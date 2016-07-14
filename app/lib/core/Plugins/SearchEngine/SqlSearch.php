@@ -490,7 +490,28 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		$vs_table_num = $t_table->tableNum();
 		
-		if (is_numeric($vs_field)) {
+		if ($vs_field == 'count') {
+			$vs_rel_type = null;
+			
+			if (sizeof($va_rel_type_ids) > 0) {
+				$vn_rel_type = array_shift($va_rel_type_ids);
+				$va_rel_type_ids = [0];
+				$vs_field_num = "C{$vn_rel_type}";
+			} else {
+				$vs_field_num = 'C_total';
+			}
+			
+			return array(
+				'access_point' => "{$vs_table}.{$vs_field_num}",
+				'relationship_type' => 0,
+				'table_num' => $vs_table_num,
+				'element_id' => null,
+				'field_num' => $vs_field_num,
+				'datatype' => 'COUNT',
+				'element_info' => null,
+				'relationship_type_ids' => $va_rel_type_ids
+			);
+		} elseif (is_numeric($vs_field)) {
 			$vs_fld_num = $vs_field;
 		} else {
 			$vs_fld_num = $this->getFieldNum($vs_table, $vs_field);
@@ -558,6 +579,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$vs_direct_sql_query = null;
 			$vn_direct_sql_target_table_num = $pn_subject_tablenum;
 			
+			$vb_dont_rewrite_direct_sql_query = false;
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
@@ -637,10 +659,29 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							$va_indexed_fields = $o_base->getFieldsToIndex($pn_subject_tablenum, $vn_direct_sql_target_table_num);
 							$vn_root_element_id = $va_element['element_info']['hier_element_id'];
-							if (!isset($va_indexed_fields['_ca_attribute_'.$va_element['element_id']]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
-											
-							
+							if (($va_element['datatype'] !== 'COUNT') && !isset($va_indexed_fields['_ca_attribute_'.$va_element['element_id']]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
+										
 							switch($va_element['datatype']) {
+								case 'COUNT':
+									$vb_dont_rewrite_direct_sql_query = true;
+									$vs_direct_sql_query = "
+										SELECT ca.row_id, 1
+										FROM ca_sql_search_word_index ca
+										INNER JOIN ca_sql_search_words AS sw ON ca.word_id = sw.word_id
+										^JOIN
+										WHERE
+											(ca.table_num = {$pn_subject_tablenum}) 
+											AND 
+											(ca.field_table_num = ?)
+											AND
+											(ca.rel_type_id = 0)
+											AND
+											(ca.field_num = '".$va_element['field_num']."')
+											AND
+											(sw.word BETWEEN ".(int)$va_lower_term->text." and ".(int)$va_upper_term->text.")
+											
+									";
+									break;
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 									$t_geocode = new GeocodeAttributeValue();
 									$va_parsed_value = $t_geocode->parseValue('['.$va_lower_term->text.']', $va_element['element_info']);
@@ -991,6 +1032,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 							}
 						} else {
+							//print "$vs_table/$vs_field/";
 							if ((!$vb_is_blank_search && !$vb_is_not_blank_search) && $vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) ) {
 								$vs_table_num = $t_table->tableNum();
 								
@@ -1480,7 +1522,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					
 					
 					$va_join = array();
-					if ($vn_direct_sql_target_table_num != $pn_subject_tablenum) {
+					if (($vn_direct_sql_target_table_num != $pn_subject_tablenum) && !$vb_dont_rewrite_direct_sql_query) {
 						// We're doing direct queries on metadata in a related table, fun!
 						// Now let's rewrite the direct query to work...
 						
@@ -1545,7 +1587,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array();
 						if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
 						$this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
-
+print $vs_sql;
+print_R($pa_direct_sql_query_params);
 						$vn_i++;
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
 					} else {

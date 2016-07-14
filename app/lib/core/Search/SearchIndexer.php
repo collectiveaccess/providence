@@ -785,8 +785,23 @@ class SearchIndexer extends SearchBase {
 							$qr_res = $this->opo_db->query($vs_sql, $va_params);
 						}
 						
-						$va_counts = ['_total' => 0];
-						$vb_index_count = isset($va_fields_to_index['_count']) && (bool)$va_fields_to_index['_count'];
+						if ($vb_index_count = isset($va_fields_to_index['_count']) && (bool)$va_fields_to_index['_count']) {
+							$va_counts = ['_total' => 0];
+						
+							// Set counts for all types to zero
+							$va_type_ids = null;
+							if (method_exists($t_rel, 'isRelationship') && $t_rel->isRelationship()) {
+								$va_type_ids = $t_rel->getRelationshipTypes(null, null, ['idsOnly' => true]);
+							} elseif (method_exists($t_rel, 'getTypeList')) {
+								$va_type_ids = $t_rel->getTypeList(['idsOnly' => true]);
+							} 
+							if (is_array($va_type_ids)) {
+								foreach($va_type_ids as $vn_type_id) {
+									$va_counts = [$vn_type_id => 0];
+								}
+							}
+						}
+						
 						while($qr_res->nextRow()) {
 							$vn_count++;
 							
@@ -849,10 +864,12 @@ class SearchIndexer extends SearchBase {
 
 								switch($vs_rel_field){
 									case '_count':
-										$va_counts['_total']++;
+										if ($vb_index_count) {
+											$va_counts['_total']++;
 										
-										if ($vn_rel_type_id || $vn_row_type_id) {
-											$va_counts[$t_rel->isRelationship() ? $vn_rel_type_id : $vn_row_type_id]++;
+											if ($vn_rel_type_id || $vn_row_type_id) {
+												$va_counts[$t_rel->isRelationship() ? $vn_rel_type_id : $vn_row_type_id]++;
+											}
 										}
 										break;
 									default:
@@ -2410,7 +2427,20 @@ class SearchIndexer extends SearchBase {
 				}
 
 				$va_counts = ['_total' => 0];
-
+						
+				// Set counts for all types to zero
+				$va_type_ids = null;
+				if (method_exists($pt_rel, 'isRelationship') && $pt_rel->isRelationship()) {
+					$va_type_ids = $pt_rel->getRelationshipTypes(null, null, ['idsOnly' => true]);
+				} elseif (method_exists($pt_rel, 'getTypeList')) {
+					$va_type_ids = $pt_rel->getTypeList(['idsOnly' => true]);
+				} 
+				if (is_array($va_type_ids)) {
+					foreach($va_type_ids as $vn_type_id) {
+						$va_counts[$vn_type_id] = 0;
+					}
+				}
+				
 				while($qr_res->nextRow()) {
 					$vn_count++;
 
