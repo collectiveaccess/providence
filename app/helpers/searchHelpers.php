@@ -1026,10 +1026,20 @@
 			// rewrite ca_objects/dates/dates_value as ca_objects/dates_value, because that's
 			// how the SearchIndexer indexes -- we don't care about the container the field is in
 			$va_tmp = explode('\\/', $vs_new_field);
+			
+			// rewrite count queries
+			if (strtolower($va_tmp[1]) == 'count') { $va_tmp[1] = 'COUNT'; }	// uppercase count field
+			if (preg_match("/^count\|(.*)$/", strtolower($va_tmp[1]), $va_matches)) { $va_tmp[1] = 'COUNT|'.$va_matches[1]; }	// uppercase count field with optional type
+			
 			if(sizeof($va_tmp) == 3) {
-				unset($va_tmp[1]);
-				$vs_new_field = join('\\/', $va_tmp);
+				if (strtolower($va_tmp[2]) == 'count') {
+					$va_tmp[2] = 'COUNT'.ca_metadata_elements::getElementID($va_tmp[1]);
+					unset($va_tmp[1]);
+				} else {
+					unset($va_tmp[1]);
+				}
 			}
+			$vs_new_field = join('\\/', $va_tmp);
 		} else {
 			$vs_new_field = $po_term->field;
 		}
