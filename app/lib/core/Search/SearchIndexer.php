@@ -2200,7 +2200,7 @@ class SearchIndexer extends SearchBase {
 
 			$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
 		} else {
-			$va_fields_to_index = $this->getFieldsToIndex($vs_subject_tablename, $vs_related_table);
+			if (!is_array($va_fields_to_index = $this->getFieldsToIndex($vs_subject_tablename, $vs_related_table))) { $va_fields_to_index = []; }
 			$va_table_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_related_table);
 
 			$va_field_list = array_keys($va_fields_to_index);

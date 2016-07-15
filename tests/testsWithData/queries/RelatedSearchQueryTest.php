@@ -180,6 +180,8 @@ class RelatedSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_entity_labels.displayname/publisher:"Homer J. Simpson"' => 0,
 			// bart has though
 			'ca_entity_labels.displayname/publisher:"Bart Simpson"' => 1,
+			'ca_objects_x_entities.count:1' => 1,
+			'ca_objects_x_entities.count:[1 to 10]' => 2,
 		));
 	}
 	# -------------------------------------------------------
