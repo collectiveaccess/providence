@@ -695,7 +695,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											AND
 											(sw.word BETWEEN ".(int)$va_lower_term->text." and ".(int)$va_upper_term->text.")
 											
-									";
+									".($this->getOption('omitPrivateIndexing') ? " AND ca.access = 0" : '');
 									break;
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 									$t_geocode = new GeocodeAttributeValue();
