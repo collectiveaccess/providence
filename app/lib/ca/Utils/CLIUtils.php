@@ -3822,8 +3822,8 @@
 		# -------------------------------------------------------
 		public static function check_url_reference_integrityParamList() {
 			return [
-				"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. [Optional]'),
-				"groups|g=s" => _t('Groups to notify if there are errors. Multiple entries are delimited by comma or semicolon. [Optional]'),
+				"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user named will be ignored. [Optional]'),
+				"groups|g=s" => _t('Groups to notify if there are errors. They\'re identified by group code. Multiple entries are delimited by comma or semicolon. Invalid or non-existing groups will be ignored. [Optional]'),
 			];
 		}
 		# -------------------------------------------------------
