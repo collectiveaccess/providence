@@ -185,7 +185,8 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
                     'parameters' => array(
                         'type_id' => 'string:' . $vo_type->getPrimaryKey(),
                         'form_id' => 'string:' . $vn_form_id,
-                        'display_id' => 'string:' . $vn_bundle_display_id
+                        'display_id' => 'string:' . $vn_bundle_display_id,
+                        'reset' => 'preference:persistent_search'
                     )
                 );
             }
