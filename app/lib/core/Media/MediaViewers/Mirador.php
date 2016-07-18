@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/MediaViewers/UniversalViewer.php :
+ * app/lib/core/Media/MediaViewers/Mirador.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,7 +38,7 @@
 	require_once(__CA_LIB_DIR__.'/core/Media/IMediaViewer.php');
 	require_once(__CA_LIB_DIR__.'/core/Media/BaseMediaViewer.php');
  
-	class UniversalViewer extends BaseMediaViewer implements IMediaViewer {
+	class Mirador extends BaseMediaViewer implements IMediaViewer {
 		# -------------------------------------------------------
 		/**
 		 *
@@ -58,7 +58,7 @@
 				if ($pa_data['t_subject']) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
 				
 				$o_view->setVar('data_url', caNavUrl($po_request, '*', '*', 'GetMediaData', $va_params, ['absolute' => true]));
-				$o_view->setVar('viewer', 'UniversalViewer');
+				$o_view->setVar('viewer', 'Mirador');
 				$o_view->setVar('width', caGetOption('width', $pa_data['display'], null));
 				$o_view->setVar('height', caGetOption('height', $pa_data['display'], null));
 			}
@@ -86,12 +86,12 @@
 					$pa_data['width'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'WIDTH');
 					$pa_data['height'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'HEIGHT');
 					
-					$o_view->setVar('id', 'caMediaOverlayUniversalViewer_'.$t_instance->getPrimaryKey().'_'.($vs_display_type = caGetOption('display_type', $pa_data, caGetOption('display_version', $pa_data['display'], ''))));
+					$o_view->setVar('id', 'caMediaOverlayMirador_'.$t_instance->getPrimaryKey().'_'.($vs_display_type = caGetOption('display_type', $pa_data, caGetOption('display_version', $pa_data['display'], ''))));
 				
-					$vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $pa_data['display'], null);
-					if (((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) && !$vn_use_universal_viewer_for_image_list_length) {
+					$vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $pa_data['display'], null);
+					if (((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) && !$vn_use_mirador_for_image_list_length) {
 						$pa_data['resources'] = $t_instance->getFileList();
-					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_universal_viewer_for_image_list_length) {
+					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_mirador_for_image_list_length) {
 						$va_reps = $pa_data['t_subject']->getRepresentations(['small', $vs_display_version, 'original'], null, []);
 						foreach($va_reps as $va_rep) {
 							$pa_data['resources'][] = [
@@ -109,11 +109,12 @@
 						];
 					}
 					
+					
 					$o_view->setVar('request', $po_request);
 					$o_view->setVar('identifier', $ps_identifier);
 					$o_view->setVar('data', $pa_data);
 					
-					return $o_view->render("UniversalViewerManifest.php");
+					return $o_view->render("MiradorManifest.php");
 				}
 			}
 			
