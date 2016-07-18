@@ -294,6 +294,16 @@ class Configuration {
 								$va_assoc_pointer_stack[] =& $this->ops_config_settings["assoc"][$vs_key];
 								$vn_state = 40;
 								break;
+							case '"':
+								if($vn_in_quote) {
+									$vn_in_quote = 0;
+									$vn_state = -1;
+								} else {
+									$vs_scalar_value = '';
+									$vn_in_quote = 1;
+									$vn_state = 20;
+								}
+								break;
 							default:
 								// strip leading exclaimation in scalar to allow scalars to start with [ or {
 								if (trim($vs_token) == '!') {
@@ -303,9 +313,11 @@ class Configuration {
 									$vs_scalar_value .= $vs_token;
 									$vn_state = 20;
 
-									if (sizeof($va_tokens) == 0) {
-										$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
-										$vn_state = -1;
+									if(!$vn_in_quote) {
+										if (sizeof($va_tokens) == 0) {
+											$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
+											$vn_state = -1;
+										}
 									}
 								}
 								break;
@@ -314,11 +326,22 @@ class Configuration {
 					# ------------------------------------
 					# handle scalar values
 					case 20:
-						if ((preg_match("/[\r\n]/", $vs_token))) {
+						// end quote? -> accept scalar
+						if((trim($vs_token) == '"') && $vn_in_quote) {
+							if($vn_in_quote) {
+								$vn_in_quote = 0;
+								$vn_state = -1;
+
+								$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
+								break;
+							}
+						}
+
+						if (preg_match("/[\r\n]/", $vs_token) && !$vn_in_quote) {
 							$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
 							$vn_state = -1;
 						} else {
-							if (sizeof($va_tokens) == 0) {
+							if ((sizeof($va_tokens) == 0) && !$vn_in_quote) {
 								$vs_scalar_value .= $vs_token;
 
 								# accept scalar
@@ -326,8 +349,9 @@ class Configuration {
 
 								# initialize
 								$vn_state = -1;
-							} else {
+							} else { # keep going to next line
 								$vs_scalar_value .= $vs_token;
+								$vn_state = 20;
 							}
 						}
 						break;
@@ -659,12 +683,16 @@ class Configuration {
 
 				}
 			}
-			if (($vn_state == 10) || ($vn_state == 20)) {
+			if ((($vn_state == 10) || ($vn_state == 20)) && !$vn_in_quote) {
 				$this->ops_config_settings["scalars"][$vs_key] = "";
 				$vn_state = -1;
 			}
 
-			if ($vn_in_quote) {
+			if(in_array($vn_state, [10,20]) && $vn_in_quote) {
+				$vs_scalar_value .= "\n";
+			}
+
+			if ($vn_in_quote && !in_array($vn_state, [10,20])) {
 				switch($vn_state) {
 					case 30:
 						$this->ops_error = "Missing trailing quote in list '$vs_key'<br/><strong>Last ".sizeof($va_token_history)." tokens were: </strong>".$this->_formatTokenHistory($va_token_history, array('outputAsHTML' => true));
