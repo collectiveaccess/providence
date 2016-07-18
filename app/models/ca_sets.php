@@ -1216,9 +1216,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Note: this method doesn't check access rights for the set
 	 *
 	 * @param array $pa_row_ids
+	 * @param array $pa_options
+	 * 		queueIndexing -- defaults to true
 	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.
 	 */
-	public function addItems($pa_row_ids) {
+	public function addItems($pa_row_ids, $pa_options = []) {
 		$vn_set_id = $this->getPrimaryKey();
 		global $g_ui_locale_id;
 		if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
@@ -1266,7 +1268,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			
 			// Index the links
-			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => true));
+			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => (bool) caGetOption('queueIndexing', $pa_options, true)));
 		}
 		
 		return sizeof($va_item_values);
