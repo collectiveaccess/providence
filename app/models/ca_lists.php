@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -357,10 +357,50 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Edit existing list item
+	 * @param int $pn_item_id
+	 * @param string $ps_value
+	 * @param bool $pb_is_enabled
+	 * @param bool $pb_is_default
+	 * @param int $pn_parent_id
+	 * @param int $pn_type_id
+	 * @param string $ps_idno
+	 * @param string $ps_validation_format
+	 * @param int $pn_status
+	 * @param int $pn_access
+	 * @param int $pn_rank
+	 * @return bool|ca_list_items
 	 */
-	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
-		die("Not implemented");
+	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
+		if(!($vn_list_id = $this->getPrimaryKey())) { return false; }
+
+		$t_item = new ca_list_items($pn_item_id);
+		if(!$t_item->getPrimaryKey()) { return false; }
+		if($t_item->get('list_id') != $this->getPrimaryKey()) { return false; } // don't allow editing items in other lists
+
+		$t_item->setMode(ACCESS_WRITE);
+		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
+
+		if(is_null($pn_parent_id)) { $pn_parent_id = $this->getRootItemIDForList($this->getPrimaryKey()); }
+
+		$t_item->set('item_value', $ps_value);
+		$t_item->set('is_enabled', $pb_is_enabled ? 1 : 0);
+		$t_item->set('is_default', $pb_is_default ? 1 : 0);
+		$t_item->set('parent_id', $pn_parent_id);
+		$t_item->set('idno', $ps_idno);
+		$t_item->set('validation_format', $ps_validation_format);
+		$t_item->set('status', $pn_status);
+		$t_item->set('access', $pn_access);
+		if (!is_null($pn_rank)) { $t_item->set('rank', $pn_rank); }
+
+		$t_item->update();
+
+		if ($t_item->numErrors()) {
+			$this->errors = array_merge($this->errors, $t_item->errors);
+			return false;
+		}
+
+		return $t_item;
 	}
 	# ------------------------------------------------------
 	/**
@@ -406,6 +446,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
 	 *		start = 		offset to start returning records from [default=0; no offset]
 	 *		limit = 		maximum number of records to return [default=null; no limit]
+	 * 		dontCache =		don't cache
+	 *		checkAccess =
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
@@ -417,9 +459,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$pn_limit = caGetOption('limit', $pa_options, null);
+		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
 		
 		$pb_omit_root = caGetOption('omitRoot', $pa_options, false);
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
+		
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
+		if(!is_array($pa_check_access) && $pa_check_access) { $va_check_access = array($va_check_access); }
 	
 		$vb_labels_only = false;
 		if (isset($pa_options['labelsOnly']) && $pa_options['labelsOnly']) {
@@ -430,8 +476,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 	
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('list_id' => $vn_list_id)));
-		
-		if (is_array(ca_lists::$s_list_item_cache[$vs_cache_key])) {
+
+		if (!$pb_dont_cache && is_array(ca_lists::$s_list_item_cache[$vs_cache_key])) {
 			return(ca_lists::$s_list_item_cache[$vs_cache_key]);
 		}
 		$t_list = new ca_lists($vn_list_id);
@@ -472,6 +518,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					break;
 			}
 			
+			$va_params = [(int)$vn_list_id];
+			
 			if ($vs_order_by) {
 				$vs_order_by = "ORDER BY {$vs_order_by}";
 			}
@@ -489,17 +537,24 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if ($pn_limit > 0) {
 				$vs_limit_sql = ($pn_start > 0) ? "LIMIT {$pn_start}, {$pn_limit}" : "LIMIT {$pn_limit}";
 			} 
+			
+			$vs_check_access_sql = '';
+			if (is_array($pa_check_access) && sizeof($pa_check_access)) {
+				$vs_check_access_sql = " AND (cli.access in (?))";
+				$va_params[] = $pa_check_access;
+			}
+			
 			$vs_sql = "
 				SELECT clil.*, cli.*
 				FROM ca_list_items cli
 				LEFT JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
 				WHERE
-					(cli.deleted = 0) AND ((clil.is_preferred = 1) OR (clil.is_preferred IS NULL)) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
+					(cli.deleted = 0) AND ((clil.is_preferred = 1) OR (clil.is_preferred IS NULL)) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql} {$vs_check_access_sql}
 				{$vs_order_by}
 				{$vs_limit_sql}
 			";
 			//print $vs_sql;
-			$qr_res = $o_db->query($vs_sql, (int)$vn_list_id);
+			$qr_res = $o_db->query($vs_sql, $va_params);
 			
 			$va_seen_locales = array();
 			$va_items = array();
@@ -560,6 +615,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
 				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
+				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && in_array($va_item['access'], $pa_check_access)) { continue; }
 				
 				$vn_item_id = $va_item['NODE']['item_id'];
 				$vn_parent_id = $va_item['NODE']['parent_id'];
@@ -1175,7 +1231,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 	transaction = transaction to perform database operations within. [Default is null]
 	 *
 	 *  useDefaultWhenNull = if a list has a null value the default value is typically ignored and null used as the initial value; set this option to use the default in all cases [Default=false]
-	 * 
+	 *	checkAccess = 
+	 *	exclude = array of item idnos to omit from the returned list. [Default is null]
+	 *	 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
 	static public function getListAsHTMLFormElement($pm_list_name_or_id, $ps_name, $pa_attributes=null, $pa_options=null) {
@@ -1222,7 +1280,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					
 					$va_item_ids = array();
 					while($qr_collections->nextHit()) {
-						$va_list_items = $qr_collections->get('ca_list_items', array('returnAsArray' => true));
+						$va_list_items = $qr_collections->get('ca_list_items', array('returnAsArray' => true, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)));
 						foreach($va_list_items as $vn_rel_id => $va_list_item) {
 							$va_item_ids[$vn_rel_id] = $va_list_item['item_id'];
 						}
@@ -1271,6 +1329,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!isset($pa_options['limitToItemsWithID']) || !is_array($pa_options['limitToItemsWithID']) || !sizeof($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = null; }
 		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
+		$pa_exclude_items = caGetOption('exclude', $pa_options, null);
 	
 		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && ($vs_render_as != 'checklist')) {
 			$va_options[''] = $pa_options['nullOption'];
@@ -1324,6 +1383,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_options['limitToItemsWithID']) && !in_array($vn_item_id, $pa_options['limitToItemsWithID'])) { continue; }
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
 			if (is_array($va_in_use_list) && !in_array($vn_item_id, $va_in_use_list)) { continue; }
+			if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && !in_array($va_item['access'], $pa_check_access)) { continue; }
+			if (is_array($pa_exclude_items) && (sizeof($pa_exclude_items) > 0) && in_array($va_item['idno'], $pa_exclude_items)) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			if (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }

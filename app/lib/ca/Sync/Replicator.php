@@ -148,6 +148,11 @@ class Replicator {
 			foreach($this->getTargetsAsServiceClients() as $vs_target_key => $o_target) {
 				/** @var CAS\ReplicationService $o_target */
 
+				$vs_push_media_to = null;
+				if($this->opo_replication_conf->get('sources')[$vs_source_key]['push_media']) {
+					$vs_push_media_to = $vs_target_key;
+				}
+
 				// get latest log id for this source at current target
 				$o_result = $o_target->setEndpoint('getlastreplicatedlogid')
 					->addGetParameter('system_guid', $vs_source_system_guid)
@@ -201,13 +206,14 @@ class Replicator {
 				}
 
 				$pb_ok = true;
-				while(true) { // use chunks of 100 entries until something happens (success/err)
+				while(true) { // use chunks of 10 entries until something happens (success/err)
 					// get change log from source, starting with the log id we got above
 					$va_source_log_entries = $o_source->setEndpoint('getlog')
 						->addGetParameter('from', $pn_replicated_log_id)
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-						->addGetParameter('limit', 100)
+						->addGetParameter('limit', 10)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
+						->addGetParameter('pushMediaTo', $vs_push_media_to)
 						->request()->getRawData();
 
 					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {

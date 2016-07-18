@@ -38,6 +38,13 @@
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_object_lots', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	$vb_batch			= $this->getVar('batch');
+	$vs_bundle_preview = '';
+	if(isset($va_settings['displayTemplate'])) {
+		$vs_bundle_preview = $t_subject->getWithTemplate($va_settings['displayTemplate']);
+	}
+	if(!$vs_bundle_preview) {
+		$vs_bundle_preview = current($va_initial_values)['name'];
+	}
 	if ($vb_batch) {
 		print caBatchEditorPreferredLabelsModeControl($t_label, $vs_id_prefix);
 	} else {
@@ -86,7 +93,7 @@
 		labelListClassName: 'caLabelList',
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
-		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['name']); ?>,
+		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});

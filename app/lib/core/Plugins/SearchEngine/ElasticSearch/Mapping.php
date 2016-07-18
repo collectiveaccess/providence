@@ -143,7 +143,7 @@ class Mapping {
 	 */
 	public function getFieldsToIndex($ps_table) {
 		if(!$this->getDatamodel()->tableExists($ps_table)) { return array(); }
-		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true));
+		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true, 'includeNonRootElements' => true));
 		if(!is_array($va_table_fields)) { return array(); }
 
 		$va_rewritten_fields = array();
@@ -159,7 +159,7 @@ class Mapping {
 
 		$va_related_tables = $this->getSearchBase()->getRelatedIndexingTables($ps_table);
 		foreach($va_related_tables as $vs_related_table) {
-			$va_related_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, $vs_related_table);
+			$va_related_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, $vs_related_table, array('clearCache' => true, 'includeNonRootElements' => true));
 			foreach($va_related_table_fields as $vs_related_table_field => $va_related_table_field_options){
 				if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_related_table_field, $va_matches)) {
 					$va_rewritten_fields[$vs_related_table.'.A'.$va_matches[1]] = $va_related_table_field_options;

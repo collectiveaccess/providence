@@ -48,20 +48,28 @@
 		/**
 		 *
 		 */
-		public static function getViewerHTML($po_request, $ps_identifier, $pa_data=null) {
+		public static function getViewerHTML($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				$o_view->setVar('identifier', $ps_identifier);
-				$o_view->setVar('data_url', caNavUrl($po_request, '*', '*', 'GetMediaData', ['identifier' => $ps_identifier], ['absolute' => true]));
+				
+				$va_params = ['identifier' => $ps_identifier, 'context' => caGetOption('context', $pa_options, $po_request->getAction())];
+				
+				// Pass subject key when getting viewer data
+				if ($pa_data['t_subject']) { $va_params['id'] = $pa_data['t_subject']->getPrimaryKey(); }
+				
+				$o_view->setVar('data_url', caNavUrl($po_request, '*', '*', 'GetMediaData', $va_params, ['absolute' => true]));
 				$o_view->setVar('viewer', 'UniversalViewer');
+				$o_view->setVar('width', caGetOption('width', $pa_data['display'], null));
+				$o_view->setVar('height', caGetOption('height', $pa_data['display'], null));
 			}
 			
-			return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data);
+			return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options);
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
-		public static function getViewerData($po_request, $ps_identifier, $pa_data=null) {
+		public static function getViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				if ($t_instance = caGetOption('t_instance', $pa_data, null)) {
 				
@@ -78,16 +86,31 @@
 					$pa_data['width'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'WIDTH');
 					$pa_data['height'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'HEIGHT');
 					
-					if (($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic') {
+					$o_view->setVar('id', 'caMediaOverlayUniversalViewer_'.$t_instance->getPrimaryKey().'_'.($vs_display_type = caGetOption('display_type', $pa_data, caGetOption('display_version', $pa_data['display'], ''))));
+				
+					if ((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) {
 						$pa_data['resources'] = $t_instance->getFileList();
 					} else {
-						$pa_data['resources'][] = [
-							'url' => $pa_data['t_instance']->getMediaUrl($vs_media_fld, $vs_display_version)
-						];
+						if (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $pa_data['display'], null))) {
+							$va_reps = $pa_data['t_subject']->getRepresentations([$vs_display_version, 'original'], null, []);
+							foreach($va_reps as $va_rep) {
+								$pa_data['resources'][] = [
+									'representation_id' => $va_rep['representation_id'],
+									'url' => $va_rep[$vs_display_version]['url'],
+									'width' => $va_rep['info']['original']['WIDTH'],
+									'height' => $va_rep['info']['original']['HEIGHT'],
+									'noPages' => true
+								];
+							}
+						} else {
+							$pa_data['resources'][] = [
+								'url' => $pa_data['t_instance']->getMediaUrl($vs_media_fld, $vs_display_version)
+							];
+						}
 					}
 					
 					
-					$o_view->setVar('request', caGetOption('request', $pa_data, null));
+					$o_view->setVar('request', $po_request);
 					$o_view->setVar('identifier', $ps_identifier);
 					$o_view->setVar('data', $pa_data);
 					

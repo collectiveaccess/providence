@@ -6753,7 +6753,7 @@
         </item>
       </items>
     </list>
-    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
+    <!--<list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object deaccession types</name>
@@ -6802,6 +6802,7 @@
         </item>
       </items>
     </list>
+    -->
     <list code="dimension_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -9638,55 +9639,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Place Resided</name_singular>
               <name_plural>Places Resided</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
-    <list code="object_location_types" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Object Location Types</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="null" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>-</name_singular>
-              <name_plural>-</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="creation_place" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Creation Place</name_singular>
-              <name_plural>Creation Place</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="place_depicted" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Place Depicted</name_singular>
-              <name_plural>Place Depicted</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="place_reproduced" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Place Reproduced</name_singular>
-              <name_plural>Place Reproduced</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="place_manufactured" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Place Manufactured</name_singular>
-              <name_plural>Place Manufactured</name_plural>
             </label>
           </labels>
         </item>

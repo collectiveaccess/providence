@@ -63,7 +63,7 @@
 		/**
 		 *
 		 */
-		static public function prepareViewerHTML($po_request, $o_view, $pa_data=null) {
+		static public function prepareViewerHTML($po_request, $o_view, $pa_data=null, $pa_options=null) {
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
 			$t_subject = isset($pa_data['t_subject']) ? $pa_data['t_subject'] : null;
 				
@@ -88,7 +88,9 @@
 					if ($vn_rep_index < ($vn_num_media - 1)) {
 						$vs_controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($po_request, '*', '*', $po_request->getAction(), array('representation_id' => (int)$va_ids[$vn_rep_index + 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey()))."\");'>→</a>";
 					}
-					$vs_controls .= "</div>";			
+					$vs_controls .= "</div>";	
+					
+					$o_view->setVar('page', $vn_rep_index);		
 				}
 			}
 			if ($t_subject && $t_instance && $po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations')) {
@@ -109,7 +111,7 @@
 			
 			$o_view->setVar('controls', $vs_controls);
 		
-			return $o_view->render('viewerWrapper.php');
+			return $o_view->render(caGetOption('viewerWrapper', $pa_options, 'viewerWrapper').'.php');
 		}
 		# -------------------------------------------------------
 	}

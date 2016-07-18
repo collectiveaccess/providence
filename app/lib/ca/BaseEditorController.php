@@ -1659,7 +1659,7 @@ class BaseEditorController extends ActionController {
 				if (
 					(!$pt_subject->get('source_id'))
 					||
-					($pt_subject->get('source_id') && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources))
+					($pt_subject->get('source_id') && in_array($pt_subject->get('source_id'), $va_restrict_to_sources))
 					||
 					((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
 				) {
@@ -1702,7 +1702,9 @@ class BaseEditorController extends ActionController {
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 	
-		// TODO: check subject_id here
+		if (!$t_subject->isReadable($this->request)) { 
+			throw new ApplicationException(_t('Cannot view media'));
+		}
 			
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
@@ -1715,8 +1717,7 @@ class BaseEditorController extends ActionController {
 			$t_subject->load($t_attr->get('row_id'));
 
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
-				// error: no viewer available
-				die("Invalid viewer");
+				throw new ApplicationException(_t('Invalid viewer'));
 			}
 
 			$this->response->addContent($vs_viewer_name::getViewerHTML(
@@ -1731,8 +1732,18 @@ class BaseEditorController extends ActionController {
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
-				// error: no viewer available
-				die("Invalid viewer");
+				throw new ApplicationException(_t('Invalid viewer'));
+			}
+			
+			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
+			if ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null)) {
+				$vn_image_count = $t_subject->numberOfRepresentationsOfClass('image');
+				$vn_rep_count = $t_subject->getRepresentationCount();
+				
+				// Are there enough representations? Are all representations images? 
+				if (($vn_image_count == $vn_rep_count) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
+					$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+				}
 			}
 			
 			if(!$vn_subject_id) {
@@ -1747,11 +1758,10 @@ class BaseEditorController extends ActionController {
 			$this->response->addContent($vs_viewer_name::getViewerHTML(
 				$this->request, 
 				"representation:{$pn_representation_id}", 
-				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
+				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => $va_display_info])
 			);
 		} else {
-			// error
-			die("Invalid id");
+			throw new ApplicationException(_t('Invalid id'));
 		}
 	}
 	# -------------------------------------------------------
@@ -1759,13 +1769,16 @@ class BaseEditorController extends ActionController {
 	 *
 	 */
 	public function GetMediaData() {
-		$ps_identifier = $this->request->getParameter('identifier', pString);
-		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
-			// error: invalid identifier
-			die("Invalid identifier $ps_identifier");
+		list($vn_subject_id, $t_subject) = $this->_initView();
+		
+		if (!$t_subject->isReadable($this->request)) { 
+			throw new ApplicationException(_t('Cannot view media'));
 		}
 		
-		// TODO: check subject_id here
+		$ps_identifier = $this->request->getParameter('identifier', pString);
+		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
+		}
 		
 		$app = AppController::getInstance();
 		$app->removeAllPlugins();
@@ -1775,11 +1788,21 @@ class BaseEditorController extends ActionController {
 				$t_instance = new ca_object_representations($va_identifier['id']);
 				
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
-					// error: no viewer available
-					die("Invalid viewer $vs_mimetype");
+					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
-				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => null, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)]));
+				$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
+				if ($t_subject && ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))) {
+					$vn_image_count = $t_subject->numberOfRepresentationsOfClass('image');
+					$vn_rep_count = $t_subject->getRepresentationCount();
+				
+					// Are there enough representations? Are all representations images? 
+					if (($vn_image_count == $vn_rep_count) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
+						$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+					}
+				}
+				
+				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
 				return;
 				break;
 			case 'attribute':
@@ -1790,8 +1813,7 @@ class BaseEditorController extends ActionController {
 				$t_subject->load($t_attr->get('row_id'));
 				
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
-					// error: no viewer available
-					die("Invalid viewer");
+					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
 				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)]));
@@ -1799,7 +1821,7 @@ class BaseEditorController extends ActionController {
 				break;
 		}
 		
-		die("Invalid type");
+		throw new ApplicationException(_t('Invalid type'));
 	}
 	# -------------------------------------------------------
 	/**

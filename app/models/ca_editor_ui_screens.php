@@ -406,6 +406,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
 		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
+		$vs_cache_key = md5($pm_table_name_or_num . serialize($pa_options));
+
+		if(MemoryCache::contains($vs_cache_key, 'UiScreensAvailableBundles')) {
+			return MemoryCache::fetch($vs_cache_key, 'UiScreensAvailableBundles');
+		}
 		
 		if (!is_numeric($pm_table_name_or_num)) { $pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num); }
 		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
@@ -468,7 +473,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => 1,
 							'label' => _t('Documentation URL'),
 							'description' => _t('URL pointing to documentation for this field. Leave blank if no documentation URL exists.')
-						)
+						),
+						'displayTemplate' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => 90, 'height' => 4,
+							'label' => _t('Display template'),
+							'validForRootOnly' => 1,
+							'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+						),
 					);
 					break;
 				case 'attribute':
@@ -1530,6 +1544,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_sorted_bundles[$vs_real_key] = $va_info;
 			}
 		}
+
+		MemoryCache::save($vs_cache_key, $va_sorted_bundles, 'UiScreensAvailableBundles');
+
 		return $va_sorted_bundles;
 	}
 	# ----------------------------------------

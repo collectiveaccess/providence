@@ -37,7 +37,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess database update</title>
-	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" />
+	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>

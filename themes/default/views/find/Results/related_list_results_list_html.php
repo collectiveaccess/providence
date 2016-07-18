@@ -104,7 +104,7 @@
 
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?> <?php print "id='{$vs_interstitial_prefix}{$vn_relation_id}'"; ?>>
 					<td style="width:10px">
-						<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, 1); ?></a>
+						<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a>
 						<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 					</td>
 <?php

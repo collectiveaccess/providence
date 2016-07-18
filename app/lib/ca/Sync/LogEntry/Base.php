@@ -123,7 +123,7 @@ abstract class Base {
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new InvalidLogEntryException('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
 			}
 
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
@@ -447,8 +447,26 @@ abstract class Base {
 					continue;
 				}
 
+				// just ignore user_ids
+				if($vs_field == 'user_id') {
+					continue;
+				}
+
+				if(($this->getModelInstance() instanceof \ca_representation_annotations) && ($vs_field == 'representation_id')) {
+					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_rep_guid = $va_snapshot[$vs_field . '_guid'])) {
+						$t_rep = new \ca_object_representations();
+						$t_rep->setTransaction($this->getTx());
+						if($t_rep->loadByGUID($vs_rep_guid)) {
+							$this->getModelInstance()->set($vs_field, $t_rep->getPrimaryKey());
+						} else {
+							throw new InvalidLogEntryException("Could not load GUID {$vs_rep_guid} (referenced in representation_id)");
+						}
+					}
+				}
+
 				// plain old field like idno, extent, source_info etc.
-				// model errors usually don't occurr on set(), so the implementations can still do whatever they want and possibly overwrite this
+				// model errors usually don't occurr on set(), so the implementations
+				// can still do whatever they want and possibly overwrite this
 				$this->getModelInstance()->set($vs_field, $vm_val);
 			}
 		}

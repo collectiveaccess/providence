@@ -893,7 +893,7 @@ class MultipartIDNumber extends IDNumber {
 				$va_output_values[] = join('', $va_acc);
 				if (is_numeric($vs_element_value)) {
 					array_pop($va_acc);
-					$va_acc[] = (int)$vs_element_value;
+					$va_acc[] = $vs_element_value;
 					$va_output_values[] = join('', $va_acc);
 				}
 				if (sizeof($va_delimiters[0]) > 0) { $va_acc[] = array_shift($va_delimiters[0]); }
@@ -915,8 +915,15 @@ class MultipartIDNumber extends IDNumber {
 		foreach($va_tmp as $vs_value_proc) {
 			$va_output_values[] = preg_replace("!([\d]+)[A-Za-z]+$!", "$1", $vs_value_proc);
 		}
+		
+		$va_output_values = array_unique($va_output_values);
+		
+		// generate tokenized version
+		if($va_tokens = preg_split("![^\pL\pN\pNd/_#\@\&\-\.]+!", $ps_value)) {
+			$va_output_values = array_merge($va_output_values, $va_tokens);
+		}
 
-		return array_values(array_unique($va_output_values));
+		return $va_output_values;
 	}
 	# -------------------------------------------------------
 	# User interace (HTML)

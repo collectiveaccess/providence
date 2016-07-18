@@ -218,6 +218,8 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		$o_view->setVar('settings', $va_settings);
 		$o_view->setVar('element_info', $pa_element_info);
 		$o_view->setVar('class', $vs_class);
+		
+		$o_view->setVar('allowQuickadd', (strpos($pa_options['request']->getController(), 'Interstitial') === false));
 
 		return $o_view->render('authority_attribute.php');
 	}

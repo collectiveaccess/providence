@@ -2475,7 +2475,7 @@
             </label>
           </labels>
           <items>
-            <item idno="celebrities" enabled="1" default="0">
+            <item idno="celebrities_art_ent" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Celebrities</name_singular>

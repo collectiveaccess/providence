@@ -18,5 +18,7 @@ DOMPDF (http://code.google.com/p/dompdf/)
 File_MARC PEAR module (http://pear.php.net/package/File_MARC/)
 Vimeo Advanced API PHP Library (https://github.com/vimeo/vimeo-php-lib)
 PasswordHash (https://crackstation.net/hashing-security.htm)
+TimelineJS (https://timeline.knightlab.com)
+StoryMapJS (https://storymap.knightlab.com/)
 
 Thank you for sharing with us!

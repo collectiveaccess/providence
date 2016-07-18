@@ -47,7 +47,7 @@ class Relationship extends Base {
 			$vs_potential_code_field = str_replace('_id', '', $vs_type_field) . '_code';
 
 			if (isset($va_snapshot[$vs_potential_code_field]) && ($vs_rel_type_code = $va_snapshot[$vs_potential_code_field])) {
-				if (!($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code))) {
+				if (!($vn_rel_type_id = caGetRelationshipTypeID($this->getModelInstance()->tableNum(), $vs_rel_type_code))) {
 					throw new InvalidLogEntryException(_t("Couldn't find relationship type with type code '%1'.", $vs_rel_type_code));
 				}
 			} else {
@@ -90,7 +90,7 @@ class Relationship extends Base {
 		if ($vs_type_field = $this->getModelInstance()->getProperty('RELATIONSHIP_TYPE_FIELDNAME')) {
 			$vs_potential_code_field = str_replace('_id', '', $vs_type_field) . '_code';
 			if (isset($va_snapshot[$vs_potential_code_field]) && ($vs_rel_type_code = $va_snapshot[$vs_potential_code_field])) {
-				if ($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code)) {
+				if ($vn_rel_type_id = caGetRelationshipTypeID($this->getModelInstance()->tableNum(), $vs_rel_type_code)) {
 					$this->getModelInstance()->set($vs_type_field, $vn_rel_type_id);
 				}
 			}

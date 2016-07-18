@@ -136,15 +136,19 @@
 		/**
 		 * Returns names of all application plugins
 		 */
-		public static function getPluginNames() {
+		public static function getPluginNames($pa_plugin_locations=null) {
 			$o_config = Configuration::load();
-			if (!($vs_app_plugin_dir = $o_config->get('application_plugins'))) { return array(); }
 			
+			if (!is_array($pa_plugin_locations)) { 
+				if (!($pa_plugin_locations[] = $o_config->get('application_plugins'))) { return array(); }
+			}
 			$va_app_plugin_dirs = array();
-			if (is_resource($r_dir = opendir($vs_app_plugin_dir))) {
-				while (($vs_plugin_dir = readdir($r_dir)) !== false) {
-					if (is_dir($vs_app_plugin_dir.'/'.$vs_plugin_dir) && preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_plugin_dir)) {
-						$va_app_plugin_dirs[] = $vs_plugin_dir;
+			foreach($pa_plugin_locations as $vs_app_plugin_dir) {
+				if (is_resource($r_dir = opendir($vs_app_plugin_dir))) {
+					while (($vs_plugin_dir = readdir($r_dir)) !== false) {
+						if (is_dir($vs_app_plugin_dir.'/'.$vs_plugin_dir) && preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_plugin_dir)) {
+							$va_app_plugin_dirs[] = $vs_plugin_dir;
+						}
 					}
 				}
 			}
