@@ -35,7 +35,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 
 class ConfigurationTest extends PHPUnit_Framework_TestCase {
 	public function testScalars() {
-		$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/core/data/test.conf');
+		$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/core/data/test.conf', false, true);
 
 		$this->assertEquals($o_config->get('a_scalar'), 'Hi there');
 		$this->assertEquals($o_config->get('a_translated_scalar'), 'Hej da!');
@@ -43,6 +43,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($o_config->get('a_scalar_using_a_macro'), '/usr/local/fish');
 		$this->assertEquals($o_config->get('a_scalar_using_an_embedded_macro'), 'This scalar is embedded: "/usr/local/fish"');
 		$this->assertEquals($o_config->get('a_scalar_with_utf_8_chars'), 'Expreß zug: חי תהער');
+		$this->assertEquals($o_config->get('a_scalar_with_line_breaks'), "Foo\nHello\nWorld");
 	}
 
 	public function testLists() {
@@ -133,7 +134,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase {
 
 		$va_keys = $o_config->getScalarKeys();
 		$this->assertTrue(is_array($va_keys));
-		$this->assertEquals(sizeof($va_keys), 13);		// 12 in config file + 1 "LOCALE" value that's automatically inserted
+		$this->assertEquals(sizeof($va_keys), 14);		// 12 in config file + 1 "LOCALE" value that's automatically inserted
 		$va_keys = $o_config->getListKeys();
 		$this->assertTrue(is_array($va_keys));
 		$this->assertEquals(sizeof($va_keys), 6);
