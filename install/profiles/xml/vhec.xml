@@ -16850,6 +16850,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+  <!-- Other -->
+    <metadataElement code="list_image" datatype="Media">
+      <labels>
+        <label locale="en_US">
+          <name>List item image</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="ca_list_items">
+          <table>ca_list_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="objects_ui" type="ca_objects">
@@ -17071,6 +17092,12 @@
               <settings>
                 <setting name="label" locale="en_US">Component Hierarchy</setting>
               </settings>
+            </placement>
+            <placement code="ca_object_circulation_status">
+              <bundle>ca_object_circulation_status</bundle>
+            </placement>
+            <placement code="ca_object_checkouts">
+              <bundle>ca_object_checkouts</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -22977,6 +23004,7 @@ differs from the holder of rights for the work. Example: The work rights are “
           </labels>
           <typeRestrictions>
           <restriction type="TimeBasedVideo"/>
+          <restriction type="TimeBasedAudio"/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="preferred_labels">
@@ -23159,6 +23187,9 @@ differs from the holder of rights for the work. Example: The work rights are “
             </placement>
             <placement code="validation_format">
               <bundle>validation_format</bundle>
+            </placement>
+            <placement code="ca_attribute_list_image">
+              <bundle>ca_attribute_list_image</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
