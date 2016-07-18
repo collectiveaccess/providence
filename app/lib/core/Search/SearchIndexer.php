@@ -1381,8 +1381,9 @@ class SearchIndexer extends SearchBase {
 				break;
 		}
 		
-		$this->opo_engine->indexField($pn_subject_table_num, 'COUNT'.$vn_element_id, $pn_row_id, [$vn_count], array_merge($pa_data, ['relationship_type_id' => 0]));
-				
+		if ((isset($pa_data['COUNT']) && (bool)$pa_data['COUNT']) || in_array('COUNT', $pa_data)) {
+			$this->opo_engine->indexField($pn_subject_table_num, 'COUNT'.$vn_element_id, $pn_row_id, [$vn_count], array_merge($pa_data, ['relationship_type_id' => 0]));
+		}	
 		return true;
 	}
 	# ------------------------------------------------
