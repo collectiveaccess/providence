@@ -258,7 +258,8 @@ class RwahsNavigationPluginIntegrationTest extends AbstractPluginIntegrationTest
 			array(
 				'type_id' => 'string:' . $this->_retrieveCreatedInstance('ca_list_items', 'type1')->getPrimaryKey(),
 				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'type1_search')->getPrimaryKey(),
-				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey()
+				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey(),
+				'reset' => 'preference:persistent_search'
 			),
 			$va_nav_info['find']['navigation']['type1']['parameters'],
 			'The URL parameters of the first search shortcut are correct'
@@ -291,7 +292,8 @@ class RwahsNavigationPluginIntegrationTest extends AbstractPluginIntegrationTest
 			array(
 				'type_id' => 'string:' . $this->_retrieveCreatedInstance('ca_list_items', 'type2')->getPrimaryKey(),
 				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'type2_search')->getPrimaryKey(),
-				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey()
+				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey(),
+				'reset' => 'preference:persistent_search'
 			),
 			$va_nav_info['find']['navigation']['type2']['parameters'],
 			'The URL parameters of the second search menu shortcut are correct'
@@ -324,7 +326,8 @@ class RwahsNavigationPluginIntegrationTest extends AbstractPluginIntegrationTest
 			array(
 				'type_id' => 'string:' . $this->_retrieveCreatedInstance('ca_list_items', 'type3')->getPrimaryKey(),
 				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'type3_search')->getPrimaryKey(),
-				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey()
+				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey(),
+				'reset' => 'preference:persistent_search'
 			),
 			$va_nav_info['find']['navigation']['type3']['parameters'],
 			'The URL parameters of the third search shortcut are correct'
