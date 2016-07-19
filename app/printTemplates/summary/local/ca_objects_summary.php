@@ -57,7 +57,7 @@
 	<div class="representationList">
 		
 <?php
-	$va_reps = $t_item->getRepresentations(array("thumbnail", "medium","original"));
+	$va_reps = $t_item->getRepresentations(array("thumbnail", "medium", "original"));
 	$vn_i = 0;
 	$va_urls = array();
 	foreach($va_reps as $va_rep) {
