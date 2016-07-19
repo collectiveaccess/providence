@@ -3044,6 +3044,7 @@
 
 									if($qr_ancestors) {
 										while($qr_ancestors->nextHit()) {
+											if ($qr_ancestors->get('deleted')) { continue; }
 											$vn_parent_type_id = $qr_ancestors->get('type_id');
 											if ((sizeof($va_exclude_types) > 0) && in_array($vn_parent_type_id, $va_exclude_types)) { continue; }
 											if ((sizeof($va_restrict_to_types) > 0) && !in_array($vn_parent_type_id, $va_restrict_to_types)) { continue; }
@@ -4977,6 +4978,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 						if($qr_ancestors) {
 							while($qr_ancestors->nextHit()) {
+								if ($qr_ancestors->get('deleted')) { continue; }
 								$vn_parent_type_id = $qr_ancestors->get('type_id');
 								if ((sizeof($va_exclude_types) > 0) && in_array($vn_parent_type_id, $va_exclude_types)) { continue; }
 								if ((sizeof($va_restrict_to_types) > 0) && !in_array($vn_parent_type_id, $va_restrict_to_types)) { continue; }

@@ -55,7 +55,7 @@
 				$va_params = ['identifier' => $ps_identifier, 'context' => caGetOption('context', $pa_options, $po_request->getAction())];
 				
 				// Pass subject key when getting viewer data
-				if ($pa_data['t_subject']) { $va_params['id'] = $pa_data['t_subject']->getPrimaryKey(); }
+				if ($pa_data['t_subject']) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
 				
 				$o_view->setVar('data_url', caNavUrl($po_request, '*', '*', 'GetMediaData', $va_params, ['absolute' => true]));
 				$o_view->setVar('viewer', 'UniversalViewer');
@@ -88,28 +88,28 @@
 					
 					$o_view->setVar('id', 'caMediaOverlayUniversalViewer_'.$t_instance->getPrimaryKey().'_'.($vs_display_type = caGetOption('display_type', $pa_data, caGetOption('display_version', $pa_data['display'], ''))));
 				
-					if ((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) {
+					$vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $pa_data['display'], null);
+					if (((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) && !$vn_use_universal_viewer_for_image_list_length) {
 						$pa_data['resources'] = $t_instance->getFileList();
-					} else {
-						if (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $pa_data['display'], null))) {
-							$va_reps = $pa_data['t_subject']->getRepresentations([$vs_display_version, 'original'], null, []);
-							foreach($va_reps as $va_rep) {
-								$pa_data['resources'][] = [
-									'representation_id' => $va_rep['representation_id'],
-									'url' => $va_rep[$vs_display_version]['url'],
-									'width' => $va_rep['info']['original']['WIDTH'],
-									'height' => $va_rep['info']['original']['HEIGHT'],
-									'noPages' => true
-								];
-							}
-						} else {
+					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_universal_viewer_for_image_list_length) {
+						$va_reps = $pa_data['t_subject']->getRepresentations(['small', $vs_display_version, 'original'], null, []);
+						foreach($va_reps as $va_rep) {
 							$pa_data['resources'][] = [
-								'url' => $pa_data['t_instance']->getMediaUrl($vs_media_fld, $vs_display_version)
+								'representation_id' => $va_rep['representation_id'],
+								'preview_url' => $va_rep['urls']['small'],
+								'url' => $va_rep['urls'][$vs_display_version],
+								'width' => $va_rep['info']['original']['WIDTH'],
+								'height' => $va_rep['info']['original']['HEIGHT'],
+								'noPages' => true
 							];
 						}
+					} else {
+						$pa_data['resources'][] = [
+							'url' => $pa_data['t_instance']->getMediaUrl($vs_media_fld, $vs_display_version)
+						];
 					}
 					
-					
+					$o_view->setVar('t_subject', $pa_data['t_subject']);
 					$o_view->setVar('request', $po_request);
 					$o_view->setVar('identifier', $ps_identifier);
 					$o_view->setVar('data', $pa_data);

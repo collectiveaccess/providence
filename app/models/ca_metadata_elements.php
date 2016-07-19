@@ -856,12 +856,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		$vs_key = caGetOption('indexByElementCode', $pa_options, false) ? 'element_code' : 'element_id';
 		foreach($va_elements as $vn_id => $va_element) {
+
 			if ((int)$va_element['datatype'] === 0) { continue; }
 			if (!isset($va_element['settings']['canBeUsedInSort'])) { $va_element['settings']['canBeUsedInSort'] = true; }
 			if ($va_element['settings']['canBeUsedInSort']) {
+				$va_element['typeRestrictions'] = array_shift(self::getTypeRestrictionsAsList($va_element['element_code']));
+
 				$va_sortable_elements[$va_element[$vs_key]] = $va_element;
 			}
 		}
+
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------

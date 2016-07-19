@@ -1736,13 +1736,21 @@ class BaseEditorController extends ActionController {
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-			if ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null)) {
+			
+			if ((($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
+				||
+				($vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $va_display_info, null)))
+			) {
 				$vn_image_count = $t_subject->numberOfRepresentationsOfClass('image');
 				$vn_rep_count = $t_subject->getRepresentationCount();
 				
 				// Are there enough representations? Are all representations images? 
-				if (($vn_image_count == $vn_rep_count) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
-					$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+				if ($vn_image_count == $vn_rep_count) {
+					if (!is_null($vn_use_universal_viewer_for_image_list_length) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
+						$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+					} elseif(!is_null($vn_use_mirador_for_image_list_length) && ($vn_image_count >= $vn_use_mirador_for_image_list_length)) {
+						$va_display_info['viewer'] = $vs_viewer_name = 'Mirador';
+					}
 				}
 			}
 			
@@ -1792,13 +1800,21 @@ class BaseEditorController extends ActionController {
 				}
 				
 				$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-				if ($t_subject && ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))) {
+				if ($t_subject && 
+					(($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
+					||
+					($vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $va_display_info, null)))
+				) {
 					$vn_image_count = $t_subject->numberOfRepresentationsOfClass('image');
 					$vn_rep_count = $t_subject->getRepresentationCount();
 				
 					// Are there enough representations? Are all representations images? 
-					if (($vn_image_count == $vn_rep_count) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
-						$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+					if ($vn_image_count == $vn_rep_count) {
+						if(!is_null($vn_use_universal_viewer_for_image_list_length) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
+							$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+						} elseif(!is_null($vn_use_mirador_for_image_list_length) && ($vn_image_count >= $vn_use_mirador_for_image_list_length)) {
+							$va_display_info['viewer'] = $vs_viewer_name = 'Mirador';
+						}
 					}
 				}
 				
