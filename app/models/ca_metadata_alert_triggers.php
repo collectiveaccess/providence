@@ -190,13 +190,13 @@ class ca_metadata_alert_triggers extends BaseModel {
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
 
-		$this->loadSettingsForTriggerType();
+		$this->loadAvailableSettingsForTriggerType();
 	}
 	# ------------------------------------------------------
-	protected function loadSettingsForTriggerType() {
+	protected function loadAvailableSettingsForTriggerType() {
 		if($vs_trigger_type = $this->get('trigger_type')) {
 			/** @var CA\MetadataAlerts\TriggerTypes\Base $o_trigger_type */
-			$o_trigger_type = CA\MetadataAlerts\TriggerTypes\Base::getInstance($vs_trigger_type);
+			$o_trigger_type = CA\MetadataAlerts\TriggerTypes\Base::getInstance($vs_trigger_type, []);
 			$this->SETTINGS = new ModelSettings($this, 'settings', $o_trigger_type->getAvailableSettings());
 		}
 	}
@@ -205,7 +205,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 		$vm_ret = parent::set($pa_fields, $pm_value, $pa_options);
 
 		if($this->changed('trigger_type')) {
-			$this->loadSettingsForTriggerType();
+			$this->loadAvailableSettingsForTriggerType();
 		}
 
 		return $vm_ret;
@@ -214,7 +214,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 	public function load($pm_id=null, $pb_use_cache=true) {
 		$vm_ret = parent::load($pm_id, $pb_use_cache);
 
-		$this->loadSettingsForTriggerType();
+		$this->loadAvailableSettingsForTriggerType();
 		return $vm_ret;
 	}
 	# ------------------------------------------------------
@@ -228,6 +228,57 @@ class ca_metadata_alert_triggers extends BaseModel {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
+	 */
+	public static function fireApplicableTriggersOnSave(&$t_subject) {
+		$va_triggers = self::getApplicableTriggers($t_subject);
+		if(!is_array($va_triggers) || !sizeof($va_triggers)) { return; }
+
+		foreach($va_triggers as $va_trigger) {
+			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
+			if($o_trigger->check($t_subject)) {
+
+				// @todo send notifications
+
+			}
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get applicable triggers for a given model instance
+	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
+	 * @return array
+	 */
+	private static function getApplicableTriggers(&$t_subject) {
+		$va_triggers = [];
+
+		// find applicable rules
+		$va_rules = ca_metadata_alert_rules::find(['table_num' => $t_subject->tableNum()], ['returnAs' => 'modelInstances']);
+		if(!is_array($va_rules) || !sizeof($va_rules)) { return; }
+
+		foreach($va_rules as $t_rule) {
+			/** @var ca_metadata_alert_rules $t_rule */
+
+			// check type restrictions
+			$va_restrictions = $t_rule->getTypeRestrictions();
+			if(is_array($va_restrictions) && sizeof($va_restrictions)) {
+				$va_type_ids = [];
+				foreach($va_restrictions as $va_restriction) {
+					$va_type_ids[] = $va_restriction['type_id'];
+				}
+
+				if(!in_array($t_subject->getTypeID(), $va_type_ids)) {
+					continue;
+				}
+			}
+
+			$va_triggers += $t_rule->getTriggers();
+		}
+
+		return $va_triggers;
 	}
 	# ------------------------------------------------------
 }

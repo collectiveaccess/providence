@@ -358,6 +358,12 @@ class BaseModel extends BaseObject {
 	 * 
 	 */
 	static $s_field_value_arrays_for_IDs_cache = array();
+
+	/**
+	 * When was this instance instantiated or load()-ed?
+	 * @var int
+	 */
+	protected $opn_instantiated_at = 0;
 	
 	/**
 	 * Constructor
@@ -369,6 +375,7 @@ class BaseModel extends BaseObject {
 	 * @return BaseModel
 	 */
 	public function __construct($pn_id=null, $pb_use_cache=true) {
+		$this->opn_instantiated_at = time();
 		$vs_table_name = $this->tableName();
 		
 		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$vs_table_name]['FIELDS']) {
@@ -635,6 +642,14 @@ class BaseModel extends BaseObject {
 	 */
 	public function changed($ps_field) {
 		return isset($this->_FIELD_VALUE_CHANGED[$ps_field]) ? $this->_FIELD_VALUE_CHANGED[$ps_field] : null;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Has this instance changed and saved since it's been loaded?
+	 * @return bool
+	 */
+	public function hasChangedSinceLoad() {
+		return ($this->getLastChangeTimestampAsInt() >= $this->opn_instantiated_at);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1836,6 +1851,7 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES = BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id];
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
+			$this->opn_instantiated_at = time();
 			return true;
 		}
 		
@@ -1936,6 +1952,7 @@ class BaseModel extends BaseObject {
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
 			}
+			$this->opn_instantiated_at = time();
 			return true;
 		} else {
 			if (!is_array($pm_id)) {

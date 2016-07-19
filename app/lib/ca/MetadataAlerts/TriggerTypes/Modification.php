@@ -32,6 +32,8 @@
 
 namespace CA\MetadataAlerts\TriggerTypes;
 
+require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
+
 class Modification extends Base {
 
 	/**
@@ -57,5 +59,27 @@ class Modification extends Base {
 			// all accessible items?
 			// restrict by set?
 		];
+	}
+
+	/**
+	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
+	 * @return bool
+	 */
+	public function check(&$t_instance) {
+		$va_values = $this->getTriggerValues();
+		if(!sizeof($va_values)) { return false; }
+
+		switch($va_values['settings']['trigger_fire']) {
+			case 'any':
+				return $t_instance->hasChangedSinceLoad();
+			case 'element':
+			default:
+				// if trigger_fire is based on element, but no element is set,
+				// just bail. trigger did not fire in that case
+				if(!$va_values['element_id']) { return false; }
+
+				$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
+				return $t_instance->elementHasChanged($vs_code);
+		}
 	}
 }

@@ -98,6 +98,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_acl.php");
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
 		parent::__construct($pn_id);	# call superclass constructor
@@ -3555,6 +3556,7 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 		$this->setMode(ACCESS_WRITE);
 			
 		$vb_is_insert = false;
+		$this->triggerMetadataAlerts();
 		
 		if ($this->getPrimaryKey()) {
 			$this->update(array('queueIndexing' => true));
@@ -4645,6 +4647,7 @@ if (!$vb_batch) {
 		}
 
 		if ($vb_dryrun) { $this->removeTransaction(false); }
+		$this->triggerMetadataAlerts();
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
 		return true;
@@ -7076,6 +7079,14 @@ side. For many self-relations the direction determines the nature and display te
 		
 		return $va_violations;
 	 }
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Trigger metadata alerts if there are any set up
+	 * @param array $pa_options
+	 */
+	public function triggerMetadataAlerts(array $pa_options=[]) {
+		ca_metadata_alert_triggers::fireApplicableTriggersOnSave($this);
+	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Method calls by SearchResult::get() on models when bundle to fetch is not an intrinsic but is listed in the 
