@@ -609,16 +609,18 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get element list as HTML select
 	 * @param string $ps_select_name
 	 * @param array $pa_attributes
-	 * @param bool $pb_root_elements_only
-	 * @param null $pm_table_name_or_num
-	 * @param null $pm_type_name_or_id
-	 * @param bool $pb_add_empty_option
-	 * @param mixed $pm_value
+	 * @param array $pa_options
 	 * @return string
 	 */
-	public static function getElementListAsHTMLSelect($ps_select_name, array $pa_attributes=[], $pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_add_empty_option=false, $pm_value=null) {
-		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
+	public static function getElementListAsHTMLSelect($ps_select_name, array $pa_attributes=[], array $pa_options=[]) {
+		$pb_root_elements_only = caGetOption('rootElementsOnly', $pa_options, false);
+		$pm_table_name_or_num = caGetOption('tableNum', $pa_options, null);
+		$pm_type_name_or_id = caGetOption('typeNameOrID', $pa_options, null);
+		$pb_add_empty_option = caGetOption('addEmptyOption', $pa_options, false);
+		$pb_no_containers = caGetOption('noContainers', $pa_options, false);
+		$pm_value = caGetOption('value', $pa_options, null);
 
+		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
 
 		if($pb_add_empty_option) {
 			$va_list = [0 => '---'];
@@ -632,7 +634,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		foreach($va_elements as $va_element) {
-			$va_list[$va_element['element_id']] = $va_element['display_label'];
+			if($pb_no_containers && ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__)) {
+				continue;
+			}
+
+			$va_list[$va_element['element_id']] = $va_element['display_label'] . ' [' . $va_element['element_code'] . ']';
 		}
 
 		return caHTMLSelect($ps_select_name, $va_list, $pa_attributes, $va_options);
