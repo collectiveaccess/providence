@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/footer.php : standard PDF report footer
+ * app/templates/local/footer.php : standard PDF report footer
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

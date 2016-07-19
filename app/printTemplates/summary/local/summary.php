@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/summary/summary.php
+ * app/templates/summary/local/summary.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
