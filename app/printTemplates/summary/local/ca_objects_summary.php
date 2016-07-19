@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/summary/local/summary.php
+ * app/templates/summary/local/ca_objects_summary.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
