@@ -63,11 +63,11 @@
 	foreach($va_reps as $va_rep) {
 	  error_log(join(', ', array_keys($va_rep)));
 		if($vn_i > 0){
-			# --- more than one rep show thumbnails
+			# --- show thumbnails for the rest of the images
 			$vn_padding_top = ((120 - $va_rep["info"]["thumbnail"]["HEIGHT"])/2) + 5;
 			print $va_rep['tags']['thumbnail']."\n";
 		}else{
-			# --- one rep - show medium rep
+			# --- medium image for the first image
 			print $va_rep['tags']['medium']."\n";
 		}
 		$va_urls[] = $va_rep['urls']['original'];
