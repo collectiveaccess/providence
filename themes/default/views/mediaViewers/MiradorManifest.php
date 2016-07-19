@@ -33,12 +33,15 @@
 	$va_data = $this->getVar('data');
 	$vs_identifer = $this->getVar('identifier');
 	$t_instance = $this->getVar('t_instance');
+	$t_subject = $this->getVar('t_subject');
 	$vo_request = $this->getVar('request');
 	$va_display = caGetOption('display', $va_data, []);
 	
 	$vs_display_version = caGetOption('display_version', $va_display, 'tilepic');
 	
-	$va_metadata = [];
+	$va_metadata = [
+    	["label" => "Title", "value" => $t_subject ? $t_subject->get('preferred_labels') : "???"]
+  	];
 	
 	if (isset($va_data['resources']) && is_array($va_data['resources']) && sizeof($va_data['resources'])) {
 		$va_resources = $va_data['resources'];

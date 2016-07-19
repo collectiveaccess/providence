@@ -110,6 +110,8 @@
 					}
 					
 					
+					$o_view->setVar('t_subject', $pa_data['t_subject']);
+					$o_view->setVar('t_instance', $t_instance);
 					$o_view->setVar('request', $po_request);
 					$o_view->setVar('identifier', $ps_identifier);
 					$o_view->setVar('data', $pa_data);

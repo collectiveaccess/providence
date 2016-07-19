@@ -25608,7 +25608,7 @@ return paper;
           _this.focusOverlaysAvailable[key].overlay = {'' : false};
         });
       } else {
-        templateData.MetadataView = true;
+        templateData.MetadataView = this.metadataView;
       }
 
       //determine if any buttons should be hidden in template
