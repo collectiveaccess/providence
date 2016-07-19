@@ -68,6 +68,14 @@ class DateRange extends GenericElement {
 
 		$va_parsed_values = caGetISODates(join(' ', $va_terms));
 
+		// send "empty" date range when query parsing fails (end < start)
+		if(!is_array($va_parsed_values) || !isset($va_parsed_values['start'])) {
+			$va_parsed_values = [
+				'start' => '1985-01-28T10:00:01Z',
+				'end' => '1985-01-28T10:00:00Z',
+			];
+		}
+
 		if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
 			$va_return[] = array(
 				'range' => array(
@@ -102,6 +110,15 @@ class DateRange extends GenericElement {
 
 		$va_return = array();
 		$va_parsed_values = caGetISODates($po_term->text);
+
+		// send "empty" date range when query parsing fails (end < start)
+		if(!is_array($va_parsed_values) || !isset($va_parsed_values['start'])) {
+			$va_parsed_values = [
+				'start' => '1985-01-28T10:00:01Z',
+				'end' => '1985-01-28T10:00:00Z',
+			];
+		}
+
 		$vs_fld = str_replace('\\', '', $po_term->field);
 
 		if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
