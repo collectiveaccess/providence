@@ -249,7 +249,7 @@
 			
 			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 
-			$vs_date_format = $o_date_config->get('dateFormat');
+			$vs_date_format = isset($pa_options['dateFormat']) ? $pa_options['dateFormat'] : $o_date_config->get('dateFormat');
 			$vs_cache_key = md5($vs_date_format . $this->opn_start_date . $this->opn_end_date);
 
 			// pull from cache

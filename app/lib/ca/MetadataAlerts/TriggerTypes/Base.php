@@ -33,6 +33,10 @@
 namespace CA\MetadataAlerts\TriggerTypes;
 
 require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Modification.php');
+require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Date.php');
+
+define('__CA_MD_ALERT_CHECK_TYPE_SAVE__', 0);
+define('__CA_MD_ALERT_CHECK_TYPE_PERIODIC__', 1);
 
 abstract class Base {
 
@@ -89,9 +93,10 @@ abstract class Base {
 	/**
 	 * Check if this trigger fired
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
+	 * @param int $pn_check_type
 	 * @return bool
 	 */
-	abstract public function check(&$t_instance);
+	abstract public function check(&$t_instance, $pn_check_type);
 
 	/**
 	 * This should return a list of type specific settings in the usual ModelSettings format
@@ -106,7 +111,6 @@ abstract class Base {
 	 * @return string
 	 */
 	public function getNotificationMessage(&$t_instance) {
-		caDebug(get_class($t_instance));
 		$vs_template = $this->getTriggerValues()['settings']['notificationTemplate'];
 
 		if(!$vs_template) {
@@ -131,8 +135,8 @@ abstract class Base {
 	public static function getAvailableTypes() {
 		return array(
 			_t('Modification') => 'Modification',
+			_t('Date') => 'Date',
 			//_t('List value chosen') => 'ListValue',
-			//_t('Date') => 'Date',
 			//_t('Conditions met') => 'Expression',
 		);
 	}
@@ -149,8 +153,9 @@ abstract class Base {
 		switch($ps_trigger_type) {
 			case 'Modification':
 				return new Modification($pa_values);
-			case 'ListValue':
 			case 'Date':
+				return new Date($pa_values);
+			case 'ListValue':
 			case 'Expression':
 				// @todo
 			default:

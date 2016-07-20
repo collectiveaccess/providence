@@ -245,7 +245,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
 
 			// did the trigger fire?
-			if($o_trigger->check($t_subject)) {
+			if($o_trigger->check($t_subject, __CA_MD_ALERT_CHECK_TYPE_SAVE__)) {
 				if(!$t_rule->load($va_trigger['rule_id'])) { continue; }
 
 				// notify users
