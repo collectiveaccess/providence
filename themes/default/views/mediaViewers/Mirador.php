@@ -72,6 +72,6 @@
       jQuery(".mirador-icon-metadata-view, .mirador-osd-annotation-controls").hide();
     });
   </script>
-  <div id="<?php print $ps_id; ?>" style="width: <?php print $vs_width; ?>; height: calc(<?php print $vs_height; ?> - 32px);">
+  <div id="<?php print $ps_id; ?>" style="width: <?php print $vs_width; ?>; height: calc(<?php print $vs_height; ?> - 24px);">
   
   </div>
