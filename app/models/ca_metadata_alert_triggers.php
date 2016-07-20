@@ -237,12 +237,45 @@ class ca_metadata_alert_triggers extends BaseModel {
 		$va_triggers = self::getApplicableTriggers($t_subject);
 		if(!is_array($va_triggers) || !sizeof($va_triggers)) { return; }
 
+		$t_rule = new ca_metadata_alert_rules();
+		$t_user = new ca_users();
+		$t_group = new ca_user_groups();
+
 		foreach($va_triggers as $va_trigger) {
 			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
+
+			// did the trigger fire?
 			if($o_trigger->check($t_subject)) {
+				if(!$t_rule->load($va_trigger['rule_id'])) { continue; }
 
-				// @todo send notifications
+				// notify users
+				$va_users = $t_rule->getUsers();
+				if(is_array($va_users)) {
+					foreach ($va_users as $va_user) {
+						if ($va_user['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
+							$t_user->load($va_user['user_id']);
+							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $o_trigger->getNotificationMessage($t_subject));
+						}
+					}
+				}
 
+				// notify user groups
+				$va_groups = $t_rule->getUserGroups();
+				if(is_array($va_groups)) {
+					foreach ($va_groups as $va_group) {
+						if ($va_group['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
+							$t_group->load($va_group['user_id']);
+
+							foreach($t_group->getGroupUsers() as $va_user) {
+								if(!$t_user->load($va_user['user_id'])) {
+									continue;
+								}
+
+								$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $o_trigger->getNotificationMessage($t_subject));
+							}
+						}
+					}
+				}
 			}
 		}
 	}

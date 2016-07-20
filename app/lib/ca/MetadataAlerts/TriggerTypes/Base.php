@@ -71,8 +71,19 @@ abstract class Base {
 	 * @return array
 	 */
 	public function getAvailableSettings() {
-		// @todo are there any generic settings (i.e. available for all types) we need to add here!?
-		return $this->getTypeSpecificSettings();
+		$va_generic_settings = [
+			'notificationTemplate' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'default' => '',
+				'width' => 90, 'height' => 4,
+				'label' => _t('Notification template'),
+				'validForRootOnly' => 1,
+				'description' => _t('Message for the alert/notification sent to the user. This is a display template relative to the alert record.')
+			),
+		];
+
+		return array_merge($va_generic_settings, $this->getTypeSpecificSettings());
 	}
 
 	/**
@@ -88,6 +99,29 @@ abstract class Base {
 	 * @return array
 	 */
 	abstract public function getTypeSpecificSettings();
+
+	/**
+	 * Get notification message
+	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
+	 * @return string
+	 */
+	public function getNotificationMessage(&$t_instance) {
+		caDebug(get_class($t_instance));
+		$vs_template = $this->getTriggerValues()['settings']['notificationTemplate'];
+
+		if(!$vs_template) {
+			$t_rule = new \ca_metadata_alert_rules($this->getTriggerValues()['rule_id']);
+			global $g_request;
+
+			return _t(
+				"Metadata alert rule '%1' triggered for record %2",
+				$t_rule->getLabelForDisplay(),
+				caEditorLink($g_request, $t_instance->getLabelForDisplay(), '', $t_instance->tableName(), $t_instance->getPrimaryKey())
+			);
+		} else {
+			return $t_instance->getWithTemplate($vs_template);
+		}
+	}
 
 	/**
 	 * Returns available trigger types as list for HTML select
