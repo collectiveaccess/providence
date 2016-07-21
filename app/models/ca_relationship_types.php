@@ -458,7 +458,10 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 			$t_instance = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
 	 			if (!$t_instance || !$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
 	 			$vs_name = $t_instance->getProperty('NAME_PLURAL');
-	 			$va_relationship_tables[$t_instance->tableNum()] = array('name' => $vs_name);
+	 			$va_relationship_tables[$t_instance->tableNum()] = array(
+	 				'name' => $vs_name,
+					'table' => $vs_table
+				);
 	 		}
 	 	}
 	 	return $va_relationship_tables;

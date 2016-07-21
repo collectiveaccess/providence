@@ -227,7 +227,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		parent::__construct($pn_id);	# call superclass constructor
 
 		// Filter list of tables form can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caGetPrimaryTablesForHTMLSelect();
+		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caGetPrimaryTables(true);
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {

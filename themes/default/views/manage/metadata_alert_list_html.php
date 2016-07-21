@@ -31,7 +31,7 @@
 		'<div class="caNavHeaderIcon">'.
 		'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 		'</div>'.
-		'<form action="#">'._t('New metadata alert rule for ').' '.caHTMLSelect('table_num', caGetPrimaryTablesForHTMLSelect(), array('id' => 'tableList')).'</form>'.
+		'<form action="#">'._t('New metadata alert rule for ').' '.caHTMLSelect('table_num', caGetPrimaryTablesForHTMLSelect(true), array('id' => 'tableList')).'</form>'.
 		'</div>';
 ?>
 <script language="JavaScript" type="text/javascript">
