@@ -3848,4 +3848,37 @@
 			return _t('This utility checks the integrity for all URL attribute references in the database. It does so by trying to hit each URL and reading a few bytes. It does not download the whole file.');
 		}
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function check_metadata_alerts($po_opts=null) {
+
+		}
+		# -------------------------------------------------------
+		public static function check_metadata_alertsParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_metadata_alertsUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_metadata_alertsShortHelp() {
+			return _t('Checks periodic metadata alert triggers');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_metadata_alertsHelp() {
+			return _t('This utility checks all periodic metadatadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
+		}
+		# -------------------------------------------------------
 	}

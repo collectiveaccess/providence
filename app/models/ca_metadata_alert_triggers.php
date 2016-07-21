@@ -244,6 +244,9 @@ class ca_metadata_alert_triggers extends BaseModel {
 		foreach($va_triggers as $va_trigger) {
 			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
 
+			// skip non-save triggers
+			if($o_trigger->getTriggerType() != __CA_MD_ALERT_CHECK_TYPE_SAVE__) { continue; }
+
 			// did the trigger fire?
 			if($o_trigger->check($t_subject, __CA_MD_ALERT_CHECK_TYPE_SAVE__)) {
 				if(!$t_rule->load($va_trigger['rule_id'])) { continue; }

@@ -54,6 +54,11 @@ class Date extends Base {
 		];
 	}
 
+	public function getTriggerType() {
+		// date triggers are always periodic
+		return __CA_MD_ALERT_CHECK_TYPE_PERIODIC__;
+	}
+
 	/**
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
 	 * @param int $pn_check_type

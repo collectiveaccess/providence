@@ -106,6 +106,19 @@ abstract class Base {
 	abstract public function getTypeSpecificSettings();
 
 	/**
+	 * Should return one of the constants
+	 *
+	 * 		__CA_MD_ALERT_CHECK_TYPE_SAVE__
+	 * 		__CA_MD_ALERT_CHECK_TYPE_PERIODIC__
+	 *
+	 * Sometimes this can be baked into the Trigger type implementation, other times
+	 * it will have to depend on the settings of the rule/trigger the user set up
+	 *
+	 * @return int
+	 */
+	abstract public function getTriggerType();
+
+	/**
 	 * Get notification message
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
 	 * @return string

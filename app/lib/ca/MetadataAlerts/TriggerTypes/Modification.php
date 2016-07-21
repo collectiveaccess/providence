@@ -61,6 +61,10 @@ class Modification extends Base {
 		];
 	}
 
+	public function getTriggerType() {
+		return __CA_MD_ALERT_CHECK_TYPE_SAVE__;
+	}
+
 	/**
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
 	 * @param int $pn_check_type
