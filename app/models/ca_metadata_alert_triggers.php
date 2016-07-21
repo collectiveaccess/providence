@@ -232,8 +232,9 @@ class ca_metadata_alert_triggers extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
+	 * @param int $pn_type
 	 */
-	public static function fireApplicableTriggersOnSave(&$t_subject) {
+	public static function fireApplicableTriggers(&$t_subject, $pn_type = __CA_MD_ALERT_CHECK_TYPE_SAVE__) {
 		$va_triggers = self::getApplicableTriggers($t_subject);
 		if(!is_array($va_triggers) || !sizeof($va_triggers)) { return; }
 
@@ -244,11 +245,11 @@ class ca_metadata_alert_triggers extends BaseModel {
 		foreach($va_triggers as $va_trigger) {
 			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
 
-			// skip non-save triggers
-			if($o_trigger->getTriggerType() != __CA_MD_ALERT_CHECK_TYPE_SAVE__) { continue; }
+			// skip triggers of different types
+			if($o_trigger->getTriggerType() != $pn_type) { continue; }
 
-			// did the trigger fire?
-			if($o_trigger->check($t_subject, __CA_MD_ALERT_CHECK_TYPE_SAVE__)) {
+			// is the trigger firing?
+			if($o_trigger->check($t_subject)) {
 				if(!$t_rule->load($va_trigger['rule_id'])) { continue; }
 
 				// notify users
@@ -270,9 +271,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 							$t_group->load($va_group['user_id']);
 
 							foreach($t_group->getGroupUsers() as $va_user) {
-								if(!$t_user->load($va_user['user_id'])) {
-									continue;
-								}
+								if(!$t_user->load($va_user['user_id'])) { continue; }
 
 								$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $o_trigger->getNotificationMessage($t_subject));
 							}
@@ -315,6 +314,27 @@ class ca_metadata_alert_triggers extends BaseModel {
 		}
 
 		return $va_triggers;
+	}
+	# ------------------------------------------------------
+	public static function firePeriodicTriggers() {
+		$o_db = new Db();
+		// @todo go through all records and load them!? argh; might want to make this searchresult-based. did not see that coming ...
+		foreach(['ca_objects', 'ca_entities'] as $vs_table) {
+			/** @var BundlableLabelableBaseModelWithAttributes $t_instance */
+			$t_instance = new $vs_table;
+
+			$vs_where = '';
+			if($t_instance->hasField('deleted')) {
+				$vs_where = 'WHERE deleted = 0';
+			}
+
+			$qr_records = $o_db->query("SELECT ".$t_instance->primaryKey(). " FROM {$vs_table} {$vs_where}");
+
+			while($qr_records->nextRow()) {
+				$t_instance->load($qr_records->get($t_instance->primaryKey()));
+				self::fireApplicableTriggers($t_instance, __CA_MD_ALERT_CHECK_TYPE_PERIODIC__);
+			}
+		}
 	}
 	# ------------------------------------------------------
 }

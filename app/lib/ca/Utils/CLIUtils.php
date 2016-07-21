@@ -3853,7 +3853,8 @@
 		 * @return bool
 		 */
 		public static function check_metadata_alerts($po_opts=null) {
-
+			require_once(__CA_MODELS_DIR__ . '/ca_metadata_alert_triggers.php');
+			ca_metadata_alert_triggers::firePeriodicTriggers();
 		}
 		# -------------------------------------------------------
 		public static function check_metadata_alertsParamList() {

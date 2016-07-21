@@ -7085,7 +7085,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $pa_options
 	 */
 	public function triggerMetadataAlerts(array $pa_options=[]) {
-		ca_metadata_alert_triggers::fireApplicableTriggersOnSave($this);
+		ca_metadata_alert_triggers::fireApplicableTriggers($this, __CA_MD_ALERT_CHECK_TYPE_SAVE__);
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

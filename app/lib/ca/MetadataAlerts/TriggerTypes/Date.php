@@ -61,13 +61,9 @@ class Date extends Base {
 
 	/**
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
-	 * @param int $pn_check_type
 	 * @return bool
 	 */
-	public function check(&$t_instance, $pn_check_type) {
-		// date checks only come up in periodic runs, not on save. right? right!?
-		if($pn_check_type != __CA_MD_ALERT_CHECK_TYPE_PERIODIC__) { return false; }
-
+	public function check(&$t_instance) {
 		$o_tep = new \TimeExpressionParser();
 
 		$va_values = $this->getTriggerValues();
@@ -80,33 +76,32 @@ class Date extends Base {
 			return false;
 		}
 
-		caDebug($t_instance->getAttributesByElement($vs_element_code), $t_instance->getPrimaryKey());
-		foreach($t_instance->getAttributesByElement($vs_element_code, ['noCache' => true]) as $o_attr) {
-			/** @var \Attribute $o_attr */
-			foreach($o_attr->getValues() as $o_val) {
-				/** @var \DateRangeAttributeValue $o_val */
-				if($o_val->getElementID() == $va_values['element_id']) { // it shouldn't be this hard to find the elements for this ID!?
-					$o_tep->parse($o_val->getDisplayValue(['dateFormat' => 'iso8601']));
-					caDebug($o_tep->getUnixTimestamps());
+		// @todo: deal with sub-elements properly and prep rewrite for searchresult (i.e. don't use crazy utility methods from BaseModelWAttrs)
+		if($vs_parent_code = \ca_metadata_elements::getParentCode($vs_element_code)) {
+			$vs_get_spec = $t_instance->tableName().'.'.$vs_parent_code.'.'.$vs_element_code;
+		} else {
+			$vs_get_spec = $t_instance->tableName().'.'.$vs_element_code;
+		}
 
-					// offset should be in days -- convert to seconds
-					$vn_offset = $this->getTriggerValues()['settings']['offset'] * 60*60*24;
+		foreach($t_instance->get($vs_get_spec, ['returnAsArray' => true, 'dateFormat' => 'iso8601']) as $vs_val) {
+			$o_tep->parse($vs_val);
 
-					// @todo: impose some kind of limit. a trigger set to a date
-					// @todo: should not fire every single day after that.
-					if($vn_offset < 0) {
-						if((time() + $vn_offset) > ((int)$o_tep->getUnixTimestamps()['start'])) {
-							return true;
-						}
-					} else {
-						if((time() + $vn_offset) > ((int)$o_tep->getUnixTimestamps()['end'])) {
-							return true;
-						}
-					}
+			// offset should be in days -- convert to seconds
+			$vn_offset = $this->getTriggerValues()['settings']['offset'] * 60*60*24;
+
+			// @todo: impose some kind of limit. a trigger set to a date
+			// @todo: should not fire every single day after that.
+			if($vn_offset < 0) {
+				if(time() > (($o_tep->getUnixTimestamps()['start']) + $vn_offset)) {
+					return true;
+				}
+			} else {
+				if((time() - $vn_offset) > $o_tep->getUnixTimestamps()['end']) {
+					return true;
 				}
 			}
-
-			return false;
 		}
+
+		return false;
 	}
 }

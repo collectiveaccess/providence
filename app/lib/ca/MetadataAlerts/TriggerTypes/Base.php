@@ -93,10 +93,9 @@ abstract class Base {
 	/**
 	 * Check if this trigger fired
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
-	 * @param int $pn_check_type
 	 * @return bool
 	 */
-	abstract public function check(&$t_instance, $pn_check_type);
+	abstract public function check(&$t_instance);
 
 	/**
 	 * This should return a list of type specific settings in the usual ModelSettings format
@@ -129,6 +128,10 @@ abstract class Base {
 		if(!$vs_template) {
 			$t_rule = new \ca_metadata_alert_rules($this->getTriggerValues()['rule_id']);
 			global $g_request;
+
+			if(!$g_request) {
+				$g_request = new \RequestHTTP(null, ['no_headers' => true, 'simulateWith' => ['REQUEST_METHOD' => 'GET', 'SCRIPT_NAME' => 'index.php']]);
+			}
 
 			return _t(
 				"Metadata alert rule '%1' triggered for record %2",

@@ -67,10 +67,9 @@ class Modification extends Base {
 
 	/**
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
-	 * @param int $pn_check_type
 	 * @return bool
 	 */
-	public function check(&$t_instance, $pn_check_type) {
+	public function check(&$t_instance) {
 		$va_values = $this->getTriggerValues();
 		if(!sizeof($va_values)) { return false; }
 
