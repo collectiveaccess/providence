@@ -146,11 +146,12 @@ class Intrinsic extends FieldType {
 	 */
 	public function getRewrittenTerm($po_term) {
 		$t_instance = \Datamodel::load()->getInstance($this->getTableName(), true);
-
 		$vs_raw_term = $po_term->text;
-		if(mb_substr($vs_raw_term, -1) == '|') {
-			$vs_raw_term = mb_substr($vs_raw_term, 0, mb_strlen($vs_raw_term) - 1);
-		}
+
+		// kill trailing pipe characters. those are used by the SearchEngine to signal that this term is
+		// not to be stemmed. we ignore this option as we don't do stemming here anyway. ElasticSearch might,
+		// but users can turn that off in the ES configuration if needed.
+		$vs_raw_term = preg_replace("/\|+$/", '', $vs_raw_term);
 
 		$va_field_components = explode('/', $po_term->field);
 

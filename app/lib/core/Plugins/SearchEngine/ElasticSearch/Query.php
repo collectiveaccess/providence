@@ -162,18 +162,22 @@ class Query {
 		if(sizeof($va_new_search_expression_parts) == sizeof($this->getRewrittenQuery()->getSigns())) {
 			$vs_search_expression = '';
 			$va_signs = $this->getRewrittenQuery()->getSigns();
-			foreach($va_new_search_expression_parts as $i=> $vs_part) {
-				$vb_sign = array_shift($va_signs);
-				if($vs_part) {
-					if($vb_sign) {
-						$vs_search_expression .= "+($vs_part) ";
-					} else {
-						$vs_search_expression .= "($vs_part) ";
+			if(!array_filter($va_signs)) {
+				$vs_search_expression = join(' OR ', array_filter($va_new_search_expression_parts));
+			} else {
+				foreach($va_new_search_expression_parts as $i=> $vs_part) {
+					$vb_sign = array_shift($va_signs);
+					if($vs_part) {
+						if($vb_sign) {
+							$vs_search_expression .= "+($vs_part) ";
+						} else {
+							$vs_search_expression .= "($vs_part) ";
+						}
 					}
 				}
-			}
 
-			$vs_search_expression = trim($vs_search_expression);
+				$vs_search_expression = trim($vs_search_expression);
+			}
 		} else {
 			$vs_search_expression = join(' AND ', array_filter($va_new_search_expression_parts));
 		}
