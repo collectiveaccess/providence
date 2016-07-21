@@ -84,4 +84,4 @@ create table ca_metadata_alert_rule_type_restrictions (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Always add the update to ca_schema_updates at the end of the file */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (136, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (137, unix_timestamp());
