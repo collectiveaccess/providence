@@ -106,7 +106,7 @@ class InterfacesController extends BaseEditorController {
 			$t_screen->set('ui_id', $vn_ui_id);
 			$t_screen->set('idno', 'basic_'.$vn_ui_id);
 			$t_screen->set('rank', 1);
-			$t_screen->set('default', 1);
+			$t_screen->set('is_default', 1);
 			$t_screen->insert();
 			
 			if ($t_screen->numErrors()) {
@@ -155,7 +155,7 @@ class InterfacesController extends BaseEditorController {
 			$t_screen->set('ui_id', $vn_ui_id);
 			$t_screen->set('idno', 'basic_'.$vn_ui_id);
 			$t_screen->set('rank', 1);
-			$t_screen->set('default', 1);
+			$t_screen->set('is_default', 1);
 			$t_screen->insert();
 			
 			if ($t_screen->numErrors()) {

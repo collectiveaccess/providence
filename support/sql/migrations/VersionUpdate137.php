@@ -90,7 +90,7 @@ class VersionUpdate137 extends BaseVersionUpdater {
 		$t_screen->set('ui_id', $vn_ui_id);
 		$t_screen->set('idno', 'basic');
 		$t_screen->set('rank', 1);
-		$t_screen->set('default', 1);
+		$t_screen->set('is_default', 1);
 		$t_screen->insert();
 
 		if ($t_screen->numErrors()) {
@@ -132,6 +132,8 @@ class VersionUpdate137 extends BaseVersionUpdater {
 		$vn_i++;
 
 		$t_screen->addPlacement('ca_metadata_alert_triggers', 'ca_metadata_alert_triggers', array(), $vn_i);
+
+		return true;
 	}
 	# -------------------------------------------------------
 }
