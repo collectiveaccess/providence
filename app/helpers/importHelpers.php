@@ -788,11 +788,11 @@
 	
 						switch($ps_table) {
 							case 'ca_entities':
-								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, $pa_options);
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, $pa_options); }
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
-								$va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item));
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item)); }
 								$va_val['_list'] = $pa_options['list_id'];
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
@@ -803,11 +803,11 @@
 							case 'ca_occurrences':
 							case 'ca_places':
 							case 'ca_objects':
-								$va_val['preferred_labels'] = array('name' => $vs_item);
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_object_lots':
-								$va_val['preferred_labels'] = array('name' => $vs_item);
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
 								if(!isset($va_val['idno_stub'])) { $va_val['idno_stub'] = $vs_item; }
 								
 								if (isset($va_val['_status'])) {
