@@ -1287,6 +1287,7 @@ class SearchIndexer extends SearchBase {
 		$va_attributes = $va_attributes ?: $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 		$pn_subject_tablenum = $pt_subject->tableNum();
 		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : ca_metadata_elements::getElementDatatype($pm_element_code_or_id);
+		$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 
 		switch($vn_datatype) {
 			case __CA_ATTRIBUTE_VALUE_CONTAINER__:
@@ -1294,7 +1295,6 @@ class SearchIndexer extends SearchBase {
 				if (sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
 						// Index each element of the container via a recursive call.
-						$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($vn_element_id, true, array('idsOnly' => true));
 
 						foreach ($va_sub_element_ids as $vn_sub_element_id) {
@@ -1325,7 +1325,6 @@ class SearchIndexer extends SearchBase {
 			case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 				// We pull the preferred labels of list items for indexing here. We do so for all languages.
 				$va_tmp = array();
-				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 
 				if (is_array($va_attributes) && sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
@@ -1377,7 +1376,6 @@ class SearchIndexer extends SearchBase {
 				break;
 
 			default:
-				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 				$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 				if (is_array($va_attributes) && sizeof($va_attributes) > 0) {
 					foreach($va_attributes as $vo_attribute) {
