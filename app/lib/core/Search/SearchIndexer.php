@@ -1280,47 +1280,31 @@ class SearchIndexer extends SearchBase {
 	 * @param int $pn_row_id
 	 * @param mixed $pm_element_code_or_id
 	 * @param array $pa_data
+	 * @param array $va_attributes Optional, will be derived from the element code or ID if omitted
 	 * @return bool
 	 */
-	private function _indexAttribute($pt_subject, $pn_row_id, $pm_element_code_or_id, $pa_data) {
-		$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
+	private function _indexAttribute($pt_subject, $pn_row_id, $pm_element_code_or_id, $pa_data, $va_attributes = null) {
+		$va_attributes = $va_attributes ?: $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 		$pn_subject_tablenum = $pt_subject->tableNum();
-
 		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : ca_metadata_elements::getElementDatatype($pm_element_code_or_id);
 
 		switch($vn_datatype) {
-			case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
-				// index components of complex multi-value attributes
+			case __CA_ATTRIBUTE_VALUE_CONTAINER__:
+				// Index components of complex multi-value attributes.
 				if (sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
-						/* index each element of the container */
+						// Index each element of the container via a recursive call.
 						$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($vn_element_id, true, array('idsOnly' => true));
-						if (is_array($va_sub_element_ids) && sizeof($va_sub_element_ids)) {
-							$va_sub_element_ids = array_flip($va_sub_element_ids);
-							foreach($vo_attribute->getValues() as $vo_value) {
-								$vn_list_id = ca_metadata_elements::getElementListID($vo_value->getElementID());
-								$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
-								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
-								if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
-									foreach($va_additional_indexing as $vs_additional_value) {
-										$vs_value_to_index .= " ; ".$vs_additional_value;
-									}
-								}
-
-								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $pn_row_id, $vs_value_to_index, $pa_data);
-								unset($va_sub_element_ids[$vo_value->getElementID()]);
-							}
-
-							// Clear out any elements that aren't defined
-							foreach(array_keys($va_sub_element_ids) as $vn_element_id) {
-								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);
+						foreach ($va_sub_element_ids as $vn_sub_element_id) {
+							if ($vn_sub_element_id !== intval($vo_attribute->getElementID())) {
+								$this->_indexAttribute($pt_subject, $pn_row_id, $vn_sub_element_id, array_merge($pa_data, array( 'datatype' => ca_metadata_elements::getElementDatatype($vn_sub_element_id) )), array( $vo_attribute ));
 							}
 						}
 					}
 				} else {
-					// we are deleting a container so cleanup existing sub-values
+					// We are deleting a container so cleanup existing sub-values.
 					if (is_array($va_sub_elements = $this->opo_metadata_element->getElementsInSet($pm_element_code_or_id))) {
 						foreach($va_sub_elements as $vn_i => $va_element_info) {
 							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$va_element_info['element_id'], $pn_row_id, '', $pa_data);
@@ -1328,6 +1312,7 @@ class SearchIndexer extends SearchBase {
 					}
 				}
 				break;
+
 			case __CA_ATTRIBUTE_VALUE_LIST__:
 			case __CA_ATTRIBUTE_VALUE_OBJECTS__:
 			case __CA_ATTRIBUTE_VALUE_ENTITIES__:
@@ -1338,28 +1323,24 @@ class SearchIndexer extends SearchBase {
 			case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
 			case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
 			case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
-				// We pull the preferred labels of list items for indexing here. We do so for all languages. Note that
-				// this only done for list attributes that are standalone and not a sub-element in a container. Perhaps
-				// we should also index the text of sub-element lists, but it's not clear that it is a good idea yet. The list_id's of
-				// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
+				// We pull the preferred labels of list items for indexing here. We do so for all languages.
 				$va_tmp = array();
-
 				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
-				$va_attributes = $pt_subject->getAttributesByElement($vn_element_id, array('row_id' => $pn_row_id));
 
 				if (is_array($va_attributes) && sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
 						foreach($vo_attribute->getValues() as $vo_value) {
-							$vs_value_to_index = $vo_value->getDisplayValue(array('idsOnly' => true));
-
-							$va_additional_indexing = $vo_value->getDataForSearchIndexing();
-							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
-								foreach($va_additional_indexing as $vs_additional_value) {
-									$vs_value_to_index .= " ; ".$vs_additional_value;
+							if (intval($vo_value->getElementID()) === $vn_element_id) {
+								$vs_value_to_index = $vo_value->getDisplayValue(array('idsOnly' => true));
+								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
+								if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
+									foreach($va_additional_indexing as $vs_additional_value) {
+										$vs_value_to_index .= " ; ".$vs_additional_value;
+									}
 								}
-							}
 
-							$va_tmp[$vo_attribute->getAttributeID()] = $vs_value_to_index;
+								$va_tmp[$vo_attribute->getAttributeID()] = $vs_value_to_index;
+							}
 						}
 					}
 				} else {
@@ -1370,9 +1351,7 @@ class SearchIndexer extends SearchBase {
 				if(is_array($va_tmp) && sizeof($va_tmp)) {
 					$va_new_values = array();
 					if ($t_item = AuthorityAttributeValue::elementTypeToInstance($vn_datatype)) {
-						$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
-
-						foreach($va_labels as $vn_row_id => $va_labels_per_row) {
+						foreach($t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true)) as $vn_row_id => $va_labels_per_row) {
 							foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
 								foreach($va_label_list as $vs_label) {
 									$va_new_values[$vn_row_id][$vs_label] = true;
@@ -1395,15 +1374,12 @@ class SearchIndexer extends SearchBase {
 						}
 					}
 				}
-
 				break;
+
 			default:
 				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
-
 				$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
-				if (!is_array($va_attributes)) { $va_attributes = array(); }
-
-				if(sizeof($va_attributes) > 0) {
+				if (is_array($va_attributes) && sizeof($va_attributes) > 0) {
 					foreach($va_attributes as $vo_attribute) {
 						foreach($vo_attribute->getValues() as $vo_value) {
 							$vs_value_to_index = $vo_value->getDisplayValue();
@@ -1423,8 +1399,6 @@ class SearchIndexer extends SearchBase {
 					$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);
 				}
 
-				$vs_subject_pk = $pt_subject->primaryKey();
-
 				// reindex children?
 				if((caGetOption('INDEX_ANCESTORS', $pa_data, false) !== false) || (in_array('INDEX_ANCESTORS', $pa_data))) {
 					if ($pt_subject && $pt_subject->isHierarchical()) {
@@ -1437,7 +1411,7 @@ class SearchIndexer extends SearchBase {
 
 						$va_children_ids = $pt_subject->getHierarchyAsList($pn_row_id, array('idsOnly' => true, 'includeSelf' => false));
 
-						if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
+						if (is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 							// trigger reindexing of children
 							$o_indexer = new SearchIndexer($this->opo_db);
 							$pt_subject->load($pn_row_id);
