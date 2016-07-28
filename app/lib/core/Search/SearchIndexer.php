@@ -1376,20 +1376,19 @@ class SearchIndexer extends SearchBase {
 				break;
 
 			default:
-				$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 				if (is_array($va_attributes) && sizeof($va_attributes) > 0) {
 					foreach($va_attributes as $vo_attribute) {
 						foreach($vo_attribute->getValues() as $vo_value) {
-							$vs_value_to_index = $vo_value->getDisplayValue();
-
-							$va_additional_indexing = $vo_value->getDataForSearchIndexing();
-							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
-								foreach($va_additional_indexing as $vs_additional_value) {
-									$vs_value_to_index .= " ; ".$vs_additional_value;
+							if (intval($vo_value->getElementID()) === $vn_element_id) {
+								$vs_value_to_index = $vo_value->getDisplayValue();
+								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
+								if (is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
+									foreach ($va_additional_indexing as $vs_additional_value) {
+										$vs_value_to_index .= " ; " . $vs_additional_value;
+									}
 								}
+								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_value_to_index, $pa_data);
 							}
-
-							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_value_to_index, $pa_data);
 						}
 					}
 				} else {
