@@ -271,8 +271,7 @@ class View extends BaseObject {
 					$vs_buf = $this->_render($vs_path.'/'.$ps_filename.".".$g_ui_locale);
 					$vb_output = true;
 					break;
-				}
-				elseif (file_exists($vs_path.'/'.$ps_filename)) {
+				} elseif (file_exists($vs_path.'/'.$ps_filename)) {
 					// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
 					$vs_buf = $this->_render($vs_path.'/'.$ps_filename);
 					$vb_output = true;
