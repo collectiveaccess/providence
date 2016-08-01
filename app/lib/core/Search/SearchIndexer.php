@@ -1296,10 +1296,11 @@ class SearchIndexer extends SearchBase {
 					foreach($va_attributes as $vo_attribute) {
 						// Index each element of the container via a recursive call.
 						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($vn_element_id, true, array('idsOnly' => true));
-
-						foreach ($va_sub_element_ids as $vn_sub_element_id) {
-							if ($vn_sub_element_id !== intval($vo_attribute->getElementID())) {
-								$this->_indexAttribute($pt_subject, $pn_row_id, $vn_sub_element_id, array_merge($pa_data, array( 'datatype' => ca_metadata_elements::getElementDatatype($vn_sub_element_id) )), array( $vo_attribute ));
+						if (is_array($va_sub_element_ids)) {
+							foreach ($va_sub_element_ids as $vn_sub_element_id) {
+								if ($vn_sub_element_id !== intval($vo_attribute->getElementID())) {
+									$this->_indexAttribute($pt_subject, $pn_row_id, $vn_sub_element_id, array_merge($pa_data, array( 'datatype' => ca_metadata_elements::getElementDatatype($vn_sub_element_id) )), array( $vo_attribute ));
+								}
 							}
 						}
 					}
