@@ -433,20 +433,44 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return $va_return;
 	}
 	# ---------------------------------------
-	function caGetQueryBuilderFilters(BaseModel $t_subject, Configuration $vo_query_builder_config) {
+	function caGetBundleNameForSearchQueryBuilder($ps_name) {
+		return preg_replace('/^.*\./', '', $ps_name);
+	}
+# ---------------------------------------
+	function caFlattenContainers(ca_search_forms $t_search_form, $ps_table) {
+		$va_bundles = $t_search_form->getAvailableBundles($ps_table);
+		foreach ($va_bundles as $vs_id => $vo_bundle) {
+			$t_element = ca_metadata_elements::getInstance(caGetBundleNameForSearchQueryBuilder($vo_bundle['bundle']));
+			// Non-strict comparison because `get()` returns a string but the constant is an int.
+			if ($t_element && $t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+				foreach ($t_element->getHierarchyChildren() as $vo_child) {
+					$vs_element_code = $vo_child['element_code'];
+					$va_bundles[$vs_element_code] = array(
+						'id' => $vs_element_code,
+						'bundle' => $vo_bundle['bundle'] . '.' . $vs_element_code,
+						'label' => $vo_bundle['label'] . ' - ' . $t_search_form->getAttributeLabel($vs_element_code)
+					);
+				}
+				unset($va_bundles[$vs_id]);
+			}
+		}
+		return $va_bundles;
+	}
+	# ---------------------------------------
+	function caGetQueryBuilderFilters(BaseModel $t_subject, Configuration $po_query_builder_config) {
 		$vs_table = $t_subject->tableName();
 		$t_search_form = new ca_search_forms();
 		$va_filters = array_values(array_map(
-			function ($pa_bundle) use ($t_subject, $vo_query_builder_config) {
-				return caMapBundleToQueryBuilderFilterDefinition($t_subject, $pa_bundle, $vo_query_builder_config);
+			function ($pa_bundle) use ($t_subject, $po_query_builder_config) {
+				return caMapBundleToQueryBuilderFilterDefinition($t_subject, $pa_bundle, $po_query_builder_config);
 			},
-			$t_search_form->getAvailableBundles($vs_table)
+			caFlattenContainers($t_search_form, $vs_table)
 		));
-		$va_exclude = $vo_query_builder_config->get('query_builder_exclude_' . $vs_table);
+		$va_exclude = $po_query_builder_config->get('query_builder_exclude_' . $vs_table);
 		$va_filters = array_filter($va_filters, function ($vo_filter) use ($va_exclude) {
 			return array_search($vo_filter['id'], $va_exclude) === false;
 		});
-		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
+		$va_priority = $po_query_builder_config->get('query_builder_priority_' . $vs_table);
 		usort($va_filters, function ($pa_a, $pa_b) use ($va_priority, $vs_table) {
 			$vs_a_id = $pa_a['id'];
 			$vs_b_id = $pa_b['id'];
@@ -488,12 +512,11 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	# ---------------------------------------
 	function caMapBundleToQueryBuilderFilterDefinition(BaseModel $t_subject, $pa_bundle, Configuration $vo_query_builder_config) {
 		$vs_name = $pa_bundle['bundle'];
-		$vs_name_no_table = preg_replace('/^.*\./', '', $vs_name);
+		$vs_name_no_table = caGetBundleNameForSearchQueryBuilder($vs_name);
 		$vs_table = $t_subject->tableName();
 		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
 		$va_operators_by_type = $vo_query_builder_config->get('query_builder_operators');
-		$va_field_info = $t_subject->getFieldInfo(substr($vs_name, strpos($vs_name, '.') + 1));
-		$va_element_codes = (method_exists($t_subject, 'getApplicableElementCodes') ? $t_subject->getApplicableElementCodes(null, false, false) : array());
+		$va_field_info = $t_subject->getFieldInfo($vs_name_no_table);
 		$vn_display_type = null;
 		$vs_list_code = null;
 		$va_select_options = null;
@@ -530,7 +553,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 					$va_result['type'] = 'datetime';
 					break;
 			}
-		} elseif (in_array($vs_name_no_table, $va_element_codes)) {
+		} else {
 			$t_element = ca_metadata_elements::getInstance($vs_name_no_table);
 			if ($t_element) {
 				// Get the list code and display type for further processing below.
