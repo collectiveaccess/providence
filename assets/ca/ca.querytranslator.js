@@ -240,8 +240,7 @@ var caUI = caUI || {};
 		if (tokens.length === 0 || tokens[0].type !== type) {
 			return false;
 		}
-		tokens.shift();
-		return true;
+		return tokens.shift();
 	};
 
 	/**
@@ -279,7 +278,7 @@ var caUI = caUI || {};
 	 */
 	assignOperatorAndValue = function (rule, queryValue, negation, wildcardPrefix, wildcardSuffix) {
 		// Determine the operator that matches the given query, negation and wildcard positions.
-		if (!queryValue && (wildcardPrefix || wildcardSuffix)) {
+		if (!queryValue) {
 			rule.operator = negation ? 'is_empty' : 'is_not_empty';
 		} else {
 			rule.value = queryValue;
