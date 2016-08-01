@@ -279,15 +279,19 @@ var caUI = caUI || {};
 	 */
 	assignOperatorAndValue = function (rule, queryValue, negation, wildcardPrefix, wildcardSuffix) {
 		// Determine the operator that matches the given query, negation and wildcard positions.
-		rule.value = queryValue;
-		if (wildcardPrefix && wildcardSuffix) {
-			rule.operator = negation ? 'not_contains' : 'contains';
-		} else if (wildcardPrefix) {
-			rule.operator = negation ? 'not_ends_with' : 'ends_with';
-		} else if (wildcardSuffix) {
-			rule.operator = negation ? 'not_begins_with' : 'begins_with';
+		if (!queryValue && (wildcardPrefix || wildcardSuffix)) {
+			rule.operator = negation ? 'is_empty' : 'is_not_empty';
 		} else {
-			rule.operator = negation ? 'not_equal' : 'equal';
+			rule.value = queryValue;
+			if (wildcardPrefix && wildcardSuffix) {
+				rule.operator = negation ? 'not_contains' : 'contains';
+			} else if (wildcardPrefix) {
+				rule.operator = negation ? 'not_ends_with' : 'ends_with';
+			} else if (wildcardSuffix) {
+				rule.operator = negation ? 'not_begins_with' : 'begins_with';
+			} else {
+				rule.operator = negation ? 'not_equal' : 'equal';
+			}
 		}
 	};
 
@@ -337,11 +341,12 @@ var caUI = caUI || {};
 					assertNextToken(tokens, TOKEN_RBRACKET);
 					assignOperatorAndRange(rule, min.value, max.value, negation);
 				} else {
-					// Other types must be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix
+					// Other types can be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix.
+					// Alternatively the word itself can be omitted, i.e. just a wildcard (`is_empty`/`is_not_empty`).
 					wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
-					word = assertNextToken(tokens, TOKEN_WORD);
+					word = isNextToken(tokens, TOKEN_WORD);
 					wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
-					assignOperatorAndValue(rule, word.value, negation, wildcardPrefix, wildcardSuffix);
+					assignOperatorAndValue(rule, word ? word.value : undefined, negation, wildcardPrefix, wildcardSuffix);
 				}
 			}
 			skipWhitespace(tokens);
