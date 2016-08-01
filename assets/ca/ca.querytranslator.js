@@ -36,7 +36,8 @@ var caUI = caUI || {};
  */
 (function () {
 	var escapeValue, getTokenList, shiftToken, tokensToRuleSet,
-		assertNextToken, isNextToken, assertCondition, skipWhitespace, assignOperatorAndValue, assignOperatorAndRange,
+		assertNextToken, isNextToken, assertCondition, skipWhitespace, isRawSearchText,
+		assignOperatorAndValue, assignOperatorAndRange,
 		TOKEN_WORD = 'WORD',
 		TOKEN_LPAREN = 'LPAREN',
 		TOKEN_RPAREN = 'RPAREN',
@@ -45,7 +46,8 @@ var caUI = caUI || {};
 		TOKEN_LBRACKET = 'LBRACKET',
 		TOKEN_RBRACKET = 'RBRACKET',
 		TOKEN_WHITESPACE = 'WHITESPACE',
-		TOKEN_WILDCARD = 'WILDCARD';
+		TOKEN_WILDCARD = 'WILDCARD',
+		FIELD_FULLTEXT = '_fulltext';
 
 	/**
 	 * Escape the user-entered field value.
@@ -269,6 +271,19 @@ var caUI = caUI || {};
 	};
 
 	/**
+	 * Determine whether the given list of tokens is all words and whitespace.
+	 * @param {Array} tokens
+	 * @returns {boolean}
+     */
+	isRawSearchText = function (tokens) {
+		var allWords = true;
+		$.each(tokens, function (i, token) {
+			allWords = allWords && (token.type === TOKEN_WORD || token.type === TOKEN_WHITESPACE);
+		});
+		return allWords;
+	};
+
+	/**
 	 * Use the given `queryValue` to assign a `value` and `condition` to the given `rule`.
 	 * @param {Object} rule
 	 * @param {String} queryValue
@@ -318,58 +333,71 @@ var caUI = caUI || {};
 			rules: []
 		};
 		skipWhitespace(tokens);
-		// End this recursion when the string is finished, or when we reach a right parenthesis.
-		while (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
-			if (isNextToken(tokens, TOKEN_LPAREN)) {
-				// Explicitly nested rule set: recursion.
-				rule = tokensToRuleSet(tokens);
-				assertNextToken(tokens, TOKEN_RPAREN);
-			} else if (tokens[0].type !== TOKEN_RPAREN) {
-				// Standard rule, with a field, operator and value.
-				rule = {};
-				rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
-				assertNextToken(tokens, TOKEN_COLON);
-				negation = isNextToken(tokens, TOKEN_NEGATION);
-				if (isNextToken(tokens, TOKEN_LBRACKET)) {
-					// Between filter value (of the form `[minValue TO maxValue]`)
-					min = assertNextToken(tokens, TOKEN_WORD);
-					skipWhitespace(tokens);
-					assertNextToken(tokens, TOKEN_WORD, 'TO');
-					skipWhitespace(tokens);
-					max = assertNextToken(tokens, TOKEN_WORD);
-					assertNextToken(tokens, TOKEN_RBRACKET);
-					assignOperatorAndRange(rule, min.value, max.value, negation);
-				} else {
-					// Other types can be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix.
-					// Alternatively the word itself can be omitted, i.e. just a wildcard (`is_empty`/`is_not_empty`).
-					wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
-					word = isNextToken(tokens, TOKEN_WORD);
-					wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
-					assignOperatorAndValue(rule, word ? word.value : undefined, negation, wildcardPrefix, wildcardSuffix);
-				}
-			}
-			skipWhitespace(tokens);
-			if (rule) {
-				ruleSet.rules.push(rule);
-				if (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
-					// Process the next condition ("AND" / "OR").
-					condition = assertCondition(tokens).value;
-					// Assign the first condition to the rule set.
-					ruleSet.condition = ruleSet.condition || condition;
-					if (condition !== ruleSet.condition) {
-						// We have something like "A AND B OR C" in the query.  This is interpreted as "(A AND B) OR C".
-						// The "AND" and "OR" conditions are given equal precedence, so the parentheses are always
-						// around the left-most set of filters with matching condition.  This is implemented by pushing
-						// the existing rule set down a level in the hierarchy, and continuing processing from the new
-						// parent.
-						ruleSet = {
-							condition: condition,
-							rules: [ ruleSet ]
-						};
+		if (isRawSearchText(tokens)) {
+			// Special case: a sequence of only words (and whitespace) should be treated as a single, full text search.
+			ruleSet.condition = 'AND';
+			ruleSet.rules.push({
+				id: FIELD_FULLTEXT,
+				field: FIELD_FULLTEXT,
+				operator: 'equal',
+				value: $.map(tokens, function (token) {
+					return token.type === TOKEN_WHITESPACE ? ' ' : token.value;
+				}).join('')
+			});
+		} else {
+			// End this recursion when the string is finished, or when we reach a right parenthesis.
+			while (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
+				if (isNextToken(tokens, TOKEN_LPAREN)) {
+					// Explicitly nested rule set: recursion.
+					rule = tokensToRuleSet(tokens);
+					assertNextToken(tokens, TOKEN_RPAREN);
+				} else if (tokens[0].type !== TOKEN_RPAREN) {
+					// Standard rule, with a field, operator and value.
+					rule = {};
+					rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
+					assertNextToken(tokens, TOKEN_COLON);
+					negation = isNextToken(tokens, TOKEN_NEGATION);
+					if (isNextToken(tokens, TOKEN_LBRACKET)) {
+						// Between filter value (of the form `[minValue TO maxValue]`)
+						min = assertNextToken(tokens, TOKEN_WORD);
+						skipWhitespace(tokens);
+						assertNextToken(tokens, TOKEN_WORD, 'TO');
+						skipWhitespace(tokens);
+						max = assertNextToken(tokens, TOKEN_WORD);
+						assertNextToken(tokens, TOKEN_RBRACKET);
+						assignOperatorAndRange(rule, min.value, max.value, negation);
+					} else {
+						// Other types can be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix.
+						// Alternatively the word itself can be omitted, i.e. just a wildcard (`is_empty`/`is_not_empty`).
+						wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
+						word = isNextToken(tokens, TOKEN_WORD);
+						wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
+						assignOperatorAndValue(rule, word ? word.value : undefined, negation, wildcardPrefix, wildcardSuffix);
 					}
 				}
+				skipWhitespace(tokens);
+				if (rule) {
+					ruleSet.rules.push(rule);
+					if (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
+						// Process the next condition ("AND" / "OR").
+						condition = assertCondition(tokens).value;
+						// Assign the first condition to the rule set.
+						ruleSet.condition = ruleSet.condition || condition;
+						if (condition !== ruleSet.condition) {
+							// We have something like "A AND B OR C" in the query.  This is interpreted as "(A AND B) OR C".
+							// The "AND" and "OR" conditions are given equal precedence, so the parentheses are always
+							// around the left-most set of filters with matching condition.  This is implemented by pushing
+							// the existing rule set down a level in the hierarchy, and continuing processing from the new
+							// parent.
+							ruleSet = {
+								condition: condition,
+								rules: [ ruleSet ]
+							};
+						}
+					}
+				}
+				skipWhitespace(tokens);
 			}
-			skipWhitespace(tokens);
 		}
 		return ruleSet;
 	};
