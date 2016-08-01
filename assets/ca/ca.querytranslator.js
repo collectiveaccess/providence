@@ -274,7 +274,7 @@ var caUI = caUI || {};
 	 * Determine whether the given list of tokens is all words and whitespace.
 	 * @param {Array} tokens
 	 * @returns {boolean}
-     */
+	 */
 	isRawSearchText = function (tokens) {
 		var allWords = true;
 		$.each(tokens, function (i, token) {
