@@ -36,12 +36,14 @@ var caUI = caUI || {};
  */
 (function () {
 	var escapeValue, getTokenList, shiftToken, tokensToRuleSet,
-		assertNextToken, isNextToken, assertCondition, skipWhitespace, assignOperatorAndValue,
+		assertNextToken, isNextToken, assertCondition, skipWhitespace, assignOperatorAndValue, assignOperatorAndRange,
 		TOKEN_WORD = 'WORD',
 		TOKEN_LPAREN = 'LPAREN',
 		TOKEN_RPAREN = 'RPAREN',
 		TOKEN_COLON = 'COLON',
 		TOKEN_NEGATION = 'NEGATION',
+		TOKEN_LBRACKET = 'LBRACKET',
+		TOKEN_RBRACKET = 'RBRACKET',
 		TOKEN_WHITESPACE = 'WHITESPACE',
 		TOKEN_WILDCARD = 'WILDCARD';
 
@@ -135,6 +137,14 @@ var caUI = caUI || {};
 				token = { type: TOKEN_RPAREN };
 				end = true;
 				break;
+			case '[':
+				token = { type: TOKEN_LBRACKET };
+				end = true;
+				break;
+			case ']':
+				token = { type: TOKEN_RBRACKET };
+				end = true;
+				break;
 			case ':':
 				token = { type: TOKEN_COLON };
 				end = true;
@@ -155,8 +165,9 @@ var caUI = caUI || {};
 				token = { type: TOKEN_WORD, value: '' };
 				quoted = true;
 				break;
-			// Beginning of a plain word, which ends before then next non-word character.
 			default:
+				// Beginning of a plain word, which ends before then next non-word character.
+				// This includes the word "TO" in "between" filters.
 				token = { type: TOKEN_WORD, value: character };
 		}
 		// Process remaining characters until the end of the token.
@@ -181,8 +192,8 @@ var caUI = caUI || {};
 					queryArray.shift();
 				}
 			} else {
-				// In plain word mode, the next non-word, non-. character ends the token.
-				if (/[\w\.]/.test(character)) {
+				// In plain word mode, the next non-word, non-dot character ends the token.
+				if (/[\w.]/.test(character)) {
 					token.value += character;
 					queryArray.shift();
 				} else {
@@ -198,10 +209,11 @@ var caUI = caUI || {};
 	 * processes `tokens` and returns the retrieved token, which always has the given `type`.
 	 * @param {Array} tokens
 	 * @param {String} type
+	 * @param {String} value Optional, only checked if not `undefined`.
 	 * @returns {Object}
 	 * @throws
 	 */
-	assertNextToken = function (tokens, type) {
+	assertNextToken = function (tokens, type, value) {
 		var token;
 		if (tokens.length === 0) {
 			throw 'Unexpected end of token stream, expected "' + type + '".';
@@ -209,6 +221,9 @@ var caUI = caUI || {};
 		token = tokens.shift();
 		if (token.type !== type) {
 			throw 'Unexpected token type "' + token.type + '"' + (token.value ? ' (value: "' + token.value + '"' : '') + ', expected "' + type + '".';
+		}
+		if (value !== undefined && token.value !== value) {
+			throw 'Unexpected token value "' + token.value + '" for token of type "' + token.type + '", expected "' + value + '".';
 		}
 		return token;
 	};
@@ -225,8 +240,7 @@ var caUI = caUI || {};
 		if (tokens.length === 0 || tokens[0].type !== type) {
 			return false;
 		}
-		tokens.shift();
-		return true;
+		return tokens.shift();
 	};
 
 	/**
@@ -263,14 +277,9 @@ var caUI = caUI || {};
 	 * @param {String} wildcardSuffix
 	 */
 	assignOperatorAndValue = function (rule, queryValue, negation, wildcardPrefix, wildcardSuffix) {
-		var matches;
 		// Determine the operator that matches the given query, negation and wildcard positions.
-		if (queryValue === '*') {
+		if (!queryValue) {
 			rule.operator = negation ? 'is_empty' : 'is_not_empty';
-		} else if (/^\[\s*(.*)\s+TO\s+(.*)\s*]$/.test(queryValue)) {
-			matches = /^\[\s*(.*)\s+TO\s+(.*)\s*]$/.exec(queryValue);
-			rule.operator = negation ? 'not_between' : 'between';
-			rule.value = [ matches[0], matches[1] ];
 		} else {
 			rule.value = queryValue;
 			if (wildcardPrefix && wildcardSuffix) {
@@ -286,12 +295,24 @@ var caUI = caUI || {};
 	};
 
 	/**
+	 * Use the given `queryValue` to assign a `value` and `condition` to the given `rule`.
+	 * @param {Object} rule
+	 * @param {String} min
+	 * @param {String} max
+	 * @param {Boolean} negation
+	 */
+	assignOperatorAndRange = function (rule, min, max, negation) {
+        rule.value = [ min, max ];
+        rule.operator = negation ? 'not_between' : 'between';
+	};
+
+	/**
 	 * Parse the given array of tokens into a tree structure for the query builder.
 	 * @param {Array} tokens
 	 * @return {Object}
 	 */
 	tokensToRuleSet = function (tokens) {
-		var rule, condition, negation, wildcardPrefix, wildcardSuffix, word, ruleSet;
+		var rule, condition, negation, wildcardPrefix, wildcardSuffix, min, max, word, ruleSet;
 		ruleSet = {
 			condition: undefined,
 			rules: []
@@ -309,10 +330,23 @@ var caUI = caUI || {};
 				rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
 				assertNextToken(tokens, TOKEN_COLON);
 				negation = isNextToken(tokens, TOKEN_NEGATION);
-				wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
-				word = assertNextToken(tokens, TOKEN_WORD);
-				wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
-				assignOperatorAndValue(rule, word.value, negation, wildcardPrefix, wildcardSuffix);
+				if (isNextToken(tokens, TOKEN_LBRACKET)) {
+					// Between filter value (of the form `[minValue TO maxValue]`)
+					min = assertNextToken(tokens, TOKEN_WORD);
+					skipWhitespace(tokens);
+					assertNextToken(tokens, TOKEN_WORD, 'TO');
+					skipWhitespace(tokens);
+					max = assertNextToken(tokens, TOKEN_WORD);
+					assertNextToken(tokens, TOKEN_RBRACKET);
+					assignOperatorAndRange(rule, min.value, max.value, negation);
+				} else {
+					// Other types can be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix.
+					// Alternatively the word itself can be omitted, i.e. just a wildcard (`is_empty`/`is_not_empty`).
+					wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
+					word = isNextToken(tokens, TOKEN_WORD);
+					wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
+					assignOperatorAndValue(rule, word ? word.value : undefined, negation, wildcardPrefix, wildcardSuffix);
+				}
 			}
 			skipWhitespace(tokens);
 			if (rule) {
