@@ -28,7 +28,7 @@
  *
  * @name Generic summary
  * @type page
- * @pageSize A4
+ * @pageSize a4
  * @pageOrientation portrait
  * @tables *
  *
