@@ -1,0 +1,39 @@
+@page {
+	margin: 0;
+}
+.titleText {
+	font-family: "Helvetica", sans-serif;
+	font-weight: bold;
+	font-size: 13px;
+}
+.margin {
+	margin: 0.5em;
+}
+.bodyText {
+	font-family: "Helvetica", sans-serif;
+	font-size: 11px;
+}
+.smallText {
+	font-family: "Helvetica", sans-serif;
+	font-size: 9px;
+}
+.pageBreak {
+	page-break-before: always;
+}
+.clear {
+	clear: both;
+	line-height: 5px;
+}
+.description {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-height: 2.5em;
+}
+.right {
+	float: right;
+	width: 50%;
+}
+.left {
+	float: left;
+	width: 50%;
+}

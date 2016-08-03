@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/summary/local/summary.php
+ * app/templates/local/pdfEnd.php : bottom-matter appended to PDF templates
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,44 +26,11 @@
  * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
  * Template configuration:
  *
- * @name Generic summary
- * @type page
- * @pageSize a4
- * @pageOrientation portrait
- * @tables *
- *
- * @marginTop 0.75in
- * @marginLeft 0.75in
- * @marginBottom 0.5in
- * @marginRight 0.75in
+ * @name PDF end
+ * @type pageEnd
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$t_item = $this->getVar('t_subject');
-
-	$va_bundle_displays = $this->getVar('bundle_displays');
-	$t_display = $this->getVar('t_display');
-	$va_placements = $this->getVar("placements");
-
-	print $this->render("../pdfStart.php");
-	print $this->render("../header.php");
-	print $this->render("footer.php");
 ?>
-	<br/>
-	<div class="title">
-		<?php print $t_item->getLabelForDisplay();?>
-	</div>
-<?php
-	foreach($va_placements as $vn_placement_id => $va_bundle_info){
-		if (!is_array($va_bundle_info)) break;
-
-		if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('purify' => true)))) {
-			if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-			$vs_display_value = '';
-		}
-
-		print '<div class="data"><span class="label">'."{$va_bundle_info['display']} </span><span class='meta'> {$vs_display_value}</span></div>\n";
-	}
-
-	print $this->render("../pdfEnd.php");
+	</body>
+</html>
