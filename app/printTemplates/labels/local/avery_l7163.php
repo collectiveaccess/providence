@@ -25,20 +25,18 @@ $vo_result = $this->getVar('result');
 ?>
 
 {{{
-<div class="titleText">Item Name: ^ca_objects.preferred_labels
-	<ifdef code="ca_objects.idno">Accession Number: ^ca_objects.idno</ifdef>
+<div class="titleText">^ca_objects.preferred_labels
+	<ifdef code="ca_objects.idno">^ca_objects.idno</ifdef>
 </div>
 
 <ifdef code="ca_objects.Description">
-	<div class="description bodyText">^ca_objects.Description</div>
+	<div class="description bodyText margin">^ca_objects.Description</div>
 </ifdef>
 <ifdef code="ca_entities" restrictToRelationshipTypes="donor">
-	<div class="bodyText">Source/Donor: ^ca_entities</div>
+	<div class="bodyText margin">Source/Donor: ^ca_entities</div>
 </ifdef>
 <ifdef code="ca_list_items" restrictToRelationshipTypes="described">
-	<div class="bodyText left">Classification Primary:
-		^ca_list_items.hierarchy.preferred_labels%maxLevelsFromTop=1
-	</div>
+	<div class="bodyText left">^ca_list_item_labels.hierarchy%maxLevelsFromTop=2</div>
 </ifdef>
 }}}
 <div class="right">

@@ -6,10 +6,12 @@
 	font-weight: bold;
 	font-size: 13px;
 }
+.margin {
+	margin: 0.5em;
+}
 .bodyText {
 	font-family: "Helvetica", sans-serif;
 	font-size: 11px;
-	margin: 0.5em;
 }
 .smallText {
 	font-family: "Helvetica", sans-serif;
