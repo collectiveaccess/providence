@@ -40,7 +40,7 @@
 			
 			<table id="caWatchedItemsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#WatchedItemsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'WatchedItems', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?>Delete</span></a>
+					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#WatchedItemsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'WatchedItems', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?>_t(Delete)</span></a>
 				</div>
 				<thead>
 					<tr>
