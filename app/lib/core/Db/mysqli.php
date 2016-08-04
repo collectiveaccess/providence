@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db/mysql.php :
+ * app/lib/core/Db/mysqli.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,6 +88,11 @@ class Db_mysqli extends DbDriverBase {
 		'max_nested_transactions' => 1
 	);
 
+	private $ops_db_host = '';
+	private $ops_db_user = '';
+	private $ops_db_pass = '';
+	private $ops_db_db = '';
+
 	/**
 	 * Constructor
 	 *
@@ -108,23 +113,34 @@ class Db_mysqli extends DbDriverBase {
 		global $g_connect;
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
-		
-		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && ($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+
+		$vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false);
+		$this->ops_db_host = ($vb_persistent_connections ? "p:" : "").$pa_options["host"];
+		$this->ops_db_user = $pa_options["username"];
+		$this->ops_db_pass = $pa_options["password"];
+		$this->ops_db_db = $pa_options["database"];
+
+		if (
+			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) &&
+			isset($g_connect[$vs_db_connection_key]) &&
+			($g_connect[$vs_db_connection_key])
+		) {
+			$this->opr_db = $g_connect[$vs_db_connection_key]; return true;
+		}
 		
 		if (!function_exists("mysqli_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
 			exit;
 		}
-		
-		$vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false);
-		$this->opr_db = @mysqli_connect(($vb_persistent_connections ? "p:" : "").$pa_options["host"], $pa_options["username"], $pa_options["password"]);
+
+		$this->opr_db = @mysqli_connect($this->ops_db_host, $this->ops_db_user, $this->ops_db_pass);
 
 		if (!$this->opr_db) {
 			$po_caller->postError(200, mysqli_connect_error(), "Db->mysqli->connect()");
 			return false;
 		}
 
-		if (!mysqli_select_db($this->opr_db, $pa_options["database"])) {
+		if (!mysqli_select_db($this->opr_db, $this->ops_db_db)) {
 			$po_caller->postError(201, mysqli_error($this->opr_db), "Db->mysqli->connect()");
 			return false;
 		}
@@ -250,6 +266,7 @@ class Db_mysqli extends DbDriverBase {
 	 * @param DbStatement $opo_statement
 	 * @param string $ps_sql SQL statement
 	 * @param array $pa_values array of placeholder replacements
+	 * @return bool
 	 */
 	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
@@ -289,7 +306,7 @@ class Db_mysqli extends DbDriverBase {
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
-		if (!($r_res = mysqli_query($this->opr_db, $vs_sql))) {
+		if (!($r_res = @mysqli_query($this->opr_db, $vs_sql))) {
 			//print "<pre>".caPrintStacktrace()."</pre>\n";
 			//print "<pre>".$vs_sql."</pre>";
 			$opo_statement->postError($po_caller->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
@@ -328,11 +345,9 @@ class Db_mysqli extends DbDriverBase {
 	 * @return string
 	 */
 	public function escape($ps_text) {
-		if ($this->opr_db) {
-			return mysqli_real_escape_string($this->opr_db, $ps_text);
-		} else {
-			return mysqli_real_escape_string($ps_text);
-		}
+		if(!$this->opr_db) { return false; }
+
+		return mysqli_real_escape_string($this->opr_db, $ps_text);
 	}
 
 	/**

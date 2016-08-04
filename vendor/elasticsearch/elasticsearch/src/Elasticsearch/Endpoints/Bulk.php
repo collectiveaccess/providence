@@ -1,24 +1,21 @@
 <?php
-/**
- * User: zach
- * Date: 05/31/2013
- * Time: 16:47:11 pm
- */
 
 namespace Elasticsearch\Endpoints;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Serializers\SerializerInterface;
 use Elasticsearch\Transport;
 
 /**
  * Class Bulk
- * @package Elasticsearch\Endpoints
+ *
+ * @category Elasticsearch
+ * @package  Elasticsearch\Endpoints
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
+ * @link     http://elasticsearch.org
  */
 class Bulk extends AbstractEndpoint implements BulkEndpointInterface
 {
-
     /**
      * @param Transport           $transport
      * @param SerializerInterface $serializer
@@ -29,27 +26,25 @@ class Bulk extends AbstractEndpoint implements BulkEndpointInterface
         parent::__construct($transport);
     }
 
-
     /**
-     * @param string|array $body
+     * @param string|array|\Traversable $body
      *
      * @return $this
      */
     public function setBody($body)
     {
-        if (isset($body) !== true) {
+        if (empty($body)) {
             return $this;
         }
 
-        if (is_array($body) === true) {
-            $bulkBody = "";
+        if (is_array($body) === true || $body instanceof \Traversable) {
             foreach ($body as $item) {
-                $bulkBody .= $this->serializer->serialize($item)."\n";
+                $this->body .= $this->serializer->serialize($item) . "\n";
             }
-            $body = $bulkBody;
+        } else {
+            $this->body = $body;
         }
 
-        $this->body = $body;
         return $this;
     }
 
@@ -58,8 +53,7 @@ class Bulk extends AbstractEndpoint implements BulkEndpointInterface
      */
     protected function getURI()
     {
-       return $this->getOptionalURI('_bulk');
-
+        return $this->getOptionalURI('_bulk');
     }
 
     /**
@@ -72,6 +66,7 @@ class Bulk extends AbstractEndpoint implements BulkEndpointInterface
             'refresh',
             'replication',
             'type',
+            'fields'
         );
     }
 

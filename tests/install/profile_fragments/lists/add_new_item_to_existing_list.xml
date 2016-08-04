@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="">
+    <profileName>collectiveaccess</profileName>
+    <profileDescription/>
+    <locales/>
+    <lists>
+        <list code="object_types" hierarchical="1" system="0" vocabulary="0">
+            <labels>
+                <label locale="en_US">
+                    <name>Object Types</name>
+                </label>
+            </labels>
+            <items>
+                <item idno="test_object_type" enabled="1" default="0">
+                    <labels>
+                        <label locale="en_US" preferred="1">
+                            <name_singular>Test</name_singular>
+                            <name_plural>Test</name_plural>
+                        </label>
+                    </labels>
+                </item>
+            </items>
+        </list>
+    </lists>
+    <elementSets/>
+    <userInterfaces/>
+    <relationshipTypes/>
+    <roles/>
+    <groups/>
+    <displays></displays>
+    <searchForms/>
+</profile>

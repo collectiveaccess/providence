@@ -2,6 +2,7 @@
 
 namespace Github\Api;
 
+use Github\Api\Organization\Hooks;
 use Github\Api\Organization\Members;
 use Github\Api\Organization\Teams;
 
@@ -59,10 +60,32 @@ class Organization extends AbstractApi
     }
 
     /**
+     * @return Hooks
+     */
+    public function hooks()
+    {
+        return new Hooks($this->client);
+    }
+
+    /**
      * @return Teams
      */
     public function teams()
     {
         return new Teams($this->client);
+    }
+
+    /**
+     * @link http://developer.github.com/v3/issues/#list-issues
+     *
+     * @param $organization
+     * @param array $params
+     * @param int $page
+     *
+     * @return array
+     */
+    public function issues($organization, array $params = array(), $page = 1)
+    {
+        return $this->get('orgs/'.rawurlencode($organization).'/issues', array_merge(array('page' => $page), $params));
     }
 }

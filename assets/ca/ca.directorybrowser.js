@@ -72,6 +72,8 @@ var caUI = caUI || {};
 			
 			indicatorUrl: '',
 			openDirectoryIcon: '',
+			disabledDirectoryIcon: '',
+			
 			folderIcon: '',
 			fileIcon: '',
 			
@@ -340,7 +342,7 @@ var caUI = caUI || {};
 								if (childCount > 0) {
 									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open' >" + that.openDirectoryIcon + "</a></div>";
 								} else {
-									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open'  style='opacity: 0.3;'>" + that.openDirectoryIcon + "</a></div>";
+									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open'  style='opacity: 0.3;'>" + (that.disabledDirectoryIcon ? that.disabledDirectoryIcon : that.openDirectoryIcon) + "</a></div>";
 								}
 							}
 							

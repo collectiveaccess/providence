@@ -34,7 +34,7 @@
   *
   */
  
-include_once(__CA_LIB_DIR__."/core/Error.php");
+include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_LIB_DIR__."/core/Datamodel.php");
 include_once(__CA_LIB_DIR__."/core/Db.php");

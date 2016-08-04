@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="utf-8"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
+  infoUrl="http://providence.collectiveaccess.org/wiki/DublinCoreInstallationProfile">
+  <profileName>Google "In Depth" Project - J. Weist</profileName>
+  <profileDescription>Used to generate info visualzations</profileDescription>
+  <locales>
+    <locale lang="en" country="US">English</locale>
+  </locales>
+  <lists>
+    <list code="entity_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Entity Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="artist" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Artist</name_singular>
+              <name_plural>Artists</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="sources" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Sources</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="sales" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sales</name_singular>
+              <name_plural>Sales</name_plural>
+            </label>
+          </labels>
+       <items>
+        <item idno="secondary_market" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Highest Value Secondary Market Sales</name_singular>
+              <name_plural>Highest Value Secondary Market Sales</name_plural>
+            </label>
+          </labels>
+        </item>
+       </items>
+        </item>
+        <item idno="biennale" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Biennale</name_singular>
+              <name_plural>Biennale</name_plural>
+            </label>
+          </labels>
+        <items>
+        <item idno="biennale_germany" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Venice Biennale (Germany)</name_singular>
+              <name_plural>Venice Biennale (Germany)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="biennale_us" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Venice Biennale (US)</name_singular>
+              <name_plural>Venice Biennale (US)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="biennale_uk" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Venice Biennale (UK)</name_singular>
+              <name_plural>Venice Biennale (UK)</name_plural>
+            </label>
+          </labels>
+        </item>
+        </items>
+        </item>
+        <item idno="prize" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Prize Winner</name_singular>
+              <name_plural>Prize Winner</name_plural>
+            </label>
+          </labels>
+        <items>
+        <item idno="MacArthur" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MacArthur Genius</name_singular>
+              <name_plural>MacArthur Genius</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Turner" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Turner Prize Winner</name_singular>
+              <name_plural>Turner Prize Winner</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Boss" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hugo Boss Prize Winner</name_singular>
+              <name_plural>Hugo Boss Prize Winner</name_plural>
+            </label>
+          </labels>
+        </item>
+        </items>
+        </item>
+        <item idno="criticsm" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Criticsm</name_singular>
+              <name_plural>Criticsm</name_plural>
+            </label>
+          </labels>
+        <items>
+        <item idno="Foster" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hal Foster</name_singular>
+              <name_plural>Hal Foster</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Buchloh" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Benjamin Buchloh</name_singular>
+              <name_plural>Benjamin Buchloh</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Krauss" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rosalind Krauss</name_singular>
+              <name_plural>Rosalind Krauss</name_plural>
+            </label>
+          </labels>
+        </item>
+        </items>
+        </item>
+      </items>
+    </list>
+    <list code="yn" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Languages</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="yes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>yes</name_singular>
+              <name_plural>yes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="no" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>no</name_singular>
+              <name_plural>no</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="countries" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Countries</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="us" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>United States</name_singular>
+              <name_plural>United States</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="uk" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>United Kingdom</name_singular>
+              <name_plural>United Kingdom</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="germany" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Germany</name_singular>
+              <name_plural>Germany</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="france" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>France</name_singular>
+              <name_plural>France</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="italy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Italy</name_singular>
+              <name_plural>Italy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cuba" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cuba</name_singular>
+              <name_plural>Cuba</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="columbia" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Columbia</name_singular>
+              <name_plural>Columbia</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spain" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spain</name_singular>
+              <name_plural>Spain</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="china" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>China</name_singular>
+              <name_plural>China</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="czech" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Czech Republic</name_singular>
+              <name_plural>Czech Republic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="india" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>India</name_singular>
+              <name_plural>India</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ireland" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ireland</name_singular>
+              <name_plural>Ireland</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="israel" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Israel</name_singular>
+              <name_plural>Israel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="japan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Japan</name_singular>
+              <name_plural>Japan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="puerto_rico" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Puerto Rico</name_singular>
+              <name_plural>Puerto Rico</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pakistan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pakistan</name_singular>
+              <name_plural>Pakistan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="south_korea" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>South Korea</name_singular>
+              <name_plural>South Korea</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="poland" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Poland</name_singular>
+              <name_plural>Poland</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="russia" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Russia</name_singular>
+              <name_plural>Russia</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="thailand" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Thailand</name_singular>
+              <name_plural>Thailand</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bahamas" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bahamas</name_singular>
+              <name_plural>Bahamas</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ethiopia" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ethiopia</name_singular>
+              <name_plural>Ethiopia</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="slovenia" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Slovenia</name_singular>
+              <name_plural>Slovenia</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="south_africa" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>South Africa</name_singular>
+              <name_plural>South Africa</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="switzerland" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Switzerland</name_singular>
+              <name_plural>Switzerland</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="taiwan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Taiwan</name_singular>
+              <name_plural>Taiwan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="venezuela" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Venezuela</name_singular>
+              <name_plural>Venezuela</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vietnam" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Vietnam</name_singular>
+              <name_plural>Vietnam</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="denmark" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Denmark</name_singular>
+              <name_plural>Denmark</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="netherlands" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Netherlands</name_singular>
+              <name_plural>Netherlands</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+  </lists>
+  <elementSets>
+    <metadataElement code="source" datatype="List" list="sources">
+      <labels>
+        <label locale="en_US">
+          <name>Sources</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="birthplace" datatype="List" list="countries">
+      <labels>
+        <label locale="en_US">
+          <name>Birthplace</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="active_place" datatype="List" list="countries">
+      <labels>
+        <label locale="en_US">
+          <name>Active Place</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="google_com" datatype="List" list="yn">
+      <labels>
+        <label locale="en_US">
+          <name>In-depth articles on Google.com?</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+        <setting name="maxColumns">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="google_uk" datatype="List" list="yn">
+      <labels>
+        <label locale="en_US">
+          <name>In-depth articles on Google.co.uk?</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+        <setting name="maxColumns">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="google_de" datatype="List" list="yn">
+      <labels>
+        <label locale="en_US">
+          <name>In-depth articles on Google.de?</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+        <setting name="maxColumns">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
+  </elementSets>
+  <userInterfaces> 
+    <userInterface code="entity_ui" type="ca_entities">
+      <labels>
+        <label locale="en_US">
+          <name>Standard entity editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="ca_attribute_source">
+              <bundle>ca_attribute_source</bundle>
+            </placement>
+            <placement code="ca_attribute_birthplace">
+              <bundle>ca_attribute_birthplace</bundle>
+            </placement>
+            <placement code="ca_attribute_active_place">
+              <bundle>ca_attribute_active_place</bundle>
+            </placement>
+            <placement code="lifespan">
+              <bundle>lifespan</bundle>
+            </placement>
+            <placement code="ca_attribute_google_com">
+              <bundle>ca_attribute_google_com</bundle>
+            </placement>
+            <placement code="ca_attribute_google_uk">
+              <bundle>ca_attribute_google_uk</bundle>
+            </placement>
+            <placement code="ca_attribute_google_de">
+              <bundle>ca_attribute_google_de</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+  </userInterfaces>
+  <relationshipTypes/>
+  <logins>
+    <login user_name="admin" password="google" fname="CollectiveAccess" lname="Administrator"
+      email="julia@whirl-i-gig.com">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+  </logins>
+</profile>

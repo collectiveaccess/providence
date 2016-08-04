@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -182,35 +182,35 @@
 		static public function getRoleActionList() {
 			return array(
 				'can_use_records_by_status_widget_ca_objects' => array(
-					'label' => _t('Objects'),
+					'label' => _t('Workflow status: objects'),
 					'description' => _t('User can use widget that shows records by workflow status to list new objects in the dashboard.')
 				),
 				'can_use_records_by_status_widget_ca_entities' => array(
-					'label' => _t('Entities'),
+					'label' => _t('Workflow status: entities'),
 					'description' => _t('User can use widget that shows records by workflow status to list new entities in the dashboard.')
 				),
 				'can_use_records_by_status_widget_ca_places' => array(
-					'label' => _t('Places'),
+					'label' => _t('Workflow status: places'),
 					'description' => _t('User can use widget that shows records by workflow status to list new places in the dashboard.')
 				),
 				'can_use_records_by_status_widget_ca_occurrences' => array(
-					'label' => _t('Occurrences'),
+					'label' => _t('Workflow status: occurrences'),
 					'description' => _t('User can use widget that shows records by workflow status to list new occurrences in the dashboard.')
 				),
 				'can_use_records_by_status_widget_ca_sets' => array(
-					'label' => _t('Sets'),
+					'label' => _t('Workflow status: sets'),
 					'description' => _t('User can use widget that shows records by workflow status to list new sets in the dashboard.')
 				),
 				'can_use_records_by_status_widget_ca_collections' => array(
-					'label' => _t('Collections'),
+					'label' => _t('Workflow status: collections'),
 					'description' => _t('User can use widget that shows records by workflow status to list new collections in the dashboard.')
 				),
 				'can_use_records_by_status_widget_ca_object_representations' => array(
-					'label' => _t('Object representations'),
+					'label' => _t('Workflow status: object representations'),
 					'description' => _t('User can use widget that shows records by workflow status to list new object representations in the dashboard.')
 				),
 				'can_use_records_by_status_widget_ca_object_lots' => array(
-					'label' => _t('Object lots'),
+					'label' => _t('Workflow status: object lots'),
 					'description' => _t('User can use widget that shows records by workflow status to list new object lots in the dashboard.')
 				)
 			);
@@ -266,4 +266,3 @@
 				'description' => _t('Limits the number of records to be listed in the widget.')
 			),
 	);
-?>

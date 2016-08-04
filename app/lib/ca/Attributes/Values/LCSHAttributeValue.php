@@ -210,6 +210,7 @@
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			if (isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+ 				if (LCSHAttributeValue::$s_term_cache[$ps_value] === false) { return null; }
  				return LCSHAttributeValue::$s_term_cache[$ps_value];
  			}
  			$o_config = Configuration::load();
@@ -317,11 +318,7 @@
 				}
 			}
 			if (!isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
-				LCSHAttributeValue::$s_term_cache[$ps_value] = array(
-					'value_longtext1' => '',	// text
-					'value_longtext2' => '',	// uri
-					'value_decimal1' => null	// id
-				);
+				LCSHAttributeValue::$s_term_cache[$ps_value] = false;
 				return null;		// not an error, just skip it
 			}
 			

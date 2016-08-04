@@ -181,7 +181,7 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 	# ------------------------------------------------
 	/**
 	 * Can be overriden in implementation to store addition bits of
-	 * information about the value which is then available via get() and for
+	 * information about the value which is then available via get()
 	 * @param array $pa_settings element settings
 	 * @param string $ps_url
 	 * @return array

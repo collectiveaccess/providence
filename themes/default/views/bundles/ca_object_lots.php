@@ -60,7 +60,11 @@
 	}
 
 	// params to pass during lookup
-	$va_lookup_params = array('type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '', 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']);
+	$va_lookup_params = array(
+		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
+		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
+		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+	);
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
@@ -336,7 +340,7 @@
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectLot', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($t_item, $this->getVar('initialValues'), $va_settings['display_template']); ?>,
+			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 <?php
 	if ($t_subject->tableName() == 'ca_objects') {
 ?>

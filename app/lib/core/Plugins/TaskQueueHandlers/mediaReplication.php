@@ -52,7 +52,7 @@ require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
 		# Constructor - all task queue handlers must implement this
 		#
 		public function __construct() {
-			$this->error = new Error();
+			$this->error = new ApplicationError();
 			$this->error->setErrorOutput(0);
 		}
 		# --------------------------------------------------------------------------------

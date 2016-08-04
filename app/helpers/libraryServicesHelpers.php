@@ -35,7 +35,7 @@
 	/**
 	 * Returns library services configuration
 	 *
-	 * @return Configuration Returns reference to client services configuration
+	 * @return Configuration Returns reference to library services configuration
 	 */
 	function caGetLibraryServicesConfiguration() {
  		return Configuration::load(__CA_APP_DIR__."/conf/library_services.conf");

@@ -27,32 +27,21 @@
  */
  
 	$t_subject 			= $this->getVar('t_subject');		// object representation
-	if (	// don't show bundle if this representation doesn't use bundles to edit annotations
-		!method_exists($t_subject, "getAnnotationType") || 
-		!$t_subject->getAnnotationType() ||
-		!method_exists($t_subject, "useBundleBasedAnnotationEditor") || 
-		!$t_subject->useBundleBasedAnnotationEditor()
-	) { 	
-?>
-		<span class='heading'><?php print _t('Annotations are not supported for this type of media'); ?></span>
-<?php
-			return; 
-	}
-	
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_item 			= $this->getVar('t_item');				// object representation annotation
 	$t_item_label 		= $this->getVar('t_item_label');	// object representation annotation_labels
 	
 	$vs_annotation_type = $t_subject->getAnnotationType();
-	$o_properties 		= $t_subject->getAnnotationPropertyCoderInstance($vs_annotation_type);
-	$vs_goto_property 	= $o_properties->getAnnotationGotoProperty();
-	$va_prop_list 		= $va_init_props = array();
-	if(!is_array($va_initial_values	= $this->getVar('initialValues'))) { $va_initial_values = array(); }
+	if ($o_properties 		= $t_subject->getAnnotationPropertyCoderInstance($vs_annotation_type)) {
+		$vs_goto_property 	= $o_properties->getAnnotationGotoProperty();
+		$va_prop_list 		= $va_init_props = array();
+		if(!is_array($va_initial_values	= $this->getVar('initialValues'))) { $va_initial_values = array(); }
 	
-	foreach(($va_properties = $o_properties->getPropertyList()) as $vs_property) { 
-		$va_prop_list[] = "'".$vs_property."'"; $va_init_props[$vs_property] = ''; 
+		foreach(($va_properties = $o_properties->getPropertyList()) as $vs_property) { 
+			$va_prop_list[] = "'".$vs_property."'"; $va_init_props[$vs_property] = ''; 
+		}
 	}
-	
+		
 	// get existing annotations
 	$va_inital_values = $this->getVar('initialValues');
 	$va_errors = array();
@@ -83,6 +72,18 @@
 <!-- BEGIN Media Player -->
 <div class="bundleContainer" style="text-align:center; padding:5px;">
 <?php
+if (	// don't show bundle if this representation doesn't use bundles to edit annotations
+		!method_exists($t_subject, "getAnnotationType") || 
+		!$t_subject->getAnnotationType() ||
+		!method_exists($t_subject, "useBundleBasedAnnotationEditor") || 
+		!$t_subject->useBundleBasedAnnotationEditor()
+	) { 	
+?>
+		<span class='heading'><?php print _t('Annotations are not supported for this type of media'); ?></span>
+	</div>
+<?php
+			return; 
+	}
 	$va_media_player_config = caGetMediaDisplayInfo('annotation_editor', $t_subject->getMediaInfo('media', $o_properties->getDisplayMediaVersion(), 'MIMETYPE'));
 ?>
 	<div class="caAnnotationMediaPlayerContainer">

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,8 +68,10 @@
 			
 				if (isset($_FILES['sourceFile']['tmp_name']) && $_FILES['sourceFile']['tmp_name']) {
 					$vs_input = $_FILES['sourceFile']['tmp_name'];
+					$vs_input_filename = $_FILES['sourceFile']['name'];
 				} elseif(!($vs_input = $req->getParameter('sourceUrl', pString))) {
 					$vs_input = $req->getParameter('sourceText', pString);
+					$vs_input_filename = null;
 				}
 				
 				$vs_file_input = caGetOption('fileInput', $this->opa_options, null); 
@@ -86,10 +88,9 @@
 					$vs_input,
 					$req->getParameter('importer_id', pInteger),
 					$req->getParameter('inputFormat', pString),
-					array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMetadataImportProgress', 'reportCallback' => 'caUpdateBatchMetadataImportResultsReport'))
+					array_merge($this->opa_options, array('originalFilename' => $vs_input_filename, 'progressCallback' => 'caIncrementBatchMetadataImportProgress', 'reportCallback' => 'caUpdateBatchMetadataImportResultsReport'))
 				);
 			}
 		}	
 		# -------------------------------------------------------
 	}
-?>

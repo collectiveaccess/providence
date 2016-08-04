@@ -261,12 +261,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 						'value_blob' => caSerializeForDatabase($va_info)
 					);
 				} else {
-					$va_return = array(
-						'value_longtext1' => '',	// text
-						'value_longtext2' => '',	// url
-						'value_decimal1' => null,	// id
-						'value_blob' => null		// extra info
-					);
+					$this->postError(1970, _t('Value for InformationService lookup has to be an ID or URL that returns exactly 1 hit. We got more or no hits. Value was %1', $ps_value), 'ListAttributeValue->parseValue()');
+					return false;
 				}
 
 				CompositeCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");

@@ -5,6 +5,7 @@ namespace Github\Api;
 use Github\Api\CurrentUser\DeployKeys;
 use Github\Api\CurrentUser\Emails;
 use Github\Api\CurrentUser\Followers;
+use Github\Api\CurrentUser\Memberships;
 use Github\Api\CurrentUser\Notifications;
 use Github\Api\CurrentUser\Watchers;
 use Github\Api\CurrentUser\Starring;
@@ -79,6 +80,14 @@ class CurrentUser extends AbstractApi
     }
 
     /**
+     * @return Memberships
+     */
+    public function memberships()
+    {
+        return new Memberships($this->client);
+    }
+
+    /**
      * @link http://developer.github.com/v3/orgs/#list-user-organizations
      *
      * @return array
@@ -110,9 +119,9 @@ class CurrentUser extends AbstractApi
     public function repositories($type = 'owner', $sort = 'full_name', $direction = 'asc')
     {
         return $this->get('user/repos', array(
-            $type,
-            $sort,
-            $direction
+            'type' => $type,
+            'sort' => $sort,
+            'direction' => $direction
         ));
     }
 
@@ -150,5 +159,13 @@ class CurrentUser extends AbstractApi
         return $this->get('user/starred', array(
             'page' => $page
         ));
+    }
+    
+    /**
+     *  @link https://developer.github.com/v3/activity/watching/#list-repositories-being-watched
+     */
+    public function subscriptions()
+    {
+        return $this->get('user/subscriptions');
     }
 }

@@ -238,7 +238,6 @@ var caUI = caUI || {};
 							if (key == 'idno') {
 								indexKey = jQuery('#' + id_string + ' .itemIdno').text() + "/" + id_string;
 							} else {
-                                alert(id_string);
 								indexKey = id_string;
 							}
 						}

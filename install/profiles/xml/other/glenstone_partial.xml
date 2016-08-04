@@ -1,0 +1,1220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
+  infoUrl="http://wiki.collectiveaccess.org">
+  <profileName>Glenstone Partial Profile Test - Condition/Conservation add</profileName>
+  <profileDescription></profileDescription>
+  <locales>
+    <locale lang="en" country="US">English</locale>
+  </locales>
+  <lists>
+    <list code="master_condition" hierarchical="1" system="0" vocabulary="0" defaultSort="1">
+      <labels>
+        <label locale="en_US">
+          <name>Master Condition List</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="new_frame_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Frame Condition</name_singular>
+              <name_plural>Frame Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="losses" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Losses</name_singular>
+                  <name_plural>Losses</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dents_abrasions" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dents/Abrasions</name_singular>
+                  <name_plural>Dents/Abrasions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="flaking" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Flaking</name_singular>
+                  <name_plural>Flaking</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Grime_accretions" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grime/Accretions</name_singular>
+                  <name_plural>Grime/Accretions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="repair" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Old Repair/Restoration</name_singular>
+                  <name_plural>Old Repair/Restoration</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mitres_cracked" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Mitres Cracked</name_singular>
+                  <name_plural>Mitres Cracked</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mold" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Infestation/Mold</name_singular>
+                  <name_plural>Infestation/Mold</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="structural_weaknesses" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Structural Weaknesses</name_singular>
+                  <name_plural>Structural Weaknesses</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="warping" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Warping</name_singular>
+                  <name_plural>Warping</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="frame_other" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_glazing_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glazing Condition</name_singular>
+              <name_plural>Glazing Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="glass" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Glass</name_singular>
+                  <name_plural>Glass</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="plexi" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Plexi</name_singular>
+                  <name_plural>Plexi</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="none" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>None</name_singular>
+                  <name_plural>None</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="scratches" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Scratches/Damage</name_singular>
+                  <name_plural>Scratches/Damage</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dust" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dust/Grime/Fingerprints/Smudge/Spots</name_singular>
+                  <name_plural>Dust/Grime/Fingerprints/Smudge/Spots</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="other_glazing" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_mount_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mount Condition</name_singular>
+              <name_plural>Mount Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="bowing" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bowing</name_singular>
+                  <name_plural>Bowing</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="warping" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Warping/Bulges/Depressions</name_singular>
+                  <name_plural>Warping/Bulges/Depressions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tear" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tears/Punctures</name_singular>
+                  <name_plural>>Tears/Punctures</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="splits" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Splits</name_singular>
+                  <name_plural>Splits</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mold" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Infestation/Mold</name_singular>
+                  <name_plural>Infestation/Mold</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mount_other" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_support_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Support Condition</name_singular>
+              <name_plural>Support Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="bowing" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bowing</name_singular>
+                  <name_plural>Bowing</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="warping" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Warping, Bulges, Depressions</name_singular>
+                  <name_plural>Warping, Bulges, Depressions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tears" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tears/Punctures/Splits</name_singular>
+                  <name_plural>Tears/Punctures/Splits</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mold" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Infestation/Mold</name_singular>
+                  <name_plural>Infestation/Mold</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="aux" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Problems of Auxiliary Elements (Stretcher, Cradle, Lining)</name_singular>
+                  <name_plural>Problems of Auxiliary Elements (Stretcher, Cradle, Lining)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="support_other" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_surface_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Specfic Condition Note</name_singular>
+              <name_plural>Specfic Condition Note</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="rubs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Abrasion/Scratches/Rubs</name_singular>
+                  <name_plural>Abrasion/Scratches/Rubs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="accretion" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Accretion</name_singular>
+                  <name_plural>Accretion</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gloss" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Discoloration/Alteration of Matte/Gloss</name_singular>
+                  <name_plural>Discoloration/Alteration of Matte/Gloss</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="silvering" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Silvering</name_singular>
+                  <name_plural>Silvering</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="soil" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Stains/Soil/Tideline</name_singular>
+                  <name_plural>Stains/Soil/Tideline</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dust" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dust/Grime/Fingerprints/Smudge</name_singular>
+                  <name_plural>Dust/Grime/Fingerprints/Smudge</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tears" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tears/Punctures</name_singular>
+                  <name_plural>Tears/Punctures</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="nick" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Chip/Nick/Gouge</name_singular>
+                  <name_plural>Chip/Nick/Gouge</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="crackle" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Crackle/Crazing/Break/Fracture</name_singular>
+                  <name_plural>Crackle/Crazing/Break/Fracture</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="creases" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Creases/Warps/Bulges</name_singular>
+                  <name_plural>Creases/Warps/Bulges</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="media" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Media Losses/Support Lossess</name_singular>
+                  <name_plural>Media Losses/Support Lossess</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="flaking" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Flaking/Wrinkling/Lifting</name_singular>
+                  <name_plural>Flaking/Wrinkling/Lifting</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="bubble" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Blister/Bubble</name_singular>
+                  <name_plural>Blister/Bubble</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="losses" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Losses</name_singular>
+                  <name_plural>Losses</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="buckling" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Buckling/Cockling</name_singular>
+                  <name_plural>Buckling/Cockling</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="foxing" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Infestation/Mold/Foxing</name_singular>
+                  <name_plural>Infestation/Mold/Foxing</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tarnish" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Corrosion/Oxidation/Tarnish</name_singular>
+                  <name_plural>Corrosion/Oxidation/Tarnish</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="watermark" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Watermark</name_singular>
+                  <name_plural>Watermark</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="retouching" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Retouching</name_singular>
+                  <name_plural>Retouching</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="shiny" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Shiny Spots/Glossy Area</name_singular>
+                  <name_plural>Shiny Spots/Glossy Area</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dull" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dull Area</name_singular>
+                  <name_plural>Dull Area</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="emulsion" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Emulsion Lift</name_singular>
+                  <name_plural>Emulsion Lift</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="adhesive" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Adhesive Residue</name_singular>
+                  <name_plural>Adhesive Residue</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="deformation" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Deformation</name_singular>
+                  <name_plural>Deformation</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="fingerprint" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Fingerprint</name_singular>
+                  <name_plural>Fingerprint</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="crack" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Crack</name_singular>
+                  <name_plural>Crack</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="surface_other" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_vitrine_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Vitrine Condition</name_singular>
+              <name_plural>Vitrine Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="glass" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Glass</name_singular>
+                  <name_plural>Glass</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="plexi" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Plexi</name_singular>
+                  <name_plural>Plexi</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="none" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>None</name_singular>
+                  <name_plural>None</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="scratches" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Scratches/Damage</name_singular>
+                  <name_plural>Scratches/Damage</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="cracks" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cracks</name_singular>
+                  <name_plural>Cracks</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="chip" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Chip/Nick/Gouge</name_singular>
+                  <name_plural>Chip/Nick/Gouge</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dents" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dents/Abrasions</name_singular>
+                  <name_plural>Dents/Abrasions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="grime" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grime/Accretions</name_singular>
+                  <name_plural>Grime/Accretions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="soil" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Stains/Soil</name_singular>
+                  <name_plural>Stains/Soil</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="wear" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Wear</name_singular>
+                  <name_plural>Wear</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="vitrine_other" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_base_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Base Condition</name_singular>
+              <name_plural>Base Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="bulges" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bulges, Depressions</name_singular>
+                  <name_plural>Bulges, Depressions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="crack" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Crack/Break/Fracture</name_singular>
+                  <name_plural>Crack/Break/Fracture</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="chip" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Chip/Nick/Gouge</name_singular>
+                  <name_plural>Chip/Nick/Gouge</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dents" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dents/Abrasions</name_singular>
+                  <name_plural>Dents/Abrasions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="grime" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grime/Accretions</name_singular>
+                  <name_plural>Grime/Accretions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="losses" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Losses</name_singular>
+                  <name_plural>Losses</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mold" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Infestation/Mold</name_singular>
+                  <name_plural>Infestation/Mold</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="retouch" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Old Repair/Retouch/Restoration</name_singular>
+                  <name_plural>Old Repair/Retouch/Restoration</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="soil" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Stains/Soil</name_singular>
+                  <name_plural>Stains/Soil</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="warping" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Warping</name_singular>
+                  <name_plural>Warping</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="wear" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Wear</name_singular>
+                  <name_plural>Wear</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="base_other" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_pedestal_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pedestal Condition</name_singular>
+              <name_plural>Pedestal Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="bulges" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bulges, Depressions</name_singular>
+                  <name_plural>Bulges, Depressions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="crack" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Crack/Break/Fracture</name_singular>
+                  <name_plural>Crack/Break/Fracture</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="chip" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Chip/Nick/Gouge</name_singular>
+                  <name_plural>Chip/Nick/Gouge</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dents" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dents/Abrasions</name_singular>
+                  <name_plural>Dents/Abrasions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="grime" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grime/Accretions</name_singular>
+                  <name_plural>Grime/Accretions</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="losses" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Losses</name_singular>
+                  <name_plural>Losses</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mold" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Infestation/Mold</name_singular>
+                  <name_plural>Infestation/Mold</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="retouch" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Old Repair/Retouch/Restoration</name_singular>
+                  <name_plural>Old Repair/Retouch/Restoration</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="soil" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Stains/Soil</name_singular>
+                  <name_plural>Stains/Soil</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="warping" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Warping</name_singular>
+                  <name_plural>Warping</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="wear" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Wear</name_singular>
+                  <name_plural>Wear</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="pedestal_other" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Other</name_singular>
+                  <name_plural>Other</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="new_auxiliary_condition" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Auxiliary Condition</name_singular>
+              <name_plural>Auxiliary Condition</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="losses" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Losses</name_singular>
+                  <name_plural>Losses</name_plural>
+                </label>
+              </labels>
+            </item>
+            
+          </items>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="occurrence_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Occurrence types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="artwork_conservation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>artwork conservation</name_singular>
+              <name_plural>artwork conservations</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+  </lists>
+  <elementSets>
+    <metadataElement code="detailed_condition" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Detailed Condition</name>
+          <description/>
+        </label>
+      </labels>
+      <settings/>
+      <elements>
+        <metadataElement code="detailed_condition_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Detailed Condition (Line 1)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="detailed_value" datatype="List" list="master_condition">
+              <labels>
+                <label locale="en_US">
+                  <name>Condition Assessment</name>
+                </label>
+              </labels>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="detailed_condition_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Detailed Condition (Line 2)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="detailed_date" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Assessment Date</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="useDatePicker">1</setting>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="detailed_condition_line3" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Detailed Condition (Line 3)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="detailed_notes" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Assessment Notes</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">100</setting>
+                <setting name="fieldHeight">3</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="detailed_condition_line4" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Detailed Condition (Line 4)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="detailed_assessor" datatype="Entities">
+              <labels>
+                <label locale="en_US">
+                  <name>Assessor</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>artwork</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="date_completed" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Date Completed</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="useDatePicker">1</setting>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>artwork</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+
+  </elementSets>
+  <userInterfaces>
+    <userInterface code="new_conservation" type="ca_occurrences">
+      <labels>
+        <label locale="en_US">
+          <name>Artwork Conservation UI</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="artwork_conservation" type="artwork_conservation"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Artwork(s)</setting>
+                <setting name="add_label" locale="en_US">Add artworks</setting>
+                <setting name="restrict_to_types">artwork</setting>
+                <setting name="list_format">list</setting>
+                <setting name="maxRelationshipsPerRow">1</setting>
+                <setting name="display_template"><![CDATA[
+                  <unit relativeTo="ca_objects">
+<unit><l>^ca_objects.preferred_labels</l><br/><br/></unit>
+                  <b>Artist:</b> <unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit><br><br>
+                  <b>Date:</b> ^ca_objects.creation_date<br><br>
+                  <b>Medium:</b> ^ca_objects.medium <br><br>
+                  <b>Dimensions:</b> <unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.display_dimensions <ifdef code="ca_objects.dimensions.Type">(</ifdef>^ca_objects.dimensions.Type<ifdef code="ca_objects.dimensions.Type">)</ifdef></unit><br><br>
+                  <b>Signature:</b> <unit relativeTo="ca_objects.signed" delimiter="; ">^ca_objects.signed.signature_details</unit><br><br>
+                  <b>Edition:</b> <unit relativeTo="ca_objects.edition" delimiter="; ">^ca_objects.edition.edition_number <ifdef code="ca_objects.edition.edition_total">/</ifdef>^ca_objects.edition.edition_total</unit>
+                  </unit><br/>
+                  ]]></setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Lab Number</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Short Description of Artwork Conservation</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Treatement conducted by</setting>
+                <setting name="add_label" locale="en_US">Add relationship</setting>
+                <setting name="restrict_to_relationship_types">treated</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_date_completed">
+              <bundle>ca_attribute_date_completed</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Discovery UI Access</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+</userInterfaces>
+  <relationshipTypes>
+    <relationshipTable name="ca_entities_x_occurrences">
+      <types>
+        <type code="treated" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>treated</typename>
+              <typename_reverse>treated</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+</relationshipTypes>
+  <displays>
+    <display code="condition_report_pg1" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Condition Report Page 1</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="artist">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Artist</setting>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="format"><![CDATA[
+              <unit relativeTo="ca_entities" delimiter="; ">
+              <l>^ca_entities.preferred_labels.surname<ifdef code="ca_entities.preferred_labels.forename">,</ifdef> ^ca_entities.preferred_labels.forename ^ca_entities.preferred_labels.middlename</l>
+              </unit>]]></setting>
+          </settings>
+        </placement>
+        <placement code="date">
+          <bundle>ca_objects.creation_date</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Creation Date</setting>
+          </settings>
+        </placement>
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Medium</setting>
+          </settings>
+        </placement>
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Object Dimensions</setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.display_dimensions <ifdef code="ca_objects.dimensions.Type">(</ifdef>^ca_objects.dimensions.Type<ifdef code="ca_objects.dimensions.Type">)</ifdef></unit>]]></setting>
+          </settings>
+        </placement>
+        <placement code="edition">
+          <bundle>ca_objects.edition</bundle>
+          <settings>
+            <setting name="format"><![CDATA[
+              <unit relativeTo="ca_objects.edition" delimiter="; ">^ca_objects.edition.edition_number <ifdef code="ca_objects.edition.edition_total">/</ifdef>^ca_objects.edition.edition_total</unit>]]></setting></settings>
+        </placement>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Accession #</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+   <display code="condition_report_pg2" type="ca_objects" system="1">
+    <labels>
+      <label locale="en_US">
+        <name>Condition Report Page 2</name>
+      </label>
+    </labels>
+    <bundlePlacements>
+      <placement code="ca_attribute_general_condition">
+        <bundle>ca_objects.general_condition</bundle>
+        <settings>
+          <setting name="format"><![CDATA[
+             <unit relativeTo="ca_objects.general_condition" delimiter="<br>">
+             ^ca_objects.general_condition.general_condition_specific 
+             <ifdef code="ca_objects.general_condition.general_condition_person">(</ifdef>^ca_objects.general_condition.general_condition_person<ifdef code="ca_objects.general_condition.general_condition_person">)</ifdef>
+             <ifdef code="ca_objects.general_condition.general_condition_specific">:</ifdef>
+             ^ca_objects.general_condition.general_condition_value 
+             ^ca_objects.general_condition.general_condition_comments
+             ^ca_objects.general_condition.general_condition_date
+              <br></unit>]]></setting>
+        </settings>
+      </placement>
+      <placement code="ca_attribute_frame_condition">
+        <bundle>ca_objects.frame_condition</bundle>
+        <settings>
+          <setting name="format"><![CDATA[
+             <unit relativeTo="ca_objects.detailed_condition" delimiter="<br><br>">
+             ^ca_objects.detailed_condition.detailed_value<ifdef code="ca_objects.detailed_condition.detailed_notes">:</ifdef> ^ca_objects.detailed_condition.detailed_notes<br>
+             <ifdef code="ca_objects.detailed_condition.detailed_assessor">-</ifdef>^ca_objects.detailed_condition.detailed_assessor ^ca_objects.detailed_condition.detailed_date
+             </unit>]]></setting>
+        </settings>
+      </placement>
+    </bundlePlacements>
+  </display>
+   <display code="condition_report_pg3" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Condition Report Page 3</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="ca_attribute_condition_images">
+          <bundle>ca_objects.condition_images</bundle>
+          <settings>
+            <setting name="format"><![CDATA[
+             <unit relativeTo="ca_objects.condition_images" delimiter="<br>">
+             ^ca_objects.condition_images.condition_images_media 
+             ^ca_objects.condition_images.condition_images_description
+              <br></unit>]]></setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_legacy_conservation_materials">
+          <bundle>ca_objects.legacy_conservation_materials</bundle>
+          <settings>
+            <setting name="format"><![CDATA[
+             <unit relativeTo="ca_objects.legacy_conservation_materials" delimiter="<br>">
+             ^ca_objects.legacy_conservation_materials.legacy_conservation_media
+             ^ca_objects.legacy_conservation_materials.legacy_conservation_description
+              <br></unit>]]></setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+  </displays>
+  <logins>
+    <login user_name="merge" password="test" fname="CA" lname="Merge"
+      email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+  </logins>
+</profile>

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/WLPlugInformationServiceCollectiveAccess.php : 
+ * app/lib/core/Plugins/InformationService/WLPlugInformationServiceCollectiveAccess.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,14 +32,13 @@
 
   /**
     *
-    */ 
-    
-    
+    */
+
+
 require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
-require_once(__CA_LIB_DIR__."/vendor/autoload.php");
 
-	use Guzzle\Http\Client;
+use Guzzle\Http\Client;
 
 global $g_information_service_settings_CollectiveAccess;
 $g_information_service_settings_CollectiveAccess = array(
@@ -114,15 +113,15 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	 */
 	public function __construct() {
 		global $g_information_service_settings_CollectiveAccess;
-		
+
 		WLPlugInformationServiceCollectiveAccess::$s_settings = $g_information_service_settings_CollectiveAccess;
 		parent::__construct();
 		$this->info['NAME'] = 'CollectiveAccess';
-		
+
 		$this->description = _t('Provides access to data services in remote CollectiveAccess databases');
 	}
 	# ------------------------------------------------
-	/** 
+	/**
 	 * Get all settings settings defined by this plugin as an array
 	 *
 	 * @return array
@@ -133,7 +132,7 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
-	/** 
+	/**
 	 * Perform lookup on CollectiveAccess-based data service
 	 *
 	 * @param array $pa_settings Plugin settings values
@@ -142,19 +141,19 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		$o_client = new Client($pa_settings['baseURL']);
-		
+
 		// Get sort field
 		$o_dm = Datamodel::load();
 		$t_instance = $o_dm->getInstanceByTableName($pa_settings['table'], true);
 		$vs_sort_field = $t_instance->getLabelTableName().".".$t_instance->getLabelSortField();
-		
+
 		// Create a request with basic Auth
 		$o_request = $o_client->get($vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']))->setAuth($pa_settings['user_name'], $pa_settings['password']);
-	
+
 		// Send the request and get the response
 		$o_response = $o_request->send();
 		$va_data = json_decode($o_response->getBody(), true);
-		
+
 		$vs_pk = $t_instance->primaryKey();
 		if (isset($va_data['results']) && is_array($va_data['results'])) {
 			foreach($va_data['results'] as $vs_k => $va_result) {
@@ -163,12 +162,12 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 				$va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'].'/service.php/item/'.$pa_settings['table'].'/id/'.$va_result[$vs_pk];
 			}
 		}
-		
+
 		return $va_data;
 	}
 	# ------------------------------------------------
-	/** 
-	 * Fetch details about a specific item from a CollectiveAccess-based data service 
+	/**
+	 * Fetch details about a specific item from a CollectiveAccess-based data service
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
@@ -176,21 +175,21 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
 		$o_client = new Client($pa_settings['baseURL']);
-		
+
 		$va_tmp = explode("/", $ps_url);
 		$ps_id = array_pop($va_tmp);
-		
+
 		if (!($vs_template = $pa_settings['detailFormat'])) {		// if no detailFormat options is set default to just outputting preferred labels
 			$vs_template = '^'.$pa_settings['table'].".preferred_labels";
 		}
-		
+
 		// Create a request with basic Auth
 		$o_request = $o_client->get($vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template))->setAuth($pa_settings['user_name'], $pa_settings['password']);
-	
+
 		// Send the request and get the response
 		$o_response = $o_request->send();
 		$va_data = json_decode($o_response->getBody(), true);
-		
+
 		return $va_data;
 	}
 	# ------------------------------------------------

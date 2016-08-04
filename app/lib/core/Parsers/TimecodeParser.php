@@ -47,7 +47,7 @@
  * FT_TIMECODE fields.
  *
  */
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 
 
 class TimecodeParser {

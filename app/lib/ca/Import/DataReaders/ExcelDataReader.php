@@ -147,7 +147,7 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num-1;
-		$this->opo_rows->seek(($pn_row_num > 0) ? ($pn_row_num - 1) : 0);
+		$this->opo_rows->seek(($pn_row_num > 0) ? $pn_row_num : 0);
 		return $this->nextRow();
 	}
 	# -------------------------------------------------------

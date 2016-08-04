@@ -38,11 +38,6 @@ require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
  */
 class SearchResultGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
-	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
-	 */
-	private $opt_object = null;
-	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
@@ -60,7 +55,7 @@ class SearchResultGetTest extends BaseTestWithData {
 				'preferred_labels' => array(
 					array(
 						"locale" => "en_US",
-						"name" => "My test moving image $i",
+						"name" => "My test moving image " . (string) $i,
 					),
 				),
 				'attributes' => array(
@@ -82,12 +77,10 @@ class SearchResultGetTest extends BaseTestWithData {
 		$o_search = caGetSearchInstance('ca_objects');
 		$this->assertInstanceOf('SearchEngine', $o_search);
 
-		$o_res = $o_search->search('*');
+		$o_res = $o_search->search('*', array('sort' => 'ca_object_labels.name'));
 		/** @var SearchResult $o_res */
 		$this->assertInstanceOf('SearchResult', $o_res);
 		$this->assertEquals(10, $o_res->numHits());
-
-		//$o_res->disableGetWithTemplatePrefetch();
 
 		$i=0;
 		while($o_res->nextHit()) {

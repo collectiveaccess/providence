@@ -67,9 +67,9 @@ BaseModel::$s_ca_models_definitions['ca_search_forms_x_user_groups'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => 0,
 				'BOUNDS_CHOICE_LIST' => array(
-					_t('has no access') => 0,
-					_t('can read') => 1,
-					_t('can edit') => 2
+					_t('has no access') => __CA_BUNDLE_ACCESS_NONE__,
+					_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
+					_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__
 				),
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates group&apos;s level of access to the form. ')
 		)

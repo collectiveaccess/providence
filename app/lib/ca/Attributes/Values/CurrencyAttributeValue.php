@@ -257,7 +257,7 @@
  				$o_locale = new Zend_Locale('en_US');
  			}
  			try {
- 				$vn_value = Zend_Locale_Format::getNumber($vs_decimal_value, array('locale' => $o_locale, 'precision' => 2));
+ 				$vn_value = Zend_Locale_Format::getFloat($vs_decimal_value, array('locale' => $o_locale, 'precision' => 2));
  			} catch (Zend_Locale_Exception $e){
  				$this->postError(1970, _t('%1 does not use a valid decimal notation for your locale', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
  				return false;

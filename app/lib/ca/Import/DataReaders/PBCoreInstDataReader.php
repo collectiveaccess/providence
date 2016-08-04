@@ -107,7 +107,7 @@ class PBCoreInstDataReader extends BaseXMLDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
-		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		if ($vm_ret = BaseDataReader::get($ps_spec, $pa_options)) { return $vm_ret; }
 		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');

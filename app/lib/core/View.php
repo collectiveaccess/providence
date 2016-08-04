@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2014 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -261,7 +261,7 @@ class View extends BaseObject {
 		
 		$vb_output = false;
 		$vs_buf = null;
-		if ($ps_filename[0] == '/') { 	// absolute path
+		if (($ps_filename[0] == '/') || (preg_match("!^[A-Za-z]{1}:!", $ps_filename))) { 	// absolute path
 			$vs_buf = $this->_render($ps_filename);
 			$vb_output = true;
 		} else {

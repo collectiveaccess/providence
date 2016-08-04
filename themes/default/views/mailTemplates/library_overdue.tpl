@@ -25,6 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
+ 
+ $va_items = $this->getVar('items');
 ?>
 The following items are overdue:
 

@@ -42,7 +42,43 @@ include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
-class BaseMediaPlugin Extends WLPlug  {
+class BaseMediaPlugin extends WLPlug  {
+	# ------------------------------------------------
+	/**
+	 * @var Configuration
+	 */
+	protected $opo_app_config;
+	/**
+	 * @var Configuration
+	 */
+	protected $opo_external_app_config;
+	# ------------------------------------------------
+	public function __construct() {
+		parent::__construct();
+
+		$this->opo_app_config = Configuration::load();
+
+		$vs_external_app_config_path = $this->opo_app_config->get('external_applications');
+		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+	}
+	# ------------------------------------------------
+	/**
+	 * Get app config
+	 *
+	 * @return Configuration
+	 */
+	public function getAppConfig() {
+		return $this->opo_app_config;
+	}
+	# ------------------------------------------------
+	/**
+	 * Get external applications configuration
+	 *
+	 * @return Configuration
+	 */
+	public function getExternalAppConfig() {
+		return $this->opo_external_app_config;
+	}
 	# ------------------------------------------------
 	/**
 	 * Returns file extensions for formats supported for import

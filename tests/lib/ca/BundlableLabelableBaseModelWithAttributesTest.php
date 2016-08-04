@@ -137,7 +137,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('test123', $vs_get, 'description must match idno after prepopulation');
@@ -161,7 +162,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('test123', $vs_get, 'description should have been overwritten');
@@ -184,7 +186,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('a description', $vs_get, 'description must not change');
@@ -207,7 +210,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('a description', $vs_get, 'description must not change');
@@ -231,7 +235,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.internal_notes');
 		$this->assertEquals('a note', $vs_get, 'internal_notes must not change');
@@ -256,7 +261,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.idno');
 		$this->assertEquals('a label', $vs_get, 'label should populate idno');
@@ -282,7 +288,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.idno');
 		$this->assertEquals('test123', $vs_get, 'idno should not change');
@@ -304,7 +311,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('Description', $t_object->get('ca_objects.preferred_labels'), 'label must prepopulate with description');
 	}
@@ -332,7 +340,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must not prepopulate because mode is addifempty');
 	}
 
@@ -359,7 +368,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 		$this->assertEquals('Description', $t_object->get('ca_objects.preferred_labels'), 'label must overwrite');
 	}
 
@@ -376,7 +386,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate with idno');
 	}
@@ -399,7 +410,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('Wikipedia', $t_object->get('ca_objects.external_link.url_source'), 'url source must not change');
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
@@ -422,7 +434,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate');
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
@@ -446,7 +459,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
-		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
+		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate');
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
@@ -463,9 +477,10 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 	public function tearDown() {
 		$o_dm = Datamodel::load();
 		foreach($this->opa_test_record_ids as $vs_table => $va_record_ids) {
+			$t_instance = $o_dm->getInstance($vs_table);
+			$t_instance->setMode(ACCESS_WRITE);
+
 			foreach($va_record_ids as $vn_record_id) {
-				$t_instance = $o_dm->getInstance($vs_table);
-				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->load($vn_record_id);
 				$t_instance->delete(true, array('hard' => true));
 			}

@@ -62,11 +62,12 @@ class CompositeCache {
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
+	 * @param int $pn_ttl
 	 * @return bool success state
 	 */
-	public static function save($ps_key, $pm_data, $ps_namespace='default') {
+	public static function save($ps_key, $pm_data, $ps_namespace='default', $pn_ttl=null) {
 		MemoryCache::save($ps_key, $pm_data, $ps_namespace);
-		ExternalCache::save($ps_key, $pm_data, $ps_namespace);
+		ExternalCache::save($ps_key, $pm_data, $ps_namespace, $pn_ttl);
 
 		return true;
 	}

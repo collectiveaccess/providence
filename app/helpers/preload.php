@@ -20,7 +20,7 @@
  *
  * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
- * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * the 'license.txt' file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
@@ -34,42 +34,42 @@
  *
  */
 
+require_once(__CA_APP_DIR__.'/helpers/errorHelpers.php');
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
 
-require_once(__CA_LIB_DIR__."/core/Utils/Debug.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Translate.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Cache.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Registry.php");
-require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php"); // is used in utilityHelpers
-require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-require_once(__CA_APP_DIR__."/helpers/initializeLocale.php");
+require_once(__CA_LIB_DIR__.'/core/Utils/Debug.php');
+require_once(__CA_LIB_DIR__.'/core/Zend/Translate.php');
+require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
+require_once(__CA_LIB_DIR__.'/core/Zend/Registry.php');
+require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php'); // is used in utilityHelpers
+require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/initializeLocale.php');
 
 if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	$g_ui_locale = $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'];
 	initializeLocale($g_ui_locale);
 }
 
-require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
-require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
-require_once(__CA_APP_DIR__."/helpers/clientServicesHelpers.php");
+require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
 
-require_once(__CA_LIB_DIR__."/core/ApplicationMonitor.php");
-require_once(__CA_LIB_DIR__."/core/BaseModel.php");
-require_once(__CA_LIB_DIR__."/core/Controller/AppController.php");
+require_once(__CA_LIB_DIR__.'/core/ApplicationMonitor.php');
+require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
 
-require_once(__CA_LIB_DIR__."/ca/MetaTagManager.php");
-require_once(__CA_LIB_DIR__."/ca/AssetLoadManager.php");
-require_once(__CA_LIB_DIR__."/ca/TooltipManager.php");
-require_once(__CA_LIB_DIR__."/ca/FooterManager.php");
+require_once(__CA_LIB_DIR__.'/ca/MetaTagManager.php');
+require_once(__CA_LIB_DIR__.'/ca/AssetLoadManager.php');
+require_once(__CA_LIB_DIR__.'/ca/TooltipManager.php');
+require_once(__CA_LIB_DIR__.'/ca/FooterManager.php');
 
-require_once(__CA_LIB_DIR__."/ca/AppNavigation.php");
+require_once(__CA_LIB_DIR__.'/ca/AppNavigation.php');
 
-require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+require_once(__CA_LIB_DIR__.'/core/Controller/ActionController.php');
 
-require_once(__CA_MODELS_DIR__."/ca_acl.php");
+require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
-require_once(__CA_LIB_DIR__."/core/Cache/ExternalCache.php");
-require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php");
+require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
+require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
 
 require_once(__CA_APP_DIR__.'/lib/ca/GarbageCollection.php');
 

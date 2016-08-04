@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/client/library/CheckInController.php :
+ * app/controllers/library/CheckInController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

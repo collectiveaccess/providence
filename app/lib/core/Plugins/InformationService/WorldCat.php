@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/WLPlugInformationServiceWorldCat.php : 
+ * app/lib/core/Plugins/InformationService/WLPlugInformationServiceWorldCat.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,13 +32,12 @@
 
   /**
     *
-    */ 
-    
-    
+    */
+
+
 require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Feed.php");
-require_once(__CA_LIB_DIR__."/vendor/autoload.php");
 
 use Guzzle\Http\Client;
 
@@ -105,37 +104,37 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	 * Plugin settings
 	 */
 	static $s_settings;
-	
+
 	/**
 	 * WorldCat web API search url
 	 */
 	static $s_worldcat_search_url = "http://www.worldcat.org/webservices/catalog/search/worldcat/opensearch";
-	
+
 	/**
 	 * WorldCat web API catalog detail url
 	 */
 	static $s_worldcat_detail_url = "http://www.worldcat.org/webservices/catalog/content/";
-	
+
 	/**
 	 * WorldCat Z39.50 host
 	 */
 	static $s_worldcat_z3950_host = "zcat.oclc.org:210/OLUCWorldCat";
-	
+
 	# ------------------------------------------------
 	/**
 	 *
 	 */
 	public function __construct() {
 		global $g_information_service_settings_WorldCat;
-		
+
 		WLPlugInformationServiceWorldCat::$s_settings = $g_information_service_settings_WorldCat;
 		parent::__construct();
 		$this->info['NAME'] = 'WorldCat';
-		
+
 		$this->description = _t('Provides access to WorldCat data');
 	}
 	# ------------------------------------------------
-	/** 
+	/**
 	 * Get all settings settings defined by this plugin as an array
 	 *
 	 * @return array
@@ -146,8 +145,8 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
-	/** 
-	 * Perform lookup on WorldCat data service. Z39.50 is used if the PHP YAZ Z39.50 client is installed on the server and a login is configured in 
+	/**
+	 * Perform lookup on WorldCat data service. Z39.50 is used if the PHP YAZ Z39.50 client is installed on the server and a login is configured in
 	 * either the plugin settings passed or in the $pa_settings parameter or in app.conf. The WorldCat search API will be used a web service API key
 	 * is configured and either PHP YAZ is unavailable or a Z39.50 login is not configured.
 	 *
@@ -159,34 +158,34 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	 *		password = WorldCAt Z39.50 password. [Default is the password configured in worldcat_z39.50_password in app.conf]
 	 *		start = Zero-based record number to begin returned result set at [Default is 0]
 	 *		count = Maximum number of records to return [Default is 25]
-	 *		
+	 *
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		$va_config = $this->_getConfiguration($pa_settings, $pa_options);
-		
+
 		$vn_start = caGetOption('start', $pa_options, 0);
 		$vn_count = caGetOption('count', $pa_options, 25);
 		if ($vn_count <= 0) { $vn_count = 25; }
-		
+
 		if ($va_config['user'] && $va_config['z39IsAvailable']) {
 			$r_conn = yaz_connect(WLPlugInformationServiceWorldCat::$s_worldcat_z3950_host, array('user' => $va_config['user'], 'password' => $va_config['password']));
-			
+
 			yaz_syntax($r_conn, "usmarc");
 			yaz_range($r_conn, $vn_start + 1, $vn_start + $vn_count);
 			yaz_search($r_conn, "rpn", '"'.str_replace('"','', $ps_search).'"');
 			yaz_wait();
-			
+
 			$va_data = array('count' => yaz_hits($r_conn), 'results' => array());
-			
+
 			for ($vn_index = $vn_start + 1; $vn_index <= $vn_start + $vn_count; $vn_index++) {
 				$vs_data = yaz_record($r_conn, $vn_index, "xml; charset=marc-8,utf-8");
 				if (empty($vs_data)) continue;
-				
+
 				$o_row = DomDocument::loadXML($vs_data);
 				$o_xpath = new DOMXPath($o_row);
 				$o_xpath->registerNamespace('n', 'http://www.loc.gov/MARC21/slim');
-				
+
 				// Get title for display
 				$va_title = array();
 				$o_node_list = $o_xpath->query("//n:datafield[@tag='245']/n:subfield[@code='a' or @code='b']");
@@ -194,7 +193,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 					$va_title[] = trim((string)$o_node->nodeValue);
 				}
 				$vs_title = trim(str_replace("/", " ", join(" ", $va_title)));
-				
+
 				// Get author for display
 				$va_author = array();
 				$o_node_list = $o_xpath->query("//n:datafield[@tag='100']/n:subfield[@code='a']");
@@ -202,7 +201,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 					$va_author[] = trim((string)$o_node->nodeValue);
 				}
 				$vs_author = trim(join(" ", $va_author));
-				
+
 				// Get OCLC number
 				$o_node_list = $o_xpath->query("//n:datafield[@tag='035']/n:subfield[@code='a']");
 				$vs_oclc_num = '';
@@ -210,7 +209,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 					$vs_oclc_num = $o_node->nodeValue;
 					break;
 				}
-				
+
 				$va_data['results'][] = array(
 					'label' => ($vs_author ? "{$vs_author} " : '')."<em>{$vs_title}</em>.",
 					'url' => $vs_oclc_num,
@@ -245,7 +244,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 				$vs_url = $o_entry->id();
 				$va_tmp = explode("/", $vs_url);
 				$vs_id = array_pop($va_tmp);
-			
+
 				$va_data['results'][] = array(
 					'label' => ($vs_author ? "{$vs_author} " : '')."<em>{$vs_title}</em>.",
 					'url' => $vs_url,
@@ -253,12 +252,12 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 				);
 			}
 		}
-		
+
 		return $va_data;
 	}
 	# ------------------------------------------------
-	/** 
-	 * Fetch details about a specific item from WorldCat data service 
+	/**
+	 * Fetch details about a specific item from WorldCat data service
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
@@ -271,29 +270,29 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url, $pa_options=null) {
 		$va_config = $this->_getConfiguration($pa_settings, $pa_options);
-		
+
 		$va_tmp = explode("/", $ps_url);
 		$vn_worldcat_id = array_pop($va_tmp);
-		
+
 		$va_data = array();
-		
+
 		if ($va_config['user'] && $va_config['z39IsAvailable']) {
 			$r_conn = yaz_connect(WLPlugInformationServiceWorldCat::$s_worldcat_z3950_host, array('user' => $va_config['user'], 'password' => $va_config['password']));
-			
+
 			yaz_syntax($r_conn, "usmarc");
 			yaz_range($r_conn, $vn_start + 1, $vn_start + $vn_count);
 			yaz_search($r_conn, "rpn", '@attr 1=12 @attr 4=2 "'.str_replace('"','', $vn_worldcat_id).'"');
 			yaz_wait();
-			
+
 			$vs_data = yaz_record($r_conn, 1, "xml; charset=marc-8,utf-8");
 		} else {
 			$o_client = new Client(WLPlugInformationServiceWorldCat::$s_worldcat_detail_url);
-	
+
 			try {
 				if (!$va_config['curlIsAvailable']) {
 					throw new Exception(_t('CURL is required for WorldCat web API usage but not available on this server'));
 				}
-				
+
 				if (!$va_config['APIKey']) {
 					if (!$va_config['z39IsAvailable']) {
 						throw new Exception(_t('Neither Z39.50 client is installed nor is WorldCat web API key configured'));
@@ -303,7 +302,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 				}
 				// Create a request
 				$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$va_config['APIKey']);
-	
+
 				// Send the request and get the response
 				$o_response = $o_request->send();
 				$vs_data = (string)$o_response->getBody();
@@ -311,7 +310,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 				return array('display' => _t('WorldCat data could not be loaded: %1', $e->getMessage()));
 			}
 		}
-		
+
 		try {
 			if (!$vs_data) {
 				throw new Exception("No data returned");
@@ -321,7 +320,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 		} catch (Exception $e) {
 			return array('display' => _t('WorldCat data could not be parsed: %1', $e->getMessage()));
 		}
-		
+
 		switch($pa_settings['detailStyle']) {
 			case 'labels':
 			default:
@@ -334,20 +333,20 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 				$vs_template = $pa_settings['detailXSLTemplate'];
 				break;
 		}
-		
+
 		try {
 			$xsl = new DOMDocument;
 			$xsl->loadXML($vs_template);
 		} catch (Exception $e) {
 			return array('display' => _t('WorldCat detail display template could not be parsed: %1', $e->getMessage()));
 		}
-		
+
 		try {
 			$proc = new XSLTProcessor;
 			$proc->importStyleSheet($xsl);
 
 			$vs_output= $proc->transformToXML($xml);
-		
+
 			$va_data = array('display' => $vs_output);
 		} catch (Exception $e) {
 			return array('display' => _t('WorldCat detail display template could not be created: %1', $e->getMessage()));
@@ -361,22 +360,22 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	private function _getConfiguration($pa_settings, $pa_options) {
 		$vs_api_key = $vs_z3950_user = $vs_z3950_password = null;
 		$o_config = Configuration::load();
-		
+
 		if (!($vs_api_key = caGetOption('APIKey', $pa_settings, null)) && !($vs_api_key = caGetOption('APIKey', $pa_options, null))) {
 			$vs_api_key = $o_config->get('worldcat_api_key');
 		}
-		
+
 		if (!($vs_z3950_user = caGetOption('user', $pa_settings, null)) && !($vs_z3950_user = caGetOption('user', $pa_options, null))) {
 			$vs_z3950_user = $o_config->get('worldcat_z39.50_user');
 		}
-		
+
 		if (!($vs_z3950_password = caGetOption('password', $pa_settings, null)) && !($vs_z3950_password = caGetOption('password', $pa_options, null))) {
 			$vs_z3950_password = $o_config->get('worldcat_z39.50_password');
 		}
-		
+
 		// Is YAZ available? If it isn't then no Z39.50 for us.
 		$vb_z3950_available = function_exists("yaz_connect");
-		
+
 		return array(
 			'APIKey' => $vs_api_key, 'user' => $vs_z3950_user, 'password' => $vs_z3950_password, 'z39IsAvailable' => $vb_z3950_available, 'curlIsAvailable' => caCurlIsAvailable()
 		);

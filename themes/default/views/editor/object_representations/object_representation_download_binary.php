@@ -45,4 +45,3 @@
 		ob_flush();
 		flush();
 	}
-	exit();

@@ -34,6 +34,7 @@ require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
 require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
 
 abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
+	# --------------------------------------------------------------------------------
     private $opo_auth_config;
     private $opo_ldap;
     # --------------------------------------------------------------------------------
@@ -252,6 +253,8 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
         // apply filter to bind, if there is one
         if (strlen($vs_bind_rdn_filter) > 0) {
+			$this->bindServiceAccount();
+
             $vo_dn_search_results = ldap_search($this->getLinkIdentifier(), $vs_base_dn, $vs_bind_rdn_filter);
             $va_dn_search_results = ldap_get_entries($this->getLinkIdentifier(), $vo_dn_search_results);
             if (isset($va_dn_search_results[0]['dn'])) {
@@ -305,6 +308,17 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
             }
         }
     }
+
+	protected function bindServiceAccount() {
+		if(
+			($vs_service_acct_rdn = $this->getConfigValue('ldap_service_account_rdn')) &&
+			($vs_service_acct_pwd = $this->getConfigValue('ldap_service_account_password'))
+		) {
+			return @ldap_bind($this->getLinkIdentifier(), $vs_service_acct_rdn, $vs_service_acct_pwd);
+		}
+
+		return false;
+	}
 }
 
 class LDAPException extends Exception {}

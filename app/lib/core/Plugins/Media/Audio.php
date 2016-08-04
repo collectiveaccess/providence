@@ -44,6 +44,7 @@ include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/getid3/write.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+include_once(__CA_APP_DIR__."/helpers/avHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/OggParser.php");
 
@@ -155,7 +156,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->ops_mediainfo_path = caGetExternalApplicationPath('mediainfo');
 		$this->opb_mediainfo_available = caMediaInfoInstalled();
 
-		$this->opb_ffmpeg_available = caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg);
+		$this->opb_ffmpeg_available = caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg);
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;

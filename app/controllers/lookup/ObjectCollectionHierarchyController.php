@@ -132,7 +132,8 @@
 				}
 				
 				if (!$pb_exact) {
-					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
+					$o_search_config = caGetSearchConfig();
+					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!u", " ", $ps_query));
 				}
 				
 				$qr_res = $o_object_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_objects.idno_sort'));
@@ -355,8 +356,12 @@
 						}
 						
 						if ($t_item->tableName() == 'ca_collections') {
+							$va_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
+							
+							
 							$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
-							$va_cross_table_items = $t_item->getRelatedItems('ca_objects', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type)));
+							$va_cross_table_items = $t_item->getRelatedItems('ca_objects', array('sort' => $va_sorts, 'restrictToRelationshipTypes' => array($vs_object_collection_rel_type)));
+							
 							$vn_item_count += sizeof($va_cross_table_items);
 							$va_ids = array();
 							foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
@@ -390,30 +395,6 @@
 						
 						$va_items_for_locale = caExtractValuesByUserLocale($va_items);
 						$vs_rank_fld = $t_item->getProperty('RANK');
-					
-						$va_sorted_items = array();
-						foreach($va_items_for_locale as $vn_id => $va_node) {
-							$vs_key = caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name']))))."_".$vn_id;
-					
-							if (isset($va_node['sort']) && $va_node['sort']) {
-								$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
-							} else {
-								if ($vs_rank_fld && ($vs_rank = (int)sprintf("%08d", $va_node[$vs_rank_fld]))) {
-									$va_sorted_items[$vs_rank][$vs_key] = $va_node;
-								} else {
-									$va_sorted_items[$vs_key][$vs_key] = $va_node;
-								}
-							}
-						}
-						ksort($va_sorted_items);
-						if ($vs_sort_dir == 'desc') { $va_sorted_items = array_reverse($va_sorted_items); }
-						$va_items_for_locale = array();
-					
-						foreach($va_sorted_items as $vs_k => $va_v) {
-							ksort($va_v);
-							if ($vs_sort_dir == 'desc') { $va_v = array_reverse($va_v); }
-							$va_items_for_locale = array_merge($va_items_for_locale, $va_v);
-						}
 					}
 				}
 				
@@ -454,10 +435,12 @@
  			
  			// get collections
  			if ($vs_table == 'ca_objects') {
+ 				$o_config = Configuration::load();
+ 				$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
  				
  				$t_item->load($vn_top_id);
  				// try to pull related collections - the first one is considered the parent
- 				$va_cross_table_items = $t_item->getRelatedItems('ca_collections');
+ 				$va_cross_table_items = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type)));
  				
  				if(is_array($va_cross_table_items)) {
  					$t_collection = new ca_collections();

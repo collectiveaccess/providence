@@ -79,7 +79,7 @@
  			$t_group->set('code', $this->request->user->getUserID().'_'.substr(preg_replace('![^A-Za-z0-9]+!', '_', $_REQUEST['name']), 0, 10));
 
  			if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
- 				$this->request->addActionError(new Error(1050, _t("Password does not match confirmation. Please try again."), "manage/GroupsController->Save()", '', false, false), 'field_password');
+ 				$this->request->addActionError(new ApplicationError(1050, _t("Password does not match confirmation. Please try again."), "manage/GroupsController->Save()", '', false, false), 'field_password');
  			} 
  			
  			if($this->request->numActionErrors() == 0) {

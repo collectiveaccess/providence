@@ -50,7 +50,7 @@ class ItemService extends BaseJSONService {
 				if($this->opn_id) {	// we allow that this might be a string here for idno-based fetching
 					if(sizeof($this->getRequestBodyArray())==0) {
 						// allow different format specifications
-						if($vs_format = $this->opo_request->getParameter("format",pString)) {
+						if($vs_format = $this->opo_request->getParameter("format", pString)) {
 							switch($vs_format) {
 								// this one is tailored towards editing/adding the item
 								// later, using the PUT variant of this service
@@ -151,6 +151,7 @@ class ItemService extends BaseJSONService {
 		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
+
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
 		$o_dm = Datamodel::load();
@@ -159,14 +160,19 @@ class ItemService extends BaseJSONService {
 
 		$va_return = array();
 
+		// get options
+		$va_get_options = $this->opo_request->getParameter('getOptions', pArray);
+		if(!is_array($va_get_options)) { $va_get_options = array(); }
+		$va_get_options = array_merge(array("returnWithStructure" => true, "returnAllLocales" => true), $va_get_options);
+
 		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
 		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
 		if ($vs_template) {
-			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id), $va_get_options);
 		}
 
 		// labels
-		$va_labels = $t_instance->get($this->ops_table.".preferred_labels", array("returnWithStructure" => true, "returnAllLocales" => true));
+		$va_labels = $t_instance->get($this->ops_table.".preferred_labels", $va_get_options);
 		$va_labels = end($va_labels);
 		if(is_array($va_labels)) {
 			foreach ($va_labels as $vn_locale_id => $va_labels_by_locale) {
@@ -176,7 +182,7 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		$va_labels = $t_instance->get($this->ops_table.".nonpreferred_labels", array("returnWithStructure" => true, "returnAllLocales" => true));
+		$va_labels = $t_instance->get($this->ops_table.".nonpreferred_labels", $va_get_options);
 		$va_labels = end($va_labels);
 		if(is_array($va_labels)) {
 			foreach($va_labels as $vn_locale_id => $va_labels_by_locale) {
@@ -190,6 +196,8 @@ class ItemService extends BaseJSONService {
 		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info) {
 			if (($this->ops_table == 'ca_object_representations') && ($vs_field_name == 'media_metadata')) { continue; }
 			$vs_list = null;
+
+			// this is way to complicated. @todo: get() handles all of that now I think
 			if(!is_null($vs_val = $t_instance->get($vs_field_name))) {
 				$va_return[$vs_field_name] = array(
 					"value" => $vs_val,
@@ -248,7 +256,7 @@ class ItemService extends BaseJSONService {
 		foreach($va_codes as $vs_code) {
 			if($va_vals = $t_instance->get(
 				$this->ops_table.".".$vs_code,
-				array("returnWithStructure" => true, "returnAllLocales" => true, "convertCodesToDisplayText" => true))
+				array_merge(array("convertCodesToDisplayText" => true), $va_get_options))
 			) {
 				$va_vals_by_locale = end($va_vals);
 				$va_attribute_values = array();
@@ -294,7 +302,7 @@ class ItemService extends BaseJSONService {
 			// end set-related hacks
 			//
 
-			$va_related_items = $t_instance->get($vs_get_spec, array("returnWithStructure" => true));
+			$va_related_items = $t_instance->get($vs_get_spec, $va_get_options);
 			$t_rel_instance = $o_dm->getInstance($vs_rel_table);
 
 			if(is_array($va_related_items) && sizeof($va_related_items)>0) {
@@ -740,6 +748,10 @@ class ItemService extends BaseJSONService {
 				}
 				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
 			}
+		}
+
+		if(!$t_instance->getPreferredLabelCount()) {
+			$t_instance->addDefaultLabel();
 		}
 
 		// nonpreferred labels

@@ -5,25 +5,18 @@ getid3 media format metadata parser library (http://getid3.org)
 Drupal Unicode functions (http://www.drupal.org)
 Archive_TAR PEAR module (http://pear.php.net)
 Zend Framework (http://framework.zend.com)
-SWFObject (http://code.google.com/p/swfobject)
 DejaVu Fonts (http://dejavu.sourceforge.net/)
 VideoJS (http://videojs.com/)
 CKEditor (http://www.ckeditor.org)
 HTMLpurifier (http://htmlpurifier.org)
 PHP QR Code (http://phpqrcode.sourceforge.net)
-HTML2PDF (http://html2pdf.fr)
 D3 (http://d3js.org/)
-DocumentCloud Document Viewer (https://github.com/documentcloud/document-viewer)
 jQuery Tileviewer (https://sites.google.com/site/tileviewer/)
 MediaElement (http://mediaelementjs.com)
 PHPExcel (http://phpexcel.codeplex.com)
 DOMPDF (http://code.google.com/p/dompdf/)
 File_MARC PEAR module (http://pear.php.net/package/File_MARC/)
-JSC3D (https://code.google.com/p/jsc3d/)
 Vimeo Advanced API PHP Library (https://github.com/vimeo/vimeo-php-lib)
 PasswordHash (https://crackstation.net/hashing-security.htm)
-
-CollectiveAccess uses icons from The Noun Project (http://thenounproject.com) covered 
-under the Creative Commons - Attribution (CC BY 3.0) license.
 
 Thank you for sharing with us!

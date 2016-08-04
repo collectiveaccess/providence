@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
@@ -115,7 +115,12 @@ class Session {
 	 */
 	public function __destruct() {
 		if($this->getSessionID() && is_array($this->opa_session_vars) && (sizeof($this->opa_session_vars) > 0)) {
-			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', 0);
+			if(isset($this->opa_session_vars['session_end_timestamp'])) {
+				$vn_session_lifetime = abs(((int) $this->opa_session_vars['session_end_timestamp']) - time());
+			} else {
+				$vn_session_lifetime = 24 * 60 * 60;
+			}
+			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', $vn_session_lifetime);
 		}
 	}
 	# ----------------------------------------
@@ -142,6 +147,7 @@ class Session {
 	 * These tokens usually have a much shorter lifetime than the session.
 	 * @param bool $pb_dont_create_new_token dont create new auth token
 	 * @return string|bool The token, false if
+	 * @throws Exception
 	 */
 	public function getServiceAuthToken($pb_dont_create_new_token=false) {
 		if(!$this->getSessionID()) { return false; }
@@ -153,7 +159,13 @@ class Session {
 		if($pb_dont_create_new_token) { return false; }
 
 		// generate new token
-		$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		if(function_exists('mcrypt_create_iv')) {
+			$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		} else if(function_exists('openssl_random_pseudo_bytes')) {
+			$vs_token = hash('sha256', openssl_random_pseudo_bytes(32));
+		} else {
+			throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
 		ExternalCache::save($this->getSessionID(), $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);

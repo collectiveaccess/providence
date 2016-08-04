@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2012 Whirl-i-Gig
+ * Copyright 2006-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,7 @@ include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
 include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/Error.php");
+include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 	
 	class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueueHandler {
@@ -57,7 +57,7 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 		 *
 		 */
 		public function __construct() {
-			$this->error = new Error();
+			$this->error = new ApplicationError();
 			$this->error->setErrorOutput(0);
 		}
 		# --------------------------------------------------------------------------------
@@ -450,16 +450,16 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 				if (method_exists($t_instance, "useBlobAsMediaField")) {	// support for attributes - force field to be FT_MEDIA
 					$t_instance->useBlobAsMediaField(true); 
 				}
-				$md = $t_instance->get($vs_field);
-				$va_merged_media_desc = is_array($md) ? $md : array();
+				$md = $t_instance->get($vs_field, array('returnWithStructure' => true, 'returnAsArray' => true));
+				$va_merged_media_desc = is_array($md) ? array_shift($md) : array();
 				foreach($media_desc as $vs_k => $va_v) {
 					$va_merged_media_desc[$vs_k] = $va_v;
 				}
+				
 				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->setMediaInfo($vs_field, $va_merged_media_desc);
 				
 				$t_instance->update();
-				
 				if ($t_instance->numErrors()) {
 					# get rid of files we just created
 					foreach($va_output_files as $vs_to_delete) {

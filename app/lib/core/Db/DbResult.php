@@ -786,4 +786,3 @@ class DbResult extends DbBase {
 		unset($this->opo_db);
 	}
 }
-?>

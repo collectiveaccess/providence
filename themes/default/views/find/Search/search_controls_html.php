@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,8 +52,7 @@
 			print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 				print caFormControlBox(
 					'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div>'.
-						caJSButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'submitSearch', array(), 
-						array('href' => '#', 'onclick' => 'caCloseBrowser(); jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $this->request->getController(), 'Index', array('search' => '')).'" + escape(jQuery("#BasicSearchInput").attr("value"))); return false;')),
+						caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm'),
 					'<a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="button">'._t('Save search').' &rsaquo;</a>',
 					'<a href="#" id="browseToggle" class="form-button"></a>'
 				); 

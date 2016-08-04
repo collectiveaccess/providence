@@ -6,7 +6,8 @@
     <locale lang="en" country="US">English (US)</locale>
     <locale lang="en" country="CA" dontUseForCataloguing="1">English (Canadian)</locale>
     <locale lang="en" country="AU" dontUseForCataloguing="1">English (Australian)</locale>
-    <locale lang="de" country="DE" dontUseForCataloguing="1">Deutsch</locale>
+    <locale lang="de" country="DE" dontUseForCataloguing="1">Deutsch (Deutschland)</locale>
+    <locale lang="de" country="AT" dontUseForCataloguing="1">Deutsch (Österreich)</locale>
     <locale lang="fr" country="FR" dontUseForCataloguing="1">Français</locale>
     <locale lang="fr" country="CA" dontUseForCataloguing="1">Français (Canadien)</locale>
     <locale lang="cs" country="CZ" dontUseForCataloguing="1">Czech</locale>
@@ -5176,6 +5177,60 @@
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+
+    <relationshipTable name="ca_occurrences_x_collections">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>est lié à</typename>
+              <typename_reverse>est lié à</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>är relaterad till</typename>
+              <typename_reverse>är relaterad till</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft />
+          <subTypeRight />
+        </type>
+      </types>
+    </relationshipTable>
+
+    <relationshipTable name="ca_object_lots_x_vocabulary_terms">
+      <types>
+        <type code="subject" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>has subject</typename>
+              <typename_reverse>is subject</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>has subject</typename>
+              <typename_reverse>is subject</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>a pour sujet</typename>
+              <typename_reverse>est le sujet</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>har ämnet</typename>
+              <typename_reverse>är ämnet</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft />
+          <subTypeRight />
         </type>
       </types>
     </relationshipTable>

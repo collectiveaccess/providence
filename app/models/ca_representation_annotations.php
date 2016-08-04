@@ -133,6 +133,13 @@ BaseModel::$s_ca_models_definitions['ca_representation_annotations'] = array(
 				),
 				'LIST' => 'workflow_statuses',
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the annotation .')
+		),
+		'view_count' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
  	)
 );
@@ -274,12 +281,13 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		parent::__construct($pn_id);	# call superclass constructor
 		
  		$o_config = $this->getAppConfig();
- 		$this->opo_type_config = Configuration::load($o_config->get('annotation_type_config'));
+ 		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects table'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
@@ -356,6 +364,10 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	 */
 	public function update($pa_options=null) {
 		$this->set('type_code', $vs_type = $this->getAnnotationType());
+		if (!$this->opo_annotations_properties) {
+			$this->postError(1101, _t('No type code set'), 'ca_representation_annotations->update');
+			return false;
+		}
 		if (!$this->opo_annotations_properties->validate()) {
 			$this->errors = $this->opo_annotations_properties->errors;
 			return false;
@@ -471,7 +483,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);
 		
-		$pa_attributes['name'] = $pa_attributes['id'] = "{$ps_placement_code}{$ps_form_name}{$ps_property}";
+		$pa_attributes['name'] = "{$ps_placement_code}{$ps_form_name}{$ps_property}";
+		$pa_attributes['id'] = $ps_property;
  		$o_view->setVar('form_element', $this->getPropertyHTMLFormElement($ps_property, $pa_attributes));
  		
 		return $o_view->render('ca_representation_annotation_properties.php');

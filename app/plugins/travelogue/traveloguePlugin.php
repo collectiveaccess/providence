@@ -26,7 +26,6 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
- 	require_once(__CA_APP_DIR__.'/helpers/clientServicesHelpers.php');
  	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
  	require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
  	require_once(__CA_LIB_DIR__.'/core/Db.php');
@@ -60,7 +59,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Perform client services-related periodic tasks
+		 * Perform periodic tasks
 		 *
 		 * @return boolean true because otherwise it disables subsequent plugins
 		 */

@@ -262,33 +262,40 @@ class ca_search_indexing_queue extends BaseModel {
 	}
 	# ------------------------------------------------------
 	static public function lockAcquire() {
-		if((function_exists('sem_get') && caGetOSFamily() == OS_POSIX)) {
-			if(!self::$s_lock_resource) {
-				self::$s_lock_resource = sem_get(ftok(__FILE__,'C'));
-			}
+		$vs_temp_file = caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock';
 
-			return sem_acquire(self::$s_lock_resource);
-		} else {
-			$vs_temp_file = caGetTempDirPath() . PATH_SEPARATOR . 'search_indexing_queue.lock';
+		// @todo: is fopen(... , 'x') thread safe? or at least "process safe"?
+		$vb_got_lock = (bool) (self::$s_lock_resource = @fopen($vs_temp_file, 'x'));
 
-			return (bool) (self::$s_lock_resource = @fopen($vs_temp_file, 'x'));
+		if($vb_got_lock) {
+			// make absolutely sure the lock is released, even if a PHP error occurrs during script execution
+			register_shutdown_function('ca_search_indexing_queue::lockRelease');
 		}
+
+		// if we couldn't get the lock, check if the lock file is old (i.e. older than 5 minutes)
+		// if that's the case, it's likely something went wrong and the lock hangs.
+		// so we just kill it and try to re-acquire
+		if(!$vb_got_lock && file_exists($vs_temp_file)) {
+			if((time() - caGetFileMTime($vs_temp_file)) > 5*60) {
+				self::lockRelease();
+				return self::lockAcquire();
+			}
+		}
+
+		return $vb_got_lock;
 	}
 	# ------------------------------------------------------
 	static public function lockRelease() {
-		if((function_exists('sem_get') && caGetOSFamily() == OS_POSIX)) {
-
-			if (!self::$s_lock_resource) {
-				self::$s_lock_resource = sem_get(ftok(__FILE__, 'CASearchIndexingQueue'));
-			}
-
-			sem_release(self::$s_lock_resource);
-		} else {
-			if(is_resource(self::$s_lock_resource)) {
-				@fclose(self::$s_lock_resource);
-				@unlink(caGetTempDirPath() . PATH_SEPARATOR . 'search_indexing_queue.lock');
-			}
+		if(is_resource(self::$s_lock_resource)) {
+			@fclose(self::$s_lock_resource);
 		}
+
+		@unlink(caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock');
+	}
+	# ------------------------------------------------------
+	static public function flush() {
+		$o_db = new Db();
+		$o_db->query("DELETE FROM ca_search_indexing_queue");
 	}
 	# ------------------------------------------------------
 }

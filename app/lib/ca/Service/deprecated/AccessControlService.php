@@ -192,8 +192,7 @@ class AccessControlService extends BaseService {
 	 * @return boolean 
 	 */
 	public function exists($user_name){
-		$t_user = new ca_users();
-		return $t_user->exists($user_name);
+		return ca_users::exists($user_name);
 	}
 	# -------------------------------------------------------
 	/**

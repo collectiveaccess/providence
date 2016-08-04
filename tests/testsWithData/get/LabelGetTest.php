@@ -89,6 +89,10 @@ class LabelGetTest extends BaseTestWithData {
 		// it should get the en_US title here because at this point this is our "UI locale"
 		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
 		$this->assertEquals('My test image', $vm_ret);
+		
+		// it should get the en_US title here because at this point this is our "UI locale"
+		$vm_ret = $this->opt_object->get('ca_object_labels.name');
+		$this->assertEquals('My test image', $vm_ret);
 
 		// extract de_DE locale from array
 		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));

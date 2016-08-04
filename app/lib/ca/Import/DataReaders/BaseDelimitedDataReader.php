@@ -106,7 +106,8 @@ class BaseDelimitedDataReader extends BaseDataReader {
 			$r_f = fopen($ps_source, 'rb');
 			$this->opn_num_rows = 0;
 			while (!feof($r_f)) {
-				$this->opn_num_rows += substr_count(fread($r_f, 8192), "\n");
+				$vs_buf = fread($r_f, 8192);
+				$this->opn_num_rows += (substr_count($vs_buf, "\n") + (substr_count($vs_buf, "\r")));
 			}
 			fclose($r_f);
 			

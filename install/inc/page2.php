@@ -119,6 +119,9 @@
 				caIncrementProgress($vn_progress, "Setting up hierarchies");
 				$vo_installer->processMiscHierarchicalSetup();
 
+				caIncrementProgress($vn_progress, "Performing post install tasks");
+				$vo_installer->performPostInstallTasks();
+
 				caIncrementProgress(100, "Installation complete");
 
 				$vs_time =  "(Installation took ".$t_total->getTime(0)." seconds)";

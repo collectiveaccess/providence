@@ -85,7 +85,7 @@
 							if($va_comment['user_id']){
 								print $va_comment['fname']." ".$va_comment['lname']."<br/>".$va_comment['user_email'];
 							}else{
-								print $va_comment['name']."<br/>".$va_comment['user_email'];
+								print $va_comment['name']."<br/>".$va_comment['email'];
 							}
 ?>
 							</div>

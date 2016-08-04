@@ -122,7 +122,7 @@ class DbBase {
 	 * @param string $ps_context
 	 */
 	function postError($pn_num, $ps_message, $ps_context, $ps_source='') {
-		$o_error = new Error();
+		$o_error = new ApplicationError();
 		$o_error->setErrorOutput($this->opb_die_on_error);
 		$o_error->setHaltOnError($this->opb_die_on_error);
 		$o_error->setError($pn_num, $ps_message, $ps_context, $ps_source);

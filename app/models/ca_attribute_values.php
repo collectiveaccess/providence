@@ -256,6 +256,7 @@ class ca_attribute_values extends BaseModel {
 		$o_attr_value = Attribute::getValueInstance($pa_element_info['datatype']);
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
 		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
+		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
 		
 		if (is_array($va_values)) {
 			$this->useBlobAsFileField(false);

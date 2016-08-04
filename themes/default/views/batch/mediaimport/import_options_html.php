@@ -79,7 +79,8 @@
 			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
 			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 
-			openDirectoryIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
+			openDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+			disabledDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__, array('class' => 'disabled')); ?>",
 
 			folderIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/folder_small.png" border="0" title="Folder" style="margin-right: 7px;"/>',
 			fileIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/file_small.png" border="0" title="File" style="margin-right: 7px;"/>',
@@ -359,6 +360,8 @@
 								<td class='formLabel'>
 									<?php
 									print $this->getVar('match_mode');
+									print "\n<br/>\n";
+									print _t('where identifier %1 value', $this->getVar('match_type'));
 									?>
 								</td>
 								<td class='formLabel'>

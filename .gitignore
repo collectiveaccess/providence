@@ -1,5 +1,5 @@
 /nbproject/*
-app/tmp/*
+/app/tmp/*
 app/conf/local/*
 setup.php
 /media/*
@@ -14,10 +14,10 @@ setup.php
 *.swp
 .vagrant/
 /import/*
-vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer/*
-app/lib/core/Parsers/dompdf/lib/fonts/*fm.php
-app/log/log*.txt
-themes/default/css/local.css
-themes/default/views/bundles/inspector_info.php
-support/scripts/*.php
-support/scripts/*.sh
+/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer/*
+/app/lib/core/Parsers/dompdf/lib/fonts/*fm.php
+/app/log/log*.txt
+/themes/default/css/local.css
+/themes/default/views/bundles/inspector_info.php
+/support/scripts/*.php
+/support/scripts/*.sh

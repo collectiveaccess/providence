@@ -27,4 +27,3 @@
  */
  
 	print json_encode($this->getVar('annotation_list'));
-?>

@@ -68,9 +68,9 @@ class RelatedAttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 						'description' => 'Bacon ipsum dolor amet turkey brisket hamburger drumstick pork belly beef flank ham tongue'
 					)
 				),
-				'coverageDates' => array(
+				'acquisition_date' => array(
 					array(
-						'coverageDates' => 'January 1985'
+						'acquisition_date' => 'January 1985'
 					)
 				),
 			)
@@ -98,8 +98,20 @@ class RelatedAttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 
 			'"Bacon ipsum"' => 1,
 			'ca_object_lots.description:"Bacon ipsum"' => 1,
-			'ca_object_lots.coverageDates:"1985"' => 1,
-			'ca_object_lots.coverageDates:"1984"' => 0,
+			'ca_object_lots.acquisition_date:"1985"' => 1,
+			'ca_object_lots.acquisition_date:"1984"' => 0,
+
+			'(ca_object_lots.description:"Bacon") AND (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.description:bacon) AND (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.acquisition_date:1985) AND (ca_object_lots.description:"Bacon")' => 1,
+			'(ca_object_lots.acquisition_date:1985) AND (ca_object_lots.description:bacon)' => 1,
+
+			'(ca_object_lots.description:"Bacon") OR (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.description:bacon) OR (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.acquisition_date:1985) OR (ca_object_lots.description:"Bacon")' => 1,
+			'(ca_object_lots.acquisition_date:1985) OR (ca_object_lots.description:bacon)' => 1,
+
+			'(ca_object_lots.type_id:1) AND (ca_object_lots.acquisition_date:1985)' => 0,
 		));
 	}
 	# -------------------------------------------------------

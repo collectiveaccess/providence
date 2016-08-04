@@ -345,7 +345,6 @@ class BaseXMLDataReader extends BaseDataReader {
 	public function valuesCanRepeat() {
 		return true;
 	}
-	
 	# -------------------------------------------------------
 	/**
 	 * Make default namespace explicit and do other adjustments such that reasonable

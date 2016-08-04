@@ -1,14 +1,14 @@
 #
 # Translators:
-# manders <martin.anders@muenchen.de>, 2013-2015
+# manders <martin.anders@muenchen.de>, 2013-2016
 # Peter B. <pb@das-werkstatt.com>, 2014-2015
-# Stefan K, 2014
+# Stefan K, 2014-2015
 msgid ""
 msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-23 09:11-0500\n"
-"PO-Revision-Date: 2015-11-17 08:29-0500\n"
+"PO-Revision-Date: 2016-02-22 12:59-0500\n"
 "Last-Translator: Stefan <stefan@whirl-i-gig.com>\n"
 "Language-Team: German (Germany) (http://www.transifex.com/collectiveaccess/collectiveaccess-providence/language/de_DE/)\n"
 "MIME-Version: 1.0\n"
@@ -296,11 +296,11 @@ msgstr "Fehler beim Erstellen des neuen Benutzers: %1"
 
 #: app/controllers/client/library/CheckOutController.php:210
 msgid "Created new client login for <em>%1</em>. Login name is <em>%2</em> and password is <em>%3</em>"
-msgstr ""
+msgstr "Neuer Benutzer angelegt für <em>%1</em>. Benutzername ist <em>%2</em> und das Passwort lautet <em>%3</em>"
 
 #: app/controllers/client/library/CheckOutController.php:228 app/controllers/client/library/OrderEditorController.php:282 app/controllers/client/orders/OrderEditorController.php:277
 msgid "Errors occurred when creating commerce transaction: %1"
-msgstr ""
+msgstr "Beim Erstellen der Transaktion ist ein Fehler aufgetreten: %1"
 
 #: app/controllers/client/library/CheckOutController.php:233 app/controllers/client/library/CheckOutController.php:234
 msgid "You must specify a client"
@@ -362,7 +362,7 @@ msgstr "Es gab Fehler beim Senden Ihrer Nachricht: Sie müssen einen Nachrichten
 
 #: app/controllers/client/library/OrderEditorController.php:357 app/controllers/client/orders/OrderEditorController.php:355
 msgid "You do not have access to this transaction"
-msgstr ""
+msgstr "Sie haben auf diese Transaktion keinen Zugriff"
 
 #: app/controllers/client/library/OrderEditorController.php:368 app/controllers/client/orders/OrderEditorController.php:366
 msgid "Order is already paid for"
@@ -410,7 +410,7 @@ msgstr "%1/%2 Seiten ausgewählt"
 
 #: app/controllers/editor/object_lots/ObjectLotEditorController.php:77
 msgid "Renumbered contents of lot"
-msgstr ""
+msgstr "Die Inhalte dieser Erwerbung wurden neu durchnummeriert"
 
 #: app/controllers/editor/object_lots/ObjectLotEditorController.php:92 app/controllers/editor/object_lots/ObjectLotEditorController.php:141 app/controllers/manage/sets/SetEditorController.php:171 app/controllers/manage/sets/SetEditorController.php:224
 msgid "No media is available for download"
@@ -549,12 +549,12 @@ msgstr "Orte"
 
 #: app/controllers/find/BrowseStorageLocationsController.php:85 app/controllers/find/SearchStorageLocationsAdvancedController.php:101 app/controllers/find/SearchStorageLocationsController.php:101 app/models/ca_storage_locations.php:43 app/conf/browse.conf:191 app/conf/browse.conf:394
 msgid "storage location"
-msgstr "Lagerplatz"
+msgstr "Standort"
 
 #: app/controllers/find/BrowseStorageLocationsController.php:85 app/controllers/find/SearchStorageLocationsAdvancedController.php:101 app/controllers/find/SearchStorageLocationsController.php:101 app/lib/core/Plugins/InformationService/CollectiveAccess.php:65 app/models/ca_bookmarks.php:71 app/models/ca_bundle_displays.php:91 app/models/ca_data_exporters.php:86 app/models/ca_data_importers.php:87 app/models/ca_editor_uis.php:90 app/models/ca_objects.php:175 app/models/ca_search_forms.php:98 app/models/ca_storage_locations.php:44 app/conf/browse.conf:192
 #: app/conf/browse.conf:395
 msgid "storage locations"
-msgstr "Lagerplätze"
+msgstr "Standorte"
 
 #: app/controllers/find/BrowseTourStopsController.php:84 app/controllers/find/SearchTourStopsAdvancedController.php:98 app/controllers/find/SearchTourStopsController.php:95 app/models/ca_tour_stops.php:45
 msgid "tour stop"
@@ -608,7 +608,7 @@ msgstr "Vorkommnisse"
 
 #: app/controllers/find/QuickSearchController.php:91 app/models/ca_set_items.php:71 app/models/ca_sets.php:95 app/models/ca_storage_locations.php:378 app/models/ca_storage_locations.php:390 app/conf/navigation.conf:2103 app/conf/user_pref_defs.conf:580 app/conf/user_pref_defs.conf:632 app/conf/user_pref_defs.conf:672 app/conf/user_pref_defs.conf:752
 msgid "Storage locations"
-msgstr "Lagerplätze"
+msgstr "Standorte"
 
 #: app/controllers/find/QuickSearchController.php:92 app/models/ca_set_items.php:73 app/models/ca_sets.php:97 app/widgets/recentChanges/recentChangesWidget.php:128 app/conf/navigation.conf:2270 app/conf/user_pref_defs.conf:581 app/conf/user_pref_defs.conf:673 app/conf/user_pref_defs.conf:897
 msgid "Loans"
@@ -793,7 +793,7 @@ msgstr "ERROR: Sie haben keinen Zugriff auf diesen Datensatz"
 
 #: app/controllers/lookup/IntrinsicController.php:55
 msgid "Invalid bundle name"
-msgstr ""
+msgstr "Ungültiger Bundle Name"
 
 #: app/controllers/lookup/ObjectCollectionHierarchyController.php:164 app/lib/ca/BaseLookupController.php:182
 msgid "No matches found for <em>%1</em>"
@@ -1169,7 +1169,7 @@ msgstr "Jetzt"
 
 #: app/helpers/displayHelpers.php:685
 msgid "Deaccessioned %1"
-msgstr ""
+msgstr "%1 deakzessioniert"
 
 #: app/helpers/displayHelpers.php:699 themes/default/views/library/dashboard/index_html.php:84
 msgid "Current"
@@ -1177,7 +1177,7 @@ msgstr "Derzeit"
 
 #: app/helpers/displayHelpers.php:706
 msgid "Location: %1"
-msgstr ""
+msgstr "Standort: %1"
 
 #: app/helpers/displayHelpers.php:767
 msgid "new screen"
@@ -1241,7 +1241,7 @@ msgstr "Typ ändern"
 
 #: app/helpers/displayHelpers.php:937 app/helpers/displayHelpers.php:1744
 msgid "Change Record Type"
-msgstr ""
+msgstr "Datensatztyp ändern"
 
 #: app/helpers/displayHelpers.php:958
 msgid "Create Child Record"
@@ -1249,7 +1249,7 @@ msgstr "Untergeordneten Datensatz anlegen"
 
 #: app/helpers/displayHelpers.php:965
 msgid "Create a child record under this one"
-msgstr ""
+msgstr "Untergeordneten Datensatz anlegen unter diesem anlegen"
 
 #: app/helpers/displayHelpers.php:983
 msgid "Duplicate this %1"
@@ -1257,7 +1257,7 @@ msgstr "%1 duplizieren"
 
 #: app/helpers/displayHelpers.php:990
 msgid "Download all media associated with objects in this lot"
-msgstr ""
+msgstr "Alle Medien, die mit Objekten in diesem Lot verknüpft sind, herunterladen"
 
 #: app/helpers/displayHelpers.php:998
 msgid "Download all media associated with records in this set"
@@ -1313,11 +1313,11 @@ msgstr "Zuletzt geändert am %1"
 
 #: app/helpers/displayHelpers.php:1060
 msgid "%1 problems require attention"
-msgstr ""
+msgstr "%1 Probleme erfordern Ihre Aufmerksamkeit"
 
 #: app/helpers/displayHelpers.php:1060
 msgid "%1 problem requires attention"
-msgstr ""
+msgstr "%1 Problem erfordert Ihre Aufmerksamkeit"
 
 #: app/helpers/displayHelpers.php:1075
 msgid "See more information about this record"
@@ -1325,15 +1325,15 @@ msgstr "Mehr Informationen zu diesem Datensatz anzeigen"
 
 #: app/helpers/displayHelpers.php:1096
 msgid "Will be related to %1"
-msgstr ""
+msgstr "Wird verknüpft mit %1"
 
 #: app/helpers/displayHelpers.php:1123
 msgid "Part of lot"
-msgstr ""
+msgstr "Teil von Lot"
 
 #: app/helpers/displayHelpers.php:1126
 msgid "Will be part of lot"
-msgstr ""
+msgstr "Wird Teil von Lot"
 
 #: app/helpers/displayHelpers.php:1140 app/helpers/displayHelpers.php:1142
 msgid "%1 component"
@@ -1345,7 +1345,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1144
 msgid "Has"
-msgstr ""
+msgstr "Hat"
 
 #: app/helpers/displayHelpers.php:1164
 msgid "Lot contains %1 component"
@@ -1389,7 +1389,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1273 themes/default/views/batch/mediaimport/batch_results_html.php:109 themes/default/views/manage/set_list_html.php:107
 msgid "Batch edit"
-msgstr ""
+msgstr "Stapelverarbeitung"
 
 #: app/helpers/displayHelpers.php:1276 app/helpers/displayHelpers.php:1347
 msgid "Number of items"
@@ -1405,7 +1405,7 @@ msgstr "Eigentümer"
 
 #: app/helpers/displayHelpers.php:1300
 msgid "Export this set of records"
-msgstr ""
+msgstr "Dieses Set an Datensätzen exportieren"
 
 #: app/helpers/displayHelpers.php:1307 app/helpers/displayHelpers.php:1606 themes/default/views/administrate/setup/Search/search_tools_html.php:43 themes/default/views/find/Search/search_tools_html.php:43
 msgid "Export"
@@ -1433,7 +1433,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1386
 msgid "Is a"
-msgstr ""
+msgstr "Ist ein/e"
 
 #: app/helpers/displayHelpers.php:1394 app/models/ca_metadata_elements.php:74 themes/default/views/administrate/setup/elements_list_html.php:55
 msgid "Element code"
@@ -1457,7 +1457,7 @@ msgstr "Ausgewählte Elemente"
 
 #: app/helpers/displayHelpers.php:1465 app/helpers/displayHelpers.php:1469
 msgid "Searches for"
-msgstr ""
+msgstr "Sucht nach"
 
 #: app/helpers/displayHelpers.php:1483
 msgid "Number of stops"
@@ -1492,7 +1492,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1537 app/models/ca_commerce_order_items.php:102
 msgid "Tax"
-msgstr ""
+msgstr "Steuer"
 
 #: app/helpers/displayHelpers.php:1539
 msgid "Addtl fees"
@@ -1500,7 +1500,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1540 themes/default/views/client/orders/list_orders_html.php:133 themes/default/views/client/orders/order_pdf_export_html.php:39
 msgid "Total"
-msgstr ""
+msgstr "Summe"
 
 #: app/helpers/displayHelpers.php:1552
 msgid "shipped %1"
@@ -2888,7 +2888,7 @@ msgstr ""
 
 #: app/helpers/htmlFormHelpers.php:422
 msgid "More..."
-msgstr ""
+msgstr "Mehr..."
 
 #: app/helpers/importHelpers.php:75
 msgid "[%2] Parents options invalid. Did you forget to pass a list? Parents list passed was: %1"
@@ -2956,19 +2956,19 @@ msgstr ""
 
 #: app/helpers/importHelpers.php:943
 msgid "Errors"
-msgstr ""
+msgstr "Fehler"
 
 #: app/helpers/importHelpers.php:944
 msgid "Warnings"
-msgstr ""
+msgstr "Warnungen"
 
 #: app/helpers/importHelpers.php:945
 msgid "Alerts"
-msgstr ""
+msgstr "Störmeldungen"
 
 #: app/helpers/importHelpers.php:946
 msgid "Infomational messages"
-msgstr ""
+msgstr "Informationen"
 
 #: app/helpers/importHelpers.php:947
 msgid "Debugging messages"
@@ -3032,15 +3032,15 @@ msgstr "Sekunden"
 
 #: app/helpers/utilityHelpers.php:2522
 msgid "%1 is not a valid unit of length [%2]"
-msgstr ""
+msgstr "%1 ist keine gültige Einheit für Länge [%2]"
 
 #: app/helpers/utilityHelpers.php:2528 app/helpers/utilityHelpers.php:2635
 msgid "Not a valid measurement"
-msgstr ""
+msgstr "Kein gültiges Maß"
 
 #: app/helpers/utilityHelpers.php:2532 app/helpers/utilityHelpers.php:2639
 msgid "Must not be less than zero"
-msgstr ""
+msgstr "Darf nicht weniger als null sein"
 
 #: app/helpers/utilityHelpers.php:2545 app/helpers/utilityHelpers.php:2651
 msgid "Not a valid measurement [%1]"
@@ -3060,7 +3060,7 @@ msgstr "Controller Fehler: %1"
 
 #: app/lib/ca/AppNavigation.php:717
 msgid "Disabled"
-msgstr ""
+msgstr "Deaktiviert"
 
 #: app/lib/ca/AppNavigation.php:725
 msgid "For type <em>%1</em>"
@@ -3081,7 +3081,7 @@ msgstr ""
 #: app/lib/ca/Attributes/Values/CollectionsAttributeValue.php:49 app/lib/ca/Attributes/Values/EntitiesAttributeValue.php:49 app/lib/ca/Attributes/Values/LengthAttributeValue.php:75 app/lib/ca/Attributes/Values/ListAttributeValue.php:74 app/lib/ca/Attributes/Values/LoansAttributeValue.php:49 app/lib/ca/Attributes/Values/MovementsAttributeValue.php:49 app/lib/ca/Attributes/Values/ObjectLotsAttributeValue.php:49 app/lib/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php:49 app/lib/ca/Attributes/Values/ObjectsAttributeValue.php:49
 #: app/lib/ca/Attributes/Values/OccurrencesAttributeValue.php:49 app/lib/ca/Attributes/Values/PlacesAttributeValue.php:49 app/lib/ca/Attributes/Values/StorageLocationsAttributeValue.php:49 app/lib/ca/Attributes/Values/TimeCodeAttributeValue.php:73 app/lib/ca/Attributes/Values/UrlAttributeValue.php:97 app/lib/ca/Attributes/Values/WeightAttributeValue.php:74
 msgid "Require value"
-msgstr ""
+msgstr "Wert erforderlich"
 
 #: app/lib/ca/Attributes/Values/CollectionsAttributeValue.php:50
 msgid "Check this option if you want to require that a collection be selected."
@@ -3375,7 +3375,7 @@ msgstr "Hochgeladene Datei"
 
 #: app/lib/ca/Attributes/Values/FileAttributeValue.php:245
 msgid "Set file"
-msgstr ""
+msgstr "Datei festlegen"
 
 #: app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:71
 msgid "Check this option if you don't want your GeoNames values to be locale-specific. (The default is to not be.)"
@@ -3547,7 +3547,7 @@ msgstr "%1 darf nicht länger als 1 Zeichen sein"
 
 #: app/lib/ca/Attributes/Values/IntegerAttributeValue.php:218 app/lib/ca/Attributes/Values/NumericAttributeValue.php:209 app/lib/ca/Attributes/Values/TextAttributeValue.php:236
 msgid "%1 must be no more than %2 characters long"
-msgstr ""
+msgstr "%1 darf nicht länger als %2 Zeichen lang sein"
 
 #: app/lib/ca/Attributes/Values/IntegerAttributeValue.php:225 app/lib/ca/Attributes/Values/NumericAttributeValue.php:216
 msgid "%1 must a number"
@@ -3575,7 +3575,7 @@ msgstr "Wählen Sie diese Option, wenn Sie keine gebietsschemaspezifischen LCSH 
 
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:137 app/conf/user_pref_defs.conf:584 app/conf/user_pref_defs.conf:634 app/conf/user_pref_defs.conf:676 app/conf/user_pref_defs.conf:714 app/conf/user_pref_defs.conf:754 app/conf/user_pref_defs.conf:793 app/conf/user_pref_defs.conf:968
 msgid "Vocabulary"
-msgstr ""
+msgstr "Vokabular"
 
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:138
 msgid "Selects which vocabulary will be searched."
@@ -4160,7 +4160,7 @@ msgstr ""
 
 #: app/lib/ca/BaseLookupController.php:177
 msgid "<em>%1</em> does not exist. Create?"
-msgstr ""
+msgstr "<em>%1</em> existiert noch nicht. Anlegen?"
 
 #: app/lib/ca/BaseLookupController.php:178
 msgid "Create <em>%1</em>?"
@@ -4376,7 +4376,7 @@ msgstr ""
 
 #: app/lib/ca/BatchProcessor.php:1215 app/lib/ca/Utils/CLIUtils.php:1224
 msgid "Imported data from source %1"
-msgstr ""
+msgstr "Importierte Daten von der Quelle %1"
 
 #: app/lib/ca/BatchProcessor.php:1227
 msgid "[%1] Batch metadata import completed"
@@ -4405,7 +4405,7 @@ msgstr ""
 #: themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:38 themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:40 themes/default/views/pageFormat/menuBar.php:7 themes/default/views/pageFormat/menuBar.php:32 app/conf/navigation.conf:1152 app/conf/navigation.conf:1283 app/conf/navigation.conf:1491 app/conf/navigation.conf:1554 app/conf/navigation.conf:1658 app/conf/navigation.conf:1721 app/conf/navigation.conf:1825 app/conf/navigation.conf:1888 app/conf/navigation.conf:1995 app/conf/navigation.conf:2061
 #: app/conf/navigation.conf:2165 app/conf/navigation.conf:2228 app/conf/navigation.conf:2335 app/conf/navigation.conf:2401 app/conf/navigation.conf:2510 app/conf/navigation.conf:2576 app/conf/navigation.conf:2870 app/conf/navigation.conf:2928 app/conf/navigation.conf:3311 app/conf/navigation.conf:3338 app/conf/navigation.conf:3361
 msgid "Search"
-msgstr "Suchen"
+msgstr "Einfache Suche"
 
 #: app/lib/ca/Browse/BrowseEngine.php:151
 msgid "Searches"
@@ -4540,15 +4540,15 @@ msgstr ""
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1255
 msgid "REQUIRED"
-msgstr ""
+msgstr "ERFORDERLICH"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1278
 msgid "These problems require attention:"
-msgstr ""
+msgstr "Diese Probleme erfordern Ihre Aufmerksamkeit:"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1339
 msgid "Not yet issued"
-msgstr ""
+msgstr "Noch nicht bekannt"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1431
 msgid "Restricted to types"
@@ -4564,7 +4564,7 @@ msgstr ""
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1813 app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1908
 msgid "from related %1"
-msgstr ""
+msgstr "von verwandtem %1"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1841
 msgid "alternates from related %1"
@@ -4588,11 +4588,11 @@ msgstr "Eine liste von zugehörigen %1"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1920 app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1922 app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1949
 msgid "A list of %1 %2"
-msgstr ""
+msgstr "Eine Liste von %1 %2"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1930 app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1932
 msgid "A list of alternate %1 %2"
-msgstr ""
+msgstr "Eine Liste von alternativen %1 %2"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:1940
 msgid "A list of related media representations using version \"%1\""
@@ -4616,7 +4616,7 @@ msgstr ""
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:3266 app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:3349
 msgid "Value <em>%1</em> is already used and duplicates are not allowed"
-msgstr ""
+msgstr "Der Wert %1 existiert bereits, Duplikate sind nicht zulässig"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:3341
 msgid "A preferred label for this locale already exists. Only one preferred label per locale is allowed."
@@ -4966,7 +4966,7 @@ msgstr "%1 muss auf %2 gesetzt werden"
 
 #: app/lib/ca/IDNumbering/MultipartIDNumber.php:356 app/lib/ca/IDNumbering/MultipartIDNumber.php:381 app/lib/ca/IDNumbering/MultipartIDNumber.php:400 app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:274 app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:299 app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:318
 msgid "%1 must not be shorter than %2 character"
-msgstr ""
+msgstr "%1 darf nicht kürzer als %2 Zeichen sein"
 
 #: app/lib/ca/IDNumbering/MultipartIDNumber.php:358 app/lib/ca/IDNumbering/MultipartIDNumber.php:383 app/lib/ca/IDNumbering/MultipartIDNumber.php:402 app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:276 app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:301 app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:320
 msgid "%1 must not be shorter than %2 characters"
@@ -5258,7 +5258,7 @@ msgstr ""
 
 #: app/lib/ca/LabelableBaseModelWithAttributes.php:1607
 msgid "Label must not be blank"
-msgstr ""
+msgstr "Die Bezeichnung darf nicht leer sein"
 
 #: app/lib/ca/MediaContentLocationIndexer.php:170
 msgid "Invalid row %2 for table %1"
@@ -5314,7 +5314,7 @@ msgstr ""
 
 #: app/lib/ca/Service/BaseJSONService.php:89
 msgid "Data sent via 'source' parameter doesn't seem to be in JSON format"
-msgstr ""
+msgstr "Die Daten, die über den 'source' Parameter verschickt wurden, scheinen nicht im JSON Format zu sein"
 
 #: app/lib/ca/Service/BaseJSONService.php:105
 msgid "Table does not exist"
@@ -6029,7 +6029,7 @@ msgstr ""
 
 #: app/lib/ca/Utils/CLIUtils.php:1192
 msgid "You must specify a data source for import"
-msgstr ""
+msgstr "Sie müssen für den Import eine Datenquelle festlegen"
 
 #: app/lib/ca/Utils/CLIUtils.php:1196
 msgid "You must specify a source"
@@ -6435,7 +6435,7 @@ msgstr "Name"
 
 #: app/lib/ca/Utils/CLIUtils.php:2503 app/models/ca_data_exporter_items.php:520 themes/default/views/client/library/loan_pdf_checklist_html.php:36 themes/default/views/client/library/order_overview_html.php:243 themes/default/views/client/orders/order_overview_html.php:248 themes/default/views/client/orders/order_pdf_checklist_html.php:38
 msgid "ID"
-msgstr ""
+msgstr "Identifikationsbezeichnung"
 
 #: app/lib/ca/Utils/CLIUtils.php:2503 themes/default/views/administrate/setup/config_check_html.php:50
 msgid "Version"
@@ -7154,11 +7154,11 @@ msgstr ""
 
 #: app/lib/core/BaseModel.php:6126 app/lib/core/BaseModel.php:6137
 msgid "Date and time %1 was created"
-msgstr ""
+msgstr "Datum und Zeit für %1 wurde erstellt"
 
 #: app/lib/core/BaseModel.php:6129
 msgid "Date and time %1 was modified"
-msgstr ""
+msgstr "Datum und Zeit für %1 wurden verändert"
 
 #: app/lib/core/BaseModel.php:6140
 msgid "Date and time %1 was last modified"
@@ -8371,27 +8371,27 @@ msgstr ""
 
 #: app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php:70
 msgid "Background media file processor"
-msgstr ""
+msgstr "Mediendatei Prozessor im Hintergrund"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php:86
 msgid "Input format"
-msgstr ""
+msgstr "Eingabeformat"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php:91
 msgid "Input file size"
-msgstr ""
+msgstr "Größe der Eingabedatei"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php:96 app/models/ca_data_exporter_items.php:86 app/models/ca_data_importer_items.php:77
 msgid "Data source"
-msgstr ""
+msgstr "Datenquelle"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php:100
 msgid "Temporary filename"
-msgstr ""
+msgstr "Temporärer Dateiname"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php:106
 msgid "Versions output"
-msgstr ""
+msgstr "Ausgabe Art"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php:123
 msgid "Media processing rules"
@@ -8571,7 +8571,7 @@ msgstr "Zugangsliste"
 
 #: app/models/ca_acl.php:45
 msgid "access control lists"
-msgstr ""
+msgstr "Zugangslisten"
 
 #: app/models/ca_acl.php:73
 msgid "Table num"
@@ -9023,7 +9023,7 @@ msgstr ""
 
 #: app/models/ca_bundle_displays.php:1281 app/models/ca_bundle_displays.php:1282 app/models/ca_objects.php:193 themes/default/views/bundles/ca_objects_location.php:56 themes/default/views/pageFormat/sideBar.php:40
 msgid "Current location"
-msgstr "Derzeitiger Lagerplatz"
+msgstr "Derzeitiger Standort"
 
 #: app/models/ca_bundle_displays.php:1283
 msgid "Current location of object"
@@ -9127,11 +9127,11 @@ msgstr "Allgemein"
 
 #: app/models/ca_bundle_displays.php:1551
 msgid "Date and time item was created"
-msgstr ""
+msgstr "Datum- und Zeitelement wurden erstellt"
 
 #: app/models/ca_bundle_displays.php:1568
 msgid "Date and time item was last modified"
-msgstr ""
+msgstr "Datum- und Zeitelement wurden zuletzt verändert"
 
 #: app/models/ca_bundle_displays.php:1705
 msgid "Placement label"
@@ -9304,7 +9304,7 @@ msgstr ""
 #: app/models/ca_collections.php:164 app/models/ca_commerce_communications.php:127 app/models/ca_commerce_orders.php:430 app/models/ca_commerce_transactions.php:89 app/models/ca_data_importers.php:124 app/models/ca_entities.php:172 app/models/ca_list_items.php:200 app/models/ca_lists.php:114 app/models/ca_loans.php:155 app/models/ca_movements.php:127 app/models/ca_object_checkouts.php:152 app/models/ca_object_lots.php:148 app/models/ca_object_representations.php:193 app/models/ca_objects.php:284 app/models/ca_occurrences.php:163 app/models/ca_places.php:160
 #: app/models/ca_sets.php:167 app/models/ca_storage_locations.php:149 app/models/ca_tour_stops.php:170
 msgid "Is deleted?"
-msgstr ""
+msgstr "Wurde gelöscht?"
 
 #: app/models/ca_collections.php:164
 msgid "Indicates if the collection is deleted or not."
@@ -9356,7 +9356,7 @@ msgstr "Zugehöriges Konvolut"
 
 #: app/models/ca_collections.php:353 app/models/ca_entities.php:337 app/models/ca_list_items.php:550 app/models/ca_loans.php:320 app/models/ca_movements.php:293 app/models/ca_object_lots.php:316 app/models/ca_object_representations.php:365 app/models/ca_objects.php:511 app/models/ca_occurrences.php:326 app/models/ca_places.php:337 app/models/ca_storage_locations.php:329
 msgid "Related storage locations"
-msgstr "Zugehörige Lagerplätze"
+msgstr "Verknüpfte Standorte"
 
 #: app/models/ca_collections.php:355 app/models/ca_entities.php:341 app/models/ca_list_items.php:555 app/models/ca_loans.php:322 app/models/ca_movements.php:295 app/models/ca_object_lots.php:322 app/models/ca_object_representations.php:367 app/models/ca_objects.php:519 app/models/ca_occurrences.php:332 app/models/ca_places.php:343 app/models/ca_representation_annotations.php:288 app/models/ca_storage_locations.php:334 app/models/ca_tour_stops.php:321
 msgid "Related vocabulary terms"
@@ -9431,11 +9431,11 @@ msgstr ""
 
 #: app/models/ca_collections_x_storage_locations.php:40
 msgid "collection ⇔ storage location relationship"
-msgstr "Sammlung ⇔ Lagerplatz Beziehung"
+msgstr "Sammlung ⇔ Standort Beziehung"
 
 #: app/models/ca_collections_x_storage_locations.php:41
 msgid "collection ⇔ storage location relationships"
-msgstr "Sammlung ⇔ Lagerplatz Beziehungen"
+msgstr "Sammlung ⇔ Standort Beziehungen"
 
 #: app/models/ca_collections_x_vocabulary_terms.php:40
 msgid "collection ⇔ vocabulary term relationship"
@@ -9563,7 +9563,7 @@ msgstr ""
 
 #: app/models/ca_commerce_fulfillment_events.php:61 app/models/ca_data_import_event_log.php:60 app/models/ca_data_importer_log_items.php:60 themes/default/views/client/library/checkin_html.php:45 themes/default/views/client/library/checkout_html.php:199 themes/default/views/client/orders/order_fulfillment_events_html.php:60 themes/default/views/manage/watched_items_list_html.php:48
 msgid "Item"
-msgstr ""
+msgstr "Element"
 
 #: app/models/ca_commerce_fulfillment_events.php:61
 msgid "Indicates the item which was fulfilled."
@@ -10952,7 +10952,7 @@ msgstr ""
 
 #: app/models/ca_data_import_items.php:102 app/models/ca_task_queue.php:84 app/widgets/trackProcessing/views/main_html.php:142
 msgid "Completed on"
-msgstr ""
+msgstr "Abgeschlossen am"
 
 #: app/models/ca_data_import_items.php:102
 msgid "Date and time import of item was completed"
@@ -12307,7 +12307,7 @@ msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:739
 msgid "If checked only current storage locations are displayed."
-msgstr "Wenn diese Option markiert ist, werden nur die aktuellen Lagerplätze angezeigt."
+msgstr "Wenn diese Option markiert ist, werden nur die aktuellen Standorte angezeigt."
 
 #: app/models/ca_editor_ui_screens.php:762
 msgid "Restrict to checklist of terms from related collections?"
@@ -12467,7 +12467,7 @@ msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:988
 msgid "storage location relationships"
-msgstr "Lagerplatz Beziehungen"
+msgstr "Standort Beziehungen"
 
 #: app/models/ca_editor_ui_screens.php:992
 msgid "Track location using"
@@ -12615,7 +12615,7 @@ msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1310
 msgid "Color for storage location"
-msgstr "Farbe für Lagerplatz"
+msgstr "Farbe für Standort"
 
 #: app/models/ca_editor_ui_screens.php:1311
 msgid "Color to use as highlight storage location."
@@ -12723,11 +12723,11 @@ msgstr "UI-Eingabemasken"
 
 #: app/models/ca_editor_uis.php:113 app/models/ca_storage_locations.php:164
 msgid "Color to identify the editor UI with"
-msgstr ""
+msgstr "Farbe um den UI Editor zu identifizieren "
 
 #: app/models/ca_editor_uis.php:121 app/models/ca_storage_locations.php:172
 msgid "Optional icon to identify the editor UI with"
-msgstr ""
+msgstr "Optionales Icon um den UI Editor zu identifizieren"
 
 #: app/models/ca_editor_uis.php:252
 msgid "Screens"
@@ -12851,11 +12851,11 @@ msgstr "Entität ⇔ Ort Beziehungen"
 
 #: app/models/ca_entities_x_storage_locations.php:40
 msgid "entity ⇔ storage location relationship"
-msgstr "Entität ⇔ Lagerplatz Beziehung"
+msgstr "Entität ⇔ Standort Beziehung"
 
 #: app/models/ca_entities_x_storage_locations.php:41
 msgid "entity ⇔ storage location relationships"
-msgstr "Entität ⇔ Lagerplatz Beziehungen"
+msgstr "Entität ⇔ Standort Beziehungen"
 
 #: app/models/ca_entities_x_vocabulary_terms.php:40
 msgid "entity ⇔ vocabulary term relationship"
@@ -13545,11 +13545,11 @@ msgstr "Leihgaben ⇔ Orte Beziehungen"
 
 #: app/models/ca_loans_x_storage_locations.php:40
 msgid "loans ⇔ storage locations relationship"
-msgstr "Leihgaben ⇔ Lagerplatz Beziehung"
+msgstr "Leihgaben ⇔ Standort Beziehung"
 
 #: app/models/ca_loans_x_storage_locations.php:41
 msgid "loans ⇔ storage locations relationships"
-msgstr "Leihgaben ⇔ Lagerplatz Beziehungen"
+msgstr "Leihgaben ⇔ Standort Beziehungen"
 
 #: app/models/ca_loans_x_vocabulary_terms.php:40
 msgid "loans ⇔ vocabulary terms relationship"
@@ -13941,11 +13941,11 @@ msgstr "Bewegungen ⇔ Orte Beziehungen"
 
 #: app/models/ca_movements_x_storage_locations.php:40
 msgid "movements ⇔ storage locations relationship"
-msgstr "Bewegungen ⇔ Lagerplatz Beziehung"
+msgstr "Bewegungen ⇔ Standort Beziehung"
 
 #: app/models/ca_movements_x_storage_locations.php:41
 msgid "movements ⇔ storage locations relationships"
-msgstr "Bewegungen ⇔ Lagerplatz Beziehungen"
+msgstr "Bewegungen ⇔ Standort Beziehungen"
 
 #: app/models/ca_movements_x_vocabulary_terms.php:40
 msgid "movements ⇔ vocabulary terms relationship"
@@ -14377,11 +14377,11 @@ msgstr ""
 
 #: app/models/ca_object_representations_x_storage_locations.php:40
 msgid "object representation ⇔ storage location relationship"
-msgstr "Objekt-Repräsentation ⇔ Lagerplatz Beziehung"
+msgstr "Objekt-Repräsentation ⇔ Standort Beziehung"
 
 #: app/models/ca_object_representations_x_storage_locations.php:41
 msgid "object representation ⇔ storage location relationships"
-msgstr "Objekt-Repräsentation ⇔ Lagerplatz Beziehungen"
+msgstr "Objekt-Repräsentation ⇔ Standort Beziehungen"
 
 #: app/models/ca_object_representations_x_storage_locations.php:92
 msgid "Indicates that the representation should be used to depict the storage location is situations where only a single representation can be displayed (eg. search results)."
@@ -14637,11 +14637,11 @@ msgstr "Objekt ⇔ Ort Beziehungen"
 
 #: app/models/ca_objects_x_storage_locations.php:40
 msgid "object ⇔ storage location relationship"
-msgstr "Objekt ⇔ Lagerplatz Beziehung"
+msgstr "Objekt ⇔ Standort Beziehung"
 
 #: app/models/ca_objects_x_storage_locations.php:41
 msgid "object ⇔ storage location relationships"
-msgstr "Objekt ⇔ Lagerplatz Beziehungen"
+msgstr "Objekt ⇔ Standort Beziehungen"
 
 #: app/models/ca_objects_x_vocabulary_terms.php:40
 msgid "object ⇔ vocabulary term relationship"
@@ -14717,11 +14717,11 @@ msgstr "Event ⇔ Event Beziehungen"
 
 #: app/models/ca_occurrences_x_storage_locations.php:40
 msgid "occurrences ⇔ storage locations relationship"
-msgstr "Event ⇔ Lagerplätze Beziehung"
+msgstr "Event ⇔ Standorte Beziehung"
 
 #: app/models/ca_occurrences_x_storage_locations.php:41
 msgid "occurrences ⇔ storage locations relationships"
-msgstr "Event ⇔ Lagerplätze Beziehungen"
+msgstr "Event ⇔ Standorte Beziehungen"
 
 #: app/models/ca_occurrences_x_vocabulary_terms.php:40
 msgid "occurrence ⇔ vocabulary term relationship"
@@ -14817,11 +14817,11 @@ msgstr "Ort ⇔ Ort Beziehungen"
 
 #: app/models/ca_places_x_storage_locations.php:40
 msgid "places ⇔ storage locations relationship"
-msgstr "Orte ⇔ Lagerplatz Beziehung"
+msgstr "Orte ⇔ Standort Beziehung"
 
 #: app/models/ca_places_x_storage_locations.php:41
 msgid "places ⇔ storage locations relationships"
-msgstr "Orte ⇔ Lagerplatz Beziehungen"
+msgstr "Orte ⇔ Standort Beziehungen"
 
 #: app/models/ca_places_x_vocabulary_terms.php:40
 msgid "place ⇔ vocabulary term relationship"
@@ -15105,7 +15105,7 @@ msgstr "Anzahl Spalten im Formular"
 
 #: app/models/ca_search_forms.php:125
 msgid "The number of columns wide the search will be."
-msgstr ""
+msgstr "Die Anzahl der Spalten, über die sich die Suche erstrecken wird."
 
 #: app/models/ca_search_forms.php:352
 msgid "Search form contents"
@@ -15121,7 +15121,7 @@ msgstr "Breite des in der Benutzeroberfläche dargestellten Feldes, in Zeichen g
 
 #: app/models/ca_search_forms.php:814 app/models/ca_search_forms.php:1118
 msgid "Full text"
-msgstr ""
+msgstr "Volltext"
 
 #: app/models/ca_search_forms.php:819
 msgid "Searches on all content that has been indexed"
@@ -15217,19 +15217,19 @@ msgstr "Element-Überschriften"
 
 #: app/models/ca_set_labels.php:41
 msgid "set name"
-msgstr ""
+msgstr "Setname"
 
 #: app/models/ca_set_labels.php:42
 msgid "set names"
-msgstr ""
+msgstr "Setnamen"
 
 #: app/models/ca_set_labels.php:71
 msgid "Name of set"
-msgstr ""
+msgstr "Name des Sets"
 
 #: app/models/ca_sets.php:48
 msgid "set"
-msgstr ""
+msgstr "Set"
 
 #: app/models/ca_sets.php:56
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this set"
@@ -15237,11 +15237,11 @@ msgstr ""
 
 #: app/models/ca_sets.php:78
 msgid "The user who created the set."
-msgstr ""
+msgstr "Der Benutzer, der das Set angelegt hat."
 
 #: app/models/ca_sets.php:117
 msgid "Set code"
-msgstr ""
+msgstr "Set Code"
 
 #: app/models/ca_sets.php:117
 msgid "A unique alphanumeric code for this set. You will need to specify this if you are using this set in a special context (on a web front-end, for example) in which the set must be unambiguously identified."
@@ -15253,7 +15253,7 @@ msgstr "Set-Elemente"
 
 #: app/models/ca_sets.php:1053
 msgid "Item does not exist"
-msgstr ""
+msgstr "Objekt existiert nicht"
 
 #: app/models/ca_sets_x_user_groups.php:40
 msgid "group-set assocation"
@@ -15285,67 +15285,67 @@ msgstr ""
 
 #: app/models/ca_storage_location_labels.php:40
 msgid "storage location name"
-msgstr "Lagerplatzname"
+msgstr "Standortname"
 
 #: app/models/ca_storage_location_labels.php:41
 msgid "storage location names"
-msgstr "Lagerplatznamen"
+msgstr "Standortnamen"
 
 #: app/models/ca_storage_location_labels.php:79
 msgid "Name of storage location"
-msgstr "Name des Lagerplatzes"
+msgstr "Name des Standorts"
 
 #: app/models/ca_storage_locations.php:51
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this storage location"
-msgstr "Eindeutige numerische Kennung die von CollectiveAccess intern verwendet wird um diesen Lagerplatz zu identifizieren"
+msgstr "Eindeutige numerische Kennung die von CollectiveAccess intern verwendet wird um diesen Standort zu identifizieren"
 
 #: app/models/ca_storage_locations.php:66
 msgid "The type of the storage location. In CollectiveAccess every storage location has a single \"instrinsic\" type that determines the set of descriptive and administrative metadata that can be applied to it."
-msgstr ""
+msgstr "Der Typ eines Standortes. In CollectiveAccess hat jeder Standort einen \"spezifischen\" Typ, der das Set von den beschreibenden und verwalteten Metadaten festlegt, auf das sie angewendet werden können."
 
 #: app/models/ca_storage_locations.php:74
 msgid "Location identifier"
-msgstr "Lagerplatz-ID"
+msgstr "Standort-ID"
 
 #: app/models/ca_storage_locations.php:74
 msgid "A unique alphanumeric identifier for this location."
-msgstr "Eine einzigartige, alphanumerische Kennung für diesen Lagerplatz."
+msgstr "Eine einzigartige, alphanumerische Kennung für diesen Standort."
 
 #: app/models/ca_storage_locations.php:92
 msgid "Administrative source of storage location. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr ""
+msgstr "Verwaltungsquelle des Standorts. Dieser Wert wird häufig genutzt, um die Verwaltungsunterteilung oder die veraltetete Datenbank, von welcher das Objekt stammt ,anzuzeigen. Falls notwendig, kann es allerdings auch als ein einfaches Einstufungs-Tool verwendet werden. "
 
 #: app/models/ca_storage_locations.php:126
 msgid "Indicates if location information is accessible to the public or not. "
-msgstr ""
+msgstr "Zeigt an, ob die Standortinformationen für die Öffentlichkeit sichtbar sind oder nicht."
 
 #: app/models/ca_storage_locations.php:142
 msgid "Indicates the current state of the storage location record."
-msgstr "Gibt den aktuellen Status des Lagerplatz-Datensatzes an."
+msgstr "Gibt den aktuellen Status des Standort-Datensatzes an."
 
 #: app/models/ca_storage_locations.php:149
 msgid "Indicates if the storage location is deleted or not."
-msgstr "Gibt an, ob ein Lagerplatz gelöscht ist oder nicht."
+msgstr "Gibt an, ob ein Standort gelöscht ist oder nicht."
 
 #: app/models/ca_storage_locations.php:179
 msgid "If unchecked this item is disabled and can't be edited or used in new relationships"
-msgstr ""
+msgstr "Wenn dies Option nicht gewählt wurde, wird dieses Element deaktiviert und kann damit nicht mehr bearbeiten werden und kann in keiner neuen Beziehung mehr verwendet werden."
 
 #: app/models/ca_storage_locations_x_storage_locations.php:40
 msgid "storage locations ⇔ storage locations relationship"
-msgstr "Lagerplätze ⇔ Lagerplätze Beziehung"
+msgstr "Standorte ⇔ Standorte Beziehung"
 
 #: app/models/ca_storage_locations_x_storage_locations.php:41
 msgid "storage locations ⇔ storage locations relationships"
-msgstr "Lagerplätze ⇔ Lagerplätze Beziehungen"
+msgstr "Standorte ⇔ Standorte Beziehungen"
 
 #: app/models/ca_storage_locations_x_vocabulary_terms.php:40
 msgid "storage locations ⇔ vocabulary terms relationship"
-msgstr "Lagerplätze ⇔ Vokabelbegriffe Beziehung"
+msgstr "Standorte ⇔ Vokabelbegriffe Beziehung"
 
 #: app/models/ca_storage_locations_x_vocabulary_terms.php:41
 msgid "storage locations ⇔ vocabulary terms relationships"
-msgstr "Lagerplätze ⇔ Vokabelbegriffe Beziehungen"
+msgstr "Standorte ⇔ Vokabelbegriffe Beziehungen"
 
 #: app/models/ca_task_queue.php:39
 msgid "task queue entry"
@@ -15529,15 +15529,15 @@ msgstr ""
 
 #: app/models/ca_user_groups.php:41
 msgid "user group"
-msgstr ""
+msgstr "Benutzergruppe"
 
 #: app/models/ca_user_groups.php:42
 msgid "user groups"
-msgstr ""
+msgstr "Benutzergruppen"
 
 #: app/models/ca_user_groups.php:49
 msgid "Group id"
-msgstr ""
+msgstr "Gruppen-ID"
 
 #: app/models/ca_user_groups.php:49
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this group"
@@ -15561,7 +15561,7 @@ msgstr "Beschreibung der Gruppe. Dieser Text wird nur System-Administratoren ang
 
 #: app/models/ca_user_groups.php:88
 msgid "Group administrator"
-msgstr ""
+msgstr "Gruppen Administrator"
 
 #: app/models/ca_user_groups.php:88
 msgid "The user who administers the group."
@@ -15967,7 +15967,7 @@ msgstr ""
 
 #: app/plugins/ULAN/themes/default/views/import_settings_html.php:171 app/plugins/WorldCat/themes/default/views/import_settings_html.php:170
 msgid "Loading next page..."
-msgstr ""
+msgstr "Lade nächste Seite"
 
 #: app/plugins/ULAN/themes/default/views/import_settings_html.php:182 app/plugins/WorldCat/themes/default/views/import_settings_html.php:181
 msgid "Loading previous page..."
@@ -17633,15 +17633,15 @@ msgstr ""
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:120
 msgid "Hierarchical storage location types"
-msgstr "Hierarchives Lagerplatztypen"
+msgstr "Hierarchives Standorttypen"
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:121
 msgid "A semicolon-delimited list of storage location types to apply to hierarchical storage locations extracted using the hierarchical delimiter."
-msgstr "Eine mit Strichpunkten getrennte Liste an Lagerplatztypen die auf hierarchische Lagerplätze angewandt werden soll, die mit Hilfe des hierarchischen Trennzeichens extrahiert wurden."
+msgstr "Eine mit Strichpunkten getrennte Liste an Standorttypen die auf hierarchische Standorte angewandt werden soll, die mit Hilfe des hierarchischen Trennzeichens extrahiert wurden."
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:138
 msgid "Storage location type"
-msgstr "Lagerplatztyp"
+msgstr "Standorttyp"
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:139
 msgid "Accepts a constant list item idno from the list storage_location_types or a reference to the location in the data source where the type can be found."
@@ -17657,7 +17657,7 @@ msgstr ""
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:174
 msgid "Storage location type default"
-msgstr "Standard Lagerplatztyp"
+msgstr "Standard Standorttyp"
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:175
 msgid "Sets the default storage location type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list storage_location_types"
@@ -17926,11 +17926,11 @@ msgstr "Wenn diese Option markiert ist, wird die Gesamtanzahl an Sammlungen der 
 
 #: app/widgets/count/countWidget.php:196
 msgid "Show count for storage locations?"
-msgstr "Zeige Anzahl von Lagerplätzen?"
+msgstr "Zeige Anzahl von Standorten?"
 
 #: app/widgets/count/countWidget.php:197
 msgid "If checked total number of storage locations in the database will be displayed."
-msgstr "Wenn diese Option markiert ist, wird die Gesamtanzahl an Lagerplätzen der Datenbank angezeigt."
+msgstr "Wenn diese Option markiert ist, wird die Gesamtanzahl an Standorten der Datenbank angezeigt."
 
 #: app/widgets/count/countWidget.php:205
 msgid "Show count for object representations?"
@@ -18182,7 +18182,7 @@ msgstr "Limit für Darstellung"
 
 #: app/widgets/recentComments/recentCommentsWidget.php:158
 msgid "Limits the number of comments to be listed in the widget."
-msgstr ""
+msgstr "Beschränkt die Anzahl an Kommentaren, die in diesem Widget angezeigt werden."
 
 #: app/widgets/recentComments/views/main_html.php:38
 msgid "Displaying the last %1 %2 comments"
@@ -18230,7 +18230,7 @@ msgstr ""
 
 #: app/widgets/recentTags/recentTagsWidget.php:160
 msgid "Limits the number of tags to be listed in the widget."
-msgstr ""
+msgstr "Beschränkt die Anzahl an Tags, die in diesem Widget angezeigt werden."
 
 #: app/widgets/recentTags/views/main_html.php:38
 msgid "Displaying the last %1 %2 tags"
@@ -18298,7 +18298,7 @@ msgstr "Darzustellende Typen von Datensätzen"
 
 #: app/widgets/recentlyCreated/recentlyCreatedWidget.php:275 app/widgets/recordsByStatus/recordsByStatusWidget.php:266
 msgid "Limits the number of records to be listed in the widget."
-msgstr ""
+msgstr "Beschränkt die Anzahl an Datensätzen, die in diesem Widget aufgelistet werden."
 
 #: app/widgets/recentlyCreated/recentlyCreatedWidget.php:287
 msgid "Display identifier"
@@ -18306,11 +18306,11 @@ msgstr "Darstellungsidentifikator"
 
 #: app/widgets/recentlyCreated/recentlyCreatedWidget.php:288
 msgid "Display label and identifier"
-msgstr ""
+msgstr "Anzeigen der Kennung"
 
 #: app/widgets/recentlyCreated/views/main_html.php:39
 msgid "Showing the last %1 <span style='font-weight:bold; text-transform:lowercase;'>%2</span> created"
-msgstr ""
+msgstr "Anzeigen der letzten %1 erzeugten <span style='font-weight:bold; text-transform:lowercase;'>%2</span> "
 
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:46
 msgid "Records by status"
@@ -18456,7 +18456,7 @@ msgstr "Suchen nach Konvoluten"
 
 #: app/widgets/savedSearches/views/main_html.php:63
 msgid "Storage Location Searches"
-msgstr "Suchen nach Lagerplätzen"
+msgstr "Suchen nach Standorten"
 
 #: app/widgets/savedSearches/views/main_html.php:68
 msgid "Collection Searches"
@@ -18484,7 +18484,7 @@ msgstr "Suche nach Elementen in Ihren Sets."
 
 #: app/widgets/searchBySet/views/main_html.php:43
 msgid "Object Sets"
-msgstr ""
+msgstr "Sets von Objekten"
 
 #: app/widgets/searchBySet/views/main_html.php:48
 msgid "Entity Sets"
@@ -18492,19 +18492,19 @@ msgstr ""
 
 #: app/widgets/searchBySet/views/main_html.php:53
 msgid "Place Sets"
-msgstr ""
+msgstr "Sets von Orten"
 
 #: app/widgets/searchBySet/views/main_html.php:58
 msgid "Object Lot Sets"
-msgstr ""
+msgstr "Sets von Konvoluten"
 
 #: app/widgets/searchBySet/views/main_html.php:63
 msgid "Storage Location Sets"
-msgstr "Lagerplatz-Sets"
+msgstr "Sets von Standorten"
 
 #: app/widgets/searchBySet/views/main_html.php:68
 msgid "Collection Sets"
-msgstr ""
+msgstr "Sets von Sammlungen"
 
 #: app/widgets/searchBySet/views/main_html.php:73
 msgid "Occurrence Sets"
@@ -18512,7 +18512,7 @@ msgstr ""
 
 #: app/widgets/trackProcessing/trackProcessingWidget.php:40
 msgid "Processing status"
-msgstr ""
+msgstr "Bearbeitungsstatus"
 
 #: app/widgets/trackProcessing/trackProcessingWidget.php:41
 msgid "View the current status of queued processing tasks"
@@ -18568,7 +18568,7 @@ msgstr ""
 
 #: app/widgets/trackProcessing/views/main_html.php:81 app/widgets/trackProcessing/views/main_html.php:111 app/widgets/trackProcessing/views/main_html.php:139
 msgid "Created by"
-msgstr ""
+msgstr "Erstellt von"
 
 #: app/widgets/trackProcessing/views/main_html.php:101
 msgid "Jobs queued for later processing"
@@ -18580,7 +18580,7 @@ msgstr ""
 
 #: app/widgets/trackProcessing/views/main_html.php:129
 msgid "Jobs completed in the last %1 hours"
-msgstr ""
+msgstr "Aufgaben in den letzten %1 Stunden abgeschlossen "
 
 #: app/widgets/trackProcessing/views/main_html.php:145
 msgid "TASK DID NOT COMPLETE"
@@ -18592,11 +18592,11 @@ msgstr ""
 
 #: app/widgets/trackProcessing/views/main_html.php:166
 msgid "Total processing time"
-msgstr ""
+msgstr "Gesamtverarbeitungszeit"
 
 #: app/widgets/trackProcessing/views/main_html.php:179
 msgid "There are no running jobs, queued jobs or jobs completed in the last %1 hours."
-msgstr ""
+msgstr "Zurzeit gibt es keine laufenden Aufgaben, die Warteschlange ist leer oder in den letzten %1 Stunden wurden keine Aufgaben abgeschlossen. "
 
 #: app/widgets/watchedItems/views/main_html.php:48 themes/default/views/manage/watched_items_list_html.php:68
 msgid "Recent Changes"
@@ -18827,7 +18827,7 @@ msgstr "Passwort bestätigen"
 
 #: themes/default/views/administrate/access/user_list_html.php:43
 msgid "Show %1 users"
-msgstr ""
+msgstr "Anzeigen von %1 Benutzern"
 
 #: themes/default/views/administrate/access/user_list_html.php:44
 msgid "New user"
@@ -19035,7 +19035,7 @@ msgstr "Los"
 
 #: themes/default/views/administrate/setup/Results/paging_controls_html.php:56 themes/default/views/find/Results/paging_controls_html.php:57 themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:56 themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:56
 msgid "Your %1 found"
-msgstr "%1 ergab"
+msgstr "Ihre %1 ergab"
 
 #: themes/default/views/administrate/setup/Results/search_options_html.php:89 themes/default/views/find/Results/search_options_html.php:89
 msgid "#/page"
@@ -19129,11 +19129,11 @@ msgstr "Sets erstellen"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:72 themes/default/views/find/Search/search_sets_html.php:72
 msgid "from results"
-msgstr ""
+msgstr "Von Ergebnissen"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:73 themes/default/views/find/Search/search_sets_html.php:73
 msgid "from checked"
-msgstr ""
+msgstr "Von eingecheckt"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:80 themes/default/views/find/Search/search_sets_html.php:80 app/conf/navigation.conf:2672
 msgid "Create"
@@ -19308,7 +19308,7 @@ msgstr "Verwendung in Benutzerinterface"
 #: themes/default/views/administrate/setup/interface_editor/summary_html.php:80 themes/default/views/administrate/setup/interface_screen_editor/summary_html.php:80 themes/default/views/administrate/setup/list_editor/summary_html.php:80 themes/default/views/administrate/setup/list_item_editor/summary_html.php:80 themes/default/views/editor/collections/summary_html.php:80 themes/default/views/editor/entities/summary_html.php:81 themes/default/views/editor/loans/summary_html.php:81 themes/default/views/editor/movements/summary_html.php:81
 #: themes/default/views/editor/object_lots/summary_html.php:81 themes/default/views/editor/object_representations/summary_html.php:81 themes/default/views/editor/objects/summary_html.php:125 themes/default/views/editor/occurrences/summary_html.php:81 themes/default/views/editor/places/summary_html.php:81 themes/default/views/editor/representation_annotations/summary_html.php:81 themes/default/views/editor/storage_locations/summary_html.php:81 themes/default/views/editor/tour_stops/summary_html.php:80 themes/default/views/editor/tours/summary_html.php:79
 msgid "Download Summary as PDF"
-msgstr ""
+msgstr "Zusammenfassung als PDF herunterladen"
 
 #: themes/default/views/administrate/setup/interface_editor/summary_html.php:81 themes/default/views/administrate/setup/interface_screen_editor/summary_html.php:81 themes/default/views/administrate/setup/list_editor/summary_html.php:81 themes/default/views/administrate/setup/list_item_editor/summary_html.php:81 themes/default/views/editor/collections/summary_html.php:81 themes/default/views/editor/entities/summary_html.php:82 themes/default/views/editor/loans/summary_html.php:82 themes/default/views/editor/movements/summary_html.php:82
 #: themes/default/views/editor/object_lots/summary_html.php:82 themes/default/views/editor/object_representations/summary_html.php:82 themes/default/views/editor/objects/summary_html.php:126 themes/default/views/editor/occurrences/summary_html.php:82 themes/default/views/editor/places/summary_html.php:82 themes/default/views/editor/representation_annotations/summary_html.php:82 themes/default/views/editor/storage_locations/summary_html.php:82 themes/default/views/editor/tour_stops/summary_html.php:81 themes/default/views/editor/tours/summary_html.php:80
@@ -20222,7 +20222,7 @@ msgstr "Stopp hinzufügen"
 
 #: themes/default/views/bundles/ca_user_groups.php:60 themes/default/views/bundles/ca_users.php:59
 msgid " for period "
-msgstr ""
+msgstr "für eine Periode"
 
 #: themes/default/views/bundles/change_type_html.php:63
 msgid "Set type to %1"
@@ -20242,7 +20242,7 @@ msgstr "Füge unterhalb ein %1 hinzu"
 
 #: themes/default/views/bundles/hierarchy_location.php:176 themes/default/views/bundles/hierarchy_navigation.php:68
 msgid "Number of %1 in hierarchy: %2"
-msgstr ""
+msgstr "Anzahl von %1 in der Hierarchie: %2"
 
 #: themes/default/views/bundles/hierarchy_location.php:178 themes/default/views/bundles/hierarchy_location.php:402
 msgid "Show Hierarchy"
@@ -21179,7 +21179,7 @@ msgstr "Widget vom Cockpit entfernen"
 
 #: themes/default/views/dashboard/dashboard_html.php:111
 msgid "Modify settings for this widget"
-msgstr ""
+msgstr "Einstellungen dieses Widgets ändern"
 
 #: themes/default/views/editor/collections/quickadd_html.php:54 themes/default/views/editor/entities/quickadd_html.php:54 themes/default/views/editor/loans/quickadd_html.php:54 themes/default/views/editor/movements/quickadd_html.php:54 themes/default/views/editor/object_lots/quickadd_html.php:54 themes/default/views/editor/objects/quickadd_html.php:54 themes/default/views/editor/occurrences/quickadd_html.php:54 themes/default/views/editor/places/quickadd_html.php:53 themes/default/views/editor/storage_locations/quickadd_html.php:53
 msgid "Quick add %1"
@@ -21197,7 +21197,7 @@ msgstr "Schnelles Hinzufügen von %1"
 #: themes/default/views/editor/collections/screen_html.php:43 themes/default/views/editor/entities/screen_html.php:43 themes/default/views/editor/loans/screen_html.php:43 themes/default/views/editor/movements/screen_html.php:42 themes/default/views/editor/object_lots/screen_html.php:42 themes/default/views/editor/object_representations/screen_html.php:42 themes/default/views/editor/objects/screen_html.php:43 themes/default/views/editor/occurrences/screen_html.php:43 themes/default/views/editor/places/screen_html.php:44
 #: themes/default/views/editor/representation_annotations/screen_html.php:42 themes/default/views/editor/storage_locations/screen_html.php:46 themes/default/views/editor/tour_stops/screen_html.php:46 themes/default/views/editor/tours/screen_html.php:44
 msgid "Save and return"
-msgstr ""
+msgstr "Speichern und Zurück"
 
 #: themes/default/views/editor/interstitial/interstitial_html.php:50
 msgid "Edit %1 relationship"
@@ -21381,12 +21381,12 @@ msgstr ""
 #: themes/default/views/find/Results/ca_collections_results_list_html.php:56 themes/default/views/find/Results/ca_entities_results_list_html.php:56 themes/default/views/find/Results/ca_loans_results_list_html.php:57 themes/default/views/find/Results/ca_movements_results_list_html.php:55 themes/default/views/find/Results/ca_object_lots_results_list_html.php:55 themes/default/views/find/Results/ca_object_representations_results_list_html.php:56 themes/default/views/find/Results/ca_objects_results_list_html.php:56
 #: themes/default/views/find/Results/ca_occurrences_results_list_html.php:56 themes/default/views/find/Results/ca_places_results_list_html.php:59 themes/default/views/find/Results/ca_storage_locations_results_list_html.php:58 themes/default/views/find/Results/ca_tour_stops_results_list_html.php:55 themes/default/views/find/Results/ca_tours_results_list_html.php:55
 msgid "Currently sorting by "
-msgstr ""
+msgstr "Derzeitig sortiert nach"
 
 #: themes/default/views/find/Results/ca_collections_results_list_html.php:59 themes/default/views/find/Results/ca_entities_results_list_html.php:59 themes/default/views/find/Results/ca_loans_results_list_html.php:60 themes/default/views/find/Results/ca_movements_results_list_html.php:58 themes/default/views/find/Results/ca_object_lots_results_list_html.php:58 themes/default/views/find/Results/ca_object_representations_results_list_html.php:59 themes/default/views/find/Results/ca_objects_results_list_html.php:59
 #: themes/default/views/find/Results/ca_occurrences_results_list_html.php:59 themes/default/views/find/Results/ca_places_results_list_html.php:62 themes/default/views/find/Results/ca_storage_locations_results_list_html.php:61 themes/default/views/find/Results/ca_tour_stops_results_list_html.php:58 themes/default/views/find/Results/ca_tours_results_list_html.php:58
 msgid "Click to sort by "
-msgstr "Sortieren nach"
+msgstr "Sortieren nach "
 
 #: themes/default/views/find/Results/ca_objects_results_map_html.php:45
 msgid "%1 of %2 results have been mapped.  To see all results chose a different display."
@@ -21414,7 +21414,7 @@ msgstr "Alle Ergebnisse &rsaquo;"
 
 #: themes/default/views/find/Results/viz_html.php:37
 msgid "Displaying %1 of %2 %3"
-msgstr ""
+msgstr "Es werden %1 von %2 %3 angezeigt"
 
 #: themes/default/views/find/Search/ajax_refine_facet_html.php:80
 msgid "Click on a %1 to see more specific %2 within that %3. Click on the arrow next to a %4 to find %5 related to it."
@@ -21690,7 +21690,7 @@ msgstr ""
 
 #: themes/default/views/manage/export/exporter_list_html.php:47
 msgid "Add exporters"
-msgstr ""
+msgstr "Exporte hinzufügen"
 
 #: themes/default/views/manage/export/exporter_list_html.php:58
 msgid "Drag exporter worksheets here to add or update"
@@ -21698,7 +21698,7 @@ msgstr ""
 
 #: themes/default/views/manage/export/widget_exporter_list_html.php:31
 msgid "Your data exporters"
-msgstr ""
+msgstr "Ihre Daten Exporte"
 
 #: themes/default/views/manage/export/widget_exporter_list_html.php:34
 msgid "1 mapping is available for export"
@@ -21706,7 +21706,7 @@ msgstr ""
 
 #: themes/default/views/manage/export/widget_exporter_list_html.php:36
 msgid "%1 mappings are available for export"
-msgstr ""
+msgstr "%1 Umwandlungen sind für den Export verfügbar"
 
 #: themes/default/views/manage/group_list_html.php:43
 msgid "New team"
@@ -21742,7 +21742,7 @@ msgstr ""
 
 #: themes/default/views/manage/saved_searches_list_html.php:85
 msgid "Storage Locations"
-msgstr "Lagerplätze"
+msgstr "Standorte"
 
 #: themes/default/views/manage/search_form_list_html.php:38
 msgid "New search form for "
@@ -22463,11 +22463,11 @@ msgstr ""
 
 #: app/conf/navigation.conf:672
 msgid "Storage location"
-msgstr "Lagerplatz"
+msgstr "Standort"
 
 #: app/conf/navigation.conf:682
 msgid "Storage location editor"
-msgstr "Lagerplatz-Editor"
+msgstr "Standort-Editor"
 
 #: app/conf/navigation.conf:841
 msgid "Movement"
@@ -22483,28 +22483,28 @@ msgstr ""
 
 #: app/conf/navigation.conf:1044 app/conf/navigation.conf:1088 app/conf/navigation.conf:1213 app/conf/navigation.conf:1346 app/conf/navigation.conf:1390 app/conf/navigation.conf:1447 app/conf/navigation.conf:1614 app/conf/navigation.conf:1781 app/conf/navigation.conf:1948 app/conf/navigation.conf:2118 app/conf/navigation.conf:2285 app/conf/navigation.conf:2463
 msgid "Basic search"
-msgstr ""
+msgstr "Einfache Suche"
 
 #: app/conf/navigation.conf:1056 app/conf/navigation.conf:1099 app/conf/navigation.conf:1163 app/conf/navigation.conf:1225 app/conf/navigation.conf:1295 app/conf/navigation.conf:1358 app/conf/navigation.conf:1401 app/conf/navigation.conf:1459 app/conf/navigation.conf:1501 app/conf/navigation.conf:1565 app/conf/navigation.conf:1626 app/conf/navigation.conf:1668 app/conf/navigation.conf:1732 app/conf/navigation.conf:1793 app/conf/navigation.conf:1835 app/conf/navigation.conf:1899 app/conf/navigation.conf:1961 app/conf/navigation.conf:2006
 #: app/conf/navigation.conf:2072 app/conf/navigation.conf:2130 app/conf/navigation.conf:2175 app/conf/navigation.conf:2239 app/conf/navigation.conf:2298 app/conf/navigation.conf:2346 app/conf/navigation.conf:2412 app/conf/navigation.conf:2476 app/conf/navigation.conf:2521 app/conf/navigation.conf:2587 app/conf/navigation.conf:2881 app/conf/navigation.conf:2939
 msgid "Advanced search"
-msgstr ""
+msgstr "Erweiterte Suche"
 
 #: app/conf/navigation.conf:2622
 msgid "QuickSearch"
-msgstr ""
+msgstr "Schnellsuche"
 
 #: app/conf/navigation.conf:2633
 msgid "QuickSearch Results"
-msgstr ""
+msgstr "Ergebnisse der Schnellsuche"
 
 #: app/conf/navigation.conf:2645
 msgid "Last QuickSearch"
-msgstr ""
+msgstr "Letzte Schnellsuche"
 
 #: app/conf/navigation.conf:3010
 msgid "My preferences"
-msgstr ""
+msgstr "Meine Einstellungen"
 
 #: app/conf/navigation.conf:3025 app/conf/user_pref_defs.conf:14
 msgid "Editing"
@@ -22524,7 +22524,7 @@ msgstr "Maßeinheiten"
 
 #: app/conf/navigation.conf:3065
 msgid "Duplication"
-msgstr ""
+msgstr "Duplizierung"
 
 #: app/conf/navigation.conf:3073 app/conf/user_pref_defs.conf:103
 msgid "User profile"
@@ -22536,23 +22536,23 @@ msgstr "Meine beobachteten Datensätze"
 
 #: app/conf/navigation.conf:3103
 msgid "My project teams"
-msgstr ""
+msgstr "Meine Projektteams"
 
 #: app/conf/navigation.conf:3110
 msgid "My displays"
-msgstr ""
+msgstr "Meine Displays"
 
 #: app/conf/navigation.conf:3120
 msgid "Edit display"
-msgstr ""
+msgstr "Darstellung bearbeiten"
 
 #: app/conf/navigation.conf:3152
 msgid "My sets"
-msgstr ""
+msgstr "Meine Sets"
 
 #: app/conf/navigation.conf:3162
 msgid "Edit set"
-msgstr ""
+msgstr "Set bearbeiten"
 
 #: app/conf/navigation.conf:3195
 msgid "Edit set item"
@@ -22560,11 +22560,11 @@ msgstr "Set-Element bearbeiten"
 
 #: app/conf/navigation.conf:3228
 msgid "My search tools"
-msgstr ""
+msgstr "Suchtools"
 
 #: app/conf/navigation.conf:3238
 msgid "Search forms"
-msgstr ""
+msgstr "Suchformulare"
 
 #: app/conf/navigation.conf:3254
 msgid "Edit search form"
@@ -22580,7 +22580,7 @@ msgstr ""
 
 #: app/conf/navigation.conf:3351
 msgid "Lists & vocabularies"
-msgstr ""
+msgstr "Listen und Vokabulare"
 
 #: app/conf/navigation.conf:3381
 msgid "Edit list"
@@ -22596,11 +22596,11 @@ msgstr ""
 
 #: app/conf/navigation.conf:3518
 msgid "Exporter list"
-msgstr ""
+msgstr "Export Liste"
 
 #: app/conf/navigation.conf:3527
 msgid "Access control"
-msgstr ""
+msgstr "Zugangskontrolle"
 
 #: app/conf/navigation.conf:3534
 msgid "User logins"
@@ -23008,7 +23008,7 @@ msgstr "Darstellungen verwenden"
 
 #: app/conf/user_actions.conf:169
 msgid "Allow user to use existing custom data display formats"
-msgstr "Dem Benutzer gestatten, existierenden Lagerplätze zu verwenden"
+msgstr "Dem Benutzer gestatten, kundenspezifische Datenaufbereitungen zu verwenden"
 
 #: app/conf/user_actions.conf:172
 msgid "Duplicate displays"
@@ -23880,95 +23880,95 @@ msgstr ""
 
 #: app/conf/user_actions.conf:685
 msgid "Storage location authority editing"
-msgstr "Lagerplatznormdatenbearbeitung"
+msgstr "Standortnormdatenbearbeitung"
 
 #: app/conf/user_actions.conf:686
 msgid "Actions allowing creation, editing and deletion of storage locations."
-msgstr "Eingriffe die das Erstellen, Bearbeiten und Löschen von Lagerplätze gestatten."
+msgstr "Eingriffe die das Erstellen, Bearbeiten und Löschen von Standorte gestatten."
 
 #: app/conf/user_actions.conf:689
 msgid "Create storage locations"
-msgstr "Lagerplatz erstellen"
+msgstr "Standort erstellen"
 
 #: app/conf/user_actions.conf:690
 msgid "Allow user to create new storage locations"
-msgstr "Dem Benutzer gestatten, neue Lagerplätze zu erstellen"
+msgstr "Dem Benutzer gestatten, neue Standorte zu erstellen"
 
 #: app/conf/user_actions.conf:693
 msgid "Edit storage locations"
-msgstr "Lagerplätze bearbeiten"
+msgstr "Standorte bearbeiten"
 
 #: app/conf/user_actions.conf:694
 msgid "Allow user to edit existing storage locations"
-msgstr "Dem Benutzer gestatten, existierenden Lagerplätze zu bearbeiten"
+msgstr "Dem Benutzer gestatten, existierende Standorte zu bearbeiten"
 
 #: app/conf/user_actions.conf:697
 msgid "Delete storage locations"
-msgstr "Lagerplätze löschen"
+msgstr "Standorte löschen"
 
 #: app/conf/user_actions.conf:698
 msgid "Allow user to delete storage locations"
-msgstr "Dem Benutzer gestatten, Lagerplätze zu löschen "
+msgstr "Dem Benutzer gestatten, Standorte zu löschen "
 
 #: app/conf/user_actions.conf:701
 msgid "Search storage locations"
-msgstr "Lagerplätze durchsuchen"
+msgstr "Standorte durchsuchen"
 
 #: app/conf/user_actions.conf:702
 msgid "Allow user to search storage locations"
-msgstr "Dem Benutzer gestatten, nach Lagerplätze zu suchen"
+msgstr "Dem Benutzer gestatten, nach Standorten zu suchen"
 
 #: app/conf/user_actions.conf:705
 msgid "Browse storage locations"
-msgstr "Nach Lagerplätzen browsen"
+msgstr "Nach Standorten browsen"
 
 #: app/conf/user_actions.conf:706
 msgid "Allow user to browse storage locations"
-msgstr "Dem Benützer gestatten, nach Lagerplätzen zu browsen"
+msgstr "Dem Benützer gestatten, nach Standorten zu browsen"
 
 #: app/conf/user_actions.conf:709
 msgid "Duplicate storage locations"
-msgstr "Lagerplätze duplizieren"
+msgstr "Standorte duplizieren"
 
 #: app/conf/user_actions.conf:710
 msgid "Allow user to duplicate storage locations"
-msgstr "Dem Benutzer gestatten, Lagerplätze zu duplizieren"
+msgstr "Dem Benutzer gestatten, Standorte zu duplizieren"
 
 #: app/conf/user_actions.conf:713
 msgid "Export storage locations"
-msgstr "Lagerplätze exportieren"
+msgstr "Standorte exportieren"
 
 #: app/conf/user_actions.conf:714
 msgid "Allow user to export storage locations"
-msgstr "Dem Benutzer gestatten, Lagerplätze zu exportieren"
+msgstr "Dem Benutzer gestatten, Standorte zu exportieren"
 
 #: app/conf/user_actions.conf:717
 msgid "Quick add storage locations"
-msgstr "Schnelles Hinzufügen von Lagerplätzen"
+msgstr "Schnelles Hinzufügen von Standorten"
 
 #: app/conf/user_actions.conf:718
 msgid "Allow user to add storage locations not already present while creating relationships"
-msgstr "Dem Benutzer das Hinzufügen von Lagerplätzen, die während der Erstellung von Beziehungen noch nicht existieren"
+msgstr "Dem Benutzer das Hinzufügen von Standorten, die während der Erstellung von Beziehungen noch nicht existieren, erlauben"
 
 #: app/conf/user_actions.conf:722
 msgid "Allow user to change types of existing storage locations"
-msgstr "Dem Benutzer gestatten, die Typen existierender Lagerplätze zu verändern"
+msgstr "Dem Benutzer gestatten, die Typen existierender Standorte zu verändern"
 
 #: app/conf/user_actions.conf:726
 msgid "Allow user to manage access control lists for storage locations"
-msgstr "Dem Benutzer Verwaltung der Zugangslisten für Lagerplätze gestatten"
+msgstr "Dem Benutzer Verwaltung der Zugangslisten für Standorte gestatten"
 
 #: app/conf/user_actions.conf:729
 msgid "Batch edit storage locations"
-msgstr "Stapel-Bearbeitung Lagerplätze"
+msgstr "Stapel-Bearbeitung Standorte"
 
 #: app/conf/user_actions.conf:730
 msgid "Allow user to edit batches of storage locations"
-msgstr "Dem Benutzer gestatten, Stapel von Lagerplätzen zu bearbeiten"
+msgstr "Dem Benutzer gestatten, Stapel von Standorten zu bearbeiten"
 
 #: app/conf/user_actions.conf:733
 msgid "Batch delete storage locations"
-msgstr "Stapelweise Lagerplätze löschen"
+msgstr "Stapelweise Standorte löschen"
 
 #: app/conf/user_actions.conf:734
 msgid "Allow user to delete batches of storage locations"
@@ -24576,7 +24576,7 @@ msgstr "Themensatz (Ansichten, CSS, Grafik) der Benutzerschnittstellenansicht"
 
 #: app/conf/user_pref_defs.conf:140
 msgid "Show current location as 'breadcrumb' trail"
-msgstr "Derzeitigen Lagerplatz als Klickpfadnavigation darstellen"
+msgstr "Derzeitigen Standort als Klickpfadnavigation darstellen"
 
 #: app/conf/user_pref_defs.conf:141
 msgid "If set to 'yes' the path of menu options taken to reach the current screen will be displayed at the top of every screen"
@@ -24736,11 +24736,11 @@ msgstr "Wählt die Benutzeroberfläche zur Bearbeitung von Sammlungen aus."
 
 #: app/conf/user_pref_defs.conf:267 app/conf/user_pref_defs.conf:440 app/conf/user_pref_defs.conf:514
 msgid "Storage location editor user interface"
-msgstr "Benutzeroberfläche für Lagerplatz-Editor"
+msgstr "Benutzeroberfläche für Standort-Editor"
 
 #: app/conf/user_pref_defs.conf:268 app/conf/user_pref_defs.conf:441
 msgid "Selects which user interface to use when editing storage locations."
-msgstr "Wählt die Benutzeroberfläche zur Bearbeitung von Lagerplätzen aus."
+msgstr "Wählt die Benutzeroberfläche zur Bearbeitung von Standorten aus."
 
 #: app/conf/user_pref_defs.conf:274 app/conf/user_pref_defs.conf:447
 msgid "Object representation editor user interface"
@@ -24920,11 +24920,11 @@ msgstr "Nicht-metrische Maßeinheiten"
 
 #: app/conf/user_pref_defs.conf:537
 msgid "Preferred display currency"
-msgstr ""
+msgstr "bevorzugte Währungsanzeige"
 
 #: app/conf/user_pref_defs.conf:538
 msgid "Determines preferred currency to use for display."
-msgstr ""
+msgstr "Legt die Bevorzugte Währung, die für die Anzeige verwendet werden soll, fest."
 
 #: app/conf/user_pref_defs.conf:547 app/conf/user_pref_defs.conf:599 app/conf/user_pref_defs.conf:638 app/conf/user_pref_defs.conf:680 app/conf/user_pref_defs.conf:718 app/conf/user_pref_defs.conf:758 app/conf/user_pref_defs.conf:797 app/conf/user_pref_defs.conf:832 app/conf/user_pref_defs.conf:866 app/conf/user_pref_defs.conf:901 app/conf/user_pref_defs.conf:934 app/conf/user_pref_defs.conf:972 app/conf/user_pref_defs.conf:994 app/conf/user_pref_defs.conf:1032
 msgid "Duplicate non-preferred labels?"
@@ -24932,7 +24932,7 @@ msgstr "Nicht-bevorzugte Bezeichnungen duplizieren?"
 
 #: app/conf/user_pref_defs.conf:548
 msgid "If checked alternate names for the object will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden nicht-bevorzugte Bezeichnungen im Objekt dupliziert."
 
 #: app/conf/user_pref_defs.conf:558 app/conf/user_pref_defs.conf:610 app/conf/user_pref_defs.conf:649 app/conf/user_pref_defs.conf:691 app/conf/user_pref_defs.conf:729 app/conf/user_pref_defs.conf:769 app/conf/user_pref_defs.conf:808 app/conf/user_pref_defs.conf:843 app/conf/user_pref_defs.conf:877 app/conf/user_pref_defs.conf:912 app/conf/user_pref_defs.conf:945 app/conf/user_pref_defs.conf:983 app/conf/user_pref_defs.conf:1005 app/conf/user_pref_defs.conf:1043
 msgid "Duplicate metadata?"
@@ -24940,7 +24940,7 @@ msgstr "Metadaten duplizieren?"
 
 #: app/conf/user_pref_defs.conf:559
 msgid "If checked all fields in the object will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden alle Felder des Objektes dupliziert."
 
 #: app/conf/user_pref_defs.conf:569 app/conf/user_pref_defs.conf:621 app/conf/user_pref_defs.conf:660 app/conf/user_pref_defs.conf:702 app/conf/user_pref_defs.conf:740 app/conf/user_pref_defs.conf:780 app/conf/user_pref_defs.conf:819 app/conf/user_pref_defs.conf:854 app/conf/user_pref_defs.conf:888 app/conf/user_pref_defs.conf:956 app/conf/user_pref_defs.conf:1016
 msgid "Duplicate relationships?"
@@ -24956,23 +24956,23 @@ msgstr "Medien duplizieren?"
 
 #: app/conf/user_pref_defs.conf:589
 msgid "If checked all media associated with the object will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden alle Medien, die in Verbindung mit einem Objekt stehen dupliziert."
 
 #: app/conf/user_pref_defs.conf:600
 msgid "If checked alternate names for the lot will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden nicht-bevorzugte Bezeichnungen im Konvolut dupliziert."
 
 #: app/conf/user_pref_defs.conf:611
 msgid "If checked all fields in the lot will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden alle Felder des Konvoluts dupliziert."
 
 #: app/conf/user_pref_defs.conf:639
 msgid "If checked alternate names for the entity will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden nicht-bevorzugte Bezeichnungen in der Entität dupliziert."
 
 #: app/conf/user_pref_defs.conf:650
 msgid "If checked all fields in the entity will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden alle Felder der Entität dupliziert."
 
 #: app/conf/user_pref_defs.conf:681
 msgid "If checked alternate names for the place will be duplicated."
@@ -24992,27 +24992,27 @@ msgstr ""
 
 #: app/conf/user_pref_defs.conf:759
 msgid "If checked alternate names for the occurrence will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden nicht-bevorzugte Bezeichnungen in den Vorkommnissen dupliziert."
 
 #: app/conf/user_pref_defs.conf:770
 msgid "If checked all fields in the occurrence will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden alle Felder der Vorkommnisse dupliziert."
 
 #: app/conf/user_pref_defs.conf:798
 msgid "If checked alternate names for the storage location will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden nicht-bevorzugte Bezeichnungen in den Standorten dupliziert."
 
 #: app/conf/user_pref_defs.conf:809
 msgid "If checked all fields in the storage location will be duplicated."
-msgstr "Wenn diese Option markiert ist, werden alle Felder des Lagerplatzes dupliziert."
+msgstr "Wenn diese Option ausgewählt ist, werden alle Felder des Standortes dupliziert."
 
 #: app/conf/user_pref_defs.conf:833
 msgid "If checked alternate names for the loan will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden nicht-bevorzugte Bezeichnungen in Leihen dupliziert."
 
 #: app/conf/user_pref_defs.conf:844
 msgid "If checked all fields in the loan will be duplicated."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden alle Felder von Leihen dupliziert."
 
 #: app/conf/user_pref_defs.conf:867
 msgid "If checked alternate names for the movement will be duplicated."
@@ -25080,11 +25080,11 @@ msgstr "Wenn diese Option markiert ist, werden alle Elemente des Sets dupliziert
 
 #: app/conf/user_pref_defs.conf:1065
 msgid "Duplicate placements?"
-msgstr ""
+msgstr "Verstandortung duplizieren"
 
 #: app/conf/user_pref_defs.conf:1066
 msgid "If checked all placements in the display will be included in the duplicated set."
-msgstr ""
+msgstr "Wenn diese Option ausgewählt ist, werden alle Standorte in der Anzeige, in die duplizierten Sets beigefügt."
 
 #: app/conf/user_pref_defs.conf:1110
 msgid "Your organization."

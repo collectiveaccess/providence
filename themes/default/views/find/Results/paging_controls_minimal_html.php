@@ -51,7 +51,7 @@
 		}
 		$vs_searchNav .= '&nbsp;&nbsp;&nbsp;'._t("Page").' '.$this->getVar('page').'/'.$this->getVar('num_pages').'&nbsp;&nbsp;&nbsp;';
 		if ($this->getVar('page') < $this->getVar('num_pages')) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>"._("Next")." &rsaquo;</a>";
+			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>"._t("Next")." &rsaquo;</a>";
 		}
 		$vs_searchNav .= "</div>";
 	}

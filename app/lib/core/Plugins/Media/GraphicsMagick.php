@@ -226,12 +226,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 		
-		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
-		
-		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			return null;	// don't use if CoreImage executable are available
-		}
-		
 		if (caMediaPluginImagickInstalled()) {	
 			return null;	// don't use if Imagick is available
 		}
@@ -253,10 +247,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		if ($this->register()) {
 			$va_status['available'] = true;
 		} else {
-			if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-				$va_status['unused'] = true;
-				$va_status['warnings'][] = _t("Didn't load because CoreImageTool is available and preferred");
-			} 
 			if (caMediaPluginImagickInstalled()) {	
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Imagick is available and preferred");

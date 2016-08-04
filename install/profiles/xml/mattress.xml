@@ -1006,14 +1006,6 @@
             </label>
           </labels>
         </item>
-        <item idno="chinese" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Chinese</name_singular>
-              <name_plural>Chinese</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="cuban" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -2281,7 +2273,7 @@
             </label>
           </labels>
         </item>
-        <item idno="bleeding" rank="15" enabled="1" default="0">
+        <item idno="pd_general" rank="15" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Planar Distortions (Generalized)</name_singular>
@@ -2289,7 +2281,7 @@
             </label>
           </labels>
         </item>
-        <item idno="bleeding" rank="16" enabled="1" default="0">
+        <item idno="pd_local" rank="16" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Planar Distortions (Local)</name_singular>
@@ -2297,7 +2289,7 @@
             </label>
           </labels>
         </item>
-        <item idno="bleeding" rank="17" enabled="1" default="0">
+        <item idno="pd_secondary" rank="17" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Planar Distortions (Secondary Support)</name_singular>
@@ -2305,7 +2297,7 @@
             </label>
           </labels>
         </item>
-        <item idno="stained" rank="18" enabled="1" default="0">
+        <item idno="stained_general" rank="18" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Staining and Discoloration (Generalized)</name_singular>
@@ -2313,7 +2305,7 @@
             </label>
           </labels>
         </item>
-        <item idno="stained" rank="19" enabled="1" default="0">
+        <item idno="stained_local" rank="19" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Staining and Discoloration (Local)</name_singular>

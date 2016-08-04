@@ -76,7 +76,7 @@
 			print "<div style='float: right;'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'AdvancedSearchForm').'<br/>'.
 				caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'))."</div>\n";
 			print $this->render('search_form_table_html.php');
-			
+			print caHTMLHiddenInput('form_id', array('value' => $vn_form_id));
 ?>
 		<script type="text/javascript">
 			function caAdvancedSearchFormReset() {

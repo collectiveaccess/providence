@@ -69,7 +69,8 @@ class ULANPlugin extends BaseApplicationPlugin {
 	 */
 	public function hookRenderMenuBar($pa_menu_bar) {
 		if ($o_req = $this->getRequest()) {
-			if (!$o_req->user->canDoAction('can_import_ulan')) { return true; }
+			if (!$o_req->user->canDoAction('can_import_ulan')) { return false; }
+			if(!(bool)$this->opo_config->get('enabled')) { return false; }
 
 			if (isset($pa_menu_bar['Import'])) {
 				$va_menu_items = $pa_menu_bar['Import']['navigation'];

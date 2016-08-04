@@ -41,7 +41,6 @@ include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 define("LIBRARY_GD", 0);
 define("LIBRARY_IMAGEMAGICK",2);
 define("LIBRARY_IMAGICK",3);
-define("LIBRARY_COREIMAGE",4);
 define("LIBRARY_GMAGICK",5);
 define("LIBRARY_GRAPHICSMAGICK",6);
 
@@ -107,9 +106,6 @@ class TilepicParser {
 	var $opo_external_app_config;
 	var $ops_imagemagick_path;
 	var $ops_graphicsmagick_path;
-	var $ops_CoreImage_path;
-	
-	var $opa_CoreImage_pipeline;
 	
 	# ------------------------------------------------------------------------------------
 	function TilepicParser($filename="") {
@@ -117,8 +113,6 @@ class TilepicParser {
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
-		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
-		$this->opa_CoreImage_pipeline = array();
 		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 		
 		// edit ranking of preferred backends for tilepic processing here
@@ -128,7 +122,6 @@ class TilepicParser {
 		
 		$va_backend_ranking = array(
 			LIBRARY_GMAGICK => caMediaPluginGmagickInstalled(),
-			LIBRARY_COREIMAGE => caMediaPluginCoreImageInstalled($this->ops_CoreImage_path),
 			LIBRARY_IMAGICK => caMediaPluginImagickInstalled(),
 			LIBRARY_GRAPHICSMAGICK => caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path),
 			LIBRARY_IMAGEMAGICK => caMediaPluginImageMagickInstalled($this->ops_imagemagick_path),
@@ -164,9 +157,6 @@ class TilepicParser {
 				break;
 			case LIBRARY_IMAGICK:
 				$this->backend = LIBRARY_IMAGICK;
-				break;
-			case LIBRARY_COREIMAGE:
-				$this->backend = LIBRARY_COREIMAGE;
 				break;
 			case LIBRARY_GMAGICK:
 				$this->backend = LIBRARY_GMAGICK;
@@ -338,9 +328,6 @@ class TilepicParser {
 				break;
 			case LIBRARY_IMAGICK:
 				return $this->encode_imagick($ps_filepath, $ps_output_path, $pa_options);
-				break;
-			case LIBRARY_COREIMAGE:
-				return $this->encode_coreimage($ps_filepath, $ps_output_path, $pa_options);
 				break;
 			case LIBRARY_GRAPHICSMAGICK:
 				return $this->encode_graphicsmagick($ps_filepath, $ps_output_path, $pa_options);
@@ -533,113 +520,6 @@ class TilepicParser {
 			}
 		}
 		return null;
-	}
-	# ------------------------------------------------
-	private function _CoreImageRead($ps_filepath) {
-		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			$vs_output = shell_exec('sips --getProperty format --getProperty space --getProperty bitsPerSample --getProperty pixelWidth --getProperty pixelHeight --getProperty dpiWidth --getProperty dpiHeight '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""));
-			
-			$va_tmp = explode("\n", $vs_output);
-			
-			array_shift($va_tmp);
-			
-			$va_properties = array();
-			foreach($va_tmp as $vs_line) {
-				$va_line_tmp = explode(':', $vs_line);
-				$va_properties[trim($va_line_tmp[0])] = trim($va_line_tmp[1]);
-			}
-			
-			return array(
-				'mimetype' => $this->appleTypeToMimeType($va_properties['format']),
-				'magick' => $va_properties['format'],
-				'width' => $va_properties['pixelWidth'],
-				'height' => $va_properties['pixelHeight'],
-				'ops' => array(),
-				'filepath' => $ps_filepath
-			);
-		}
-		return null;
-	}
-	# ------------------------------------------------
-	private function _CoreImageProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null, $pb_pipeline=false) {
-		
-		foreach($pa_ops as $va_op) {
-			switch($va_op['op']) {
-				case 'size':
-					if ($va_op['width'] < 1) { break; }
-					if ($va_op['height'] < 1) { break; }
-					
-					$vn_scale = $va_op['width']/$va_op['orig_width'];
-					$va_ops[] = "filter image CILanczosScaleTransform scale={$vn_scale}:aspectRatio=1";
-					break;
-				case 'crop':
-					if ($va_op['width'] < 1) { break; }
-					if ($va_op['height'] < 1) { break; }
-					if ($va_op['x'] < 0) { break; }
-					if ($va_op['y'] < 0) { break; }
-					
-					// CoreImage y-origin is at the bottom, not the top, of the image
-					$vn_y = $va_op['orig_height'] - $va_op['y'] - $va_op['height'];
-					if ($vn_y < 0) { $va_op['height'] += $vn_y; $vn_y = 0; }
-					if ($va_op['height'] <= 0) { break; }
-					$va_ops[] = "filter image CICrop rectangle=".join(",", array($va_op['x'], $vn_y, $va_op['width'], $va_op['height']));
-					break;
-				case 'rotate':
-					if (!is_numeric($va_op['angle'])) { break; }
-					$va_ops[] = "filter image CIAffineTransform transform=".cos($va_op['angle']).",".(-1*sin($va_op['angle'])).",0,".sin($va_op['angle']).",".cos($va_op['angle']).",0";
-					break;
-				case 'filter_despeckle':
-					// TODO: see if this works nicely... just using default values
-					$va_ops[] = "filter image CINoiseReduction inputNoiseLevel=0.2:inputSharpness=0.4";
-					break;
-				case 'filter_median':
-					if ($va_op['radius'] < 0) { break; }
-					// NOTE: CoreImage Median doesn't take a radius, unlike ImageMagick's
-					$va_ops[] = "filter image CIMedianFilter ";
-					break;
-				case 'filter_unsharp_mask':
-				case 'filter_sharpen':
-					if ($va_op['radius'] < 0) { break; }
-					
-					$vn_radius = $va_op['radius'];
-					if(!($vn_intensity = $va_op['amount'])) {
-						$vn_intensity = 1;
-					}
-					
-					$va_ops[] = "filter image CIUnsharpMask radius={$vn_radius}:intensity={$vn_intensity}";
-					break;
-			}
-		}
-		
-		if (is_array($va_ops) && sizeof($va_ops)) {
-			$ps_mimetype = 'image/jpeg';
-			
-			array_unshift($va_ops, "load image \"{$ps_source_filepath}\"");
-			array_push($va_ops, "store image \"{$ps_dest_filepath}\" ".$this->apple_UTIs[$ps_mimetype]);
-			
-			if ($pb_pipeline) {
-				$this->opa_CoreImage_pipeline[] = join(" ", $va_ops);
-			} else {
-				exec($this->ops_CoreImage_path." ".join(" ", $va_ops), $va_output, $vn_ret);
-			}
-		}
-		
-		return true;
-	}
-	# ------------------------------------------------
-	private function _CoreImageFlushPipeline() {
-		if (sizeof($this->opa_CoreImage_pipeline)) {
-			exec($this->ops_CoreImage_path." ".join(" ", $this->opa_CoreImage_pipeline), $va_output, $vn_ret);
-		}
-		$this->opa_CoreImage_pipeline = array();
-	}
-	# ------------------------------------------------
-	private function _CoreImageImageFromTiles($ps_dest_filepath, $pa_tiles, $pn_tile_width, $pn_tile_height) {
-		// TODO: implement this for _CoreImageImageFromTiles 
-		
-		//exec($this->ops_imagemagick_path.'/montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
-	
-		return true;
 	}
 	# ------------------------------------------------------------------------------------
 	function encode_imagemagick ($ps_filepath, $ps_output_path, $pa_options) {
@@ -1096,331 +976,6 @@ class TilepicParser {
 			}
 			if ($this->debug) { print "OUTPUT $tiles TILES FOR LAYER $l : $image_width x $image_height\n";}
 		}
-		if ($vs_filepath != $ps_filepath) { @unlink($vs_filepath); }
-		
-		#
-		# Write Tilepic format file
-		#
-		if ($this->debug) { print "WRITING FILE..."; }
-		if ($fh = fopen($ps_output_path.".tpc", "w")) {
-			# --- attribute list
-			$attribute_list = "";
-			$attributes = 0;
-			
-			if ((isset($pa_options["attributes"])) && (is_array($pa_options["attributes"]))) {
-				$pa_options["attributes"]["mimeType"] = $pa_options["output_mimetype"];
-			} else {
-				$pa_options["attributes"] = array("mimeType" => $pa_options["output_mimetype"]);
-			}
-			foreach ($pa_options["attributes"] as $k => $v) {
-				$attribute_list .= "$k=$v\0";
-				$attributes++;
-			}
-			
-			if ($this->debug) { print "header OK;"; }
-			# --- header
-			if (!fwrite($fh, "TPC\n")) {
-				$this->error = "Could not write Tilepic signature";
-				return false;
-			}
-			if (!fwrite($fh, pack("NNNNNNnnNN",40, $base_width, $base_height, $pa_options["tile_width"], $pa_options["tile_height"], $tiles, $pa_options["layers"], $pa_options["layer_ratio"], strlen($attribute_list),$attributes))) {
-				$this->error = "Could not write Tilepic header";
-				return false;
-			}
-		
-			# --- offset table
-			$offset = 44 + ($tiles * 4);
-			for($i=sizeof($layer_list)-1; $i >= 0; $i--) {
-				for($j=0; $j<sizeof($layer_list[$i]);$j++) {
-					if (!fwrite($fh, pack("N",$offset))) {
-						$this->error = "Could not write Tilepic offset table";
-						return false;
-					}
-					$offset += strlen($layer_list[$i][$j]);
-				}   
-			}
-			if ($this->debug) { print "offset table OK;"; }
-			
-			if (!fwrite($fh, pack("N", $offset))) {
-				$this->error = "Could not finish writing Tilepic offset table";
-				return false;
-			}
-			
-			# --- tiles
-			for($i=sizeof($layer_list)-1; $i >= 0; $i--) {
-				for($j=0; $j<sizeof($layer_list[$i]);$j++) {
-					if (!fwrite($fh, $layer_list[$i][$j])) {
-						$this->error = "Could not write Tilepic tile data";
-						return false;
-					}
-				}   
-			}
-			if ($this->debug) { print "tiles OK;"; }
-			unset($layer_list);
-			# --- attributes
-			if (!fwrite($fh, $attribute_list)) {
-				$this->error = "Could not write Tilepic attributes";
-				return false;
-			}
-			if ($this->debug) { print "attributes OK\n"; }
-			fclose($fh);
-			
-			return $pa_options;
-		} else {
-			$this->error = "Couldn't open output file $ps_output_path\n";
-			return false;
-		}
-	}
-	# ------------------------------------------------------------------------------------
-	function encode_coreimage ($ps_filepath, $ps_output_path, $pa_options) {
-		if (!($vs_tilepic_tmpdir = $this->opo_config->get('tilepic_tmpdir'))) {
-			$vs_tilepic_tmpdir = '/tmp';
-		}
-		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
-			$this->error = "Invalid output format";
-			return false;
-		}
-		
-		#
-		# Open image
-		#
-		$h = $this->_CoreImageRead($ps_filepath);
-        if (!$h) {
-			$this->error = "Couldn't open image $ps_filepath";
-			return false;
-        }
-        
-        $vs_filepath = $ps_filepath;
-		
-        $orig_image_width = $image_width = $h['width'];
-        $orig_image_height = $image_height = $h['height'];
-        if (($image_width < 10) || ($image_height < 10)) {
-        	$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
-			return false;
-        }
-        
-        if ($pa_options["scale_factor"] != 1) {
-        	$image_width *= $pa_options["scale_factor"];
-        	$image_height *= $pa_options["scale_factor"];
-			
-			$vs_tmp_fname = tempnam($vs_tilepic_tmpdir, 'tpc_scale_');
-			if (!($this->_CoreImageProcess($vs_filepath, $vs_tmp_fname, array(
-					array(
-						'op' => 'size',
-						'width' => $image_width,
-						'height' => $image_height,
-						'orig_width' => $orig_image_width,
-						'orig_height' => $orig_image_height
-					)
-				)
-			))) {
-				$this->error = "Couldn't scale image";
-				@unlink($vs_tmp_fname);
-				return false;
-			}
-			$vs_filepath = $vs_tmp_fname;
-        }
-        
-        if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
-				if (isset($va_exif['IFD0']['Orientation'])) {
-					$vn_orientation_rotate = null;
-					$vn_orientation = $va_exif['IFD0']['Orientation'];
-					switch($vn_orientation) {
-						case 3:
-							$vn_orientation_rotate = 180;
-							break;
-						case 6:
-							$vn_orientation_rotate = 90;
-							break;
-						case 8:
-							$vn_orientation_rotate = -90;
-							break;
-					}
-					
-					if ($vn_orientation_rotate) {
-						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_rotate_');
-						$vs_tmp_fname = $vs_tmp_basename.'.jpg';
-						if (!($this->_CoreImageProcess($vs_filepath, $vs_tmp_fname, array(
-								array(
-									'op' => 'rotate',
-									'angle' => $vn_orientation_rotate
-								)
-							)
-						))) {
-							$this->error = "Couldn't rotate image";
-							@unlink($vs_tmp_fname);
-							return false;
-						}
-						
-						if (in_array($vn_orientation_rotate, array(90, -90))) {
-							$vn_tmp = $image_width;
-							$image_width = $h['width'] = $image_height;
-							$image_height = $h['height'] = $vn_tmp;
-						}
-						$vs_filepath = $vs_tmp_fname;
-					}
-				}
-			}
-		}
-        
-		#
-		# How many layers to make?
-		#
-		if (!$pa_options["layers"]) {
-			$sw = $image_width * $pa_options["layer_ratio"];
-			$sh = $image_height * $pa_options["layer_ratio"];
-			$pa_options["layers"] = 1;
-			while (($sw >= $pa_options["tile_width"]) || ($sh >= $pa_options["tile_height"])) {
-				$sw = ceil($sw / $pa_options["layer_ratio"]);
-				$sh = ceil($sh / $pa_options["layer_ratio"]);
-				$pa_options["layers"] ++;
-			}
-		}
-		
-		#
-		# Cut image into tiles
-		#
-		$tiles = 0;
-		$layer_list = array();
-		$base_width = $image_width;
-		$base_height = $image_height;
-		
-		if ($this->debug) { print "BASE $base_width x $base_height \n";}
-		for($l=$pa_options["layers"]; $l >= 1; $l--) {
-			
-			$x = $y = 0;
-			$wx = $pa_options["tile_width"];
-			$wy = $pa_options["tile_height"];
-			
-			if ($this->debug) { print "LAYER=$l\n"; };
-			if ($l < $pa_options["layers"]) {
-				$orig_image_width = $image_width;
-				$orig_image_height = $image_height;
-				$image_width = ceil($image_width/$pa_options["layer_ratio"]);
-				$image_height = ceil($image_height/$pa_options["layer_ratio"]);
-				if ($this->debug) { print "RESIZE layer $l TO $image_width x $image_height \n";}
-				
-				
-				$vs_tmp_fname = tempnam($vs_tilepic_tmpdir, 'tpc_layer_');
-				if (!($this->_CoreImageProcess($vs_filepath, $vs_tmp_fname, array(
-						array(
-							'op' => 'size',
-							'width' => $image_width,
-							'height' => $image_height,
-							'orig_width' => $orig_image_width,
-							'orig_height' => $orig_image_height
-						)
-					)
-				))) {
-					$this->error = "Couldn't scale image";
-					@unlink($vs_tmp_fname);
-					return false;
-				}
-				if ($vs_filepath != $ps_filepath) { @unlink($vs_filepath); }
-				$vs_filepath = $vs_tmp_fname;
-			}
-		
-			$i = 0;
-			
-			// generate first row strip of image
-			$vs_strip_name = tempnam($vs_tilepic_tmpdir, 'tpc_strip_');
-			if (!($this->_CoreImageProcess($vs_filepath, $vs_strip_name, array(
-					array(
-						'op' => 'crop',
-						'width' => $image_width,
-						'height' => $wy,
-						'x' => 0,
-						'y' => 0,
-						'orig_width' => $image_width,
-						'orig_height' => $image_height
-					), 
-					array(
-						'op' => 'strip'
-					)
-				),
-				$pa_options["quality"]
-			))) {
-				$this->error = "Couldn't generate image strip";
-				return false;
-			}
-			
-			$layer_list[] = array();
-			
-			$tile_name_list = array();
-			while($y < $image_height) {
-				$vs_tmp_fname = tempnam($vs_tilepic_tmpdir, 'tpc_tile_');
-				if (!($this->_CoreImageProcess($vs_strip_name, $vs_tmp_fname, array(
-						array(
-							'op' => 'crop',
-							'width' => $wx,
-							'height' => $wy,
-							'x' => $x,
-							'y' => 0,
-							'orig_width' => $image_width,
-							'orig_height' => $wy
-						), 
-						array(
-							'op' => 'strip'
-						)
-					),
-					$pa_options["quality"], true
-				))) {
-					$this->error = "Couldn't scale image";
-					return false;
-				}
-				
-				$tile_name_list[] = $vs_tmp_fname;
-				$x += $pa_options["tile_width"];
-				
-				if ($x >= $image_width) {
-					$y += $pa_options["tile_height"];
-					$x = 0;
-					
-					$this->_CoreImageFlushPipeline();
-					
-					foreach($tile_name_list as $vs_tmp_fname) {
-						$vs_tile = file_get_contents($vs_tmp_fname);
-						@unlink($vs_tmp_fname);
-						$layer_list[sizeof($layer_list)-1][] = $vs_tile;
-						
-						$tile_name_list = array();
-					}
-					
-					@unlink($vs_strip_name);
-					
-					// get next strip
-					$vs_strip_name = tempnam($vs_tilepic_tmpdir, 'tpc_strip_');
-					if (!($this->_CoreImageProcess($vs_filepath, $vs_strip_name, array(
-							array(
-								'op' => 'crop',
-								'width' => $image_width,
-								'height' => $wy,
-								'x' => 0,
-								'y' => $y,
-								'orig_width' => $image_width,
-								'orig_height' => $image_height
-							), 
-							array(
-								'op' => 'strip'
-							)
-						),
-						$pa_options["quality"]
-					))) {
-						$this->error = "Couldn't generate image strip";
-						return false;
-					}
-				}
-				
-				$i++;
-				$tiles++;
-				
-				
-			}
-			@unlink($vs_strip_name);
-			if ($this->debug) { print "OUTPUT $tiles TILES FOR LAYER $l : $image_width x $image_height\n";}
-		}
-		@unlink($vs_strip_name);
 		if ($vs_filepath != $ps_filepath) { @unlink($vs_filepath); }
 		
 		#

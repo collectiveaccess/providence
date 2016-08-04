@@ -37,7 +37,7 @@
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__."/core/ApplicationVars.php");
 require_once(__CA_LIB_DIR__."/core/Utils/ProcessStatus.php");
@@ -340,7 +340,7 @@ class TaskQueue extends BaseObject {
 					$this->opo_eventlog->log(array(
 						"CODE" => "ERR", 
 						"SOURCE" => "TaskQueue->processQueue()", 
-						"MESSAGE" => "Queue processing failed using handler $proc_handler: ".$h->error->getErrorDescription()." [".$h->error->getErrorNumber()."]; queue was <b>NOT</b> halted")
+						"MESSAGE" => "Queue processing failed using handler $proc_handler: ".($h->error ? $h->error->getErrorDescription() : '')." [".$h->error->getErrorNumber()."]; queue was <b>NOT</b> halted")
 					);
 					$this->errors[] = $h->error;
 					

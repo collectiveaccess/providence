@@ -35,7 +35,7 @@
   */
  
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
 require_once(__CA_LIB_DIR__."/core/Controller/Response/ResponseHTTP.php");
 require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");

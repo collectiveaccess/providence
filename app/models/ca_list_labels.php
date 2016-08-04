@@ -165,7 +165,7 @@ class ca_list_labels extends BaseLabel {
 	protected $LABEL_DISPLAY_FIELD = 'name';
 	
 	# --- Name of field used for sorting purposes
-	protected $LABEL_SORT_FIELD = 'name';
+	protected $LABEL_SORT_FIELD = null;
 	
 	# --- Name of table this table contains label for
 	protected $LABEL_SUBJECT_TABLE = 'ca_lists';

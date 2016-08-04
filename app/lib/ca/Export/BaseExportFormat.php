@@ -37,6 +37,7 @@
  	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportXML.php');
  	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportMARC.php');
  	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportCSV.php');
+	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportExifTool.php');
  
 	abstract class BaseExportFormat {
 		# -------------------------------------------------------

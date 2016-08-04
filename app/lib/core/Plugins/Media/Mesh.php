@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,6 +64,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		"EXPORT" => array(
 			"application/ply" 						=> "ply",
+			"application/ctm" 						=> "ctm",
 			"application/stl" 						=> "stl",
 			"application/surf" 						=> "surf",
 			"text/plain"							=> "txt",
@@ -98,12 +99,14 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		"application/ply" 				=> "Polygon File Format",
 		"application/stl" 				=> "Standard Tessellation Language File",
 		"application/surf" 				=> "Surface Grid Format",
+		"application/ctm" 				=> "CTM"
 	);
 	
 	var $magick_names = array(
 		"application/ply" 				=> "PLY",
 		"application/stl" 				=> "STL",
 		"application/surf" 				=> "SURF",
+		"application/ctm" 				=> "CTM"
 	);
 	
 	# ------------------------------------------------
@@ -170,6 +173,20 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				);
 				return "application/surf";
 			}
+			
+			// binary STL?
+			$vs_section = file_get_contents($ps_filepath, NULL, NULL, 0, 79);
+			fseek($r_fp, 80);
+			$vs_data = fread($r_fp, 4);
+			$vn_num_facets = array_shift(unpack("I", $vs_data));
+			if ((84 + ($vn_num_facets * 50)) == ($vn_filesize = filesize($ps_filepath))) {
+				$this->properties = $this->handle = $this->ohandle = array(
+					"mimetype" => 'application/stl',
+					"filesize" => $vn_filesize,
+					"typename" => "Standard Tessellation Language File"
+				);
+				return "application/stl";
+			}
 		}
 
 		$this->filepath = null;
@@ -210,6 +227,15 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			return '';
 		}
 		return true;
+	}
+	# ------------------------------------------------
+	/**
+	 * Returns text content for indexing, or empty string if plugin doesn't support text extraction
+	 *
+	 * @return String Extracted text
+	 */
+	public function getExtractedText() {
+		return '';
 	}
 	# ------------------------------------------------
 	/**
@@ -282,17 +308,36 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			return false;
 		}
 
-		# pretty restricted, but we can convert ply to stl!
-		if(($this->properties['mimetype'] == 'application/ply') && ($ps_mimetype == 'application/stl')){
-			if(file_exists($this->filepath)){
-				if(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
-					return $ps_filepath.'.stl';	
+		switch($ps_mimetype) {
+			case 'application/ctm':
+				if(file_exists($this->filepath) && caOpenCTMInstalled()){
+					exec(caGetExternalApplicationPath('openctm').' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
+					return "{$ps_filepath}.ctm";	
 				} else {
-					@unlink($ps_filepath.'.stl');
-					$this->postError(1610, _t("Couldn't convert ply model to stl"), "WLPlugMediaMesh->write()");
-					return false;
+					@unlink("{$ps_filepath}.ctm");
+					//$this->postError(1610, _t("Couldn't convert %1 model to ctm", $this->properties['mimetype']), "WLPlugMediaMesh->write()");
+					//return false;
 				}
-			}
+				break;
+			default:
+				# pretty restricted, but we can convert ply to stl!
+				if(($this->properties['mimetype'] == 'application/ply') && ($ps_mimetype == 'application/stl')){
+					if(file_exists($this->filepath)){
+						if (caMeshlabServerInstalled()) {
+							putenv("DISPLAY=:0");
+							chdir('/usr/local/bin');
+							exec(caGetExternalApplicationPath('meshlabserver')." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
+							return "{$ps_filepath}.stl";	
+						} elseif(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
+							return "{$ps_filepath}.stl";	
+						} else {
+							@unlink("{$ps_filepath}.stl");
+							$this->postError(1610, _t("Couldn't convert ply model to stl"), "WLPlugMediaMesh->write()");
+							return false;
+						}
+					}
+				}
+				break;
 		}
 		
 		# use default media icons
@@ -358,22 +403,194 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		$vn_width = $pa_options["viewer_width"] ? $pa_options["viewer_width"] : 820;
-		$vn_height = $pa_options["viewer_height"] ? $pa_options["viewer_height"] : 520;
+		$vn_width = (isset($pa_options["viewer_width"]) && ($pa_options["viewer_width"] > 0)) ? $pa_options["viewer_width"] : 820;
+		$vn_height = (isset($pa_options["viewer_height"]) && ($pa_options["viewer_height"] > 0)) ? $pa_options["viewer_height"] : 520;
 
-		$vs_id = $pa_options["id"] ? $pa_options["id"] : "mesh_canvas";
+		$vs_id = (isset($pa_options["id"]) && $pa_options["id"]) ? $pa_options["id"] : "mesh_canvas";
+		
+		$vs_bgcolor = (isset($pa_options["background_color"]) && $pa_options["background_color"]) ? preg_replace("![^A-Fa-f0-9]+!", "", $pa_options["background_color"]) : "CCCCCC";
+		
+		$vs_progress_id = (isset($pa_options["progress_id"]) && $pa_options["progress_id"]) ? $pa_options["progress_id"] : "caMediaOverlayProgress";
+		
+		$vn_progress_total_filesize = (isset($pa_options["progress_total_filesize"]) && ($pa_options["progress_total_filesize"] > 0)) ? $pa_options["progress_total_filesize"] : 0;
+		
 
-		if(in_array($pa_properties['mimetype'], array("application/stl"))){
+		if(in_array($pa_properties['mimetype'], array("application/ply", "application/stl", "application/ctm"))){
 			ob_start();
 ?>
-<canvas id="<?php print $vs_id; ?>" style="border: 1px solid;" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" ></canvas>
+		<div id="viewer"></div>
 <script type="text/javascript">
-	var canvas = document.getElementById('<?php print $vs_id; ?>');
-	var viewer = new JSC3D.Viewer(canvas);
-	viewer.setParameter('SceneUrl', '<?php print $ps_url; ?>');
-	viewer.setParameter('RenderMode', 'flat');
-	viewer.init();
-	viewer.update();
+			var container, stats;
+			var camera, cameraTarget, scene, renderer;
+			var total_filesize = <?php print $vn_progress_total_filesize; ?>;
+			
+			init();
+			animate();
+			
+			function init() {
+				container = document.getElementById('viewer');
+
+				camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 150 );
+				camera.position.set( 3, 0.15, 3 );
+
+				cameraTarget = new THREE.Vector3( 0, -0.25, 0 );
+
+				scene = new THREE.Scene();
+				scene.add(camera);
+				
+				// ASCII file
+
+<?php
+	switch($pa_properties['mimetype']) {
+		case 'application/stl':
+?>
+				var loader = new THREE.STLLoader();
+<?php
+				break;
+		case 'application/ply':
+?>
+				var loader = new THREE.PLYLoader();
+<?php
+				break;
+		case 'application/ctm':
+?>
+				var loader = new THREE.CTMLoader();
+<?php
+				break;
+	}
+?>
+				function postLoad ( event ) {
+					var geometry = event;
+					if(!geometry.center) { geometry = event.content; }
+					
+					geometry.center();
+					var material = new THREE.MeshPhongMaterial( { ambient: 0xFFFFCC, color: 0xFFFFCC, specular: 0x111111, shininess: 200, side: THREE.DoubleSide } );
+					var mesh = new THREE.Mesh( geometry, material );
+					
+					var boundingBox = mesh.geometry.boundingBox.clone();
+					
+					var s = 3/Math.abs(boundingBox.max.x);
+					mesh.position.set( 0, 0, 0 );
+					mesh.scale.set( 0.25* s, 0.25 * s, 0.25 *s);
+					
+					mesh.castShadow = false;
+					mesh.receiveShadow = false;
+
+					scene.add( mesh );
+				
+					var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.7 );
+					scene.add( light );
+				
+					jQuery('#<?php print $vs_progress_id; ?> div').html("Loaded model");
+					setTimeout(function() {
+						jQuery('#<?php print $vs_progress_id; ?>').fadeOut(500);
+					}, 3000);
+
+				}
+				
+				function loadProgressMonitor( event ) {
+						jQuery('#<?php print $vs_progress_id; ?>').show();
+						var msg = "Loaded " + caUI.utils.formatFilesize(event.loaded/5.2, true);
+						if(total_filesize > 0) {
+							msg += " (" + Math.ceil((event.loaded/total_filesize) * 100) + "%)";
+						}
+						jQuery('#<?php print $vs_progress_id; ?> div').html(msg);
+				}
+				
+				if (loader.addEventListener) {
+					loader.addEventListener( 'load', postLoad);
+				
+				
+					loader.addEventListener( 'progress', loadProgressMonitor);
+				}
+				loader.load( '<?php print $ps_url; ?>' , postLoad, loadProgressMonitor);
+
+				// Lights
+				scene.add( new THREE.AmbientLight( 0x777777 ) );
+				
+				// renderer
+				if (Detector.webgl) {
+					renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
+				} else {
+					renderer = new THREE.CanvasRenderer( { antialias: false, alpha: false } );
+				}
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				renderer.physicallyBasedShading = true;
+
+				renderer.shadowMapEnabled = true;
+				renderer.shadowMapCullFace = THREE.CullFaceBack;
+
+				controls = new THREE.TrackballControls( camera, renderer.domElement );
+				controls.rotateSpeed = 0.5;
+				controls.zoomSpeed = 0.5;
+				controls.panSpeed = 0.2;
+ 
+				controls.noZoom = false;
+				controls.noPan = false;
+ 
+				controls.staticMoving = false;
+				controls.dynamicDampingFactor = 0.3;
+ 
+				controls.minDistance = 1.5;
+				controls.maxDistance = 100;
+				
+				renderer.setClearColor( 0x<?php print $vs_bgcolor; ?>, 1 );
+ 
+				controls.keys = [ 16, 17, 18 ]; // [ rotateKey, zoomKey, panKey ]
+
+				container.appendChild( renderer.domElement );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function addShadowedLight( x, y, z, color, intensity ) {
+
+				var directionalLight = new THREE.DirectionalLight( color, intensity );
+				directionalLight.position.set( x, y, z )
+				scene.add( directionalLight );
+
+				directionalLight.castShadow = true;
+				directionalLight.shadowCameraVisible = false;
+
+				var d = 1;
+				directionalLight.shadowCameraLeft = -d;
+				directionalLight.shadowCameraRight = d;
+				directionalLight.shadowCameraTop = d;
+				directionalLight.shadowCameraBottom = -d;
+
+				directionalLight.shadowCameraNear = 1;
+				directionalLight.shadowCameraFar = 4;
+
+				directionalLight.shadowMapWidth = 1024;
+				directionalLight.shadowMapHeight = 1024;
+
+				directionalLight.shadowBias = -0.005;
+				directionalLight.shadowDarkness = 0.15;
+				return directionalLight;
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {
+				controls.update(); 
+				camera.lookAt( cameraTarget );
+				renderer.render( scene, camera );
+			}
 </script>
 <?php
 			return ob_get_clean();
@@ -387,4 +604,3 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 }
-?>

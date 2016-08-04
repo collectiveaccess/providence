@@ -51,7 +51,7 @@
  				$t_screen = $this->view->getVar('t_subject');
 				$this->opn_ui_id = $t_screen->get('ui_id');
  				$t_ui = new ca_editor_uis($this->opn_ui_id);
- 				$va_screens = $t_ui->getScreens(null, null, array('showAll' => true));
+ 				$va_screens = $t_ui->getScreens(null, array('showAll' => true));
 				if(is_array($va_screens)) {
 					$o_result_context = new ResultContext($this->request, 'ca_editor_ui_screens', 'basic_search');
 					$o_result_context->setResultList(array_keys($va_screens));

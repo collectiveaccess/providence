@@ -35,7 +35,7 @@
 			cssHeader: 'list-header-unsorted',
 			widgets: ['zebra', 'cookie']
 		});
-	}
+	};
 	$.fn.caFilterTable = function (searchText) {
 		if (!searchText) { 
 			this.find('tbody tr').show();
@@ -44,7 +44,7 @@
 		this.find('tbody tr').hide();
 		this.find('tbody tr:contains('+searchText+')').show();
 		return this;
-	}
+	};
 })(jQuery);
 
 /* Table sorter sort-order persistence widget using jquery.cookiejar */

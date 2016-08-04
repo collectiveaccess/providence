@@ -95,6 +95,15 @@
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			
+ 			
+ 			
+ 			//
+ 			// Enforce type restriction, if defined
+ 			// 
+ 			if ($this->opn_type_restriction_id > 0) {
+ 				$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
+ 			}
+ 			
  			//
  			// Restrict facets to specific group for main browse landing page (if set in app.conf config)
  			// 			
@@ -172,11 +181,6 @@
  					return;
  				}
  			}
- 			
- 			//
- 			// Enforce type restriction, if defined
- 			// 
- 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
  			
  			MetaTagManager::setWindowTitle(_t('%1 browse', $this->browseName('plural')));
  			
@@ -377,10 +381,10 @@
  			$vs_cache_key = md5(join("/", array($ps_facet_name,$vs_show_group,$vs_grouping,$vm_id)));
  			$va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
  			
- 			if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
- 				$this->response->addContent($vs_content);
- 				return;
- 			}
+ 			//if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
+ 			//	$this->response->addContent($vs_content);
+ 			//	return;
+ 			//}
  			
  			// Enforce type restriction
  			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
