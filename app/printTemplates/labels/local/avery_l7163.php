@@ -33,7 +33,7 @@ $vo_result = $this->getVar('result');
 	<div class="description bodyText margin">^ca_objects.Description</div>
 </ifdef>
 <ifdef code="ca_entities" restrictToRelationshipTypes="donor">
-	<div class="bodyText margin">Source/Donor: ^ca_entities</div>
+	<div class="bodyText margin">Source/Donor: <unit relativeTo="ca_entities" restrictToRelationshipTypes="donor">^ca_entity_labels.surname, <ifdef code="ca_entity_labels.forename">^ca_entity_labels.forename</ifdef><ifnotdef code="ca_entity_labels.forename">^ca_entity_labels.middlename</ifnotdef></</unit></div>
 </ifdef>
 <ifdef code="ca_list_items" restrictToRelationshipTypes="described">
 	<div class="bodyText left">^ca_list_item_labels.hierarchy%maxLevelsFromTop=2</div>
