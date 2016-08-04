@@ -65,35 +65,38 @@ print $this->render("../footer.php");
 	$vn_line_count = 0;
 
 	while ($vo_result->nextHit()) {
-		if($vn_line_count === 0){
-			print "<thead><tr>";
-			foreach ($va_display_list as $vn_placement_id => $va_display_item) {
-				print "<th class='displayHeader'>" . $va_display_item['display'] . "</th>";
-			}
-			print "</tr></thead>";
+		if ($vn_line_count === 0) {
+			?>
+			<thead>
+			<tr>
+				<?php
+				foreach ($va_display_list as $vn_placement_id => $va_display_item) { ?>
+					<th class='displayHeader'><?php print $va_display_item['display'] ?></th>
+					<?php
+				}
+				?>
+			</tr>
+			</thead>
+			<?php
 		}
 		?>
 		<tr class="row">
-				<?php
-
-				foreach ($va_display_list as $vn_placement_id => $va_display_item) {
-					?><td><?php
-					$bundle_class = preg_replace('/W+/', '_',$va_display_item['bundle_name']);
-					$vs_display_value = $t_display->getDisplayValue(
-						$vo_result,
-						$vn_placement_id,
-						array(
-							'forReport' => TRUE,
-							'purify' => TRUE
-						)
-					);
-					print (strlen($vs_display_value) > 100 ? strip_tags(substr($vs_display_value, 0, 97)) . "&hellip;" : $vs_display_value);
-					?></td><?php
-					$vn_line_count ++;
-					error_log($vs_display_value);
-					error_log($vn_line_count);
-				}
-				?>
+			<?php
+			foreach ($va_display_list as $vn_placement_id => $va_display_item) { ?>
+				<td><?php
+				$vs_display_value = $t_display->getDisplayValue(
+					$vo_result,
+					$vn_placement_id,
+					array(
+						'forReport' => TRUE,
+						'purify' => TRUE
+					)
+				);
+				print (strlen($vs_display_value) > 100 ? strip_tags(substr($vs_display_value, 0, 97)) . "&hellip;" : $vs_display_value);
+				?></td><?php
+				$vn_line_count++;
+			}
+			?>
 		</tr>
 		<?php
 	}
