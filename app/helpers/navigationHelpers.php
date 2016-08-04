@@ -103,6 +103,7 @@
  	define('__CA_NAV_ICON_MEDIA_METADATA__', 61);
  	define('__CA_NAV_ICON_NUKE__', 62);
  	define('__CA_NAV_FULL_RESULTS__', 63);
+ 	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
  	
  	/**
  	 * Icon position constants
@@ -698,6 +699,7 @@
 				break;
 			case __CA_NAV_ICON_LOGIN__:
 				$vs_fa_class = 'fa-check-circle-o';
+				$vs_ca_class = 'loginButton';
 				break;
 			case __CA_NAV_ICON_SAVE__:
 				$vs_fa_class = 'fa-check-circle-o';
@@ -846,7 +848,10 @@
 				break;
 			case __CA_NAV_FULL_RESULTS__:
 				$vs_fa_class = 'fa-bars';
-				break;																			
+				break;
+			case __CA_NAV_ICON_EXPORT_SMALL__: 
+				$vs_fa_class = 'fa-external-link-square';
+				break;																							
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
