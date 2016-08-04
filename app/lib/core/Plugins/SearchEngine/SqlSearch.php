@@ -1460,6 +1460,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					// If we're querying on the fulltext index then we need to construct
 					// the query here... if we already have a direct SQL query to run then we can skip this
 					//
+					$va_sql_where = array();
 					if ($vb_is_blank_search) {
 						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id = 0))";
 						
@@ -1467,11 +1468,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$vs_sql_where = join(' OR ', $va_sql_where);
 					} elseif ($vb_is_not_blank_search) {
 						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id > 0))";
-						
 						if (!sizeof($va_sql_where)) { continue; }
 						$vs_sql_where = join(' OR ', $va_sql_where);
 					} elseif (!$vs_direct_sql_query) {
-						$va_sql_where = array();
 						if (sizeof($va_ft_terms)) {
 							if (($t_table) && (strlen($vs_fld_num) > 1)) {
 								$o_search = new SearchEngine();
