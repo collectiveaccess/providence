@@ -9,12 +9,12 @@
  * @pageSize a4
  * @pageOrientation portrait
  * @tables ca_objects
- * @marginLeft 4.7mm
- * @marginRight 4.7mm
- * @marginTop 15.2mm
+ * @marginLeft 6mm
+ * @marginRight 6mm
+ * @marginTop 16mm
  * @marginBottom 6mm
  * @horizontalGutter 0.1mm
- * @verticalGutter 2.5mm
+ * @verticalGutter 3.5mm
  * @labelWidth 98mm
  * @labelHeight 38mm
  * 
