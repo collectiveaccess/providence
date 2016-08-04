@@ -2787,7 +2787,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_get_related_opts['sortDirection'] = $pa_bundle_settings['sortDirection'];
 		}
 
+		$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
+		$va_opts = [
+			'table' => $vb_is_many_many ? $t_rel->tableName() : null,
+			'primaryKey' => $vb_is_many_many ? $t_rel->primaryKey() : null,
+			'template' => caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings),
+			'primaryIDs' => array($this->tableName() => array($this->getPrimaryKey())),
+			'request' => $po_request,
+			'stripTags' => true
+		];
+
 		if($ps_related_table == 'ca_sets') {
+			// sets special case
+			
 			$t_set = new ca_sets();
 			$va_items = caExtractValuesByUserLocale($t_set->getSetsForItem($this->tableNum(), $this->getPrimaryKey(), $va_get_related_opts));
 
@@ -2796,7 +2808,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$va_items = caSortArrayByKeyInValue($va_items, array($ps_sort), caGetOption('sortDirectio ', $va_get_related_opts, 'ASC'));
 			}
 
-			$va_vals = array();
+			$va_vals = [];
 			$vs_template = caGetBundleDisplayTemplate($this, 'ca_sets', $pa_bundle_settings);
 			if(is_array($va_items) && sizeof($va_items)) {
 				foreach($va_items as $vn_id => $va_item) {
@@ -2806,30 +2818,26 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 
 			return $va_vals;
-		} else {
-			if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
-				$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
-				$vs_rel_pk = $t_rel->primaryKey();
-
-				$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
-				if ($vb_is_many_many) {
-					$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
-					$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
-					$va_opts['table'] = $t_rel->tableName();
-					$va_opts['primaryKey'] = $t_rel->primaryKey();
-				} else {
-					$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
-					$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);
-				}
-
-				$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
-				$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
-				$va_opts['request'] = $po_request;
-
-				$va_vals = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
-
-				return $va_vals;
+		} elseif(($ps_related_table == 'ca_objects') && ($this->tableName() == 'ca_storage_locations') && (strlen($vs_mode = $pa_bundle_settings['locationTrackingMode']) > 0) && ($qr_results = $this->getLocationContents($vs_mode))) {
+			// Limit list to objects _currently_ in this location
+			
+			if (sizeof($va_ids = $qr_results->getAllFieldValues('ca_objects.object_id')) == 0) { return []; }
+			$qr_rel_items = caMakeSearchResult('ca_objects', $va_ids);
+			
+			return caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
+		} elseif (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
+			// Show fill list
+			
+			$va_opts['relatedItems'] = $va_items;
+			if ($vb_is_many_many) {
+				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
+				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
+			} else {
+				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $t_rel->primaryKey());
+				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);
 			}
+
+			return caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
 
 		return array();
