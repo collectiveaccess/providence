@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 	public function Index($pa_options=null) {
 		$po_search = (isset($pa_options['search']) && $pa_options['search']) ? $pa_options['search'] : null;
 		parent::Index($pa_options);
+		AssetLoadManager::register('advancedsearch');
 		AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
 
 		// Get elements of result context
@@ -262,6 +263,8 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 	# Ajax
 	# -------------------------------------------------------
 	public function getAdvancedSearchForm($pb_render_view=null) {
+		AssetLoadManager::register('advancedsearch');
+		
 		$t_form = new ca_search_forms();
 		if (!($vn_form_id = $this->request->getParameter('form_id', pInteger))) {
 			if ((!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) || (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__, $vn_form_id))) {

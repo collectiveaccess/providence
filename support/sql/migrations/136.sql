@@ -1,30 +1,33 @@
 /*
 	Date: 7 July 2016
 	Migration: 136
-	Description: Add logging of downloads
+	Description: More reasonable user/group notification model
 */
 
 /*==========================================================================*/
-create table ca_download_log (
-  log_id		      	int unsigned        not null AUTO_INCREMENT,
-  log_datetime        	int unsigned        not null,
-  user_id             	int unsigned        null,
-  ip_addr			  	char(15)			null,
-  table_num    			tinyint unsigned    not null,
-  row_id       			int unsigned        not null,
-  representation_id     int unsigned      	null,
-  download_source		varchar(40)			null,
+ALTER TABLE ca_notifications DROP FOREIGN KEY fk_ca_users_user_id;
+ALTER TABLE ca_notifications DROP FOREIGN KEY fk_ca_user_groups_group_id;
 
-  primary key (log_id),
 
-  constraint fk_ca_download_log_user_id foreign key (user_id)
-    references ca_users (user_id) on delete restrict on update restrict,
+ALTER TABLE ca_notifications DROP COLUMN user_id;
+ALTER TABLE ca_notifications DROP COLUMN group_id;
 
-  constraint fk_ca_download_log_representation_id foreign key (representation_id)
-    references ca_object_representations (representation_id) on delete restrict on update restrict,
+ALTER TABLE ca_notifications DROP COLUMN was_read;
 
-  index i_table_num_row_id (table_num, row_id),
-  index i_log_datetime (log_datetime)
+ALTER TABLE ca_notifications DROP INDEX i_table_num_row_id;
+ALTER TABLE ca_notifications DROP COLUMN table_num;
+ALTER TABLE ca_notifications DROP COLUMN row_id;
+/*==========================================================================*/
+create table ca_notification_subjects (
+  subject_id      int unsigned        not null auto_increment,
+  notification_id int unsigned        not null references ca_notifications(notification_id),
+  was_read        tinyint unsigned    not null default 0,
+  table_num       tinyint unsigned    not null,
+  row_id          int unsigned        not null,
+
+  primary key (subject_id),
+  index i_notification_id (notification_id),
+  index i_table_num_row_id (table_num, row_id)
 
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 /*==========================================================================*/

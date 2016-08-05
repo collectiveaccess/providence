@@ -74,7 +74,7 @@
 } else {
 ?>
 			<div id="errorLocation" class="errorPanel">
-				<img src='<?php print $vs_path; ?>/themes/default/graphics/buttons/glyphicons_078_warning_sign.png' class="permissionErrorIcon"/>
+				<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
 				<div class="errorDescription">
 <?php
 				print _t("There was an uncaught fatal error. Please contact your system administrator and check the CollectiveAccess log files.");

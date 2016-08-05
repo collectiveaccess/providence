@@ -81,7 +81,7 @@ class Bundlable extends Base {
 			return;
 		}
 
-		$this->getModelInstance()->delete();
+		$this->getModelInstance()->delete(true);
 		$this->checkModelInstanceForErrors();
 	}
 

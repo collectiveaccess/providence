@@ -647,7 +647,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 								'keyword_lowercase' => array(
 									'tokenizer' => 'keyword',
 									'filter' => 'lowercase'
-								)
+								),
+								'whitespace' => array(
+									'tokenizer' => 'whitespace',
+									'filter' => 'lowercase'
+								),
 							)
 						)
 					)

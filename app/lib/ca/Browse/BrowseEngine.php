@@ -3044,6 +3044,7 @@
 
 									if($qr_ancestors) {
 										while($qr_ancestors->nextHit()) {
+											if ($qr_ancestors->get('deleted')) { continue; }
 											$vn_parent_type_id = $qr_ancestors->get('type_id');
 											if ((sizeof($va_exclude_types) > 0) && in_array($vn_parent_type_id, $va_exclude_types)) { continue; }
 											if ((sizeof($va_restrict_to_types) > 0) && !in_array($vn_parent_type_id, $va_restrict_to_types)) { continue; }
@@ -3445,7 +3446,7 @@
 
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 							$vs_sql = "
-								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id
+								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id, li.rank, li.idno_sort
 								FROM ca_list_items li
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
@@ -4977,6 +4978,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 						if($qr_ancestors) {
 							while($qr_ancestors->nextHit()) {
+								if ($qr_ancestors->get('deleted')) { continue; }
 								$vn_parent_type_id = $qr_ancestors->get('type_id');
 								if ((sizeof($va_exclude_types) > 0) && in_array($vn_parent_type_id, $va_exclude_types)) { continue; }
 								if ((sizeof($va_restrict_to_types) > 0) && !in_array($vn_parent_type_id, $va_restrict_to_types)) { continue; }

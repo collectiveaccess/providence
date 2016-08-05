@@ -1026,10 +1026,20 @@
 			// rewrite ca_objects/dates/dates_value as ca_objects/dates_value, because that's
 			// how the SearchIndexer indexes -- we don't care about the container the field is in
 			$va_tmp = explode('\\/', $vs_new_field);
+			
+			// rewrite count queries
+			if (strtolower($va_tmp[1]) == 'count') { $va_tmp[1] = 'COUNT'; }	// uppercase count field
+			if (preg_match("/^count\|(.*)$/", strtolower($va_tmp[1]), $va_matches)) { $va_tmp[1] = 'COUNT|'.$va_matches[1]; }	// uppercase count field with optional type
+			
 			if(sizeof($va_tmp) == 3) {
-				unset($va_tmp[1]);
-				$vs_new_field = join('\\/', $va_tmp);
+				if (strtolower($va_tmp[2]) == 'count') {
+					$va_tmp[2] = 'COUNT'.ca_metadata_elements::getElementID($va_tmp[1]);
+					unset($va_tmp[1]);
+				} else {
+					unset($va_tmp[1]);
+				}
 			}
+			$vs_new_field = join('\\/', $va_tmp);
 		} else {
 			$vs_new_field = $po_term->field;
 		}
@@ -1269,9 +1279,45 @@
 
 			// add sortable elements
 			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
-			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
+			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id, ['indexByElementCode' => true]);
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			}
+
+			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
+				foreach(array_count_values($va_base_fields) as $vn_v => $vn_c) {
+					if($vn_c > 1) {
+						foreach(array_keys($va_base_fields, $vn_v) as $vs_k) {
+
+							$vs_code = explode('.', $vs_k)[1];
+
+
+							if(is_array($va_sortable_elements[$vs_code]['typeRestrictions'])) {
+								$va_restrictions = [];
+								foreach($va_sortable_elements[$vs_code]['typeRestrictions'] as $vs_table => $va_type_list) {
+									foreach($va_type_list as $vn_type_id => $vs_type_name) {
+										$va_restrictions[] = ucfirst($vs_table)." [{$vs_type_name}]";
+									}
+								}
+
+								$va_base_fields[$vs_k] .= ' (' . join('; ', $va_restrictions) . ')';
+							} elseif($vn_parent_id = $va_sortable_elements[$vs_code]['parent_id']) {
+
+								$t_parent = new ca_metadata_elements();
+								while($vn_parent_id) {
+									$t_parent->load($vn_parent_id);
+									$vn_parent_id = $t_parent->get('parent_id');
+								}
+
+								if($t_parent->getPrimaryKey()) {
+									$va_base_fields[$vs_k] .= ' (' . $t_parent->getLabelForDisplay() . ')';
+								}
+							}
+
+
+						}
+					}
+				}
 			}
 		}
 		natcasesort($va_base_fields);

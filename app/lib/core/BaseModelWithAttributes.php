@@ -283,7 +283,6 @@
 				$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 				$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
 				
-				
 				$vn_del_cnt = 0;
 				foreach($this->opa_attributes_to_remove as $va_attr) {
 					if ($va_attr['element_id'] == $vn_element_id) {
@@ -292,7 +291,7 @@
 				}
 				
 				$vn_count = $this->getAttributeCountByElement($t_element->getPrimaryKey(), ['includeBlanks' => true])  + $vn_add_cnt - $vn_del_cnt;
-				if ($vn_count <= $vn_min) { 
+				if ($vn_count < $vn_min) { 
 					if (caGetOption('showRepeatCountErrors', $pa_options, false)) {
 						$this->postError(1967, ($vn_min == 1) ? _t('Cannot remove value; at least %1 value is required', $vn_min) : _t('Cannot remove value; at least %1 values are required', $vn_min), 'BaseModelWithAttributes->removeAttribute()', $ps_error_source);
 					}

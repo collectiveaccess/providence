@@ -239,6 +239,10 @@ class Mapping {
 			$va_element_config[$ps_table.'/'.$vs_element_code]['analyzer'] = 'keyword_lowercase';
 		}
 
+		if(in_array('TOKENIZE_WS', $pa_indexing_config)) {
+			$va_element_config[$ps_table.'/'.$vs_element_code]['analyzer'] = 'whitespace';
+		}
+
 		// @todo break this out into separate classes in the ElasticSearch\FieldTypes namespace!?
 		switch($pa_element_info['datatype']) {
 			case 2:	// daterange

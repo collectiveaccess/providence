@@ -349,7 +349,11 @@ class Installer {
 
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->truncateIndex();
+			try {
+				$o_es->truncateIndex();
+			} catch(DatabaseException $e) {
+				// noop. this can happen when we operate on an empty database where ca_application_vars doesn't exist yet
+			}
 		}
 
 		return true;
