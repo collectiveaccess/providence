@@ -70,7 +70,7 @@ class MySQLDataReader extends BaseDataReader {
 	 */
 	public function read($ps_source, $pa_options=null) {
 		parent::read($ps_source, $pa_options);
-		
+		$this->config = Configuration::load();
 		# mysql://username:password@localhost/database?table=tablename
 		# or limit the query using
 		# mysql://username:password@localhost/database?table=tablename&limit=100&offset=10
@@ -83,7 +83,8 @@ class MySQLDataReader extends BaseDataReader {
 				"username" => 	$va_url['user'],
 				"password" => 	$va_url['pass'],
 				"host" =>	 	$va_url['host'],
-				"database" =>	$vs_db
+				"database" =>	$vs_db,
+				"type"     =>   $this->config->get("db_type")
 			));
 			$this->opn_current_row = 0;
 			
