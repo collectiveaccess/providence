@@ -83,8 +83,7 @@ class MySQLDataReader extends BaseDataReader {
 				"username" => 	$va_url['user'],
 				"password" => 	$va_url['pass'],
 				"host" =>	 	$va_url['host'],
-				"database" =>	$vs_db,
-				"type" =>		'mysql'
+				"database" =>	$vs_db
 			));
 			$this->opn_current_row = 0;
 			
