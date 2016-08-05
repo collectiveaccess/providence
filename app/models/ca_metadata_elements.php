@@ -343,7 +343,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		if($pb_use_cache && CompositeCache::contains($pn_element_id, 'ElementSets')) {
 			$va_set = CompositeCache::fetch($pn_element_id, 'ElementSets');
-			//return (caGetOption('idsOnly', $pa_options, false) ?  array_keys($va_set) : $va_set);
+			return (caGetOption('idsOnly', $pa_options, false) ?  caExtractArrayValuesFromArrayOfArrays($va_set, 'element_id') : $va_set);
 		}
 
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
