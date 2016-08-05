@@ -47,6 +47,7 @@ require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
 require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
+require_once(__CA_LIB_DIR__.'/core/Logging/Downloadlog.php');
 
 define('__CA_SAVE_AND_RETURN_STACK_SIZE__', 30);
 
@@ -2095,10 +2096,11 @@ class BaseEditorController extends ActionController {
 		$vn_c = 1;
 		$va_file_names = array();
 		$va_file_paths = array();
-
+		$va_child_ids = array_unique($va_child_ids);
+		
+		$t_download_log = new Downloadlog();
 		foreach($va_child_ids as $vn_child_id) {
 			if (!$t_subject->load($vn_child_id)) { continue; }
-
 			if ($t_subject->tableName() == 'ca_object_representations') {
 				$va_reps = array(
 					$vn_child_id => array(
@@ -2110,9 +2112,11 @@ class BaseEditorController extends ActionController {
 				$va_reps = $t_subject->getRepresentations(array($ps_version));
 			}
 			$vs_idno = $t_subject->get('idno');
-
+			
+			$vb_download_for_record = false;
 			foreach($va_reps as $vn_representation_id => $va_rep) {
 				if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
+				$vb_download_for_record = true;
 				$va_rep_info = $va_rep['info'][$ps_version];
 				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 				switch($this->request->user->getPreference('downloaded_file_naming')) {
@@ -2145,7 +2149,7 @@ class BaseEditorController extends ActionController {
 						$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
 						break;
 				}
-
+				
 				$va_file_names[$vs_file_name] = true;
 				$o_view->setVar('version_download_name', $vs_file_name);
 
@@ -2162,6 +2166,16 @@ class BaseEditorController extends ActionController {
 				$va_file_paths[$vs_path] = $vs_file_name;
 
 				$vn_c++;
+			}
+			if($vb_download_for_record){
+				$t_download_log->log(array(
+						"user_id" => $this->request->getUserID(), 
+						"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+						"table_num" => $this->opo_datamodel->getTableNum($this->ops_table_name), 
+						"row_id" => $vn_child_id, 
+						"representation_id" => $pn_representation_id ? $pn_representation_id : null, 
+						"download_source" => "providence"
+				));
 			}
 		}
 
@@ -2251,7 +2265,15 @@ class BaseEditorController extends ActionController {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode(_t('Invalid file')));
 				break;		
 		}
-		
+		$t_download_log = new Downloadlog();
+		$t_download_log->log(array(
+				"user_id" => $this->request->getUserID(), 
+				"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+				"table_num" => $this->opo_datamodel->getTableNum($this->ops_table_name), 
+				"row_id" => $vn_subject_id, 
+				"representation_id" => null, 
+				"download_source" => "providence"
+		));
 
 		$o_view->setVar('archive_path', $vs_path);
 		$o_view->setVar('archive_name', $vs_name);
