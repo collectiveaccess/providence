@@ -1796,8 +1796,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_history':		// summary of object accession, movement, exhibition and deaccession
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						//if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->getPrimaryKey() && !$vb_batch) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						$vs_element .= $this->getObjectHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
@@ -4463,7 +4463,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_history':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 								
 						// set storage location
@@ -4492,7 +4492,6 @@ if (!$vb_batch) {
 												$t_item_rel->set($vs_element, $vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vs_element}new_0", pString));
 											} elseif ($vn_element_id = ca_metadata_elements::getElementID($vs_element)) {
 												$va_sub_element_ids = ca_metadata_elements::getElementsForSet($vn_element_id, ['idsOnly' => true]);
-												
 												$t_item_rel->setMode(ACCESS_WRITE);
 												
 												$va_vals = [];
