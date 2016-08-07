@@ -150,8 +150,7 @@ class Relationship extends Base {
 			}
 
 			$t_instance->setTransaction($this->getTx());
-
-			if (!$t_instance->loadByGUID($vs_reference_guid)) {
+			if (!method_exists($t_instance, "loadByGUID") || !$t_instance->loadByGUID($vs_reference_guid)) {
 				throw new InvalidLogEntryException("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
 			}
 		} else {

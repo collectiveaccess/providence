@@ -32,10 +32,16 @@
 
 require_once(__CA_MODELS_DIR__.'/ca_change_log.php');
 require_once(__CA_MODELS_DIR__.'/ca_replication_log.php');
-
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
+require_once(__CA_LIB_DIR__."/core/Logging/Logger.php");
 
 class ReplicationService {
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	static $s_logger = null;
+	
 	# -------------------------------------------------------
 	/**
 	 * Dispatch service call
@@ -45,6 +51,10 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
+	
+		if (is_null(ReplicationService::$s_logger)) { 
+			ReplicationService::$s_logger = new Logger('replication');
+		}
 
 		switch(strtolower($ps_endpoint)) {
 			case 'getlog':
@@ -123,6 +133,8 @@ class ReplicationService {
 					// translate url to absolute media path
 					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
 					$vs_local_path = __CA_BASE_DIR__ . str_replace(__CA_URL_ROOT__, '', $vs_path_from_url);
+					
+					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize(filesize($vs_local_path))."]");
 
 					// send media to remote service endpoint
 					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
@@ -355,8 +367,8 @@ class ReplicationService {
 
 		$va_files[$vs_checksum] = $vs_new_file_path;
 
-		// only stash 100 files tops
-		if(sizeof($va_files) > 100) {
+		// only stash 500 files tops
+		if(sizeof($va_files) > 500) {
 			$va_excess_files = array_splice($va_files, 99);
 
 			foreach($va_excess_files as $vs_file) {
