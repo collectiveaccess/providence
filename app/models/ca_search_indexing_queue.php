@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -262,8 +262,7 @@ class ca_search_indexing_queue extends BaseModel {
 	}
 	# ------------------------------------------------------
 	static public function lockAcquire() {
-		$vs_temp_file = caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock';
-
+		$vs_temp_file = __CA_APP_DIR__ . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock';
 		// @todo: is fopen(... , 'x') thread safe? or at least "process safe"?
 		$vb_got_lock = (bool) (self::$s_lock_resource = @fopen($vs_temp_file, 'x'));
 
@@ -290,7 +289,7 @@ class ca_search_indexing_queue extends BaseModel {
 			@fclose(self::$s_lock_resource);
 		}
 
-		@unlink(caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock');
+		@unlink(__CA_APP_DIR__ . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock');
 	}
 	# ------------------------------------------------------
 	static public function flush() {
