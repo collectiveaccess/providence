@@ -2579,7 +2579,7 @@ class ca_users extends BaseModel {
 	public function close() {
 		if($this->getPrimaryKey()) {
 			$this->setMode(ACCESS_WRITE);
-			$this->update();
+			$this->update(['dontLogChange' => true]);
 		}
 	}
 	# ----------------------------------------
