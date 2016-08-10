@@ -1636,6 +1636,36 @@ img.form-button-left{  /** used to align images to the left **/
     display:none;
 }
 
+/* form button without images, to use when text on 2 lines (damned french long texts) */
+
+A.form-button-gradient {
+    border-radius:5px;
+    border:1px solid #a3a3a3;
+    padding:4px 10px 4px 10px;
+    text-decoration: none;
+    display: inline-block;
+    background: rgb(255,255,255); /* Old browsers */
+    background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(245,245,245,1) 47%, rgba(236,236,236,1) 50%, rgba(242,242,242,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(47%,rgba(245,245,245,1)), color-stop(50%,rgba(236,236,236,1)), color-stop(100%,rgba(242,242,242,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(245,245,245,1) 47%,rgba(236,236,236,1) 50%,rgba(242,242,242,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(245,245,245,1) 47%,rgba(236,236,236,1) 50%,rgba(242,242,242,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(245,245,245,1) 47%,rgba(236,236,236,1) 50%,rgba(242,242,242,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(245,245,245,1) 47%,rgba(236,236,236,1) 50%,rgba(242,242,242,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f2f2f2',GradientType=0 ); /* IE6-9 */
+    margin-bottom: 10px;
+    font-size: 12px;
+    text-align: left;
+}
+A.form-button-gradient:hover {
+    box-shadow: 0 0 0 3px #3cc6f5;
+    color:inherit;
+}
+
+A.form-button-gradient img.form-button-left {
+    padding-right:10px;
+}
+
+
 /*** FORM LISTS ***/
 
 
