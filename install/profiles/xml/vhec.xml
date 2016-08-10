@@ -401,23 +401,6 @@
         </item>
       </items>
     </list>
-    <list code="collection_sources" hierarchical="1" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Collection sources</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="cdwa" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>CDWA-Lite</name_singular>
-              <name_plural>CDWA-Lite</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="occurrence_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1256,146 +1239,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Poor</name_singular>
               <name_plural>Poor</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
-    <list code="date_types" hierarchical="0" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_US">
-          <name>Date Types</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Types de date</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="null" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>-</name_singular>
-              <name_plural>-</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="sort" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Sort date</name_singular>
-              <name_plural>Sort date</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date de disponibilité</name_singular>
-              <name_plural>Date de disponibilité</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="available" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date available</name_singular>
-              <name_plural>Date available</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date de disponibilité</name_singular>
-              <name_plural>Date de disponibilité</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="created" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date created</name_singular>
-              <name_plural>Date created</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date de création</name_singular>
-              <name_plural>Date de création</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="dateAccepted" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date accepted</name_singular>
-              <name_plural>Date accepted</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date d'acceptation</name_singular>
-              <name_plural>Date d'acceptation</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="dateCopyrighted" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date copyrighted</name_singular>
-              <name_plural>Date copyrighted</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date de copyright</name_singular>
-              <name_plural>Date de copyright</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="dateSubmitted" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date submitted</name_singular>
-              <name_plural>Date submitted</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date de soumission</name_singular>
-              <name_plural>Date de soumission</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="issued" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date issued</name_singular>
-              <name_plural>Date issued</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date de publication</name_singular>
-              <name_plural>Date de publication</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="modified" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date modified</name_singular>
-              <name_plural>Date modified</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date modified</name_singular>
-              <name_plural>Date modified</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="valid" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date valid</name_singular>
-              <name_plural>Date valid</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date de validation</name_singular>
-              <name_plural>Date de validation</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="recording" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Recording date</name_singular>
-              <name_plural>Recording date</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>Date d'enregistrement</name_singular>
-              <name_plural>Date d'enregistrement</name_plural>
             </label>
           </labels>
         </item>
@@ -3952,7 +3795,7 @@
             </label>
           </labels>
         </item>
-        <item idno="victoria" enabled="1" default="0">
+        <item idno="toronto" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Toronto, ON</name_singular>
@@ -5890,14 +5733,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>-</name_singular>
               <name_plural>-</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="A_PCM" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>A_PCM</name_singular>
-              <name_plural>A_PCM</name_plural>
             </label>
           </labels>
         </item>
@@ -10763,6 +10598,7 @@
         <setting name="fieldHeight">5</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
+        <setting name="usewysiwygeditor">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="collections">
@@ -15326,6 +15162,7 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
+        <setting name="mustBeUnique">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_objects">
@@ -16848,6 +16685,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+  <!-- Other -->
+    <metadataElement code="list_image" datatype="Media">
+      <labels>
+        <label locale="en_US">
+          <name>List item image</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="ca_list_items">
+          <table>ca_list_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="objects_ui" type="ca_objects">
@@ -16873,6 +16731,12 @@
               <settings>
                 <setting name="label" locale="en_US">Component Hierarchy</setting>
               </settings>
+            </placement>
+            <placement code="ca_object_circulation_status">
+              <bundle>ca_object_circulation_status</bundle>
+            </placement>
+            <placement code="ca_object_checkouts">
+              <bundle>ca_object_checkouts</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -17063,6 +16927,12 @@
               <settings>
                 <setting name="label" locale="en_US">Component Hierarchy</setting>
               </settings>
+            </placement>
+            <placement code="ca_object_circulation_status">
+              <bundle>ca_object_circulation_status</bundle>
+            </placement>
+            <placement code="ca_object_checkouts">
+              <bundle>ca_object_checkouts</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -17856,6 +17726,7 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -18554,6 +18425,7 @@ entity. Example: Pot with lid. (CDWA)"</setting>
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                  <setting name="restrict_to_relationship_types">related</setting>
+                 <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -18718,6 +18590,7 @@ entity. Example: Pot with lid. (CDWA)"</setting>
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                  <setting name="restrict_to_relationship_types">related</setting>
+                 <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -19141,6 +19014,7 @@ entity. Example: Pot with lid. (CDWA)"</setting>
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                 <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -19813,6 +19687,7 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -21672,6 +21547,8 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Objects</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_relationship_types">consists</setting>
+
               </settings>
             </placement>
             <placement code="ca_entities">
@@ -21731,21 +21608,6 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Places</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="media_collection" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Media</name>
-            </label>
-          </labels>
-          <typeRestrictions>
-            <restriction code="collection" type="collection"/>
-          </typeRestrictions>
-          <bundlePlacements>
-            <placement code="ca_object_representations">
-              <bundle>ca_object_representations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -21999,6 +21861,18 @@ differs from the holder of rights for the work. Example: The work rights are “
             </placement>
             <placement code="ca_attribute_keywords">
               <bundle>ca_attribute_keywords</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="media_collection" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -22957,12 +22831,16 @@ differs from the holder of rights for the work. Example: The work rights are “
         </label>
       </labels>
       <screens>
-        <screen idno="basic" default="1">
+        <screen idno="basic_time" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic info</name>
             </label>
           </labels>
+          <typeRestrictions>
+          <restriction type="TimeBasedVideo"/>
+          <restriction type="TimeBasedAudio"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
@@ -22980,6 +22858,9 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Cataloguing Status</setting>
               </settings>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
             <placement code="ca_representation_annotation_properties">
               <bundle>ca_representation_annotation_properties</bundle>
@@ -23005,33 +22886,14 @@ differs from the holder of rights for the work. Example: The work rights are “
                 <setting name="label" locale="en_US">Administrative Note (Non-Display)</setting>
               </settings>
             </placement>
-            <placement code="access">
-              <bundle>access</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="subjects" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Access Points</name>
-            </label>
-          </labels>
-          <bundlePlacements>
+            
             <placement code="ca_attribute_local_subject">
               <bundle>ca_attribute_local_subject</bundle>
             </placement>  
             <placement code="ca_attribute_keywords">
               <bundle>ca_attribute_keywords</bundle>
             </placement>  
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
+            
             <placement code="ca_subject">
               <bundle>ca_entities</bundle>
               <settings>
@@ -23053,7 +22915,6 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Historical Events</setting>
                 <setting name="restrict_to_types">historical</setting>
-                
                 <setting name="description" locale="en_US">Relationship to Historical Events</setting>
               </settings>
             </placement>
@@ -23062,7 +22923,6 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Institutional Events</setting>
                 <setting name="restrict_to_types">institutional</setting>
-                
                 <setting name="description" locale="en_US">Relationship to Institutional Events</setting>
               </settings>
             </placement>
@@ -23072,6 +22932,42 @@ differs from the holder of rights for the work. Example: The work rights are “
                 <setting name="label" locale="en_US">Related Places</setting>
                 <setting name="description" locale="en_US">Relationship to Places</setting>
               </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_image" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+          <restriction type="Image"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+              </settings>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Cataloguing Status</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_narrative_note">
+              <bundle>ca_attribute_narrative_note</bundle>
+            </placement>
+            <placement code="ca_attribute_transcription_note">
+              <bundle>ca_attribute_transcription_note</bundle>
+            </placement>
+            <placement code="ca_attribute_administrative_note">
+              <bundle>ca_attribute_administrative_note</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -23126,6 +23022,9 @@ differs from the holder of rights for the work. Example: The work rights are “
             </placement>
             <placement code="validation_format">
               <bundle>validation_format</bundle>
+            </placement>
+            <placement code="ca_attribute_list_image">
+              <bundle>ca_attribute_list_image</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -23730,6 +23629,16 @@ differs from the holder of rights for the work. Example: The work rights are “
             <label locale="en_US">
               <typename>related</typename>
               <typename_reverse>related</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="consists" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>consists</typename>
+              <typename_reverse>consists</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -24382,7 +24291,7 @@ differs from the holder of rights for the work. Example: The work rights are “
               <typename_reverse>donor/contributor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>monetary</subTypeLeft>
+          <subTypeLeft/>
           <subTypeRight/>
         </type>
         <type code="sent" default="0">

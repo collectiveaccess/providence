@@ -239,7 +239,7 @@ class ca_users extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -446,9 +446,17 @@ class ca_users extends BaseModel {
 			$this->set("volatile_vars",$this->opa_volatile_user_vars);
 		}
 		
+		$va_changed_fields = $this->getChangedFieldValuesArray();
+		unset($va_changed_fields['vars']);
+		unset($va_changed_fields['volatile_vars']);
+		
+		if (sizeof($va_changed_fields) == 0) {
+			$pa_options['dontLogChange'] = true;
+		}
+		
 		unset(ca_users::$s_user_role_cache[$this->getPrimaryKey()]);
 		unset(ca_users::$s_group_role_cache[$this->getPrimaryKey()]);
-		return parent::update();
+		return parent::update($pa_options);
 	}
 	# ----------------------------------------
 	/**
@@ -472,7 +480,7 @@ class ca_users extends BaseModel {
 			}
 		}
 
-		return $this->update();
+		return $this->update($pa_options);
 	}
 	# ----------------------------------------
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
@@ -1342,7 +1350,7 @@ class ca_users extends BaseModel {
 		}
 		if (!$vb_got_group) {
 			if (!$t_group->load(array("name" => $ps_group))) {
-				if (!$t_group->load(array("name_short" => $ps_group))) {
+				if (!$t_group->load(array("code" => $ps_group))) {
 					return false;
 				}
 			}
@@ -2571,7 +2579,7 @@ class ca_users extends BaseModel {
 	public function close() {
 		if($this->getPrimaryKey()) {
 			$this->setMode(ACCESS_WRITE);
-			$this->update();
+			$this->update(['dontLogChange' => true]);
 		}
 	}
 	# ----------------------------------------

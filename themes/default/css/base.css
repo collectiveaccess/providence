@@ -576,11 +576,23 @@ div.inspectorCheckedOut {
 	font-size:12px;
 	line-height:1.7em;
 }
-#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools{
+#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools, #leftNav h3.currentSort {
 	color:#555;
 	margin-bottom: 5px;
 	margin-top:5px;
 }
+
+h3.searchHistory div {
+    margin-left: 3px;
+    margin-top: 1px;
+}
+
+h3.currentSort div {
+    margin-left: 3px;
+    margin-top: 1px;
+    margin-right: 5px;
+}
+
 .inspectorNonConformingNumberList {
     display: none;
 }
@@ -1573,7 +1585,9 @@ del.form-button{
 .form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
 	color:red;
 }
-
+.deleteButton a.form-button span {
+	color:red;
+}
 del.form-button span{
     cursor:default;
     color:#aaa !important;
@@ -1693,7 +1707,12 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 
 #caWatchedItemsList.listtable {
 	font-size:12px;
-} 
+}
+
+#watchedItemsSetControls {
+    padding: 5px 5px 0 10px;
+    background-color: #eeeeee;
+}
 
 
 /* table headers */
@@ -1805,6 +1824,9 @@ td.listtableTotals {
 #caSetList img.deleteIcon, #caSetList img.editIcon {
 	width:20px;
 	padding:5px;
+}
+.caIcon.deleteIcon:hover {
+	color:red;
 }
 
 #caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
@@ -2616,7 +2638,7 @@ table.representationAnnotationListItem {
     display: none;
     margin: 0px;
     padding: 0px;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 34000;			/* needs to be on top of menu bar, which has z-index=30000 */
 }
 
 #caMediaPanelContentArea {
@@ -2660,7 +2682,7 @@ div.caMediaOverlayControls {
     width:100%;
     bottom:0px;
     left:0px;
-    z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+    z-index: 35000;			/* needs to be on top of caMediaPanel, which has z-index=34000 */
     /* opacity:.1;	 */
     opacity: 0.7;
 }
@@ -5559,14 +5581,12 @@ a.caItemLoadNextBundles {
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
     position: relative;
+    margin: 0 3px 0 3px;
 }
 
 .listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
     float: right;
-}
-
-.listRel .caInterstitialEditButton {
-    float: right;
+    margin: 0 3px 0 3px;
 }
 
 div.preferenceSectionDivider {

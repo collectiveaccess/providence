@@ -237,7 +237,7 @@ class ca_watch_list extends BaseModel {
 					"watch_id" => $q_watched_items->get("watch_id"), 
 					"row_id" => $q_watched_items->get("row_id"), 
 					"table_num" => $q_watched_items->get("table_num"), 
-					"table_name" => $t_item_table->TableName(), 
+					"table_name" => $t_item_table->tableName(),
 					"displayName" => $t_item_table->getLabelForDisplay(), 
 					"idno" => $t_item_table->get("idno"), 
 					"item_type" => $t_item_table->getProperty('NAME_SINGULAR'), 
@@ -250,5 +250,22 @@ class ca_watch_list extends BaseModel {
 		return $va_items;
 	}
 	# ------------------------------------------------------
+	public function getWatchedTablesAsHTMLSelect($pn_user_id, $ps_name) {
+		$va_items = $this->getWatchedItems($pn_user_id);
+		$va_select = [];
+		$o_dm = Datamodel::load();
+
+		foreach($va_items as $va_item) {
+			$t_instance = $o_dm->getInstance($va_item['table_num'], true);
+
+			$va_select[$t_instance->getProperty('NAME_PLURAL')] = $t_instance->tableName();
+		}
+
+		return caHTMLSelect($ps_name,
+			$va_select,
+			array('id' => $ps_name, 'class' => 'searchSetsSelect'),
+			array('value' => null, 'width' => '140px')
+		);
+	}
+	# ------------------------------------------------------
 }
-?>

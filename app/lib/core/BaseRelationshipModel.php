@@ -211,9 +211,19 @@
 		}
  		# ------------------------------------------------------
 		/**
-		 * Returns an array of relationship types for this relation, subject to sub type restrictions
+		 * Returns an array of relationship types for this relation, subject to sub type restrictions. Each array entry
+		 * is an array with all fields from the ca_relationship_types record 
+		 *
+		 * @param int $pn_sub_type_left_id
+		 * @param int $pn_sub_type_right_id
+		 * @param array $pa_options Options include:
+		 *		idsOnly = Return list of relationship type_ids only. [Default is false]
+		 *
+		 * @return array
 		 */
 		public function getRelationshipTypes($pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_options=null) {
+			$pb_ids_only = caGetOption('idsOnly', $pa_options, false);
+			
 			$o_db = $this->getDb();
 			
 			$vs_sub_type_left_sql = '';
@@ -275,13 +285,19 @@
 			
 			$va_types = array();
 			while($qr_res->nextRow()) {
-				$vs_key = '';
-				if (strlen($vs_rank = $qr_res->get('rank'))) {
-					$vs_key .= (int)sprintf("%08d", (int)$qr_res->get('rank'));
+				if ($pb_ids_only) {
+					$va_types[] = (int)$qr_res->get('type_id');
+				} else {
+					$vs_key = '';
+					if (strlen($vs_rank = $qr_res->get('rank'))) {
+						$vs_key .= (int)sprintf("%08d", (int)$qr_res->get('rank'));
+					}
+					$vs_key .= $qr_res->get('typename_forward');
+					$va_types[$vs_key][(int)$qr_res->get('type_id')][(int)$qr_res->get('locale_id')] = $qr_res->getRow();
 				}
-				$vs_key .= $qr_res->get('typename_forward');
-				$va_types[$vs_key][(int)$qr_res->get('type_id')][(int)$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
+			if ($pb_ids_only) { return $va_types; }
+			
 			ksort($va_types, SORT_NUMERIC);
 			$va_sorted_types = array();
 			foreach($va_types as $vs_k => $va_v) {
@@ -676,6 +692,28 @@
 				return null;
 			}
 			return (BaseModel::hasField('type_id')) ? BaseModel::get('type_id') : null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Get instance for related table opposite the one specified by $pm_tablename_or_num.
+		 * For example, if the relationship is ca_objects_x_entities, passing $pm_tablename_or_num = ca_objects will
+		 * result in a ca_entities instance being returned. If $pm_tablename_or_num is not referenced by the relationship 
+		 * null is returned.
+		 *
+		 * @param mixed $pm_tablename_or_num Table name of number
+		 * @return BaseModel
+		 */
+		public function getInstanceOpposite($pm_tablename_or_num) {
+			if ($t_one_side = $this->getAppDatamodel()->getInstanceByTableName($pm_tablename_or_num, true)) {
+				if ($this->getLeftTableName() == $t_one_side->tableName()) {
+					// other side is right
+					return $this->getRightTableInstance();
+				} elseif ($this->getRightTableName() == $t_one_side->tableName()) {
+					// other side is left
+					return $this->getLeftTableInstance();
+				}
+			}
+			return null;
 		}
 		# ------------------------------------------------------
 		/**

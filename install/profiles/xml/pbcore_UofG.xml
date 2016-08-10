@@ -8714,14 +8714,6 @@
                 </label>
               </labels>
             </item>
-            <item idno="audioStandardsNull" enabled="1" default="0">
-              <labels>
-                <label preferred="1" locale="en_US">
-                  <name_singular>audioStandardsNull</name_singular>
-                  <name_plural>audioStandardsNull</name_plural>
-                </label>
-              </labels>
-            </item>
             <item idno="option0" enabled="1" default="0">
               <labels>
                 <label preferred="1" locale="en_US">

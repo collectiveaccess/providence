@@ -103,7 +103,7 @@ if (!$this->request->isAjax()) {
 					<?php print $va_importer['importer_type']; ?>
 				</td>
 				<td>
-					<?php print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; ?>
+					<?php print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; ?>
 				</td>
 				<td>
 					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('dateFormat' => 'delimited')); ?>

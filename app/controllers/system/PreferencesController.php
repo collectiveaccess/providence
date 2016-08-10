@@ -107,7 +107,6 @@
 			$this->view->setVar('current_table', $vs_current_table);
 			
  			$t_screen = new ca_editor_ui_screens();
-			
  			
  			// get bundles for this table
  			$va_bundle_list = array(); 

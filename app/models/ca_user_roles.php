@@ -170,7 +170,7 @@ class ca_user_roles extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -327,6 +327,69 @@ class ca_user_roles extends BaseModel {
 		return true;
 	}
 	# ------------------------------------------------------
+	public function removeAllBundleAccessSettings() {
+		if(!$this->getPrimaryKey()) { return false; }
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		$va_vars['bundle_access_settings'] = array();
+
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
+	}
+	# ------------------------------------------------------
+	public function removeAllTypeAccessSettings() {
+		if(!$this->getPrimaryKey()) { return false; }
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		$va_vars['type_access_settings'] = array();
+
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
+	}
+	# ------------------------------------------------------
+	public function removeAllSourceAccessSettings() {
+		if(!$this->getPrimaryKey()) { return false; }
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		$va_vars['source_access_settings'] = array();
+
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
+	}
+	# ------------------------------------------------------
 	/**
 	 * Get type access settings for current role
 	 */
@@ -394,11 +457,11 @@ class ca_user_roles extends BaseModel {
 	 */
 	public function getSourceAccessSettings() {
 		if(!$this->getPrimaryKey()) { return array(); }
-		if(!$this->getAppConfig()->get('perform_type_access_checking')) { array(); }
+		if(!$this->getAppConfig()->get('perform_source_access_checking')) { array(); }
 
 		$va_vars = $this->get('vars');
- 		if(isset($va_vars['type_access_settings'])){
- 			return $va_vars['type_access_settings'];
+ 		if(isset($va_vars['source_access_settings'])){
+ 			return $va_vars['source_access_settings'];
  		} else {
  			return array();
  		}

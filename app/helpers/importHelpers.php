@@ -100,43 +100,44 @@
 			$va_attributes['idno'] = $vs_idno;
 			$va_attributes['parent_id'] = $vn_id;
 			
-			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) { 
+			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) {
 				foreach($va_parent['rules'] as $va_rule) {
-					$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $pa_source_data);
-					if (!ExpressionParser::hadError() && (bool)$vm_ret) {
-						foreach($va_rule['actions'] as $va_action) {
-							if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
-								$va_action = array('action' => 'skip');
-							}
-							switch($vs_action_code = strtolower($va_action['action'])) {
-								case 'set':
-									switch($va_action['target']) {
-										case 'name':
-											$vs_name = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
-											break;
-										case 'type':
-											$vs_type = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
-											break;
-										default:
-											$va_attributes[$va_action['target']] = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
-											break;
-									}
-									break;
-								case 'skip':
-								default:
-									if ($o_log) { 
-										if ($vs_action_code != 'skip') {
-											$o_log->logInfo(_t('[%3] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
-										} else {
-											$o_log->logDebug(_t('[%3] Parent was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
+					try {
+						if ((bool)ExpressionParser::evaluate($va_rule['trigger'], $pa_source_data)) {
+							foreach($va_rule['actions'] as $va_action) {
+								if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
+									$va_action = array('action' => 'skip');
+								}
+								switch($vs_action_code = strtolower($va_action['action'])) {
+									case 'set':
+										switch($va_action['target']) {
+											case 'name':
+												$vs_name = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+												break;
+											case 'type':
+												$vs_type = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+												break;
+											default:
+												$va_attributes[$va_action['target']] = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+												break;
 										}
-									}
-									continue(4);
-									break;
+										break;
+									case 'skip':
+									default:
+										if ($o_log) {
+											if ($vs_action_code != 'skip') {
+												$o_log->logInfo(_t('[%3] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
+											} else {
+												$o_log->logDebug(_t('[%3] Parent was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
+											}
+										}
+										continue(4);
+										break;
+								}
 							}
 						}
-					} elseif (ExpressionParser::hadError() && $o_log) {
-						$o_log->logError(_t('[%3] Error processing rule "%1" as an error occurred. Error number was "%2"', $va_rule['trigger'], ExpressionParser::$s_last_error, $ps_refinery_name));
+					} catch (Exception $o_error) {
+						$o_log->logError(_t('[%3] Error processing rule "%1" as an error occurred. Error number was "%2"', $va_rule['trigger'], $o_error->getMessage(), $ps_refinery_name));
 					}
 				}
 			}
@@ -356,7 +357,7 @@
  *
  * @return array
  */
-	function caProcessRefineryRelated($ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options = null) {
+	function caProcessRefineryRelated($ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options=null) {
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
@@ -430,7 +431,7 @@
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));	
 			}	
 			
-			$pa_options = array_merge(array('matchOn' => array('idno', 'label'), $pa_options));
+			$pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label'), $pa_options));
 			
 			switch($ps_related_table) {
 				case 'ca_objects':
@@ -695,7 +696,9 @@
 						}
 
 						// Set relationships on the related table
-						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $vn_i, $o_log, $o_reader, $va_val, $va_attr_vals);
+						
+					
+						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $vn_i, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
 
 						// Set nonpreferred labels
 						if (is_array($va_non_preferred_labels = $pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
@@ -769,7 +772,7 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_vals[][$vs_terminal] = $vn_item_id;
+							$va_vals[] = [$vs_terminal => $vn_item_id, '_related_related' => $va_val['_related_related']];
 							continue;
 						} else {
 							if ($o_log && !$pb_dont_create) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
@@ -832,6 +835,8 @@
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
+								} else {
+									$va_val['media']['media'] = $vs_item;
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
@@ -901,7 +906,9 @@
  * @param $va_val array
  * @param $va_attr_vals array
  */
-function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, &$va_val, &$va_attr_vals) {
+function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, &$va_val, &$va_attr_vals, $pa_options=null) {
+	$o_trans = caGetOption('transaction', $pa_options, null);
+
 	$vs_relationship_settings_key = $po_refinery_instance->getName() . '_relationships';
 	// Set relatedEntities to support legacy mappings
 	if (is_array($va_related_entities_settings = $pa_item['settings'][$po_refinery_instance->getName() . '_relatedEntities'])) {
@@ -915,8 +922,19 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
-				if (is_array($va_attr_vals = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
-					$va_val = array_merge($va_val, $va_attr_vals);
+				if (is_array($va_rels = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, $pa_options))) {
+					$va_rel_rels = $va_rels['_related_related'];
+					unset($va_rels['_related_related']);
+					
+					$va_val = array_merge($va_val, $va_rels);
+					
+					if(is_array($va_rel_rels)) {
+						if (!is_array($va_val['_related_related'])) { $va_val['_related_related'] = []; }
+						foreach($va_rel_rels as $vs_rel_table => $va_rel_info) {
+							if(!is_array($va_val['_related_related'][$vs_rel_table])) { $va_val['_related_related'][$vs_rel_table] = []; }
+							$va_val['_related_related'][$vs_rel_table] = array_merge($va_val['_related_related'][$vs_rel_table], $va_rel_info);
+						}
+					}
 				}
 			}
 		}

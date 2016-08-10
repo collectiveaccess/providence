@@ -174,7 +174,7 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			'screen_id'
 		),
 		"RELATED_TABLES" => array(
 		
