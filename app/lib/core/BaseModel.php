@@ -2087,7 +2087,8 @@ class BaseModel extends BaseObject {
 	 * Use this method to insert new record using supplied values
 	 * (assuming that you've constructed your BaseModel object as empty record)
 	 * @param $pa_options array optional associative array of options. Supported options include: 
-	 *				dont_do_search_indexing = if set to true then no search indexing on the inserted record is performed
+	 *		dont_do_search_indexing = if set to true then no search indexing on the inserted record is performed
+	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @return int primary key of the new record, false on error
 	 */
 	public function insert ($pa_options=null) {
@@ -2510,7 +2511,7 @@ class BaseModel extends BaseObject {
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, $va_index_options);
 					}
 					
-					$this->logChange("I");
+					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("I"); }
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
@@ -2579,6 +2580,7 @@ class BaseModel extends BaseObject {
 	 *		dontCheckCircularReferences = when dealing with strict monohierarchical lists (also known as trees), you can use this option to disable checks for circuits in the graph
 	 *		updateOnlyMediaVersions = when set to an array of valid media version names, media is only processed for the specified versions
 	 *		force = if set field values are not verified prior to performing the update
+	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @return bool success state
 	 */
 	public function update ($pa_options=null) {
@@ -3096,7 +3098,7 @@ class BaseModel extends BaseObject {
 						}
 					}
 					
-					$this->logChange("U");
+					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("U"); }
 	
 					$this->_FILES_CLEAR = array();
 				}
@@ -3175,6 +3177,7 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options Options for delete process. Options are:
 	 *		hard = if true records which can support "soft" delete are really deleted rather than simply being marked as deleted
 	 *		queueIndexing =
+	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @param array $pa_fields instead of deleting the record represented by this object instance you can
 	 * pass an array of field => value assignments which is used in a SQL-DELETE-WHERE clause.
 	 * @param array $pa_table_list this is your possibility to pass an array of table name => true assignments
@@ -3202,7 +3205,8 @@ class BaseModel extends BaseObject {
 						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
 					}
 				}
-				$this->logChange("D");
+				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D"); }
+				
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 				return $vn_rc;
 			} else {
@@ -3391,7 +3395,7 @@ class BaseModel extends BaseObject {
 					
 				//}
 				# clear object
-				$this->logChange("D");
+				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D"); }
 				
 				$this->clear();
 			} else {

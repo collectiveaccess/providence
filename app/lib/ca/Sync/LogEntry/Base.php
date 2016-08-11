@@ -339,7 +339,7 @@ abstract class Base {
 						// already established one of them is set, a few lines above
 						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];
 
-						if(!($vn_item_id = caGetListItemID($vs_list, $vs_code))) {
+						if(strlen($vs_code) && ($vs_code !== 'null') && !($vn_item_id = caGetListItemID($vs_list, $vs_code))) {
 							throw new InvalidLogEntryException(
 								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
 							);
@@ -408,7 +408,7 @@ abstract class Base {
 							} else { // type_id, source_id, etc. ...
 								$this->getModelInstance()->set($vs_field, $vn_item_id);
 							}
-						} else {
+						} elseif(strlen($vs_code) && ($vs_code !== 'null')) {
 							throw new InvalidLogEntryException(
 								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
 							);
@@ -467,6 +467,8 @@ abstract class Base {
 				// plain old field like idno, extent, source_info etc.
 				// model errors usually don't occurr on set(), so the implementations
 				// can still do whatever they want and possibly overwrite this
+				
+				\ReplicationService::$s_logger->log("[".$this->getModelInstance()->tableName()."] Set {$vs_field} = {$vm_val}");
 				$this->getModelInstance()->set($vs_field, $vm_val);
 			}
 		}
@@ -507,6 +509,8 @@ abstract class Base {
 		$o_dm = \Datamodel::load();
 
 		$t_instance = $o_dm->getInstance($pa_log['logged_table_num']);
+		
+		\ReplicationService::$s_logger->log("GET INSTANCE FOR {$ps_source_system_id}/{$pn_log_id}/".$t_instance->tableName());
 
 		if($t_instance instanceof \BaseRelationshipModel) {
 			return new Relationship($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
@@ -519,6 +523,8 @@ abstract class Base {
 		} elseif($t_instance instanceof \ca_object_representations) {
 			return new Representation($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BundlableLabelableBaseModelWithAttributes) {
+			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
+		} elseif($t_instance instanceof \BaseModel) {
 			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		}
 

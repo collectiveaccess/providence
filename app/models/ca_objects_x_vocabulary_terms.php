@@ -168,7 +168,7 @@ class ca_objects_x_vocabulary_terms extends ObjectRelationshipBaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'object_id'
+			'object_id', 'item_id'
 		),
 		"RELATED_TABLES" => array(
 		
