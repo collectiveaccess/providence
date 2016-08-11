@@ -28,6 +28,7 @@ create table ca_notification_subjects (
   primary key (subject_id),
   index i_notification_id (notification_id),
   index i_table_num_row_id (table_num, row_id)
+
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 /*==========================================================================*/
 

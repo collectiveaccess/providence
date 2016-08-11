@@ -1277,6 +1277,10 @@ class SearchIndexer extends SearchBase {
 									$vs_value_to_index .= " ; ".$vs_additional_value;
 								}
 							}
+							
+							if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
+								$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, [$vo_value->getDisplayValue(array('output' => 'idno'))], array_merge($pa_data, array('DONT_TOKENIZE' => 1)));
+							}
 
 							$va_tmp[$vo_attribute->getAttributeID()] = $vs_value_to_index;
 						}
