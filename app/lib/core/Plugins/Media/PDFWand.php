@@ -131,13 +131,19 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		"application/postscript" => "Postscript"
 	);
 	
+	/**
+	 * Per-request caching of information extracted from read PDFs
+	 */
+	static $s_pdf_info_cache = [];
+	
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Provides PDF conversion services using ImageMagick or the Zend_PDF library. Will use Ghostscript to generate image-previews of PDF files.');
 	}
 	# ------------------------------------------------
-	# Tell WebLib what kinds of media this plug-in supports
-	# for import and export
+	/**
+	 * What sort media does this plug-in support for import and export
+	*/ 
 	public function register() {
 		$this->opo_config = Configuration::load();
 		
@@ -180,41 +186,19 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			return '';
 		}
 		
-		if ((!$this->opo_config->get('dont_use_graphicsmagick_to_identify_pdfs')) && caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
-			if(is_array($va_info = $this->_graphicsMagickIdentify($ps_filepath)) && sizeof($va_info)) {
-				$vn_width = $va_info['width'];
-				$vn_height = $va_info['height'];
-				$vn_res = 72;
-				$vn_pages = $va_info['pages'];
-			} else {
-				return null;
-			}
-		} else if ((!$this->opo_config->get('dont_use_imagemagick_to_identify_pdfs')) && caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
-			if(is_array($va_info = $this->_imageMagickIdentify($ps_filepath)) && sizeof($va_info)) {
-				$vn_width = $va_info['width'];
-				$vn_height = $va_info['height'];
-				$vn_res = 72;
-				$vn_pages = $va_info['pages'];
-			} else {
-				return null;
-			}
-		} else {
-			try {
-				if($this->opo_config->get('dont_use_zendpdf_to_identify_pdfs')) { return ''; }
-
-				include_once(__CA_LIB_DIR__."/core/Zend/Pdf.php");
-				$o_pdf = Zend_Pdf::load($ps_filepath);
-				if (sizeof($o_pdf->pages) == 0) { return ''; }
-			} catch(Exception $e){
-				return '';
-			}
-			$o_page = $o_pdf->pages[0];
-			$vn_width = $o_page->getWidth();
-			$vn_height = $o_page->getHeight();
+		if ((isset(WLPlugMediaPDFWand::$s_pdf_info_cache[$ps_filepath]) && ($va_info = WLPlugMediaPDFWand::$s_pdf_info_cache[$ps_filepath])) || (WLPlugMediaPDFWand::$s_pdf_info_cache[$ps_filepath] = $va_info = caGetPDFInfo($ps_filepath))) {
+			if(!WLPlugMediaPDFWand::$s_pdf_info_cache[$ps_filepath]) { return ''; }
+			$vn_width = $va_info['width'];
+			$vn_height = $va_info['height'];
 			$vn_res = 72;
-			$vn_pages = sizeof($o_pdf->pages);
-		}
+			$vn_pages = $va_info['pages'];
+		} else {
+			return '';
+		} 
 		$vs_mimetype = "application/pdf";
+		
+		
+		if (sizeof(WLPlugMediaPDFWand::$s_pdf_info_cache) > 100) { WLPlugMediaPDFWand::$s_pdf_info_cache = array_slice(WLPlugMediaPDFWand::$s_pdf_info_cache, 50); }
 		
 		
 		if (($vs_mimetype) && $this->info["IMPORT"][$vs_mimetype]) {
@@ -247,40 +231,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		} else {
 			return '';
 		}
-	}
-	# ------------------------------------------------
-	private function _imageMagickIdentify($ps_filepath) {
-		exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-		
-		array_pop($va_output); // last line is blank
-		if (is_array($va_output) && (sizeof($va_output) > 0)) {
-			$va_tmp = explode(';', $va_output[0]);
-			if ($va_tmp[0] === 'PDF') {
-				return array(
-					'width' => intval($va_tmp[1]),
-					'height' => intval($va_tmp[2]),
-					'pages' => sizeof($va_output)
-				);
-			}
-		}
-		return null;
-	}
-	# ----------------------------------------------------------
-	private function _graphicsMagickIdentify($ps_filepath) {
-		exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-
-		array_pop($va_output); // last line is blank
-		if (is_array($va_output) && (sizeof($va_output) > 0)) {
-			$va_tmp = explode(';', $va_output[0]);
-			if ($va_tmp[0] === 'PDF') {
-				return array(
-					'width' => intval($va_tmp[1]),
-					'height' => intval($va_tmp[2]),
-					'pages' => sizeof($va_output)
-				);
-			}
-		}
-		return null;
 	}
 	# ----------------------------------------------------------
 	public function get($property) {
@@ -582,18 +532,23 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	/**
 	 * @param array $pa_options Options include:
 	 *		dontUseDefaultIcons = If set to true, write will fail rather than use default icons when preview can't be generated. Default is false – to use default icons.
-	 *
+	 *		writeAllPages = 
+	 *		start = 
+	 *		numPages = 
 	 */
 	public function write($ps_filepath, $ps_mimetype, $pa_options=null) {
 		if (!$this->handle) { return false; }
 		
-		$vb_dont_allow_default_icons = (isset($pa_options['dontUseDefaultIcons']) && $pa_options['dontUseDefaultIcons']) ? true : false;
+		$pb_write_all_pages = caGetOption('writeAllPages', $pa_options, false);
+		$pb_dont_allow_default_icons = caGetOption('dontUseDefaultIcons', $pa_options, false);
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
 			$this->postError(1610, _t("Can't convert file to %1", $ps_mimetype), "WLPlugPDFWand->write()");
 			return false;
 		} 
+		
+		$va_files = [];
 		
 		# write the file
 		if ($ps_mimetype == "application/pdf") {
@@ -602,7 +557,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				return false;
 			}
 		} else {
-			$vb_use_default_icon = true;
 			if (caMediaPluginGhostscriptInstalled($this->ops_ghostscript_path)) {
 				$vn_scaling_correction = (float)$this->get("scaling_correction");
 				if ($vn_scaling_correction == 1) { $vn_scaling_correction = 0; }
@@ -612,105 +566,121 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 					if ($vn_scaling_correction) { $vn_res *= 2; }
 					$vs_res = ceil($vn_res)."x".ceil($vn_res);
 				}
-				$vn_page = ceil($this->get("page"));
 				$vn_quality = ceil($this->get("quality"));
 				if ($vn_quality > 100) { $vn_quality = 100; }
 				if ($vn_quality < 1) { $vn_quality = 50; }
-				if ($vn_page < 1) { $vn_page = 1; }
 				
-				if ($this->get("antialiasing")) {
-					$vs_antialiasing = "-dTextAlphaBits=4 -dGraphicsAlphaBits=4";
-				} else {
-					$vs_antialiasing = "";
+				$vn_start_page = $vn_end_page = ceil($this->get("page"));
+				if ($pb_write_all_pages) {
+					$vn_start_page = caGetOption('start', $pa_options, $vn_start_page);
+					$vn_end_page = caGetOption('numPages', $pa_options, $vn_start_page);
+					$ps_filepath .= '%05d';
 				}
+				if ($vn_start_page < 1) { $vn_start_page = 1; }
+				if ($vn_end_page > $this->get('pages')) { $vn_end_page = (int)$this->get('pages'); }
+				if ($vn_end_page < 1) { $vn_end_page = $vn_start_page; }
+				
+				$vs_antialiasing = ($this->get("antialiasing")) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
 				
 				$vb_processed_preview = false;
 				switch($ps_mimetype) {
 					case 'image/jpeg':
-						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." {$vs_antialiasing} -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						exec($this->ops_ghostscript_path." -dNumRenderingThreads=6 -dNOGC -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." {$vs_antialiasing} -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_start_page." -dLastPage=".$vn_end_page." -dMaxPatternBitmap=1000000 -dBandBufferSpace=500000000 -sBandListStorage=memory -dBufferSpace=1000000000 -dBandHeight=100 -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." -c \"30000000 setvmthreshold\" -f ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 						if ($vn_return == 0) { $vb_processed_preview = true; }
 						break;
 					case 'image/png':
-						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=pngalpha {$vs_antialiasing} -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						exec($this->ops_ghostscript_path." -dNumRenderingThreads=6 -dNOGC -dNOPAUSE -dBATCH -sDEVICE=pngalpha {$vs_antialiasing} -dFirstPage=".$vn_start_page." -dLastPage=".$vn_end_page." -dMaxPatternBitmap=1000000 -dBandBufferSpace=500000000 -sBandListStorage=memory -dBufferSpace=1000000000 -dBandHeight=100 -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." -c \"30000000 setvmthreshold\" -f ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 						if ($vn_return == 0) { $vb_processed_preview = true; }
 						break;
 					case 'image/tiff':
 					case 'image/gif':
-						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=tiff24nc {$vs_antialiasing} -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						exec($this->ops_ghostscript_path." -dNumRenderingThreads=6 -dNOGC -dNOPAUSE -dBATCH -sDEVICE=tiff24nc {$vs_antialiasing} -dFirstPage=".$vn_start_page." -dLastPage=".$vn_end_page." -dMaxPatternBitmap=1000000 -dBandBufferSpace=500000000 -sBandListStorage=memory -dBufferSpace=1000000000 -dBandHeight=100 -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." -c \"30000000 setvmthreshold\" -f ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 						if ($vn_return == 0) { $vb_processed_preview = true; }
 						break;
 					default:
 						//die("Unsupported output type in PDF plug-in: $ps_mimetype [this shouldn't happen]");
 						break;
 				}
-				
+				if ($pb_write_all_pages) {
+					for($i=$vn_start_page; $i <= $vn_end_page; $i++) {
+						$va_files[] = str_replace("%05d",  sprintf("%05d", $i), $ps_filepath).".{$vs_ext}";
+					}
+				} else {
+					$va_files[] = "{$ps_filepath}.{$vs_ext}";
+				}		
+		
+
 				if ($vb_processed_preview) {
-					if ($vs_crop = $this->get("crop")) {
-						$o_media = new Media();
-						list($vn_w, $vn_h) = explode("x", $vs_crop);
-						if (($vn_w > 0) && ($vn_h > 0)) {
-							$o_media->read($ps_filepath.".".$vs_ext);
-							if (!$o_media->numErrors()) {
-								$o_media->transform('SCALE', array('mode' => 'fill_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h));
-								$o_media->write($ps_filepath, $ps_mimetype, array());
+					foreach($va_files as $vn_page => $vs_file) {
+						$vb_use_default_icon = true;
+						if ($vs_crop = $this->get("crop")) {
+							$o_media = new Media();
+							list($vn_w, $vn_h) = explode("x", $vs_crop);
+							if (($vn_w > 0) && ($vn_h > 0)) {
+								$o_media->read($vs_file);
 								if (!$o_media->numErrors()) {
-									$this->properties["width"] = $vn_w;
-									$this->properties["height"] = $vn_h;
-									$vb_use_default_icon = false;
-								}
-							}
-						}
-					} else {
-						if ($vn_scaling_correction) {
-							$o_media = new Media(true);
-							$o_media->read($ps_filepath.".".$vs_ext);
-							if (!$o_media->numErrors()) {
-										
-								$vn_w = ($o_media->get('width') * $vn_scaling_correction);
-								$vn_h = ($o_media->get('height') * $vn_scaling_correction);
-								
-								if (($vn_w > $vn_h) || ($this->get("target_height") == 0)) {
-									$vn_r = $this->get("target_width")/$vn_w;
-									$vn_w = $this->get("target_width");
-									$vn_h *= $vn_r;
-								} else {
-									$vn_r = $this->get("target_height")/$vn_h;
-									$vn_h = $this->get("target_height");
-									$vn_w *= $vn_r;
-								}
-								
-								$vn_w = ceil($vn_w);
-								$vn_h = ceil($vn_h);
-								$this->properties["width"] = $vn_w;
-								$this->properties["height"] = $vn_h;
-									
-								$o_media->transform('SCALE', array('mode' => 'bounding_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h));
-								$o_media->transform('UNSHARPEN_MASK', array('sigma' => 0.5, 'radius' => 1, 'threshold' => 1.0, 'amount' => 0.1));
-								$o_media->set('quality',$vn_quality);
-								
-								$o_media->write($ps_filepath, $ps_mimetype, array());
-								if (!$o_media->numErrors()) {
-									$vb_use_default_icon = false;
+									$o_media->transform('SCALE', array('mode' => 'fill_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h));
+									$o_media->write(preg_replace("!\.[A-Za-z0-9]+$!", '', $vs_file), $ps_mimetype, array());
+									if (!$o_media->numErrors()) {
+										$this->properties["width"] = $vn_w;
+										$this->properties["height"] = $vn_h;
+										$vb_use_default_icon = false;
+									}
 								}
 							}
 						} else {
-							$vb_use_default_icon = false;
+							if ($vn_scaling_correction) {
+								$o_media = new Media(true);
+								$o_media->read($vs_file);
+								if (!$o_media->numErrors()) {
+										
+									$vn_w = ($o_media->get('width') * $vn_scaling_correction);
+									$vn_h = ($o_media->get('height') * $vn_scaling_correction);
+								
+									if (($vn_w > $vn_h) || ($this->get("target_height") == 0)) {
+										$vn_r = $this->get("target_width")/$vn_w;
+										$vn_w = $this->get("target_width");
+										$vn_h *= $vn_r;
+									} else {
+										$vn_r = $this->get("target_height")/$vn_h;
+										$vn_h = $this->get("target_height");
+										$vn_w *= $vn_r;
+									}
+								
+									$vn_w = ceil($vn_w);
+									$vn_h = ceil($vn_h);
+									$this->properties["width"] = $vn_w;
+									$this->properties["height"] = $vn_h;
+									
+									$o_media->transform('SCALE', array('mode' => 'bounding_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h));
+									$o_media->transform('UNSHARPEN_MASK', array('sigma' => 0.5, 'radius' => 1, 'threshold' => 1.0, 'amount' => 0.1));
+									$o_media->set('quality',$vn_quality);
+								
+									$o_media->write(preg_replace("!\.[A-Za-z0-9]+$!", '', $vs_file), $ps_mimetype, array());
+									if (!$o_media->numErrors()) {
+										$vb_use_default_icon = false;
+									}
+								}
+							} else {
+								$vb_use_default_icon = false;
+							}
+						}
+						
+						if (!$pb_write_all_pages && $vb_use_default_icon) {
+							return $pb_dont_allow_default_icons ? null : __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
+						} elseif($pb_write_all_pages && $vb_use_default_icon) {
+							$va_files[$vn_page] = __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
 						}
 					}
 				}
 			}
-			
-			if ($vb_use_default_icon) {
-				return $vb_dont_allow_default_icons ? null : __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
-			}
 		}
-		
-		
-		$this->properties["mimetype"] = $ps_mimetype;
-		$this->properties["filesize"] = filesize($ps_filepath.".".$vs_ext);
-		$this->properties["typename"] = $this->typenames[$ps_mimetype];
-		
-		return $ps_filepath.".".$vs_ext;
+		if (!$pb_write_all_pages) {	
+			$this->properties["mimetype"] = $ps_mimetype;
+			$this->properties["filesize"] = filesize($ps_filepath.".".$vs_ext);
+			$this->properties["typename"] = $this->typenames[$ps_mimetype];
+		}
+		return $pb_write_all_pages ? $va_files : array_shift($va_files);
 	}
 	# ------------------------------------------------
 	/** 
@@ -739,10 +709,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			$vn_max_number_of_pages = 5000;
 		}
 		
-		if (!($vn_page_interval = (int)$pa_options['pageInterval'])) {
-			$vn_page_interval = 1;
-		}
-		
 		if (!($vn_start_at = (int)$pa_options['startAtPage'])) {
 			$vn_start_at = 1;
 		}
@@ -754,26 +720,15 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		if ($vn_start_at > $vn_tot_pages) { $vn_start_at = 1; }
 		
-		
-		$vn_preview_width = (isset($pa_options['width']) && ((int)$pa_options['width'] > 0)) ? (int)$pa_options['width'] : 320;
-		$vn_preview_height= (isset($pa_options['height']) && ((int)$pa_options['height'] > 0)) ? (int)$pa_options['height'] : 320;
-	
 		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caDocumentPreview');
 		
-		$va_files = array();
 		$vn_old_res = $this->get('resolution');
-		for($vn_i=$vn_start_at; $vn_i <= $vn_tot_pages; $vn_i++) {
-			$this->set("page", $vn_i);
-			
-			if (($vn_res = (int)$this->opo_config->get("document_preview_resolution")) < 72) {
-				$vn_res = 72;
-			}
-			$this->set('resolution', $vn_res);
-			if ($vs_filename = $this->write($vs_output_file_prefix.sprintf("%05d", $vn_i), 'image/jpeg', array('dontUseDefaultIcons' => true))) {
-				$va_files[$vn_i] = $vs_filename;
-			}
-			if ($vn_i >= $vn_max_number_of_pages) { break; }
-		}
+		
+		if (($vn_res = (int)$this->opo_config->get("document_preview_resolution")) < 72) { $vn_res = 72; }
+		$this->set('resolution', $vn_res);
+		
+		$va_files = $this->write($vs_output_file_prefix, 'image/jpeg', ['dontUseDefaultIcons' => true, 'writeAllPages' => true, 'start' => $vn_start_at, 'numPages' => (($vn_tot_pages > $vn_max_number_of_pages) > $vn_max_number_of_pages) ? $vn_max_number_of_pages : $vn_tot_pages]);
+
 		$this->set("page", 1);
 		$this->set('resolution', $vn_old_res);
 		
