@@ -603,7 +603,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				}
 				if ($pb_write_all_pages) {
 					for($i=$vn_start_page; $i <= $vn_end_page; $i++) {
-						$va_files[] = str_replace("%05d",  sprintf("%05d", $i), $ps_filepath).".{$vs_ext}";
+						$va_files[$i] = str_replace("%05d",  sprintf("%05d", $i), $ps_filepath).".{$vs_ext}";
 					}
 				} else {
 					$va_files[] = "{$ps_filepath}.{$vs_ext}";
