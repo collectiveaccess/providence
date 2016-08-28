@@ -43,7 +43,7 @@
 	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
  	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
- 	
+
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
 		protected $opo_datamodel;
@@ -742,8 +742,6 @@
 						$this->render('Results/xlsx_results.php');
 						return;
                     case '_docx':
-                        require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
-                        \PhpOffice\PhpWord\Autoloader::register();
                         $this->render('Results/docx_results.php');
                         return;						
 					case '_csv':
