@@ -2461,7 +2461,7 @@ class SearchIndexer extends SearchBase {
 		$va_queries 			= $va_query_info['queries'];
 		$va_fields_to_index 	= $va_query_info['fields_to_index'];
 
-		if(isset($va_fields_to_index['_count']) && (bool)$va_fields_to_index['_count']) {
+		if(isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count'])) {
 			$vn_subject_table_num = $pt_subject->tableNum();
 			$vn_related_table_num = $pt_rel->tableNum();
 			if (!is_array($va_rel_field_info = $va_fields_to_index['_count'])) { $va_rel_field_info = []; }
@@ -2484,12 +2484,12 @@ class SearchIndexer extends SearchBase {
 
 					$vn_row_id = $qr_res->get($vs_related_pk);
 
-					$vn_rel_type_id = $qr_res->get('rel_type_id');
-					$vn_row_type_id = $qr_res->get('type_id');
+					$vn_rel_type_id = (int)$qr_res->get('rel_type_id');
+					$vn_row_type_id = (int)$qr_res->get('type_id');
 
 					$va_counts['_total']++;
 
-					if ($vn_rel_type_id || $vn_row_type_id) {
+					if ($vn_rel_type_id || $vn_row_type_id || !$pt_rel->hasField('type_id')) {
 						$va_counts[$pt_rel->isRelationship() ? $vn_rel_type_id : $vn_row_type_id]++;
 					}
 				}
