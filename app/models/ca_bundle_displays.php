@@ -473,7 +473,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 *		returnAllAvailableIfEmpty = if set to true then the list of all available bundles will be returned if the currently loaded display has no placements, or if there is no display loaded
 	 *		table = if using the returnAllAvailableIfEmpty option and you expect a list of available bundles to be returned if no display is loaded, you must specify the table the bundles are intended for use with with this option. Either the table name or number may be used.
 	 *		user_id = if specified then placements are only returned if the user has at least read access to the display
-	 *		settingsOnly = if true the settings forms are omitted and only setting values are returned; default is false
+	 *		settingsOnly = if true the settings forms are omitted and only setting values are returned. [Default is false]
+	 *		omitEditingInfo = don't include data required for inline in-spreadsheet editing. [Default is false]
 	 * @return array List of placements in display order. Array is keyed on bundle name. Values are arrays with the following keys:
 	 *		placement_id = primary key of ca_bundle_display_placements row - a unique id for the placement
 	 *		bundle_name = bundle name (a code - not for display)
@@ -486,6 +487,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$pb_return_all_available_if_empty = (isset($pa_options['returnAllAvailableIfEmpty']) && !$pb_settings_only) ? (bool)$pa_options['returnAllAvailableIfEmpty'] : false;
 		$ps_table = (isset($pa_options['table'])) ? $pa_options['table'] : null;
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
+		$pb_omit_editing_info = caGetOption('omitEditingInfo', $pa_options, false);
 		
 		$ps_hierarchical_delimiter = caGetOption('hierarchicalDelimiter', $pa_options, null);
 		
@@ -521,12 +523,13 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles(null, $pa_options);
 		$va_placements = array();
-	
+		
 		if ($qr_res->numRows() > 0) {
 			$vs_subject_table = $o_dm->getTableName($this->get('table_num'));
 			$t_subject = $o_dm->getInstanceByTableNum($this->get('table_num'), true);
 			$t_placement = new ca_bundle_display_placements();
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
@@ -543,6 +546,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					$t_instance = $o_dm->getInstanceByTableName($va_bundle_name[0], true);
 					$va_placements[$vn_placement_id]['display'] = ($t_instance ? $t_instance->getDisplayLabel($vs_bundle_name) : "???");
 				}
+if (!$pb_omit_editing_info) {
 				if ($va_bundle_name[0] == $vs_subject_table) {
 					// Only primary fields are inline-editable
 				
@@ -646,7 +650,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 												$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
 												$va_list_item_labels = array();
 										
-									
+									print caPrintStackTrace(); die;
 												while($qr_list_items->nextHit()) {
 													$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
 												}
@@ -680,6 +684,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 						$va_placements[$vn_placement_id]['allowEditing'] = false;
 					}
 				}
+}
 			}
 		} else {
 			if ($pb_return_all_available_if_empty) {
@@ -1859,7 +1864,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$vs_bundle_name = $pn_placement_id;
 			$va_placement = array();
 		} else {
-			$va_placements = $this->getPlacements();
+			$va_placements = $this->getPlacements(['settingsOnly' => true, 'omitEditingInfo' => true]);
 			$va_placement = $va_placements[$pn_placement_id];
 			$vs_bundle_name = $va_placement['bundle_name'];
 		}
