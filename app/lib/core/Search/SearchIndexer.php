@@ -509,12 +509,12 @@ class SearchIndexer extends SearchBase {
 	 * For example, if you are indexing a row in table 'entities', then indexRow()
 	 * will automatically apply the indexing not just to the entities record, but also
 	 * to all objects, place_names, occurrences, lots, etc. that reference the entity.
-	 * The dependencies are configured in the search_indices.conf configuration file.
+	 * The dependencies are configured in the search_indexing.conf configuration file.
 	 *
 	 * "subject" tablenum/row_id refer to the row **to which the indexing is being applied**. This may be the row being indexed
 	 * or it may be a dependent row. The "content" tablenum/fieldnum/row_id parameters define the specific row and field being indexed.
 	 * This is always the actual row being indexed. $pm_content is the content to be indexed and $pa_options is an optional associative
-	 * array of indexing options passed through from the search_indices.conf (no options are defined yet - but will be soon)
+	 * array of indexing options passed through from the search_indexing.conf (no options are defined yet - but will be soon)
 	 *
 	 * @param int $pn_subject_table_num subject table number
 	 * @param int $pn_subject_row_id subject record, identified by primary key
@@ -797,7 +797,7 @@ class SearchIndexer extends SearchBase {
 							$qr_res = $this->opo_db->query($vs_sql, $va_params);
 						}
 						
-						if ($vb_index_count = isset($va_fields_to_index['_count']) && (bool)$va_fields_to_index['_count']) {
+						if ($vb_index_count = (isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count']))) {
 							$va_counts = $this->_getInitedCountList($t_rel); 
 						}
 						
@@ -808,8 +808,8 @@ class SearchIndexer extends SearchBase {
 							
 							$vn_row_id = $qr_res->get($vs_related_pk);
 							
-							$vn_rel_type_id = $qr_res->get('rel_type_id');
-							$vn_row_type_id = $qr_res->get('type_id');
+							$vn_rel_type_id = (int)$qr_res->get('rel_type_id');
+							$vn_row_type_id = (int)$qr_res->get('type_id');
 							
 							$vn_private = ((!is_array($va_private_rel_types) || !sizeof($va_private_rel_types) || !in_array($vn_rel_type_id, $va_private_rel_types))) ? 0 : 1;
 							
@@ -868,7 +868,7 @@ class SearchIndexer extends SearchBase {
 										if ($vb_index_count) {
 											$va_counts['_total']++;
 										
-											if ($vn_rel_type_id || $vn_row_type_id) {
+											if ($vn_rel_type_id || $vn_row_type_id || !$t_rel->hasField('type_id')) {
 												$va_counts[$t_rel->isRelationship() ? $vn_rel_type_id : $vn_row_type_id]++;
 											}
 										}
