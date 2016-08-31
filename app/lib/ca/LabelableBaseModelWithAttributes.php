@@ -2308,13 +2308,17 @@
 		 * 
 		 */ 
 		public function setUserGroups($pa_group_ids, $pa_effective_dates=null, $pa_options=null) {
-			if (is_array($va_groups = $this->getUserGroups())) {
-				$this->removeAllUserGroups();
-				if (!$this->addUserGroups($pa_group_ids, $pa_effective_dates, $pa_options)) { return false; }
-				
-				return true;
+			if(is_array($va_groups = $this->getUserGroups([]))) {
+				$va_group_ids_to_remove = [];
+				foreach($va_groups as $vn_group_id => $va_info) {
+					if (!isset($pa_group_ids[$vn_group_id])) {
+						$va_group_ids_to_remove[] = $vn_group_id;
+					}
+				}
+				if (!$this->removeUserGroups($va_group_ids_to_remove)) { return false; }
+				if (!$this->addUserGroups($pa_group_ids, $pa_effective_dates)) { return false; }
 			}
-			return null;
+			return true;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -2358,17 +2362,19 @@
 			if (!($vs_group_rel_table = $this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_db = $this->getDb();
-			
-			$qr_res = $o_db->query("
-				DELETE FROM {$vs_group_rel_table}
-				WHERE
-					{$vs_pk} = ?
-			", (int)$vn_id);
-			
-			if ($o_db->numErrors()) {
-				$this->errors = $o_db->errors;
-				return false;
+			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_group_rel_table, true);
+			if(is_array($va_groups = $this->getUserGroups(['returnAsInitialValuesForBundle' => true]))) {
+				foreach($va_groups as $vn_rel_id => $va_info) {
+					if($t_rel->load($vn_rel_id)) {
+						$t_rel->setMode(ACCESS_WRITE);
+						$t_rel->delete();
+						
+						if ($t_rel->numErrors()) {
+							$this->errors = $t_rel->errors;
+							return false;
+						}
+					}
+				}
 			}
 			return true;
 		}
@@ -2534,9 +2540,16 @@
 		 * 
 		 */ 
 		public function setUsers($pa_user_ids, $pa_effective_dates=null) {
-			$this->removeAllUsers();
-			if (!$this->addUsers($pa_user_ids, $pa_effective_dates)) { return false; }
-			
+			if(is_array($va_users = $this->getUsers([]))) {
+				$va_user_ids_to_remove = [];
+				foreach($va_users as $vn_user_id => $va_info) {
+					if (!isset($pa_user_ids[$vn_user_id])) {
+						$va_user_ids_to_remove[] = $vn_user_id;
+					}
+				}
+				if (!$this->removeUsers($va_user_ids_to_remove)) { return false; }
+				if (!$this->addUsers($pa_user_ids, $pa_effective_dates)) { return false; }
+			}
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -2581,16 +2594,19 @@
 			if (!($vs_user_rel_table = $this->getProperty('USERS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_db = $this->getDb();
-			
-			$qr_res = $o_db->query("
-				DELETE FROM {$vs_user_rel_table}
-				WHERE
-					{$vs_pk} = ?
-			", $vn_id);
-			if ($o_db->numErrors()) {
-				$this->errors = $o_db->errors;
-				return false;
+			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_user_rel_table, true);
+			if(is_array($va_users = $this->getUsers(['returnAsInitialValuesForBundle' => true]))) {
+				foreach($va_users as $vn_rel_id => $va_info) {
+					if($t_rel->load($vn_rel_id)) {
+						$t_rel->setMode(ACCESS_WRITE);
+						$t_rel->delete();
+						
+						if ($t_rel->numErrors()) {
+							$this->errors = $t_rel->errors;
+							return false;
+						}
+					}
+				}
 			}
 			return true;
 		}
@@ -2752,12 +2768,16 @@
 		 */ 
 		public function setUserRoles($pa_role_ids, $pa_options=null) {
 			if (is_array($va_roles = $this->getUserRoles())) {
-				$this->removeAllUserRoles();
-				if (!$this->addUserRoles($pa_role_ids, $pa_options)) { return false; }
-				
-				return true;
+				$va_role_ids_to_remove = [];
+				foreach($va_roles as $vn_role_id => $va_info) {
+					if (!isset($pa_role_ids[$vn_role_id])) {
+						$va_role_ids_to_remove[] = $vn_role_id;
+					}
+				}
+				if (!$this->removeUserRoles($va_role_ids_to_remove)) { return false; }
+				if (!$this->addUserRoles($pa_role_ids, $pa_effective_dates)) { return false; }
 			}
-			return null;
+			return true;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -2799,19 +2819,20 @@
 		public function removeAllUserRoles() {
 			if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
-			$vs_pk = $this->primaryKey();
 			
-			$o_db = $this->getDb();
-			
-			$qr_res = $o_db->query("
-				DELETE FROM {$vs_role_rel_table}
-				WHERE
-					{$vs_pk} = ?
-			", (int)$vn_id);
-			
-			if ($o_db->numErrors()) {
-				$this->errors = $o_db->errors;
-				return false;
+			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_role_rel_table, true);
+			if(is_array($va_roles = $this->getUserRoles(['returnAsInitialValuesForBundle' => true]))) {
+				foreach($va_roles as $vn_rel_id => $va_info) {
+					if($t_rel->load($vn_rel_id)) {
+						$t_rel->setMode(ACCESS_WRITE);
+						$t_rel->delete();
+						
+						if ($t_rel->numErrors()) {
+							$this->errors = $t_rel->errors;
+							return false;
+						}
+					}
+				}
 			}
 			return true;
 		}

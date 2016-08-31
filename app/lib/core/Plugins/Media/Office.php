@@ -146,6 +146,9 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"text/plain" 					=> "TXT"
 	);
 	
+	/**
+	 * Cache Office -> PDF file conversions across invocations in current request
+	 */
 	static $s_pdf_conv_cache = array();
 	
 	var $opa_transformations = array();
@@ -546,6 +549,8 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->handle['content'] = file_exists("{$vs_tmp_dir_path}/".join(".", $va_out_file).".html") ? strip_tags(file_get_contents("{$vs_tmp_dir_path}/".join(".", $va_out_file).".html")) : '';
 				$va_out_file[] = 'pdf';
 				
+				
+				if (sizeof(WLPlugMediaOffice::$s_pdf_conv_cache) > 100) { WLPlugMediaOffice::$s_pdf_conv_cache = array_slice(WLPlugMediaOffice::$s_pdf_conv_cache, 50); }
 				WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath] = "{$vs_tmp_dir_path}/".join(".", $va_out_file);
 				$o_media = new Media();
 				if ($o_media->read(WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath])) {
