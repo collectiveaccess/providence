@@ -10,5 +10,8 @@
     "easyrdf/easyrdf": "0.9.*",
     "hoa/compiler": "~2.15",
     "hoa/visitor": "~1.15"
+  },
+  "require": {
+    "phpoffice/phpword": "^0.13.0"
   }
 }
