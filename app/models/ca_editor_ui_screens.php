@@ -537,9 +537,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'related_table':
 					if(preg_match("/^([a-z_]+)_(related_list|table)$/", $vs_bundle, $va_matches)) {
-						$vs_table = $va_matches[1];
-						$t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
-						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_table));
+						$vs_rel_table = $va_matches[1];
+						$t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_rel_table, true);
+						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_rel_table));
 						if(!is_array($va_path)) { continue 2; }
 
 						$va_additional_settings = array(
@@ -1534,7 +1534,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				'default' => '',
 				'showTypesForTable' => $vs_table,
 				'width' => "275px", 'height' => 4,
-				'label' => _t('Display bundle for types'),
+				'label' => _t('Display bundle for types: %1', $vs_table),
 				'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
 			];
 
