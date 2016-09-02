@@ -650,7 +650,6 @@ if (!$pb_omit_editing_info) {
 												$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
 												$va_list_item_labels = array();
 										
-									print caPrintStackTrace(); die;
 												while($qr_list_items->nextHit()) {
 													$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
 												}
