@@ -237,9 +237,10 @@ class ca_change_log extends BaseModel {
 	 * @param int $pn_from
 	 * @param null|int $pn_limit
 	 * @param null|array $pa_options
+	 * @param null|array $pa_media optional array that will contain media references
 	 * @return array
 	 */
-	public static function getLog($pn_from, $pn_limit=null, $pa_options=null) {
+	public static function getLog($pn_from, $pn_limit=null, $pa_options=null, &$pa_media=null) {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 
 		if(!is_null($pn_limit)) {
@@ -352,17 +353,44 @@ class ca_change_log extends BaseModel {
 							}
 
 							// handle media ...
-							if($t_instance instanceof ca_object_representations) {
-								// nowadays the change log entry is an <img> tag ... the default behavior for get('media'), presumably
-								if(isset($va_snapshot['media']) && is_string($va_snapshot['media'])) {
-									$o_dom = new DOMDocument();
-									$o_dom->loadHTML($va_snapshot['media']);
-									if (isset($o_dom->getElementsByTagName('img')[0])) {
-										$va_snapshot['media'] = $o_dom->getElementsByTagName('img')[0]->getAttribute('src');
+							if(($t_instance instanceof ca_object_representations) && isset($va_snapshot['media'])) {
+
+								// we only put the URL/path if it's still the latest file. can figure that out with a simple query
+								$qr_future_entries = $o_db->query("
+										SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
+										WHERE cl.log_id = cls.log_id AND cl.log_id>?
+										AND cl.logged_row_id = ? AND cl.logged_table_num = ?
+										ORDER BY cl.log_id
+									", $va_row['log_id'], $va_row['logged_row_id'], $va_row['logged_table_num']);
+
+								$pb_is_latest = true;
+								while($qr_future_entries->nextRow()) {
+									$va_future_snap = caUnserializeForDatabase($qr_future_entries->get('snapshot'));
+									if(isset($va_future_snap['media'])) {
+										$pb_is_latest = false;
+										break;
 									}
-								} elseif(is_array($va_snapshot['media'])) { // back in the day it would store the full media array here
-									$o_coder = MediaInfoCoder::load();
-									$va_snapshot['media'] = $o_coder->getMediaUrl($va_snapshot['media'], 'original');
+								}
+
+								if($pb_is_latest) {
+									// nowadays the change log entry is an <img> tag ... the default behavior for get('media'), presumably
+									// it usually points to a non-original version, so we have to actually load() here to get the original
+									if(is_string($va_snapshot['media'])) {
+										$t_instance->load($va_row['logged_row_id']);
+										$va_snapshot['media'] = $t_instance->getMediaUrl('media', 'original');
+									} elseif(is_array($va_snapshot['media'])) { // back in the day it would store the full media array here
+										$o_coder = MediaInfoCoder::load();
+										$va_snapshot['media'] = $o_coder->getMediaUrl($va_snapshot['media'], 'original');
+									}
+								} else { // if it's not the latest, we don't care about the media
+									unset($va_snapshot['media']);
+								}
+
+								// if caller wants media references, collect them here and replace
+								if(is_array($pa_media) && isset($va_snapshot['media'])) {
+									$vs_md5 = md5($va_snapshot['media']);
+									$pa_media[$vs_md5] = $va_snapshot['media'];
+									$va_snapshot['media'] = $vs_md5;
 								}
 
 								// also unset media metadata, because otherwise json_encode is likely to bail
@@ -399,6 +427,12 @@ class ca_change_log extends BaseModel {
 									$vs_label_subject_guid_field = str_replace('_id', '', $vs_fld) . '_guid';
 									$va_snapshot[$vs_label_subject_guid_field] = ca_guids::getForRow($t_instance->getSubjectTableInstance()->tableNum(), $vm_val);
 								}
+							}
+
+							// handle 1:n foreign keys like ca_representation_annotations.representation_id
+							// @todo: don't use hardcoded field names!? -- another case would be ca_objects.lot_id
+							if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
+								$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::load()->getTableNum('ca_object_representations'), $vm_val);
 							}
 						}
 						break;

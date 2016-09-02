@@ -54,8 +54,8 @@
 	foreach($va_resources as $va_resource) {
 		$vs_canvas_id = "{$vs_identifer}:{$vn_page}";
 		
-		if (isset($va_resource['representation_id']) && ($va_resource['representation_id'] > 0)) {
-			// If resource includes explicitly set representation_id then assume representation identifier with that id
+		if (isset($va_resource['noPages'])) {
+			// If resource includes explicitly set "noPages" then assume representation identifier with that id
 			// (This is used to support the "use_universal_viewer_for_image_list_length_at_least" option in media_display.conf
 			//  which forces a list of image representations to be displayed as a multipage document in UniversalViewer)
 			$vs_service_url = "{$vs_base_url}/service.php/IIIF/representation:".$va_resource['representation_id']."";

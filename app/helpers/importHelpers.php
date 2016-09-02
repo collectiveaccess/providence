@@ -100,43 +100,44 @@
 			$va_attributes['idno'] = $vs_idno;
 			$va_attributes['parent_id'] = $vn_id;
 			
-			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) { 
+			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) {
 				foreach($va_parent['rules'] as $va_rule) {
-					$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $pa_source_data);
-					if (!ExpressionParser::hadError() && (bool)$vm_ret) {
-						foreach($va_rule['actions'] as $va_action) {
-							if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
-								$va_action = array('action' => 'skip');
-							}
-							switch($vs_action_code = strtolower($va_action['action'])) {
-								case 'set':
-									switch($va_action['target']) {
-										case 'name':
-											$vs_name = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
-											break;
-										case 'type':
-											$vs_type = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
-											break;
-										default:
-											$va_attributes[$va_action['target']] = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
-											break;
-									}
-									break;
-								case 'skip':
-								default:
-									if ($o_log) { 
-										if ($vs_action_code != 'skip') {
-											$o_log->logInfo(_t('[%3] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
-										} else {
-											$o_log->logDebug(_t('[%3] Parent was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
+					try {
+						if ((bool)ExpressionParser::evaluate($va_rule['trigger'], $pa_source_data)) {
+							foreach($va_rule['actions'] as $va_action) {
+								if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
+									$va_action = array('action' => 'skip');
+								}
+								switch($vs_action_code = strtolower($va_action['action'])) {
+									case 'set':
+										switch($va_action['target']) {
+											case 'name':
+												$vs_name = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+												break;
+											case 'type':
+												$vs_type = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+												break;
+											default:
+												$va_attributes[$va_action['target']] = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+												break;
 										}
-									}
-									continue(4);
-									break;
+										break;
+									case 'skip':
+									default:
+										if ($o_log) {
+											if ($vs_action_code != 'skip') {
+												$o_log->logInfo(_t('[%3] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
+											} else {
+												$o_log->logDebug(_t('[%3] Parent was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
+											}
+										}
+										continue(4);
+										break;
+								}
 							}
 						}
-					} elseif (ExpressionParser::hadError() && $o_log) {
-						$o_log->logError(_t('[%3] Error processing rule "%1" as an error occurred. Error number was "%2"', $va_rule['trigger'], ExpressionParser::$s_last_error, $ps_refinery_name));
+					} catch (Exception $o_error) {
+						$o_log->logError(_t('[%3] Error processing rule "%1" as an error occurred. Error number was "%2"', $va_rule['trigger'], $o_error->getMessage(), $ps_refinery_name));
 					}
 				}
 			}

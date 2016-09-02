@@ -344,6 +344,137 @@
 		public function getType() {
 			return __CA_ATTRIBUTE_VALUE_URL__;
 		}
+		# ------------------------------------------------------------------
+		public function checkIntegrity() {
+			if(!$this->ops_text_value) { return false; }
+			$ps_url = $this->ops_text_value;
+
+			if(!((bool)ini_get('allow_url_fopen'))) {
+				throw new Exception("It looks like allow_url_fopen is set to false. This means CollectiveAccess is not able to download the given file. Please contact your system administrator.");
+			}
+
+			if(!isURL($ps_url)) {
+				throw new Exception("This does not look like a URL");
+			}
+
+			$o_context = stream_context_create( array(
+				'http' => array(
+					'timeout' => 3
+				)
+			));
+
+			$r_fp = @fopen($ps_url, 'r', false, $o_context);
+
+			if(!$r_fp) {
+				throw new Exception(_t('Could not open remote URL [%1]', $ps_url));
+			}
+
+			if(($vs_content = fgets($r_fp, 64)) === false) {
+				throw new Exception(_t('Could not read data from remote URL [%1]', $ps_url));
+			}
+
+			fclose($r_fp);
+		}
  		# ------------------------------------------------------------------
+		/**
+		 * @param array $pa_options
+		 * 		request = Request object used to build links
+		 * 		printStatusViaCLIUtils = defaults to true
+		 * 		notifyUsers =
+		 * 		notifyGroups =
+		 * @throws Exception
+		 */
+		public static function checkIntegrityForAllElements(array $pa_options = []) {
+			$pb_print_status = caGetOption('printStatusViaCLIUtils', $pa_options, true);
+			$ps_notify_users = caGetOption('notifyUsers', $pa_options, false);
+			$ps_notify_groups = caGetOption('notifyGroups', $pa_options, false);
+			$po_request = caGetOption('request', $pa_options, null);
+
+			$o_db = new Db();
+
+			$qr_elements = $o_db->query('SELECT element_id FROM ca_metadata_elements WHERE datatype=? ORDER BY element_id', __CA_ATTRIBUTE_VALUE_URL__);
+
+			$va_notifications = [];
+			while($qr_elements->nextRow()) {
+				$vs_element_code = ca_metadata_elements::getElementCodeForId($qr_elements->get('element_id'));
+
+				if($pb_print_status) {
+					CLIUtils::addMessage(_t("Checking values for element code [%1]", $vs_element_code));
+				}
+
+				$qr_vals = $o_db->query('SELECT * FROM ca_attribute_values WHERE element_id=? ORDER BY value_id', $qr_elements->get('element_id'));
+
+				if($pb_print_status) { print CLIProgressBar::start($qr_vals->numRows(), _t("Processing element [%1]", $vs_element_code)); }
+
+				while($qr_vals->nextRow()) {
+					$o_val = new UrlAttributeValue($qr_vals->getRow());
+
+					if($pb_print_status) { print CLIProgressBar::next(); }
+
+					try {
+						$o_val->checkIntegrity();
+					} catch(Exception $e) {
+						$qr_attr = $o_db->query('SELECT * FROM ca_attributes where attribute_id=?', $qr_vals->get('attribute_id'));
+						if(!$qr_attr->nextRow()) { throw new Exception('Something went horribly wrong.'); } // each value should have an attribute
+
+						$vs_msg = _t("There was an error while veryfing URL for %1 with ID %2: %3",
+							caGetTableDisplayName($qr_attr->get('table_num'), false),
+							$qr_attr->get('row_id'), $e->getMessage()
+						);
+
+						if($po_request instanceof RequestHTTP) {
+							$vs_msg .= "\n<br/><br/>" . caEditorLink($po_request, _t("Open record"), '', $qr_attr->get('table_num'), $qr_attr->get('row_id'), null, null, ['action' => 'Edit']);
+						}
+
+						$va_notifications[] = $vs_msg;
+
+						if($pb_print_status) {
+							CLIUtils::addError($vs_msg);
+						}
+					}
+
+					if($pb_print_status) { print CLIProgressBar::finish(); }
+				}
+
+				// notify users
+				if((strlen($ps_notify_users) > 0) && sizeof($va_notifications)) {
+					$t_user = new ca_users();
+					$pa_users = preg_split('/[,:]/', $ps_notify_users);
+
+					foreach($pa_users as $vs_user_name) {
+						if(!$t_user->load(['user_name' => $vs_user_name])) {
+							continue;
+						}
+
+						foreach($va_notifications as $vs_notification) {
+							$t_user->addNotification(__CA_NOTIFICATION_TYPE_URL_REFERENCE_CHECK__, $vs_notification);
+						}
+					}
+				}
+
+				// notify user groups (each user individually)
+				if((strlen($ps_notify_groups) > 0) && sizeof($va_notifications)) {
+					$t_group = new ca_user_groups();
+					$t_user = new ca_users();
+					$pa_groups = preg_split('/[,:]/', $ps_notify_groups);
+
+					foreach($pa_groups as $vs_group_code) {
+						if(!$t_group->load(['code' => $vs_group_code])) {
+							continue;
+						}
+
+						foreach($t_group->getGroupUsers() as $va_user) {
+							if(!$t_user->load(['user_name' => $va_user['user_name']])) {
+								continue;
+							}
+
+							foreach($va_notifications as $vs_notification) {
+								$t_user->addNotification(__CA_NOTIFICATION_TYPE_URL_REFERENCE_CHECK__, $vs_notification);
+							}
+						}
+					}
+				}
+			}
+		}
+		# ------------------------------------------------------------------
 	}
- ?>

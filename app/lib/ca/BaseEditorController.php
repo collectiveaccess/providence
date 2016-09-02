@@ -47,6 +47,7 @@ require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
 require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
+require_once(__CA_LIB_DIR__.'/core/Logging/Downloadlog.php');
 
 define('__CA_SAVE_AND_RETURN_STACK_SIZE__', 30);
 
@@ -636,7 +637,7 @@ class BaseEditorController extends ActionController {
 		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$this->view->setVar('display_id', $vn_display_id);
 
-			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true));
+			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
 
 			$va_display_list = array();
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
@@ -697,7 +698,7 @@ class BaseEditorController extends ActionController {
 		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$this->view->setVar('display_id', $vn_display_id);
 
-			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true));
+			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
 			$va_display_list = array();
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
 				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
@@ -1736,13 +1737,21 @@ class BaseEditorController extends ActionController {
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-			if ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null)) {
+			
+			if ((($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
+				||
+				($vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $va_display_info, null)))
+			) {
 				$vn_image_count = $t_subject->numberOfRepresentationsOfClass('image');
 				$vn_rep_count = $t_subject->getRepresentationCount();
 				
 				// Are there enough representations? Are all representations images? 
-				if (($vn_image_count == $vn_rep_count) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
-					$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+				if ($vn_image_count == $vn_rep_count) {
+					if (!is_null($vn_use_universal_viewer_for_image_list_length) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
+						$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+					} elseif(!is_null($vn_use_mirador_for_image_list_length) && ($vn_image_count >= $vn_use_mirador_for_image_list_length)) {
+						$va_display_info['viewer'] = $vs_viewer_name = 'Mirador';
+					}
 				}
 			}
 			
@@ -1792,13 +1801,21 @@ class BaseEditorController extends ActionController {
 				}
 				
 				$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-				if ($t_subject && ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))) {
+				if ($t_subject && 
+					(($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
+					||
+					($vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $va_display_info, null)))
+				) {
 					$vn_image_count = $t_subject->numberOfRepresentationsOfClass('image');
 					$vn_rep_count = $t_subject->getRepresentationCount();
 				
 					// Are there enough representations? Are all representations images? 
-					if (($vn_image_count == $vn_rep_count) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
-						$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+					if ($vn_image_count == $vn_rep_count) {
+						if(!is_null($vn_use_universal_viewer_for_image_list_length) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
+							$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
+						} elseif(!is_null($vn_use_mirador_for_image_list_length) && ($vn_image_count >= $vn_use_mirador_for_image_list_length)) {
+							$va_display_info['viewer'] = $vs_viewer_name = 'Mirador';
+						}
 					}
 				}
 				
@@ -2095,10 +2112,11 @@ class BaseEditorController extends ActionController {
 		$vn_c = 1;
 		$va_file_names = array();
 		$va_file_paths = array();
-
+		$va_child_ids = array_unique($va_child_ids);
+		
+		$t_download_log = new Downloadlog();
 		foreach($va_child_ids as $vn_child_id) {
 			if (!$t_subject->load($vn_child_id)) { continue; }
-
 			if ($t_subject->tableName() == 'ca_object_representations') {
 				$va_reps = array(
 					$vn_child_id => array(
@@ -2110,9 +2128,11 @@ class BaseEditorController extends ActionController {
 				$va_reps = $t_subject->getRepresentations(array($ps_version));
 			}
 			$vs_idno = $t_subject->get('idno');
-
+			
+			$vb_download_for_record = false;
 			foreach($va_reps as $vn_representation_id => $va_rep) {
 				if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
+				$vb_download_for_record = true;
 				$va_rep_info = $va_rep['info'][$ps_version];
 				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 				switch($this->request->user->getPreference('downloaded_file_naming')) {
@@ -2145,7 +2165,7 @@ class BaseEditorController extends ActionController {
 						$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
 						break;
 				}
-
+				
 				$va_file_names[$vs_file_name] = true;
 				$o_view->setVar('version_download_name', $vs_file_name);
 
@@ -2162,6 +2182,16 @@ class BaseEditorController extends ActionController {
 				$va_file_paths[$vs_path] = $vs_file_name;
 
 				$vn_c++;
+			}
+			if($vb_download_for_record){
+				$t_download_log->log(array(
+						"user_id" => $this->request->getUserID(), 
+						"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+						"table_num" => $this->opo_datamodel->getTableNum($this->ops_table_name), 
+						"row_id" => $vn_child_id, 
+						"representation_id" => $pn_representation_id ? $pn_representation_id : null, 
+						"download_source" => "providence"
+				));
 			}
 		}
 
@@ -2251,7 +2281,15 @@ class BaseEditorController extends ActionController {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode(_t('Invalid file')));
 				break;		
 		}
-		
+		$t_download_log = new Downloadlog();
+		$t_download_log->log(array(
+				"user_id" => $this->request->getUserID(), 
+				"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+				"table_num" => $this->opo_datamodel->getTableNum($this->ops_table_name), 
+				"row_id" => $vn_subject_id, 
+				"representation_id" => null, 
+				"download_source" => "providence"
+		));
 
 		$o_view->setVar('archive_path', $vs_path);
 		$o_view->setVar('archive_name', $vs_name);

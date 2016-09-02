@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,10 @@
 require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
 
 class AuthenticationManager {
+	/**
+	 * @var object contains instance of authentication configuration
+	 */
+	private static $g_authentication_conf = null;
 
 	/**
 	 * @var object contains instance of authentication adapter to use
@@ -50,14 +54,13 @@ class AuthenticationManager {
 	 */
 	public static function init($ps_adapter=null) {
 		if(!is_null($ps_adapter) || (self::$g_authentication_adapter === null)) {
-			$o_app_conf = Configuration::load();
-			$o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+			AuthenticationManager::$g_authentication_conf = $o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 			$vs_auth_adapter = (!is_null($ps_adapter)) ? $ps_adapter : $o_auth_config->get('auth_adapter');
 
 			$vs_auth_adapter_file = __CA_LIB_DIR__."/core/Auth/Adapters/".$vs_auth_adapter.".php";
 			if(file_exists($vs_auth_adapter_file)) {
-				@require_once($vs_auth_adapter_file);
+				require_once($vs_auth_adapter_file);
 
 				$vs_auth_class_name = $vs_auth_adapter . 'AuthAdapter';
 				if(class_exists($vs_auth_class_name)) {
@@ -82,6 +85,14 @@ class AuthenticationManager {
 		self::init();
 
 		if ($vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options)) {
+			return $vn_rc;
+		}
+
+		if ((AuthenticationManager::$g_authentication_conf->get('allow_fallback_to_ca_users_auth')) && !self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
+			// fall back to ca_users "native" authentication
+			self::init('CaUsers');
+			$vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options);
+			self::$g_authentication_adapter = null;
 			return $vn_rc;
 		}
 
@@ -132,8 +143,7 @@ class AuthenticationManager {
 		self::init();
 
 		if ($pn_feature == __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__) {
-			$po_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
-			if (!$po_auth_config->get('auth_allow_password_reset')) {
+			if (!AuthenticationManager::$g_authentication_conf->get('auth_allow_password_reset')) {
 				return false;
 			}
 		}
@@ -179,7 +189,7 @@ class AuthenticationManager {
 			return $vn_rc;
 		}
 
-		if (!self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
+		if ((AuthenticationManager::$g_authentication_conf->get('allow_fallback_to_ca_users_auth')) && !self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
 			// fall back to ca_users "native" authentication
 			self::init('CaUsers');
 			$vn_rc = self::$g_authentication_adapter->getUserInfo($ps_username, $ps_password);

@@ -1863,7 +1863,6 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
-				"username" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
@@ -3759,6 +3758,94 @@
 		 */
 		public static function push_config_changesHelp() {
 			return _t('Pushes configuration changes from this system out to other systems.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function generate_new_system_guid($po_opts=null) {
+			// generate system GUID -- used to identify systems in data sync protocol
+			$o_vars = new ApplicationVars();
+			$o_vars->setVar('system_guid', $vs_guid = caGenerateGUID());
+			$o_vars->save();
+
+			CLIUtils::addMessage(_t('New system GUID is %1', $vs_guid));
+		}
+
+		public static function generate_new_system_guidParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_new_system_guidUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_new_system_guidShortHelp() {
+			return _t('Generates a new system GUID for this setup. Useful if you\'re using the sync/replication feature.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_new_system_guidHelp() {
+			return _t('This utility generates a new system GUID for the current system. This can be useful is you used a copy of another system to set it up and are now trying to sync/replicate data between the two. You may have to reset the system GUID for one of them in that case.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function check_url_reference_integrity($po_opts=null) {
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/UrlAttributeValue.php');
+
+			$o_request = new RequestHTTP(null, [
+				'no_headers' => true,
+				'simulateWith' => [
+					'REQUEST_METHOD' => 'GET',
+					'SCRIPT_NAME' => 'index.php'
+				]
+			]);
+
+			UrlAttributeValue::checkIntegrityForAllElements([
+				'request' => $o_request,
+				'notifyUsers' => $po_opts->getOption('users'),
+				'notifyGroups' => $po_opts->getOption('groups')
+			]);
+		}
+		# -------------------------------------------------------
+		public static function check_url_reference_integrityParamList() {
+			return [
+				"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user named will be ignored. [Optional]'),
+				"groups|g=s" => _t('Groups to notify if there are errors. They\'re identified by group code. Multiple entries are delimited by comma or semicolon. Invalid or non-existing groups will be ignored. [Optional]'),
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_url_reference_integrityUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_url_reference_integrityShortHelp() {
+			return _t('Checks integrity for all URL references in the database.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_url_reference_integrityHelp() {
+			return _t('This utility checks the integrity for all URL attribute references in the database. It does so by trying to hit each URL and reading a few bytes. It does not download the whole file.');
 		}
 		# -------------------------------------------------------
 	}

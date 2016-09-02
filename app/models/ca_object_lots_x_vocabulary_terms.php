@@ -168,7 +168,7 @@ class ca_object_lots_x_vocabulary_terms extends BaseRelationshipModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'lot_id'
+			'lot_id', 'item_id'
 		),
 		"RELATED_TABLES" => array(
 		

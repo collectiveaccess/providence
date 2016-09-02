@@ -25,8 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
+	/** @var ResultContext $vo_result_context */
  	$vo_result_context 			= $this->getVar('result_context');
+	/** @var SearchResult $vo_result */
  	$vo_result					= $this->getVar('result');
 ?>
 <h3 class='searchType'>
@@ -107,6 +109,8 @@ if(sizeof($this->getVar("available_sets")) > 0){
 <?php
 }
 	if($vo_result) {
+		print $this->render('Results/current_sort_html.php');
+
 		if ($vs_viz_list = Visualizer::getAvailableVisualizationsAsHTMLFormElement($vo_result->tableName(), 'viz', array('id' => 'caSearchVizOpts'), array('resultContext' => $vo_result_context, 'data' => $vo_result, 'restrictToTypes' => array($vo_result_context->getTypeRestriction($vb_type_restriction_has_changed))))) {
 ?>
 			<div class='visualize'>
@@ -125,7 +129,6 @@ if(sizeof($this->getVar("available_sets")) > 0){
 			</div>
 <?php
 		}
-		
+
 		print $this->render('Search/search_sets_html.php');
 	}
-?>

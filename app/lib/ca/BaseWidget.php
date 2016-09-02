@@ -41,6 +41,7 @@
 		# -------------------------------------------------------
 		protected $title = '';
 		protected $description = '';
+		/** @var View */
 		protected $opo_view;
 		protected $ops_widget_path;
 		protected $opa_settings = array();
@@ -64,7 +65,7 @@
 		 * Get request object for current request. Returns null if no request is available 
 		 * (if, for example, the plugin is being run in a batch script - scripts don't use the request/response model)
 		 *
-		 * @return Request object or null if no request object is available
+		 * @return RequestHTTP object or null if no request object is available
 		 */
 		public function getRequest() {
 			return $this->request;

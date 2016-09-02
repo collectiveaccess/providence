@@ -343,7 +343,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		if($pb_use_cache && CompositeCache::contains($pn_element_id, 'ElementSets')) {
 			$va_set = CompositeCache::fetch($pn_element_id, 'ElementSets');
-			//return (caGetOption('idsOnly', $pa_options, false) ?  array_keys($va_set) : $va_set);
+			return (caGetOption('idsOnly', $pa_options, false) ?  caExtractArrayValuesFromArrayOfArrays($va_set, 'element_id') : $va_set);
 		}
 
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
@@ -700,6 +700,17 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 			if ($pb_return_stats) {
 				$va_record['ui_counts'] = $va_counts_by_attribute[$vs_code = $qr_tmp->get('element_code')];
+
+				if(!$pb_root_elements_only && !$va_record['ui_counts'] && $va_record['parent_id']) {
+					$t_element->load($va_record['parent_id']);
+
+					while($t_element->get('parent_id')) {
+						$t_element->load($t_element->get('parent_id'));
+					}
+
+					$va_record['ui_counts'] = $va_counts_by_attribute[$t_element->get('element_code')];
+				}
+
 				$va_record['restrictions'] = $va_restrictions_by_attribute[$vs_code];
 			}
 			$va_return[$vn_element_id] = $va_record;
@@ -812,12 +823,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		$vs_key = caGetOption('indexByElementCode', $pa_options, false) ? 'element_code' : 'element_id';
 		foreach($va_elements as $vn_id => $va_element) {
+
 			if ((int)$va_element['datatype'] === 0) { continue; }
 			if (!isset($va_element['settings']['canBeUsedInSort'])) { $va_element['settings']['canBeUsedInSort'] = true; }
 			if ($va_element['settings']['canBeUsedInSort']) {
+				$va_element['typeRestrictions'] = array_shift(self::getTypeRestrictionsAsList($va_element['element_code']));
+
 				$va_sortable_elements[$va_element[$vs_key]] = $va_element;
 			}
 		}
+
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------
