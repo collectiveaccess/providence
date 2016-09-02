@@ -2341,8 +2341,7 @@ class BaseEditorController extends ActionController {
 			$va_stored_files[$vn_i] = "userMedia{$vn_user_id}/{$vs_dest_filename}"; // only return the user directory and file name, not the entire path
 		}
 
-
-		print json_encode($va_stored_files);
+		$this->response->addContent(json_encode($va_stored_files));
 	}
 	# -------------------------------------------------------
 	/**
@@ -2372,7 +2371,7 @@ class BaseEditorController extends ActionController {
 		$o_res = caMakeSearchResult($t_instance->tableName(), $va_ids, array('sort' => $va_sort_keys, 'sortDirection' => $vs_sort_direction));
 		$va_sorted_ids = $o_res->getAllFieldValues($t_instance->primaryKey());
 
-		print json_encode($va_sorted_ids);
+		$this->response->addContent(json_encode($va_sorted_ids));
 	}
 	# -------------------------------------------------------
 }
