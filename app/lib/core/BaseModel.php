@@ -11673,23 +11673,6 @@ $pa_options["display_form_field_tips"] = true;
 
 		return $va_return;
 	}
-	# --------------------------------------------------------------------------------------------
-	/**
-	 * Destructor
-	 */
-	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
-		unset($this->o_db);
-		unset($this->_CONFIG);
-		unset($this->_DATAMODEL);
-		unset($this->_MEDIA_VOLUMES);
-		unset($this->_FILE_VOLUMES);
-		unset($this->opo_app_plugin_manager);
-		unset($this->_TRANSACTION);
-		
-		parent::__destruct();
-	}
 	# ------------------------------------------------------
  	/**
  	 * Returns list of items in the specified table related to the currently loaded row or rows specified in options. This is a simplified version of
@@ -11954,6 +11937,24 @@ $pa_options["display_form_field_tips"] = true;
 
 		return $va_rels;
 	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Destructor
+	 */
+	public function __destruct() {
+		//print "Destruct ".$this->tableName()."\n";
+		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
+		unset($this->o_db);
+		unset($this->_CONFIG);
+		unset($this->_DATAMODEL);
+		unset($this->_MEDIA_VOLUMES);
+		unset($this->_FILE_VOLUMES);
+		unset($this->opo_app_plugin_manager);
+		unset($this->_TRANSACTION);
+		
+		parent::__destruct();
+	}
+	# --------------------------------------------------------------------------------------------
 }
 
 // includes for which BaseModel must already be defined
