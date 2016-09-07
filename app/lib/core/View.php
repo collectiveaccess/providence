@@ -78,7 +78,7 @@ class View extends BaseObject {
 				if ($vs_path_element == 'views') { break; }
 				array_push($va_suffix_bits, $vs_path_element);
 			}
-			if ($vs_suffix = join("/", $va_suffix_bits)) { $vs_suffix = '/'.$vs_suffix; break;}
+			if ($vs_suffix = join("/", array_reverse($va_suffix_bits))) { $vs_suffix = '/'.$vs_suffix; break;}
 		}
 		
 		if (caGetOption('includeDefaultThemePath', $pa_options, true)) {
@@ -279,6 +279,8 @@ class View extends BaseObject {
 				}
 			}
 			if (!$vb_output) {
+				print caPrintStackTrace();
+				print_R($this->opa_view_paths); die;
 				$this->postError(2400, _t("View %1 was not found", $ps_filename), "View->render()");
 			}
 		}
