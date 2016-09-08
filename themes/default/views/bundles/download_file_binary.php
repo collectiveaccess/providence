@@ -33,8 +33,8 @@
 	header("Pragma: no-cache");
 	header("Cache-control: private");
 	header("Content-Disposition: attachment; filename=".preg_replace('![^A-Za-z0-9\.\-]+!', '_', $this->getVar('archive_name')));
-	if(file_exists($this->getVar('archive_name'))) {
-		header("Content-length: " . filesize($this->getVar('archive_name')));
+	if(file_exists($this->getVar('archive_path'))) {
+		header("Content-length: " . filesize($this->getVar('archive_path')));
 	}
 
 	set_time_limit(0);
