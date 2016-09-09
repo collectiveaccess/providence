@@ -1510,7 +1510,7 @@
 			}
 			
 			foreach($va_element_set as $va_element) {
-				if ($va_element['datatype'] == 0) { continue; }
+				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
 
 				$va_element_info[$va_element['element_id']] = $va_element;
 				
