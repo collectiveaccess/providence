@@ -789,17 +789,16 @@
 				case 'searchresult':
 					$va_ids = array();
 					while($qr_res->nextRow()) {
-						$va_ids[] = $qr_res->get($vs_pk);
-						$vn_c++;
-						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+						$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
+						if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
 					}
 					if ($ps_return_as == 'searchresult') {
 						if (sizeof($va_ids) > 0) {
-							return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+							return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
 						}
 						return null;
 					} else {
-						return $va_ids;
+						return array_values($va_ids);
 					}
 					break;
 			}
