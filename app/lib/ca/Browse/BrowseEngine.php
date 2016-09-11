@@ -2812,13 +2812,16 @@
 							}
 
 							$vs_label = trim($qr_res->get($vs_label_display_field));
+							$vs_sort_label = trim($qr_res->get($vs_label_sort_field));
+							
 							if (isset($va_unique_values[$vs_label])) { continue; }
 							$va_unique_values[$vs_label] = true;
 
 							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
 								'id' => $vn_id,
 								'parent_id' => $vn_parent_id,
-								'label' => $vs_label
+								'label' => $vs_sort_label ? $vs_sort_label : $vs_label,
+								'display_label' => $vs_label
 							));
 							if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 								$vb_single_value_is_present = true;
