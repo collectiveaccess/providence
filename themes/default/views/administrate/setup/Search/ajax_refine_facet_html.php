@@ -48,7 +48,7 @@
 	
 	$vs_group_mode 			= $this->getVar('group_mode');
 	if (!$va_facet||!$vs_facet_name) { 
-		print 'No facet defined'; 
+		print _t('No facet defined'); 
 		return;
 	}
 	
