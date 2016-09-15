@@ -108,8 +108,34 @@ class SimpleService {
 		}
 
 		$va_return = array();
-		foreach($pa_config['content'] as $vs_key => $vs_template) {
-			$va_return[self::sanitizeKey($vs_key)] = $t_instance->getWithTemplate($vs_template, $va_get_options);
+		
+		foreach($pa_config['content'] as $vs_key => $vm_template) {
+			if(is_array($vm_template)) {
+				$vs_delimiter = caGetOption('delimiter', $vm_template, ";");
+				
+				// Get values and break on delimiter
+				$vs_v = $t_instance->getWithTemplate(caGetOption('valueTemplate', $vm_template, 'No template'), $va_get_options);
+				$va_v = explode($vs_delimiter, $vs_v);
+				
+				$va_key = null;
+				if ($vs_key_template = caGetOption('keyTemplate', $vm_template, null)) {
+					// Get keys and break on delimiter
+					$va_keys = explode($vs_delimiter, $vs_keys = $t_instance->getWithTemplate($vs_key_template, $va_get_options));
+				}
+				$va_v_decode = [];
+				foreach($va_v as $vn_i => $vs_part) {
+					if ($va_json = json_decode($vs_part)) { 
+						if ($va_keys) {
+							$va_v_decode[$va_keys[$vn_i]] = $va_json; 
+						} else {
+							$va_v_decode[] = $va_json; 
+						}
+					}
+				}
+				$va_return[self::sanitizeKey($vs_key)] = $va_v_decode;
+			} else {
+				$va_return[self::sanitizeKey($vs_key)] = $t_instance->getWithTemplate($vm_template, $va_get_options);
+			}
 		}
 
 		return $va_return;
