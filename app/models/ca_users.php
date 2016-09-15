@@ -3183,6 +3183,8 @@ class ca_users extends BaseModel {
 		if (isset(ca_users::$s_user_type_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_access_cache[$vs_cache_key]; }
 
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // type-level access control only applies to these tables
+			if(in_array($ps_table_name, ['ca_list_items', 'ca_set_items'])) { return __CA_BUNDLE_ACCESS_EDIT__; }
+
 			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
 			
 			if (is_numeric($pm_type_code_or_id)) { 

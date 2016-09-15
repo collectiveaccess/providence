@@ -74,6 +74,10 @@
 			$va_type_access_settings = $va_role_vars['type_access_settings'];
 			
 			foreach(ca_users::$s_bundlable_tables as $vs_table) {
+				if(in_array($vs_table, ['ca_list_items', 'ca_set_items'])) {
+					continue;
+				}
+
 				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 				if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 				
