@@ -110,32 +110,7 @@ class SimpleService {
 		$va_return = array();
 		
 		foreach($pa_config['content'] as $vs_key => $vm_template) {
-			if(is_array($vm_template)) {
-				$vs_delimiter = caGetOption('delimiter', $vm_template, ";");
-				
-				// Get values and break on delimiter
-				$vs_v = $t_instance->getWithTemplate(caGetOption('valueTemplate', $vm_template, 'No template'), $va_get_options);
-				$va_v = explode($vs_delimiter, $vs_v);
-				
-				$va_key = null;
-				if ($vs_key_template = caGetOption('keyTemplate', $vm_template, null)) {
-					// Get keys and break on delimiter
-					$va_keys = explode($vs_delimiter, $vs_keys = $t_instance->getWithTemplate($vs_key_template, $va_get_options));
-				}
-				$va_v_decode = [];
-				foreach($va_v as $vn_i => $vs_part) {
-					if ($va_json = json_decode($vs_part)) { 
-						if ($va_keys) {
-							$va_v_decode[$va_keys[$vn_i]] = $va_json; 
-						} else {
-							$va_v_decode[] = $va_json; 
-						}
-					}
-				}
-				$va_return[self::sanitizeKey($vs_key)] = $va_v_decode;
-			} else {
-				$va_return[self::sanitizeKey($vs_key)] = $t_instance->getWithTemplate($vm_template, $va_get_options);
-			}
+			$va_return[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($t_instance, $vs_key, $vm_template, $va_get_options);
 		}
 
 		return $va_return;
@@ -201,10 +176,9 @@ class SimpleService {
 		while($o_res->nextHit()) {
 			$va_hit = array();
 
-			foreach($pa_config['content'] as $vs_key => $vs_template) {
-				$va_hit[self::sanitizeKey($vs_key)] = $o_res->getWithTemplate($vs_template, $va_get_options);
+			foreach($pa_config['content'] as $vs_key => $vm_template) {
+				$va_hit[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($o_res, $vs_key, $vm_template, $va_get_options);
 			}
-			
 			
 			if ($vb_return_data_as_list) {
 				$va_return['data'][] = $va_hit;
@@ -249,6 +223,46 @@ class SimpleService {
 	# -------------------------------------------------------
 	private static function sanitizeKey($ps_key) {
 		return preg_replace('[^A-Za-z0-9\-\_\.\:]', '', $ps_key);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function processContentKey($pt_instance, $ps_key, $pm_template, $pa_options=null) {
+		if(is_array($pm_template)) {
+			$vs_return_as = caGetOption('returnAs', $pm_template, 'text', ['forceLowercase' => true]);
+			$vs_delimiter = caGetOption('delimiter', $pm_template, ";");
+			
+			// Get values and break on delimiter
+			$vs_v = $pt_instance->getWithTemplate(caGetOption('valueTemplate', $pm_template, 'No template'), $pa_options);
+			$va_v = explode($vs_delimiter, $vs_v);
+			
+			$va_key = null;
+			if ($vs_key_template = caGetOption('keyTemplate', $pm_template, null)) {
+				// Get keys and break on delimiter
+				$va_keys = explode($vs_delimiter, $vs_keys = $pt_instance->getWithTemplate($vs_key_template, $pa_options));
+			}
+			$va_v_decode = [];
+			foreach($va_v as $vn_i => $vs_part) {
+				switch($vs_return_as) {
+					case 'json':
+						if ($va_json = json_decode($vs_part)) { 
+							if ($va_keys) {
+								$va_v_decode[$va_keys[$vn_i]] = $va_json; 
+							} else {
+								$va_v_decode[] = $va_json; 
+							}
+						}
+						break;
+					default:
+						$va_v_decode[] = $vs_part;
+						break;
+				}
+			}
+			return $va_v_decode;
+		} else {
+			return $pt_instance->getWithTemplate($pm_template, $pa_options);
+		}
 	}
 	# -------------------------------------------------------
 }
