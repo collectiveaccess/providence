@@ -500,11 +500,7 @@ class SearchResult extends BaseObject {
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
-		
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
-			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
-		}
-		
+	
 		$vs_pk = $t_rel_instance->primaryKey();
 		$vs_parent_id_fld = $t_rel_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
 		$vs_sql = "
@@ -1688,7 +1684,7 @@ class SearchResult extends BaseObject {
 
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
-			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
+			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_rel_instance->hasField('access') && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
 				continue;
 			}
 			
