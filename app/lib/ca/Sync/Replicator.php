@@ -142,7 +142,10 @@ class Replicator {
 				} else {
 					$pn_min_log_id = (int) $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_id'];
 				}
-				if($pn_min_log_id > $pn_replicated_log_id) { $pn_replicated_log_id = $pn_min_log_id; }
+				if($pn_min_log_id > $pn_replicated_log_id) { 
+					$pn_replicated_log_id = $pn_min_log_id; 
+					$this->log(_t("Set log id to minimum ({$pn_replicated_log_id})"), Zend_Log::INFO);
+				}
 
 				// get skip if expression
 				$pa_skip_if_expression = $this->opo_replication_conf->get('sources')[$vs_source_key]['skipIfExpression'];

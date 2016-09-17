@@ -157,6 +157,13 @@
 				$this->errors = $t_label->errors; //array_merge($this->errors, $t_label->errors);
 				return false;
 			}
+			
+			/**
+			 * Execute "processLabelsAfterChange" if it is defined in a sub-class. This allows model-specific
+			 * functionality to be executed after a successful change to labels. For instance, if a sub-class caches labels
+			 * in a non-standard way, it can implement this method to reset the cache.
+			 */
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
 			return $vn_label_id;
 		}
 		# ------------------------------------------------------------------
@@ -239,6 +246,11 @@
 				$this->errors = $t_label->errors;
 				return false;
 			}
+			
+			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
 			return $t_label->getPrimaryKey();
 		}
 		# ------------------------------------------------------------------
@@ -270,6 +282,11 @@
 				$this->errors = array_merge($this->errors, $t_label->errors);
 				return false;
 			}
+			
+			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
  			return true;
  		}
 		# ------------------------------------------------------------------
@@ -309,6 +326,11 @@
  					}
  				}
  			}
+ 			
+			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
  			return $vb_ret;
  		}
  		# ------------------------------------------------------------------
@@ -323,14 +345,20 @@
  			if (sizeof($va_labels)) {
  				$va_labels = caExtractValuesByUserLocale($va_labels);
  				$va_label = array_shift($va_labels);
- 				return $this->editLabel(
+ 				$vn_rc = $this->editLabel(
  					$va_label[0]['label_id'], $pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			} else {
- 				return $this->addLabel(
+ 				$vn_rc = $this->addLabel(
  					$pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			}
+ 			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if ($vn_rc && method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
+			
+ 			return $vn_rc;
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -438,10 +466,14 @@
 			$t_instance = null;
 			$vs_table = get_called_class();
 			
-			if (!is_array($pa_values) && ((int)$pa_values > 0)) { 
-				$t_instance = new $vs_table;
-				$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
-				if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
+			if (!is_array($pa_values)) {
+				if ((int)$pa_values > 0) { 
+					$t_instance = new $vs_table;
+					$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
+					if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
+				} elseif($pa_values === '*') {
+					$pa_values = ['deleted' => 0];
+				}
 			}
 			if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 			
