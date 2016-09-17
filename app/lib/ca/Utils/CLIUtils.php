@@ -3478,7 +3478,8 @@
 					($t_instance instanceof BaseLabel) ||
 					($t_instance instanceof ca_attribute_values) ||
 					($t_instance instanceof ca_users) ||
-					($t_instance instanceof ca_attributes)
+					($t_instance instanceof ca_attributes) ||
+					($t_instance->getProperty('LOG_CHANGES_TO_SELF') && method_exists($t_instance, 'getGUIDByPrimaryKey'))
 				) {
 					$qr_results = $o_db->query("SELECT ". $t_instance->primaryKey() . " FROM ". $t_instance->tableName());
 					if($qr_results && ($qr_results->numRows() > 0)) {
