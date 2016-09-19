@@ -11498,17 +11498,16 @@ $pa_options["display_form_field_tips"] = true;
 			case 'searchresult':
 				$va_ids = array();
 				while($qr_res->nextRow()) {
-					$va_ids[] = $qr_res->get($vs_pk);
-					$vn_c++;
-					if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
+					if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
 					if (sizeof($va_ids) > 0) {
-						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+						return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
 					}
 					return null;
 				} else {
-					return $va_ids;
+					return array_values($va_ids);
 				}
 				break;
 		}
@@ -11672,23 +11671,6 @@ $pa_options["display_form_field_tips"] = true;
 		}
 
 		return $va_return;
-	}
-	# --------------------------------------------------------------------------------------------
-	/**
-	 * Destructor
-	 */
-	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
-		unset($this->o_db);
-		unset($this->_CONFIG);
-		unset($this->_DATAMODEL);
-		unset($this->_MEDIA_VOLUMES);
-		unset($this->_FILE_VOLUMES);
-		unset($this->opo_app_plugin_manager);
-		unset($this->_TRANSACTION);
-		
-		parent::__destruct();
 	}
 	# ------------------------------------------------------
  	/**
@@ -11954,6 +11936,24 @@ $pa_options["display_form_field_tips"] = true;
 
 		return $va_rels;
 	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Destructor
+	 */
+	public function __destruct() {
+		//print "Destruct ".$this->tableName()."\n";
+		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
+		unset($this->o_db);
+		unset($this->_CONFIG);
+		unset($this->_DATAMODEL);
+		unset($this->_MEDIA_VOLUMES);
+		unset($this->_FILE_VOLUMES);
+		unset($this->opo_app_plugin_manager);
+		unset($this->_TRANSACTION);
+		
+		parent::__destruct();
+	}
+	# --------------------------------------------------------------------------------------------
 }
 
 // includes for which BaseModel must already be defined

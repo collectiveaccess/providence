@@ -13383,8 +13383,8 @@
     </relationshipTable>
   </relationshipTypes>
   <logins>
-    <login user_name="admin" password="ocean" fname="CollectiveAccess" lname="Administrator"
-      email="julia@whirl-i-gig.com">
+    <login user_name="administrator" password="changeme" fname="CollectiveAccess" lname="Administrator"
+      email="admin@whirl-i-gig.com">
       <role code="admin"/>
       <group code="admin"/>
     </login>

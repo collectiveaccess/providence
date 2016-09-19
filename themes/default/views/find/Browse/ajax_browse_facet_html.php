@@ -73,7 +73,7 @@
 			<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 		</div>
 		<div class="hierarchyBrowserSearchBar">
-			<label for="hierarchyBrowserSearch">Search:</label>
+			<label for="hierarchyBrowserSearch"><?php print _t("Search"); ?>:</label>
 			<input id="hierarchyBrowserSearch" type="text" size="40" />
 			<span class="ui-helper-hidden-accessible" role="status" aria-live="polite"></span>
 		</div>
