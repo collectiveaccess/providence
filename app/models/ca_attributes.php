@@ -214,7 +214,7 @@ class ca_attributes extends BaseModel {
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
 		if($vn_primary_key && $vn_rc) {
-			$this->removeGUID($vn_primary_key);
+			//$this->removeGUID($vn_primary_key);
 		}
 
 		return $vn_rc;

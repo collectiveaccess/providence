@@ -459,11 +459,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options
 	 *		countOnly = return number of importers available rather than a list of importers
 	 *		formats = array of input formats to limit returned importers to. Only importers that accept at least one of the specified formats will be returned.
+	 *		dontIncludeWorksheet = don't include compressed metadata describing import worksheet in return value.  If you are serializing the array to JSON this data can cause problems. [Default is false]
 	 * 
 	 * @return mixed List of importers, or integer count of importers if countOnly option is set
 	 */
 	static public function getImporters($pn_table_num=null, $pa_options=null) {
 		$o_db = new Db();
+		
+		$vb_dont_include_worksheet = caGetOption('dontIncludeWorksheet', $pa_options, false);
 		
 		$t_importer = new ca_data_importers();
 		$vo_dm = $t_importer->getAppDatamodel();
@@ -495,6 +498,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
+			if ($vb_dont_include_worksheet) { unset($va_row['worksheet']); }
 			$va_settings = caUnserializeForDatabase($va_row['settings']);
 			
 			if (isset($va_settings['inputFormats']) && is_array($va_settings['inputFormats']) && is_array($va_formats)) {
@@ -515,7 +519,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_importers[$vn_id]['settings'] = $va_settings;
 			$va_importers[$vn_id]['last_modified_on'] = $t_importer->getLastChangeTimestamp($vn_id, array('timestampOnly' => true));
 			
-			unset($va_importers[$vn_id]['worksheet']);
 		}
 		
 		$va_labels = $t_importer->getPreferredDisplayLabelsForIDs($va_ids);
@@ -2311,6 +2314,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									switch($vs_element) {
 										case 'preferred_labels':
 											if (!$vb_was_preferred_label_match) {
+												if (!isset($va_element_content[$vs_disp_field = $t_subject->getLabelDisplayField()]) || !strlen($va_element_content[$vs_disp_field])) { $va_element_content[$vs_disp_field] = _t('[BLANK]'); }
 												$t_subject->addLabel(
 													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
 												);

@@ -500,11 +500,7 @@ class SearchResult extends BaseObject {
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
-		
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
-			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
-		}
-		
+	
 		$vs_pk = $t_rel_instance->primaryKey();
 		$vs_parent_id_fld = $t_rel_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
 		$vs_sql = "
@@ -934,6 +930,7 @@ class SearchResult extends BaseObject {
 	 *		[Options controlling type of return value]
 	 *			returnAsArray = return values in a one-dimensional, numerically indexed array. If not not a string is always returned. [Default is false]
 	 *			returnWithStructure = return values in a multi-dimensional array mirroring the internal storage structure of CollectiveAccess. [Default is false]
+	 *			returnAsSearchResult = 
 	 *
 	 *		[Options controlling scope of data in return value]
 	 *			returnAllLocales = Return values from all available locales, rather than just the most appropriate locale for the current user. For string and array return values, returnAllLocales will result in inclusion of additional values. For returnWithStructure, additional entries keys on locale_id or code will be added.  [Default is false]
@@ -991,12 +988,18 @@ class SearchResult extends BaseObject {
 	public function get($ps_field, $pa_options=null) {
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$vb_return_with_structure = isset($pa_options['returnWithStructure']) ? (bool)$pa_options['returnWithStructure'] : false;
+		if ($vb_return_as_search_result = isset($pa_options['returnAsSearchResult']) ? (bool)$pa_options['returnAsSearchResult'] : false) {
+			$vb_return_as_array = true; 
+			$vb_return_with_structure = $vb_return_all_locales = false;
+			$pa_options['template'] = null;
+		}
+		
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
 		
 		// Return primary key of primary table as quickly as possible
 		if (($ps_field == $this->ops_table_pk) || ($ps_field == $this->ops_table_name.'.'.$this->ops_table_pk)) {
 			$vn_id = $this->opo_engine_result->get($this->ops_table_pk);
-			return ($vb_return_as_array || $vb_return_with_structure) ? array($vn_id) : $vn_id;
+			return ($vb_return_as_array || $vb_return_with_structure) ? array($vn_id) : ($vb_return_as_search_result ? caMakeSearchResult($this->ops_table_name, [$vn_id], $pa_options) : $vn_id);
 		}
 		
 		if (isset($pa_options['template']) && $pa_options['template']) {
@@ -1083,6 +1086,8 @@ class SearchResult extends BaseObject {
 				} else {
 					return array($vs_value);
 				}
+			} elseif($vb_return_as_search_result) {
+				return caMakeSearchResult($va_path_components['table_name'], [$vs_value], $pa_options);
 			} else {
 				return $vs_value;
 			}
@@ -1574,6 +1579,11 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
+		if ($vb_return_as_search_result) {
+			if (!is_array($vm_val) || !sizeof($vm_val)) { return null; }
+			return caMakeSearchResult($va_path_components['table_name'], $vm_val, $pa_options);
+		}
+		
 		return $vm_val;
 	}
 	# ------------------------------------------------------------------
@@ -1674,7 +1684,7 @@ class SearchResult extends BaseObject {
 
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
-			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
+			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_rel_instance->hasField('access') && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
 				continue;
 			}
 			

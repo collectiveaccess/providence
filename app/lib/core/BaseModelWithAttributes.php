@@ -1510,7 +1510,7 @@
 			}
 			
 			foreach($va_element_set as $va_element) {
-				if ($va_element['datatype'] == 0) { continue; }
+				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
 
 				$va_element_info[$va_element['element_id']] = $va_element;
 				
@@ -2797,6 +2797,64 @@
 			if (is_null($pn_type_id)) { $pn_type_id = $this->getTypeID(); }
 			$va_codes = $this->getApplicableElementCodes($pn_type_id, $pb_include_sub_element_codes, caGetOption('dontCache', $pa_options, false));
 			return (in_array($ps_element_code, $va_codes));
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Check is a value already is set for a metadata element
+		 *
+		 * @param mixed $pm_element_code_or_id The element code or id
+		 * @param string $ps_value The value
+		 * @param array $pa_options Options include:
+		 *		transaction = A database transaction to execute the search within. [Default is null]
+		 *		value_id = An optional value id to exclude when looking for existing values. [Default is null]
+		 * @return bool True if a value exists
+		 */
+		static public function valueExistsForElement($pm_element_code_or_id, $ps_value, $pa_options=null) {
+			if (!($vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id))) { return false; }
+			
+			$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
+			
+			$va_sql_params = [$vn_element_id, $ps_value];
+			$vs_value_sql = '';
+			if($pn_value_id = caGetOption('value_id', $pa_options, null, ['castTo' => 'int'])) {
+				$va_sql_params[] = $pn_value_id;
+				$vs_value_sql = " AND cav.value_id <> ?";
+			}
+			
+			$qr_values = $o_db->query("
+				SELECT cav.value_id, ca.attribute_id, ca.table_num, ca.row_id
+				FROM ca_attribute_values cav
+				INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+				WHERE 
+					cav.element_id = ? AND cav.value_longtext1 = ? {$vs_value_sql}", $va_sql_params);
+
+			// filter deleted
+			$va_ids_by_table = [];
+			while($qr_values->nextRow()) {
+				$va_ids_by_table[$qr_values->get('table_num')][] = $qr_values->get('row_id');
+			}
+			
+			$o_dm = Datamodel::load();
+			foreach($va_ids_by_table as $vn_table_num => $va_row_ids) {
+				if (!($t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true))) {
+					continue;
+				}
+				if (!$t_instance->hasField('deleted')) { continue; }
+				$vs_table_name = $o_dm->getTableName($vn_table_num);
+				$vs_table_pk = $o_dm->primaryKey($vn_table_num);
+				
+				$qr_existant = $o_db->query("
+					SELECT {$vs_table_pk}
+					FROM {$vs_table_name}
+					WHERE 
+						deleted = 0 AND {$vs_table_pk} IN (?)
+					
+				", [$va_row_ids]);
+				if($qr_existant->numRows()>0) {
+					return true;
+				}
+			}
+			return false;
 		}
 		# ------------------------------------------------------------------
 		/**

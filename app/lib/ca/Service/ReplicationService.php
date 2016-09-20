@@ -129,6 +129,7 @@ class ReplicationService {
 
 			if(sizeof($va_media) > 0) {
 				foreach($va_media as $vs_md5 => $vs_url) {
+					if (!$vs_url) { continue; }
 
 					// translate url to absolute media path
 					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
