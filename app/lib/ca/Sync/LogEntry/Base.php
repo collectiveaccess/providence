@@ -219,6 +219,12 @@ abstract class Base {
 	 */
 	public function getSnapshot() {
 		if(isset($this->opa_log['snapshot']) && is_array($this->opa_log['snapshot'])) {
+		
+			// Init unset value fields to null; this allows blanking of a field value to be replicated
+			foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1'] as $vs_f) {
+				if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
+			}
+		
 			return $this->opa_log['snapshot'];
 		}
 
@@ -377,6 +383,7 @@ abstract class Base {
 	public function setIntrinsicsFromSnapshotInModelInstance() {
 		$va_snapshot = $this->getSnapshot();
 
+		$va_many_to_one_rels = $this->opo_datamodel->getManyToOneRelations($this->getModelInstance()->tableName());
 		foreach($va_snapshot as $vs_field => $vm_val) {
 			// skip non existing "fake" fields
 			if(!$this->getModelInstance()->hasField($vs_field)) { continue; }
@@ -390,6 +397,18 @@ abstract class Base {
 
 			// only do something if this is a valid field
 			if($va_fld_info = $this->getModelInstance()->getFieldInfo($vs_field)) {
+			
+				// handle media in intrinsics
+				// was checksum? -> clean up stashed file
+				if (($va_fld_info['FIELD_TYPE'] == FT_MEDIA) && (strlen($va_snapshot[$vs_field]) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot[$vs_field])) {
+					$o_app_vars = new \ApplicationVars();
+					$va_files = $o_app_vars->getVar('pushMediaFiles');
+					if(isset($va_files[$va_snapshot[$vs_field]])) {
+						$vm_val = $va_files[$va_snapshot[$vs_field]];
+						\ReplicationService::$s_logger->log("[".$this->getModelInstance()->tableName()."] Set instrinic media for {$vs_field} = {$vm_val}/".$va_snapshot[$vs_field]);
+						$this->getModelInstance()->set($vs_field, $vm_val);
+					}
+				}
 
 				// handle list reference fields, like status, access, item_status_id, or even type_id
 				// in the source log, there should be fields like "type_code" or "access_code" that have
@@ -446,11 +465,22 @@ abstract class Base {
 
 					continue;
 				}
+				
+				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
+				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
+					\ReplicationService::$s_logger->log(print_R($va_snapshot, true).";; GUID WAS ".$va_snapshot[$vs_field.'_guid']);
+					
+					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
+						\ReplicationService::$s_logger->log("LOADED ".$t_rel_item->getPrimaryKey());
+						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
+						continue;
+					}
+				}
 
 				// just ignore user_ids
-				if($vs_field == 'user_id') {
-					continue;
-				}
+				//if($vs_field == 'user_id') {
+				//	continue;
+				//}
 
 				if(($this->getModelInstance() instanceof \ca_representation_annotations) && ($vs_field == 'representation_id')) {
 					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_rep_guid = $va_snapshot[$vs_field . '_guid'])) {
@@ -465,7 +495,7 @@ abstract class Base {
 				}
 
 				// plain old field like idno, extent, source_info etc.
-				// model errors usually don't occurr on set(), so the implementations
+				// model errors usually don't occur on set(), so the implementations
 				// can still do whatever they want and possibly overwrite this
 				
 				\ReplicationService::$s_logger->log("[".$this->getModelInstance()->tableName()."] Set {$vs_field} = {$vm_val}");

@@ -363,7 +363,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
-			$this->removeGUID($vn_primary_key);
+			// Don't remove GUID, otherwise wrong GUID will be sent to target
+			//$this->removeGUID($vn_primary_key);
 		}
 
 		return $vn_rc;

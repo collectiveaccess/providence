@@ -171,7 +171,7 @@ print $vs_control_box = caFormControlBox(
 	});
 	
 	var caDataReaderInfo = <?php print json_encode(ca_data_importers::getInfoForAvailableInputFormats()); ?>;
-	var caImporterInfo = <?php print json_encode(ca_data_importers::getImporters()); ?>;
+	var caImporterInfo = <?php print json_encode(ca_data_importers::getImporters(null, ['dontIncludeWorksheet' => true])); ?>;
 	
 	function caSetBatchMetadataImportFormState(dontAnimate) {
 		var info;
