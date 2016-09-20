@@ -487,8 +487,13 @@
 					$va_sort_buffer[$vs_key.str_pad($vn_c, 8, '0', STR_PAD_LEFT)] = $vb_return_index ? $vn_idx . '/' . $vn_hit : $vn_hit;
 					$vn_c++;
 				}
+				
+				$o_conf = caGetSearchConfig();
 
-				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
+				$vn_sort_mode = SORT_FLAG_CASE;
+				if (!$o_conf->get('dont_use_natural_sort')) { $vn_sort_mode |= SORT_NATURAL; }
+				
+				ksort($va_sort_buffer, $vn_sort_mode);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
 
 				if($vb_return_index) {
