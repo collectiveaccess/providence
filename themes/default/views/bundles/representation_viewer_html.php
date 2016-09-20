@@ -485,13 +485,20 @@
 	if (!is_array($va_display_options)) { $va_display_options = array(); }
 	
 	if ($vn_representation_id) {
+		$va_pieces = caEditorUrl($this->request, $t_subject->tableName(), null, true);
+
 		$vs_tag = $t_rep->getMediaTag('media', $vs_show_version, array_merge($va_display_options, array(
 			'id' => $vs_viewer_id = (($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia'), 
 			'viewer_base_url' => $this->request->getBaseUrlPath(),
-			'annotation_load_url' => caNavUrl($this->request, '*', '*', 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
-			'annotation_save_url' => caNavUrl($this->request, '*', '*', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
-			'download_url' => caNavUrl($this->request, '*', '*', 'DownloadMedia', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
-			'help_load_url' => caNavUrl($this->request, '*', '*', 'ViewerHelp', array()),
+			// don't think we need to pass the subject key? also, we can't use */* for controller and module, since Search controllers don't have GetAnnotations/SaveAnnotations
+			//'annotation_load_url' => caNavUrl($this->request, '*', '*', 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
+			'annotation_load_url' => caNavUrl($this->request, $va_pieces['module'], $va_pieces['controller'], 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey())),
+			//'annotation_save_url' => caNavUrl($this->request, '*', '*', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
+			'annotation_save_url' => caNavUrl($this->request, $va_pieces['module'], $va_pieces['controller'], 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey())),
+			//'download_url' => caNavUrl($this->request, '*', '*', 'DownloadMedia', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
+			'download_url' => caNavUrl($this->request, $va_pieces['module'], $va_pieces['controller'], 'DownloadMedia', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
+			//'help_load_url' => caNavUrl($this->request, '*', '*', 'ViewerHelp', array()),
+			'help_load_url' => caNavUrl($this->request, $va_pieces['module'], $va_pieces['controller'], 'ViewerHelp', array()),
 			'annotationEditorPanel' => 'caRepresentationAnnotationEditor',
 			'annotationEditorUrl' => caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => (int)$t_rep->getPrimaryKey())),
 			'captions' => $t_rep->getCaptionFileList(), 'progress_id' => 'caMediaOverlayProgress'

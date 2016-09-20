@@ -101,11 +101,15 @@
  		 * QuickLook
  		 */
  		public function QuickLook() {
- 			$vn_object_id = (int)$this->request->getParameter('object_id', pInteger);
+ 			$vn_object_id = (int)$this->getRequest()->getParameter('object_id', pInteger);
  			$t_object = new ca_objects($vn_object_id);
- 			$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
+			if($vn_representation_id = (int)$this->getRequest()->getParameter('representation_id', pInteger)) {
+				$t_rep = new ca_object_representations($vn_representation_id);
+			} else {
+				$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
+			}
  			
- 			$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, array('display' => 'media_overlay', 't_subject' => $t_object, 't_representation' => $t_rep, 'containerID' => 'caMediaPanelContentArea')));
+ 			$this->getResponse()->addContent(caGetMediaViewerHTMLBundle($this->getRequest(), array('display' => 'media_overlay', 't_subject' => $t_object, 't_representation' => $t_rep, 'containerID' => 'caMediaPanelContentArea')));
  		}
  		# -------------------------------------------------------
  		/**
