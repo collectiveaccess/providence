@@ -253,7 +253,7 @@
 				switch($va_facet_info['type']) {
 					case 'attribute':
 						$t_element = new ca_metadata_elements();
-						if ($t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+						if ($t_element->load(array('element_code' => array_pop(explode(".", $va_facet_info['element_code']))))) {
 							if (($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_LIST__) && ($vn_list_id = $t_element->get('list_id'))) {
 								if ($vn_item_id = caGetListItemID($vn_list_id, $va_facet_info['single_value'])) {
 									$va_revised_facets[$vs_facet]['single_value'] = $vn_item_id;
@@ -553,14 +553,14 @@
 				# -----------------------------------------------------
 				case 'attribute':
 					$t_element = new ca_metadata_elements();
-					if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+					if (!$t_element->load(array('element_code' => array_pop(explode(".", $va_facet_info['element_code']))))) {
 						return urldecode($pn_row_id);
 					}
 
 					$vn_element_id = $t_element->getPrimaryKey();
 					switch($vn_element_type = $t_element->get('datatype')) {
 						case __CA_ATTRIBUTE_VALUE_LIST__:
-							return caProcessTemplateForIDs("^ca_list_items.hierarchy.preferred_labels.name_plural", "ca_list_items", array($pn_row_id), array("delimiter" => " ➜ ", 'removeFirstItems' => 1));
+							return  caProcessTemplateForIDs("^ca_list_items.hierarchy.preferred_labels.name_plural", "ca_list_items", array($pn_row_id), array("delimiter" => " ➜ ", 'removeFirstItems' => 0));
 							break;
 						case __CA_ATTRIBUTE_VALUE_OBJECTS__:
 						case __CA_ATTRIBUTE_VALUE_ENTITIES__:
@@ -1054,7 +1054,7 @@
 
 									if ($va_facet_info['element_code']) {
 										$t_element = new ca_metadata_elements();
-										if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+										if (!$t_element->load(array('element_code' => array_pop(explode('.', $va_facet_info['element_code']))))) {
 											break;
 										}
 										$vs_element_code = $va_facet_info['element_code'];
@@ -1273,7 +1273,7 @@
 								# -----------------------------------------------------
 								case 'attribute':
 									$t_element = new ca_metadata_elements();
-									if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+									if (!$t_element->load(array('element_code' => array_pop(explode(".", $va_facet_info['element_code']))))) {
 										return array();
 									}
 
@@ -1381,7 +1381,7 @@
 									$t_element = new ca_metadata_elements();
 
 									$vb_is_element = $vb_is_field = false;
-									if (!($vb_is_element = $t_element->load(array('element_code' => $va_facet_info['element_code']))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
+									if (!($vb_is_element = $t_element->load(array('element_code' => array_pop(explode('.', $va_facet_info['element_code']))))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 										return array();
 									}
 
@@ -1503,7 +1503,7 @@
 									$t_element = new ca_metadata_elements();
 
 									$vb_is_element = $vb_is_field = false;
-									if (!($vb_is_element = $t_element->load(array('element_code' => $va_facet_info['element_code']))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
+									if (!($vb_is_element = $t_element->load(array('element_code' => array_pop(explode('.', $va_facet_info['element_code']))))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 										return array();
 									}
 
@@ -1684,16 +1684,16 @@
 											$t_loc = new ca_storage_locations();
 											
 											if (!is_array($va_loc_ids = $t_loc->getHierarchy($va_row_tmp[2], ['returnAsArray' => true, 'includeSelf' => true, 'idsOnly' => true])) || !sizeof($va_loc_ids)) { continue; }
-											$va_row_tmp[2] = array_values($va_loc_ids);
+											$va_row_tmp[] = array_values($va_loc_ids);
 											
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												WHERE
 													({$this->ops_browse_table_name}.current_loc_class = ?)"
-														.((sizeof($va_row_tmp) > 1) ? " AND ({$this->ops_browse_table_name}.current_loc_subclass = ?)" : "")
-														.((sizeof($va_row_tmp) > 2) ? " AND ({$this->ops_browse_table_name}.current_loc_id IN (?))" : "");
-													
+														.((sizeof($va_row_tmp) == 2) ? " AND ({$this->ops_browse_table_name}.current_loc_id IN (?))" : "")
+														.((sizeof($va_row_tmp) > 2) ? " AND ({$this->ops_browse_table_name}.current_loc_subclass = ?) AND ({$this->ops_browse_table_name}.current_loc_id IN (?))" : "");
+												
 											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
 										} else {
 											$vs_sql = "
@@ -2452,7 +2452,7 @@
 
 					if ($va_facet_info['element_code']) {
 						$t_element = new ca_metadata_elements();
-						if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+						if (!$t_element->load(array('element_code' => array_pop(explode('.', $va_facet_info['element_code']))))) {
 							break;
 						}
 						$vs_element_code = $va_facet_info['element_code'];
@@ -2888,7 +2888,8 @@
 				case 'attribute':
 					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
-					if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+					
+					if (!$t_element->load(array('element_code' => array_pop(explode(".", $va_facet_info['element_code']))))) {
 						return array();
 					}
 
@@ -3267,10 +3268,10 @@
 
 									$qr_res = caMakeSearchResult($vs_hier_table_name, $va_tmp);
 
-									if (isset($va_collapse_map[$vs_table_name]) && isset($va_collapse_map[$vs_table_name]['*']) && $va_collapse_map[$vs_table_name]['*']) {
+									if (isset($va_collapse_map[$vs_hier_table_name]) && isset($va_collapse_map[$vs_hier_table_name]['*']) && $va_collapse_map[$vs_hier_table_name]['*']) {
 										$va_values[$vs_id = "{$vs_loc_class}"] = array(
 											'id' => $vs_id,
-											'label' => $va_collapse_map[$vs_table_name]['*']
+											'label' => $va_collapse_map[$vs_hier_table_name]['*']
 										);
 										continue;
 									}
@@ -4188,7 +4189,7 @@
 					$t_element = new ca_metadata_elements();
 
 					$vb_is_element = $vb_is_field = false;
-					if (!($vb_is_element = $t_element->load(array('element_code' => $va_facet_info['element_code']))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
+					if (!($vb_is_element = $t_element->load(array('element_code' => array_pop(explode('.', $va_facet_info['element_code']))))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 						return array();
 					}
 
@@ -4478,7 +4479,7 @@
 					$t_element = new ca_metadata_elements();
 
 					$vb_is_element = $vb_is_field = false;
-					if (!($vb_is_element = $t_element->load(array('element_code' => $va_facet_info['element_code']))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
+					if (!($vb_is_element = $t_element->load(array('element_code' => array_pop(explode('.', $va_facet_info['element_code']))))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 						return array();
 					}
 
