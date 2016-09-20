@@ -491,7 +491,7 @@
 				$o_conf = caGetSearchConfig();
 
 				$vn_sort_mode = SORT_FLAG_CASE;
-				if (!$o_conf->get('dont_use_natural_sort')) { $vn_sort_mode |= SORT_NATURAL; }
+				if (!$o_conf->get('dont_use_natural_sort')) { $vn_sort_mode |= SORT_NATURAL; } else { $vn_sort_mode |= SORT_STRING; }
 				
 				ksort($va_sort_buffer, $vn_sort_mode);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
