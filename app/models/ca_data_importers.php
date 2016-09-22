@@ -2314,6 +2314,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									switch($vs_element) {
 										case 'preferred_labels':
 											if (!$vb_was_preferred_label_match) {
+												if (!isset($va_element_content[$vs_disp_field = $t_subject->getLabelDisplayField()]) || !strlen($va_element_content[$vs_disp_field])) { $va_element_content[$vs_disp_field] = _t('[BLANK]'); }
 												$t_subject->addLabel(
 													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
 												);

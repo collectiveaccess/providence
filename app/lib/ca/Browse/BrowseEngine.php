@@ -2859,7 +2859,7 @@
 							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
 								'id' => $vn_id,
 								'parent_id' => $vn_parent_id,
-								'label' => $vs_sort_label ? $vs_sort_label : $vs_label,
+								'label' => mb_strtolower($vs_sort_label ? $vs_sort_label : $vs_label),
 								'display_label' => $vs_label
 							));
 							if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
