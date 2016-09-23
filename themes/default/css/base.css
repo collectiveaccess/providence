@@ -28,6 +28,7 @@ form select {
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
+	font-size:12px;
 }
 textarea {
     resize: none;
@@ -211,12 +212,14 @@ div.clear {
     color: #1ab3c8;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
-#leftNav ul.selected { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:block; }
-#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 11px; }
+#leftNav ul.arrow { padding:0px; }
+#leftNav ul.selected { list-style: none; margin: 0px; padding: 0px 0px 0px 0px; display:block; }
+#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 12px; }
 #leftNav ul.arrow li { list-style: none; font-weight: normal; border: 0; padding: 0; margin: 0; }
-#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/rightArrowSmall.png') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
+#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
-#leftNav ul.arrow li a:hover { background-color: #fff; }
+#leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
+#leftNav ul.arrow li a:hover { color: #1ab3c8}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -244,7 +247,7 @@ div.clear {
     text-align:center;
     font-family: "DIN-Regular";
 	font-weight: bold;
-	height: 38px;
+	height: 35px;
 }
 #leftNav h3.nextPrevious a{
 	color:#333;
@@ -252,33 +255,40 @@ div.clear {
 #leftNav h3.nextPrevious a.next{
 	background-color: #ddd;
 	float: right;
-	padding: 5px 5px 5px 5px;
-	width: 30px;
+	padding: 9px 5px 5px 5px;
+	width: 20px;
 	text-align: right;
 }
 #leftNav h3.nextPrevious a.prev{
 	background-color: #ddd;
 	float: left;
-	padding: 5px 6px 5px 5px;
-	width: 30px;
+	padding: 9px 6px 5px 5px;
+	width: 20px;
 	text-align: left;
 }
 #leftNav h3.nextPrevious span.prev{
 	background-color: #ddd;
 	float: left;
-	padding: 5px 6px 5px 5px;
-	width: 30px;
+	padding: 9px 6px 5px 5px;
+	width: 20px;
 	text-align: left;
 }
 #leftNav h3.nextPrevious span.next{
 	background-color: #ddd;
 	float: right;
-	padding: 5px 5px 5px 5px;
-	width: 30px;
+	padding: 9px 5px 5px 5px;
+	width: 20px;
 	text-align: right;
 }
-#leftNav .resultCount, #leftNav .resultLink {
-	padding-top: 7px;
+#leftNav h3.nextPrevious .disabled .caIcon:hover {
+	color:#333;
+}
+#leftNav .resultCount {
+	padding-top: 10px;
+	display: inline-block;
+	width: 110px;
+}
+#leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
 }
@@ -329,7 +339,7 @@ div.clear {
     font-size: 9px;
 }
 #leftNav #toolIcons {
-	margin-bottom:5px;
+	margin-bottom:10px;
 	padding-top:0px;
 	clear: both;
 	min-height: 26px;
@@ -351,6 +361,7 @@ div.clear {
 	float:left;
 	width:22px;
 	margin-left:2px;
+	padding-bottom:10px;
 }
 #leftNav #inspectorChangeType img {
 	width: 26px;
@@ -367,7 +378,7 @@ div.clear {
 	padding-top:3px;
 }
 #leftNav div.watchThis { 
-	width:28px; 
+	width:14px; 
 	text-align:center; 
 	margin-right:10px; 
 }
@@ -461,7 +472,7 @@ div.inspectorCheckedOut {
 #leftNav #inspectorMedia {
     border: 1px solid #FFFFFF;
     margin-top: 0px;
-    padding: 0px 8px 0px 8px;
+    padding: 0px 8px 0px 5px;
     width:170px;
 }
 
@@ -565,11 +576,23 @@ div.inspectorCheckedOut {
 	font-size:12px;
 	line-height:1.7em;
 }
-#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools{
+#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools, #leftNav h3.currentSort {
 	color:#555;
 	margin-bottom: 5px;
 	margin-top:5px;
 }
+
+h3.searchHistory div {
+    margin-left: 3px;
+    margin-top: 1px;
+}
+
+h3.currentSort div {
+    margin-left: 3px;
+    margin-top: 1px;
+    margin-right: 5px;
+}
+
 .inspectorNonConformingNumberList {
     display: none;
 }
@@ -770,8 +793,8 @@ li.sfHover > a:link, li.sfHover > a:visited {
     margin: 5px 12px 0px 0px;
 }
 a.sf-menu-selected {
-    color:#FFFFFF;
-    background-color: #4b4a4a;
+    color:#333;
+    background-color: #eee;
 }
 
 a.sf-menu-selected:hover {
@@ -806,7 +829,7 @@ a.sf-menu-disabled {
 }
 
 /*** arrows **/
-.sf-menu a.sf-with-ul {
+.sf-menu a.sf-with-ul, .sf-menu a.sf-with-ul:focus, .sf-menu a.sf-with-ul:active {
     padding-right: 	1em;
     min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
     text-transform:uppercase;
@@ -944,6 +967,9 @@ li.sfHover > a > .sf-sub-indicator {
     position:relative;
     z-index:1;
     margin-bottom:5px;
+}
+#browseTypeMenu .fa {
+	font-size:18px;
 }
 .sf-hier-menu {
 
@@ -1211,6 +1237,11 @@ div.hint {
     color: #b32b21;
 }
 
+.caDupeAttributeMessageBox {
+    font-family: Helvetica Neue, sans-serif;
+    color: #b32b21;
+}
+
 /* often times referred to as bundlePreview */
 .bundleContentPreview {
 	text-align:left;
@@ -1441,7 +1472,9 @@ a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
    /* background-image:url('../graphics/backgrounds/form_buttons.png'); */
 }
-
+#caChangeTypeFormCancelButton .fa {
+	font-size:30px;
+}
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
 
 	white-space: nowrap;
@@ -1480,6 +1513,9 @@ a.form-button img {
 }
 .control-box a.form-button {
 	padding-bottom:5px;
+}
+#submitSearch .fa{
+	font-size:15px !important;
 }
 a.form-button img.deleteIcon {
 	margin-top:-7px;
@@ -1546,7 +1582,12 @@ del.form-button{
     background-position:0 -180px;
 
 }
-
+.form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
+	color:red;
+}
+.deleteButton a.form-button span {
+	color:red;
+}
 del.form-button span{
     cursor:default;
     color:#aaa !important;
@@ -1666,7 +1707,12 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 
 #caWatchedItemsList.listtable {
 	font-size:12px;
-} 
+}
+
+#watchedItemsSetControls {
+    padding: 5px 5px 0 10px;
+    background-color: #eeeeee;
+}
 
 
 /* table headers */
@@ -1677,6 +1723,7 @@ table.listtable thead tr th {
     background-repeat: no-repeat;
     background-position: center right;
     cursor: pointer;
+    background-color:#eee;
 }
 #caSetList.listtable thead tr th, 
 #caGroupList.listtable thead tr th, 
@@ -1722,7 +1769,19 @@ table.listtable tbody td {
     color: #3D3D3D;
     padding: 4px;
     background-color: #FFF;
-    vertical-align: top;
+    vertical-align: middle;
+    width:42px;
+}
+table.listtable tbody td.listtableEditDelete {
+	width:55px;
+}
+table.listtable tbody td.listtableEditDelete a {
+	display:inline-block;
+	margin-top:5px;
+}
+table.listtable tbody td .fa {
+	padding-left:5px;
+	display:inline-block;
 }
 table#caCommentsList tbody td {
 	max-width:140px;
@@ -1766,6 +1825,9 @@ td.listtableTotals {
 	width:20px;
 	padding:5px;
 }
+.caIcon.deleteIcon:hover {
+	color:red;
+}
 
 #caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
 	overflow: auto;
@@ -1791,7 +1853,7 @@ td.listtableTotals {
 div.control-box {
     background-color: #f7f7f7;
     padding: 4px;
-    margin-bottom: 0px;
+    margin-bottom: 5px;
     text-align: right;
     width: 99%;
     float: left;
@@ -1857,6 +1919,12 @@ a.deleteButton span{
 	color: red;
 	font-weight:bold;
 }
+a.deleteButton span .caIcon:hover{
+	color:red;
+}
+a.deleteButton span.form-button:hover {
+	color:red;
+}
 div.control-box-right-content select {
     width: 150px;
 }
@@ -1905,6 +1973,16 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     border: 0px solid #e6e6e6;
     padding-left:0px;
+}
+.bundleContainer .caDeleteLabelButton .fa, .bundleContainer .caDeleteItemButton .fa{
+	font-size:18px;
+	padding-right: 1px;
+    color: #888;
+    margin-top: -3px;
+    margin-bottom: 5px;
+}
+.bundleContainer .caDeleteLabelButton .fa:hover, .bundleContainer .caDeleteItemButton .fa:hover{
+	color:red;
 }
 
 .labelInfo {
@@ -2464,6 +2542,18 @@ select.searchToolsSelect {
     background-color:#f7f7f7;
     clear:both;
 }
+#leftNav #inspectorInfo.setDelete, #leftNav #inspectorInfo.setDelete a {
+	color: red;
+}
+#leftNav #inspectorInfo.setDelete .fa {
+	color:black;
+}
+#leftNav #inspectorInfo.setDelete a:hover .fa{
+	color: red;
+}
+#leftNav #inspectorInfo.setDelete {
+	background-color:#FFCCCB;
+}
 #leftNav #inspectorShowMedia {
 	text-align: center;
 	opacity: .4;
@@ -2548,7 +2638,7 @@ table.representationAnnotationListItem {
     display: none;
     margin: 0px;
     padding: 0px;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 34000;			/* needs to be on top of menu bar, which has z-index=30000 */
 }
 
 #caMediaPanelContentArea {
@@ -2592,7 +2682,7 @@ div.caMediaOverlayControls {
     width:100%;
     bottom:0px;
     left:0px;
-    z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+    z-index: 35000;			/* needs to be on top of caMediaPanel, which has z-index=34000 */
     /* opacity:.1;	 */
     opacity: 0.7;
 }
@@ -2792,8 +2882,9 @@ table.attributeListItem {
 
 .editorBatchModeControl {
     float: right;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: normal;
+    margin-top:-3px;
 }
 
 .editorBatchBundleContent {
@@ -2805,7 +2896,7 @@ table.attributeListItem {
 }
 
 .editorBatchModeControl select {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
 }
 
@@ -2984,13 +3075,13 @@ div.caObjectRepresentationSourceDisplay h3 {
 }
 
 div.caObjectRepresentationListInfoSubDisplay {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
     padding-top: 3px;
 }
 
 div.caObjectRepresentationListInfoSubDisplay h3 {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     display: inline;
 }
@@ -3001,15 +3092,35 @@ a.caObjectRepresentationListInfoSubDisplayFilename {
 }
 
 div.caObjectRepresentationMetadataDisplay {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
 }
 
 a.caObjectRepresentationMetadataButton {
     text-decoration: none;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     margin-right: 20px;
+}
+.mediaRight {
+	float: right; 
+	width: 20%;
+}
+.mediaRight .fa {
+	font-size:18px;
+	padding-right:5px;
+}
+.downloadAll {
+    text-align: right;
+    float: right;
+    margin: 10px 5px 0 0;
+    font-size: 12px;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    padding-bottom: 5px;
+}
+.downloadAll .fa {
+	font-size:18px;
 }
 
 div.caObjectRepresentationMetadata {
@@ -3018,7 +3129,7 @@ div.caObjectRepresentationMetadata {
 	height: 200px;
 	overflow: auto;
 	padding: 8px;
-	line-height: 14px;
+	line-height: 18px;
 	font-weight: normal;
 	color: #000000;
 	background-color: #f2f2f2;
@@ -3601,6 +3712,9 @@ a.exploreSelected {
     float:right;
     margin:-8px -5px 5px 10px;
 }
+.hierNav .form-button {
+	padding-top:10px;
+}
 .editorHierarchyBrowserContainer{
     background-color:#fafafa;
 }
@@ -3843,7 +3957,8 @@ div.quickSearchHeader {
 }
 div.quickSearchFullResultsLink {
     float:right;
-    padding-top:2px;
+    padding-top: 0px;
+    margin-top: -3px;
 }
 div.quickSearchFullResultsLink a {
     font-size:12px;
@@ -4684,11 +4799,15 @@ div.bundleDisplayEditorPlacement {
     background-image:url('../graphics/buttons/glyphicons_186_move.png');
     background-position: 98% 50%;
     background-repeat:no-repeat;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
     background-size:14px 14px;
     font-size:12px;
+}
+div.bundleDisplayEditorPlacement .fa {
+	font-size:18px;
+	margin-top:-4px;
 }
 div.bundleDisplayEditorPlacement img{
 	width:16px;
@@ -4714,10 +4833,10 @@ span.bundleDisplayEditorPlacementListItemTitle {
 }
 .elementSettingsUI {
 	position: absolute;
-	top: 40px;
-	left: 150px;
+	top: 20px;
+	left: 100px;
 	overflow: auto;
-	width: 400px;
+	width: 500px;
 	max-height:500px;
 	background-color: rgb(255, 255, 255);
 	padding: 20px;
@@ -4727,6 +4846,10 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
+	z-index:10000;
+}
+.elementSettingsUI .fa {
+	font-size:18px;
 }
 .elementSettingsUI a{
 	float:right;
@@ -4772,7 +4895,6 @@ div.bundleDisplayTemplateKey {
 
 div.bundleDisplayElementSettingsControl {
     float: right;
-    margin-right: 15px;
 }
 
 .bundleDisplayElementBundleName {
@@ -4789,6 +4911,10 @@ table.uiScreenItem {
     width: 100%;
     border-bottom: #ddd dashed 1px;
 }
+table.uiScreenItem .fa{
+	font-size:18px;
+	padding-left:10px;
+} 
 
 .uiScreenInfo {
     font-size: 12px;
@@ -5455,14 +5581,12 @@ a.caItemLoadNextBundles {
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
     position: relative;
+    margin: 0 3px 0 3px;
 }
 
 .listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
     float: right;
-}
-
-.listRel .caInterstitialEditButton {
-    float: right;
+    margin: 0 3px 0 3px;
 }
 
 div.preferenceSectionDivider {
@@ -6951,9 +7075,116 @@ div.caResultsComplexDataEditorErrorContainer {
 }
 
 .caIcon:hover {
-	color: #cc0000;
+	color: #1ab3c8;
 }
 
 .caIconRed {
 	color: #cc0000;
+}
+
+.infoIcon {
+	padding-left:5px;
+	line-height:8px !important;
+}
+
+/**
+ * 
+ * ThreeSixty spinning image viewer
+ *
+ */
+.threesixty {
+  position: relative;
+  margin: auto;
+  text-align: left;
+}
+.threesixty .threesixty_images {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.threesixty .threesixty_images img {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: auto;
+}
+.threesixty .threesixty_images img.previous-image {
+  visibility: hidden;
+  /*
+           Do not put here any other styles.
+           It causes massive recalc / repaints and image flickering,
+           especially on Firefox.
+        */
+
+}
+.threesixty .threesixty_images img.current-image {
+  visibility: visible;
+  /*
+           Do not put here any other styles.
+           It causes massive recalc / repaints and image flickering,
+           especially on Firefox.
+        */
+
+}
+.threesixty .spinner {
+  width: 60px;
+  display: block;
+  margin: 0 auto;
+  height: 30px;
+  background: #333;
+  background: rgba(0, 0, 0, 0.7);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+.threesixty .spinner span {
+  font-family: Arial, "MS Trebuchet", sans-serif;
+  font-size: 12px;
+  font-weight: bolder;
+  color: #FFF;
+  text-align: center;
+  line-height: 30px;
+  display: block;
+}
+.threesixty .nav_bar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 11;
+}
+.threesixty .nav_bar a {
+  display: block;
+  width: 32px;
+  height: 32px;
+  float: left;
+  background: url(../graphics/threesixty/sprites.png) no-repeat;
+  text-indent: -99999px;
+}
+.threesixty .nav_bar a.nav_bar_play {
+  background-position: 0 0 !important;
+}
+.threesixty .nav_bar a.nav_bar_previous {
+  background-position: 0 -73px !important;
+}
+.threesixty .nav_bar a.nav_bar_stop {
+  background-position: 0 -37px !important;
+}
+.threesixty .nav_bar a.nav_bar_next {
+  background-position: 0 -104px !important;
+}
+/* html */
+.threesixty:-webkit-full-screen {
+  background: #ffffff;
+  width: 100%;
+  height: 100%;
+  margin-top: 0;
+  padding-top: 200px;
+}
+.threesixty:-moz-full-screen {
+  background: #ffffff;
+  width: 100%;
+  height: 100%;
+  margin-top: 0;
+  padding-top: 200px;
 }

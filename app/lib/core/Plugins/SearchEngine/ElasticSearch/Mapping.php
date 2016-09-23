@@ -143,7 +143,7 @@ class Mapping {
 	 */
 	public function getFieldsToIndex($ps_table) {
 		if(!$this->getDatamodel()->tableExists($ps_table)) { return array(); }
-		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true));
+		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true, 'includeNonRootElements' => true));
 		if(!is_array($va_table_fields)) { return array(); }
 
 		$va_rewritten_fields = array();
@@ -159,7 +159,7 @@ class Mapping {
 
 		$va_related_tables = $this->getSearchBase()->getRelatedIndexingTables($ps_table);
 		foreach($va_related_tables as $vs_related_table) {
-			$va_related_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, $vs_related_table);
+			$va_related_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, $vs_related_table, array('clearCache' => true, 'includeNonRootElements' => true));
 			foreach($va_related_table_fields as $vs_related_table_field => $va_related_table_field_options){
 				if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_related_table_field, $va_matches)) {
 					$va_rewritten_fields[$vs_related_table.'.A'.$va_matches[1]] = $va_related_table_field_options;
@@ -220,9 +220,10 @@ class Mapping {
 	 * @param string $ps_table
 	 * @param int $pn_element_id
 	 * @param array $pa_element_info @see Mapping::getElementInfo()
+	 * @param array $pa_indexing_config
 	 * @return array
 	 */
-	public function getConfigForElement($ps_table, $pn_element_id, $pa_element_info) {
+	public function getConfigForElement($ps_table, $pn_element_id, $pa_element_info, $pa_indexing_config) {
 		if(!is_numeric($pn_element_id) && (intval($pn_element_id) > 0)) { return array(); }
 		$va_element_info = $this->getElementInfo($pn_element_id);
 		$vs_element_code = $va_element_info['element_code'];
@@ -233,6 +234,14 @@ class Mapping {
 			$ps_table.'/'.$vs_element_code => array(
 			)
 		);
+
+		if(in_array('INDEX_AS_IDNO', $pa_indexing_config)) {
+			$va_element_config[$ps_table.'/'.$vs_element_code]['analyzer'] = 'keyword_lowercase';
+		}
+
+		if(in_array('TOKENIZE_WS', $pa_indexing_config)) {
+			$va_element_config[$ps_table.'/'.$vs_element_code]['analyzer'] = 'whitespace';
+		}
 
 		// @todo break this out into separate classes in the ElasticSearch\FieldTypes namespace!?
 		switch($pa_element_info['datatype']) {
@@ -389,7 +398,8 @@ class Mapping {
 							$this->getConfigForElement(
 								$va_matches[1],
 								(int)$va_matches[2],
-								$this->getElementInfo((int)$va_matches[2])
+								$this->getElementInfo((int)$va_matches[2]),
+								$va_indexing_info
 							)
 						);
 				} elseif(preg_match("/^(ca[\_a-z]+)\.I([0-9]+)$/", $vs_field, $va_matches)) { // intrinsic

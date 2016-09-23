@@ -83,8 +83,10 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	$g_list_item_id_cache = array();
 	function caGetListItemID($ps_list_code, $ps_idno, $pa_options=null) {
-		global $g_list_item_id_cache;
-		if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
+		if(!caGetOption('dontCache', $pa_options, false)) {
+			global $g_list_item_id_cache;
+			if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
+		}
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
@@ -382,19 +384,21 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	# ---------------------------------------
 	/**
 	 * Fetch the type id (primary key) for a given relationship type code
-	 * @param string $ps_type_code
-	 * @return int
+	 *
+	 * @param int|string $pm_table_name_or_num
+	 * @param int|string $pm_type_code_or_id
+	 * @return int|bool
 	 */
-	function caGetRelationshipTypeID($ps_type_code) {
-		if(CompositeCache::contains($ps_type_code, 'RelationshipTypeCodesToIDs')) {
-			return CompositeCache::fetch($ps_type_code, 'RelationshipTypeCodesToIDs');
+	function caGetRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id) {
+		if(CompositeCache::contains($pm_type_code_or_id, 'RelationshipTypeCodesToIDs')) {
+			return CompositeCache::fetch($pm_type_code_or_id, 'RelationshipTypeCodesToIDs');
 		}
 
 		$t_rel_types = new ca_relationship_types();
-		if(!$t_rel_types->load(array('type_code' => $ps_type_code))) { return false; }
+		$vn_id = $t_rel_types->getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id);
+		if(!$vn_id) { return false; }
 
-		$vn_id = $t_rel_types->getPrimaryKey();
-		CompositeCache::save($ps_type_code, $vn_id, 'RelationshipTypeCodesToIDs');
+		CompositeCache::save($pm_type_code_or_id, $vn_id, 'RelationshipTypeCodesToIDs');
 		return $vn_id;
 	}
 	# ---------------------------------------

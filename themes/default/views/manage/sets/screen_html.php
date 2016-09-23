@@ -37,7 +37,7 @@
 			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SetEditorForm').' '.
 			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)), 
 			'', 
-			((intval($vn_set_id) > 0) && ($can_delete)) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
+			((intval($vn_set_id) > 0) && ($can_delete)) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteButton form-button', 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
 		);
 		
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/set_id/'.$vn_set_id, 'SetEditorForm', null, 'POST', 'multipart/form-data');

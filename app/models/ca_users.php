@@ -41,6 +41,7 @@ require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
 require_once(__CA_LIB_DIR__ . '/core/Auth/AuthenticationManager.php');
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
@@ -169,6 +170,8 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 );
 
 class ca_users extends BaseModel {
+	use SyncableBaseModel;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -239,7 +242,7 @@ class ca_users extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -404,7 +407,10 @@ class ca_users extends BaseModel {
 		$this->set("vars",$this->opa_user_vars);
 		$this->set("volatile_vars",$this->opa_volatile_user_vars);
 		
-		return parent::insert($pa_options);
+		if ($vn_rc = parent::insert($pa_options)) {
+			$this->setGUID($pa_options);
+		}
+		return $vn_rc;
 	}
 	# ----------------------------------------
 	/**
@@ -446,9 +452,17 @@ class ca_users extends BaseModel {
 			$this->set("volatile_vars",$this->opa_volatile_user_vars);
 		}
 		
+		$va_changed_fields = $this->getChangedFieldValuesArray();
+		unset($va_changed_fields['vars']);
+		unset($va_changed_fields['volatile_vars']);
+		
+		if (sizeof($va_changed_fields) == 0) {
+			$pa_options['dontLogChange'] = true;
+		}
+		
 		unset(ca_users::$s_user_role_cache[$this->getPrimaryKey()]);
 		unset(ca_users::$s_group_role_cache[$this->getPrimaryKey()]);
-		return parent::update();
+		return parent::update($pa_options);
 	}
 	# ----------------------------------------
 	/**
@@ -460,7 +474,8 @@ class ca_users extends BaseModel {
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$this->clearErrors();
 		$this->set('userclass', 255);
-
+		$vn_primary_key = $this->getPrimaryKey();
+		
 		if($this->getPrimaryKey()>0) {
 			try {
 				AuthenticationManager::deleteUser($this->get('user_name'));
@@ -472,7 +487,11 @@ class ca_users extends BaseModel {
 			}
 		}
 
-		return $this->update();
+		$vn_rc = $this->update($pa_options);
+		
+		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
+			$this->removeGUID($vn_primary_key);
+		}
 	}
 	# ----------------------------------------
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
@@ -1342,7 +1361,7 @@ class ca_users extends BaseModel {
 		}
 		if (!$vb_got_group) {
 			if (!$t_group->load(array("name" => $ps_group))) {
-				if (!$t_group->load(array("name_short" => $ps_group))) {
+				if (!$t_group->load(array("code" => $ps_group))) {
 					return false;
 				}
 			}
@@ -2571,7 +2590,7 @@ class ca_users extends BaseModel {
 	public function close() {
 		if($this->getPrimaryKey()) {
 			$this->setMode(ACCESS_WRITE);
-			$this->update();
+			$this->update(['dontLogChange' => true]);
 		}
 	}
 	# ----------------------------------------

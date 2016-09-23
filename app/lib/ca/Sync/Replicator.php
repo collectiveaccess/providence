@@ -30,9 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Stream.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Syslog.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Log/Formatter/Simple.php");
+require_once(__CA_LIB_DIR__."/core/Logging/Logger.php");
 
 use \CollectiveAccessService as CAS;
 
@@ -44,33 +42,13 @@ class Replicator {
 	protected $opo_replication_conf;
 
 	/**
-	 * @var Zend_Log
+	 * @var Logger
 	 */
-	protected $opo_replication_log = null;
+	static $s_logger = null;
 
 	public function __construct() {
 		$this->opo_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
-
-		$o_writer = null;
-		if($vs_log = $this->opo_replication_conf->get('replication_log')) {
-			try {
-				$o_writer = new Zend_Log_Writer_Stream($vs_log);
-				$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%timestamp% %priorityName%: %message%' . PHP_EOL));
-			} catch (Zend_Log_Exception $e) { // error while opening the file (usually permissions)
-				$o_writer = null;
-				print CLIUtils::textWithColor("Couldn't open log file. Now logging via system log.", "bold_red") . PHP_EOL . PHP_EOL;
-			}
-		}
-
-			// default: log everything to syslog
-		if(!$o_writer) {
-			$o_writer = new Zend_Log_Writer_Syslog(array('application' => 'CollectiveAccess Replicator', 'facility' => LOG_USER));
-			// no need for timespamps in syslog ... the syslog itsself provides that
-			$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%priorityName%: %message%'.PHP_EOL));
-		}
-
-		$this->opo_replication_log = new Zend_Log($o_writer);
-		$this->opo_replication_log->setTimestampFormat('D Y-m-d H:i:s');
+		Replicator::$s_logger = new Logger('replication');
 	}
 
 	protected function getSourcesAsServiceClients() {
@@ -99,7 +77,7 @@ class Replicator {
 		}
 		return $va_return;
 	}
-
+	
 	/**
 	 * Log message with given log level
 	 * @param string $ps_msg
@@ -107,30 +85,9 @@ class Replicator {
 	 *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
 	 */
 	public function log($ps_msg, $pn_level) {
-		if(!in_array($pn_level, array(Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR))){
-			$pn_level = Zend_Log::INFO;
-		}
-
-		$this->opo_replication_log->log($ps_msg, $pn_level);
-
-		switch($pn_level) {
-			case Zend_Log::DEBUG:
-				if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-					print CLIUtils::textWithColor($ps_msg, 'purple') . PHP_EOL;
-				}
-				break;
-			case Zend_Log::INFO:
-				print CLIUtils::textWithColor($ps_msg, 'green') . PHP_EOL;
-				break;
-			case Zend_Log::WARN:
-				print CLIUtils::textWithColor($ps_msg, 'yellow') . PHP_EOL;
-				break;
-			case Zend_Log::ERR:
-				CLIUtils::addError($ps_msg);
-				break;
-		}
+		Replicator::$s_logger->log($ps_msg, $pn_level);
 	}
-
+	
 	public function replicate() {
 		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
@@ -147,6 +104,11 @@ class Replicator {
 
 			foreach($this->getTargetsAsServiceClients() as $vs_target_key => $o_target) {
 				/** @var CAS\ReplicationService $o_target */
+
+				$vs_push_media_to = null;
+				if($this->opo_replication_conf->get('sources')[$vs_source_key]['push_media']) {
+					$vs_push_media_to = $vs_target_key;
+				}
 
 				// get latest log id for this source at current target
 				$o_result = $o_target->setEndpoint('getlastreplicatedlogid')
@@ -180,7 +142,10 @@ class Replicator {
 				} else {
 					$pn_min_log_id = (int) $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_id'];
 				}
-				if($pn_min_log_id > $pn_replicated_log_id) { $pn_replicated_log_id = $pn_min_log_id; }
+				if($pn_min_log_id > $pn_replicated_log_id) { 
+					$pn_replicated_log_id = $pn_min_log_id; 
+					$this->log(_t("Set log id to minimum ({$pn_replicated_log_id})"), Zend_Log::INFO);
+				}
 
 				// get skip if expression
 				$pa_skip_if_expression = $this->opo_replication_conf->get('sources')[$vs_source_key]['skipIfExpression'];
@@ -201,13 +166,14 @@ class Replicator {
 				}
 
 				$pb_ok = true;
-				while(true) { // use chunks of 100 entries until something happens (success/err)
+				while(true) { // use chunks of 10 entries until something happens (success/err)
 					// get change log from source, starting with the log id we got above
 					$va_source_log_entries = $o_source->setEndpoint('getlog')
 						->addGetParameter('from', $pn_replicated_log_id)
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-						->addGetParameter('limit', 100)
+						->addGetParameter('limit', 10)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
+						->addGetParameter('pushMediaTo', $vs_push_media_to)
 						->request()->getRawData();
 
 					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {
@@ -256,6 +222,33 @@ class Replicator {
 
 				if($pb_ok) {
 					$this->log(_t("Sync for source %1 and target %2 successful", $vs_source_key, $vs_target_key), Zend_Log::INFO);
+
+					// run dedup if configured
+					$va_dedup_after_replication = $this->opo_replication_conf->get('targets')[$vs_target_key]['deduplicateAfterReplication'];
+					$vs_dedup_after_replication = null;
+					if(is_array($va_dedup_after_replication) && sizeof($va_dedup_after_replication)) {
+						$vs_dedup_after_replication = json_encode($va_dedup_after_replication);
+
+						// apply that log at the current target
+						$o_dedup_response = $o_target->setRequestMethod('POST')->setEndpoint('dedup')
+							->addGetParameter('tables', $vs_dedup_after_replication)
+							->request();
+
+						$va_dedup_response = $o_dedup_response->getRawData();
+
+						if (!$o_dedup_response->isOk()) {
+							$this->log(_t("There were errors while processing deduplication for at target %1: %2", $vs_target_key, join(' ', $o_dedup_response->getErrors())), Zend_Log::ERR);
+						} else {
+							$this->log(_t("Dedup at target %1 successful.", $vs_target_key), Zend_Log::INFO);
+							if(isset($va_dedup_response['report']) && is_array($va_dedup_response['report'])) {
+								foreach($va_dedup_response['report'] as $vs_t => $vn_c) {
+									$this->log(_t("De-duped %1 records for %2.", $vn_c, $vs_t), Zend_Log::DEBUG);
+								}
+							}
+						}
+					}
+
+
 				} else {
 					$this->log(_t("Sync for source %1 and target %2 finished, but there were errors", $vs_source_key, $vs_target_key), Zend_Log::ERR);
 				}

@@ -854,6 +854,8 @@
 			
 			$vs_idno_fld					= $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			$vs_idno 						= caGetOption($vs_idno_fld, $pa_values, null); 
+			if (is_array($vs_idno)) { $vs_idno = $vs_idno[$vs_idno_fld]; }	// when passed via caProcessRefineryAttributes() might be in attribute-y array
+			
 			
 			/** @var ca_data_import_events $o_event */
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
@@ -862,7 +864,7 @@
 				$t_instance->setTransaction($pa_options['transaction']);
 				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
-
+			
 			if (preg_match('!\%!', $vs_idno)) {
 				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
 				$vs_idno = null;

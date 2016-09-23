@@ -228,7 +228,7 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	background-position: 100% 0;
 	background-repeat: no-repeat;
 	height: 24px;
-	padding: 8px 20px 0 10px;
+	padding: 6px 20px 8px 10px;
 	margin: 0 -16px 0 0px;
 	border: none;
 	vertical-align: text-top;
@@ -241,7 +241,6 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	_top: 0;
 	_right: -5px;
 	background-color: #eee;
-	padding: 12px 12px 0px 6px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;

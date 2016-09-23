@@ -51,7 +51,7 @@ class BaseJSONService {
 	protected $opa_post;
 	protected $ops_method;
 
-	protected $opa_valid_tables;
+	protected $opa_valid_tables = array();
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
 		$this->opo_request = $po_request;
@@ -92,13 +92,19 @@ class BaseJSONService {
 			$this->opa_post = array();
 		}
 
-		$this->opa_valid_tables = array(
+		$va_base_tables = array(
 			"ca_objects", "ca_object_lots", "ca_entities",
 			"ca_places", "ca_occurrences", "ca_collections",
 			"ca_list_items", "ca_lists", "ca_object_representations",
 			"ca_storage_locations", "ca_movements",
 			"ca_loans", "ca_tours", "ca_tour_stops", "ca_sets"
 		);
+
+		if(is_array($this->opa_valid_tables)) {
+			$this->opa_valid_tables = array_merge($va_base_tables, $this->opa_valid_tables);
+		} else {
+			$this->opa_valid_tables = $va_base_tables;
+		}
 
 		if(strlen($ps_table)>0) {
 			if(!in_array($ps_table, $this->opa_valid_tables)){

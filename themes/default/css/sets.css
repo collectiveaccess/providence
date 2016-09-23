@@ -57,7 +57,9 @@
 	width:16px;
 	background-size: 16px 16px;
 }
-
+.setItems .remove .fa:hover {
+	color:red;
+}
 .setItems .remove a{
 	font-size: 9px;
 	color: #333;

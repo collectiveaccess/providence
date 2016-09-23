@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,7 @@ define("__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__", 0);
 define("__CA_OBJECTS_CHECKOUT_STATUS_OUT__", 1);
 define("__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__", 2);
 define("__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__", 3);
-
+define("__CA_OBJECTS_CHECKOUT_STATUS_UNAVAILABLE__", 4);
 
 BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
  	'NAME_SINGULAR' 	=> _t('object checkout'),
@@ -353,8 +353,23 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			throw new Exception(_t('Item is already out'));
 		}
 		
-		// is there a reservation for this user?
 		$o_db = $o_trans->getDb();
+		
+		// Does this user already have it?
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_checkouts
+			WHERE
+				user_id = ? AND object_id = ? AND checkout_date IS NOT NULL AND return_date IS NULL
+			ORDER BY 
+				created_on
+		", array($pn_user_id, $pn_object_id));
+		
+		if ($qr_res->nextRow()) {
+			throw new Exception(_t('User already has item'));
+		}
+		
+		// is there a reservation for this user?
 		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_object_checkouts
@@ -581,8 +596,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getObjectCheckoutTypes() {
 		$o_config = caGetLibraryServicesConfiguration();
-		$t_object = new ca_objects();
-		
 		$va_type_config = $o_config->getAssoc('checkout_types');
 		
 		return array_keys($va_type_config);
@@ -867,17 +880,20 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	# By User
 	# ------------------------------------------------------
 	/**
-	 * Return list of outstanding checkouts for a user
+	 * Return list of outstanding checkouts for a user. If a time period is specified then only checkouts
+	 * made within that period are considered.
 	 *
 	 * @param int $pn_user_id
 	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
+	 * @param string $ps_datetime Date/time range expression. [Default is null]
 	 * @param array $pa_options Array of options. Options include
 	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 *		omitOverdue = Omit overdue checkouts. [Default is false]
 	 * @return array 
 	 */
 	static public function getOutstandingCheckoutsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $pa_options=null) {
 		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
-		
+		$pb_omit_overdue = caGetOption('omitOverdue', $pa_options, false);
 		
 		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
 			$qr_res = $o_db->query("
@@ -889,6 +905,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 					return_date IS NULL
 					AND
 					user_id = ?
+					".(($pb_omit_overdue ? " AND (due_date > ".time().") " : ''))."
 					AND
 					deleted = 0
 				ORDER BY
@@ -904,6 +921,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 					return_date IS NULL
 					AND
 					user_id = ?
+					".(($pb_omit_overdue ? " AND (due_date > ".time().") " : ''))."
 					AND
 					deleted = 0
 				ORDER BY
@@ -915,16 +933,20 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return list of overdue checkouts for a user
+	 * Return list of overdue checkouts for a user. If a time period is specified then only checkouts
+	 * made within that period are considered.
 	 *
 	 * @param int $pn_user_id
 	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
+	 * @param string $ps_datetime Date/time range expression. [Default is null]
 	 * @param array $pa_options Array of options. Options include
 	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 *		omitOverdue = Omit overdue checkouts. [Default is false]
 	 * @return array 
 	 */
 	static public function getOverdueCheckoutsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $pa_options=null) {
 		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		$pb_omit_overdue = caGetOption('omitOverdue', $pa_options, false);
 		
 		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
 			$qr_res = $o_db->query("
@@ -942,7 +964,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 					deleted = 0
 				ORDER BY
 					checkout_date ASC
-			", array($va_dates[0], $va_dates[1], $pn_user_id, time()));
+			", array($va_dates[0], $va_dates[1], time(), $pn_user_id));
 		} else {
 			$qr_res = $o_db->query("
 				SELECT checkout_id
@@ -970,6 +992,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param int $pn_user_id
 	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
+	 * @param string $ps_datetime Date/time range expression. [Default is null]
 	 * @param array $pa_options Array of options. Options include
 	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
 	 * @return array 
@@ -1013,7 +1036,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return list of outstanding checkouts for a user
+	 * Return list of outstanding checkouts for a user. If a time period is specified then only checkouts
+	 * made within that period are considered.
 	 *
 	 * @param int $pn_user_id
 	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
@@ -1043,7 +1067,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Roll up by-user data for return
+	 * Roll up by-user data for return. 
 	 *
 	 * @param SearchResult $qr_res A ca_object_checkouts result set
 	 * @param string $ps_display_template Optional display template; will be returned in _display key in returned array
@@ -1076,7 +1100,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	# Stats
 	# ------------------------------------------------------
 	/**
-	 * Return number of outstanding checkouts that need to be returned
+	 * Return number of outstanding checkouts that need to be returned. If a time period is specified 
+	 * then only checkouts in that period are considered.
 	 *
 	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
 	 * @param array $pa_options Array of options. Options include
@@ -1092,6 +1117,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				FROM ca_object_checkouts
 				WHERE
 					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
 					AND
 					deleted = 0
 			", array($va_dates[0], $va_dates[1]));
@@ -1114,7 +1141,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return number of outstanding checkouts that need to be returned
+	 * Return list of outstanding checkouts that need to be returned. If a time period is provided then only
+	 * checkouts in that period are considered.
 	 *
 	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
 	 * @param array $pa_options Array of options. Options include
@@ -1131,6 +1159,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				INNER JOIN ca_users AS u ON u.user_id = c.user_id
 				WHERE
 					c.checkout_date BETWEEN ? AND ?
+					AND
+					c.return_date IS NULL
 					AND
 					c.deleted = 0
 			", array($va_dates[0], $va_dates[1]));
@@ -1156,7 +1186,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return number of checkins
+	 * Return number of checkins. If a time period is provided then only returns 
+	 * made during that period are considered.
 	 *
 	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
 	 * @param array $pa_options Array of options. Options include
@@ -1182,8 +1213,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				WHERE
 					return_date IS NOT NULL
 					AND
-					return_date IS NULL
-					AND
 					deleted = 0
 			");
 		}
@@ -1194,7 +1223,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return users who checked in items
+	 * Return list of users returning items. If a time period is specified then only returns made
+	 * in that period are considered.
 	 *
 	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
 	 * @param array $pa_options Array of options. Options include
@@ -1234,7 +1264,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return number of overdue checkouts that need to be returned
+	 * Return number of overdue checkouts that need to be returned. If a time period is specified then 
+	 * only checkouts made in that period are considered.
 	 *
 	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
 	 * @param array $pa_options Array of options. Options include
@@ -1279,7 +1310,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	
 	# ------------------------------------------------------
 	/**
-	 * Return number of overdue checkouts that need to be returned
+	 * Return list of overdue checkouts needing returned. If a time period is specified then only checkouts
+	 * made within that period are considered.
 	 *
 	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
 	 * @param array $pa_options Array of options. Options include
@@ -1327,7 +1359,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return number of outstanding reservations
+	 * Return number of outstanding reservations.
 	 *
 	 * @param array $pa_options Array of options. Options include
 	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
@@ -1354,7 +1386,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return list of users with outstanding reservations
+	 * Return list of users with outstanding reservations.
 	 *
 	 * @param array $pa_options Array of options. Options include
 	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]

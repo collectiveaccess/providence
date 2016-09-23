@@ -47,17 +47,19 @@ class Relationship extends Base {
 			$vs_potential_code_field = str_replace('_id', '', $vs_type_field) . '_code';
 
 			if (isset($va_snapshot[$vs_potential_code_field]) && ($vs_rel_type_code = $va_snapshot[$vs_potential_code_field])) {
-				if (!($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code))) {
+				if (!($vn_rel_type_id = caGetRelationshipTypeID($this->getModelInstance()->tableNum(), $vs_rel_type_code))) {
 					throw new InvalidLogEntryException(_t("Couldn't find relationship type with type code '%1'.", $vs_rel_type_code));
 				}
 			} else {
-				throw new InvalidLogEntryException(_t("No relationship type code found in relationship log entry."));
+				if($this->isInsert()) {
+					throw new InvalidLogEntryException(_t("No relationship type code found in relationship log entry."));
+				}
 			}
 		}
 
 		// check if left and right guid fields are present
 		// left
-		if ($vs_field = $this->getModelInstance()->getProperty('RELATIONSHIP_LEFT_FIELDNAME')) {
+		if ($this->isInsert() && ($vs_field = $this->getModelInstance()->getProperty('RELATIONSHIP_LEFT_FIELDNAME'))) {
 			$this->verifyLeftOrRightFieldNameFromSnapshot($vs_field, true);
 		}
 
@@ -88,7 +90,7 @@ class Relationship extends Base {
 		if ($vs_type_field = $this->getModelInstance()->getProperty('RELATIONSHIP_TYPE_FIELDNAME')) {
 			$vs_potential_code_field = str_replace('_id', '', $vs_type_field) . '_code';
 			if (isset($va_snapshot[$vs_potential_code_field]) && ($vs_rel_type_code = $va_snapshot[$vs_potential_code_field])) {
-				if ($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code)) {
+				if ($vn_rel_type_id = caGetRelationshipTypeID($this->getModelInstance()->tableNum(), $vs_rel_type_code)) {
 					$this->getModelInstance()->set($vs_type_field, $vn_rel_type_id);
 				}
 			}
@@ -148,13 +150,15 @@ class Relationship extends Base {
 			}
 
 			$t_instance->setTransaction($this->getTx());
-
-			if (!$t_instance->loadByGUID($vs_reference_guid)) {
-				throw new InvalidLogEntryException("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
+			if (!method_exists($t_instance, "loadByGUID") || !$t_instance->loadByGUID($vs_reference_guid)) {
+				// TODO: confirm irrelevant is the way to go here
+				throw new IrrelevantLogEntry("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
 			}
 		} else {
-			throw new InvalidLogEntryException("No guid for {$vs_property} field found");
+			if($this->isInsert()) {
+				// TODO: confirm irrelevant is the way to go here
+				throw new IrrelevantLogEntry("No guid for {$vs_property} field found");
+			}
 		}
 	}
-
 }

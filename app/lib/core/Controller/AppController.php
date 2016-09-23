@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2009 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
  
 include_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
 include_once(__CA_LIB_DIR__."/core/Controller/RequestDispatcher.php");
+include_once(__CA_LIB_DIR__."/core/Controller/ApplicationException.php");
 
 global $g_app_controller;
 $g_app_controller = null;

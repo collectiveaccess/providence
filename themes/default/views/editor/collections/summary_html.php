@@ -70,6 +70,18 @@
 			}
 			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display'].":</span> ".$vs_display_value."</div>\n";
 		}
+		
+		
+		
+		if ($t_item->get('ca_collections.children.collection_id')) {
+			print "<div class='heading' style='margin-bottom:10px;'>".$t_item->get('ca_collections.type_id', array('convertCodesToDisplayText' => true))." Contents</div>";
+
+			$va_hierarchy = $t_item->hierarchyWithTemplate("<l>^ca_collections.preferred_labels.name</l> (^ca_collections.idno)", array('collection_id' => $vn_item_id, 'sort' => 'ca_collections.preferred_labels.name'));
+			foreach($va_hierarchy as $vn_i => $va_hierarchy_item) {
+				$vs_margin = $va_hierarchy_item['level']*20;
+				print "<div style='margin-left:".$vs_margin."px;margin-bottom:10px;'><i class='fa fa-angle-right' ></i> ".$va_hierarchy_item['display']."</div>";
+			}
+		}		
 ?>
 			</td>
 			</td>

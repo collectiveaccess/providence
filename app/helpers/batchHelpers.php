@@ -48,7 +48,7 @@
 		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
 			caHTMLSelect($ps_id_prefix."_batch_mode", array(
 			_t("do not use") => "_disabled_", 
-			_t('add to each item') => '_add_', 
+			_t('add to each') => '_add_', 
 			_t('replace value') => '_replace_',
 			_t('remove all values') => '_delete_'
 		), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'))."</div>\n

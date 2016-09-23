@@ -103,6 +103,8 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 
 			// basic stuff
 			'ca_objects.coverageDates:"1985-1986"' => 2,
+			'ca_objects.coverageDates:"1984-1985"' => 1,
+			'ca_objects.coverageDates:"1984 - 1985"' => 1,
 			'ca_objects.coverageDates:"1985"' => 1,
 			'ca_objects.coverageDates:"01/1985"' => 1,
 			'ca_objects.coverageDates:"01-28-1985"' => 1,

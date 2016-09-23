@@ -414,6 +414,7 @@ class ca_locales extends BaseModel {
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
 	static public function codeToID($ps_code) {
+		if (strlen($ps_code) == 0) { return null; }
 		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
@@ -439,6 +440,7 @@ class ca_locales extends BaseModel {
 	 * @return string A language code in the form <language>_<country> (eg. en_US)
 	 */
 	static public function IDToCode($pn_id) {
+		if (strlen($pn_id) == 0) { return null; }
 		if (!MemoryCache::contains($pn_id, 'LocaleIdToCode')){
 			ca_locales::getLocaleList();
 		}
@@ -464,6 +466,7 @@ class ca_locales extends BaseModel {
 	 * @return string The name of the locale
 	 */
 	static public function IDToName($pn_id) {
+		if (strlen($pn_id) == 0) { return null; }
 		if (!MemoryCache::contains($pn_id, 'LocaleIdToName')){
 			ca_locales::getLocaleList();
 		}

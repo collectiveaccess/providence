@@ -85,7 +85,6 @@
  	define('__CA_NAV_ICON_COMMIT__', 43);
  	define('__CA_NAV_ICON_SETS__', 44);
  	define('__CA_NAV_ICON_RIGHT_ARROW__', 45);
- 	define('__CA_NAV_ICON_ROTATE__', 46);
  	define('__CA_NAV_ICON_VISUALIZE__', 47);
  	define('__CA_NAV_ICON_ADD_WIDGET__', 48);	
  	define('__CA_NAV_ICON_VISIBILITY_TOGGLE__', 49);
@@ -100,6 +99,10 @@
  	define('__CA_NAV_ICON_SPREADSHEET__', 58);
  	define('__CA_NAV_ICON_VERTICAL_ARROWS__', 59);
  	define('__CA_NAV_ICON_EXTRACT__', 60);
+ 	define('__CA_NAV_ICON_MEDIA_METADATA__', 61);
+ 	define('__CA_NAV_ICON_NUKE__', 62);
+ 	define('__CA_NAV_ICON_FULL_RESULTS__', 63);
+ 	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
  	
  	/**
  	 * Icon position constants
@@ -132,7 +135,12 @@
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
-		if ($ps_action == '*') { $ps_action = $po_request->getAction(); }
+		if ($ps_action == '*') { 
+			$ps_action = $po_request->getAction(); 
+			if ($vs_action_extra =  $po_request->getActionExtra()) { 
+				$ps_action .= "/{$vs_action_extra}";
+			}
+		}
 		
 		if ($ps_module_path) {
 			$vs_url .= '/'.$ps_module_path;
@@ -600,7 +608,7 @@
 	 * Return system icon as HTML
 	 *
 	 * @param int $pn_type Icon type constant (ex. __CA_NAV_ICON_ADD__)
-	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). [Default is 2]
+	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). Text values will be applied as CSS classes to the icon. [Default is 2]
 	 * @param array $pa_attributes Array of additional parameters to include in URL [Default is null]
 	 * @param array $pa_options Options include:
 	 *		color = hex color for icon [Default is #fff]
@@ -626,6 +634,8 @@
 			} elseif(substr(strtolower($pm_size), -2) == 'px') {
 				if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
 				$pa_attributes['style'] = "font-size: {$pm_size};".$pa_attributes['style'];
+			} elseif($pm_size) {
+				$vs_opt_class .= " {$pm_size}";
 			}
 			
 			$vs_rotate_class = '';
@@ -663,11 +673,11 @@
 				$vs_ca_class = 'cancelIcon';
 				break;			
 			case __CA_NAV_ICON_EDIT__:
-				$vs_fa_class = 'fa-pencil-square-o';
+				$vs_fa_class = 'fa-file';
 				$vs_ca_class = 'editIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
-				$vs_fa_class = 'fa-cubes';
+				$vs_fa_class = 'fa-magic';
 				$vs_ca_class = 'batchIcon'; 
 				break;
 			case __CA_NAV_ICON_ALERT__:
@@ -678,12 +688,13 @@
 				break;
 			case __CA_NAV_ICON_INFO__:
 				$vs_fa_class = 'fa-info-circle';
+				$vs_ca_class = 'infoIcon';
 				break;
 			case __CA_NAV_ICON_DOWNLOAD__:
 				$vs_fa_class = 'fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'fa-upload';
+				$vs_fa_class = 'fa-check';
 				break;
 			case __CA_NAV_ICON_APPROVE__:
 				$vs_fa_class = 'fa-thumbs-o-up';
@@ -702,7 +713,7 @@
 				$vs_fa_class = 'fa-life-ring';
 				break;
 			case __CA_NAV_ICON_GO__:
-				$vs_fa_class = 'fa-play-circle-o';
+				$vs_fa_class = 'fa-chevron-circle-right';
 				$vs_ca_class = 'hierarchyIcon';
 				break;
 			case __CA_NAV_ICON_DEL_BUNDLE__:
@@ -742,7 +753,7 @@
 				$vs_fa_class = 'fa-minus-circle';
 				break;
 			case __CA_NAV_ICON_EXPAND__:
-				$vs_fa_class = 'fa-expand';
+				$vs_fa_class = 'fa-plus-circle';
 				break;					
 			case __CA_NAV_ICON_COMMIT__:
 				$vs_fa_class = 'fa-check-circle-o';
@@ -751,16 +762,19 @@
 				$vs_fa_class = 'fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fa-filter';
+				$vs_fa_class = 'fa-sliders';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
-				$vs_fa_class = 'fa-inbox';
+				$vs_fa_class = 'fa-download';
 				break;
+			case __CA_NAV_ICON_EXPORT_SMALL__:
+				$vs_fa_class = 'fa-external-link-square';
+				break;	
 			case __CA_NAV_ICON_SETS__:
-				$vs_fa_class = 'fa-shopping-bag';
+				$vs_fa_class = 'fa-clone';
 				break;	
 			case __CA_NAV_ICON_RIGHT_ARROW__:
-				$vs_fa_class = 'fa-chevron-circle-right';
+				$vs_fa_class = 'fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_VISUALIZE__:
 				$vs_fa_class = 'fa-line-chart';
@@ -775,10 +789,10 @@
 				$vs_fa_class = 'fa-child';
 				break;	
 			case __CA_NAV_ICON_SCROLL_RT__:
-				$vs_fa_class = 'fa-chevron-circle-right';
+				$vs_fa_class = 'fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_SCROLL_LT__:
-				$vs_fa_class = 'fa-chevron-circle-left';
+				$vs_fa_class = 'fa-chevron-left';
 				break;	
 			case __CA_NAV_ICON_MOVE__:
 				$vs_fa_class = 'fa-truck';
@@ -827,19 +841,28 @@
 				break;	
 			case __CA_NAV_ICON_VERTICAL_ARROWS__:
 				$vs_fa_class = 'fa-arrows-v';
-				break;				
+				break;
+			case __CA_NAV_ICON_MEDIA_METADATA__:
+				$vs_fa_class = 'fa-file-audio-o';
+				break;					
 			case __CA_NAV_ICON_EXTRACT__:
 				$vs_fa_class = 'fa-scissors';
 				break;					
 			case __CA_NAV_ICON_ROTATE__:
 				$vs_fa_class = 'fa-undo';
-				break;						
+				break;
+			case __CA_NAV_ICON_NUKE__:
+				$vs_fa_class = 'fa-bomb';
+				break;
+			case __CA_NAV_ICON_FULL_RESULTS__:
+				$vs_fa_class = 'fa-bars';
+				break;																			
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
 				break;
 		}
-		return array('class' => $vs_fa_class);
+		return array('class' => trim("{$vs_fa_class} {$vs_ca_class}"), 'fa-class' => $vs_fa_class, 'ca-class' => $vs_ca_class);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1084,7 +1107,7 @@
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
 			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
-			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters);
+			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters, $pa_options);
 		}
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -1286,7 +1309,8 @@
 			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel', $pa_attributes),
 			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
 			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
-			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes)
+			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes),
+			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes)
 		);
 	}
 	# ------------------------------------------------------------------------------------------------

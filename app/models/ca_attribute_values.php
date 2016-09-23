@@ -86,7 +86,7 @@ BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
 				'LABEL' => 'Longtext value container 2', 'DESCRIPTION' => 'Second longtext attribute value container'
 		),
 		'value_blob' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
@@ -359,8 +359,18 @@ class ca_attribute_values extends BaseModel {
 			return $va_values;
 		}
 		
-		CompositeCache::delete('attribute:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
-		CompositeCache::delete('attribute:'.$this->getPrimaryKey(), 'IIIFTileCounts');
+		// Clear cache against attribute and any pages
+		$vn_id = $this->getPrimaryKey();
+		CompositeCache::delete("attribute:{$vn_id}", 'IIIFMediaInfo');
+		CompositeCache::delete("attribute:{$vn_id}", 'IIIFTileCounts');
+		
+		$vn_p = 1;
+		while(CompositeCache::contains($vs_key = "attribute:{$vn_id}:{$vn_p}", "IIIFMediaInfo")) {
+			CompositeCache::delete($vs_key, 'IIIFMediaInfo');
+			CompositeCache::delete($vs_key, 'IIIFTileCounts');
+			$vn_p++;
+		}
+		
 		$this->update();
 		
 		if ($this->numErrors()) {
@@ -392,7 +402,7 @@ class ca_attribute_values extends BaseModel {
 		$vn_primary_key = $this->getPrimaryKey();
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		if($vn_primary_key && $vn_rc) {
-			$this->removeGUID($vn_primary_key);
+			//$this->removeGUID($vn_primary_key);
 		}
 		return $vn_rc;
 	}

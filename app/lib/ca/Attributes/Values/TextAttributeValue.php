@@ -200,6 +200,14 @@
 			'label' => _t('Dependent value template'),
 			'validForNonRootOnly' => 1,
 			'description' => _t('Template to be used to format content for dependent values. Template should reference container values using their bare element code prefixed with a caret (^). Do not include the table or container codes.')
+		),
+		'mustBeUnique' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Must be unique'),
+			'description' => _t('Check this option to enforce uniqueness across all values for this attribute.')
 		)
 	);
  
@@ -222,7 +230,7 @@
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
- 				array('minChars', 'maxChars', 'regex')
+ 				array('minChars', 'maxChars', 'regex', 'mustBeUnique')
  			);
  			$vn_strlen = unicode_strlen($ps_value);
  			if ($vn_strlen < $va_settings['minChars']) {
@@ -243,6 +251,14 @@
 				$this->postError(1970, _t('%1 does not conform to required format', $pa_element_info['displayLabel']), 'TextAttributeValue->parseValue()');
 				return false;
  			}
+
+			if(isset($va_settings['mustBeUnique']) && (bool)$va_settings['mustBeUnique'] && ($vn_strlen > 0)) {
+				
+				if (BaseModelWithAttributes::valueExistsForElement($pa_element_info['element_id'], $ps_value, ['transaction' => $pa_options['transaction'], 'value_id' => $this->getValueID()])) {
+					$this->postError(1970, _t('%1 must be unique across all values. The value you entered already exists.', $pa_element_info['displayLabel']), 'TextAttributeValue->parseValue()');
+					return false;
+				}
+			}
  			
  			return array(
  				'value_longtext1' => $ps_value
@@ -266,7 +282,7 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate'));
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique'));
 
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
@@ -326,6 +342,14 @@
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
  				$va_opts
  			);
+
+			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
+				$vs_element .= "
+					<div id='{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning' class='caDupeAttributeMessageBox' style='display:none'>
+						"._t("This field value already exists!")."
+					</div>
+				";
+			}
  			
  			if ($va_settings['isDependentValue'] || $pa_options['isDependentValue']) {
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
@@ -369,6 +393,23 @@
 					);
  				</script>\n";
  			}
+
+			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
+				$vs_unique_lookup_url = caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'ValueExists', array('bundle' => $vs_bundle_name));
+				$vs_element .= "<script type='text/javascript'>
+					var warnSpan = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning');
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').keyup(function() {
+						jQuery.getJSON('{$vs_unique_lookup_url}', {n: jQuery(this).val()}).done(function(data) {
+							console.log('data', data);
+							if(data.exists >= 1) {
+								warnSpan.show();
+							} else {
+								warnSpan.hide();
+							}
+						});
+					});
+ 				</script>\n";
+			}
  			
  			return $vs_element;
  		}

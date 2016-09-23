@@ -248,9 +248,12 @@ var caUI = caUI || {};
 					if(this.id) {
 						var split = this.id.split('_');
 						var label_id = split[split.length - 1];
-						if(label_id) {
-							formValues['label_id'] = label_id;
+
+						if(split[split.length - 2] == 'new') {
+							label_id = 'new_' + label_id;
 						}
+						if(label_id) { formValues['label_id'] = label_id; }
+
 						formValues[this.id] = jQuery(this).val();
 					}
 				});

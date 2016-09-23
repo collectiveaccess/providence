@@ -51,8 +51,8 @@ if (!$this->request->isAjax()) {
 		<div id="progressbar"></div>
 	</div>
 	
-	<div id="importerUploadArea" style="border: 2px dashed #999999; text-align: center; padding: 20px; display: none;">
-		<span style="font-size: 20px; color: #aaaaaa; font-weight: bold;"><?php print _t("Drag importer worksheets here to add or update"); ?></span>
+	<div id="importerUploadArea" style="border: 1px dashed #ccc; text-align: center; padding: 10px; display: none;">
+		<span style="font-size: 16px; color: #333; "><?php print _t("Drag importer worksheets here to add or update"); ?></span>
 	</div>
 <?php
 }
@@ -103,7 +103,7 @@ if (!$this->request->isAjax()) {
 					<?php print $va_importer['importer_type']; ?>
 				</td>
 				<td>
-					<?php print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; ?>
+					<?php print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; ?>
 				</td>
 				<td>
 					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('dateFormat' => 'delimited')); ?>

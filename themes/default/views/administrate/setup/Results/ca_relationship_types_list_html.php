@@ -104,7 +104,7 @@
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
 				print "<td class='listtableEditDelete'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'editIcon', 'ca_relationship_types', $vn_type_id, array());
-				print " <a href='#' onclick='caOpenBrowserWith({$vn_type_id}); return false;' class='hierarchyIcon'>".caNavIcon(__CA_NAV_ICON_GO__, 2, array('title' => _t('View in hierarchy')))."</a>";
+				print " <a href='#' onclick='caOpenBrowserWith({$vn_type_id}); return false;' class='hierarchyIcon'>".caNavIcon(__CA_NAV_ICON_HIER__, 2, array('title' => _t('View in hierarchy'), 'style' => 'margin-top:5px;'), array('rotate' => 270))."</a>";
 				print "</td>";		
 ?>	
 			</tr>

@@ -50,7 +50,11 @@
 			$this->_generateSortableValue();	// populate sort field
 			// invalidate get() prefetch cache
 			SearchResult::clearResultCacheForTable($this->tableName());
-			return parent::insert($pa_options);
+			if($vn_rc = parent::insert($pa_options)) {
+				$this->setGUID($pa_options);
+			}
+
+			return $vn_rc;
 		}
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
@@ -72,7 +76,8 @@
 			$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
 			if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
-				$this->removeGUID($vn_primary_key);
+				// Don't remove GUID, otherwise wrong GUID will be sent to target
+				//$this->removeGUID($vn_primary_key);
 			}
 
 			return $vn_rc;

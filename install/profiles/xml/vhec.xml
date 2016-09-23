@@ -2918,7 +2918,7 @@
             </label>
           </labels>
         </item>
-        <item idno="victoria" enabled="1" default="0">
+        <item idno="victoria2" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Toronto, ON</name_singular>
@@ -3288,7 +3288,7 @@
       </items>
     </list>
     <!-- RAD Lists -->
-    <list code="collection_sources" hierarchical="1" system="0" vocabulary="0">
+    <list code="collection_sources2" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Collection sources</name>
@@ -4023,7 +4023,7 @@
         </item>
       </items>
     </list>
-    <list code="date_types" hierarchical="0" system="0" vocabulary="1">
+    <list code="date_types2" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Date Types</name>
@@ -18385,53 +18385,8 @@ differs from the holder of rights for the work. Example: The work rights are “
     </relationshipTable>
   </relationshipTypes>
   <logins>
-    <login user_name="admin" password="maple" fname="CollectiveAccess" lname="Administrator"
+    <login user_name="administrator" password="changeme" fname="CollectiveAccess" lname="Administrator"
       email="info@collectiveaccess.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Elizabeth" password="Shaffer" fname="Elizabeth" lname="Shaffer"
-      email="archives@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Naomi" password="Lloyd" fname="Naomi" lname="Lloyd" email="n.lloyd@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Katie" password="Powell" fname="Katie" lname="Powell"
-      email="research@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Shannon" password="LaBelle" fname="Shannon" lname="LaBelle"
-      email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Marisa" password="Parker" fname="Marisa" lname="Parker" email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Caitlin" password="Donaldson" fname="Caitlin" lname="Donaldson"
-      email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Daniel" password="Sheinin" fname="Daniel" lname="Sheinin"
-      email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Richard" password="Dancy" fname="Richard" lname="Dancy" email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Ann" password="Stevenson" fname="Ann" lname="Stevenson" email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Kristy" password="Waller" fname="Kristy" lname="Waller" email="info@vhec.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>

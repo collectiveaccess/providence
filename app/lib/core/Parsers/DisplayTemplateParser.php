@@ -178,7 +178,14 @@ class DisplayTemplateParser {
 			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, $pa_options);
 		}
 
+		// ad hoc template processing for labels.
+		// they only support a very limited set and no nested units or stuff like that
+		if($t_instance instanceof BaseLabel) {
+			return self::_processLabelTemplate($t_instance, $ps_template, $pa_row_ids, $pa_options);
+		}
+
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids);
+
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
 		if(!caGetOption('filterNonPrimaryRepresentations', $pa_options, true) && ($qr_res instanceof ObjectSearchResult)) {
@@ -521,6 +528,13 @@ class DisplayTemplateParser {
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
+							// allow labels as units
+							case 'preferred_labels':
+							case 'nonpreferred_labels':
+								/** @var LabelableBaseModelWithAttributes $t_instance */
+								$ps_tablename = $t_instance->getLabelTableName();
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['returnAsArray' => true]);
+								break;
 							default:
 								// If relativeTo is not set to a valid attribute try to guess from template, looking for container
 								if ($t_rel_instance->isValidMetadataElement(join(".", array_slice($va_relative_to_tmp, 1, 1)), true)) {
@@ -575,6 +589,22 @@ class DisplayTemplateParser {
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
 					} else { 
+						if ($t_instance->isRelationship()) {
+							// Allow subunits to inherit incorrectly places restrict/exclude types options
+							// This enables templates such as this to work as expected:
+							//
+							// <unit relativeTo="ca_objects_x_entities" restrictToTypes="individual"><unit relativeTo="ca_entities">^ca_entities.preferred_labels.displayname</unit></unit>
+							//
+							// by allowing the restrictToTypes on the relationship to be applied on the inner unit as is required.
+							//
+							if (!is_array($va_get_options['restrictToTypes']) || !sizeof($va_get_options['restrictToTypes'])) {
+								$va_get_options['restrictToTypes'] = $pa_options['restrictToTypes'];
+							}
+							if (!is_array($va_get_options['excludeTypes']) || !sizeof($va_get_options['excludeTypes'])) {
+								$va_get_options['excludeTypes'] = $pa_options['excludeTypes'];
+							}
+						}
+						
 						switch(strtolower($va_relative_to_tmp[1])) {
 							case 'hierarchy':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options);
@@ -622,10 +652,14 @@ class DisplayTemplateParser {
 									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
-										$va_relationship_type_ids = $qr_rels->getAllFieldValues($x=$t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+									} elseif($t_rel_instance->isRelationship()) {
+										// return type on relationship
+										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
 									} elseif($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) {
-										$va_relationship_type_ids = [$pr_res->get("{$vs_rel_tablename}.type_id")];
-									}
+										// grab type from adjacent relationship table
+										$va_relationship_type_ids = $pr_res->get("{$vs_rel_tablename}.type_id", ['returnAsArray' => true]);
+ 									}
 								}
 							
 								break;
@@ -683,8 +717,18 @@ class DisplayTemplateParser {
 					}
 					
 					if ($vs_tag === 'l') {
+						$vs_linking_context = $ps_tablename;
+						$va_linking_ids = [$pr_res->getPrimaryKey()];
+						
+						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
+							$vs_linking_context = array_shift($va_tmp);
+							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
+								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".$o_dm->primaryKey($vs_linking_context), ['returnAsArray' => true]);
+							}
+						}
+						
 						$va_proc_templates = caCreateLinksFromText(
-							["{$vs_proc_template}"], $ps_tablename, [$pr_res->getPrimaryKey()],
+							["{$vs_proc_template}"], $vs_linking_context, $va_linking_ids,
 							null, caGetOption('linkTarget', $pa_options, null),
 							array_merge(['addRelParameter' => true, 'requireLinkTags' => false], $pa_options)
 						);
@@ -814,7 +858,7 @@ class DisplayTemplateParser {
 				if (isset($pa_options['sort']) && is_array($pa_options['sort']) && sizeof($pa_options['sort'])) {
 					$va_sortables = array();
 					foreach($pa_options['sort'] as $vs_sort_spec) {
-						$va_sortables[] = $pr_res->get($vs_sort_spec, ['sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true]);
+						$va_sortables[] = $pr_res->get($vs_sort_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true]));
 					}
 					if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_sortables)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_sortables)))) {
 						$va_sortables = array_slice($va_sortables, $vn_start, ($vn_length > 0) ? $vn_length : null);
@@ -1203,6 +1247,46 @@ class DisplayTemplateParser {
 				break;
 		}
 		return array();
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Process template for labels
+	 *
+	 * @param BaseLabel $t_instance
+	 * @param string $ps_template
+	 * @param array $pa_row_ids
+	 * @param array $pa_options
+	 * @return array
+	 */
+	public static function _processLabelTemplate($t_instance, $ps_template, array $pa_row_ids, array $pa_options) {
+		$pb_return_as_array = (bool) caGetOption('returnAsArray', $pa_options, false);
+
+		if(!($t_instance instanceof BaseLabel)) { return $pb_return_as_array ? array() : ''; }
+
+		$va_tags = caGetTemplateTags($ps_template);
+		if(!is_array($va_tags) || (sizeof($va_tags) < 1)) { return []; }
+
+		$va_return = [];
+		foreach($pa_row_ids as $vn_row_id) {
+			if(!$t_instance->load($vn_row_id)) { continue; }
+
+			$pb_is_preferred = (bool) ($t_instance->hasField('is_preferred') ? $t_instance->get('is_preferred') : false);
+
+			$t_instance->setLabelTypeList(Configuration::load()->get($pb_is_preferred ? $t_instance->getSubjectTableName()."_preferred_label_type_list" : $t_instance->getSubjectTableName()."_nonpreferred_label_type_list"));
+
+			$va_tag_values = [];
+			foreach($va_tags as $vs_tag) {
+				// @ todo: check ca_objects.preferred_labels or ca_object_labels?
+				// @ todo: right now you can template whatever so long as the
+				// @ todo: field name is in that table
+				$vs_field = array_pop(explode('.', $vs_tag));
+
+				$va_tag_values[$vs_tag] = $t_instance->get($vs_field, ['convertCodesToDisplayText' => true]);
+			}
+			$va_return[] = caProcessTemplate($ps_template, $va_tag_values);
+		}
+
+		return $va_return;
 	}
 	# -------------------------------------------------------------------
 }

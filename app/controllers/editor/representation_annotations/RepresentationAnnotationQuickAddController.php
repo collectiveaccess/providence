@@ -43,7 +43,11 @@
  			$t_annotation = new ca_representation_annotations();
  			$vs_type = $t_annotation->getAnnotationType($vn_representation_id);
  			
- 			return parent::Form(null, array('loadSubject' => true, 'dontCheckQuickAddAction' => true, 'forceSubjectValues' => array('representation_id' => $vn_representation_id, 'type_code' => $vs_type)));
+ 			parent::Form(null, array(
+				'loadSubject' => true,
+				'dontCheckQuickAddAction' => true,
+				'forceSubjectValues' => array('representation_id' => $vn_representation_id, 'type_code' => $vs_type)
+			));
  		}
  		# -------------------------------------------------------
  		public function Save($pa_options=null) {

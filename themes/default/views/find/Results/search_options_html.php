@@ -126,8 +126,8 @@ if($vo_result->numHits() > 0) {
 ?>		
 			<div class="clear"> </div>
 		
-			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
-			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit();'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide"); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit(); return false;'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 
 		<div style='clear:both;height:1px;'>&nbsp;</div>
@@ -137,6 +137,7 @@ if($vo_result->numHits() > 0) {
 	TooltipManager::add('#showOptions', _t("Display Options"));
 	TooltipManager::add('#showRefine', _t("Refine Results"));
 	TooltipManager::add('#showTools', _t("Export Tools"));
+	TooltipManager::add('#showResultsEditor', _t("Edit in Spreadsheet"));
 ?>
 <script type="text/javascript">
 	function caHandleResultsUIBoxes(mode, action) {

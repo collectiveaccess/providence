@@ -330,11 +330,11 @@
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>", $vs_type_selector, caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
-							print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$vs_id_prefix}typeList\").val(), jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, 1)."</a></div>";
+							print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$vs_id_prefix}typeList\").val(), jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 						} else {
 							// for items without types
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
-							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, 1)."</a></div>";
+							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 						}
 ?>
 					</div>
@@ -361,7 +361,7 @@
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $vs_type_selector, $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
-							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, 1)."</a></div>";				
+							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";				
 ?>
 					</div>
 				</div>

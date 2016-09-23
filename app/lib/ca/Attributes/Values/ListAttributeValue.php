@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -435,10 +435,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 			if($vb_print_js) {
 				$t_list = new ca_lists();
-				$vb_yes_was_set = false; $vs_select = '';
+				$vb_yes_was_set = false;
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
 						$vs_hide_js = '';
+						$vs_condition = '';
+						$vs_select = '';
 
 						if(isset($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
 							$va_hideif_for_idno = $pa_element_info['settings']['hideIfSelected_'.$va_item['idno']];
@@ -479,7 +481,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								continue;
 						}
 
-						$vs_element .= "
+						if ($vs_select && $vs_hide_js && $vs_condition) {
+							$vs_element .= "
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
 		var select = {$vs_select};
@@ -496,6 +499,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	});
 </script>
 	";
+						}
 					}
 				}
 			}
@@ -574,9 +578,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			// when installing, UIs, screens and placements are not yet available when we process elementSets, so
 			// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
 			$t_list = new ca_lists();
-			foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
-				foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-					$va_element_settings['hideIfSelected_'.$va_item['idno']] = true;
+			$va_list_items = $t_list->getItemsForList($pa_element_info['list_id']);
+			if(is_array($va_list_items) && sizeof($va_list_items)) {
+				foreach($va_list_items as $va_items_by_locale) {
+					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = true;
+					}
 				}
 			}
 		}

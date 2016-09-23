@@ -1120,14 +1120,18 @@ function caFileIsIncludable($ps_file) {
 	 *		type = either 'pixels' or 'relative'
 	 *
 	 * @param string $ps_dimension
+	 * @param array $pa_options Options include:
+	 *		returnAsString = return normalized dimension expression as string rather than an array of values. [Default is false]
+	 *		default = dimension expression to use if $ps_dimension is empty. [Default is null]
 	 * @return array An array describing the parsed value or null if no value was passed
 	*/
-	function caParseElementDimension($ps_dimension) {
-		$ps_dimension = trim($ps_dimension);
+	function caParseElementDimension($ps_dimension, $pa_options=null) {
+		if (!($ps_dimension = trim($ps_dimension))) { $ps_dimension = caGetOption('default', $pa_options, null); }
 		if (!$ps_dimension) { return null; }
 		
+		$va_val = null;
 		if (preg_match('!^([\d]+)[ ]*px$!', $ps_dimension, $va_matches)) {
-			return array(
+			$va_val = array(
 				'dimension' => (int)$va_matches[1],
 				'expression' => $ps_dimension,
 				'type' => 'pixels'
@@ -1135,18 +1139,22 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if (preg_match('!^([\d\.]+)[ ]*%$!', $ps_dimension, $va_matches)) {
-			return array(
+			$va_val = array(
 				'dimension' => (int)$va_matches[1],
 				'expression' => $ps_dimension,
 				'type' => 'relative'
 			);
 		}
 		
-		return array(
-			'dimension' => (int)$ps_dimension,
-			'expression' => "{$ps_dimension} px",
-			'type' => 'pixels'
-		);
+		if(!$va_val && $ps_dimension) {
+			$va_val = array(
+				'dimension' => (int)$ps_dimension,
+				'expression' => "{$ps_dimension}px",
+				'type' => 'pixels'
+			);
+		}
+		if (!$va_val) { return null; }
+		return caGetOption('returnAsString', $pa_options, false) ? $va_val['expression'] : $va_val;
 	}
 	# ---------------------------------------
 	/**
@@ -2537,7 +2545,7 @@ function caFileIsIncludable($ps_file) {
 		$size = array('B','KiB','MiB','GiB','TiB');
 		$factor = floor((strlen($bytes) - 1) / 3);
 
-		return sprintf("%,{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
+		return sprintf("%.{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
 	}
 	# ----------------------------------------
 	/**
@@ -3263,5 +3271,48 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
 		return $vs_display_value;
+	}
+	# ----------------------------------------
+	/**
+	 * Get list of (enabled) primary tables as table_num => table_name mappings
+	 * @return array
+	 */
+	function caGetPrimaryTables() {
+		$o_conf = Configuration::load();
+		$va_ret = [];
+		foreach([
+			'ca_objects' => 57,
+			'ca_object_lots' => 51,
+			'ca_entities' => 20,
+			'ca_places' => 72,
+			'ca_occurrences' => 67,
+			'ca_collections' => 13,
+			'ca_storage_locations' => 89,
+			'ca_object_representations' => 56,
+			'ca_loans' => 133,
+			'ca_movements' => 137,
+			'ca_list_items' => 33,
+			'ca_tours' => 153,
+			'ca_tour_stops' => 155
+		] as $vs_table_name => $vn_table_num) {
+			if(!$o_conf->get($vs_table_name.'_disable')) {
+				$va_ret[$vn_table_num] = $vs_table_name;
+			}
+		}
+		return $va_ret;
+	}
+	# ----------------------------------------
+	/**
+	 * Get CA primary tables (objects, entities, etc.) for HTML select, i.e. as Display Name => Table Num mapping
+	 * @return array
+	 */
+	function caGetPrimaryTablesForHTMLSelect() {
+		$va_tables = caGetPrimaryTables();
+		$o_dm = Datamodel::load();
+		$va_ret = [];
+		foreach($va_tables as $vn_table_num => $vs_table) {
+			$va_ret[$o_dm->getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
+		}
+		return $va_ret;
 	}
 	# ----------------------------------------

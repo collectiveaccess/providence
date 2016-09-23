@@ -93,12 +93,29 @@ class SearchResult extends BaseObject {
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
+	
+	/**
+	 * Maximum number of entries for each table in these caches:
+	 *		rel_prefetch_cache
+	 *		prefetch_cache
+	 *		hierarchy_parent_prefetch_cache
+	 *		hierarchy_parent_prefetch_cache_index
+	 *		hierarchy_siblings_prefetch_cache
+	 *		hierarchy_siblings_prefetch_cache_index
+	 *		hierarchy_children_prefetch_cache_index
+	 */
+	static $s_cache_size_limit = 256;
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
 	private $opa_template_prefetch_cache = array();
 	# ------------------------------------------------------------------
 
+	/**
+	 * Clear all internal caches
+	 *
+	 * @return void
+	 */ 
 	public static function clearCaches() {
 		self::$s_prefetch_cache = array();
 		self::$s_instance_cache = array();
@@ -112,6 +129,75 @@ class SearchResult extends BaseObject {
 		self::$opa_hierarchy_siblings_prefetch_cache = array();
 		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
 	}
+	
+	/**
+	 * Get relative sizes of internal caches. The size is the strlen of the cache when serialized and
+	 * is only useful for relative size comparisons.
+	 *
+	 * @return array Array with keys set to cache name, values set to relative sizes
+	 */
+	public static function getCacheSizes() {
+		return [
+			'prefetch_cache' => strlen(serialize(self::$s_prefetch_cache)),
+			'instance_cache' => strlen(serialize(self::$s_instance_cache)),
+			'timestamp_cache' => strlen(serialize(self::$s_timestamp_cache)),
+			'rel_prefetch_cache' => strlen(serialize(self::$s_rel_prefetch_cache)),
+			'parsed_field_component_cache' => strlen(serialize(self::$s_parsed_field_component_cache)),
+			'hierarchy_parent_prefetch_cache' => strlen(serialize(self::$opa_hierarchy_parent_prefetch_cache)),
+			'hierarchy_children_prefetch_cache' => strlen(serialize(self::$opa_hierarchy_children_prefetch_cache)),
+			'hierarchy_parent_prefetch_cache_index' => strlen(serialize(self::$opa_hierarchy_parent_prefetch_cache_index)),
+			'hierarchy_children_prefetch_cache_index' => strlen(serialize(self::$opa_hierarchy_children_prefetch_cache_index)),
+			'hierarchy_siblings_prefetch_cache' => strlen(serialize(self::$opa_hierarchy_siblings_prefetch_cache)),
+			'hierarchy_siblings_prefetch_cache_index' => strlen(serialize(self::$opa_hierarchy_siblings_prefetch_cache_index))
+		];
+	}
+
+	/**
+	 * Checks size of volatile per-table caches and resets them if their size exceeds the threshold for the given table
+	 * as set in SearchResult::$s_cache_size_limit. Caches managed include:
+	 *
+	 *		rel_prefetch_cache
+	 *		prefetch_cache
+	 *		hierarchy_parent_prefetch_cache
+	 *		hierarchy_parent_prefetch_cache_index
+	 *		hierarchy_siblings_prefetch_cache
+	 *		hierarchy_siblings_prefetch_cache_index
+	 *		hierarchy_children_prefetch_cache_index
+	 * 
+	 * @param string Table name
+	 * @return void
+	 */ 
+	public static function checkCacheSizeLimit($ps_tablename) {
+		foreach ([
+			'prefetch_cache' => &self::$s_prefetch_cache,
+			'instance_cache' => &self::$s_instance_cache,
+			'timestamp_cache' => &self::$s_timestamp_cache,
+			'rel_prefetch_cache' => &self::$s_rel_prefetch_cache,
+			'parsed_field_component_cache' => &self::$s_parsed_field_component_cache,
+			'hierarchy_parent_prefetch_cache' => &self::$opa_hierarchy_parent_prefetch_cache,
+			'hierarchy_children_prefetch_cache' => &self::$opa_hierarchy_children_prefetch_cache,
+			'hierarchy_parent_prefetch_cache_index' => &self::$opa_hierarchy_parent_prefetch_cache_index,
+			'hierarchy_children_prefetch_cache_index' => &self::$opa_hierarchy_children_prefetch_cache_index,
+			'hierarchy_siblings_prefetch_cache' => &self::$opa_hierarchy_siblings_prefetch_cache,
+			'hierarchy_siblings_prefetch_cache_index' => &self::$opa_hierarchy_siblings_prefetch_cache_index
+		] as $vs_cache => &$va_cache) {
+			switch($vs_cache) {
+				case 'rel_prefetch_cache':
+				case 'prefetch_cache':
+				case 'hierarchy_parent_prefetch_cache':
+				case 'hierarchy_parent_prefetch_cache_index':
+				case 'hierarchy_siblings_prefetch_cache':
+				case 'hierarchy_siblings_prefetch_cache_index':
+				case 'hierarchy_children_prefetch_cache_index':
+					if (is_array($va_cache) && is_array($va_cache[$ps_tablename]) && (sizeof($va_cache[$ps_tablename]) > SearchResult::$s_cache_size_limit)) {
+						$va_cache[$ps_tablename] = [];
+					}
+					break;
+			}
+			
+		}
+	}
+
 
 	public function __construct($po_engine_result=null, $pa_tables=null) {
 		if (!SearchResult::$opo_datamodel) { SearchResult::$opo_datamodel = Datamodel::load(); }
@@ -298,6 +384,9 @@ class SearchResult extends BaseObject {
 	 */
 	public function prefetchHierarchyParents($ps_tablename, $pn_start, $pn_num_rows, $pa_options=null) {
 		if (!$ps_tablename ) { return; }
+		
+		SearchResult::checkCacheSizeLimit($ps_tablename);
+		
 		// get row_ids to fetch
 		if (isset($pa_options['row_ids']) && is_array($pa_options['row_ids'])) {
 			$va_row_ids = $pa_options['row_ids'];
@@ -411,11 +500,7 @@ class SearchResult extends BaseObject {
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
-		
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
-			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
-		}
-		
+	
 		$vs_pk = $t_rel_instance->primaryKey();
 		$vs_parent_id_fld = $t_rel_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
 		$vs_sql = "
@@ -534,10 +619,14 @@ class SearchResult extends BaseObject {
 	 */
 	private function _getRelatedIDsForPrefetch($ps_tablename, $pn_start, $pn_num_rows, &$pa_cache, $t_rel_instance, $va_row_ids, $pa_options) {
 		$this->prefetchRelated($ps_tablename, $pn_start, $pn_num_rows, $pa_options);
+		
+		SearchResult::checkCacheSizeLimit($ps_tablename);
 						
 		$va_base_row_ids = array();
 		$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 		$va_related_ids = array();
+		
+		
 		foreach($va_row_ids as $vn_row_id) {
 			if(is_array($va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_opt_md5])) {
 				$va_base_row_ids[$vn_row_id] = caExtractValuesFromArrayList($va_related_items, $t_rel_instance->primaryKey());
@@ -709,6 +798,8 @@ class SearchResult extends BaseObject {
 		unset($pa_options['request']);
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		
+		SearchResult::checkCacheSizeLimit($this->ops_table_name);
+		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
@@ -732,6 +823,7 @@ class SearchResult extends BaseObject {
 				'criteria' => array()
 			);
 		}
+		
 		
 		foreach($va_rel_items as $vs_key => $va_rel_item) {
 			self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$va_rel_item['row_id']][$ps_tablename][$vs_md5][$va_rel_item[$va_rel_item['_key']]] = $va_rel_item;
@@ -838,6 +930,7 @@ class SearchResult extends BaseObject {
 	 *		[Options controlling type of return value]
 	 *			returnAsArray = return values in a one-dimensional, numerically indexed array. If not not a string is always returned. [Default is false]
 	 *			returnWithStructure = return values in a multi-dimensional array mirroring the internal storage structure of CollectiveAccess. [Default is false]
+	 *			returnAsSearchResult = 
 	 *
 	 *		[Options controlling scope of data in return value]
 	 *			returnAllLocales = Return values from all available locales, rather than just the most appropriate locale for the current user. For string and array return values, returnAllLocales will result in inclusion of additional values. For returnWithStructure, additional entries keys on locale_id or code will be added.  [Default is false]
@@ -895,12 +988,18 @@ class SearchResult extends BaseObject {
 	public function get($ps_field, $pa_options=null) {
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$vb_return_with_structure = isset($pa_options['returnWithStructure']) ? (bool)$pa_options['returnWithStructure'] : false;
+		if ($vb_return_as_search_result = isset($pa_options['returnAsSearchResult']) ? (bool)$pa_options['returnAsSearchResult'] : false) {
+			$vb_return_as_array = true; 
+			$vb_return_with_structure = $vb_return_all_locales = false;
+			$pa_options['template'] = null;
+		}
+		
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
 		
 		// Return primary key of primary table as quickly as possible
 		if (($ps_field == $this->ops_table_pk) || ($ps_field == $this->ops_table_name.'.'.$this->ops_table_pk)) {
 			$vn_id = $this->opo_engine_result->get($this->ops_table_pk);
-			return ($vb_return_as_array || $vb_return_with_structure) ? array($vn_id) : $vn_id;
+			return ($vb_return_as_array || $vb_return_with_structure) ? array($vn_id) : ($vb_return_as_search_result ? caMakeSearchResult($this->ops_table_name, [$vn_id], $pa_options) : $vn_id);
 		}
 		
 		if (isset($pa_options['template']) && $pa_options['template']) {
@@ -987,6 +1086,8 @@ class SearchResult extends BaseObject {
 				} else {
 					return array($vs_value);
 				}
+			} elseif($vb_return_as_search_result) {
+				return caMakeSearchResult($va_path_components['table_name'], [$vs_value], $pa_options);
 			} else {
 				return $vs_value;
 			}
@@ -1334,7 +1435,7 @@ class SearchResult extends BaseObject {
 						goto filter;
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id]['timestamp'];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->init();
@@ -1362,7 +1463,7 @@ class SearchResult extends BaseObject {
 						goto filter;
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id]['timestamp'];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->init();
@@ -1455,8 +1556,8 @@ class SearchResult extends BaseObject {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}
-				
-					$va_filter_values = $this->get(join(".", $va_tmp).".{$vs_filter}", array('returnAsArray' => true, 'alwaysReturnItemID' => true));
+					
+					$va_filter_values = $this->get(join(".", $va_tmp).".{$vs_filter}", array('returnAsArray' => true, 'alwaysReturnItemID' => true, 'sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)));
 			
 					if (is_array($va_filter_values)) {
 						foreach($va_filter_values as $vn_id => $vm_filtered_val) {
@@ -1476,6 +1577,11 @@ class SearchResult extends BaseObject {
 				}
 				return array_values($va_filtered_vals);
 			}
+		}
+		
+		if ($vb_return_as_search_result) {
+			if (!is_array($vm_val) || !sizeof($vm_val)) { return null; }
+			return caMakeSearchResult($va_path_components['table_name'], $vm_val, $pa_options);
 		}
 		
 		return $vm_val;
@@ -1578,7 +1684,7 @@ class SearchResult extends BaseObject {
 
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
-			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
+			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_rel_instance->hasField('access') && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
 				continue;
 			}
 			

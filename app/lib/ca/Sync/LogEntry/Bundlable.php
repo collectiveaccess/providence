@@ -78,10 +78,10 @@ class Bundlable extends Base {
 
 	private function applyDelete() {
 		if(!$this->getModelInstance()->getPrimaryKey()) {
-			throw new LogEntryInconsistency('operation is delete but model instance does not have a primary key.');
+			return;
 		}
 
-		$this->getModelInstance()->delete();
+		$this->getModelInstance()->delete(true);
 		$this->checkModelInstanceForErrors();
 	}
 

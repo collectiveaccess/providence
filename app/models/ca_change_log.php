@@ -237,10 +237,13 @@ class ca_change_log extends BaseModel {
 	 * @param int $pn_from
 	 * @param null|int $pn_limit
 	 * @param null|array $pa_options
+	 * @param null|array $pa_media optional array that will contain media references
 	 * @return array
 	 */
-	public static function getLog($pn_from, $pn_limit=null, $pa_options=null) {
+	public static function getLog($pn_from, $pn_limit=null, $pa_options=null, &$pa_media=null) {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
+
+		$o_dm = Datamodel::load();
 
 		if(!is_null($pn_limit)) {
 			$vs_limit_sql = "LIMIT $pn_limit";
@@ -256,7 +259,7 @@ class ca_change_log extends BaseModel {
 
 		$va_ignore_tables = [];
 		foreach($pa_ignore_tables as $vs_ignore_table) {
-			if($vn_ignore_table_num = Datamodel::load()->getTableNum($vs_ignore_table)) {
+			if($vn_ignore_table_num = $o_dm->getTableNum($vs_ignore_table)) {
 				$va_ignore_tables[] = $vn_ignore_table_num;
 			}
 		}
@@ -286,13 +289,18 @@ class ca_change_log extends BaseModel {
 			}
 			$va_row['guid'] = $vs_guid;
 
-			// don't sync inserts/updates for deleted records
-			if(ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
-				continue;
-			}
+			// don't sync inserts/updates for deleted records, UNLESS they're in a hierarchical table,
+			// in which case other records may have depended on them when they were inserted
+			// (meaning their insert() could fail if a related/parent record is absent)
+			$t_instance = $o_dm->getInstance((int) $qr_results->get('logged_table_num'), true);
+			//if(!$t_instance->isHierarchical() && ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
+			//	continue;
+			//}
 
 			// decode snapshot
 			$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));
+			
+			$va_many_to_one_rels = $o_dm->getManyToOneRelations($t_instance->tableName());
 
 			// add additional sync info to snapshot. we need to be able to properly identify
 			// attributes and elements on the far side of the sync and the primary key doesn't cut it
@@ -309,7 +317,6 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					case 'type_id':
-						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if($t_instance) {
 							if($t_instance instanceof BaseRelationshipModel) {
 								$va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val);
@@ -326,7 +333,7 @@ class ca_change_log extends BaseModel {
 					default:
 						if(
 							// don't break ca_list_items.item_id!!
-							(Datamodel::load()->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
+							($o_dm->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
 							&&
 							($vs_fld == 'item_id')
 						) {
@@ -334,7 +341,7 @@ class ca_change_log extends BaseModel {
 							$va_snapshot['item_label'] = caGetListItemForDisplayByItemID($vm_val);
 						}
 
-						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
+						$t_instance = $o_dm->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
 							// handle all other list referencing fields
 							$vs_new_fld = str_replace('_id', '', $vs_fld) . '_code';
@@ -344,24 +351,84 @@ class ca_change_log extends BaseModel {
 								$va_snapshot[$vs_new_fld] = caGetListItemIdno($vm_val);
 							}
 
-							// handle monohierarchy (usually parent_id) fields
 							if($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+								// handle monohierarchy (usually parent_id) fields
 								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
+							} elseif (isset($va_many_to_one_rels[$vs_fld]) && ($t_rel_item = $o_dm->getInstanceByTableName($va_many_to_one_rels[$vs_fld]['one_table'], true))) {
+								// handle many-one keys
+								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_rel_item->tableNum(), $vm_val);
 							}
 
 							// handle media ...
-							if($t_instance instanceof ca_object_representations) {
-								// nowadays the change log entry is an <img> tag ... the default behavior for get('media'), presumably
-								if(isset($va_snapshot['media']) && is_string($va_snapshot['media'])) {
-									$o_dom = new DOMDocument();
-									$o_dom->loadHTML($va_snapshot['media']);
-									if (isset($o_dom->getElementsByTagName('img')[0])) {
-										$va_snapshot['media'] = $o_dom->getElementsByTagName('img')[0]->getAttribute('src');
+							//if(($t_instance instanceof ca_object_representations) && isset($va_snapshot['media'])) {
+							if (($va_fld_info['FIELD_TYPE'] === FT_MEDIA)
+								||
+								(
+									($o_dm->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
+									&&
+									($vs_fld == 'value_blob')
+								)
+							) {
+
+								// we only put the URL/path if it's still the latest file. can figure that out with a simple query
+								$qr_future_entries = $o_db->query("
+										SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
+										WHERE cl.log_id = cls.log_id AND cl.log_id>?
+										AND cl.logged_row_id = ? AND cl.logged_table_num = ?
+										ORDER BY cl.log_id
+									", $va_row['log_id'], $va_row['logged_row_id'], $va_row['logged_table_num']);
+
+								$pb_is_latest = true;
+								while($qr_future_entries->nextRow()) {
+									$va_future_snap = caUnserializeForDatabase($qr_future_entries->get('snapshot'));
+									//if(isset($va_future_snap['media'])) {
+									if(isset($va_future_snap[$vs_fld])) {
+										$pb_is_latest = false;
+										break;
 									}
-								} elseif(is_array($va_snapshot['media'])) { // back in the day it would store the full media array here
-									$o_coder = MediaInfoCoder::load();
-									$va_snapshot['media'] = $o_coder->getMediaUrl($va_snapshot['media'], 'original');
 								}
+
+								if($pb_is_latest) {
+									// nowadays the change log entry is an <img> tag ... the default behavior for get('media'), presumably
+									// it usually points to a non-original version, so we have to actually load() here to get the original
+									//if(is_string($va_snapshot['media'])) {
+									if(is_string($va_snapshot[$vs_fld])) {
+										if ($va_row['logged_table_num'] == 3) {
+											$x = new ca_attribute_values($va_row['logged_row_id']);
+											$va_snapshot[$vs_fld] = $x->getMediaUrl($vs_fld, 'original');
+										} else {
+											$t_instance->load($va_row['logged_row_id']);
+											//$va_snapshot['media'] = $t_instance->getMediaUrl('media', 'original');
+											$va_snapshot[$vs_fld] = $t_instance->getMediaUrl($vs_fld, 'original');
+										}
+									//} elseif(is_array($va_snapshot['media'])) { // back in the day it would store the full media array here
+									} elseif(is_array($va_snapshot[$vs_fld])) { // back in the day it would store the full media array here
+										$o_coder = MediaInfoCoder::load();
+										//$va_snapshot['media'] = $o_coder->getMediaUrl($va_snapshot['media'], 'original');
+										$va_snapshot[$vs_fld] = $o_coder->getMediaUrl($va_snapshot[$vs_fld], 'original');
+									}
+									//ReplicationService::$s_logger->log("MEDIA ? GOT ".print_R($va_snapshot, true));
+									//ReplicationService::$s_logger->log("ROW ? GOT ".print_R($va_row, true));
+								} else { // if it's not the latest, we don't care about the media
+									//unset($va_snapshot['media']);
+									unset($va_snapshot[$vs_fld]);
+								}
+
+								// if caller wants media references, collect them here and replace
+								//if(is_array($pa_media) && isset($va_snapshot['media'])) {
+								//	$vs_md5 = md5($va_snapshot['media']);
+								//	$pa_media[$vs_md5] = $va_snapshot['media'];
+								//	$va_snapshot['media'] = $vs_md5;
+								//}
+								
+								if(is_array($pa_media) && isset($va_snapshot[$vs_fld])) {
+									$vs_md5 = md5($va_snapshot[$vs_fld]);
+									$pa_media[$vs_md5] = $va_snapshot[$vs_fld];
+									$va_snapshot[$vs_fld] = $vs_md5;
+								}
+
+								// also unset media metadata, because otherwise json_encode is likely to bail
+								unset($va_snapshot['media_metadata']);
 							}
 
 							// handle left and right foreign keys in foo_x_bar table
@@ -371,9 +438,9 @@ class ca_change_log extends BaseModel {
 									$va_snapshot[$vs_fld . '_guid'] = $vs_left_guid;
 
 									// don't sync relationships involving deleted records
-									if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
-										continue 3;
-									}
+									//if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
+									//	continue 3;
+									//}
 								}
 
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
@@ -381,9 +448,9 @@ class ca_change_log extends BaseModel {
 									$va_snapshot[$vs_fld . '_guid'] = $vs_right_guid;
 
 									// don't sync relationships involving deleted records
-									if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
-										continue 3;
-									}
+									//if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
+									//	continue 3;
+									//}
 								}
 							}
 
@@ -394,6 +461,12 @@ class ca_change_log extends BaseModel {
 									$vs_label_subject_guid_field = str_replace('_id', '', $vs_fld) . '_guid';
 									$va_snapshot[$vs_label_subject_guid_field] = ca_guids::getForRow($t_instance->getSubjectTableInstance()->tableNum(), $vm_val);
 								}
+							}
+
+							// handle 1:n foreign keys like ca_representation_annotations.representation_id
+							// @todo: don't use hardcoded field names!? -- another case would be ca_objects.lot_id
+							if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
+								$va_snapshot['representation_guid'] = ca_guids::getForRow($o_dm->getTableNum('ca_object_representations'), $vm_val);
 							}
 						}
 						break;
@@ -412,9 +485,9 @@ class ca_change_log extends BaseModel {
 				}
 
 				// handle skip if expression relative to subjects
-				$vs_subject_table_name = Datamodel::load()->getTableName($qr_subjects->get('subject_table_num'));
+				$vs_subject_table_name = $o_dm->getTableName($qr_subjects->get('subject_table_num'));
 				if(isset($pa_skip_if_expression[$vs_subject_table_name])) {
-					$t_subject_instance = Datamodel::load()->getInstance($vs_subject_table_name);
+					$t_subject_instance = $o_dm->getInstance($vs_subject_table_name);
 					$vs_exp = $pa_skip_if_expression[$vs_subject_table_name];
 					// have to load() unfortch.
 					$t_subject_instance->load($qr_subjects->get('subject_row_id'));
