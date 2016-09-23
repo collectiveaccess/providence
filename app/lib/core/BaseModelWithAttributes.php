@@ -1536,7 +1536,7 @@
 				if(!is_array($va_label)) { 
 					$va_label = array('name' => '???', 'description' => '');
 				}
-				$va_elements_by_container[$va_element['parent_id']][] = $vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, array(
+				$va_elements_by_container[$va_element['parent_id']][] = ($va_element['datatype'] == 0) ? '' : $vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, array(
 					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
 					'description' => $va_label['description'],
 					't_subject' => $this,
