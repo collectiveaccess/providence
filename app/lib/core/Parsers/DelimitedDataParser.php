@@ -94,6 +94,19 @@
 		}
 		# ----------------------------------------
 		/**
+		 * Parse a delimited data file (text or XLSX) and return parser instance
+		 *
+		 * @param string $ps_filepath Path to parsable file. [Default is null]
+		 * @param array $pa_options Options include:
+		 *		delimiter = Delimiter for text files. [Default is tab (\t)]
+		 *		textMarker = Marker used to enclose text blocks in text files. [Default is double quote (")]
+		 * @return DelimitedDataParser
+		 */
+		static public function load($ps_filepath, $pa_options=null) {
+			return new DelimitedDataParser(caGetOption('delimiter', $pa_options, "\t"), caGetOption('textMarker', $pa_options, '"'), $ps_filepath);
+		}
+		# ----------------------------------------
+		/**
 		 *
 		 */
 		public function __destruct() {
@@ -109,6 +122,18 @@
 		public function parse($ps_filepath) {
 			$this->opn_current_row = 0;
 			try {
+				$vb_valid = false;
+				$va_excel_types = ['Excel2007', 'Excel5', 'Excel2003XML'];
+				foreach ($va_excel_types as $vs_type) {
+					$o_reader = PHPExcel_IOFactory::createReader($vs_type);
+					if ($o_reader->canRead($ps_filepath)) {
+						print "CAN READ FOR $ps_filepath/$vs_type\n";
+						$vb_valid = true;
+						break;
+					}
+				}
+				
+				if(!$vb_valid) { throw new Exception("Not an Excel file"); }
 				$this->opo_excel = PHPExcel_IOFactory::load($ps_filepath);
 				$this->opo_excel->setActiveSheetIndex(0);
 				
