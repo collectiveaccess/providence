@@ -816,12 +816,14 @@ class BaseEditorController extends ActionController {
 		} else {
 			$this->view->setVar('valuesAsAttributeInstances', $va_values = $t_subject->getAttributesByElement($vs_element));
 		}
+		
+		$this->view->setVar('t_subject', $t_subject);
 
 		// Extract values into array for easier view processing
 
 		$va_extracted_values = array();
 		foreach($va_values as $o_value) {
-			$va_extracted_values[] = $o_value->getDisplayValues();
+			$va_extracted_values[] = $o_value->getDisplayValues(null, ['output' => 'text']);
 		}
 		$this->view->setVar('valuesAsElementCodeArrays', $va_extracted_values);
 

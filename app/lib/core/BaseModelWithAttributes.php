@@ -1511,9 +1511,9 @@
 			}
 			
 			foreach($va_element_set as $va_element) {
+				$va_element_info[$va_element['element_id']] = $va_element;
 				if ($va_element['datatype'] == 0) { continue; }
 
-				$va_element_info[$va_element['element_id']] = $va_element;
 				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 
