@@ -996,6 +996,44 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			);
 		}
 
+		// Hidden Field
+		$va_additional_settings = array(
+			'hidden_field_name' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 25, 'height' => 1,
+				'takesLocale' => false,
+				'required' => true,
+				'label' => _t('Field Name'),
+				'description' => _t('Name of the hidden input field. For example <em>ca_objects.type_id</em>.'),
+			),
+			'hidden_field_value' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 25, 'height' => 1,
+				'takesLocale' => false,
+				'requireValue' => true,
+				'label' => _t('Value'),
+				'description' => _t('Value of the hidden input field.')
+			)
+		);
+		$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
+		$vs_bundle = 'hidden_field';
+		$vs_display = "<div id='searchFormEditor_$vs_bundle'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t('Custom').'</span> '.($vs_label = _t('Hidden Field'))."</div>";
+		$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+			'bundle' => $vs_bundle,
+			'label' => $vs_label,
+			'display' => $vs_display,
+			'description' => $vs_description = _t('Provides a hidden search field on the search form.'),
+			'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+			'settings' => $va_additional_settings
+		);
+
+		TooltipManager::add(
+			"#searchFormEditor_$vs_bundle",
+			"<h2>{$vs_label}</h2>{$vs_description}"
+		);
+
 		ksort($va_available_bundles);
 
 		$va_sorted_bundles = array();
@@ -1145,6 +1183,22 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						'name' => $va_element['bundle_name']
 					);
 					continue(2);
+				case 'hidden_field':
+					if (!$vs_field_label) { $vs_field_label = ''; }
+					if(isset($va_element['settings']['hidden_field_name']) && isset($va_element['settings']['hidden_field_value'])){
+						$vs_name = strip_tags($va_element['settings']['hidden_field_name']);
+						$vs_value = strip_tags($va_element['settings']['hidden_field_value']);
+						$va_output[] = array(
+							'element' => caHTMLHiddenInput(
+								$vs_name, array(
+									'value' => $vs_value,
+								)
+							),
+							'label' => $vs_field_label,
+							'name' => $va_element['bundle_name']
+						);
+					}
+					continue(2);
 			}
 
 			$va_tmp = explode('.', $vs_field = $va_element['bundle_name']);
@@ -1276,6 +1330,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						$va_elements[] = $va_tmp[0].'.'.$va_tmp[1].'.'.$va_element_info['element_code'];
 					}
 				}
+			} elseif ($va_placement['bundle_name'] === 'hidden_field') {
+				$va_elements[] = $va_placement['settings']['hidden_field_name'];
 			} else {
 				$va_elements[] = $va_placement['bundle_name'];
 			}
