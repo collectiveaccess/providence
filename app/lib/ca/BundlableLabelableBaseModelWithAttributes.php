@@ -2817,8 +2817,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 
 			return $va_vals;
-		} elseif(($ps_related_table == 'ca_objects') && ($this->tableName() == 'ca_storage_locations') && (strlen($vs_mode = $pa_bundle_settings['locationTrackingMode']) > 0) && ($qr_results = $this->getLocationContents($vs_mode))) {
+		} elseif(($ps_related_table == 'ca_objects') && ($this->tableName() == 'ca_storage_locations') && (strlen($vs_mode = $pa_bundle_settings['locationTrackingMode']) > 0)) {
 			// Limit list to objects _currently_ in this location
+			if(!($qr_results = $this->getLocationContents($vs_mode))) { return []; }
 			
 			if (sizeof($va_ids = $qr_results->getAllFieldValues('ca_objects.object_id')) == 0) { return []; }
 			$qr_rel_items = caMakeSearchResult('ca_objects', $va_ids);
