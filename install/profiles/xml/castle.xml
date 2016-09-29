@@ -170,6 +170,14 @@
             </label>
           </labels>
         </item>
+        <item idno="associations" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>association</name_singular>
+              <name_plural>associations</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="movement_types" hierarchical="1" system="0" vocabulary="0">
@@ -302,6 +310,104 @@
         </item>
       </items>
     </list>
+    <list code="object_lot_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object lot types</name>
+        </label>
+        <label locale="en_CA">
+          <name>Object lot types</name>
+        </label>
+        <label locale="fr_FR">
+          <name>Types de lots d\'objets</name>
+        </label>
+        <label locale="sv_SE">
+          <name>Objekt beslutstyper</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="gift" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>gift</name_singular>
+              <name_plural>gifts</name_plural>
+            </label>
+            <label locale="en_CA" preferred="1">
+              <name_singular>gift</name_singular>
+              <name_plural>gifts</name_plural>
+            </label>
+            <label locale="fr_FR" preferred="1">
+              <name_singular>don</name_singular>
+              <name_plural>dons</name_plural>
+            </label>
+            <label locale="sv_SE" preferred="1">
+              <name_singular>gåva</name_singular>
+              <name_plural>gåvor</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="restricted_gift" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>restricted gift</name_singular>
+              <name_plural>restricted gift</name_plural>
+            </label>
+            <label locale="en_CA" preferred="1">
+              <name_singular>restricted gift</name_singular>
+              <name_plural>restricted gift</name_plural>
+            </label>
+            <label locale="fr_FR" preferred="1">
+              <name_singular>don conditionné</name_singular>
+              <name_plural>dons conditionnés</name_plural>
+            </label>
+            <label locale="sv_SE" preferred="1">
+              <name_singular>begränsad gåva</name_singular>
+              <name_plural>begränsade gåvor</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bequest" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bequest</name_singular>
+              <name_plural>bequests</name_plural>
+            </label>
+            <label locale="en_CA" preferred="1">
+              <name_singular>bequest</name_singular>
+              <name_plural>bequests</name_plural>
+            </label>
+            <label locale="fr_FR" preferred="1">
+              <name_singular>leg</name_singular>
+              <name_plural>legs</name_plural>
+            </label>
+            <label locale="sv_SE" preferred="1">
+              <name_singular>donation</name_singular>
+              <name_plural>donationer</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="purchase" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>purchase</name_singular>
+              <name_plural>purchases</name_plural>
+            </label>
+            <label locale="en_CA" preferred="1">
+              <name_singular>purchase</name_singular>
+              <name_plural>purchases</name_plural>
+            </label>
+            <label locale="fr_FR" preferred="1">
+              <name_singular>achat</name_singular>
+              <name_plural>achats</name_plural>
+            </label>
+            <label locale="sv_SE" preferred="1">
+              <name_singular>köp</name_singular>
+              <name_plural>köp</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!-- Castle Lists -->
     <list code="shape" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -343,11 +449,27 @@
             </label>
           </labels>
         </item>
-        <item idno="valueTBD" enabled="1" default="0">
+        <item idno="male" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Values TBD</name_singular>
-              <name_plural>Values TBD</name_plural>
+              <name_singular>Male</name_singular>
+              <name_plural>Male</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="female" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Female</name_singular>
+              <name_plural>Female</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
             </label>
           </labels>
         </item>
@@ -385,19 +507,19 @@
         </label>
       </labels>
       <items>
-        <item idno="null" enabled="1" default="1">
+        <item idno="found" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>found</name_singular>
+              <name_plural>found</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="valueTBD" enabled="1" default="0">
+        <item idno="missing" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Values TBD</name_singular>
-              <name_plural>Values TBD</name_plural>
+              <name_singular>missing</name_singular>
+              <name_plural>missing</name_plural>
             </label>
           </labels>
         </item>
@@ -561,315 +683,306 @@
         </item>
       </items>
     </list>
-    <list code="yn" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Yes/No</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="yes" rank="1" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Yes</name_singular>
-              <name_plural>Yes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="no" rank="2" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>No</name_singular>
-              <name_plural>No</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
-    <list code="colour" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
+    <list code="colour" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Colour</name>
         </label>
       </labels>
       <items>
-        <item idno="all_colours" rank="4" enabled="1" default="0">
+        <item idno="Beige" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>all colours</name_singular>
-              <name_plural>all colours</name_plural>
+              <name_singular>Beige</name_singular>
+              <name_plural>Beige</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="amber" enabled="1" default="0">
+        <item idno="Black" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>amber</name_singular>
-              <name_plural>amber</name_plural>
+              <name_singular>Black</name_singular>
+              <name_plural>Black</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="amethyst" enabled="1" default="0">
+        <item idno="Blue" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>amethyst</name_singular>
-              <name_plural>amethyst</name_plural>
+              <name_singular>Blue</name_singular>
+              <name_plural>Blue</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="aqua" enabled="1" default="0">
+        <item idno="Blue_dark" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>aqua</name_singular>
-              <name_plural>aqua</name_plural>
+              <name_singular>Blue, dark</name_singular>
+              <name_plural>Blue, dark</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="beige" enabled="1" default="0">
+        <item idno="Blue_light" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>beige</name_singular>
-              <name_plural>beige</name_plural>
+              <name_singular>Blue, light</name_singular>
+              <name_plural>Blue, light</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="black" enabled="1" default="0">
+        <item idno="Brass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>black</name_singular>
-              <name_plural>black</name_plural>
+              <name_singular>Brass</name_singular>
+              <name_plural>Brass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="black_amp_white" enabled="1" default="0">
+        <item idno="Brown" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>black &amp; white</name_singular>
-              <name_plural>black &amp; white</name_plural>
+              <name_singular>Brown</name_singular>
+              <name_plural>Brown</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="blue" enabled="1" default="0">
+        <item idno="Brown_dark" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>blue</name_singular>
-              <name_plural>blue</name_plural>
+              <name_singular>Brown, dark</name_singular>
+              <name_plural>Brown, dark</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="brass" enabled="1" default="0">
+        <item idno="Brown_light" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>brass</name_singular>
-              <name_plural>brass</name_plural>
+              <name_singular>Brown, light</name_singular>
+              <name_plural>Brown, light</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="brown" enabled="1" default="0">
+        <item idno="Burgundy" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>brown</name_singular>
-              <name_plural>brown</name_plural>
+              <name_singular>Burgundy</name_singular>
+              <name_plural>Burgundy</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="burgandy" enabled="1" default="0">
+        <item idno="Clear" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>burgandy</name_singular>
-              <name_plural>burgandy</name_plural>
+              <name_singular>Clear</name_singular>
+              <name_plural>Clear</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="clear" enabled="1" default="0">
+        <item idno="Copper" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>clear</name_singular>
-              <name_plural>clear</name_plural>
+              <name_singular>Copper</name_singular>
+              <name_plural>Copper</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cobalt" enabled="1" default="0">
+        <item idno="Cream" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cobalt</name_singular>
-              <name_plural>cobalt</name_plural>
+              <name_singular>Cream</name_singular>
+              <name_plural>Cream</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="copper" enabled="1" default="0">
+        <item idno="Gold" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>copper</name_singular>
-              <name_plural>copper</name_plural>
+              <name_singular>Gold</name_singular>
+              <name_plural>Gold</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="dark" rank="2" enabled="1" default="0">
+        <item idno="Green" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>dark</name_singular>
-              <name_plural>dark</name_plural>
+              <name_singular>Green</name_singular>
+              <name_plural>Green</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="flat_silver" enabled="1" default="0">
+        <item idno="Green_dark" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>flat silver</name_singular>
-              <name_plural>flat silver</name_plural>
+              <name_singular>Green, dark</name_singular>
+              <name_plural>Green, dark</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="frosted" enabled="1" default="0">
+        <item idno="Green_light" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>frosted</name_singular>
-              <name_plural>frosted</name_plural>
+              <name_singular>Green, light</name_singular>
+              <name_plural>Green, light</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="gold" enabled="1" default="0">
+        <item idno="Grey" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>gold</name_singular>
-              <name_plural>gold</name_plural>
+              <name_singular>Grey</name_singular>
+              <name_plural>Grey</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="green" enabled="1" default="0">
+        <item idno="Grey_dark" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>green</name_singular>
-              <name_plural>green</name_plural>
+              <name_singular>Grey, dark</name_singular>
+              <name_plural>Grey, dark</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="grey" enabled="1" default="0">
+        <item idno="Grey_light" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>grey</name_singular>
-              <name_plural>grey</name_plural>
+              <name_singular>Grey, light</name_singular>
+              <name_plural>Grey, light</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="light" rank="1" enabled="1" default="0">
+        <item idno="Orange" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>light</name_singular>
-              <name_plural>light</name_plural>
+              <name_singular>Orange</name_singular>
+              <name_plural>Orange</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="marble" enabled="1" default="0">
+        <item idno="Orange_dark" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>marble</name_singular>
-              <name_plural>marble</name_plural>
+              <name_singular>Orange, dark</name_singular>
+              <name_plural>Orange, dark</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="maroon" enabled="1" default="0">
+        <item idno="Orange_light" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>maroon</name_singular>
-              <name_plural>maroon</name_plural>
+              <name_singular>Orange, light</name_singular>
+              <name_plural>Orange, light</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="mid_" rank="3" enabled="1" default="0">
+        <item idno="Pink" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>mid-</name_singular>
-              <name_plural>mid-</name_plural>
+              <name_singular>Pink</name_singular>
+              <name_plural>Pink</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="natural" rank="5" enabled="1" default="0">
+        <item idno="Pink_dark" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>natural</name_singular>
-              <name_plural>natural</name_plural>
+              <name_singular>Pink, dark</name_singular>
+              <name_plural>Pink, dark</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="off_white" enabled="1" default="0">
+        <item idno="Pink_light" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>off-white</name_singular>
-              <name_plural>off-white</name_plural>
+              <name_singular>Pink, light</name_singular>
+              <name_plural>Pink, light</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="pink" enabled="1" default="0">
+        <item idno="Purple" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>pink</name_singular>
-              <name_plural>pink</name_plural>
+              <name_singular>Purple</name_singular>
+              <name_plural>Purple</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="purple" enabled="1" default="0">
+        <item idno="Purple_dark" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>purple</name_singular>
-              <name_plural>purple</name_plural>
+              <name_singular>Purple, dark</name_singular>
+              <name_plural>Purple, dark</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="red" enabled="1" default="0">
+        <item idno="Purple_light" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>red</name_singular>
-              <name_plural>red</name_plural>
+              <name_singular>Purple, light</name_singular>
+              <name_plural>Purple, light</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="sepia" enabled="1" default="0">
+        <item idno="Red" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>sepia</name_singular>
-              <name_plural>sepia</name_plural>
+              <name_singular>Red</name_singular>
+              <name_plural>Red</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="silver" enabled="1" default="0">
+        <item idno="Sepia" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>silver</name_singular>
-              <name_plural>silver</name_plural>
+              <name_singular>Sepia</name_singular>
+              <name_plural>Sepia</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="teal" enabled="1" default="0">
+        <item idno="Silver" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>teal</name_singular>
-              <name_plural>teal</name_plural>
+              <name_singular>Silver</name_singular>
+              <name_plural>Silver</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="turquoise" enabled="1" default="0">
+        <item idno="Turquoise" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>turquoise</name_singular>
-              <name_plural>turquoise</name_plural>
+              <name_singular>Turquoise</name_singular>
+              <name_plural>Turquoise</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="white" enabled="1" default="0">
+        <item idno="White" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>white</name_singular>
-              <name_plural>white</name_plural>
+              <name_singular>White</name_singular>
+              <name_plural>White</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="yellow" enabled="1" default="0">
+        <item idno="Yellow" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>yellow</name_singular>
-              <name_plural>yellow</name_plural>
+              <name_singular>Yellow</name_singular>
+              <name_plural>Yellow</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Yellow_dark" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Yellow, dark</name_singular>
+              <name_plural>Yellow, dark</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Yellow_light" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Yellow, light</name_singular>
+              <name_plural>Yellow, light</name_plural>
             </label>
           </labels>
         </item>
@@ -878,999 +991,1023 @@
     <list code="material" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Materials</name>
+          <name>Material</name>
         </label>
       </labels>
       <items>
-        <item idno="alabaster" enabled="1" default="0">
+        <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>alabaster</name_singular>
-              <name_plural>alabaster</name_plural>
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
             </label>
           </labels>
         </item>
-        <item idno="aluminium" enabled="1" default="0">
+        <item idno="Antler" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>aluminium</name_singular>
-              <name_plural>aluminium</name_plural>
+              <name_singular>Antler</name_singular>
+              <name_plural>Antler</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="animal" enabled="1" default="0">
+        <item idno="Brass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>animal</name_singular>
-              <name_plural>animal</name_plural>
+              <name_singular>Brass</name_singular>
+              <name_plural>Brass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="ash" enabled="1" default="0">
+        <item idno="Brick" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>ash</name_singular>
-              <name_plural>ash</name_plural>
+              <name_singular>Brick</name_singular>
+              <name_plural>Brick</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="Bakelite" enabled="1" default="0">
+        <item idno="Bristle" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Bakelite</name_singular>
-              <name_plural>Bakelite</name_plural>
+              <name_singular>Bristle</name_singular>
+              <name_plural>Bristle</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="bamboo" enabled="1" default="0">
+        <item idno="Bristle_boar" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>bamboo</name_singular>
-              <name_plural>bamboo</name_plural>
+              <name_singular>Bristle, boar</name_singular>
+              <name_plural>Bristle, boar</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="beads" enabled="1" default="0">
+        <item idno="Burlap" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>beads</name_singular>
-              <name_plural>beads</name_plural>
+              <name_singular>Burlap</name_singular>
+              <name_plural>Burlap</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="beech" enabled="1" default="0">
+        <item idno="Cane" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>beech</name_singular>
-              <name_plural>beech</name_plural>
+              <name_singular>Cane</name_singular>
+              <name_plural>Cane</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="beeswax" enabled="1" default="0">
+        <item idno="Ceramic" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>beeswax</name_singular>
-              <name_plural>beeswax</name_plural>
+              <name_singular>Ceramic</name_singular>
+              <name_plural>Ceramic</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="birch" enabled="1" default="0">
+        <item idno="Ceramic_earthenware" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>birch</name_singular>
-              <name_plural>birch</name_plural>
+              <name_singular>Ceramic, earthenware</name_singular>
+              <name_plural>Ceramic, earthenware</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="bird" enabled="1" default="0">
+        <item idno="Ceramic_parian_ware" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>bird</name_singular>
-              <name_plural>bird</name_plural>
+              <name_singular>Ceramic, parian ware</name_singular>
+              <name_plural>Ceramic, parian ware</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="bone" enabled="1" default="0">
+        <item idno="Ceramic_porcelain" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>bone</name_singular>
-              <name_plural>bone</name_plural>
+              <name_singular>Ceramic, porcelain</name_singular>
+              <name_plural>Ceramic, porcelain</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="boxwood" enabled="1" default="0">
+        <item idno="Down_goose" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>boxwood</name_singular>
-              <name_plural>boxwood</name_plural>
+              <name_singular>Down, goose</name_singular>
+              <name_plural>Down, goose</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="brass" enabled="1" default="0">
+        <item idno="Elastic" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>brass</name_singular>
-              <name_plural>brass</name_plural>
+              <name_singular>Elastic</name_singular>
+              <name_plural>Elastic</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="brick" enabled="1" default="0">
+        <item idno="Enamel" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>brick</name_singular>
-              <name_plural>brick</name_plural>
+              <name_singular>Enamel</name_singular>
+              <name_plural>Enamel</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="Brittannia_metal" enabled="1" default="0">
+        <item idno="Fabric_cotton" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Brittannia metal</name_singular>
-              <name_plural>Brittannia metal</name_plural>
+              <name_singular>Fabric, cotton</name_singular>
+              <name_plural>Fabric, cotton</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="brocade" enabled="1" default="0">
+        <item idno="Fabric_cotton_canvass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>brocade</name_singular>
-              <name_plural>brocade</name_plural>
+              <name_singular>Fabric, cotton, canvass</name_singular>
+              <name_plural>Fabric, cotton, canvass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cane" enabled="1" default="0">
+        <item idno="Fabric_cotton_muslin" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cane</name_singular>
-              <name_plural>cane</name_plural>
+              <name_singular>Fabric, cotton, muslin</name_singular>
+              <name_plural>Fabric, cotton, muslin</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="canvas" enabled="1" default="0">
+        <item idno="fabric_cotton_tartalan" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>canvas</name_singular>
-              <name_plural>canvas</name_plural>
+              <name_singular>Fabric, cotton, tartalan</name_singular>
+              <name_plural>Fabric, cotton, tartalan</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="carborundum" enabled="1" default="0">
+        <item idno="Fabric_damask" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>carborundum</name_singular>
-              <name_plural>carborundum</name_plural>
+              <name_singular>Fabric, damask</name_singular>
+              <name_plural>Fabric, damask</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="card" enabled="1" default="0">
+        <item idno="Fabric_cotton_denim" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>card</name_singular>
-              <name_plural>card</name_plural>
+              <name_singular>Fabric, cotton, denim</name_singular>
+              <name_plural>Fabric, cotton, denim</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="card_stock" enabled="1" default="0">
+        <item idno="Fabric_felt" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>card stock</name_singular>
-              <name_plural>card stock</name_plural>
+              <name_singular>Fabric, felt</name_singular>
+              <name_plural>Fabric, felt</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cardboard" enabled="1" default="0">
+        <item idno="Fabric_hemp" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cardboard</name_singular>
-              <name_plural>cardboard</name_plural>
+              <name_singular>Fabric, hemp</name_singular>
+              <name_plural>Fabric, hemp</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cashmere" enabled="1" default="0">
+        <item idno="Fabric_linen" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cashmere</name_singular>
-              <name_plural>cashmere</name_plural>
+              <name_singular>Fabric, linen</name_singular>
+              <name_plural>Fabric, linen</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cast_bronze" enabled="1" default="0">
+        <item idno="Fabric_net" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cast bronze</name_singular>
-              <name_plural>cast bronze</name_plural>
+              <name_singular>Fabric, net</name_singular>
+              <name_plural>Fabric, net</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cast_iron" enabled="1" default="0">
+        <item idno="Fabric_synthetic_nylon" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cast iron</name_singular>
-              <name_plural>cast iron</name_plural>
+              <name_singular>Fabric, synthetic, nylon</name_singular>
+              <name_plural>Fabric, synthetic, nylon</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cedar" enabled="1" default="0">
+        <item idno="Fabric_synthetic_polyester" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cedar</name_singular>
-              <name_plural>cedar</name_plural>
+              <name_singular>Fabric, synthetic, polyester</name_singular>
+              <name_plural>Fabric, synthetic, polyester</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="celluloid" enabled="1" default="0">
+        <item idno="Fabric_synthetic_rayon" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>celluloid</name_singular>
-              <name_plural>celluloid</name_plural>
+              <name_singular>Fabric, synthetic, rayon</name_singular>
+              <name_plural>Fabric, synthetic, rayon</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="ceramic" enabled="1" default="0">
+        <item idno="Fabric_silk" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>ceramic</name_singular>
-              <name_plural>ceramic</name_plural>
+              <name_singular>Fabric, silk</name_singular>
+              <name_plural>Fabric, silk</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cherry" enabled="1" default="0">
+        <item idno="Fabric_silk_chiffon" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cherry</name_singular>
-              <name_plural>cherry</name_plural>
+              <name_singular>Fabric, silk, chiffon</name_singular>
+              <name_plural>Fabric, silk, chiffon</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="china" enabled="1" default="0">
+        <item idno="Fabric_silk_georgette" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>china</name_singular>
-              <name_plural>china</name_plural>
+              <name_singular>Fabric, silk, georgette</name_singular>
+              <name_plural>Fabric, silk, georgette</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="chrome_plated" enabled="1" default="0">
+        <item idno="Fabric_silk_moire" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>chrome plated</name_singular>
-              <name_plural>chrome plated</name_plural>
+              <name_singular>Fabric, silk, moire</name_singular>
+              <name_plural>Fabric, silk, moire</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="clay" enabled="1" default="0">
+        <item idno="Fabric_synthetic" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>clay</name_singular>
-              <name_plural>clay</name_plural>
+              <name_singular>Fabric, synthetic</name_singular>
+              <name_plural>Fabric, synthetic</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cloth" enabled="1" default="0">
+        <item idno="Fabric_taffeta" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cloth</name_singular>
-              <name_plural>cloth</name_plural>
+              <name_singular>Fabric, taffeta</name_singular>
+              <name_plural>Fabric, taffeta</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="coal" enabled="1" default="0">
+        <item idno="Fabric_velvet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>coal</name_singular>
-              <name_plural>coal</name_plural>
+              <name_singular>Fabric, velvet</name_singular>
+              <name_plural>Fabric, velvet</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="copper" enabled="1" default="0">
+        <item idno="Fabric_wool" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>copper</name_singular>
-              <name_plural>copper</name_plural>
+              <name_singular>Fabric, wool</name_singular>
+              <name_plural>Fabric, wool</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cork" enabled="1" default="0">
+        <item idno="Feather" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cork</name_singular>
-              <name_plural>cork</name_plural>
+              <name_singular>Feather</name_singular>
+              <name_plural>Feather</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cotton" enabled="1" default="0">
+        <item idno="Feather_ostrich" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cotton</name_singular>
-              <name_plural>cotton</name_plural>
+              <name_singular>Feather, ostrich</name_singular>
+              <name_plural>Feather, ostrich</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cotton_chenille" enabled="1" default="0">
+        <item idno="Feather_peacock" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cotton chenille</name_singular>
-              <name_plural>cotton chenille</name_plural>
+              <name_singular>Feather, peacock</name_singular>
+              <name_plural>Feather, peacock</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="cotton_muslin" enabled="1" default="0">
+        <item idno="Feather_swan" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cotton muslin</name_singular>
-              <name_plural>cotton muslin</name_plural>
+              <name_singular>Feather, swan</name_singular>
+              <name_plural>Feather, swan</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="crystal" enabled="1" default="0">
+        <item idno="Felt_beaver" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>crystal</name_singular>
-              <name_plural>crystal</name_plural>
+              <name_singular>Felt, beaver</name_singular>
+              <name_plural>Felt, beaver</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="damask" enabled="1" default="0">
+        <item idno="Flower" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>damask</name_singular>
-              <name_plural>damask</name_plural>
+              <name_singular>Flower</name_singular>
+              <name_plural>Flower</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="diamonds" enabled="1" default="0">
+        <item idno="Foil" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>diamonds</name_singular>
-              <name_plural>diamonds</name_plural>
+              <name_singular>Foil</name_singular>
+              <name_plural>Foil</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="earthenware" enabled="1" default="0">
+        <item idno="Fur" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>earthenware</name_singular>
-              <name_plural>earthenware</name_plural>
+              <name_singular>Fur</name_singular>
+              <name_plural>Fur</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="ebony" enabled="1" default="0">
+        <item idno="Fur_beaver" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>ebony</name_singular>
-              <name_plural>ebony</name_plural>
+              <name_singular>Fur, beaver</name_singular>
+              <name_plural>Fur, beaver</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="eech" enabled="1" default="0">
+        <item idno="Fur_ermine" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>eech</name_singular>
-              <name_plural>eech</name_plural>
+              <name_singular>Fur, ermine</name_singular>
+              <name_plural>Fur, ermine</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="elm" enabled="1" default="0">
+        <item idno="Fur_lamp" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>elm</name_singular>
-              <name_plural>elm</name_plural>
+              <name_singular>Fur, lamp</name_singular>
+              <name_plural>Fur, lamp</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="enamel" enabled="1" default="0">
+        <item idno="Fur_rabbit" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>enamel</name_singular>
-              <name_plural>enamel</name_plural>
+              <name_singular>Fur, rabbit</name_singular>
+              <name_plural>Fur, rabbit</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="fabric" enabled="1" default="0">
+        <item idno="Fur_seal" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>fabric</name_singular>
-              <name_plural>fabric</name_plural>
+              <name_singular>Fur, seal</name_singular>
+              <name_plural>Fur, seal</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="faux_leather" enabled="1" default="0">
+        <item idno="Fur_squirrel" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>faux leather</name_singular>
-              <name_plural>faux leather</name_plural>
+              <name_singular>Fur, squirrel</name_singular>
+              <name_plural>Fur, squirrel</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="fawn_cotton" enabled="1" default="0">
+        <item idno="Gesso" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>fawn cotton</name_singular>
-              <name_plural>fawn cotton</name_plural>
+              <name_singular>Gesso</name_singular>
+              <name_plural>Gesso</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="felt" enabled="1" default="0">
+        <item idno="Glass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>felt</name_singular>
-              <name_plural>felt</name_plural>
+              <name_singular>Glass</name_singular>
+              <name_plural>Glass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="fir" enabled="1" default="0">
+        <item idno="Glass_milkglass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>fir</name_singular>
-              <name_plural>fir</name_plural>
+              <name_singular>Glass, milkglass</name_singular>
+              <name_plural>Glass, milkglass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="flora" enabled="1" default="0">
+        <item idno="Glass_slag" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>flora</name_singular>
-              <name_plural>flora</name_plural>
+              <name_singular>Glass, slag</name_singular>
+              <name_plural>Glass, slag</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="foil" enabled="1" default="0">
+        <item idno="Glaze" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>foil</name_singular>
-              <name_plural>foil</name_plural>
+              <name_singular>Glaze</name_singular>
+              <name_plural>Glaze</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="fur" enabled="1" default="0">
+        <item idno="Glue" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>fur</name_singular>
-              <name_plural>fur</name_plural>
+              <name_singular>Glue</name_singular>
+              <name_plural>Glue</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="galvanized_iron" enabled="1" default="0">
+        <item idno="Grass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>galvanized iron</name_singular>
-              <name_plural>galvanized iron</name_plural>
+              <name_singular>Grass</name_singular>
+              <name_plural>Grass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="galvanized_tin" enabled="1" default="0">
+        <item idno="Hair" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>galvanized tin</name_singular>
-              <name_plural>galvanized tin</name_plural>
+              <name_singular>Hair</name_singular>
+              <name_plural>Hair</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="georgette" enabled="1" default="0">
+        <item idno="Hair_horsehair" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>georgette</name_singular>
-              <name_plural>georgette</name_plural>
+              <name_singular>Hair, horsehair</name_singular>
+              <name_plural>Hair, horsehair</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="gesso" enabled="1" default="0">
+        <item idno="Ink" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>gesso</name_singular>
-              <name_plural>gesso</name_plural>
+              <name_singular>Ink</name_singular>
+              <name_plural>Ink</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="glass" enabled="1" default="0">
+        <item idno="Iron" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>glass</name_singular>
-              <name_plural>glass</name_plural>
+              <name_singular>Iron</name_singular>
+              <name_plural>Iron</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="glaze" enabled="1" default="0">
+        <item idno="Ivory" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>glaze</name_singular>
-              <name_plural>glaze</name_plural>
+              <name_singular>Ivory</name_singular>
+              <name_plural>Ivory</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="gold" enabled="1" default="0">
+        <item idno="Lacquer" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>gold</name_singular>
-              <name_plural>gold</name_plural>
+              <name_singular>Lacquer</name_singular>
+              <name_plural>Lacquer</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="hair" enabled="1" default="0">
+        <item idno="Leather" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>hair</name_singular>
-              <name_plural>hair</name_plural>
+              <name_singular>Leather</name_singular>
+              <name_plural>Leather</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="hemp" enabled="1" default="0">
+        <item idno="Leather_Alligator" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>hemp</name_singular>
-              <name_plural>hemp</name_plural>
+              <name_singular>Leather, Alligator</name_singular>
+              <name_plural>Leather, Alligator</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="ink" enabled="1" default="0">
+        <item idno="Leather_hide" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>ink</name_singular>
-              <name_plural>ink</name_plural>
+              <name_singular>Leather, hide</name_singular>
+              <name_plural>Leather, hide</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="iron" enabled="1" default="0">
+        <item idno="Metal" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>iron</name_singular>
-              <name_plural>iron</name_plural>
+              <name_singular>Metal</name_singular>
+              <name_plural>Metal</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="ivory" enabled="1" default="0">
+        <item idno="Metal_aluminium" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>ivory</name_singular>
-              <name_plural>ivory</name_plural>
+              <name_singular>Metal, aluminium</name_singular>
+              <name_plural>Metal, aluminium</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="jet" enabled="1" default="0">
+        <item idno="Metal_brass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>jet</name_singular>
-              <name_plural>jet</name_plural>
+              <name_singular>Metal, brass</name_singular>
+              <name_plural>Metal, brass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="lace" enabled="1" default="0">
+        <item idno="Metal_bronze" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>lace</name_singular>
-              <name_plural>lace</name_plural>
+              <name_singular>Metal, bronze</name_singular>
+              <name_plural>Metal, bronze</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="lacquer" enabled="1" default="0">
+        <item idno="Metal_chromium" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>lacquer</name_singular>
-              <name_plural>lacquer</name_plural>
+              <name_singular>Metal, chromium</name_singular>
+              <name_plural>Metal, chromium</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="lawn" enabled="1" default="0">
+        <item idno="Metal_copper" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>lawn</name_singular>
-              <name_plural>lawn</name_plural>
+              <name_singular>Metal, copper</name_singular>
+              <name_plural>Metal, copper</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="lead" enabled="1" default="0">
+        <item idno="Metal_gold" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>lead</name_singular>
-              <name_plural>lead</name_plural>
+              <name_singular>Metal, gold</name_singular>
+              <name_plural>Metal, gold</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="leather" enabled="1" default="0">
+        <item idno="Metal_lead" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>leather</name_singular>
-              <name_plural>leather</name_plural>
+              <name_singular>Metal, lead</name_singular>
+              <name_plural>Metal, lead</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="light_metal" enabled="1" default="0">
+        <item idno="Metal_nickel" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>light metal</name_singular>
-              <name_plural>light metal</name_plural>
+              <name_singular>Metal, nickel</name_singular>
+              <name_plural>Metal, nickel</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="linen" enabled="1" default="0">
+        <item idno="Metal_pewter" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>linen</name_singular>
-              <name_plural>linen</name_plural>
+              <name_singular>Metal, pewter</name_singular>
+              <name_plural>Metal, pewter</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="magnesia" enabled="1" default="0">
+        <item idno="Metal_platinum" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>magnesia</name_singular>
-              <name_plural>magnesia</name_plural>
+              <name_singular>Metal, platinum</name_singular>
+              <name_plural>Metal, platinum</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="mahogany" enabled="1" default="0">
+        <item idno="Metal_silver" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>mahogany</name_singular>
-              <name_plural>mahogany</name_plural>
+              <name_singular>Metal, silver</name_singular>
+              <name_plural>Metal, silver</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="maple" enabled="1" default="0">
+        <item idno="Metal_silver_sterling" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>maple</name_singular>
-              <name_plural>maple</name_plural>
+              <name_singular>Metal, silver, sterling</name_singular>
+              <name_plural>Metal, silver, sterling</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="metal" enabled="1" default="0">
+        <item idno="Metal_spelter" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>metal</name_singular>
-              <name_plural>metal</name_plural>
+              <name_singular>Metal, spelter</name_singular>
+              <name_plural>Metal, spelter</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="metal_alloy" enabled="1" default="0">
+        <item idno="Metal_steel" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>metal alloy</name_singular>
-              <name_plural>metal alloy</name_plural>
+              <name_singular>Metal, steel</name_singular>
+              <name_plural>Metal, steel</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="mica" enabled="1" default="0">
+        <item idno="Metal_tin" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>mica</name_singular>
-              <name_plural>mica</name_plural>
+              <name_singular>Metal, tin</name_singular>
+              <name_plural>Metal, tin</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="mirror" enabled="1" default="0">
+        <item idno="Metal_zinc" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>mirror</name_singular>
-              <name_plural>mirror</name_plural>
+              <name_singular>Metal, zinc</name_singular>
+              <name_plural>Metal, zinc</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="mother_of_pearl" enabled="1" default="0">
+        <item idno="Mineral_carborundum" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>mother of pearl</name_singular>
-              <name_plural>mother of pearl</name_plural>
+              <name_singular>Mineral, carborundum</name_singular>
+              <name_plural>Mineral, carborundum</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="muslin" enabled="1" default="0">
+        <item idno="Mineral_coal" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>muslin</name_singular>
-              <name_plural>muslin</name_plural>
+              <name_singular>Mineral, coal</name_singular>
+              <name_plural>Mineral, coal</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="netting" enabled="1" default="0">
+        <item idno="Mineral_Mica" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>netting</name_singular>
-              <name_plural>netting</name_plural>
+              <name_singular>Mineral, Mica</name_singular>
+              <name_plural>Mineral, Mica</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="nickel" enabled="1" default="0">
+        <item idno="Paint" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>nickel</name_singular>
-              <name_plural>nickel</name_plural>
+              <name_singular>Paint</name_singular>
+              <name_plural>Paint</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="nylon" enabled="1" default="0">
+        <item idno="Paint_oil" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>nylon</name_singular>
-              <name_plural>nylon</name_plural>
+              <name_singular>Paint, oil</name_singular>
+              <name_plural>Paint, oil</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="oak" enabled="1" default="0">
+        <item idno="Paint_powder" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>oak</name_singular>
-              <name_plural>oak</name_plural>
+              <name_singular>Paint, powder</name_singular>
+              <name_plural>Paint, powder</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="oil" enabled="1" default="0">
+        <item idno="Paint_watercolour" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>oil</name_singular>
-              <name_plural>oil</name_plural>
+              <name_singular>Paint, watercolour</name_singular>
+              <name_plural>Paint, watercolour</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="paint" enabled="1" default="0">
+        <item idno="Paper" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>paint</name_singular>
-              <name_plural>paint</name_plural>
+              <name_singular>Paper</name_singular>
+              <name_plural>Paper</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="paper" enabled="1" default="0">
+        <item idno="Paper_cardboard" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>paper</name_singular>
-              <name_plural>paper</name_plural>
+              <name_singular>Paper, cardboard</name_singular>
+              <name_plural>Paper, cardboard</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="papier_mache" enabled="1" default="0">
+        <item idno="Paper_cardstock" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>papier mache</name_singular>
-              <name_plural>papier mache</name_plural>
+              <name_singular>Paper, cardstock</name_singular>
+              <name_plural>Paper, cardstock</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="parian_ware" enabled="1" default="0">
+        <item idno="Paper_matboard" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>parian ware</name_singular>
-              <name_plural>parian ware</name_plural>
+              <name_singular>Paper, matboard</name_singular>
+              <name_plural>Paper, matboard</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="plaster" enabled="1" default="0">
+        <item idno="Papier_mache" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>plaster</name_singular>
-              <name_plural>plaster</name_plural>
+              <name_singular>Papier mache</name_singular>
+              <name_plural>Papier mache</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="plastic" enabled="1" default="0">
+        <item idno="Plastic" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>plastic</name_singular>
-              <name_plural>plastic</name_plural>
+              <name_singular>Plastic</name_singular>
+              <name_plural>Plastic</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="polyester" enabled="1" default="0">
+        <item idno="Plastic_bakelite" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>polyester</name_singular>
-              <name_plural>polyester</name_plural>
+              <name_singular>Plastic, bakelite</name_singular>
+              <name_plural>Plastic, bakelite</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="porcelain" enabled="1" default="0">
+        <item idno="Plastic_celluloid" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>porcelain</name_singular>
-              <name_plural>porcelain</name_plural>
+              <name_singular>Plastic, celluloid</name_singular>
+              <name_plural>Plastic, celluloid</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="pottery" enabled="1" default="0">
+        <item idno="Plastic_vinyl" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>pottery</name_singular>
-              <name_plural>pottery</name_plural>
+              <name_singular>Plastic, vinyl</name_singular>
+              <name_plural>Plastic, vinyl</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="powder" enabled="1" default="0">
+        <item idno="Powder" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>powder</name_singular>
-              <name_plural>powder</name_plural>
+              <name_singular>Powder</name_singular>
+              <name_plural>Powder</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="rayon" enabled="1" default="0">
+        <item idno="Rubber" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>rayon</name_singular>
-              <name_plural>rayon</name_plural>
+              <name_singular>Rubber</name_singular>
+              <name_plural>Rubber</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="resin" enabled="1" default="0">
+        <item idno="Sawdust" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>resin</name_singular>
-              <name_plural>resin</name_plural>
+              <name_singular>Sawdust</name_singular>
+              <name_plural>Sawdust</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="rosewood" enabled="1" default="0">
+        <item idno="Seed" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>rosewood</name_singular>
-              <name_plural>rosewood</name_plural>
+              <name_singular>Seed</name_singular>
+              <name_plural>Seed</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="rubber" enabled="1" default="0">
+        <item idno="Shell_abalone" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>rubber</name_singular>
-              <name_plural>rubber</name_plural>
+              <name_singular>Shell, abalone</name_singular>
+              <name_plural>Shell, abalone</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="satin" enabled="1" default="0">
+        <item idno="Shell_clam" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>satin</name_singular>
-              <name_plural>satin</name_plural>
+              <name_singular>Shell, clam</name_singular>
+              <name_plural>Shell, clam</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="semi_china" enabled="1" default="0">
+        <item idno="Shell_mother_of_pearl" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>semi-china</name_singular>
-              <name_plural>semi-china</name_plural>
+              <name_singular>Shell, mother of pearl</name_singular>
+              <name_plural>Shell, mother of pearl</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="semi_porcelain" enabled="1" default="0">
+        <item idno="Shell_tortoiseshell" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>semi-porcelain</name_singular>
-              <name_plural>semi-porcelain</name_plural>
+              <name_singular>Shell, tortoiseshell</name_singular>
+              <name_plural>Shell, tortoiseshell</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="shot" enabled="1" default="0">
+        <item idno="Shellac" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>shot</name_singular>
-              <name_plural>shot</name_plural>
+              <name_singular>Shellac</name_singular>
+              <name_plural>Shellac</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="silk" enabled="1" default="0">
+        <item idno="Shot" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>silk</name_singular>
-              <name_plural>silk</name_plural>
+              <name_singular>Shot</name_singular>
+              <name_plural>Shot</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="silver" enabled="1" default="0">
+        <item idno="Soap" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>silver</name_singular>
-              <name_plural>silver</name_plural>
+              <name_singular>Soap</name_singular>
+              <name_plural>Soap</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="silver_plate" enabled="1" default="0">
+        <item idno="Stone" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>silver plate</name_singular>
-              <name_plural>silver plate</name_plural>
+              <name_singular>Stone</name_singular>
+              <name_plural>Stone</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="silver_plate_over_metal" enabled="1" default="0">
+        <item idno="Stone_alabaster" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>silver plate over metal</name_singular>
-              <name_plural>silver plate over metal</name_plural>
+              <name_singular>Stone, alabaster</name_singular>
+              <name_plural>Stone, alabaster</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="soft_paste" enabled="1" default="0">
+        <item idno="Stone_amethyst" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>soft paste</name_singular>
-              <name_plural>soft paste</name_plural>
+              <name_singular>Stone, amethyst</name_singular>
+              <name_plural>Stone, amethyst</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="spelter" enabled="1" default="0">
+        <item idno="Stone_carnelian" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>spelter</name_singular>
-              <name_plural>spelter</name_plural>
+              <name_singular>Stone, carnelian</name_singular>
+              <name_plural>Stone, carnelian</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="steel" enabled="1" default="0">
+        <item idno="Stone_diamond" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>steel</name_singular>
-              <name_plural>steel</name_plural>
+              <name_singular>Stone, diamond</name_singular>
+              <name_plural>Stone, diamond</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="sterling" enabled="1" default="0">
+        <item idno="Stone_jet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>sterling</name_singular>
-              <name_plural>sterling</name_plural>
+              <name_singular>Stone, jet</name_singular>
+              <name_plural>Stone, jet</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="stoneware" enabled="1" default="0">
+        <item idno="Stone_marble" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>stoneware</name_singular>
-              <name_plural>stoneware</name_plural>
+              <name_singular>Stone, marble</name_singular>
+              <name_plural>Stone, marble</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="straw" enabled="1" default="0">
+        <item idno="Stone_olivine" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>straw</name_singular>
-              <name_plural>straw</name_plural>
+              <name_singular>Stone, olivine</name_singular>
+              <name_plural>Stone, olivine</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="string" enabled="1" default="0">
+        <item idno="Stone_onyx" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>string</name_singular>
-              <name_plural>string</name_plural>
+              <name_singular>Stone, onyx</name_singular>
+              <name_plural>Stone, onyx</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="synthetic" enabled="1" default="0">
+        <item idno="Stone_rhinestone" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>synthetic</name_singular>
-              <name_plural>synthetic</name_plural>
+              <name_singular>Stone, rhinestone</name_singular>
+              <name_plural>Stone, rhinestone</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="taffeta" enabled="1" default="0">
+        <item idno="Stone_ruby" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>taffeta</name_singular>
-              <name_plural>taffeta</name_plural>
+              <name_singular>Stone, ruby</name_singular>
+              <name_plural>Stone, ruby</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="teak" enabled="1" default="0">
+        <item idno="Stone_slate" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>teak</name_singular>
-              <name_plural>teak</name_plural>
+              <name_singular>Stone, slate</name_singular>
+              <name_plural>Stone, slate</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="tile" enabled="1" default="0">
+        <item idno="Taxidermy" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>tile</name_singular>
-              <name_plural>tile</name_plural>
+              <name_singular>Taxidermy</name_singular>
+              <name_plural>Taxidermy</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="tin" enabled="1" default="0">
+        <item idno="tea" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>tin</name_singular>
-              <name_plural>tin</name_plural>
+              <name_singular>Tea</name_singular>
+              <name_plural>Tea</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Thread" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Thread</name_singular>
+              <name_plural>Thread</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Thread_cotton" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Thread, cotton</name_singular>
+              <name_plural>Thread, cotton</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Thread_metal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Thread, metal</name_singular>
+              <name_plural>Thread, metal</name_plural>
             </label>
           </labels>
         </item>
@@ -1882,67 +2019,1152 @@
             </label>
           </labels>
         </item>
-        <item idno="tortoiseshell" enabled="1" default="0">
+        <item idno="Wax" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>tortoiseshell</name_singular>
-              <name_plural>tortoiseshell</name_plural>
+              <name_singular>Wax</name_singular>
+              <name_plural>Wax</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="vegetable_ivory" enabled="1" default="0">
+        <item idno="Wood" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>vegetable ivory</name_singular>
-              <name_plural>vegetable ivory</name_plural>
+              <name_singular>Wood</name_singular>
+              <name_plural>Wood</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="vellum" enabled="1" default="0">
+        <item idno="Wood_ash" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>vellum</name_singular>
-              <name_plural>vellum</name_plural>
+              <name_singular>Wood, ash</name_singular>
+              <name_plural>Wood, ash</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="velvet" enabled="1" default="0">
+        <item idno="Wood_bass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>velvet</name_singular>
-              <name_plural>velvet</name_plural>
+              <name_singular>Wood, bass</name_singular>
+              <name_plural>Wood, bass</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="watercolour" enabled="1" default="0">
+        <item idno="Wood_beech" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>watercolour</name_singular>
-              <name_plural>watercolour</name_plural>
+              <name_singular>Wood, beech</name_singular>
+              <name_plural>Wood, beech</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="wicker" enabled="1" default="0">
+        <item idno="Wood_birch" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>wicker</name_singular>
-              <name_plural>wicker</name_plural>
+              <name_singular>Wood, birch</name_singular>
+              <name_plural>Wood, birch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wood_bogwood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>wood, bogwood</name_singular>
+              <name_plural>wood, bogwood</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_boxwood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, boxwood</name_singular>
+              <name_plural>Wood, boxwood</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_cedar" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, cedar</name_singular>
+              <name_plural>Wood, cedar</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_cherry" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, cherry</name_singular>
+              <name_plural>Wood, cherry</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_cherry_bark" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, cherry, bark</name_singular>
+              <name_plural>Wood, cherry, bark</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_cypress" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, cypress</name_singular>
+              <name_plural>Wood, cypress</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_ebony" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, ebony</name_singular>
+              <name_plural>Wood, ebony</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_elm" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, elm</name_singular>
+              <name_plural>Wood, elm</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_fir" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, fir</name_singular>
+              <name_plural>Wood, fir</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_hickory" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, hickory</name_singular>
+              <name_plural>Wood, hickory</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_linden" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, linden</name_singular>
+              <name_plural>Wood, linden</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_mahogany" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, mahogany</name_singular>
+              <name_plural>Wood, mahogany</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_maple" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, maple</name_singular>
+              <name_plural>Wood, maple</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_oak" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, oak</name_singular>
+              <name_plural>Wood, oak</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_rosewood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, rosewood</name_singular>
+              <name_plural>Wood, rosewood</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_sandalwood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, sandalwood</name_singular>
+              <name_plural>Wood, sandalwood</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_satinwood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, satinwood</name_singular>
+              <name_plural>Wood, satinwood</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_spruce_root" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, spruce, root</name_singular>
+              <name_plural>Wood, spruce, root</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_sycamore" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, sycamore</name_singular>
+              <name_plural>Wood, sycamore</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_teak" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, teak</name_singular>
+              <name_plural>Wood, teak</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_yew" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, yew</name_singular>
+              <name_plural>Wood, yew</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wood_bamboo" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood, bamboo</name_singular>
+              <name_plural>Wood, bamboo</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Vegetable_ivory" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Vegetable ivory</name_singular>
+              <name_plural>Vegetable ivory</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="peau_soie" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fabric, silk, peau de soie</name_singular>
+              <name_plural>Fabric, silk, peau de soie</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Plaster" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Plaster</name_singular>
+              <name_plural>Plaster</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Leather_suede" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Leather, suede</name_singular>
+              <name_plural>Leather, suede</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Paper_onionskin" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paper, onionskin</name_singular>
+              <name_plural>Paper, onionskin</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="String" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>String</name_singular>
+              <name_plural>String</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Oil" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Oil</name_singular>
+              <name_plural>Oil</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Chocolate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chocolate</name_singular>
+              <name_plural>Chocolate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Fabric_lawn" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fabric, cotton, lawn</name_singular>
+              <name_plural>Fabric, cotton, lawn</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Lace" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lace</name_singular>
+              <name_plural>Lace</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wire" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wire</name_singular>
+              <name_plural>Wire</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Cork" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cork</name_singular>
+              <name_plural>Cork</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Crystal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Crystal</name_singular>
+              <name_plural>Crystal</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Pearl" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pearl</name_singular>
+              <name_plural>Pearl</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Straw" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Straw</name_singular>
+              <name_plural>Straw</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="photograph_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Photograph Type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="albumen_process" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Albumen process</name_singular>
+              <name_plural>Albumen process</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ambrotype" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ambrotype</name_singular>
+              <name_plural>Ambrotype</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cellulous" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cellulous acetate negative</name_singular>
+              <name_plural>Cellulous acetate negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Chromium_process" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chromium process</name_singular>
+              <name_plural>Chromium process</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="chromogenic_process" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chromogenic process</name_singular>
+              <name_plural>Chromogenic process</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Daguerrotype" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Daguerrotype</name_singular>
+              <name_plural>Daguerrotype</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Digital" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Digital</name_singular>
+              <name_plural>Digital</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Gelatine" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gelatine silver process</name_singular>
+              <name_plural>Gelatine silver process</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="glassplate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glassplate negative</name_singular>
+              <name_plural>Glassplate negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="print" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Print</name_singular>
+              <name_plural>Print</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="transparency" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Transparency</name_singular>
+              <name_plural>Transparency</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="support" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Support</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="canvas" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Canvas</name_singular>
+              <name_plural>Canvases</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cardboard" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cardboard</name_singular>
+              <name_plural>Cardboard</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cardstock" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cardstock</name_singular>
+              <name_plural>Cardstock</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="celluloid" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Celluloid</name_singular>
+              <name_plural>Celluloid</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fabric" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fabric</name_singular>
+              <name_plural>Fabric</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="glass" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glass</name_singular>
+              <name_plural>Glass</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Jute" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Jute</name_singular>
+              <name_plural>Jute</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Leather" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Leather</name_singular>
+              <name_plural>Leather</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="paper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paper</name_singular>
+              <name_plural>Paper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bond" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paper, Bond paper</name_singular>
+              <name_plural>Paper, Bond paper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photographic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paper, Photographic paper</name_singular>
+              <name_plural>Paper, Photographic paper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="plywood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Plywood</name_singular>
+              <name_plural>Plywood</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="silk" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Silk</name_singular>
+              <name_plural>Silk</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tin" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tin</name_singular>
+              <name_plural>Tin</name_plural>
             </label>
           </labels>
         </item>
         <item idno="wood" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>wood</name_singular>
-              <name_plural>wood</name_plural>
+              <name_singular>Wood</name_singular>
+              <name_plural>Wood</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="wool" enabled="1" default="0">
+      </items>
+    </list>
+    <list code="medium" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Medium</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>wool</name_singular>
-              <name_plural>wool</name_plural>
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="crayon" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Crayon</name_singular>
+              <name_plural>Crayon</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="embroidery" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Embroidery</name_singular>
+              <name_plural>Embroidery</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="engraved" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Engraved</name_singular>
+              <name_plural>Engraved</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gelatine" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gelatine</name_singular>
+              <name_plural>Gelatine</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ink" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ink</name_singular>
+              <name_plural>Ink</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lithograph" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lithograph</name_singular>
+              <name_plural>Lithograph</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="oil" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Oil</name_singular>
+              <name_plural>Oil</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="paint" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paint</name_singular>
+              <name_plural>Paint</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pastel" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pastel</name_singular>
+              <name_plural>Pastel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pencil" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pencil</name_singular>
+              <name_plural>Pencil</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photographic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Photographic</name_singular>
+              <name_plural>Photographic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="seaweed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Seaweed</name_singular>
+              <name_plural>Seaweed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="silkscreen" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Silkscreen</name_singular>
+              <name_plural>Silkscreen</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="watercolour" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Watercolour</name_singular>
+              <name_plural>Watercolour</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="woodblock" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Woodblock</name_singular>
+              <name_plural>Woodblock</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="technique" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Technique</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="anodize" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Anodize</name_singular>
+              <name_plural>Anodize</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="blown" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Blown</name_singular>
+              <name_plural>Blown</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bound" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bound</name_singular>
+              <name_plural>Bound</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="calligraphy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Calligraphy</name_singular>
+              <name_plural>Calligraphy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="carved" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Carved</name_singular>
+              <name_plural>Carved</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cast" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cast</name_singular>
+              <name_plural>Cast</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="crocheted" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Crocheted</name_singular>
+              <name_plural>Crocheted</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cut" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cut</name_singular>
+              <name_plural>Cut</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="electroplated" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Electroplated</name_singular>
+              <name_plural>Electroplated</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="embroidered" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Embroidered</name_singular>
+              <name_plural>Embroidered</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="enamelled" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Enamelled</name_singular>
+              <name_plural>Enamelled</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="encased" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Encased</name_singular>
+              <name_plural>Encased</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="engraved" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Engraved</name_singular>
+              <name_plural>Engraved</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="etched" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Etched</name_singular>
+              <name_plural>Etched</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="faux_finish" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Faux finished</name_singular>
+              <name_plural>Faux finished</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="flat_sawn" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Flat sawn</name_singular>
+              <name_plural>Flat sawn</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="forged" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Forged</name_singular>
+              <name_plural>Forged</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="galvanized" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Galvanized</name_singular>
+              <name_plural>Galvanized</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gilt" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gilt</name_singular>
+              <name_plural>Gilt</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="glazed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glazed</name_singular>
+              <name_plural>Glazed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hammered" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hammered</name_singular>
+              <name_plural>Hammered</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="handmade" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Handmade</name_singular>
+              <name_plural>Handmade</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hand_tinted" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hand tinted</name_singular>
+              <name_plural>Hand tinted</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hollow_cast" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hollow cast</name_singular>
+              <name_plural>Hollow cast</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="japanned" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Japanned</name_singular>
+              <name_plural>Japanned</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="knot" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Knot</name_singular>
+              <name_plural>Knot</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lacquered" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lacquered</name_singular>
+              <name_plural>Lacquered</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lithograph" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lithograph</name_singular>
+              <name_plural>Lithograph</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lost_wax" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lost wax cast</name_singular>
+              <name_plural>Lost wax cast</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="machined" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Machined</name_singular>
+              <name_plural>Machined</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="moulded" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Moulded</name_singular>
+              <name_plural>Moulded</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Olegraph" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Olegraph</name_singular>
+              <name_plural>Olegraph</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ormolu" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ormolu</name_singular>
+              <name_plural>Ormolu</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="overcast_know" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Overcast knot</name_singular>
+              <name_plural>Overcast knot</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="painted" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Painted</name_singular>
+              <name_plural>Painted</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="plated" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Plated</name_singular>
+              <name_plural>Plated</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="printed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Printed</name_singular>
+              <name_plural>Printed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="silkscreened" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Silkscreened</name_singular>
+              <name_plural>Silkscreened</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="soldered" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Soldered</name_singular>
+              <name_plural>Soldered</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stamped" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stamped</name_singular>
+              <name_plural>Stamped</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stencilled" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stencilled</name_singular>
+              <name_plural>Stencilled</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tatted" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tatted</name_singular>
+              <name_plural>Tatted</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tooled" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tooled</name_singular>
+              <name_plural>Tooled</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="upholstered" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Upholstered</name_singular>
+              <name_plural>Upholstered</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="veneered" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Veneered</name_singular>
+              <name_plural>Veneered</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="welded" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Welded</name_singular>
+              <name_plural>Welded</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="woven" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Woven</name_singular>
+              <name_plural>Woven</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wrought" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wrought</name_singular>
+              <name_plural>Wrought</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="yn" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
+      <labels>
+        <label locale="en_US">
+          <name>Yes/No</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="yes" rank="1" value="10" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Yes</name_singular>
+              <name_plural>Yes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="no" rank="2" value="20" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>No</name_singular>
+              <name_plural>No</name_plural>
             </label>
           </labels>
         </item>
@@ -1982,10 +3204,9 @@
         </restriction>
         <restriction code="r3">
           <table>ca_occurrences</table>
-          <type>event</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -2875,8 +4096,8 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">6</setting>
+        <setting name="fieldWidth">50</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -3107,10 +4328,7 @@
           <description/>
         </label>
       </labels>
-      <settings>
-        <setting name="render">checklist</setting>
-        <setting name="maxColumns">3</setting>
-      </settings>
+      <settings/>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
@@ -3149,7 +4367,7 @@
       </labels>
       <settings>
         <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">6</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -3170,7 +4388,7 @@
       </labels>
       <settings>
         <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">6</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -3204,7 +4422,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="photograph_type" datatype="Text">
+    <metadataElement code="photograph_type" datatype="List" list="photograph_type">
       <labels>
         <label locale="en_US">
           <name>Photograph Type</name>
@@ -3246,16 +4464,13 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="medium" datatype="Text">
+    <metadataElement code="medium" datatype="List" list="medium">
       <labels>
         <label locale="en_US">
           <name>Medium</name>
         </label>
       </labels>
-      <settings>
-        <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">6</setting>
-      </settings>
+      <settings/>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
@@ -3267,16 +4482,13 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="technique" datatype="Text">
+    <metadataElement code="technique" datatype="List" list="technique">
       <labels>
         <label locale="en_US">
           <name>Technique</name>
         </label>
       </labels>
-      <settings>
-        <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">6</setting>
-      </settings>
+      <settings/>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
@@ -3309,16 +4521,13 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="support" datatype="Text">
+    <metadataElement code="support" datatype="List" list="support">
       <labels>
         <label locale="en_US">
           <name>Support</name>
         </label>
       </labels>
-      <settings>
-        <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">6</setting>
-      </settings>
+      <settings/>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
@@ -3505,6 +4714,16 @@
         <setting name="lineBreakAfterNumberOfElements">1</setting>
       </settings>
       <elements>
+        <metadataElement code="appraisal_yn" datatype="List" list="yn">
+          <labels>
+            <label locale="en_US">
+              <name>Current?</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="render">yes_no_checkboxes</setting>
+          </settings>
+        </metadataElement>
         <metadataElement code="fair_market_value" datatype="Currency">
           <labels>
             <label locale="en_US">
@@ -3550,7 +4769,7 @@
             <setting name="fieldHeight">1</setting>
           </settings>
         </metadataElement>
-        <metadataElement code="insurance_number" datatype="Entities">
+        <metadataElement code="insurance_number" datatype="Text">
           <labels>
             <label locale="en_US">
               <name>Insurance Number</name>
@@ -3567,7 +4786,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3583,13 +4802,26 @@
         <setting name="lineBreakAfterNumberOfElements">1</setting>
       </settings>
       <elements>
+        <metadataElement code="inventory_yn" datatype="List" list="yn">
+          <labels>
+            <label locale="en_US">
+              <name>Current?</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="render">yes_no_checkboxes</setting>
+          </settings>
+        </metadataElement>
         <metadataElement code="inventory_list" datatype="List" list="inventory">
           <labels>
             <label locale="en_US">
               <name>Inventory</name>
             </label>
           </labels>
-          <settings/>
+          <settings>
+            <setting name="render">radio_buttons</setting>
+            <setting name="maxColumns">2</setting>
+          </settings>
         </metadataElement>
         <metadataElement code="inventory_date" datatype="DateRange">
           <labels>
@@ -3603,6 +4835,17 @@
             <setting name="useDatePicker">1</setting>
           </settings>
         </metadataElement>
+        <metadataElement code="inventory_note" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Inventory Note</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">3</setting>
+          </settings>
+        </metadataElement>
       </elements>
       <typeRestrictions>
         <restriction code="r1">
@@ -3610,6 +4853,27 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="current_inventory_status" datatype="List" list="inventory">
+      <labels>
+        <label locale="en_US">
+          <name>Current Inventory Status</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+        <setting name="maxColumns">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3634,6 +4898,7 @@
           <settings>
             <setting name="fieldWidth">100</setting>
             <setting name="fieldHeight">6</setting>
+            <setting name="usewysiwygeditor">1</setting>
           </settings>
         </metadataElement>
         <metadataElement code="condition_list" datatype="List" list="condition">
@@ -3652,7 +4917,7 @@
           </labels>
           <settings>
             <setting name="useDatePicker">1</setting>
-            <setting name="fieldWidth">70</setting>
+            <setting name="fieldWidth">50</setting>
             <setting name="fieldHeight">1</setting>
           </settings>
         </metadataElement>
@@ -3675,7 +4940,7 @@
           </labels>
           <settings>
             <setting name="useDatePicker">1</setting>
-            <setting name="fieldWidth">70</setting>
+            <setting name="fieldWidth">50</setting>
             <setting name="fieldHeight">1</setting>
           </settings>
         </metadataElement>
@@ -3699,6 +4964,18 @@
           <settings>
             <setting name="fieldWidth">100</setting>
             <setting name="fieldHeight">6</setting>
+            <setting name="usewysiwygeditor">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="conservation_upload" datatype="Media">
+          <labels>
+            <label locale="en_US">
+              <name>Conservation Media</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">50</setting>
+            <setting name="fieldHeight">1</setting>
           </settings>
         </metadataElement>
       </elements>
@@ -3707,7 +4984,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3779,17 +5056,6 @@
           </labels>
           <settings/>
         </metadataElement>
-        <metadataElement code="admin_source" datatype="Entities">
-          <labels>
-            <label locale="en_US">
-              <name>Source Name</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">70</setting>
-            <setting name="fieldHeight">1</setting>
-          </settings>
-        </metadataElement>
       </elements>
       <typeRestrictions>
         <restriction code="r1">
@@ -3815,6 +5081,49 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="country_origin" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Country of Origin</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="title" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Artwork Title</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>artwork</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -4065,14 +5374,14 @@
       </labels>
       <settings/>
       <typeRestrictions>
-      <restriction code="r1">
-        <table>ca_movements</table>
-        <settings>
-          <setting name="minAttributesPerRow">0</setting>
-          <setting name="maxAttributesPerRow">1</setting>
-          <setting name="minimumAttributeBundlesToDisplay">1</setting>
-        </settings>
-      </restriction>
+        <restriction code="r1">
+          <table>ca_movements</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="condition_record_date" datatype="DateRange">
@@ -4150,16 +5459,84 @@
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">6</setting>
       </settings>
-    <typeRestrictions>
-      <restriction code="r1">
-        <table>ca_movements</table>
-        <settings>
-          <setting name="minAttributesPerRow">0</setting>
-          <setting name="maxAttributesPerRow">1</setting>
-          <setting name="minimumAttributeBundlesToDisplay">1</setting>
-        </settings>
-      </restriction>
-    </typeRestrictions>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_movements</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <!-- Loan Elements -->
+    <metadataElement code="loan_period" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Loan Period</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="authorization_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Loan Authorization Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <!-- Object Lot Elements -->
+    <metadataElement code="accession_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Accession Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
     </metadataElement>
   </elementSets>
   <userInterfaces>
@@ -4219,7 +5596,10 @@
             <placement code="ca_attribute_use_history">
               <bundle>ca_attribute_use_history</bundle>
             </placement>
-             <placement code="ca_attribute_date">
+            <placement code="ca_attribute_country_origin">
+              <bundle>ca_attribute_country_origin</bundle>
+            </placement>
+            <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
             </placement>
              <placement code="ca_attribute_quantity">
@@ -4240,23 +5620,20 @@
              <placement code="ca_attribute_gender">
               <bundle>ca_attribute_gender</bundle>
             </placement>
-             <placement code="ca_attribute_culture">
-              <bundle>ca_attribute_culture</bundle>
-            </placement>
-             <placement code="ca_attribute_discipline">
-              <bundle>ca_attribute_discipline</bundle>
-            </placement>
              <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
-            </placement>
-             <placement code="ca_attribute_inscription">
-              <bundle>ca_attribute_inscription</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
               <settings>
                 <setting name="label" locale="en_US">Website Access</setting>
               </settings>
+            </placement>
+             <placement code="ca_attribute_culture">
+              <bundle>ca_attribute_culture</bundle>
+            </placement>
+             <placement code="ca_attribute_discipline">
+              <bundle>ca_attribute_discipline</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -4278,6 +5655,9 @@
                <setting name="restrict_to_relationship_types">photographer</setting>
               </settings>
              </placement>
+            <placement code="ca_attribute_title">
+              <bundle>ca_attribute_title</bundle>
+            </placement>
             <placement code="ca_attribute_photograph_type">
               <bundle>ca_attribute_photograph_type</bundle>
             </placement>
@@ -4374,6 +5754,9 @@
             <placement code="ca_attribute_series_place">
               <bundle>ca_attribute_series_place</bundle>
             </placement>
+             <placement code="ca_attribute_inscription">
+              <bundle>ca_attribute_inscription</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
@@ -4398,13 +5781,31 @@
             </label>
           </labels>
           <bundlePlacements>
-             <placement code="ca_attribute_inventory">
+             <placement code="ca_attribute_current_inventory_status">
+              <bundle>ca_attribute_current_inventory_status</bundle>
+            </placement> 
+            <placement code="ca_attribute_inventory">
               <bundle>ca_attribute_inventory</bundle>
+            </placement> 
+            <placement code="ca_lots">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Accession</setting>
+                <setting name="add_label" locale="en_US">add accession</setting>
+              </settings>
             </placement>
-          <placement code="ca_storage_locations">
+            <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
                <settings>
                 <setting name="label" locale="en_US">Related Storage Locations</setting>
+                 <setting name="display_template"><![CDATA[<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➔_</l>]]></setting>
+              </settings>
+             </placement>
+            <placement code="ca_loans">
+              <bundle>ca_loans</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related  Loans</setting>
+                <setting name="add_label" locale="en_US">Add loans</setting>
               </settings>
              </placement>
             <placement code="ca_objects_history">
@@ -4413,23 +5814,8 @@
                  <setting name="hide_add_to_loan_controls">1</setting>
                  <setting name="hide_update_location_controls">1</setting>
                  <setting name="label" locale="en_US">Object Location History</setting>
-                 <setting name="ca_loans_showTypes">loan</setting>
-                 <setting name="ca_loans_loan_color">F0EFB1</setting>
-                 <setting name="ca_loans_loan_dateElement">loan_period</setting>
-                 <setting name="ca_loans_loan_displayTemplate"><![CDATA[<l>^ca_loans.preferred_labels</l><br>
-                   Borrower: <unit relativeTo="ca_loans">
-                   <unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower">^ca_entities.preferred_labels</unit></unit><br>
-                    Loan Dates: ^ca_loans.loan_period<br>
-                    ^ca_loans.loan_note
-                    ]]></setting>
-                 <setting name="ca_storage_locations_dateElement">effective_date</setting>
-                 <setting name="ca_storage_locations_color">C8C8CC</setting>
-                 <setting name="ca_storage_locations_displayTemplate"><![CDATA[<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➔_</l>]]></setting>
-                 <setting name="ca_storage_locations_showRelationshipTypes">related</setting>
-                 <setting name="deaccession_color">FF123D</setting>
-                 <setting name="showDeaccessionInformation">1</setting>
-                 <setting name="deaccession_displayTemplate"><![CDATA[Deaccessioned <ifdef code="ca_objects.deaccession_date">on</ifdef> ^ca_objects.deaccession_date <ifdef code="ca_objects.deaccession_type_id">(</ifdef>^ca_objects.deaccession_type_id<ifdef code="ca_objects.deaccession_type_id">)</ifdef>]]></setting>
-              </settings>
+                 <setting name="useAppConfDefaults">1</setting>
+               </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -4442,6 +5828,10 @@
           <bundlePlacements>
              <placement code="ca_attribute_appraisal">
               <bundle>ca_attribute_appraisal</bundle>
+               <settings>
+                 <setting name="sort">appraisal_date</setting>
+                 <setting name="sortDirection">DESC</setting>
+               </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -4454,6 +5844,9 @@
           <bundlePlacements>
              <placement code="ca_attribute_condition">
               <bundle>ca_attribute_condition</bundle>
+               <settings>
+                 <setting name="add_label" locale="en_US">Add Condition Information</setting>
+               </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -4467,6 +5860,13 @@
              <placement code="ca_attribute_administration">
               <bundle>ca_attribute_administration</bundle>
             </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+             <settings>
+                <setting name="label" locale="en_US">Source Name</setting>
+               <setting name="restrict_to_relationship_types">source_name</setting>
+              </settings>
+             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="relationships" default="0">
@@ -4476,22 +5876,17 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_items">
+            <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
               </settings>
             </placement>
            <placement code="ca_entities">
               <bundle>ca_entities</bundle>
              <settings>
                 <setting name="label" locale="en_US">Related Entities</setting>
-              </settings>
-             </placement>
-             <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Storage Locations</setting>
               </settings>
              </placement>
             <placement code="ca_lots">
@@ -4501,13 +5896,6 @@
                 <setting name="add_label" locale="en_US">add accession</setting>
               </settings>
             </placement>
-            <placement code="ca_loans">
-              <bundle>ca_loans</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Related Archival Loans</setting>
-                <setting name="add_label" locale="en_US">Add loans</setting>
-              </settings>
-             </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -4608,6 +5996,7 @@
               <bundle>ca_objects</bundle>
                <settings>
                 <setting name="label" locale="en_US">Related Objects</setting>
+                 <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
               </settings>
             </placement>
             <placement code="ca_entities">
@@ -4702,6 +6091,7 @@
               <bundle>ca_objects</bundle>
                <settings>
                 <setting name="label" locale="en_US">Related Objects</setting>
+                 <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
               </settings>
             </placement>
             <placement code="ca_entities">
@@ -4733,12 +6123,15 @@
         </label>
       </labels>
       <screens>
-        <screen idno="basic" default="1">
+        <screen idno="basic_publication" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic info</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="publications" type="publications"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -4789,6 +6182,45 @@
             </placement>
           </bundlePlacements>
         </screen>
+        <screen idno="basic_associations" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="associations" type="associations"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Association Identifier</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Association Name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Website Access</setting>
+              </settings>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Cataloging Status</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
         <screen idno="relationships" default="0">
           <labels>
             <label locale="en_US">
@@ -4798,26 +6230,15 @@
           <bundlePlacements>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
-               <settings>
+              <settings>
                 <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
               </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
                <settings>
                 <setting name="label" locale="en_US">Related Entities</setting>
-              </settings>
-            </placement>
-            <placement code="ca_occurrences">
-              <bundle>ca_occurrences</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Publications</setting>
-              </settings>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Places</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -4979,6 +6400,110 @@
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="loan_cataloguers_ui" type="ca_loans">
+      <labels>
+        <label locale="en_US">
+          <name>Loan editor</name>
+        </label>
+        <label locale="en_CA">
+          <name>Loan editor</name>
+        </label>
+        <label locale="fr_FR">
+          <name>Editeur de prêt</name>
+        </label>
+        <label locale="sv_SE">
+          <name>Lån redigerare</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+            <label locale="en_CA">
+              <name>Basic info</name>
+            </label>
+            <label locale="fr_FR">
+              <name>Informations basiques</name>
+            </label>
+            <label locale="sv_SE">
+              <name>Grundläggande info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Short description of loan</setting>
+                <setting name="label" locale="en_CA">Short description of loan</setting>
+                <setting name="label" locale="fr_FR">Rapide description du prêt</setting>
+                <setting name="label" locale="sv_SE">Kort beskrivning av lån</setting>
+                <setting name="add_label" locale="en_US">Add short description</setting>
+                <setting name="add_label" locale="en_CA">Add short description</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter une courte description</setting>
+                <setting name="add_label" locale="sv_SE">Lägg till kort beskrivning</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_attribute_authorization_date">
+              <bundle>ca_attribute_authorization_date</bundle>
+            </placement>
+            <placement code="ca_attribute_loan_period">
+              <bundle>ca_attribute_loan_period</bundle>
+            </placement>
+            <placement code="ca_attribute_loan_renewal_date">
+              <bundle>ca_attribute_loan_renewal_date</bundle>
+            </placement>
+            <placement code="ca_attribute_loan_conditions">
+              <bundle>ca_attribute_loan_conditions</bundle>
+            </placement>
+            <placement code="ca_attribute_loan_note">
+              <bundle>ca_attribute_loan_note</bundle>
+            </placement>
+            <placement code="ca_attribute_loan_purpose">
+              <bundle>ca_attribute_loan_purpose</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+            <label locale="en_CA">
+              <name>Relationships</name>
+            </label>
+            <label locale="fr_FR">
+              <name>Relations</name>
+            </label>
+            <label locale="sv_SE">
+              <name>Relationer</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_movements">
+              <bundle>ca_movements</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
     <userInterface code="standard_collection_ui" type="ca_collections">
       <labels>
         <label locale="en_US">
@@ -5055,6 +6580,10 @@
           <bundlePlacements>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
+              </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -5156,6 +6685,10 @@
           <bundlePlacements>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -5202,6 +6735,9 @@
             </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_attribute_accession_date">
+              <bundle>ca_attribute_accession_date</bundle>
             </placement>
             <placement code="extent">
               <bundle>extent</bundle>
@@ -5250,6 +6786,10 @@
           <bundlePlacements>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.idno (^ca_objects.preferred_labels)</l>]]></setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -5480,7 +7020,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="borrower" default="1">
           <labels>
@@ -5490,7 +7030,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="authorizer" default="1">
           <labels>
@@ -5500,7 +7040,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5551,6 +7091,16 @@
             <label locale="en_US">
               <typename>publisher</typename>
               <typename_reverse>publisher</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="source_name" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>source name</typename>
+              <typename_reverse>source name</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -6330,11 +7880,132 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
   </relationshipTypes>
+  <displays>
+    <display code="missing_inventory" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Object - Location with Inventory Date</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Accession Number</setting>
+          </settings>
+        </placement>  
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Object Name</setting>
+          </settings>
+        </placement>
+        <placement code="description">
+          <bundle>ca_objects.description</bundle>
+        </placement>
+        <placement code="inventory">
+          <bundle>ca_objects.inventory</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.inventory"><if rule="^ca_objects.inventory.inventory_yn =~ /Yes/">
+^ca_objects.inventory.inventory_list: ^ca_objects.inventory.inventory_date (^ca_objects.inventory.inventory_note)</if></unit>]]></setting>
+            <setting name="delimiter"><![CDATA[<br>]]></setting>
+          </settings>
+        </placement>  
+        <placement code="location">
+          <bundle>ca_objects.ca_objects_location</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Current Location</setting>
+          </settings>
+        </placement>     
+      </bundlePlacements>
+    </display>
+    <display code="object_fmv" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Object - Fair Market Value</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+             <setting name="label" locale="en_US">Accession Number</setting>
+          </settings>
+        </placement>  
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Object Name</setting>
+          </settings>
+        </placement>
+        <placement code="appraisal">
+          <bundle>ca_objects.appraisal</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.appraisal"><if rule="^ca_objects.appraisal.appraisal_yn =~ /Yes/">
+^ca_objects.appraisal.appraisal_date: ^ca_objects.appraisal.fair_market_value (^ca_objects.appraisal.appraisal_remarks)</unit>]]></setting>
+            <setting name="delimiter"><![CDATA[<br>]]></setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="object_valuation" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Object - Valuation</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Accession Number</setting>
+          </settings>
+        </placement>  
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Object Name</setting>
+          </settings>
+        </placement>
+        <placement code="appraisal">
+          <bundle>ca_objects.appraisal</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.appraisal"><if rule="^ca_objects.appraisal.appraisal_yn =~ /Yes/">
+^ca_objects.appraisal.appraisal_date: ^ca_objects.appraisal.fair_market_value (^ca_objects.appraisal.appraisal_remarks)</unit>]]></setting>
+            <setting name="delimiter"><![CDATA[<br>]]></setting>
+          </settings>
+        </placement>      
+      </bundlePlacements>
+    </display>
+  </displays>
+  <searchForms>
+    <searchForm code="ca_objects_inventory" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Inventory search</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="form_width">3</setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_object_labels.name</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="inventory">
+          <bundle>ca_objects.inventory</bundle>
+        </placement>
+      </bundlePlacements>
+    </searchForm>
+  </searchForms>
   <logins>
     <login user_name="admin" password="princess" fname="CollectiveAccess" lname="Administrator"
       email="info@collectiveaccess.org">

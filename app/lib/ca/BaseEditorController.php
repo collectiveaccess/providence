@@ -388,7 +388,7 @@ class BaseEditorController extends ActionController {
 				do {
 					$va_pop = array_pop($va_save_and_return);
 				} while (
-					sizeof($va_save_and_return)>0 && // only keep going if there are more saved locations
+					(sizeof($va_save_and_return)>0) && // only keep going if there are more saved locations
 					(
 						!$va_pop['key'] || // keep going if key is empty (i.e. it was a "create new record" screen)
 						(($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id)) // keep going if the record is the current one
@@ -416,9 +416,8 @@ class BaseEditorController extends ActionController {
 				'table' => $t_subject->tableName(),
 				'key' => $vn_subject_id,
 				// dont't direct back to Save action
-				'url_path' => str_replace('/Save/', '/Edit/', $this->getRequest()->getFullUrlPath()).$vn_subject_id
+				'url_path' => str_replace('/Save/', '/Edit/', $this->getRequest()->getFullUrlPath())
 			);
-
 			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
 		}
 
@@ -817,12 +816,14 @@ class BaseEditorController extends ActionController {
 		} else {
 			$this->view->setVar('valuesAsAttributeInstances', $va_values = $t_subject->getAttributesByElement($vs_element));
 		}
+		
+		$this->view->setVar('t_subject', $t_subject);
 
 		// Extract values into array for easier view processing
 
 		$va_extracted_values = array();
 		foreach($va_values as $o_value) {
-			$va_extracted_values[] = $o_value->getDisplayValues();
+			$va_extracted_values[] = $o_value->getDisplayValues(null, ['output' => 'text']);
 		}
 		$this->view->setVar('valuesAsElementCodeArrays', $va_extracted_values);
 
