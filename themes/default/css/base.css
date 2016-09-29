@@ -1770,7 +1770,6 @@ table.listtable tbody td {
     padding: 4px;
     background-color: #FFF;
     vertical-align: middle;
-    width:42px;
 }
 table.listtable tbody td.listtableEditDelete {
 	width:55px;
