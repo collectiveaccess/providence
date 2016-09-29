@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,7 +87,7 @@ var caUI = caUI || {};
 						
 			// set up add/delete triggers on check/uncheck of boxes
 			jQuery(container + ' input[type=checkbox]').click(function(e) {
-				var boundsViolation = !that.checkMaxMin();
+				var boundsViolation = !that.checkMaxMin(e);
 				
 				if (boundsViolation) {
 					jQuery(this).prop('checked', !jQuery(this).prop('checked'));
@@ -145,9 +145,14 @@ var caUI = caUI || {};
 			return this;
 		};
 		
-		that.checkMaxMin = function() {
+		that.checkMaxMin = function(e) {
+			var numTotal = jQuery(that.container + ' input').length;
 			var numChecked = jQuery(that.container + ' input:checked').length;
 			if ((numChecked < that.minRepeats) || (numChecked > that.maxRepeats)) {
+				if ((that.maxRepeats == 1) && e) {
+					jQuery(that.container + ' input').not(e.target).attr("checked", false);
+					return true;
+				}
 				return false;
 			}
 			return true;
