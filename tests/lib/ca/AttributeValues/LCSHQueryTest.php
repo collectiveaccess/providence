@@ -33,7 +33,7 @@ require_once(__CA_LIB_DIR__."/ca/Attributes/Values/GeocodeAttributeValue.php");
 
 class LCSHQueryTest extends PHPUnit_Framework_TestCase {
 
-// 	public function testBasicQuery() {
+ 	public function testBasicQuery() {
 // 		$vs_voc_query = '&q='.rawurlencode('cs:http://id.loc.gov/authorities/subjects');
 // 		$vs_url = 'http://id.loc.gov/search/?q='.urlencode('"bowl"').$vs_voc_query.'&format=atom&count=150';
 // 
@@ -48,6 +48,6 @@ class LCSHQueryTest extends PHPUnit_Framework_TestCase {
 // 		$o_entries = $o_xml->{'entry'};
 // 		$this->assertTrue($o_entries instanceof SimpleXMLElement);
 // 		$this->assertGreaterThan(65, sizeof($o_entries)); // there were 67 on 11/4/2015
-// 	}
+ 	}
 
 }
