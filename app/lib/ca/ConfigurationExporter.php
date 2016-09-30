@@ -220,6 +220,7 @@ final class ConfigurationExporter {
 			// skip excluded lists (in diff exports only)
 			if($this->opn_modified_after && is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0)) {
 				if(in_array($qr_lists->get('list_code'), $va_exclude_lists)) {
+					$this->printStatus(_t("Skipping list %1 as it's in 'configuration_export_exclude_lists' in app.conf", $qr_lists->get('list_code')));
 					continue;
 				}
 			}
@@ -267,7 +268,7 @@ final class ConfigurationExporter {
 					continue;
 				}
 
-				$this->printStatus(_t("Exporting changes for list %1", $qr_lists->get("list_code")));
+				$this->printStatus(_t("List %1 (or items in that list) seem(s) to have changed or has been added. We're appending it to the export now.", $qr_lists->get("list_code")));
 			}
 
 			if($vo_items) {
@@ -283,6 +284,7 @@ final class ConfigurationExporter {
 	private function getListItemsAsDOM($pn_parent_id, $pn_list_id) {
 		$qr_items = $this->opo_db->query("SELECT * FROM ca_list_items WHERE parent_id=? AND deleted=0",$pn_parent_id);
 		$t_list_item = new ca_list_items();
+		$t_list = new ca_lists($pn_list_id);
 
 		if(!($qr_items->numRows()>0)) {
 			return false;
@@ -295,6 +297,8 @@ final class ConfigurationExporter {
 			is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_list_item->tableNum(), 'idno', array('list_id' => $pn_list_id)))
 		) {
 			foreach($va_deleted as $vs_deleted_idno) {
+				$this->printStatus(_t("Exporting deleted list item %1 for list %2.", $vs_deleted_idno, $t_list->get('list_code')));
+
 				$vo_item = $this->opo_dom->createElement("item");
 				$vo_items->appendChild($vo_item);
 				$vo_item->setAttribute("idno", $vs_deleted_idno);
@@ -346,6 +350,8 @@ final class ConfigurationExporter {
 				if($t_list_item->getLastChangeTimestampAsInt($qr_items->get('item_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("List item %1 for list %2 seems to have changed or has been added. Exporting it now.", $qr_items->get('idno'), $t_list->get('list_code')));
 			}
 
 			$vo_items->appendChild($vo_item);
@@ -716,7 +722,7 @@ final class ConfigurationExporter {
 				$vo_ui->setAttribute("code", $vs_deleted_idno);
 				$vo_ui->setAttribute("deleted", 1);
 
-				$this->printStatus(_t("Exporting deleted editor %1", $vs_deleted_idno));
+				$this->printStatus(_t("Exporting deleted editor UI %1", $vs_deleted_idno));
 			}
 		}
 
@@ -820,6 +826,8 @@ final class ConfigurationExporter {
 					$vo_screens->appendChild($vo_screen);
 					$vo_screen->setAttribute("idno", $vs_deleted_idno);
 					$vo_screen->setAttribute("deleted", 1);
+
+					$this->printStatus(_t("Exporting deleted editor UI screen %1", $vs_deleted_idno));
 				}
 			}
 
@@ -831,6 +839,8 @@ final class ConfigurationExporter {
 					if($t_screen->getLastChangeTimestampAsInt($qr_screens->get('screen_id')) < $this->opn_modified_after) {
 						continue;
 					}
+
+					$this->printStatus(_t("UI screen %1 in editor %2 seems to have changed. Exporting it now.", $qr_screens->get('idno'), $vs_code));
 				}
 
 				$vo_screen = $this->opo_dom->createElement("screen");
@@ -970,7 +980,7 @@ final class ConfigurationExporter {
 					continue;
 				}
 
-				$this->printStatus(_t("Exporting changes for editor %1", $qr_uis->get("editor_code")));
+				$this->printStatus(_t("Editor %1 seems to have changed. Exporting it now.", $qr_uis->get("editor_code")));
 			}
 
 			$vo_ui->appendChild($vo_screens);
@@ -988,7 +998,7 @@ final class ConfigurationExporter {
 
 		while($qr_tables->nextRow()) {
 			$vo_table = $this->opo_dom->createElement("relationshipTable");
-			$vo_table->setAttribute("name", $this->opo_dm->getTableName($qr_tables->get("table_num")));
+			$vo_table->setAttribute("name", $vs_table_name = $this->opo_dm->getTableName($qr_tables->get("table_num")));
 
 			$qr_root = $this->opo_db->query("
 				SELECT type_id FROM ca_relationship_types
@@ -1003,6 +1013,8 @@ final class ConfigurationExporter {
 						continue;
 					}
 
+					$this->printStatus(_t("A relationship type changed or was added for table %2. Exporting that table now.", $vs_table_name));
+
 					$vo_table->appendChild($vo_types);
 					$vo_rel_types->appendChild($vo_table);
 				}
@@ -1014,6 +1026,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private function getRelationshipTypesForParentAsDOM($pn_parent_id, $pn_table_num) {
 		$t_list = new ca_lists();
+		$ps_table_name = $this->opo_dm->getTableName($pn_table_num);
 
 		$vo_types = $this->opo_dom->createElement("types");
 		$t_rel_types = new ca_relationship_types();
@@ -1027,7 +1040,7 @@ final class ConfigurationExporter {
 				$vo_type->setAttribute("code", $vs_deleted_idno);
 				$vo_type->setAttribute("deleted", 1);
 
-				$this->printStatus(_t("Exporting deleted relationship type %1", $vs_deleted_idno));
+				$this->printStatus(_t("Exporting deleted relationship type %1 for relationship table %2", $vs_deleted_idno, $ps_table_name));
 			}
 		}
 
@@ -1042,7 +1055,7 @@ final class ConfigurationExporter {
 					continue;
 				}
 
-				$this->printStatus(_t("Exporting changes for relationship type %1", $qr_types->get("type_code")));
+				$this->printStatus(_t("Exporting changes for relationship type %1 and table %2", $qr_types->get("type_code"), $ps_table_name));
 			}
 
 			if(preg_match("/root\_for\_[0-9]{1,3}/",$qr_types->get("type_code"))) { // ignore legacy root records
@@ -1121,7 +1134,7 @@ final class ConfigurationExporter {
 				$vo_role->setAttribute("code", $vs_deleted_idno);
 				$vo_role->setAttribute("deleted", 1);
 
-				$this->printStatus(_t("Exporting deleted role %1", $vs_deleted_idno));
+				$this->printStatus(_t("Exporting deleted user role %1", $vs_deleted_idno));
 			}
 		}
 
@@ -1133,7 +1146,7 @@ final class ConfigurationExporter {
 					continue;
 				}
 
-				$this->printStatus(_t("Exporting changes for role %1", $qr_roles->get("code")));
+				$this->printStatus(_t("Exporting changes for user role %1", $qr_roles->get("code")));
 			}
 
 			$t_role->load($qr_roles->get("role_id"));
@@ -1229,7 +1242,7 @@ final class ConfigurationExporter {
 					continue;
 				}
 
-				$this->printStatus(_t("Exporting changes for group %1", $qr_groups->get("code")));
+				$this->printStatus(_t("Exporting changes for user group %1", $qr_groups->get("code")));
 			}
 
 			$t_group->load($qr_groups->get("group_id"));

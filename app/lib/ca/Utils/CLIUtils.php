@@ -3081,6 +3081,17 @@
 
 				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Configuration fragment for target '%1' is \n %2", $vs_target, $vs_config)); }
 
+				// you sure you want to import?
+				if(!(bool)$po_opts->getOption('yes')) {
+					print CLIUtils::textWithColor("Are you sure you want to push the configuration changes to target %1? Changes cannot be undone. You should create a backup of the target database before you proceed. [y/N]" . PHP_EOL,"green");
+					$vs_confirm = trim(strtolower(fgets(STDIN)));
+
+					if ($vs_confirm !== 'y') {
+						print CLIUtils::textWithColor(_t("Okay, skipping target %1 ..." . PHP_EOL, 'green'), 'green');
+						continue;
+					}
+				}
+
 				$vo_handle = curl_init($vs_target);
 				curl_setopt($vo_handle, CURLOPT_CUSTOMREQUEST, 'PUT');
 				curl_setopt($vo_handle, CURLOPT_RETURNTRANSFER, true);
@@ -3143,6 +3154,7 @@
 				"timestamp|s=s" => _t('Timestamp to use to filter the configuration changes that should be exported/pushed. Optional. The timestamp is only used for the very first push to that system. After that the master system will store the last push timestamp and use that instead. This parameter is a fixed offset/"starting point" of sorts.'),
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+				"yes|y" => _t("Skip interactive confirmation prompts")
 
 				// @todo some params that control excluding/including specific stuff?
 			];
