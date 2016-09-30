@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -149,7 +149,7 @@ class ca_sets_x_user_groups extends BaseRelationshipModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			'set_id', 'group_id'
 		),
 		"RELATED_TABLES" => array(
 		

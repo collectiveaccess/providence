@@ -99,7 +99,8 @@ class IIIFService {
 						$t_media->load(['value_id' => $pn_id, 'resource_path' => $pn_page]);
 						$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
 						$vs_fldname = 'media';
-					} else {
+					} 
+					if (!$t_media || !$t_media->getPrimaryKey()) {
 						$t_media = new ca_attribute_values($pn_id);
 						$t_media->useBlobAsMediaField(true);
 						$vs_fldname = 'value_blob';
@@ -132,7 +133,8 @@ class IIIFService {
 					if ($pn_page) {
 						$t_media = new ca_object_representation_multifiles();
 						$t_media->load(['representation_id' => $pn_id, 'resource_path' => $pn_page]);
-					} else {
+					}
+					if (!$t_media || !$t_media->getPrimaryKey()) {
 						$t_media = new ca_object_representations($pn_id);
 					}
 					$vs_fldname = 'media';

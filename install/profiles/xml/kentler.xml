@@ -1032,7 +1032,7 @@
             </label>
           </labels>
         </item>
-        <item idno="International" rank="7" enabled="1" default="0">
+        <item idno="Deceased" rank="7" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Deceased Artist</name_singular>
@@ -4202,18 +4202,8 @@
     </display>
   </displays>
   <logins>
-    <login user_name="admin" password="drawing" fname="CollectiveAccess" lname="Administrator"
+    <login user_name="admin" password="changeme" fname="CollectiveAccess" lname="Administrator"
       email="info@collectiveaccess.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Sallie" password="Mize" fname="Sallie" lname="Mize"
-      email="sallie@kentlergallery.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Florence" password="Neal" fname="Florence" lname="Neal"
-      email="florence@kentlergallery.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>

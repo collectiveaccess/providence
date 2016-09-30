@@ -213,7 +213,7 @@
  			
  			if (strlen($ps_value) && !is_numeric($ps_value)) {
  				// value is not numeric
- 				$vs_err_str = _t('%1 must a number', $pa_element_info['displayLabel']); 
+ 				$vs_err_str = _t('%1 must be a number', $pa_element_info['displayLabel']); 
 				$this->postError(1970, $vs_err_str, 'NumericAttributeValue->parseValue()');
 				return false;
  			}

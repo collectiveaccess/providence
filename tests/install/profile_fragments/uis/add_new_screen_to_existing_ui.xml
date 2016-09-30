@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="">
+  <profileName>collectiveaccess</profileName>
+  <profileDescription/>
+  <locales/>
+  <lists/>
+  <elementSets/>
+  <userInterfaces>
+      <userInterface code="standard_entity_ui" type="ca_entities">
+        <labels>
+          <label locale="en_US">
+            <name>Standard entity editor</name>
+          </label>
+        </labels>
+        <screens>
+          <screen idno="new_screen" default="0">
+            <labels>
+              <label locale="en_US">
+                <name>Shiny new screen</name>
+              </label>
+            </labels>
+            <bundlePlacements>
+              <placement code="idno">
+                <bundle>idno</bundle>
+                <settings>
+                  <setting name="label" locale="en_US">Idno</setting>
+                </settings>
+              </placement>
+            </bundlePlacements>
+          </screen>
+        </screens>
+      </userInterface>
+  </userInterfaces>
+
+  <relationshipTypes/>
+  <roles/>
+  <groups/>
+  <displays/>
+  <searchForms/>
+</profile>

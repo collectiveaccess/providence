@@ -324,6 +324,8 @@
 					{$vs_is_primary_sql}
 					{$vs_access_sql}
 					{$va_type_restriction_filters['sql']}
+				ORDER BY
+					caoor.rank, caoor.is_primary DESC
 			", $va_type_restriction_filters['params']);
 		
 			$va_rep_ids = array();

@@ -212,13 +212,15 @@ var caUI = caUI || {};
 					} else {
 						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage).show();
 						
-						jQuery.each(data.request.changes, function(i, c) {
-							var row = parseInt(itemIDToRow[c['id']]);
-							var col = that.getColumnForField(c['change'][1], true);
+						if (data && data.request && data.request.changes) {
+							jQuery.each(data.request.changes, function(i, c) {
+								var row = parseInt(itemIDToRow[c['id']]);
+								var col = that.getColumnForField(c['change'][1], true);
 							
-        					ht.setCellMeta(row, col, 'comment', null);  // clear comment
-        					ht.setCellMeta(row, col, 'error', false);
-        				});
+								ht.setCellMeta(row, col, 'comment', null);  // clear comment
+								ht.setCellMeta(row, col, 'error', false);
+							});
+						}
         				ht.render();
 					}
 					

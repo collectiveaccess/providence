@@ -537,11 +537,31 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 		
 		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_movements'));
 		
+		$o_view->setVar('qr_result', ($qr_result = $this->getLocationContents($vs_mode)));
 		switch($vs_mode) {
 			case 'ca_storage_locations':
-				// Get current storage locations
-				
 				$o_view->setVar('t_subject_rel', new ca_objects_x_storage_locations());
+				break;
+			case 'ca_movements':
+			default:
+				$o_view->setVar('t_subject_rel', new ca_movements_x_objects());
+				break;
+		}
+		
+		return $o_view->render('ca_storage_locations_contents.php');
+ 	}
+	# ------------------------------------------------------
+	/**
+	 * Return search result containing objects currently resident in this location
+	 *
+	 * @param string $ps_mode Location tracking mode: ca_storage_locations (for direct object-location relationship tracking) or ca_movements (for movement-based location tracking)
+	 * @param array $pa_options No options are currently supported
+	 *
+	 * @return ObjectSearchResult Result set containing objects currently in this location
+	 */
+	public function getLocationContents($ps_mode, $pa_options=null) {
+		switch($ps_mode) {
+			case 'ca_storage_locations':
 				// Get current objects for location
 				$va_object_ids = $this->getRelatedItems('ca_objects', array('idsOnly' => true));
 				if (is_array($va_object_ids) && sizeof($va_object_ids)) {
@@ -556,14 +576,12 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 						if ($va_location_info['location_id'] == $this->getPrimaryKey()) { $va_object_rels[] = $vn_relation_id; }
 					}
 					
-					$o_view->setVar('qr_result', sizeof($va_object_rels) ? caMakeSearchResult('ca_objects_x_storage_locations', $va_object_rels) : null);
-					
+					return sizeof($va_object_rels) ? caMakeSearchResult('ca_objects_x_storage_locations', $va_object_rels) : null;
 				}
 				break;
 			case 'ca_movements':
 			default:
 				// Get current movements for location
-				
 				$va_movement_ids = $this->getRelatedItems('ca_movements', array('idsOnly' => true));
 				if (is_array($va_movement_ids) && sizeof($va_movement_ids)) {
 					// get list of objects on these movements...
@@ -579,15 +597,11 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 						if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $vn_relation_id; }
 					}
 					
-					$o_view->setVar('qr_result', sizeof($va_movement_rels) ? caMakeSearchResult('ca_movements_x_objects', $va_movement_rels) : null);
-					
+					return sizeof($va_movement_rels) ? caMakeSearchResult('ca_movements_x_objects', $va_movement_rels) : null;
 				}
-				
-				$o_view->setVar('t_subject_rel', new ca_movements_x_objects());
 				break;
 		}
-		
-		return $o_view->render('ca_storage_locations_contents.php');
- 	}
+		return null;
+	}
 	# ------------------------------------------------------
 }

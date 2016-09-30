@@ -135,7 +135,12 @@
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
-		if ($ps_action == '*') { $ps_action = $po_request->getAction(); }
+		if ($ps_action == '*') { 
+			$ps_action = $po_request->getAction(); 
+			if ($vs_action_extra =  $po_request->getActionExtra()) { 
+				$ps_action .= "/{$vs_action_extra}";
+			}
+		}
 		
 		if ($ps_module_path) {
 			$vs_url .= '/'.$ps_module_path;
@@ -1102,7 +1107,7 @@
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
 			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
-			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters);
+			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters, $pa_options);
 		}
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -1304,7 +1309,8 @@
 			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel', $pa_attributes),
 			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
 			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
-			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes)
+			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes),
+			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes)
 		);
 	}
 	# ------------------------------------------------------------------------------------------------

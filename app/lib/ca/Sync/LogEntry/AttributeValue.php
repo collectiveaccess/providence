@@ -38,6 +38,14 @@ require_once(__CA_MODELS_DIR__.'/ca_attributes.php');
 
 class AttributeValue extends Base {
 
+	public function isRelevant() {
+		if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
+			return false;
+		}
+
+		return parent::isRelevant();
+	}
+
 	public function sanityCheck() {
 		parent::sanityCheck();
 		$va_snapshot = $this->getSnapshot();
@@ -114,6 +122,13 @@ class AttributeValue extends Base {
 					if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
 						$this->getModelInstance()->set('element_id', $vn_element_id);
 					}
+				}
+			} elseif($vs_field == 'value_blob') {
+				$o_app_vars = new \ApplicationVars();
+				$va_files = $o_app_vars->getVar('pushMediaFiles');
+				if(isset($va_files[$va_snapshot[$vs_field]])) {
+					$this->getModelInstance()->useBlobAsMediaField(true);
+					$this->getModelInstance()->set('value_blob', $va_files[$va_snapshot[$vs_field]]);
 				}
 			} elseif($vs_field == 'attribute_id') {
 				if (isset($va_snapshot['attribute_guid']) && ($vs_attribute_guid = $va_snapshot['attribute_guid'])) {

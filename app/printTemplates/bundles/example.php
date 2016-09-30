@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,6 +57,8 @@
 	// This is the simplest way to get attribute content for dsplay.
 	$va_values_as_element_indexed_arrays = $this->getVar('valuesAsElementCodeArrays');
 
+	// An instance loaded with the current record is also provided
+	$t_subject = $this->getVar('t_subject');
 ?>
 	<table>
 <?php

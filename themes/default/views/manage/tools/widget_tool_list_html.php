@@ -37,6 +37,6 @@
 <h4><div id='caColorbox' style='border: 6px solid #444444; padding-bottom:15px;'>
 <strong><?php print _t('Tools for your installation'); ?>:</strong>
 <p><?php
-	print (is_array($va_tools) && sizeof($va_tools)) ? join("<br/>", array_keys($va_tools)) : _('None available');
+	print (is_array($va_tools) && sizeof($va_tools)) ? join("<br/>", array_keys($va_tools)) : _t('None available');
 ?></p>
 </div></h4>

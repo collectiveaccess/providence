@@ -63,7 +63,7 @@
 		/**
 		 *
 		 */
-		static public function prepareViewerHTML($po_request, $o_view, $pa_data=null) {
+		static public function prepareViewerHTML($po_request, $o_view, $pa_data=null, $pa_options=null) {
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
 			$t_subject = isset($pa_data['t_subject']) ? $pa_data['t_subject'] : null;
 				
@@ -88,7 +88,9 @@
 					if ($vn_rep_index < ($vn_num_media - 1)) {
 						$vs_controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($po_request, '*', '*', $po_request->getAction(), array('representation_id' => (int)$va_ids[$vn_rep_index + 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey()))."\");'>→</a>";
 					}
-					$vs_controls .= "</div>";			
+					$vs_controls .= "</div>";	
+					
+					$o_view->setVar('page', $vn_rep_index);		
 				}
 			}
 			if ($t_subject && $t_instance && $po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations')) {
@@ -96,7 +98,7 @@
 						$vs_controls .= "<div class='download'>";
 						// -- provide user with a choice of versions to download
 						$vs_controls .= caFormTag($po_request, 'DownloadMedia', 'caMediaDownloadForm', $po_request->getModulePath().'/'.$po_request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-						$vs_controls .= caHTMLSelect('version', $va_versions, array('style' => 'font-size: 8px; height: 16px;'));
+						$vs_controls .= caHTMLSelect('version', array_combine(array_map("_t", $va_versions), $va_versions), array('style' => 'font-size: 8px; height: 16px;'));
 						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
 						$vs_controls .= caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey()));
 						if (is_a($t_instance, 'ca_object_representations')) { $vs_controls .= caHTMLHiddenInput("representation_id", array('value' => $t_instance->getPrimaryKey())); }
@@ -109,7 +111,7 @@
 			
 			$o_view->setVar('controls', $vs_controls);
 		
-			return $o_view->render('viewerWrapper.php');
+			return $o_view->render(caGetOption('viewerWrapper', $pa_options, 'viewerWrapper').'.php');
 		}
 		# -------------------------------------------------------
 	}

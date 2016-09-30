@@ -459,11 +459,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options
 	 *		countOnly = return number of importers available rather than a list of importers
 	 *		formats = array of input formats to limit returned importers to. Only importers that accept at least one of the specified formats will be returned.
+	 *		dontIncludeWorksheet = don't include compressed metadata describing import worksheet in return value.  If you are serializing the array to JSON this data can cause problems. [Default is false]
 	 * 
 	 * @return mixed List of importers, or integer count of importers if countOnly option is set
 	 */
 	static public function getImporters($pn_table_num=null, $pa_options=null) {
 		$o_db = new Db();
+		
+		$vb_dont_include_worksheet = caGetOption('dontIncludeWorksheet', $pa_options, false);
 		
 		$t_importer = new ca_data_importers();
 		$vo_dm = $t_importer->getAppDatamodel();
@@ -495,6 +498,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
+			if ($vb_dont_include_worksheet) { unset($va_row['worksheet']); }
 			$va_settings = caUnserializeForDatabase($va_row['settings']);
 			
 			if (isset($va_settings['inputFormats']) && is_array($va_settings['inputFormats']) && is_array($va_formats)) {
@@ -515,7 +519,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_importers[$vn_id]['settings'] = $va_settings;
 			$va_importers[$vn_id]['last_modified_on'] = $t_importer->getLastChangeTimestamp($vn_id, array('timestampOnly' => true));
 			
-			unset($va_importers[$vn_id]['worksheet']);
 		}
 		
 		$va_labels = $t_importer->getPreferredDisplayLabelsForIDs($va_ids);
@@ -2200,6 +2203,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						continue;
 					}
+					$va_ids_created[] = $t_subject->getPrimaryKey();
 					$o_log->logDebug(_t('Created idno %1 at %2 seconds [id=%3]', $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				} else {
 					$o_event->beginItem($vn_row, $t_subject->tableNum(), 'U') ;
@@ -2227,7 +2231,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						continue;
 					}
-				
+					$va_ids_updated[] = $t_subject->getPrimaryKey();
 					$t_subject->clearErrors();
 					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0) && (!$vb_was_preferred_label_match)) {
 						$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
@@ -2285,11 +2289,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 			
+				$o_log->logDebug(_t('Started insert of content tree for idno %1 at %2 seconds [id=%3]', $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				$va_elements_set_for_this_record = array();
 				foreach($va_content_tree as $vs_table_name => $va_content) {
 					if ($vs_table_name == $vs_subject_table) {		
 						foreach($va_content as $vn_i => $va_element_data) {
 							foreach($va_element_data as $vs_element => $va_element_content) {	
+								$o_log->logDebug(_t('Started insert of %1.%2 for idno %3 at %4 seconds [id=%3]', $vs_table_name, $vs_element, $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
+				
 								try {
 									if (is_array($va_element_content)) { 														
 										$vb_truncate_long_labels = caGetOption('_truncateLongLabels', $va_element_content, false);
@@ -2307,6 +2314,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									switch($vs_element) {
 										case 'preferred_labels':
 											if (!$vb_was_preferred_label_match) {
+												if (!isset($va_element_content[$vs_disp_field = $t_subject->getLabelDisplayField()]) || !strlen($va_element_content[$vs_disp_field])) { $va_element_content[$vs_disp_field] = _t('[BLANK]'); }
 												$t_subject->addLabel(
 													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
 												);
@@ -2361,8 +2369,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
 													$va_opts['original_filename'] = basename($va_element_content[$vs_element]);
 												}
-
-												$t_subject->set($vs_element, $va_element_content[$vs_element], $va_opts);
+												
+												$vs_content = isset($va_element_content[$vs_element]) ? $va_element_content[$vs_element] : $va_element_content;
+												$t_subject->set($vs_element, $vs_content, $va_opts);
 												$t_subject->update();
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2463,6 +2472,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						// related
 						$vs_table_name = preg_replace('!^related\.!', '', $vs_table_name);
 					
+						$o_log->logDebug(_t('Started insert of %1.%2 for idno %3 at %4 seconds [id=%3]', $vs_table_name, $vs_element, $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
+				
 						foreach($va_content as $vn_i => $va_element_data) {
 								$va_match_on = caGetOption('_matchOn', $va_element_data, null);
 								$vb_dont_create = caGetOption('_dontCreate', $va_element_data, null);
@@ -2790,6 +2801,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped, ca_data_importers::$s_num_import_errors));
 		
 		//if ($vb_show_cli_progress_bar) {
+		$o_progress->setDataForJobID(null, _t('Import complete'), ['numRecordsProcessed' => ca_data_importers::$s_num_records_processed, 'table' => $t_subject->tableName(), 'created' => $va_ids_created, 'updated' => $va_ids_updated]);
 		$o_progress->finish();
 		//}
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {

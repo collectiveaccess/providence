@@ -168,7 +168,7 @@ class ca_places_x_vocabulary_terms extends BaseRelationshipModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'place_id'
+			'place_id', 'item_id'
 		),
 		"RELATED_TABLES" => array(
 		
