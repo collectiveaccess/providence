@@ -273,14 +273,19 @@
 					}
 				}
 			}
+			if (!($t_element = ca_metadata_elements::getInstance($t_attr->get('element_id')))) { return false; }
 			
+			if ($vb_require_value = (bool)$t_element->getSetting('requireValue')) {
+				$pa_options['dontCheckMinMax'] = false;
+			}
 			
 			// check restriction min/max settings
 			if (!caGetOption('dontCheckMinMax', $pa_options, false)) {
-				if (!($t_element = ca_metadata_elements::getInstance($t_attr->get('element_id')))) { return false; }
 				$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 				if (!$t_restriction) { return null; }		// attribute not bound to this type
-				$vn_min = $t_restriction->getSetting('minAttributesPerRow');
+				if ((($vn_min = $t_restriction->getSetting('minAttributesPerRow')) == 0) && $vb_require_value) {
+					$vn_min = 1;
+				}
 				$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
 				
 				$vn_del_cnt = 0;
@@ -291,7 +296,7 @@
 				}
 				
 				$vn_count = $this->getAttributeCountByElement($t_element->getPrimaryKey(), ['includeBlanks' => true])  + $vn_add_cnt - $vn_del_cnt;
-				if ($vn_count < $vn_min) { 
+				if ($vn_count <= $vn_min) { 
 					if (caGetOption('showRepeatCountErrors', $pa_options, false)) {
 						$this->postError(1967, ($vn_min == 1) ? _t('Cannot remove value; at least %1 value is required', $vn_min) : _t('Cannot remove value; at least %1 values are required', $vn_min), 'BaseModelWithAttributes->removeAttribute()', $ps_error_source);
 					}
@@ -1581,7 +1586,11 @@
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
 				// If batch mode force minimums to zero
 				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
-				$o_view->setVar('min_num_repeats', $vb_batch ? 0 : $t_restriction->getSetting('minAttributesPerRow'));
+				
+				$vn_min_repeats = $t_restriction->getSetting('minAttributesPerRow');
+				if (($vn_min_repeats < 1) && (isset($va_element['settings']['requireValue'])) && ((bool)$va_element['settings']['requireValue'])) { $vn_min_repeats = 1; }
+				
+				$o_view->setVar('min_num_repeats', $vb_batch ? 0 : $vn_min_repeats);
 				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
