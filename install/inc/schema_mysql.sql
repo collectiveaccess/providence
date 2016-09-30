@@ -6777,6 +6777,40 @@ create table ca_download_log (
 
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*==========================================================================*/
+
+create table ca_site_templates (
+  template_id		    int unsigned        not null AUTO_INCREMENT,
+  title					varchar(255)		not null,
+  description			text				not null,
+  template				longtext			not null,
+  tags                  longtext            not null,
+  deleted               tinyint unsigned    not null default 0,
+
+  primary key (template_id),
+  unique index u_title (title)
+
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_site_pages (
+  page_id		      	int unsigned        not null  AUTO_INCREMENT,
+  template_id           int unsigned        not null references ca_site_templates(template_id),
+  title					varchar(255)		not null,
+  description			text				not null,
+  path        			varchar(255)        not null,
+  content				longtext			not null,
+  keywords				text				not null,
+  access                tinyint unsigned    not null default 0,
+  deleted               tinyint unsigned    not null default 0,
+  view_count            int unsigned        not null default 0,
+
+  primary key (page_id),
+  key (template_id),
+  unique index u_path (path)
+
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
 /* Schema update tracking                                                   */
@@ -6789,5 +6823,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 140 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (140, unix_timestamp());
+/* CURRENT MIGRATION: 141 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (141, unix_timestamp());
