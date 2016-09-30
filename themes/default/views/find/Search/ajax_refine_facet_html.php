@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,7 +66,6 @@
 		# ------------------------------------------------------------
 		case 'hierarchical';
 ?>
-	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
 	<!--- BEGIN HIERARCHY BROWSER --->
 	<div id="hierarchyBrowser" class='hierarchyBrowser'>
