@@ -195,11 +195,16 @@ class DisplayTemplateParser {
 		$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 		if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
 		
+		$vb_check_deleted = $t_instance->hasField('deleted');
+		
 		$ps_skip_if_expression = caGetOption('skipIfExpression', $pa_options, false);
 		$va_skip_if_expression_tags = caGetTemplateTags($ps_skip_if_expression);
 		
 		$va_proc_templates = [];
 		while($qr_res->nextHit()) {
+			// skip deleted
+			if ($vb_check_deleted && ($qr_res->get("{$ps_tablename}.deleted") !== '0')) { continue; }
+			
 			// check access
 			if ($pa_check_access && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			
