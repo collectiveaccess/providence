@@ -1818,6 +1818,12 @@ td.listtableTotals {
 	text-align: right;
 }
 
+td.listtableAggregateTotals {
+    vertical-align: top;
+	font-weight: normal;
+	text-align: left;
+}
+
 /* misc */
 
 #caSetList img.deleteIcon, #caSetList img.editIcon {
