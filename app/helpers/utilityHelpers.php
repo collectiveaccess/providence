@@ -3218,6 +3218,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
 		$num = round($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
