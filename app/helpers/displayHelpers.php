@@ -3021,10 +3021,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		
 		$va_tags = caGetTemplateTags($vs_template, ['parseOptions' => true]);
 		$vb_is_set = false;
-		
+	
 		foreach($va_tags as $va_tag) {
 			$va_fields = preg_split("/[ ;,]+/", $va_tag['options']['fields']);
-			switch(strtolower($va_tag['tag'])) {
+			
+			$va_tag_bits = explode(':', $va_tag['tag']);
+			switch(strtolower($va_tag_bits[0])) {
 				case 'sum':
 					$va_placements = [];
 					foreach($va_fields as $vs_field) {
@@ -3032,7 +3034,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 						$va_placements[] = $va_bundles_by_code[$vs_field];
 					}
 					
-					$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements , $pr_res, ['template' => '^SUM', 'multiple' => true]);
+					$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements , $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
 					
 					$vs_template = str_replace("^".$va_tag['originalTag'], $vs_val, $vs_template);
 					
@@ -3079,7 +3081,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			}
 
 			$vn_datatype = ca_metadata_elements::getElementDatatype($va_tmp[1]);
-			if (is_null($vn_datatype)) { return null; }
+			if (is_null($vn_datatype)) { continue; }
 		
 			if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 				$vs_user_currency = 'USD';
@@ -3307,6 +3309,29 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					if(strpos($vs_value_name, '.') !== false) {
 						$va_tmp = explode(".", $vs_value_name);
 						$vs_template = str_replace("^{$vs_tag}:".array_pop($va_tmp), $vs_tag_value, $vs_template);
+					} elseif($vb_is_multiple && preg_match("!^Value_([\d]+)$!", $vs_value_name, $va_matches)) {
+						$vs_name = null;
+						switch((int)$va_matches[1]) {
+							case 6:
+								$vs_name = 'currency';
+								break;
+							case 8:
+								$vs_name = 'length';
+								break;
+							case 9:
+								$vs_name = 'timecode';
+								break;
+							case 10:
+								$vs_name = 'length';
+								break;
+							case 10:
+								$vs_name = 'integer';
+								break;
+							case 10:
+								$vs_name = 'numeric';
+								break;
+						}
+						if ($vs_name) { $vs_template = str_replace("^{$vs_tag}:{$vs_name}", $vs_tag_value, $vs_template); }
 					}
 					$vs_template = str_replace("^{$vs_tag}", $vs_tag_value, $vs_template);
 				}
