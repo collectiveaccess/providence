@@ -539,7 +539,7 @@
 						
 					}
 				
-					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
+					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add), ['user_id' => $this->request->getUserID()])) === false) {
 						$this->view->setVar('error', join('; ', $t_set->getErrors()));
 					}
 					
@@ -592,7 +592,7 @@
 			
 				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
 			
-				$vn_added_items_count = $t_set->addItems($va_row_ids);
+				$vn_added_items_count = $t_set->addItems($va_row_ids, ['user_id' => $this->request->getUserID()]);
 				
 				$this->view->setVar('set_id', $t_set->getPrimaryKey());
 				$this->view->setVar('t_set', $t_set);
