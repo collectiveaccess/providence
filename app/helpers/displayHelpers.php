@@ -1269,6 +1269,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			}	
 			
 			//
+			// Output related counts
+			//
+			if (is_array($va_show_counts_for = $po_view->request->config->getList($t_item->tableName().'_show_related_counts_in_inspector_for')) && sizeof($va_show_counts_for)) {
+				foreach($va_show_counts_for as $vs_rel_table) {
+					if (($vn_count = (int)$t_item->getRelatedItems($vs_rel_table, ['returnAs' => 'count'])) > 0) {
+						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, $o_dm->getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
+						//$vs_buf .= caNavLink($this->request, '', _t('%1 related %2', $vn_count, $o_dm->getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), ')."<br/>\n";
+					}
+				}
+			}
+			
+			//
 			// Output related objects for ca_object_representations
 			//
 			if ($vs_table_name === 'ca_object_representations') {
