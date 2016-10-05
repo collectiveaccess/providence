@@ -1717,8 +1717,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		", (int)$vn_set_id);
 
 		if($ps_template = caGetOption('template', $pa_options, null)) {
-			$qr_ids = $o_db->query("SELECT row_id FROM ca_set_items WHERE set_id = ? ORDER BY rank ASC", $this->getPrimaryKey());
-			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_ids->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$qr_res->seek(0);
 		}
 		$va_items = array();
 
