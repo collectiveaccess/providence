@@ -372,7 +372,7 @@
 				$vb_printed_properly = true;
 				
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-				
+				exit;
 			} catch (Exception $e) {
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				
@@ -497,6 +497,7 @@
 					
 					$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
 					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
+					exit;
 				} catch (Exception $e) {
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
