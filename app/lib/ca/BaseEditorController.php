@@ -766,6 +766,7 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = true;
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+			exit;
 		} catch (Exception $e) {
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 			$vb_printed_properly = false;
@@ -856,6 +857,7 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = true;
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
+			exit;
 		} catch (Exception $e) {
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 			$vb_printed_properly = false;
