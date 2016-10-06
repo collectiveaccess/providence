@@ -160,7 +160,7 @@ var methods = {
 			imageScaleControlChangeSettingText: "<div class='tileviewerImageScaleControlsHeader'>This image is scaled at %1.</div><div class='tileviewerImageScaleControlsHelpText'>To change scale enter the length with units (mm, cm, m, km, in, ft, miles, etc.) of the currently selected measurement below.</div>"
         };
         
-        if (options.annotationLoadUrl.substr(0, 1) === '#') {
+        if (options.annotationLoadUrl && (options.annotationLoadUrl.substr(0, 1) === '#')) {
         	options.enableMeasurements = false; 	// no measurements allowed when saving annotations locally
 		}
 		
