@@ -665,7 +665,7 @@
  		 * 
  		 * 
  		 */ 
- 		public function DownloadRepresentations() {
+ 		public function DownloadMedia() {
  			if ($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
 				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
 
@@ -783,7 +783,7 @@
  			}
  			
  			// post error
- 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadRepresentation()");
+ 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadMedia()");
  		}
  		# ------------------------------------------------------------------
  		/**
