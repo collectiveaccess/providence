@@ -1705,10 +1705,6 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-	
-		if (!$t_subject->isReadable($this->request)) { 
-			throw new ApplicationException(_t('Cannot view media'));
-		}
 			
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
@@ -1719,6 +1715,10 @@ class BaseEditorController extends ActionController {
 			$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
 			$t_subject->load($t_attr->get('row_id'));
+						
+			if (!$t_subject->isReadable($this->request)) { 
+				throw new ApplicationException(_t('Cannot view media'));
+			}
 
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
@@ -1729,7 +1729,10 @@ class BaseEditorController extends ActionController {
 				"attribute:{$pn_value_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
 			);
-		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {			
+			if (!$t_subject->isReadable($this->request)) { 
+				throw new ApplicationException(_t('Cannot view media'));
+			}
 			//
 			// View object representation
 			//
