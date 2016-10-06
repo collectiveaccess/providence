@@ -670,7 +670,7 @@
 				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
 
  				$pa_ids = null;
- 				if ($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) {
+ 				if (($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($vs_ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
  					if ($vs_ids != 'all') {
 						$pa_ids = explode(';', $vs_ids);
 						

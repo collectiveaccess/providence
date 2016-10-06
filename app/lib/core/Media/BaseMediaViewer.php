@@ -100,7 +100,7 @@
 						$vs_controls .= caFormTag($po_request, 'DownloadMedia', 'caMediaDownloadForm', $po_request->getModulePath().'/'.$po_request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 						$vs_controls .= caHTMLSelect('version', array_combine(array_map("_t", $va_versions), $va_versions), array('style' => 'font-size: 8px; height: 16px;'));
 						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
-						$vs_controls .= caHTMLHiddenInput($t_subject->tableName(), array('value' => $t_subject->getPrimaryKey()));
+						$vs_controls .= caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey()));
 						if (is_a($t_instance, 'ca_object_representations')) { $vs_controls .= caHTMLHiddenInput("representation_id", array('value' => $t_instance->getPrimaryKey())); }
 						if (is_a($t_instance, 'ca_attribute_values')) { $vs_controls .= caHTMLHiddenInput("value_id", array('value' => $t_instance->getPrimaryKey())); }
 						$vs_controls .= caHTMLHiddenInput("download", array('value' => 1));
