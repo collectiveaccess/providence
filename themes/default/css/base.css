@@ -2976,19 +2976,6 @@ div.editorBundlePrintControl select {
     vertical-align: top;
 }
 
-div.editorBundleValuePrintControl {
-    position: absolute; 
-    bottom: 2px; 
-    right: 5px;
-}
-
-div.editorBundleValuePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}
-
 #caHierarchyOverviewHeader {
     font-size: 13px;
     font-weight: bold;

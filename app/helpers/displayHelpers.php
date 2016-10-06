@@ -3012,10 +3012,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 * 
 	 */
 	function caProcessBottomLineTemplateForDisplay($po_request, $pt_display, $pr_res, $pa_options=null) {
+		if (!$pr_res) { return null; }
+		
 		$vs_template = $pt_display->getSetting('bottom_line');
 		
 		$va_bundles_by_code = [];
-		foreach($pt_display->getPlacementsInDisplay() as $vn_placement_id => $va_placement) {
+		if (!is_array($va_bundles = $pt_display->getPlacementsInDisplay())) { return null; }
+		foreach($va_bundles as $vn_placement_id => $va_placement) {
 			$va_bundles_by_code[$va_placement['bundle']] = $va_placement;
 		}
 		
@@ -3051,6 +3054,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	function caProcessBottomLineTemplateForPlacement($po_request, $pa_placement, $pr_res, $pa_options=null) {
 		global $g_ui_units_pref, $g_ui_locale;
 		$o_dm = Datamodel::load();
+		
+		if (!$pr_res) { return null; }
 		
 		if ($vb_is_multiple = caGetOption('multiple', $pa_options, false)) {
 			$pa_placements = $pa_placement;
