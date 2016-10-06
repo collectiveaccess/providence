@@ -60,7 +60,7 @@
 		}
 		# -------------------------------------------------------
 		public function postDispatch() {
-			$o_view = new View($this->getRequest(), $this->getRequest()->config->get('views_directory'));
+			$o_view = new View($this->getRequest(), $this->getRequest()->getViewsDirectoryPath());
 			
 			$o_notification = new NotificationManager($this->getRequest());
 			if($o_notification->numNotifications()) {
