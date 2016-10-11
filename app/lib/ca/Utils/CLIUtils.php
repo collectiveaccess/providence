@@ -762,7 +762,6 @@
 					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
 					print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
-
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(sizeof($pa_mimetypes)) {
 						$vb_mimetype_match = false;
@@ -3478,7 +3477,9 @@
 					($t_instance instanceof BundlableLabelableBaseModelWithAttributes) ||
 					($t_instance instanceof BaseLabel) ||
 					($t_instance instanceof ca_attribute_values) ||
-					($t_instance instanceof ca_attributes)
+					($t_instance instanceof ca_users) ||
+					($t_instance instanceof ca_attributes) ||
+					($t_instance->getProperty('LOG_CHANGES_TO_SELF') && method_exists($t_instance, 'getGUIDByPrimaryKey'))
 				) {
 					$qr_results = $o_db->query("SELECT ". $t_instance->primaryKey() . " FROM ". $t_instance->tableName());
 					if($qr_results && ($qr_results->numRows() > 0)) {

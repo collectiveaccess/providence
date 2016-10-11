@@ -6346,13 +6346,19 @@ class BaseModel extends BaseObject {
 	# --- Change log
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Log a change
+	 * Log a change. Normally the changes logged are for the currently loaded row. In special cases you can use
+	 * the row_id and snapshot options to manually specify what gets logged. Manual logging is only supported for intrinsic fields
+	 * in tables. You cannot log metadata attribute changes manually.
 	 * 
 	 * @access private
 	 * @param string $ps_change_type 'I', 'U' or 'D', meaning INSERT, UPDATE or DELETE
 	 * @param int $pn_user_id user identifier, defaults to null
+	 * @param array $pa_options Options include:
+	 *		row_id = Force logging for specified row_id. [Default is to use id from currently loaded row]
+	 *		snapshot = Row snapshot array to use for logging. [Default i to use snapshot from currently loaded row]
+	 
 	 */
-	protected function logChange($ps_change_type, $pn_user_id=null) {
+	public function logChange($ps_change_type, $pn_user_id=null, $pa_options=null) {
 		if(defined('__CA_DONT_LOG_CHANGES__')) { return null; }
 		if (!$this->logChanges()) { return null; }
 		$vb_is_metadata = $vb_is_metadata_value = false;
@@ -6372,10 +6378,10 @@ class BaseModel extends BaseObject {
 		global $AUTH_CURRENT_USER_ID;
 		if (!$pn_user_id) { $pn_user_id = $AUTH_CURRENT_USER_ID; }
 		if (!$pn_user_id) { $pn_user_id = null; }
-
+		
 		if (!in_array($ps_change_type, array('I', 'U', 'D'))) { return false; };		// invalid change type (shouldn't happen)
 
-		if (!($vn_row_id = $this->getPrimaryKey())) { return false; }					// no logging without primary key value
+		if (!($vn_row_id = $this->getPrimaryKey()) && !($vn_row_id = caGetOption('row_id', $pa_options, null))) { return false; }					// no logging without primary key value
 
 		// get unit id (if set)
 		global $g_change_log_unit_id;
@@ -6512,7 +6518,7 @@ class BaseModel extends BaseObject {
 		}
 
 		// get snapshot of changes made to record
-		$va_snapshot = $this->getSnapshot(($ps_change_type === 'U') ? true : false);
+		if (!($va_snapshot = caGetOption('snapshot', $pa_options, null))) { $va_snapshot = $this->getSnapshot(($ps_change_type === 'U') ? true : false); }
 
 		$vs_snapshot = caSerializeForDatabase($va_snapshot, true);
 
@@ -9772,7 +9778,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 */
 	private function _getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_cache=true) {
-		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
+		$vs_table = $this->tableName();
+		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num])) {
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
 		}
 		if (is_numeric($pm_rel_table_name_or_num)) {
@@ -11498,17 +11505,16 @@ $pa_options["display_form_field_tips"] = true;
 			case 'searchresult':
 				$va_ids = array();
 				while($qr_res->nextRow()) {
-					$va_ids[] = $qr_res->get($vs_pk);
-					$vn_c++;
-					if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
+					if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
 					if (sizeof($va_ids) > 0) {
-						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+						return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
 					}
 					return null;
 				} else {
-					return $va_ids;
+					return array_values($va_ids);
 				}
 				break;
 		}

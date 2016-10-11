@@ -1770,7 +1770,6 @@ table.listtable tbody td {
     padding: 4px;
     background-color: #FFF;
     vertical-align: middle;
-    width:42px;
 }
 table.listtable tbody td.listtableEditDelete {
 	width:55px;
@@ -1817,6 +1816,12 @@ td.listtableTotals {
     vertical-align: top;
 	font-weight: bold;
 	text-align: right;
+}
+
+td.listtableAggregateTotals {
+    vertical-align: top;
+	font-weight: normal;
+	text-align: left;
 }
 
 /* misc */
@@ -2965,19 +2970,6 @@ div.editorBundlePrintControl {
 }
 
 div.editorBundlePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}
-
-div.editorBundleValuePrintControl {
-    position: absolute; 
-    bottom: 2px; 
-    right: 5px;
-}
-
-div.editorBundleValuePrintControl select {
     font-size: 9px;
     font-weight: normal;
     height: 17px;

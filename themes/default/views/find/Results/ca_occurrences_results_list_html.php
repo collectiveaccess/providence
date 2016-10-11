@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -107,10 +107,10 @@
 			}
 ?>
 			</tbody>
+			<tfoot>
 <?php
 			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
 ?>
-				<tfoot>
 					<tr>
 						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
 <?php
@@ -119,10 +119,17 @@
 						}
 ?>
 					</tr>
-				</tfoot>
 <?php
 			}
+			if ($vs_bottom_line_totals = $this->getVar('bottom_line_totals')) {
+?>				
+					<tr>
+						<td colspan="<?php print sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?php print $vs_bottom_line_totals; ?></td>
+					</tr>
+<?php		
+			}
 ?>
+			</tfoot>
 		</table>
 	</form>
 </div><!--end scrollingResults -->		

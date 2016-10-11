@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -302,10 +302,12 @@ final class ConfigurationExporter {
 			}
 		}
 
+		$va_used_codes = [];
 		while($qr_items->nextRow()) {
 			$vo_item = $this->opo_dom->createElement("item");
-			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno');
-
+			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno', $va_used_codes);
+			$va_used_codes[$vs_idno] = true;
+			
 			$vo_item->setAttribute("idno", $vs_idno);
 			$vo_item->setAttribute("enabled", $qr_items->get("is_enabled"));
 			$vo_item->setAttribute("default", $qr_items->get("is_default"));
@@ -891,11 +893,14 @@ final class ConfigurationExporter {
 
 				if(is_array($va_placements)) {
 
+					$va_used_codes = [];
 					foreach($va_placements as $va_placement) {
 						$vo_placement = $this->opo_dom->createElement("placement");
 						$vo_placements->appendChild($vo_placement);
 
-						$vo_placement->setAttribute("code", $this->makeIDNO($va_placement["placement_code"]));
+						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
+						$va_used_codes[$vs_code] = true;
+						
 						$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($va_placement["bundle"])));
 
 						if(is_array($va_placement["settings"])) {
@@ -1565,12 +1570,20 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	// Utilities
 	# -------------------------------------------------------
-	private function makeIDNO($ps_idno, $pn_length = 30) {
+	private function makeIDNO($ps_idno, $pn_length = 30, $pa_used_list=null) {
 		if(strlen($ps_idno)>0) {
-			return substr(preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno),0, $pn_length);
+			$vs_code =  substr(preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno),0, $pn_length);
 		} else {
-			return "default";
+			$vs_code =  "default";
 		}
+		
+		$vs_code_stem = $vs_code;
+		$vn_i = 1;
+		while(isset($pa_used_list[$vs_code])) {
+			$vs_code = "{$vs_code_stem}_{$vn_i}";
+			$vn_i++;
+		}
+		return $vs_code;
 	}
 	# --------------------------------------------------
 	private function _convertACLConstantToString($pn_val) {
@@ -1600,12 +1613,12 @@ final class ConfigurationExporter {
 	 * @param string $ps_field_name
 	 * @return string normalised idno
 	 */
-	private function makeIDNOFromInstance($po_model_instance, $ps_field_name) {
+	private function makeIDNOFromInstance($po_model_instance, $ps_field_name, $pa_used_list=null) {
 		$va_length = $po_model_instance->getFieldInfo($ps_field_name, 'BOUNDS_LENGTH');
 		// Previously this was always 30, so let's be conservative
 		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 30;
 		$vs_value = $po_model_instance->get($ps_field_name);
-		return $this->makeIDNO($vs_value, $vn_max_length);
+		return $this->makeIDNO($vs_value, $vn_max_length, $pa_used_list);
 	}
 	# --------------------------------------------------
 	/**
