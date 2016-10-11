@@ -127,7 +127,6 @@
 				foreach ($va_excel_types as $vs_type) {
 					$o_reader = PHPExcel_IOFactory::createReader($vs_type);
 					if ($o_reader->canRead($ps_filepath)) {
-						print "CAN READ FOR $ps_filepath/$vs_type\n";
 						$vb_valid = true;
 						break;
 					}
