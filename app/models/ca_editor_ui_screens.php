@@ -1283,7 +1283,52 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_displayTemplate";
 								}
-								
+
+								$va_additional_settings['ca_collections_showTypes'] = array(
+									'formatType' => FT_TEXT,
+									'displayType' => DT_SELECT,
+									'useList' => 'collection_types',
+									'takesLocale' => false,
+									'default' => '',
+									'width' => "275px", 'height' => "75px",
+									'label' => _t('Show collections'),
+									'description' => ''
+								);
+								$va_types = caGetTypeList("ca_collections");
+								foreach($va_types as $vn_type_id => $va_type) {
+									$va_additional_settings["ca_collections_{$va_type['idno']}_dateElement"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => ['ca_collections', 'ca_objects_x_collections'],
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('%1 date', $va_type['name_singular']),
+										'description' => ''
+									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_color"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for %1', $va_type['name_singular']),
+										'description' => _t('Color to use as highlight %1.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_displayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('%1 display template', $va_type['name_singular']),
+										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_collections.idno</i>.', $va_type['name_singular'])
+									);
+									
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_dateElement";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_color";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_displayTemplate";
+								}								
 								$va_additional_settings['ca_movements_showTypes'] = array(
 									'formatType' => FT_TEXT,
 									'displayType' => DT_SELECT,
