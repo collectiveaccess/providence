@@ -465,6 +465,7 @@
 		 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
 		 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 	 *		includeDeleted =
  	 	 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
@@ -478,7 +479,7 @@
 					$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
 					if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
 				} elseif($pa_values === '*') {
-					$pa_values = ['deleted' => 0];
+					$pa_values = caGetOption('includeDeleted', $pa_options, false) ? [] : ['deleted' => 0];
 				}
 			}
 			if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
@@ -746,7 +747,7 @@
 				$va_sql_params[] = $pa_check_access;
 			}
 			
-			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
+			$vs_deleted_sql = (($t_instance->hasField('deleted')) && !caGetOption('includeDeleted', $pa_options, false)) ? "({$vs_table}.deleted = 0) AND " : '';
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
 			$vs_sql .=" WHERE {$vs_deleted_sql} {$vs_type_restriction_sql} (".join(" {$ps_boolean} ", $va_label_sql).")";

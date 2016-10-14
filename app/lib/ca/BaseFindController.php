@@ -548,8 +548,8 @@
 					$this->view->setVar('error', _t('Invalid set'));
 				}
 			}
-			$this->view->setVar('num_items_added', $vn_added_items_count);
-			$this->view->setVar('num_items_already_in_set', $vn_dupe_item_count);
+			$this->view->setVar('num_items_added', (int)$vn_added_items_count);
+			$this->view->setVar('num_items_already_in_set', (int)$vn_dupe_item_count);
  			$this->render('Results/ajax_add_to_set_json.php');
  		}
  		# ------------------------------------------------------------------
