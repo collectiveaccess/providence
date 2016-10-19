@@ -141,6 +141,15 @@ $_ca_bundle_displays_settings = array(		// global
 		'default' => '1',
 		'label' => _t('Display empty values?'),
 		'description' => _t('If checked all values will be displayed, whether there is content for them or not.')
+	),
+	'bottom_line' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 100, 'height' => 4,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Bottom line format'),
+		'description' => _t('.')
 	)
 );
 	
@@ -2441,6 +2450,7 @@ if (!$pb_omit_editing_info) {
 				$va_display_list[$vn_placement_id] = array(
 					'placement_id' => 				$vn_placement_id,
 					'bundle_name' => 				$va_display_item['bundle_name'],
+					'bundle' => 					$va_display_item['bundle_name'],
 					'display' => 					$vs_header,
 					'settings' => 					$va_settings,
 					'allowEditing' =>				$va_display_item['allowEditing'],

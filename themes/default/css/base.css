@@ -1818,6 +1818,12 @@ td.listtableTotals {
 	text-align: right;
 }
 
+td.listtableAggregateTotals {
+    vertical-align: top;
+	font-weight: normal;
+	text-align: left;
+}
+
 /* misc */
 
 #caSetList img.deleteIcon, #caSetList img.editIcon {
@@ -2964,19 +2970,6 @@ div.editorBundlePrintControl {
 }
 
 div.editorBundlePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}
-
-div.editorBundleValuePrintControl {
-    position: absolute; 
-    bottom: 2px; 
-    right: 5px;
-}
-
-div.editorBundleValuePrintControl select {
     font-size: 9px;
     font-weight: normal;
     height: 17px;

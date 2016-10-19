@@ -1275,7 +1275,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				foreach($va_show_counts_for as $vs_rel_table) {
 					if (($vn_count = (int)$t_item->getRelatedItems($vs_rel_table, ['returnAs' => 'count'])) > 0) {
 						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, $o_dm->getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
-						//$vs_buf .= caNavLink($this->request, '', _t('%1 related %2', $vn_count, $o_dm->getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), ')."<br/>\n";
 					}
 				}
 			}
@@ -3012,176 +3011,226 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	/**
 	 * 
 	 */
-	function caProcessBottomLineTemplate($po_request, $pa_placement, $pr_res, $pa_options=null) {
-		global $g_ui_units_pref, $g_ui_locale;
-		
-		if (!isset($pa_placement['settings']['bottom_line']) || !$pa_placement['settings']['bottom_line']) { return null; }
+	function caProcessBottomLineTemplateForDisplay($po_request, $pt_display, $pr_res, $pa_options=null) {
 		if (!$pr_res) { return null; }
 		
-		$vs_template = $pa_placement['settings']['bottom_line'];
-		$vs_bundle_name = $pa_placement['bundle_name'];
+		$vs_template = $pt_display->getSetting('bottom_line');
+		
+		$va_bundles_by_code = [];
+		if (!is_array($va_bundles = $pt_display->getPlacementsInDisplay())) { return null; }
+		foreach($va_bundles as $vn_placement_id => $va_placement) {
+			$va_bundles_by_code[$va_placement['bundle']] = $va_placement;
+		}
+		
+		$va_tags = caGetTemplateTags($vs_template, ['parseOptions' => true]);
+		$vb_is_set = false;
+	
+		foreach($va_tags as $va_tag) {
+			$va_fields = preg_split("/[ ;,]+/", $va_tag['options']['fields']);
+			
+			$va_tag_bits = explode(':', $va_tag['tag']);
+			switch(strtolower($va_tag_bits[0])) {
+				case 'sum':
+					$va_placements = [];
+					foreach($va_fields as $vs_field) {
+						if (!isset($va_bundles_by_code[$vs_field])) { continue; }
+						$va_placements[] = $va_bundles_by_code[$vs_field];
+					}
+					
+					$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements , $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
+					
+					$vs_template = str_replace("^".$va_tag['originalTag'], $vs_val, $vs_template);
+					
+					$vb_is_set = true;
+					break;
+			}
+		}
+		return $vb_is_set ? $vs_template : null;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 */
+	function caProcessBottomLineTemplateForPlacement($po_request, $pa_placement, $pr_res, $pa_options=null) {
+		global $g_ui_units_pref, $g_ui_locale;
+		$o_dm = Datamodel::load();
+		
+		if (!$pr_res) { return null; }
+		
+		if ($vb_is_multiple = caGetOption('multiple', $pa_options, false)) {
+			$pa_placements = $pa_placement;
+		} else {
+			$pa_placements = [$pa_placement];
+		}
+		
+		if (($vn_current_index = $pr_res->currentIndex()) < 0) { $vn_current_index = 0; }
 		
 		$pn_page_start = caGetOption('pageStart', $pa_options, 0);
 		$pn_page_end = caGetOption('pageEnd', $pa_options, $pr_res->numHits());
 		
-		if (($vn_current_index = $pr_res->currentIndex()) < 0) { $vn_current_index = 0; }
-		$pr_res->seek(0);
-		
-		$o_dm = Datamodel::load();
-		
-		$va_tmp = explode(".", $vs_bundle_name);
-		if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
-			return null;
-		}
-
-		$vn_datatype = ca_metadata_elements::getElementDatatype($va_tmp[1]);
-		if (is_null($vn_datatype)) { return null; }
-		
-		if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
-			$vs_user_currency = 'USD';
-		}
-	
-		// Parse out tags and optional sub-elements from template
-		//		we have to pull each sub-element separately
-		//
-		//		Ex. 	^SUM:valuation = sum of "valuation" sub-element
-		//				^SUM = sum of primary value in non-container element
-		if (!preg_match("!(\^[A-Z]+[\:]{0,1}[A-Za-z0-9\_\-]*)!", $vs_template, $va_tags)) {
-			return $vs_template;
-		}
-
 		$va_tags_to_process = array();
 		$va_subelements_to_process = array();
 		
-		if ($vn_datatype == 0) {	// container
-			foreach($va_tags as $vs_raw_tag) {
-				$va_tmp = explode(":", $vs_raw_tag);
-				$vs_tag = $va_tmp[0];
-				if (sizeof($va_tmp) == 2) {
-					$vs_subelement = $va_tmp[1];
-				} else {
-					continue;
-				}
-			
-				$va_tags_to_process[$vs_raw_tag] = true;
-				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = ca_metadata_elements::getElementDatatype($vs_subelement);
-			}
-		} else {
+		foreach($pa_placements as $pa_placement) {
+			if (!$pr_res) { return null; }
+			$pr_res->seek(0);
+		
+			if (!($vs_template = caGetOption('template', $pa_options, $pa_placement['settings']['bottom_line']))) { return null; }
+		
+			$vs_bundle_name = $pa_placement['bundle'];
+		
 			$va_tmp = explode(".", $vs_bundle_name);
-			if (sizeof($va_tmp) == 2) { $vs_bundle_name .= ".".array_pop($va_tmp); }
-			$va_subelements_to_process = array($vs_bundle_name => $vn_datatype);
-		}
+		
+			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+				return null;
+			}
+
+			$vn_datatype = ca_metadata_elements::getElementDatatype($va_tmp[1]);
+			if (is_null($vn_datatype)) { continue; }
+		
+			if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
+				$vs_user_currency = 'USD';
+			}
+			$vs_user_currency = caGetCurrencySymbol($vs_user_currency);
 	
-		$vn_c = 0;
-		$vn_page_len = 0;
-		$vb_has_timecode = false;
+			// Parse out tags and optional sub-elements from template
+			//		we have to pull each sub-element separately
+			//
+			//		Ex. 	^SUM:valuation = sum of "valuation" sub-element
+			//				^SUM = sum of primary value in non-container element
+			if (!preg_match("!(\^[A-Z]+[\:]{0,1}[A-Za-z0-9\_\-]*)!", $vs_template, $va_tags)) {
+				return $vs_template;
+			}
+
 		
-		$vn_min = $vn_max = null;
-		$vn_page_min = $vn_page_max = null;
-		
-		$va_tag_values = array();
-		while($pr_res->nextHit()) {
-			foreach($va_subelements_to_process as $vs_subelement => $vn_subelement_datatype) {
-				if (!is_array($va_tag_values[$vs_subelement])) {
-					$va_tag_values[$vs_subelement]['SUM'] = 0;
-					$va_tag_values[$vs_subelement]['PAGESUM'] = 0;
-					$va_tag_values[$vs_subelement]['MIN'] = null;
-					$va_tag_values[$vs_subelement]['PAGEMIN'] = null;
-					$va_tag_values[$vs_subelement]['MAX'] = null;
-					$va_tag_values[$vs_subelement]['PAGEMAX'] = null;
-					$va_tag_values[$vs_subelement]['AVG'] = 0;
-					$va_tag_values[$vs_subelement]['PAGEAVG'] = 0;
-				}
+			if ($vn_datatype == 0) {	// container
+				foreach($va_tags as $vs_raw_tag) {
+					$va_tmp = explode(":", $vs_raw_tag);
+					$vs_tag = $va_tmp[0];
+					if (sizeof($va_tmp) == 2) {
+						$vs_subelement = $va_tmp[1];
+					} else {
+						continue;
+					}
 			
-				switch($vn_subelement_datatype) {
-					case 2:		// date range
-				
-						$vs_value = $pr_res->get($vs_subelement);
-						break;
-					case 6:		// currency
-						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
-						
-						if(is_array($va_values)) {
-							foreach($va_values as $vs_value) {
-								$vn_value = (float)caConvertCurrencyValue($vs_value, $vs_user_currency, array('numericValue' => true));
-						
-								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-								if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
-								if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
-					
-								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-									if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
-									if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
-									$vn_page_len++;
-								}
-							}
-						}
-						break;
-					case 8:		// length
-					case 9:		// weight
-						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
-						
-						if(is_array($va_values)) {
-							foreach($va_values as $vs_value) {
-								$vn_value = (float)$vs_value;
-								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-								if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
-								if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
-					
-								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-									if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
-									if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
-									$vn_page_len++;
-								}
-							}
-						}
-						break;
-					case 10:	// timecode
-						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
-						
-						if(is_array($va_values)) {
-							foreach($va_values as $vn_value) {
-								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-								if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
-								if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
-					
-								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-									if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
-									if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
-									$vn_page_len++;
-								}
-							}
-						}
-						$vb_has_timecode = true;
-						break;
-					case 11:	// integer
-					case 12:	// numeric (decimal)
-						$va_values = $pr_res->get($vs_subelement, array('returnAsArray' => true));
-						
-						if(is_array($va_values)) {
-							foreach($va_values as $vs_value) {
-								$vn_value = (float)$vs_value;
-								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-								if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
-								if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
-					
-								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-									if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
-									if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
-									$vn_page_len++;
-								}
-							}
-						}
-						break;
-					default:
-						break(2);
+					$va_tags_to_process[$vs_raw_tag] = true;
+					$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = ca_metadata_elements::getElementDatatype($vs_subelement);
 				}
-			}			
-			$vn_c++;
+			} else {
+				$va_tmp = explode(".", $vs_bundle_name);
+				if (sizeof($va_tmp) == 2) { $vs_bundle_name .= ".".array_pop($va_tmp); }
+				$va_subelements_to_process[$vs_bundle_name] = $vn_datatype;
+			}
+	
+			$vn_c = 0;
+			$vn_page_len = 0;
+			$vb_has_timecode = false;
+		
+			$vn_min = $vn_max = null;
+			$vn_page_min = $vn_page_max = null;
+		
+			$va_tag_values = array();
+			while($pr_res->nextHit()) {
+				foreach($va_subelements_to_process as $vs_subelement => $vn_subelement_datatype) {
+					$vs_value_name = ($vb_is_multiple) ? "Value_{$vn_subelement_datatype}" : $vs_subelement;
+				
+					if (!is_array($va_tag_values[$vs_value_name])) {
+						$va_tag_values[$vs_value_name]['SUM'] = 0;
+						$va_tag_values[$vs_value_name]['PAGESUM'] = 0;
+						$va_tag_values[$vs_value_name]['MIN'] = null;
+						$va_tag_values[$vs_value_name]['PAGEMIN'] = null;
+						$va_tag_values[$vs_value_name]['MAX'] = null;
+						$va_tag_values[$vs_value_name]['PAGEMAX'] = null;
+						$va_tag_values[$vs_value_name]['AVG'] = 0;
+						$va_tag_values[$vs_value_name]['PAGEAVG'] = 0;
+					}
+			
+					switch($vn_subelement_datatype) {
+						case 6:		// currency
+							$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
+						
+							if(is_array($va_values)) {
+								foreach($va_values as $vs_value) {
+									$vn_value = (float)caConvertCurrencyValue($vs_value, $vs_user_currency, array('numericValue' => true));
+						
+									$va_tag_values[$vs_value_name]['SUM'] += $vn_value;
+									if (is_null($va_tag_values[$vs_value_name]['MIN']) || ($vn_value < $va_tag_values[$vs_value_name]['MIN'])) { $va_tag_values[$vs_value_name]['MIN'] = $vn_value; }
+									if (is_null($va_tag_values[$vs_value_name]['MAX']) || ($vn_value > $va_tag_values[$vs_value_name]['MAX'])) { $va_tag_values[$vs_value_name]['MAX'] = $vn_value; }
+					
+									if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+										$va_tag_values[$vs_value_name]['PAGESUM'] += $vn_value;
+										if (is_null($va_tag_values[$vs_value_name]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_value_name]['PAGEMIN'])) { $va_tag_values[$vs_value_name]['PAGEMIN'] = $vn_value; }
+										if (is_null($va_tag_values[$vs_value_name]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_value_name]['PAGEMAX'])) { $va_tag_values[$vs_value_name]['PAGEMAX'] = $vn_value; }
+										$vn_page_len++;
+									}
+								}
+							}
+							break;
+						case 8:		// length
+						case 9:		// weight
+							$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
+						
+							if(is_array($va_values)) {
+								foreach($va_values as $vs_value) {
+									$vn_value = (float)$vs_value;
+									$va_tag_values[$vs_value_name]['SUM'] += $vn_value;
+									if (is_null($va_tag_values[$vs_value_name]['MIN']) || ($vn_value < $va_tag_values[$vs_value_name]['MIN'])) { $va_tag_values[$vs_value_name]['MIN'] = $vn_value; }
+									if (is_null($va_tag_values[$vs_value_name]['MAX']) || ($vn_value > $va_tag_values[$vs_value_name]['MAX'])) { $va_tag_values[$vs_value_name]['MAX'] = $vn_value; }
+					
+									if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+										$va_tag_values[$vs_value_name]['PAGESUM'] += $vn_value;
+										if (is_null($va_tag_values[$vs_value_name]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_value_name]['PAGEMIN'])) { $va_tag_values[$vs_value_name]['PAGEMIN'] = $vn_value; }
+										if (is_null($va_tag_values[$vs_value_name]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_value_name]['PAGEMAX'])) { $va_tag_values[$vs_value_name]['PAGEMAX'] = $vn_value; }
+										$vn_page_len++;
+									}
+								}
+							}
+							break;
+						case 10:	// timecode
+							$va_values = $pr_res->get($vs_subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
+						
+							if(is_array($va_values)) {
+								foreach($va_values as $vn_value) {
+									$va_tag_values[$vs_value_name]['SUM'] += $vn_value;
+									if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
+									if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
+					
+									if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+										$va_tag_values[$vs_value_name]['PAGESUM'] += $vn_value;
+										if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
+										if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
+										$vn_page_len++;
+									}
+								}
+							}
+							$vb_has_timecode = true;
+							break;
+						case 11:	// integer
+						case 12:	// numeric (decimal)
+							$va_values = $pr_res->get($vs_subelement, array('returnAsArray' => true));
+						
+							if(is_array($va_values)) {
+								foreach($va_values as $vs_value) {
+									$vn_value = (float)$vs_value;
+									$va_tag_values[$vs_value_name]['SUM'] += $vn_value;
+									if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
+									if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
+					
+									if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+										$va_tag_values[$vs_value_name]['PAGESUM'] += $vn_value;
+										if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
+										if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
+										$vn_page_len++;
+									}
+								}
+							}
+							break;
+						default:
+							break(2);
+					}
+				}			
+				$vn_c++;
+			}
 		}
 		
 		if ($vb_has_timecode) {			
@@ -3190,81 +3239,115 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if (!($vs_timecode_format = $o_config->get('timecode_output_format'))) { $vs_timecode_format = 'HOURS_MINUTES_SECONDS'; }
 		}
 		
+		if ($vb_is_multiple) {
+			$va_subelements_to_process = [];
+			foreach(array_keys($va_tag_values) as $vs_value_name) {
+				$vn_datatype = preg_match("!_([\d]+)$!", $vs_value_name, $va_matches) ? (int)$va_matches[1] : 0;
+				$va_subelements_to_process[$vs_value_name] =  $vn_datatype;
+			}
+		}
+
 		// Post processing
 		foreach($va_subelements_to_process as $vs_subelement => $vn_subelement_datatype) {
+			$vs_value_name = ($vb_is_multiple) ? "Value_{$vn_subelement_datatype}" : $vs_subelement;
+					
 			switch($vn_subelement_datatype) {
 				case 6:		// currency
-					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
-					
-					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
-						$va_tag_values[$vs_subelement][$vs_tag] = "{$vs_user_currency} ".$va_tag_values[$vs_subelement][$vs_tag];
+					$va_tag_values[$vs_value_name]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['PAGESUM']/$vn_page_len) : 0;
+					$va_tag_values[$vs_value_name]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['SUM']/$vn_c) : "0.00";
+				
+					foreach($va_tag_values[$vs_value_name] as $vs_tag => $vn_val) {
+						$va_tag_values[$vs_value_name][$vs_tag] = "{$vs_user_currency} ".$va_tag_values[$vs_value_name][$vs_tag];
 					}
-					
+				
 					break;
 				case 8:		// length
-					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
-					
-					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
+					$va_tag_values[$vs_value_name]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['PAGESUM']/$vn_page_len) : 0;
+					$va_tag_values[$vs_value_name]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['SUM']/$vn_c) : "0.00";
+				
+					foreach($va_tag_values[$vs_value_name] as $vs_tag => $vn_val) {
 						$vo_measurement = new Zend_Measure_Length((float)$vn_val, 'METER', $g_ui_locale);
-						$va_tag_values[$vs_subelement][$vs_tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Length::METER :  Zend_Measure_Length::FEET, 4);
+						$va_tag_values[$vs_value_name][$vs_tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Length::METER :  Zend_Measure_Length::FEET, 4);
 					}
-					
+				
 					break;
 				case 9:		// weight
-					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
-					
-					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
+					$va_tag_values[$vs_value_name]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['PAGESUM']/$vn_page_len) : 0;
+					$va_tag_values[$vs_value_name]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['SUM']/$vn_c) : "0.00";
+				
+					foreach($va_tag_values[$vs_value_name] as $vs_tag => $vn_val) {
 						$vo_measurement = new Zend_Measure_Length((float)$vn_val, 'KILOGRAM', $g_ui_locale);
-						$va_tag_values[$vs_subelement][$vs_tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Weight::KILOGRAM :  Zend_Measure_Weight::POUND, 4);
+						$va_tag_values[$vs_value_name][$vs_tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Weight::KILOGRAM :  Zend_Measure_Weight::POUND, 4);
 					}
-					
+				
 					break;
 				case 10:	// timecode
-					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : 0;
-					
-					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
-						if (!$vb_has_timecode) { $va_tag_values[$vs_subelement][$vs_tag] = ''; continue; }
+					$va_tag_values[$vs_value_name]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['PAGESUM']/$vn_page_len) : 0;
+					$va_tag_values[$vs_value_name]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_value_name]['SUM']/$vn_c) : 0;
+				
+					foreach($va_tag_values[$vs_value_name] as $vs_tag => $vn_val) {
+						if (!$vb_has_timecode) { $va_tag_values[$vs_value_name][$vs_tag] = ''; continue; }
 						$o_tcp->setParsedValueInSeconds($vn_val);
-						$va_tag_values[$vs_subelement][$vs_tag] = $o_tcp->getText($vs_timecode_format); 
+						$va_tag_values[$vs_value_name][$vs_tag] = $o_tcp->getText($vs_timecode_format); 
 					}
-					
+				
 					break;
 				case 11:	// integer
-					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
-						$va_tag_values[$vs_subelement][$vs_tag] = (int)$va_tag_values[$vs_subelement][$vs_tag];
+					foreach($va_tag_values[$vs_value_name] as $vs_tag => $vn_val) {
+						$va_tag_values[$vs_value_name][$vs_tag] = (int)$va_tag_values[$vs_value_name][$vs_tag];
 					}
-					
+				
 					break;
 				case 12:	// numeric (decimal)
-					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
-						$va_tag_values[$vs_subelement][$vs_tag] = (float)$va_tag_values[$vs_subelement][$vs_tag];
+					foreach($va_tag_values[$vs_value_name] as $vs_tag => $vn_val) {
+						$va_tag_values[$vs_value_name][$vs_tag] = (float)$va_tag_values[$vs_value_name][$vs_tag];
 					}
-					
+				
 					break;
+			}
+		
+			// Restore current position of search result
+			$pr_res->seek(0);
+			
+			foreach($va_tag_values as $vs_value_name => $va_tag_data) {
+				foreach($va_tag_data as $vs_tag => $vs_tag_value) {
+					if(strpos($vs_value_name, '.') !== false) {
+						$va_tmp = explode(".", $vs_value_name);
+						$vs_template = str_replace("^{$vs_tag}:".array_pop($va_tmp), $vs_tag_value, $vs_template);
+					} elseif($vb_is_multiple && preg_match("!^Value_([\d]+)$!", $vs_value_name, $va_matches)) {
+						$vs_name = null;
+						switch((int)$va_matches[1]) {
+							case 6:
+								$vs_name = 'currency';
+								break;
+							case 8:
+								$vs_name = 'length';
+								break;
+							case 9:
+								$vs_name = 'timecode';
+								break;
+							case 10:
+								$vs_name = 'length';
+								break;
+							case 10:
+								$vs_name = 'integer';
+								break;
+							case 10:
+								$vs_name = 'numeric';
+								break;
+						}
+						if ($vs_name) { $vs_template = str_replace("^{$vs_tag}:{$vs_name}", $vs_tag_value, $vs_template); }
+					}
+					$vs_template = str_replace("^{$vs_tag}", $vs_tag_value, $vs_template);
+				}
 			}
 		}
 		
 		// Restore current position of search result
 		$pr_res->seek($vn_current_index);
 		
-		foreach($va_tag_values as $vs_subelement => $va_tag_data) {
-			foreach($va_tag_data as $vs_tag => $vs_tag_value) {
-				if ($vs_subelement == $vs_bundle_name) {
-					$vs_template = str_replace("^{$vs_tag}", $vs_tag_value, $vs_template);
-				} else {
-					$va_tmp = explode(".", $vs_subelement);
-					$vs_template = str_replace("^{$vs_tag}:".array_pop($va_tmp), $vs_tag_value, $vs_template);
-				}
-			}
-		}
-		
 		return $vs_template;
 	}
-	
 	# ------------------------------------------------------------------
 	/**
  	 * Returns media presentation viewer HTML for one or more records. This is the entry point when rendering media
