@@ -234,7 +234,7 @@ class SimpleService {
 			$vs_delimiter = caGetOption('delimiter', $pm_template, ";");
 			
 			// Get values and break on delimiter
-			$vs_v = $pt_instance->getWithTemplate(caGetOption('valueTemplate', $pm_template, 'No template'), $pa_options);
+			$vs_v = $pt_instance->getWithTemplate(caGetOption('valueTemplate', $pm_template, 'No template'), array_merge($pa_options, ['includeBlankValuesInArray' => true]));
 			$va_v = explode($vs_delimiter, $vs_v);
 			
 			$va_key = null;
@@ -242,6 +242,7 @@ class SimpleService {
 				// Get keys and break on delimiter
 				$va_keys = explode($vs_delimiter, $vs_keys = $pt_instance->getWithTemplate($vs_key_template, $pa_options));
 			}
+		
 			$va_v_decode = [];
 			foreach($va_v as $vn_i => $vs_part) {
 				switch($vs_return_as) {
