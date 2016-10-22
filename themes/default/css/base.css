@@ -2719,8 +2719,10 @@ div.caMediaOverlayControls .download {
     margin-left:20px;
 }
 
-div.caMediaOverlayControls .download form a {
-	font-size: 12px;	
+div.caMediaOverlayControls .download form a, div.caMediaOverlayControls .download a {
+	font-size: 11px;	
+    font-weight: normal;
+    color:#FFF;
 }
 
 div.caMediaOverlayControls .objectInfo{
