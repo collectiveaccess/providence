@@ -279,8 +279,6 @@ class View extends BaseObject {
 				}
 			}
 			if (!$vb_output) {
-				print caPrintStackTrace();
-				print_R($this->opa_view_paths); die;
 				$this->postError(2400, _t("View %1 was not found", $ps_filename), "View->render()");
 			}
 		}
