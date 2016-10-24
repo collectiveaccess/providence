@@ -275,15 +275,40 @@ class DisplayTemplateParser {
 		$o_doc = str_get_dom($ps_template);	
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 
-		$va_tags = DisplayTemplateParser::_getTags($o_doc->children, array_merge($pa_options, ['maxLevels' => 1]));
-
+		$va_tags = DisplayTemplateParser::_getTags($o_doc->children, array_merge($pa_options, []));
+		$va_units = DisplayTemplateParser::_parseUnits($o_doc->children, [], []);
+		
 		if (!is_array(DisplayTemplateParser::$template_cache)) { DisplayTemplateParser::$template_cache = []; }
 		return DisplayTemplateParser::$template_cache[$vs_cache_key] = [
 			'original_template' => $ps_template_original, 	// template as passed by caller
 			'template' => $ps_template, 					// full template with compatibility transformations performed and units replaced with placeholders
 			'tags' => $va_tags, 							// all placeholder tags used in template, both replaceable (eg. ^ca_objects.idno) and directive codes (eg. <ifdef code="ca_objects.idno">...</ifdef>
-			'tree' => $o_doc								// ganon instance containing parsed template HTML
+			'tree' => $o_doc,								// ganon instance containing parsed template HTML
+			'units' => $va_units							// map of nested units in template 
 		];	
+	}
+	# -------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _parseUnits($po_nodes, $pa_units, $pa_options=null) {
+		if(!is_array($pa_units)) { $pa_units = []; }
+		
+		foreach($po_nodes as $vn_index => $o_node) {
+			switch($vs_tag = $o_node->tag) {
+				case 'unit':
+					$pa_units[] = $u = [
+						'relativeTo' => $o_node->relativeTo,
+						'unitTemplate' => $o_node->html(),
+						'subUnits' => DisplayTemplateParser::_parseUnits($o_node->children, $u)
+					];
+					
+					break;	
+			}
+			
+		}
+		
+		return $pa_units;
 	}
 	# -------------------------------------------------------------------
 	/**
@@ -668,6 +693,10 @@ class DisplayTemplateParser {
 								}
 							
 								break;
+						}
+						
+						if (($vn_start > 0) || ($vn_length > 0)) {
+							$va_relative_ids = array_slice($va_relative_ids, $vn_start, $vn_length); // trim to start/length
 						}
 						
 						$va_tmpl_val = DisplayTemplateParser::evaluate(

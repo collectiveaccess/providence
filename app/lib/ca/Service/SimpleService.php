@@ -153,8 +153,8 @@ class SimpleService {
 
 		/** @var SearchResult $o_res */
 		$o_res = $o_search->search($ps_q, array(
-			'sort' => $po_request->getParameter('sort', pString),
-			'sortDirection' => $po_request->getParameter('sortDirection', pString),
+			'sort' => ($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort'],
+			'sortDirection' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'],
 			'checkAccess' => $pa_config['checkAccess'],
 		));
 
