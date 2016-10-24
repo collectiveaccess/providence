@@ -40,8 +40,8 @@ function caDisplayException(Exception $e) {
 
 	$pn_errno = 0;
 	$ps_errstr = $e->getMessage();
-	$ps_errfile = __FILE__;
-	$pn_errline = __LINE__;
+	$ps_errfile = $e->getFile();
+	$pn_errline = $e->getLine();
 	$pa_errcontext = $e->getTrace();
 	$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
 	$pa_request_params = caExtractRequestParams();

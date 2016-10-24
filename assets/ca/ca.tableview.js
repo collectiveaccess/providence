@@ -147,7 +147,6 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 
 		that.save = function(change) {
-			console.log("change", change);
 			that.saveQueue.push(change);
 			that._runSaveQueue();
 		};
@@ -187,10 +186,13 @@ var caUI = caUI || {};
 			that.saveQueue = [];
 			jQuery.post(that.dataSaveUrl, { changes: q },
 				function(data) {
-					if (data.status == 'error') {
+					console.log("data", data);
+					if (parseInt(data.status) !== 0) {
 						var errorMessages = [];
-						jQuery.each(data.errors, function(f, errorList) {
-							jQuery.each(errorList, function(id, error) {
+						jQuery.each(data.errors, function(error, bundle) {
+							//jQuery.each(errorList, function(id, error) {
+								var id = data['id'];
+								
         						var row = parseInt(itemIDToRow[id]);
         						var col = that.getColumnForField(rowData[row]['change'][1], true);
 								
@@ -203,7 +205,7 @@ var caUI = caUI || {};
 								
 								ht.setCellMeta(row, col, 'comment', error);	// display error on cell
 								ht.setCellMeta(row, col, 'error', true);
-							});
+							//});
 						});
 						
         				ht.render();
