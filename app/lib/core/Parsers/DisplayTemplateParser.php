@@ -585,6 +585,8 @@ class DisplayTemplateParser {
 								break;
 						}
 						
+						$vn_num_vals = sizeof($va_relative_ids);
+						
 						// process template for all records selected by unit tag
 						$va_tmpl_val = DisplayTemplateParser::evaluate(
 							$o_node->getInnerText(), $ps_tablename, $va_relative_ids,
@@ -602,6 +604,7 @@ class DisplayTemplateParser {
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
+									'fullValueCount' => $vn_num_vals,
 									'relativeToContainer' => $vs_relative_to_container,
 									'includeBlankValuesInTopLevelForPrefetch' => false,
 									'unique' => $vb_unique,
@@ -695,8 +698,12 @@ class DisplayTemplateParser {
 								break;
 						}
 						
-						if (($vn_start > 0) || ($vn_length > 0)) {
-							$va_relative_ids = array_slice($va_relative_ids, $vn_start, $vn_length); // trim to start/length
+						$vn_num_vals = sizeof($va_relative_ids);
+						if ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids)) {
+							// Only evaluate units that fall within the start/length window to save time
+							// We pass the full count of units as 'fullValueCount' to ensure that ^count, ^index and friends 
+							// are accurate.
+							$va_relative_ids = array_slice($va_relative_ids, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
 						}
 						
 						$va_tmpl_val = DisplayTemplateParser::evaluate(
@@ -715,6 +722,7 @@ class DisplayTemplateParser {
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
+									'fullValueCount' => $vn_num_vals,
 									'includeBlankValuesInTopLevelForPrefetch' => false,
 									'unique' => $vb_unique,
 									'aggregateUnique' => $vb_aggregate_unique,
@@ -726,8 +734,7 @@ class DisplayTemplateParser {
 						);
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
-							$vn_num_vals = sizeof($va_tmpl_val);
-							$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); 
+							//$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); 
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
 						}
 						
@@ -824,6 +831,7 @@ class DisplayTemplateParser {
 		
 		$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
 		$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
+		$vn_full_value_count = caGetOption('fullValueCount', $pa_options, $pr_res->numHits(), ['castTo' => 'int']);
 		
 		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $pa_options, array(), ['castTo' => 'array']);
 		
@@ -968,13 +976,13 @@ class DisplayTemplateParser {
 						$va_val_list = [$pr_res->tableName()];
 						break;
 					case 'count':
-						$va_val_list = [$pr_res->numHits()];
+						$va_val_list = [$vn_full_value_count];
 						break;
 					case 'omitcount':
-						$va_val_list = [(int)$pr_res->numHits() - ($vn_length - $vn_start)];
+						$va_val_list = [$vn_full_value_count - ($vn_length - $vn_start)];
 						break;
 					case 'index':
-						$va_val_list = [$pr_res->currentIndex() + 1];
+						$va_val_list = [(int)$vn_start + $pr_res->currentIndex() + 1];
 						break;
 					default:
 						if(isset($pa_options['forceValues'][$vs_get_spec][$pr_res->getPrimaryKey()])) { 
