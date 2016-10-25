@@ -872,12 +872,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
 								
 								$qr_count = $this->opo_db->query("SELECT count(*) c FROM {$vs_temp_table}");
-								if (!$qr_count->nextRow() || !(int)$qr_count->get('c')) { 
-									foreach($va_temp_tables as $vs_temp_table) {
-										$this->_dropTempTable($vs_temp_table);
-									}
-									break(2); 
-								}
 								
 								$va_temp_tables[] = $vs_temp_table;	
 							}
