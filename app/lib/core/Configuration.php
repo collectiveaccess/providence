@@ -933,7 +933,12 @@ class Configuration {
 		// assumes translation function _t() is present; if not loaded will not attempt translation
 		if (preg_match("/_\(([^\"\)]+)\)/", $ps_text, $va_matches)) {
 			if(function_exists('_t')) {
-				return _t($va_matches[1]);
+				$vs_trans_text = $ps_text;
+				array_shift($va_matches);
+				foreach($va_matches as $vs_match) {
+					$vs_trans_text = str_replace("_({$vs_match})", _t($vs_match), $vs_trans_text);
+				}
+				return $vs_trans_text;
 			}
 		}
 		return $ps_text;

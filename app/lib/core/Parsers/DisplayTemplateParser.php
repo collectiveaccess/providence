@@ -195,11 +195,16 @@ class DisplayTemplateParser {
 		$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 		if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
 		
+		$vb_check_deleted = $t_instance->hasField('deleted');
+		
 		$ps_skip_if_expression = caGetOption('skipIfExpression', $pa_options, false);
 		$va_skip_if_expression_tags = caGetTemplateTags($ps_skip_if_expression);
 		
 		$va_proc_templates = [];
 		while($qr_res->nextHit()) {
+			// skip deleted
+			if ($vb_check_deleted && ($qr_res->get("{$ps_tablename}.deleted") !== '0')) { continue; }
+			
 			// check access
 			if ($pa_check_access && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			
@@ -270,15 +275,40 @@ class DisplayTemplateParser {
 		$o_doc = str_get_dom($ps_template);	
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 
-		$va_tags = DisplayTemplateParser::_getTags($o_doc->children, array_merge($pa_options, ['maxLevels' => 1]));
-
+		$va_tags = DisplayTemplateParser::_getTags($o_doc->children, array_merge($pa_options, []));
+		$va_units = DisplayTemplateParser::_parseUnits($o_doc->children, [], []);
+		
 		if (!is_array(DisplayTemplateParser::$template_cache)) { DisplayTemplateParser::$template_cache = []; }
 		return DisplayTemplateParser::$template_cache[$vs_cache_key] = [
 			'original_template' => $ps_template_original, 	// template as passed by caller
 			'template' => $ps_template, 					// full template with compatibility transformations performed and units replaced with placeholders
 			'tags' => $va_tags, 							// all placeholder tags used in template, both replaceable (eg. ^ca_objects.idno) and directive codes (eg. <ifdef code="ca_objects.idno">...</ifdef>
-			'tree' => $o_doc								// ganon instance containing parsed template HTML
+			'tree' => $o_doc,								// ganon instance containing parsed template HTML
+			'units' => $va_units							// map of nested units in template 
 		];	
+	}
+	# -------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _parseUnits($po_nodes, $pa_units, $pa_options=null) {
+		if(!is_array($pa_units)) { $pa_units = []; }
+		
+		foreach($po_nodes as $vn_index => $o_node) {
+			switch($vs_tag = $o_node->tag) {
+				case 'unit':
+					$pa_units[] = $u = [
+						'relativeTo' => $o_node->relativeTo,
+						'unitTemplate' => $o_node->html(),
+						'subUnits' => DisplayTemplateParser::_parseUnits($o_node->children, $u)
+					];
+					
+					break;	
+			}
+			
+		}
+		
+		return $pa_units;
 	}
 	# -------------------------------------------------------------------
 	/**
@@ -555,6 +585,8 @@ class DisplayTemplateParser {
 								break;
 						}
 						
+						$vn_num_vals = sizeof($va_relative_ids);
+						
 						// process template for all records selected by unit tag
 						$va_tmpl_val = DisplayTemplateParser::evaluate(
 							$o_node->getInnerText(), $ps_tablename, $va_relative_ids,
@@ -572,6 +604,7 @@ class DisplayTemplateParser {
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
+									'fullValueCount' => $vn_num_vals,
 									'relativeToContainer' => $vs_relative_to_container,
 									'includeBlankValuesInTopLevelForPrefetch' => false,
 									'unique' => $vb_unique,
@@ -656,13 +689,21 @@ class DisplayTemplateParser {
 									} elseif($t_rel_instance->isRelationship()) {
 										// return type on relationship
 										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
-									} elseif($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) {
+									} elseif(($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) && $o_dm->isRelationship($vs_rel_tablename)) {
 										// grab type from adjacent relationship table
 										$va_relationship_type_ids = $pr_res->get("{$vs_rel_tablename}.type_id", ['returnAsArray' => true]);
  									}
 								}
 							
 								break;
+						}
+						
+						$vn_num_vals = sizeof($va_relative_ids);
+						if ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids)) {
+							// Only evaluate units that fall within the start/length window to save time
+							// We pass the full count of units as 'fullValueCount' to ensure that ^count, ^index and friends 
+							// are accurate.
+							$va_relative_ids = array_slice($va_relative_ids, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
 						}
 						
 						$va_tmpl_val = DisplayTemplateParser::evaluate(
@@ -681,6 +722,7 @@ class DisplayTemplateParser {
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
+									'fullValueCount' => $vn_num_vals,
 									'includeBlankValuesInTopLevelForPrefetch' => false,
 									'unique' => $vb_unique,
 									'aggregateUnique' => $vb_aggregate_unique,
@@ -692,8 +734,7 @@ class DisplayTemplateParser {
 						);
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
-							$vn_num_vals = sizeof($va_tmpl_val);
-							$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); 
+							//$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); 
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
 						}
 						
@@ -790,6 +831,7 @@ class DisplayTemplateParser {
 		
 		$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
 		$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
+		$vn_full_value_count = caGetOption('fullValueCount', $pa_options, $pr_res->numHits(), ['castTo' => 'int']);
 		
 		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $pa_options, array(), ['castTo' => 'array']);
 		
@@ -934,13 +976,13 @@ class DisplayTemplateParser {
 						$va_val_list = [$pr_res->tableName()];
 						break;
 					case 'count':
-						$va_val_list = [$pr_res->numHits()];
+						$va_val_list = [$vn_full_value_count];
 						break;
 					case 'omitcount':
-						$va_val_list = [(int)$pr_res->numHits() - ($vn_length - $vn_start)];
+						$va_val_list = [$vn_full_value_count - ($vn_length - $vn_start)];
 						break;
 					case 'index':
-						$va_val_list = [$pr_res->currentIndex() + 1];
+						$va_val_list = [(int)$vn_start + $pr_res->currentIndex() + 1];
 						break;
 					default:
 						if(isset($pa_options['forceValues'][$vs_get_spec][$pr_res->getPrimaryKey()])) { 

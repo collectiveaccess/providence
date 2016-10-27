@@ -74,8 +74,15 @@ class ModelController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function updateConfig() {
 		$vs_post_data = $this->getRequest()->getRawPostData();
+		require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+		// @todo make this configurable or get from app.conf?
+		$o_log = new KLogger(__CA_BASE_DIR__ . '/app/log', KLogger::DEBUG);
 		try {
-			$o_installer = Installer::getFromString($vs_post_data);
+			$o_log->logInfo(_t('Got incoming updateConfig request from %1', $this->getRequest()->getClientIP()));
+			$o_log->logInfo(_t('Raw payload is %1', $vs_post_data));
+			$o_log->logInfo(_t('Running installer now ...'));
+
+			$o_installer = Installer::getFromString($vs_post_data, '', false, true);
 
 			if($va_errors = $o_installer->getErrors()) {
 				$this->getView()->setVar('errors', $va_errors);
@@ -96,12 +103,16 @@ class ModelController extends BaseServiceController {
 
 			if($va_errors = $o_installer->getErrors()) {
 				$this->getView()->setVar('errors', $va_errors);
+				$o_log->logInfo(_t('It seems there was at least one error while running Installer for updateConfig: %1', join(',', $va_errors)));
 				$this->render('json_error.php');
 				return;
 			}
 
+			$o_log->logInfo(_t('Done ...'));
+
 			$this->render('json.php');
 		} catch(Exception $e) {
+			$o_log->logInfo(_t('It seems there was an error while running Installer for updateConfig: %1', $e->getMessage()));
 			$this->getView()->setVar('errors', [$e->getCode() => $e->getMessage()]);
 			$this->render('json_error.php');
 		}

@@ -177,7 +177,7 @@
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (caGetOption('returnAsDecimalWithCurrencySpecifier', $pa_options, false)) {
-				return $this->ops_currency_specifier.' '.$this->opn_value;
+				return caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value;
 			}
 			if(Zend_Registry::isRegistered("Zend_Locale")) {
 				$o_locale = Zend_Registry::get('Zend_Locale');
@@ -201,9 +201,9 @@
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			$vs_val = str_replace('%', $this->ops_currency_specifier, $vs_decimal_with_placeholder);
+ 			$vs_val = str_replace('%', caGetCurrencySymbol($this->ops_currency_specifier), $vs_decimal_with_placeholder);
  			if (($vs_to_currency = caGetOption('displayCurrencyConversion', $pa_options, false)) && ($this->ops_currency_specifier != $vs_to_currency)) {
- 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue($this->ops_currency_specifier.' '.$this->opn_value, $vs_to_currency)).")";
+ 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue(caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value, $vs_to_currency)).")";
  			}
  			return $vs_val;
 		}

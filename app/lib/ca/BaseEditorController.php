@@ -604,7 +604,7 @@ class BaseEditorController extends ActionController {
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-			$this->render('../template_test_html.php');
+			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
 		}
 
 		$t_display = new ca_bundle_displays();
@@ -766,6 +766,7 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = true;
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+			exit;
 		} catch (Exception $e) {
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 			$vb_printed_properly = false;
@@ -816,12 +817,14 @@ class BaseEditorController extends ActionController {
 		} else {
 			$this->view->setVar('valuesAsAttributeInstances', $va_values = $t_subject->getAttributesByElement($vs_element));
 		}
+		
+		$this->view->setVar('t_subject', $t_subject);
 
 		// Extract values into array for easier view processing
 
 		$va_extracted_values = array();
 		foreach($va_values as $o_value) {
-			$va_extracted_values[] = $o_value->getDisplayValues();
+			$va_extracted_values[] = $o_value->getDisplayValues(null, ['output' => 'text']);
 		}
 		$this->view->setVar('valuesAsElementCodeArrays', $va_extracted_values);
 
@@ -854,6 +857,7 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = true;
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
+			exit;
 		} catch (Exception $e) {
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 			$vb_printed_properly = false;
@@ -1701,10 +1705,6 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-	
-		if (!$t_subject->isReadable($this->request)) { 
-			throw new ApplicationException(_t('Cannot view media'));
-		}
 			
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
@@ -1715,6 +1715,10 @@ class BaseEditorController extends ActionController {
 			$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
 			$t_subject->load($t_attr->get('row_id'));
+						
+			if (!$t_subject->isReadable($this->request)) { 
+				throw new ApplicationException(_t('Cannot view media'));
+			}
 
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
@@ -1725,7 +1729,10 @@ class BaseEditorController extends ActionController {
 				"attribute:{$pn_value_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
 			);
-		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {			
+			if (!$t_subject->isReadable($this->request)) { 
+				throw new ApplicationException(_t('Cannot view media'));
+			}
 			//
 			// View object representation
 			//
@@ -2340,8 +2347,7 @@ class BaseEditorController extends ActionController {
 			$va_stored_files[$vn_i] = "userMedia{$vn_user_id}/{$vs_dest_filename}"; // only return the user directory and file name, not the entire path
 		}
 
-
-		print json_encode($va_stored_files);
+		$this->response->addContent(json_encode($va_stored_files));
 	}
 	# -------------------------------------------------------
 	/**
@@ -2371,7 +2377,7 @@ class BaseEditorController extends ActionController {
 		$o_res = caMakeSearchResult($t_instance->tableName(), $va_ids, array('sort' => $va_sort_keys, 'sortDirection' => $vs_sort_direction));
 		$va_sorted_ids = $o_res->getAllFieldValues($t_instance->primaryKey());
 
-		print json_encode($va_sorted_ids);
+		$this->response->addContent(json_encode($va_sorted_ids));
 	}
 	# -------------------------------------------------------
 }

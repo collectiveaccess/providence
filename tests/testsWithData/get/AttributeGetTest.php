@@ -174,7 +174,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("23 / 1984", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.currency_test');
-		$this->assertEquals("USD 100.00", $vm_ret);
+		$this->assertEquals("$ 100.00", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.georeference');
 		$this->assertRegExp("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);

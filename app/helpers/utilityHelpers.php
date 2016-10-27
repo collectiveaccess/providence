@@ -2458,6 +2458,30 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Get symbol for currency if available. "USD" will return "$", for example, while
+	 * "CAD" will return "CAD"
+	 *
+	 * @param $ps_value string Currency specifier (Ex. USD, EUR, CAD)
+	 *
+	 * @return string Symbol (Ex. $, £, ¥) or currency specifier if no symbol is available
+	 */
+	function caGetCurrencySymbol($ps_value) {
+		$o_config = Configuration::load();
+		$vs_dollars_are_this = strtolower($o_config->get('default_dollar_currency'));
+		switch(strtolower($ps_value)) {
+			case $vs_dollars_are_this:
+				return '$';
+			case 'eur':
+				return '€';
+			case 'gbp':
+				return '£';
+			case 'jpy':
+				return '¥';
+		}
+		return $ps_value;
+	}
+	# ----------------------------------------
+	/**
 	 * 
 	 *
 	 * @return array 
@@ -3194,6 +3218,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
 		$num = round($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;

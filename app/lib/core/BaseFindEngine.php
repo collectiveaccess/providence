@@ -272,14 +272,14 @@
 		 *
 		 * @param array $pa_hits
 		 * @param string $ps_table The table being sorted
-		 * @param string $ps_field A semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
+		 * @param string $pm_field An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
 		 * @param string $ps_key Key to use for temporary storage
 		 * @param string $ps_direction Direction to sort
 		 * @param array $pa_options
 		 *
 		 * @return array
 		 */
-		public function sortHits(&$pa_hits, $ps_table, $ps_field, $ps_direction='asc', $pa_options=null) {
+		public function sortHits(&$pa_hits, $ps_table, $pm_field, $ps_direction='asc', $pa_options=null) {
 			if (!$t_table = $this->opo_datamodel->getInstanceByTableName($ps_table, true)) { return null; } // invalid table
 			$vs_table_pk = $t_table->primaryKey();
 			$vn_table_num = $t_table->tableNum();
@@ -292,11 +292,10 @@
 			if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
 			
 			// Get field list
-			//$va_sort_tmp = explode('/', $ps_field);		// strip any relationship type
-			//$ps_field = $va_sort_tmp[0];
+			//$va_sort_tmp = explode('/', $pm_field);		// strip any relationship type
+			//$pm_field = $va_sort_tmp[0];
 			//$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;
-			$va_bundles = explode(';', $ps_field); // $va_sort_tmp[0]);
-			
+			$va_bundles = is_array($pm_field) ? $pm_field : explode(';', $pm_field); // $va_sort_tmp[0]);
 			$va_sorted_hits = array();
 			
 			$vs_sort_tmp_table = null;
