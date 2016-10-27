@@ -2363,7 +2363,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 											break;
 										default:
-											if ($t_subject->hasField($vs_element)) {
+											if ($t_subject->hasField($vs_element) && (($vs_element != $t_subject->primaryKey(true)) && ($vs_element != $t_subject->primaryKey()))) {
 												$va_field_info = $t_subject->getFieldInfo($vs_element);
 												$va_opts = array('assumeIdnoForRepresentationID' => true, 'assumeIdnoStubForLotID' => true, 'tryObjectIdnoForRepresentationID' => true, 'treatParentIDAsIdno' => true);
 												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
