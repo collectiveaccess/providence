@@ -202,92 +202,53 @@
         <label locale="en_US">
           <name>Storage location types</name>
         </label>
-        <label locale="fr_FR">
-          <name>Types d'emplacement de stockage</name>
-        </label>
       </labels>
       <items>
-        <item idno="campus" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>campus</name_singular>
-              <name_plural>campuses</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>campus</name_singular>
-              <name_plural>campus</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="building" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>building</name_singular>
-              <name_plural>buildings</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>bâtiment</name_singular>
-              <name_plural>bâtiments</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="floor" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>floor</name_singular>
-              <name_plural>floors</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>étage</name_singular>
-              <name_plural>étages</name_plural>
+              <name_singular>Building</name_singular>
+              <name_plural>Buildings</name_plural>
             </label>
           </labels>
         </item>
         <item idno="room" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>room</name_singular>
-              <name_plural>rooms</name_plural>
+              <name_singular>Room</name_singular>
+              <name_plural>Rooms</name_plural>
             </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>pièce</name_singular>
-              <name_plural>pièces</name_plural>
+          </labels>
+        </item>
+        <item idno="box" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Box</name_singular>
+              <name_plural>Boxes</name_plural>
             </label>
           </labels>
         </item>
         <item idno="cabinet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cabinet</name_singular>
-              <name_plural>cabinets</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>armoire</name_singular>
-              <name_plural>armoire</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="drawer" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>drawer</name_singular>
-              <name_plural>drawers</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>bureau</name_singular>
-              <name_plural>bureaux</name_plural>
+              <name_singular>Cabinet</name_singular>
+              <name_plural>Cabinets</name_plural>
             </label>
           </labels>
         </item>
         <item idno="shelf" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>shelf</name_singular>
-              <name_plural>shelves</name_plural>
+              <name_singular>Shelf</name_singular>
+              <name_plural>Shelves</name_plural>
             </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>étagère</name_singular>
-              <name_plural>étagères</name_plural>
+          </labels>
+        </item>
+        <item idno="area" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Area</name_singular>
+              <name_plural>Areas</name_plural>
             </label>
           </labels>
         </item>
@@ -462,6 +423,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>Female</name_singular>
               <name_plural>Female</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="child" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Child/Infant</name_singular>
+              <name_plural>Child/Infant</name_plural>
             </label>
           </labels>
         </item>
@@ -3023,7 +2992,7 @@
             </label>
           </labels>
         </item>
-        <item idno="overcast_know" enabled="1" default="0">
+        <item idno="overcast_knot" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Overcast knot</name_singular>
@@ -3190,7 +3159,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -4032,6 +4001,7 @@
         </label>
       </labels>
       <settings>
+        <setting name="usewysiwygeditor">1</setting>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">6</setting>
       </settings>
@@ -4476,7 +4446,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -4494,7 +4464,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -4533,7 +4503,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -5076,7 +5046,7 @@
       </labels>
       <settings>
         <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">3</setting>
+        <setting name="fieldHeight">7</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -5554,6 +5524,12 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession Number</setting>
+              </settings>
+            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -5568,12 +5544,6 @@
             </placement>
              <placement code="ca_attribute_component_parts">
               <bundle>ca_attribute_component_parts</bundle>
-            </placement>
-            <placement code="idno">
-              <bundle>idno</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Accession Number</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_previous_number">
               <bundle>ca_attribute_previous_number</bundle>
@@ -5595,9 +5565,6 @@
             </placement>
             <placement code="ca_attribute_use_history">
               <bundle>ca_attribute_use_history</bundle>
-            </placement>
-            <placement code="ca_attribute_country_origin">
-              <bundle>ca_attribute_country_origin</bundle>
             </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
@@ -5667,17 +5634,20 @@
             <placement code="ca_attribute_medium">
               <bundle>ca_attribute_medium</bundle>
             </placement>
+            <placement code="ca_attribute_support">
+              <bundle>ca_attribute_support</bundle>
+            </placement>
             <placement code="ca_attribute_technique">
               <bundle>ca_attribute_technique</bundle>
             </placement>
             <placement code="ca_attribute_school_style">
               <bundle>ca_attribute_school_style</bundle>
             </placement>
-            <placement code="ca_attribute_support">
-              <bundle>ca_attribute_support</bundle>
-            </placement>
             <placement code="ca_attribute_inscription">
               <bundle>ca_attribute_inscription</bundle>
+            </placement>
+            <placement code="ca_attribute_country_origin">
+              <bundle>ca_attribute_country_origin</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -5719,6 +5689,9 @@
             <placement code="ca_attribute_inscription">
               <bundle>ca_attribute_inscription</bundle>
             </placement>
+            <placement code="ca_attribute_country_origin">
+              <bundle>ca_attribute_country_origin</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="document" default="0">
@@ -5757,6 +5730,9 @@
              <placement code="ca_attribute_inscription">
               <bundle>ca_attribute_inscription</bundle>
             </placement>
+            <placement code="ca_attribute_country_origin">
+              <bundle>ca_attribute_country_origin</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
@@ -5787,13 +5763,6 @@
             <placement code="ca_attribute_inventory">
               <bundle>ca_attribute_inventory</bundle>
             </placement> 
-            <placement code="ca_lots">
-              <bundle>ca_object_lots</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Related Accession</setting>
-                <setting name="add_label" locale="en_US">add accession</setting>
-              </settings>
-            </placement>
             <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
                <settings>
@@ -6015,6 +5984,28 @@
               <bundle>ca_places</bundle>
                <settings>
                 <setting name="label" locale="en_US">Related Places</setting>
+              </settings>
+            </placement>
+            <placement code="ca_lots">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Accession</setting>
+                <setting name="add_label" locale="en_US">add accession</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="media" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+               <settings>
+                 <setting name="label" locale="en_US">Entity Image</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -6463,11 +6454,11 @@
             <placement code="ca_attribute_loan_conditions">
               <bundle>ca_attribute_loan_conditions</bundle>
             </placement>
-            <placement code="ca_attribute_loan_note">
-              <bundle>ca_attribute_loan_note</bundle>
-            </placement>
             <placement code="ca_attribute_loan_purpose">
               <bundle>ca_attribute_loan_purpose</bundle>
+            </placement>
+            <placement code="ca_attribute_loan_note">
+              <bundle>ca_attribute_loan_note</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -7922,35 +7913,6 @@
             <setting name="label" locale="en_US">Current Location</setting>
           </settings>
         </placement>     
-      </bundlePlacements>
-    </display>
-    <display code="object_fmv" type="ca_objects" system="1">
-      <labels>
-        <label locale="en_US">
-          <name>Object - Fair Market Value</name>
-        </label>
-      </labels>
-      <bundlePlacements>
-        <placement code="idno">
-          <bundle>ca_objects.idno</bundle>
-          <settings>
-             <setting name="label" locale="en_US">Accession Number</setting>
-          </settings>
-        </placement>  
-        <placement code="preferred_labels">
-          <bundle>ca_objects.preferred_labels</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Object Name</setting>
-          </settings>
-        </placement>
-        <placement code="appraisal">
-          <bundle>ca_objects.appraisal</bundle>
-          <settings>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.appraisal"><if rule="^ca_objects.appraisal.appraisal_yn =~ /Yes/">
-^ca_objects.appraisal.appraisal_date: ^ca_objects.appraisal.fair_market_value (^ca_objects.appraisal.appraisal_remarks)</unit>]]></setting>
-            <setting name="delimiter"><![CDATA[<br>]]></setting>
-          </settings>
-        </placement>
       </bundlePlacements>
     </display>
     <display code="object_valuation" type="ca_objects" system="1">
