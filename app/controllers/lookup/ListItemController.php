@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -128,24 +128,22 @@
 						
 						$vn_c = 0;
 						foreach($va_list_items as $vn_item_id => $va_item) {
-							if ($vn_c >= $vn_start) {
-								unset($va_item['description']);
-								unset($va_item['icon']);
-							
-								if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
-								if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
-							
-								$va_item['name'] = $va_display_values[$vn_c];
-								if (!$va_item['name']) { $va_item['name'] = '??? '.$vn_item_id; }
-								$va_item['table'] = 'ca_list_items';
-							
-								// Child count is only valid if has_children is not null
-								$va_item['children'] = 0;
-								$va_list_items[$vn_item_id] = $va_item;
-							}
+							unset($va_item['description']);
+							unset($va_item['icon']);
+						
+							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
+							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
+						
+							$va_item['name'] = $va_display_values[$vn_c];
+							if (!$va_item['name']) { $va_item['name'] = '??? '.$vn_item_id; }
+							$va_item['table'] = 'ca_list_items';
+						
+							// Child count is only valid if has_children is not null
+							$va_item['children'] = 0;
+							$va_list_items[$vn_item_id] = $va_item;
 							$vn_c++;
 							
-							if ($vn_c > ($vn_start + $vn_max_items_per_page)) { break; }
+							if ($vn_c > ($vn_max_items_per_page)) { break; }
 						}
 						
 						if (sizeof($va_list_items)) {

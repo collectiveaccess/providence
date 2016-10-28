@@ -604,7 +604,7 @@ class BaseEditorController extends ActionController {
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-			$this->render('../template_test_html.php');
+			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
 		}
 
 		$t_display = new ca_bundle_displays();

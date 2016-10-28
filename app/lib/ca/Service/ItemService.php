@@ -628,7 +628,7 @@ class ItemService extends BaseJSONService {
 				continue;
 			}
 
-			$va_related_items = $t_instance->get($vs_get_spec,array("returnWithStructure" => true, 'useLocaleCodes' => true, 'groupFields' => true));
+			$va_related_items = $t_instance->getRelatedItems($vs_rel_table,array('returnWithStructure' => true, 'returnAsArray' => true, 'useLocaleCodes' => true, 'groupFields' => true));
 
 			if(($this->ops_table == "ca_objects") && ($vs_rel_table=="ca_object_representations")) {
 				$va_versions = $t_instance->getMediaVersions('media');
@@ -641,7 +641,7 @@ class ItemService extends BaseJSONService {
 					}
 					$va_return['representations'] = join($vs_delimiter, $va_urls);
 				} else {
-					$va_return['representations'] = $t_instance->getRepresentations($va_versions);
+					$va_return['representations'] = $t_instance->getRepresentations(['original']);
 				}
 
 				if(is_array($va_return['representations'])) {
