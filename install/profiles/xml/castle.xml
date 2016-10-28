@@ -609,11 +609,27 @@
             </label>
           </labels>
         </item>
-        <item idno="valueTBD" enabled="1" default="0">
+        <item idno="donation" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Values TBD</name_singular>
-              <name_plural>Values TBD</name_plural>
+              <name_singular>Donation</name_singular>
+              <name_plural>Donation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="purchase" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Purchase</name_singular>
+              <name_plural>Purchase</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="transfer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Transfer</name_singular>
+              <name_plural>Transfer</name_plural>
             </label>
           </labels>
         </item>
@@ -3973,7 +3989,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="object_id" datatype="Text">
+    <metadataElement code="object_identifier" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Object ID</name>
@@ -5548,8 +5564,8 @@
             <placement code="ca_attribute_previous_number">
               <bundle>ca_attribute_previous_number</bundle>
             </placement>
-             <placement code="ca_attribute_object_id">
-              <bundle>ca_attribute_object_id</bundle>
+             <placement code="ca_attribute_object_identifier">
+              <bundle>ca_attribute_object_identifier</bundle>
             </placement>
              <placement code="ca_objects_deaccession">
               <bundle>ca_objects_deaccession</bundle>
