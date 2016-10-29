@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,6 +83,8 @@ var caUI = caUI || {};
 			firstItemColor: null,
 			itemColor: null,
 			lastItemColor: null,
+			oddColor: null,
+			evenColor: null,
 
 			isSortable: false,
 			listSortOrderID: null,
@@ -446,6 +448,14 @@ var caUI = caUI || {};
 				if (options.lastItemColor) {
 					jQuery(this.container + " ." + options.listItemClassName + ":last").css('background-color', '#' + options.lastItemColor);
 				}
+			} else if((options.oddColor) || (options.evenColor)) {
+				if (options.oddColor) {		// use :even because jQuery is zero-based (eg. 1, 3, 5... are "even" but we consider them "odd")
+				console.log(this.container + " ." + options.listItemClassName + ":even");
+					jQuery(this.container + " ." + options.listItemClassName + ":even").css('background-color', '#' + options.oddColor);
+				}	
+				if (options.evenColor) {	// use :odd because jQuery is zero-based (eg. 0, 2, 4... are "odd" but we consider them "even")
+					jQuery(this.container + " ." + options.listItemClassName + ":odd").css('background-color', '#' + options.evenColor);
+				}	
 			}
 			return this;
 		};

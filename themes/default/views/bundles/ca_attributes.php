@@ -178,7 +178,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">	
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo repeatingItem">	
 			<span class="formLabelError">{error}</span>
 <?php
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {		// static (non-repeating) checkbox list for list attributes
@@ -339,7 +339,11 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 			bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
-			onInitializeItem: caHideBundlesForReadOnlyContainers /* todo: look for better callback (or make one up?) */
+			onInitializeItem: caHideBundlesForReadOnlyContainers, /* todo: look for better callback (or make one up?) */
+			
+			listItemClassName: 'repeatingItem',
+			oddColor: '<?php print caGetOption('colorOddItem', $va_settings, 'FFFFFF'); ?>',
+			evenColor: '<?php print caGetOption('colorEvenItem', $va_settings, 'FFFFFF'); ?>'
 		});
 <?php
 	}
