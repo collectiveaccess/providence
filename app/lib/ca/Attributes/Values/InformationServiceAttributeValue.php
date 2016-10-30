@@ -370,7 +370,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	public function getAvailableSettings($pa_element_info=null) {
 		global $_ca_attribute_settings;
 
-		$vs_service = isset($pa_element_info['service']) ? $pa_element_info['service'] : null;
+		$vs_service = isset($pa_element_info['settings']['service']) ? $pa_element_info['settings']['service'] : null;
 		$va_names = InformationServiceManager::getInformationServiceNames();
 		if (!in_array($vs_service, $va_names)) {
 			$vs_service = $va_names[0];
