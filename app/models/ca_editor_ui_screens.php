@@ -528,6 +528,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Odd item color'),
 							'description' => _t('If set odd items in list will use this color.')
 						),
+						'displayTemplate' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Display template'),
+							'description' => _t('Layout for preview of this field. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.my_element_code</i>.')
+						),
 						'documentation_url' => array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_FIELD,

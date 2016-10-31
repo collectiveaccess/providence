@@ -78,11 +78,13 @@
 	$vs_bundle_preview = '';
 	
 	$va_template_tags = $va_element_ids;
-	$vs_display_template = caGetOption('displayTemplate', $va_element_settings);
+	if(!($vs_display_template = trim(caGetOption('displayTemplate', $va_settings)))) {
+		$vs_display_template = caGetOption('displayTemplate', $va_element_settings, null);
+	}
 
 	$va_element_settings = $t_element->getSettings();
 	if($t_instance->getAppConfig()->get('always_show_bundle_preview_for_attributes') || $vs_display_template) {
-		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
+		$vs_bundle_preview = $vs_display_template ? $t_instance->getWithTemplate($vs_display_template) : $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
 	}
 
 	if (sizeof($va_attribute_list)) {
