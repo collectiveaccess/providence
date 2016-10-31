@@ -482,8 +482,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Display template'),
 							'validForRootOnly' => 1,
 							'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
-						),
+						)
 					);
+					if (($va_info['type'] == 'preferred_label') && ($vs_table == 'ca_objects')) {
+						$va_additional_settings['use_list'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'showLists' => true,
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'allowNull' => true,
+							'allowAll' => true,
+							'label' => _t('Look up values using list'),
+							'description' => _t('Suggest values using a specific list. Select <em>All lists</em> to suggest any configured list value.')
+						);
+					}
 					break;
 				case 'attribute':
 					$va_additional_settings = array(
