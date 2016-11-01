@@ -227,6 +227,7 @@ var caUI = caUI || {};
 				jQuery.each(this.defaultValues, function(k, v) {
 					if (v && !templateValues[k]) { templateValues[k] = v; }
 				});
+				id = 'new_' + this.getCount();	// set id to ensure sub-fields get painted with unsaved warning handler
 			}
 
 			// replace values in template
