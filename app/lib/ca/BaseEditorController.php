@@ -1870,7 +1870,7 @@ class BaseEditorController extends ActionController {
 		} else {
 			if ($t_rep->applyMediaTransformation('media', $ps_op, array('angle' => $pn_angle), array('revert' => $pb_revert))) {
 				$va_response = array(
-					'action' => 'process', 'status' => 0, 'message' => 'OK', 'op' => $ps_op, 'angle' => $pn_angle
+					'action' => 'process', 'status' => 0, 'message' => 'OK', 'op' => $ps_op, 'angle' => $pn_angle, 'timestamp' => time()
 				);
 			} else {
 				$va_response = array(

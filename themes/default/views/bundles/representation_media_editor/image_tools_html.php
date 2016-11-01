@@ -102,6 +102,7 @@
 						jQuery("#caRepToolsRotateAngleControl #caRepToolsButtonRotate" + d['angle']).addClass("caRepToolsRotateControlButtonSelected");
 						jQuery("#caRepToolsRotateAngleControl #caRepToolsButtonRotate" + d['angle']).find("img").addClass("caRepToolsRotateControlButtonSelected");
 					}
+					jQuery("form input[name='form_timestamp']").val(d['timestamp']);
 				}
 			}
 			
