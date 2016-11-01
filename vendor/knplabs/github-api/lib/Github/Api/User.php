@@ -39,6 +39,7 @@ class User extends AbstractApi
         if (!is_int($id)) {
             return $this->get('users');
         }
+
         return $this->get('users?since=' . rawurldecode($id));
     }
 
@@ -49,7 +50,7 @@ class User extends AbstractApi
      *
      * @param string $username the username to show
      *
-     * @return array informations about the user
+     * @return array information about the user
      */
     public function show($username)
     {

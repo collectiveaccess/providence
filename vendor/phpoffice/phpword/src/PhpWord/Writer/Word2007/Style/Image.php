@@ -24,21 +24,4 @@ namespace PhpOffice\PhpWord\Writer\Word2007\Style;
  */
 class Image extends Frame
 {
-    /**
-     * Write page break
-     *
-     * @since 0.12.0
-     *
-     * @return string
-     */
-    public function write()
-    {
-        /** @var \PhpOffice\PhpWord\Writer\HTML $parentWriter Type hint */
-        $parentWriter = $this->parentWriter;
-        if ($parentWriter->isPdf()) {
-            return '<pagebreak style="page-break-before: always;" pagebreak="true"></pagebreak>';
-        }
-
-        return "";
-    }
 }

@@ -34,14 +34,14 @@ class Unescaper
     /**
      * Regex fragment that matches an escaped character in a double quoted string.
      */
-    const REGEX_ESCAPED_CHARACTER = "\\\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|.)";
+    const REGEX_ESCAPED_CHARACTER = '\\\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|.)';
 
     /**
      * Unescapes a single quoted string.
      *
-     * @param string $value A single quoted string.
+     * @param string $value A single quoted string
      *
-     * @return string The unescaped string.
+     * @return string The unescaped string
      */
     public function unescapeSingleQuotedString($value)
     {
@@ -51,9 +51,9 @@ class Unescaper
     /**
      * Unescapes a double quoted string.
      *
-     * @param string $value A double quoted string.
+     * @param string $value A double quoted string
      *
-     * @return string The unescaped string.
+     * @return string The unescaped string
      */
     public function unescapeDoubleQuotedString($value)
     {

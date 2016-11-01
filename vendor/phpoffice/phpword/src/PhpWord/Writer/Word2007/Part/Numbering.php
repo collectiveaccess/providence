@@ -21,7 +21,6 @@ use PhpOffice\Common\XMLWriter;
 use PhpOffice\PhpWord\Style;
 use PhpOffice\PhpWord\Style\Numbering as NumberingStyle;
 use PhpOffice\PhpWord\Style\NumberingLevel;
-use PhpOffice\PhpWord\Style;
 
 /**
  * Word2007 numbering part writer: word/numbering.xml

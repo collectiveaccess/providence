@@ -27,20 +27,17 @@ class Autoloader
     /**
      * Register
      *
-     * @param bool $throw
-     * @param bool $prepend
      * @return void
      */
-    public static function register($throw = true, $prepend = false)
+    public static function register()
     {
-        spl_autoload_register(array(new self, 'autoload'), $throw, $prepend);
+        spl_autoload_register(array(new self, 'autoload'));
     }
 
     /**
      * Autoload
      *
      * @param string $class
-     * @return void
      */
     public static function autoload($class)
     {

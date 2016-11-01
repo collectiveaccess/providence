@@ -1,3 +1,102 @@
+## Release 2.2.2
+- Normalizing Reindex name (#466) [[e0cc5f9]](http://github.com/elasticsearch/elasticsearch-php/commit/e0cc5f9)
+- Add "extended" host configuration syntax [[99cd83f]](http://github.com/elasticsearch/elasticsearch-php/commit/99cd83f)
+- Reindex endpoint should not be camel-cased ("ReIndex") [[7ca34ab]](http://github.com/elasticsearch/elasticsearch-php/commit/7ca34ab)
+- Allow ConnectionFactory to be overridable (#459) [[81b2a23]](http://github.com/elasticsearch/elasticsearch-php/commit/81b2a23)
+- Reindex endpoint should accept a body parameter [[21ca68b]](http://github.com/elasticsearch/elasticsearch-php/commit/21ca68b)
+
+### Documentation
+- Fix typo (#471) [[20af8fb]](http://github.com/elasticsearch/elasticsearch-php/commit/20af8fb)
+- [DOCS] Update index-operations.asciidoc (#470) [[74f2b19]](http://github.com/elasticsearch/elasticsearch-php/commit/74f2b19)
+- Php typos [[3d9d8e0]](http://github.com/elasticsearch/elasticsearch-php/commit/7fd0051)
+- [DOCS] Update changelog [[4c9aab0]](http://github.com/elasticsearch/elasticsearch-php/commit/4c9aab0)
+
+## Release 2.2.1
+
+- Reindex endpoint should accept a body parameter [[3d9d8e0]](http://github.com/elasticsearch/elasticsearch-php/commit/3d9d8e0)
+- `Tasks/Show` should be `Tasks/Get`. Deprecate `Show` [[fcc85b4]](http://github.com/elasticsearch/elasticsearch-php/commit/fcc85b4)
+- "Task" namespace should be plural ("Tasks") [[5e8bacf]](http://github.com/elasticsearch/elasticsearch-php/commit/5e8bacf)
+
+### Testing
+
+- Update travis to include 2.3 [[7108ca0]](http://github.com/elasticsearch/elasticsearch-php/commit/7108ca0)
+
+## Release 2.2.0
+
+- 236a5e0 Added deprecated tag on deletebyquery and mlt
+- Update for 2.3 https://github.com/elastic/elasticsearch-php/pull/420
+  - Add Reindex Endpoint
+  - Add UpdateByQuery endpoint
+  - Add Tasks Namespace (Tasks/Cancel, Tasks/Show)
+  - Add `ignore_unavailable` to Cat/Snapshots
+  - Add `master_timeout`, `timeout` to Cluster/PutSettings
+  - Add `timeout` to Cluster/Stats
+  - Add `char_filters`, `char_filter`, `filter`, `explain`, `attributes` to Indices/Analyze
+  - Add `query`, `index`, `recycler`, `request` to Cache/Clear
+  - Add `update_all_types` to Indices/Create
+  - Add `local` to Indices/ExistsTypes
+  - Add `bytes` to Cat/Shards
+  - Add `wait_if_ongoing` to Indices/Flush
+  - Add `update_all_types` to Indices/PutMapping
+  - Add `verbose` to Indices/Segments
+  - Remove unused Indices/Snapshotindex (unlinked from any namespace)
+  - Add `ignore_unavailable`, `allow_no_indices`, `expand_wildcards`, `rewrite` to Indices/ValidateQuery
+  - Add `version`, `version_type` to MTermVectors
+  - Add `ignore_idle_threads` to Nodes/HotThreads
+  - Add `timeout` to Nodes/Info
+  - Add `timeout` to Nodes/Stats
+  - Add `percolate_routing`, `percolate_preference` to Percolate
+  - Add terminate_after`, `track_scores`, `request_cache` to Search
+  - Add `min_score` to SearchExists
+  - Add `verify` to Snapshot/CreateRepository
+  - Add `version`, `version_type` to Template/Delete
+  - Add `version`, `version_type` to Template/Get
+  - Add `version`, `version_type`, `op_type` to Template/Put
+  - Add `script_id`, `scripted_upsert` to Update
+- 6b6a1f6 feat(): allow to override client instantiation (#412)
+- 8b53f6b Fix bug when Create is called with an stdClass body
+
+### Testing
+- 1009763 [TEST] Fix jq syntax for numeric branches (e.g. `2.2`)
+- c303676 Fixed phpunit to refer to server instead of env
+- 391b249 Updated ParseSpec to be able to run from console and use new api path
+- 9308a1a getApiPath function returns path without trailing slash
+- 16dfe8a [TEST] Automate snapshot retrieval
+
+### Documentation
+- 1b01244 [Docs] Fix typo. (#409)
+- 1f07b31 [DOCS] Usage example for creating ClientBuilder fixed (#406)
+- e7b8e83, a3c806a [DOCS] Generate reference docs
+- 836b499 Add script to generate docs
+- 951d576 Make it easier to note that 'client' is an array of options.
+
+## Release 2.1.5
+- whitelist search per-request cache parameters [[8105a9e]](http://github.com/elasticsearch/elasticsearch-php/commit/8105a9e)
+- Add 'routing' parameter to Mget endpoint whitelist [[bb0a623]](http://github.com/elasticsearch/elasticsearch-php/commit/bb0a623)
+- Add 'percolate_format' parameter to Percolate endpoint whitelist [[65462ba]](http://github.com/elasticsearch/elasticsearch-php/commit/65462ba)
+- Remove $scroll_id variable entirely Set $body = $scroll_id in setScrollID() Return $body in getBody() [[05999d8]](http://github.com/elasticsearch/elasticsearch-php/commit/05999d8)
+- Add update_all_types support to create index call [[6dcf4c5]](http://github.com/elasticsearch/elasticsearch-php/commit/6dcf4c5)
+- Allow update_all_types as index setting [[4161290]](http://github.com/elasticsearch/elasticsearch-php/commit/4161290)
+- Use request body for scroll ID instead of URI param [[016c191]](http://github.com/elasticsearch/elasticsearch-php/commit/016c191)
+
+### Testing
+- Update snapshot download script for 2.2 [[350cd6e]](http://github.com/elasticsearch/elasticsearch-php/commit/350cd6e)
+- Update travis matrix [[04bcf81]](http://github.com/elasticsearch/elasticsearch-php/commit/04bcf81)
+- Invoke phpunit dependency instead of travis phpunit.phar [[f9e0d99]](http://github.com/elasticsearch/elasticsearch-php/commit/f9e0d99)
+- Do not track the util/elasticsearch directory [[25bd111]](http://github.com/elasticsearch/elasticsearch-php/commit/25bd111)
+
+### Documentation
+- Fix comment tag [[3b8e918]](http://github.com/elasticsearch/elasticsearch-php/commit/3b8e918)
+- Add .github templates [[104a7ea]](http://github.com/elasticsearch/elasticsearch-php/commit/104a7ea)
+- Minor fix to wrong documentation [[2863521]](http://github.com/elasticsearch/elasticsearch-php/commit/2863521)
+- Wrong syntax in bulk index example [[17eb43a]](http://github.com/elasticsearch/elasticsearch-php/commit/17eb43a)
+- Delete configuration.asciidoc~ [[3449d97]](http://github.com/elasticsearch/elasticsearch-php/commit/3449d97)
+- Syntax errors in Exception handling [[ba5b38b]](http://github.com/elasticsearch/elasticsearch-php/commit/ba5b38b)
+- Elasticsearch needed for autoload to find classes [[9410e14]](http://github.com/elasticsearch/elasticsearch-php/commit/9410e14)
+- Small doc fix in futures doc [[86e559a]](http://github.com/elasticsearch/elasticsearch-php/commit/86e559a)
+- Fix incorrect nesting of array [[3e041f3]](http://github.com/elasticsearch/elasticsearch-php/commit/3e041f3)
+
+
 ## Release 2.1.4
 - Fix the host path handling [[15b5be3]](http://github.com/elasticsearch/elasticsearch-php/commit/15b5be3)
 - fix body setter in bulk endpoint [[fa283ea]](http://github.com/elasticsearch/elasticsearch-php/commit/fa283ea)

@@ -29,7 +29,7 @@ class Font
      */
     public static function fontSizeToPixels($fontSizeInPoints = 12)
     {
-        return Converter::pointToPixel($fontSizeInPoints);
+        return ((16 / 12) * $fontSizeInPoints);
     }
 
     /**
@@ -40,7 +40,7 @@ class Font
      */
     public static function inchSizeToPixels($sizeInInch = 1)
     {
-        return Converter::inchToPixel($sizeInInch);
+        return ($sizeInInch * 96);
     }
 
     /**
@@ -51,7 +51,7 @@ class Font
      */
     public static function centimeterSizeToPixels($sizeInCm = 1)
     {
-        return Converter::cmToPixel($sizeInCm);
+        return ($sizeInCm * 37.795275591);
     }
 
     /**

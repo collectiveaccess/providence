@@ -109,7 +109,6 @@ class Document extends AbstractPart
      */
     private function writeSections()
     {
-
         $content = '';
 
         $sections = $this->getParentWriter()->getPhpWord()->getSections();
