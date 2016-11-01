@@ -128,6 +128,45 @@ EOTXT
         );
     }
 
+    public function testJsonCast()
+    {
+        $var = (array) json_decode('{"0":{},"1":null}');
+        foreach ($var as &$v) {
+        }
+        $var[] = &$v;
+        $var[''] = 2;
+
+        $this->assertDumpMatchesFormat(
+            <<<EOTXT
+array:4 [
+  "0" => {}
+  "1" => &1 null
+  0 => &1 null
+  "" => 2
+]
+EOTXT
+            ,
+            $var
+        );
+    }
+
+    public function testObjectCast()
+    {
+        $var = (object) array(1 => 1);
+        $var->{1} = 2;
+
+        $this->assertDumpMatchesFormat(
+            <<<EOTXT
+{
+  +1: 1
+  +"1": 2
+}
+EOTXT
+            ,
+            $var
+        );
+    }
+
     public function testClosedResource()
     {
         if (defined('HHVM_VERSION') && HHVM_VERSION_ID < 30600) {
@@ -149,7 +188,7 @@ EOTXT
 
         $this->assertStringMatchesFormat(
             <<<EOTXT
-Unknown resource @{$res}
+Closed resource @{$res}
 
 EOTXT
             ,
@@ -157,6 +196,41 @@ EOTXT
         );
     }
 
+    public function testFlags()
+    {
+        putenv('DUMP_LIGHT_ARRAY=1');
+        putenv('DUMP_STRING_LENGTH=1');
+
+        $var = array(
+            range(1, 3),
+            array('foo', 2 => 'bar'),
+        );
+
+        $this->assertDumpEquals(
+            <<<EOTXT
+[
+  [
+    1
+    2
+    3
+  ]
+  [
+    0 => (3) "foo"
+    2 => (3) "bar"
+  ]
+]
+EOTXT
+            ,
+            $var
+        );
+
+        putenv('DUMP_LIGHT_ARRAY=');
+        putenv('DUMP_STRING_LENGTH=');
+    }
+
+    /**
+     * @requires function Twig_Template::getSourceContext
+     */
     public function testThrowingCaster()
     {
         $out = fopen('php://memory', 'r+b');
@@ -191,19 +265,6 @@ EOTXT
         rewind($out);
         $out = stream_get_contents($out);
 
-        if (method_exists($twig, 'getSource')) {
-            $twig = <<<EOTXT
-          foo.twig:2: """
-            foo bar\\n
-                twig source\\n
-            \\n
-            """
-
-EOTXT;
-        } else {
-            $twig = '';
-        }
-
         $r = defined('HHVM_VERSION') ? '' : '#%d';
         $this->assertStringMatchesFormat(
             <<<EOTXT
@@ -225,7 +286,12 @@ stream resource {@{$ref}
                 throw new \Exception('Foobar');\\n
             }\\n
             """
-{$twig}        }
+          bar.twig:2: """
+            foo bar\\n
+              twig source\\n
+            \\n
+            """
+        }
       }
       %d. Twig_Template->displayWithErrorHandling() ==> __TwigTemplate_VarDumperFixture_u75a09->doDisplay(): {
         src: {
