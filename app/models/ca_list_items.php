@@ -591,10 +591,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	}
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
-		$vb_web_set_transaction = false;
+		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
-			$vb_web_set_transaction = true;
+			$vb_we_set_transaction = true;
 		}
 		
 		$o_trans = $this->getTransaction();
@@ -620,9 +620,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 				if(!$vn_locale_id) {
 					$this->postError(750, _t('Locale %1 does not exist', $va_locales[0]), 'ca_list_items->insert()');
-					if ($vb_web_set_transaction) {
-						$this->getTransaction()->rollback();
-					}
+					if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); }
 					return false;
 				}
 				
@@ -640,9 +638,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				if ($t_place->numErrors()) {
 					$this->delete();
 					$this->errors = array_merge($this->errors, $t_place->errors);
-					if ($vb_web_set_transaction) {
-						$this->getTransaction()->rollback();
-					}
+					if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); }
 					return false;
 				}
 				
@@ -656,20 +652,25 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		
 		if ($this->numErrors()) {
-			if ($vb_web_set_transaction) { $o_trans->rollback(); }
+			if ($vb_we_set_transaction) {$o_trans->rollback(); }
 		} else {
-			if ($vb_web_set_transaction) { $o_trans->commit(); }
+			if ($vb_we_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
+		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
+			$vb_we_set_transaction = true;
 			$this->setTransaction(new Transaction($this->getDb()));
 		}
+		
+		$o_trans = $this->getTransaction();
+		
 		if ($this->get('is_default') == 1) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
 				WHERE list_id = ? AND item_id <> ?
@@ -678,9 +679,9 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$vn_rc = parent::update($pa_options);
 		
 		if ($this->numErrors()) {
-			$this->getTransaction()->rollback();
+			if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); } 
 		} else {
-			$this->getTransaction()->commit();
+			if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
 			$this->_setSettingsForList();
 		}
 		return $vn_rc;

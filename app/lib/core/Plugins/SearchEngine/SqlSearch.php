@@ -872,12 +872,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
 								
 								$qr_count = $this->opo_db->query("SELECT count(*) c FROM {$vs_temp_table}");
-								if (!$qr_count->nextRow() || !(int)$qr_count->get('c')) { 
-									foreach($va_temp_tables as $vs_temp_table) {
-										$this->_dropTempTable($vs_temp_table);
-									}
-									break(2); 
-								}
 								
 								$va_temp_tables[] = $vs_temp_table;	
 							}
@@ -982,6 +976,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 								if ($vb_output_term) { $va_raw_terms[] = $vs_raw_term; $va_raw_terms_escaped[] = '"'.$this->opo_db->escape($vs_raw_term).'"'; }
 							}
+							$va_raw_terms = array_unique($va_raw_terms);
+							$va_raw_terms_escaped = array_unique($va_raw_terms_escaped);
+							$va_ft_terms = array_unique($va_ft_terms);
+							$va_ft_stem_terms = array_unique($va_ft_stem_terms);
 							
 							break;
 					}

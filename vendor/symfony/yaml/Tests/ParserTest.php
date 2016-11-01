@@ -596,7 +596,7 @@ EOF;
 
     /**
      * @expectedException \Symfony\Component\Yaml\Exception\ParseException
-     * @expectedExceptionMessage Multiple documents are not supported.
+     * @expectedExceptionMessageRegExp /^Multiple documents are not supported.+/
      */
     public function testMultipleDocumentsNotSupportedException()
     {
@@ -626,6 +626,53 @@ yaml:
   - array stuff
 EOF
         );
+    }
+
+    public function testSequenceInMappingStartedBySingleDashLine()
+    {
+        $yaml = <<<EOT
+a:
+-
+  b:
+  -
+    bar: baz
+- foo
+d: e
+EOT;
+        $expected = array(
+            'a' => array(
+                array(
+                    'b' => array(
+                        array(
+                            'bar' => 'baz',
+                        ),
+                    ),
+                ),
+                'foo',
+            ),
+            'd' => 'e',
+        );
+
+        $this->assertSame($expected, $this->parser->parse($yaml));
+    }
+
+    public function testSequenceFollowedByCommentEmbeddedInMapping()
+    {
+        $yaml = <<<EOT
+a:
+    b:
+        - c
+# comment
+    d: e
+EOT;
+        $expected = array(
+            'a' => array(
+                'b' => array('c'),
+                'd' => 'e',
+            ),
+        );
+
+        $this->assertSame($expected, $this->parser->parse($yaml));
     }
 
     /**
@@ -879,6 +926,7 @@ EOF;
 
     /**
      * @group legacy
+     * @expectedDeprecation Using a colon in the unquoted mapping value "bar: baz" in line 1 is deprecated since Symfony 2.8 and will throw a ParseException in 3.0.
      * throw ParseException in Symfony 3.0
      */
     public function testColonInMappingValueException()
@@ -887,19 +935,7 @@ EOF;
 foo: bar: baz
 EOF;
 
-        $deprecations = array();
-        set_error_handler(function ($type, $msg) use (&$deprecations) {
-            if (E_USER_DEPRECATED === $type) {
-                $deprecations[] = $msg;
-            }
-        });
-
         $this->parser->parse($yaml);
-
-        restore_error_handler();
-
-        $this->assertCount(1, $deprecations);
-        $this->assertContains('Using a colon in the unquoted mapping value "bar: baz" in line 1 is deprecated since Symfony 2.8 and will throw a ParseException in 3.0.', $deprecations[0]);
     }
 
     public function testColonInMappingValueExceptionNotTriggeredByColonInComment()
@@ -989,6 +1025,7 @@ EOT
 foo
 # bar
 baz
+
 EOT
                     ,
                 ),
@@ -1017,7 +1054,7 @@ EOT;
         $expected = array(
             'foo' => array(
                 'bar' => array(
-                    'scalar-block' => 'line1 line2>',
+                    'scalar-block' => "line1 line2>\n",
                 ),
                 'baz' => array(
                     'foobar' => null,
@@ -1093,6 +1130,74 @@ EOT
                 ,
             ),
             $this->parser->parse($yaml)
+        );
+    }
+
+    /**
+     * @param $lineNumber
+     * @param $yaml
+     * @dataProvider parserThrowsExceptionWithCorrectLineNumberProvider
+     */
+    public function testParserThrowsExceptionWithCorrectLineNumber($lineNumber, $yaml)
+    {
+        $this->setExpectedException(
+            '\Symfony\Component\Yaml\Exception\ParseException',
+            sprintf('Unexpected characters near "," at line %d (near "bar: "123",").', $lineNumber)
+        );
+
+        $this->parser->parse($yaml);
+    }
+
+    public function parserThrowsExceptionWithCorrectLineNumberProvider()
+    {
+        return array(
+            array(
+                4,
+                <<<YAML
+foo:
+    -
+        # bar
+        bar: "123",
+YAML
+            ),
+            array(
+                5,
+                <<<YAML
+foo:
+    -
+        # bar
+        # bar
+        bar: "123",
+YAML
+            ),
+            array(
+                8,
+                <<<YAML
+foo:
+    -
+        # foobar
+        baz: 123
+bar:
+    -
+        # bar
+        bar: "123",
+YAML
+            ),
+            array(
+                10,
+                <<<YAML
+foo:
+    -
+        # foobar
+        # foobar
+        baz: 123
+bar:
+    -
+        # bar
+        # bar
+        bar: "123",
+YAML
+            ),
         );
     }
 }
