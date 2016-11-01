@@ -985,48 +985,6 @@
 			}
 		}
 		
-		// try pdfinfo
-		if (caMediaPluginPdftotextInstalled()) {
-			$vs_path_to_pdf_to_text = str_replace("pdftotext", "pdfinfo", caGetExternalApplicationPath('pdftotext'));
-			
-			exec("{$vs_path_to_pdf_to_text} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-			
-			if (($vn_return == 0) && sizeof($va_output) > 0) {
-				$va_info = [];
-				foreach($va_output as $vs_line) {
-					$va_line = explode(":", $vs_line);
-					
-					$vs_tag = strtolower(trim(array_shift($va_line)));
-					$vs_value = trim(join(":", $va_line));
-				
-					switch($vs_tag) {
-						case 'pages':
-							$va_info['pages'] = (int)$vs_value;
-							break;
-						case 'page size':
-							if (preg_match_all("!([\d]+)!", $vs_value, $va_dims)) {
-								$va_info['width'] = $va_dims[1][0];
-								$va_info['height'] = $va_dims[1][1];
-							}
-							break;
-						case 'pdf version':
-							$va_info['version'] = (float)$vs_value;
-							break;
-						case 'producer':
-							$va_info['software'] = $vs_value;
-							break;
-						case 'author':
-						case 'title':
-							$va_info[$vs_tag] = $vs_value;
-							break;
-					}
-				}
-				return $va_info;
-			} else {
-				return null;
-			}
-		}
-		
 		// try graphicsmagick
 		if ((!$o_config->get('dont_use_graphicsmagick_to_identify_pdfs')) && caMediaPluginGraphicsMagickInstalled()) {
 			$vs_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick');
@@ -1092,6 +1050,48 @@
 							break;
 						case 'author':
 						case 'creator':
+						case 'title':
+							$va_info[$vs_tag] = $vs_value;
+							break;
+					}
+				}
+				return $va_info;
+			} else {
+				return null;
+			}
+		}
+		
+		// try pdfinfo
+		if (caMediaPluginPdftotextInstalled()) {
+			$vs_path_to_pdf_to_text = str_replace("pdftotext", "pdfinfo", caGetExternalApplicationPath('pdftotext'));
+			
+			exec("{$vs_path_to_pdf_to_text} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			
+			if (($vn_return == 0) && sizeof($va_output) > 0) {
+				$va_info = [];
+				foreach($va_output as $vs_line) {
+					$va_line = explode(":", $vs_line);
+					
+					$vs_tag = strtolower(trim(array_shift($va_line)));
+					$vs_value = trim(join(":", $va_line));
+				
+					switch($vs_tag) {
+						case 'pages':
+							$va_info['pages'] = (int)$vs_value;
+							break;
+						case 'page size':
+							if (preg_match_all("!([\d]+)!", $vs_value, $va_dims)) {
+								$va_info['width'] = $va_dims[1][0];
+								$va_info['height'] = $va_dims[1][1];
+							}
+							break;
+						case 'pdf version':
+							$va_info['version'] = (float)$vs_value;
+							break;
+						case 'producer':
+							$va_info['software'] = $vs_value;
+							break;
+						case 'author':
 						case 'title':
 							$va_info[$vs_tag] = $vs_value;
 							break;
