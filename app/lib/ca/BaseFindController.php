@@ -998,7 +998,7 @@
 				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
 
  				$pa_ids = null;
- 				if ($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) {
+ 				if (($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($vs_ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
  					if ($vs_ids != 'all') {
 						$pa_ids = explode(';', $vs_ids);
 						
@@ -1007,26 +1007,25 @@
 						}
 					}
  				}
- 			//print_R($vs_ids); die;
+ 		
  				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
  					$pa_ids = $this->opo_result_context->getResultList();
  				}
  				
-				$vn_file_count = 0;
-				
  				if (($vn_limit = (int)$t_subject->getAppConfig()->get('maximum_download_file_count')) > 0) {
  					$pa_ids = array_slice($pa_ids, 0, $vn_limit);
  				}
  				
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 						
+				$va_download_list = [];
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
 						
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 10);
-						$o_zip = new ZipStream();
+						
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -1064,8 +1063,8 @@
 										if ($vs_original_name) {
 											$va_tmp = explode('.', $vs_original_name);
 											if (sizeof($va_tmp) > 1) { 
-												if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
-													$va_tmp[] = $vs_ext;
+												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
+													$va_tmp[] = $vs_filename_ext;
 												}
 											}
 											$vs_filename = join('_', $va_tmp)."{$vn_index}.{$vs_ext}";
@@ -1084,21 +1083,31 @@
 									}
 								}
 								if (!file_exists($vs_path)) { continue; }
-								$o_zip->addFile($vs_path, $vs_filename);
-								$vn_file_count++;
+								$va_download_list[$vs_path] = $vs_filename;
 							}
 						}
 					}
 				}
-				 				
- 				if ($o_zip && ($vn_file_count > 0)) {
+				
+				$vn_file_count = sizeof($va_download_list);			
+ 				if ($vn_file_count > 1) {
+					$o_zip = new ZipStream();
+					foreach($va_download_list as $vs_path => $vs_filename) {
+						$o_zip->addFile($vs_path, $vs_filename);
+					}
+					
  					$o_view->setVar('zip_stream', $o_zip);
 					$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 
 					$this->response->addContent($o_view->render('download_file_binary.php'));
 					set_time_limit($vn_limit);
-
- 					//$this->render('Results/object_representation_download_binary.php');
+				} elseif($vn_file_count == 1) {
+					foreach($va_download_list as $vs_path => $vs_filename) {
+						$o_view->setVar('archive_path', $vs_path);
+						$o_view->setVar('archive_name', $vs_filename);
+						$this->response->addContent($o_view->render('download_file_binary.php'));
+						break;
+					}
  				} else {
  					$this->response->setHTTPResponseCode(204, _t('No files to download'));
  				}
@@ -1106,7 +1115,7 @@
  			}
  			
  			// post error
- 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadRepresentation()");
+ 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadMedia()");
  		}
  		# ------------------------------------------------------------------
  		/**
