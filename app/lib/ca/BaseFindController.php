@@ -679,9 +679,13 @@
 						}
 					}
  				}
- 				
+ 			//print_R($vs_ids); die;
  				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
  					$pa_ids = $this->opo_result_context->getResultList();
+ 				}
+ 				
+ 				if (($vn_limit = (int)$t_subject->getAppConfig()->get('maximum_download_file_count')) > 0) {
+ 					$pa_ids = array_slice($pa_ids, 0, $vn_limit);
  				}
  				
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
