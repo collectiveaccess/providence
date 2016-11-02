@@ -679,7 +679,7 @@
 						}
 					}
  				}
- 			//print_R($vs_ids); die;
+ 		
  				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
  					$pa_ids = $this->opo_result_context->getResultList();
  				}
@@ -735,8 +735,8 @@
 										if ($vs_original_name) {
 											$va_tmp = explode('.', $vs_original_name);
 											if (sizeof($va_tmp) > 1) { 
-												if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
-													$va_tmp[] = $vs_ext;
+												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
+													$va_tmp[] = $vs_filename_ext;
 												}
 											}
 											$vs_filename = join('_', $va_tmp)."{$vn_index}.{$vs_ext}";
