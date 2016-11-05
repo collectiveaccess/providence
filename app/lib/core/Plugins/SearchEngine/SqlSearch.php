@@ -1836,9 +1836,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > 0) {
 				$this->opo_db->query("SET unique_checks=0");
 				$this->opo_db->query("SET foreign_key_checks=0");
-				$this->opo_db->query("SET autocommit=0");
 				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
-				$this->opo_db->query("COMMIT");
 				$this->opo_db->query("SET unique_checks=1");
 				$this->opo_db->query("SET foreign_key_checks=1");
 			}

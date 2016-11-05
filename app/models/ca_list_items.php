@@ -591,16 +591,16 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	}
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
-		//$vb_we_set_transaction = false;
-		//if (!$this->inTransaction()) {
-			//$this->setTransaction(new Transaction($this->getDb()));
-			//$vb_we_set_transaction = true;
-		//}
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		}
 		
-		//$o_trans = $this->getTransaction();
+		$o_trans = $this->getTransaction();
 		
 		if ($this->get('is_default')) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
 				WHERE list_id = ?
@@ -610,7 +610,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
-			//$t_list->setTransaction($o_trans);
+			$t_list->setTransaction($o_trans);
 			
 			if (($t_list->load($this->get('list_id'))) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
 				// insert root or place hierarchy when creating non-root items in 'place_hierarchies' list
@@ -626,7 +626,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				
 				// create root in ca_places
 				$t_place = new ca_places();
-				//$t_place->setTransaction($o_trans);
+				$t_place->setTransaction($o_trans);
 				$t_place->setMode(ACCESS_WRITE);
 				$t_place->set('hierarchy_id', $this->getPrimaryKey());
 				$t_place->set('locale_id', $vn_locale_id);
@@ -652,25 +652,25 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		
 		if ($this->numErrors()) {
-			//if ($vb_we_set_transaction) {$o_trans->rollback(); }
+			if ($vb_we_set_transaction) {$o_trans->rollback(); }
 		} else {
-			//if ($vb_we_set_transaction) { $o_trans->commit(); }
+			if ($vb_we_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
-		//$vb_we_set_transaction = false;
-		//if (!$this->inTransaction()) {
-		//	$vb_we_set_transaction = true;
-		//	$this->setTransaction(new Transaction($this->getDb()));
-		//}
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$vb_we_set_transaction = true;
+			$this->setTransaction(new Transaction($this->getDb()));
+		}
 		
-		//$o_trans = $this->getTransaction();
+		$o_trans = $this->getTransaction();
 		
 		if ($this->get('is_default') == 1) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
 				WHERE list_id = ? AND item_id <> ?
@@ -679,9 +679,9 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$vn_rc = parent::update($pa_options);
 		
 		if ($this->numErrors()) {
-			//if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); } 
+			if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); } 
 		} else {
-			//if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
+			if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
 			$this->_setSettingsForList();
 		}
 		return $vn_rc;

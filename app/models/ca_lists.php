@@ -332,7 +332,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_item = new ca_list_items();
 		$t_item->setMode(ACCESS_WRITE);
 		
-		//if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
+		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		
 		$t_item->set('list_id', $vn_list_id);
 		$t_item->set('item_value', $ps_value);
