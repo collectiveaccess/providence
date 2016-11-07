@@ -571,6 +571,21 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
+		// is it an idno?
+		if (is_array($va_idno_regexs = $this->opo_search_config->getList('idno_regexes'))) {
+			foreach($va_idno_regexs as $vs_idno_regex) {
+				if ((preg_match("!{$vs_idno_regex}!", (string)$po_term->getTerm()->text)) && ($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+					$vs_table_name = $t_instance->tableName();
+			
+					return array(
+						'terms' => array(new Zend_Search_Lucene_Index_Term((string)$po_term->getTerm()->text, "{$vs_table_name}.{$vs_idno_fld}")),
+						'signs' => array($pb_sign),
+						'options' => array()
+					);
+				}
+			}
+		}
+		
 		// is it a label? Rewrite the field for that.
 		$va_tmp = explode('/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
