@@ -2,8 +2,8 @@
 
 namespace Elasticsearch\Endpoints\Indices;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
+use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
  * Class Create
@@ -17,7 +17,7 @@ use Elasticsearch\Common\Exceptions;
 class Create extends AbstractEndpoint
 {
     /**
-     * @param array $body
+     * @param array|object $body
      *
      * @throws \Elasticsearch\Common\Exceptions\InvalidArgumentException
      * @return $this
@@ -45,7 +45,7 @@ class Create extends AbstractEndpoint
             );
         }
         $index = $this->index;
-        $uri   = "/$index";
+        $uri = "/$index";
 
         if (isset($index) === true) {
             $uri = "/$index";
@@ -59,10 +59,11 @@ class Create extends AbstractEndpoint
      */
     protected function getParamWhitelist()
     {
-        return array(
+        return [
             'timeout',
             'master_timeout',
-        );
+            'update_all_types',
+        ];
     }
 
     /**
@@ -70,10 +71,11 @@ class Create extends AbstractEndpoint
      */
     protected function getMethod()
     {
-        if (isset($this->body['mappings']) === true) {
+        if (is_array($this->body) && isset($this->body['mappings']) === true) {
             return 'POST';
-        } else {
-            return 'PUT';
+        } elseif (is_object($this->body) && isset($this->body->mappings) === true) {
+            return 'POST';
         }
+        return 'PUT';
     }
 }

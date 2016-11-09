@@ -5,7 +5,7 @@ namespace Elasticsearch\Endpoints;
 use Elasticsearch\Common\Exceptions;
 
 /**
- * Class Mget
+ * Class MGet
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
@@ -13,7 +13,7 @@ use Elasticsearch\Common\Exceptions;
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
  * @link     http://elasticsearch.org
  */
-class Mget extends AbstractEndpoint
+class MGet extends AbstractEndpoint
 {
     /**
      * @param array $body
@@ -39,7 +39,7 @@ class Mget extends AbstractEndpoint
     {
         $index = $this->index;
         $type = $this->type;
-        $uri   = "/_mget";
+        $uri = "/_mget";
 
         if (isset($index) === true && isset($type) === true) {
             $uri = "/$index/$type/_mget";
@@ -57,16 +57,16 @@ class Mget extends AbstractEndpoint
      */
     protected function getParamWhitelist()
     {
-        return array(
+        return [
             'fields',
             'preference',
             'realtime',
+            'routing',
             'refresh',
             '_source',
             '_source_exclude',
             '_source_include',
-            'routing'
-        );
+        ];
     }
 
     /**

@@ -548,6 +548,7 @@ class Installer {
 			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new ca_lists();
 			}
+			$t_list->setTransaction($o_trans = new Transaction($t_list->getDb()));
 
 			if($t_list->getPrimaryKey()) {
 				$this->logStatus(_t('List %1 already exists', $vs_list_code));
@@ -595,8 +596,10 @@ class Installer {
 				}
 				if($vo_list->items) {
 					if(!$this->processListItems($t_list, $vo_list->items, null)) {
+						$o_trans->rollback();
 						return false;
 					}
+					$o_trans->commit();
 				}
 			}
 		}

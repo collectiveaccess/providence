@@ -216,7 +216,6 @@ class FunctionSomeTest extends TestCase
             ->expects($this->never())
             ->method('__invoke');
 
-
         $deferred = New Deferred($mock);
         $deferred->resolve();
 
@@ -225,6 +224,25 @@ class FunctionSomeTest extends TestCase
             ->expects($this->once())
             ->method('cancel');
 
-        some([$deferred->promise(), $mock2], 1)->cancel();
+        some([$deferred->promise(), $mock2], 1);
+    }
+
+    /** @test */
+    public function shouldCancelOtherPendingInputArrayPromisesIfEnoughPromisesReject()
+    {
+        $mock = $this->createCallableMock();
+        $mock
+            ->expects($this->never())
+            ->method('__invoke');
+
+        $deferred = New Deferred($mock);
+        $deferred->reject();
+
+        $mock2 = $this->getMock('React\Promise\CancellablePromiseInterface');
+        $mock2
+            ->expects($this->once())
+            ->method('cancel');
+
+        some([$deferred->promise(), $mock2], 2);
     }
 }
