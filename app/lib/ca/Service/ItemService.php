@@ -750,7 +750,7 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		if(!$t_instance->getPreferredLabelCount()) {
+		if(($t_instance instanceof LabelableBaseModelWithAttributes) && !$t_instance->getPreferredLabelCount()) {
 			$t_instance->addDefaultLabel();
 		}
 
