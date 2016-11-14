@@ -2992,13 +2992,13 @@ function caFileIsIncludable($ps_file) {
 					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
 				}
 			} catch(Exception $e) {
-				if (preg_match("!^([\d]+)!", $vs_measurement, $va_matches)) {
+				if (preg_match("!^([\d\.]+)!", $vs_measurement, $va_matches)) {
 					$vs_measurement = $va_matches[0]." {$ps_units}";
 				} else {
 					continue;
 				}
 			}
-			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
+			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d\.]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
 		}
 		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
 		

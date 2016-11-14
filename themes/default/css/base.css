@@ -4603,6 +4603,7 @@ ul#displayItemList {
     background: url(../graphics/colorpicker/colorpicker_background.png);
     font-family: Arial, Helvetica, sans-serif;
     display: none;
+    z-index: 200000;
 }
 .colorpicker_color {
     width: 150px;

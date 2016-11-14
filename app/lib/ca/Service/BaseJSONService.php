@@ -97,7 +97,7 @@ class BaseJSONService {
 			"ca_places", "ca_occurrences", "ca_collections",
 			"ca_list_items", "ca_lists", "ca_object_representations",
 			"ca_storage_locations", "ca_movements",
-			"ca_loans", "ca_tours", "ca_tour_stops", "ca_sets"
+			"ca_loans", "ca_tours", "ca_tour_stops", "ca_sets", "ca_item_comments"
 		);
 
 		if(is_array($this->opa_valid_tables)) {
