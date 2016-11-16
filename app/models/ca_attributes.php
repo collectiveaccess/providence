@@ -907,4 +907,18 @@ class ca_attributes extends BaseModel {
 		return $vs_element_code;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getTableNumForAttribute($pn_attribute_id, $po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		if ($qr_res = $o_db->query("SELECT table_num FROM ca_attributes WHERE attribute_id = ?", [$pn_attribute_id])) {
+			if ($qr_res->nextRow()) {
+				return $qr_res->get('table_num');
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------
 }
