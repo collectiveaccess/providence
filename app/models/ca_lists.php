@@ -823,11 +823,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getItemFromList($pm_list_name_or_id, $ps_item_idno) {
-		
-		if (isset(ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno])) {
-			return ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno];
+	public function getItemFromList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
+		$vs_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_item_idno}");
+		if (isset(ca_lists::$s_list_item_get_cache[$vs_key])) {
+			return ca_lists::$s_list_item_get_cache[$vs_key];
 		}
+	
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		
@@ -839,13 +841,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_list_items cli
 			WHERE
-				(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.idno = ?)
+				{$vs_deleted_sql} (cli.list_id = ?) AND (cli.idno = ?)
 		", (int)$vn_list_id, (string)$ps_item_idno);
 		
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_item_idno}");
 		if ($qr_res->nextRow()) {
-			return  ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_item_idno] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno] = $qr_res->getRow();
+			return  ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_key] = $qr_res->getRow();
 		}
-		return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_item_idno] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno]  = null;
+		return ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_key]  = null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1039,7 +1042,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getItemIDFromList($pm_list_name_or_id, $ps_item_idno) {
+	public function getItemIDFromList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
 		if ($va_list_item = $this->getItemFromList($pm_list_name_or_id, $ps_item_idno)) {
 			return $va_list_item['item_id'];
 		}
@@ -1076,15 +1079,17 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id) {
+	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
+		
 		$o_db = $this->getDb();
-		$qr_res = $o_db->query($x="
+		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_list_items cli
 			WHERE
-				(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.item_id = ?)
+				{$vs_deleted_sql} (cli.list_id = ?) AND (cli.item_id = ?)
 		", (int)$vn_list_id, (int)$pn_item_id);
 		$va_items = array();
 		while($qr_res->nextRow()) {
@@ -1097,15 +1102,15 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function itemIsInList($pm_list_name_or_id, $ps_item_idno) {
-		return $this->getItemFromList($pm_list_name_or_id, $ps_item_idno) ? true : false;
+	public function itemIsInList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
+		return $this->getItemFromList($pm_list_name_or_id, $ps_item_idno, $pa_options) ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function itemIDIsInList($pm_list_name_or_id, $pn_item_id) {
-		return $this->getItemFromListByItemID($pm_list_name_or_id, $pn_item_id) ? true : false;
+	public function itemIDIsInList($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
+		return $this->getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options) ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
