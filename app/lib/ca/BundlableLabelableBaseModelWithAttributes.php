@@ -2910,6 +2910,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// pass placement code
 		$o_view->setVar('placement_code', $ps_placement_code);
 		
+		// quickadd available?
+		$vb_quickadd_enabled = (bool)$po_request->user->canDoAction("can_quickadd_{$ps_related_table}");
+		if ($pa_bundle_settings['disableQuickadd']) { $vb_quickadd_enabled = false; }
+		$o_view->setVar('quickadd_enabled', $vb_quickadd_enabled);
+		
 		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 		
 		$t_label = null;

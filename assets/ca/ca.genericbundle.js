@@ -223,6 +223,7 @@ var caUI = caUI || {};
 			templateValues.fieldNamePrefix = this.fieldNamePrefix; // always pass field name prefix to template
 
 			// Set default value for new items
+			var is_new = id ? false : true;
 			if (!id) {
 				jQuery.each(this.defaultValues, function(k, v) {
 					if (v && !templateValues[k]) { templateValues[k] = v; }
@@ -254,7 +255,7 @@ var caUI = caUI || {};
 			}
 
 			if (this.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {
-				this.onInitializeItem(id, initialValues, this, isNew);
+				this.onInitializeItem(is_new ? null : id, initialValues, this, isNew);
 			}
 
 			var that = this;	// for closures

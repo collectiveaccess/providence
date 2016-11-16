@@ -785,6 +785,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => '0',
 								'label' => _t('Show current only?'),
 								'description' => _t('If checked only the most recently dated relationship displayed.')
+							),
+							'disableQuickadd' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "10", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Disable quick add?'),
+								'description' => _t('If checked quickadd will be disabled regardless of user privileges.')
 							)
 						);
 					}
