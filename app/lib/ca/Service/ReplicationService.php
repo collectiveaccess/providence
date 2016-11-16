@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,9 @@ class ReplicationService {
 			case 'pushmedia':
 				$va_return = self::pushMedia($po_request);
 				break;
+			case 'hasguid':
+				$va_return = self::hasGUID($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint');
 
@@ -112,6 +115,25 @@ class ReplicationService {
 				$pa_options['ignoreTables'] = $pa_ignore_tables;
 			}
 		}
+		
+		if($ps_include_metadata = $po_request->getParameter('includeMetadata', pString, null, array('retainBackslashes' => false))) {
+			$pa_include_metadata = @json_decode($ps_include_metadata, true);
+			if(is_array($pa_include_metadata) && sizeof($pa_include_metadata)) {
+				$pa_options['includeMetadata'] = $pa_include_metadata;
+			}
+		}
+		if($ps_exclude_metadata = $po_request->getParameter('excludeMetadata', pString, null, array('retainBackslashes' => false))) {
+			$pa_exclude_metadata = @json_decode($ps_exclude_metadata, true);
+			if(is_array($pa_exclude_metadata) && sizeof($pa_exclude_metadata)) {
+				$pa_options['excludeMetadata'] = $pa_exclude_metadata;
+			}
+		}
+		if ($ps_for_guid = $po_request->getParameter('forGUID', pString)) {
+			$pa_options['forGUID'] = $ps_for_guid;
+		}
+		if ($ps_for_logged_guid = $po_request->getParameter('forLoggedGUID', pString)) {
+			$pa_options['forLoggedGUID'] = $ps_for_logged_guid;
+		}
 
 		// if log contains media, and pushMediaTo is set, copy media first before sending log. that way the
 		// other side of the sync doesn't have to pull the media from us (which may not be possible due to networking
@@ -128,8 +150,10 @@ class ReplicationService {
 			$va_log = ca_change_log::getLog($pn_from, $pn_limit, $pa_options, $va_media);
 
 			if(sizeof($va_media) > 0) {
+				$va_push_list = [];
 				foreach($va_media as $vs_md5 => $vs_url) {
 					if (!$vs_url) { continue; }
+					if (isset($va_push_list[$vs_md5])) { continue; }
 
 					// translate url to absolute media path
 					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
@@ -150,7 +174,7 @@ class ReplicationService {
 							'url_checksum' => $vs_md5
 						]
 					);
-
+					
 					curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, true);
 					curl_setopt($o_curl, CURLOPT_SSL_VERIFYHOST, 0);
 					curl_setopt($o_curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -170,6 +194,8 @@ class ReplicationService {
 					}
 
 					curl_close($o_curl);
+					
+					$va_push_list[$vs_md5] = true;
 				}
 			}
 		} else {
@@ -242,6 +268,8 @@ class ReplicationService {
 		foreach($va_log as $vn_log_id => $va_log_entry) {
 			$o_tx = new \Transaction($o_db);
 			try {
+				if ($va_log_entry['SKIP']) { throw new CA\Sync\LogEntry\IrrelevantLogEntry(_t('Skip log entry')); }
+				
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->sanityCheck();
 			} catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
@@ -286,6 +314,8 @@ class ReplicationService {
 			$t_replication_log->set('status', 'C');
 			$t_replication_log->set('log_id', $vn_last_applied_log_id);
 			$t_replication_log->insert();
+		} else {
+			$vn_last_applied_log_id = ca_replication_log::getLastReplicatedLogID($vs_source_system_guid);
 		}
 
 		if($vs_error) {
@@ -381,6 +411,28 @@ class ReplicationService {
 		$o_app_vars->save();
 
 		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function hasGUID($po_request) {
+		$va_guids_to_check = explode(";", $po_request->getParameter('guids', pString));
+		if ((!is_array($va_guids_to_check) || !sizeof($va_guids_to_check)) && ($vs_guid = $po_request->getParameter('guid', pString))) {
+			$va_guids_to_check = [$vs_guid];
+		}
+		
+		$va_results = [];
+		if(is_array($va_guids_to_check)) {
+			foreach($va_guids_to_check as $vs_guid) {
+				if (!($va_results[$vs_guid] = ca_guids::getInfoForGUID($vs_guid))) {
+					$va_results[$vs_guid] = '???';
+				}
+			}
+		}
+		return $va_results;
 	}
 	# -------------------------------------------------------
 }
