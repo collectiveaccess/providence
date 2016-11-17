@@ -2511,7 +2511,7 @@ class BaseModel extends BaseObject {
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, $va_index_options);
 					}
 					
-					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("I"); }
+					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("I", null, ['log_id' => $vn_log_id = caGetOption('log_id', $pa_options, null)]); }
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
@@ -3098,7 +3098,7 @@ class BaseModel extends BaseObject {
 						}
 					}
 					
-					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("U"); }
+					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("U", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
 	
 					$this->_FILES_CLEAR = array();
 				}
@@ -3205,7 +3205,7 @@ class BaseModel extends BaseObject {
 						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
 					}
 				}
-				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D"); }
+				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
 				
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 				return $vn_rc;
@@ -3395,7 +3395,7 @@ class BaseModel extends BaseObject {
 					
 				//}
 				# clear object
-				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D"); }
+				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
 				
 				$this->clear();
 			} else {
@@ -6355,8 +6355,8 @@ class BaseModel extends BaseObject {
 	 * @param int $pn_user_id user identifier, defaults to null
 	 * @param array $pa_options Options include:
 	 *		row_id = Force logging for specified row_id. [Default is to use id from currently loaded row]
-	 *		snapshot = Row snapshot array to use for logging. [Default i to use snapshot from currently loaded row]
-	 
+	 *		snapshot = Row snapshot array to use for logging. [Default is to use snapshot from currently loaded row]
+	 * 		log_id = Force logging using a specific log_id. [Default is to use next available log_id]
 	 */
 	public function logChange($ps_change_type, $pn_user_id=null, $pa_options=null) {
 		if(defined('__CA_DONT_LOG_CHANGES__')) { return null; }
@@ -6374,6 +6374,8 @@ class BaseModel extends BaseObject {
 			$vb_log_changes_to_self = 	$this->getProperty('LOG_CHANGES_TO_SELF');
 			$va_subject_config = 		$this->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
 		}
+		
+		$pn_log_id = caGetOption('log_id', $pa_options, null);
 
 		global $AUTH_CURRENT_USER_ID;
 		if (!$pn_user_id) { $pn_user_id = $AUTH_CURRENT_USER_ID; }
@@ -6484,11 +6486,11 @@ class BaseModel extends BaseObject {
 			if (!($this->opqs_change_log = $o_db->prepare("
 				INSERT INTO ".$vs_change_log_database."ca_change_log
 				(
-					log_datetime, user_id, unit_id, changetype,
+					log_id, log_datetime, user_id, unit_id, changetype,
 					logged_table_num, logged_row_id, batch_id
 				)
 				VALUES
-				(?, ?, ?, ?, ?, ?, ?)
+				(?, ?, ?, ?, ?, ?, ?, ?)
 			"))) {
 				// prepare failed - shouldn't happen
 				return false;
@@ -6527,11 +6529,11 @@ class BaseModel extends BaseObject {
 			
 			global $g_change_log_batch_id;	// Log batch_id as set in global by ca_batch_log model (app/models/ca_batch_log.php)
 			$this->opqs_change_log->execute(
-				time(), $pn_user_id, $vn_unit_id, $ps_change_type,
+				$pn_log_id, time(), $pn_user_id, $vn_unit_id, $ps_change_type,
 				$this->tableNum(), $vn_row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
 			);
 			
-			$vn_log_id = $this->opqs_change_log->getLastInsertID();
+			$vn_log_id = ($pn_log_id > 0) ? $pn_log_id : $this->opqs_change_log->getLastInsertID();
 			$this->opqs_change_log_snapshot->execute(
 				$vn_log_id, $vs_snapshot
 			);

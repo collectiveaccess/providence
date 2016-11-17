@@ -77,7 +77,7 @@ class Relationship extends Base {
 		} elseif($this->isUpdate()) {
 			$this->getModelInstance()->update();
 		} elseif($this->isDelete()) {
-			$this->getModelInstance()->delete();
+			$this->getModelInstance()->delete(false);
 		}
 
 		$this->checkModelInstanceForErrors();
