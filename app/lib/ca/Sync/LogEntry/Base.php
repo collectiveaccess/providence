@@ -507,6 +507,10 @@ abstract class Base {
 		}
 
 		if($this->getModelInstance()->numErrors() > 0) { // is this critical or not? hmm
+			if (($this->getModelInstance()->numErrors() == 1) && ($o_error = $this->getModelInstance()->errors[0]) && ($o_error->getErrorNumber() == 251)) {
+				throw new IrrelevantLogEntry(_t("Log entry has already been applied"));
+			}
+		
 			throw new InvalidLogEntryException(
 				_t("There were errors processing record from log entry %1: %2",
 					$this->getLogId(), join(' ', $this->getModelInstance()->getErrors()))

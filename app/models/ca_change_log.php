@@ -578,4 +578,54 @@ class ca_change_log extends BaseModel {
 		return false;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function logEntryHasAccess($pa_log_entry, $pa_access) {
+		$o_db = new Db();
+		$o_dm = Datamodel::load();
+		
+		if (!($t_instance = $o_dm->getInstanceByTableNum($pa_log_entry['logged_table_num'], true))) { return false; }
+		if ($t_instance->hasField('access')) { 
+			$qr_res = $o_db->query("SELECT access FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pa_log_entry['logged_row_id']]);
+			if ($qr_res->nextRow()) {
+				if (in_array($vn_access = $qr_res->get('access'), $pa_access)) { return true; }
+			}
+		}
+		
+		if (is_array($pa_log_entry['subjects'])) {
+			foreach($pa_log_entry['subjects'] as $va_subject) {
+				if (!($t_instance = $o_dm->getInstanceByTableNum($va_subject['subject_table_num'], true))) { continue; }
+				if ($t_instance->hasField('access')) { 
+					$qr_res = $o_db->query("SELECT access FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$va_subject['subject_row_id']]);
+					if ($qr_res->nextRow()) {
+						if (in_array($qr_res->get('access'), $pa_access)) { return true; }
+					}
+				}
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function rowHasAccess($pn_table_num, $pn_row_id, $pa_access) {
+		$o_db = new Db();
+		$o_dm = Datamodel::load();
+		
+		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num, true))) { return false; }
+		if ($t_instance->hasField('access')) { 
+			$qr_res = $o_db->query("SELECT access FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_row_id]);
+			if ($qr_res->nextRow()) {
+				if (in_array($vn_access = $qr_res->get('access'), $pa_access)) { return true; }
+			}
+		} else {
+			return true;
+		}
+		
+		
+		return false;
+	}
+	# ------------------------------------------------------
 }

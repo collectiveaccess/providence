@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__."/core/Logging/Logger.php");
+require_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
 use \CollectiveAccessService as CAS;
 
@@ -178,6 +179,11 @@ class Replicator {
 				if(is_array($pa_exclude_metadata) && sizeof($pa_exclude_metadata)) {
 					$vs_exclude_metadata = json_encode($pa_exclude_metadata);
 				}
+				// get filter_on_access_settings
+				if (!is_array($pa_filter_on_access_settings = $this->opo_replication_conf->get('sources')[$vs_source_key]['filter_on_access_settings']) || !sizeof($pa_filter_on_access_settings)) {
+					$pa_filter_on_access_settings = null;
+				}
+				
 
 				$va_back_log = [];
 				$pb_ok = true;
@@ -199,32 +205,35 @@ class Replicator {
 						(bool)$this->opo_replication_conf->get('sources')[$vs_target_key]['push_missing']
 					) {
 						// harvest guids used for updates
-						$va_guids = [];
+						$va_guid_list = [];
 						$va_source_log_entries_for_missing_guids = [];
-						foreach($va_source_log_entries as $va_source_log_entry) {
+						foreach($va_source_log_entries as $vn_log_id => $va_source_log_entry) {
 							if (is_array($va_source_log_entry['subjects'])) {
 								foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
-									$va_guids[$va_source_log_subject['guid']]++;
+									if (!($va_guid_list[$va_source_log_subject['guid']] = ($pa_filter_on_access_settings && !ca_change_log::rowHasAccess($va_source_log_subject['subject_table_num'], $va_source_log_subject['subject_row_id'], $pa_filter_on_access_settings)) ? 0 : 1)) {
+										$va_source_log_entries[$vn_log_id]['SKIP'] = 1;	 // skip entry because no access
+									}
 								}
 							}
 						}
 						
 						// are any of these guids not present on the target?
 						$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
-								->addGetParameter('guids', join(";", array_keys($va_guids)))
+								->addGetParameter('guids', join(";", array_keys($va_guid_list)))
 								->request();
 						$va_guid_presence_map = $o_resp->getRawData();
 					
 						if (is_array($va_guid_presence_map) && sizeof($va_guid_presence_map)) {
 							// run log entries for those guids
 							foreach($va_guid_presence_map as $vs_guid => $va_guid_info) {
-								if ($vs_guid && !is_array($va_guid_info)) {
+								if ($vs_guid && !is_array($va_guid_info) && ($va_guid_list[$vs_guid])) {	// Only process related if the guid is not present and access is set
 									if ($va_back_log[$vs_guid]) { continue; }
+									
 									$va_back_log[$vs_guid] = true;
-									$va_source_log_entries_for_missing_guids = array_replace($va_source_log_entries_for_missing_guids, $o_source->setEndpoint('getlog')->clearGetParameters()
+									$va_source_log_entries_for_missing_guids = array_replace($va_source_log_entries_for_missing_guids, $o_source->setEndpoint('getlog')
+										->clearGetParameters()
 										->addGetParameter('forGUID', $vs_guid)
 										->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-										//->addGetParameter('limit', 10)
 										->addGetParameter('ignoreTables', $vs_ignore_tables)
 										->addGetParameter('includeMetadata', $vs_include_metadata)
 										->addGetParameter('excludeMetadata', $vs_exclude_metadata)
@@ -232,18 +241,18 @@ class Replicator {
 										->request()->getRawData());
 								}
 							}
-							
+
 							// expand to related subjects
-							$va_guids = [];
-							foreach($va_source_log_entries_for_missing_guids as $va_source_log_entry) {
+							$va_expanded_guid_list = [];
+							foreach($va_source_log_entries_for_missing_guids as $vn_log_id => $va_source_log_entry) {
 								if (is_array($va_source_log_entry['subjects'])) {
 									foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
-										$va_guids[$va_source_log_subject['guid']]++;
+										$va_expanded_guid_list[$va_source_log_subject['guid']]++;
 									}
 								}
 							}
 							$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
-								->addGetParameter('guids', join(";", array_keys($va_guids)))
+								->addGetParameter('guids', join(";", array_keys($va_expanded_guid_list)))
 								->request();
 							$va_expanded_guid_presence_map = $o_resp->getRawData();
 							
@@ -252,10 +261,10 @@ class Replicator {
 									if ($va_back_log[$vs_guid]) { continue; }
 									$va_back_log[$vs_guid] = true;
 									
-									$va_source_log_entries_for_missing_guids = array_replace($va_source_log_entries_for_missing_guids, $o_source->setEndpoint('getlog')->clearGetParameters()
+									$va_source_log_entries_for_missing_guids = array_replace($va_source_log_entries_for_missing_guids, $o_source->setEndpoint('getlog')
+										->clearGetParameters()
 										->addGetParameter('forGUID', $vs_guid)
 										->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-										//->addGetParameter('limit', 10)
 										->addGetParameter('ignoreTables', $vs_ignore_tables)
 										->addGetParameter('includeMetadata', $vs_include_metadata)
 										->addGetParameter('excludeMetadata', $vs_exclude_metadata)
@@ -263,7 +272,7 @@ class Replicator {
 										->request()->getRawData());
 								}
 							}
-							
+						
 							foreach(array_keys($va_source_log_entries) as $vn_log_id) {
 								if($va_source_log_entries[$vn_log_id]) { unset($va_source_log_entries_for_missing_guids[$vn_log_id]); }
 							}

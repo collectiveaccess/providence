@@ -421,7 +421,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'lot_id'
+	
 		),
 		"RELATED_TABLES" => array(
 		
