@@ -1219,7 +1219,7 @@ class SearchIndexer extends SearchBase {
 							$va_sub_element_ids = array_flip($va_sub_element_ids);
 							foreach($vo_attribute->getValues() as $vo_value) {
 								$vn_list_id = ca_metadata_elements::getElementListID($vo_value->getElementID());
-								$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
+								$vs_value_to_index = $vo_value->getDisplayValue(['list_id' => $vn_list_id]);
 
 								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 								if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {

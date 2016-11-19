@@ -468,6 +468,12 @@
 									$va_lists = caExtractValuesByUserLocale($t_list->getListOfLists());
 									
 									$va_rel_opts = array();
+									if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
+										$va_rel_opts['-'] = null;
+									}
+									if (isset($va_properties['allowAll']) && $va_properties['allowAll']) {
+										$va_rel_opts[_t('All lists')] = '*';
+									}
 									foreach($va_lists as $vn_list_id => $va_list_info) {
 										if ($va_properties['showVocabularies'] && !$va_list_info['use_as_vocabulary']) { continue; }
 										$va_rel_opts[$va_list_info['name'].' ('.$va_list_info['list_code'].')'] = $vn_list_id;
