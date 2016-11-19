@@ -257,6 +257,9 @@ class ca_change_log extends BaseModel {
 		$pa_ignore_tables = caGetOption('ignoreTables', $pa_options);
 		if(!is_array($pa_ignore_tables)) { $pa_ignore_tables = array(); }
 		
+		$pa_only_tables = caGetOption('onlyTables', $pa_options);
+		if(!is_array($pa_only_tables)) { $pa_only_tables = array(); }
+		
 		$pa_include_metadata = caGetOption('includeMetadata', $pa_options);
 		if(!is_array($pa_include_metadata)) { $pa_include_metadata = array(); }
 		
@@ -271,16 +274,25 @@ class ca_change_log extends BaseModel {
 			if($vn_ignore_table_num = $o_dm->getTableNum($vs_ignore_table)) {
 				$va_ignore_tables[] = $vn_ignore_table_num;
 			}
+		}		
+		$va_only_tables = [];
+		foreach($pa_only_tables as $vs_only_table) {
+			if($vn_only_table_num = $o_dm->getTableNum($vs_only_table)) {
+				$va_only_tables[] = $vn_only_table_num;
+			}
 		}
-
-		$vs_ignore_sql = '';
-		if(sizeof($va_ignore_tables)) {
-			$vs_ignore_sql = 'AND logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
-		}
+		
+		
+		$vs_table_filter_sql = $vs_table_filter_subject_sql = '';
 
 		$o_db = new Db();
 
 		if ($ps_for_logged_guid) {
+			if(sizeof($va_only_tables)) {
+				$vs_table_filter_sql = 'AND cl.logged_table_num IN (' . join(',', $va_only_tables) . ')';
+			} elseif(sizeof($va_ignore_tables)) {
+				$vs_table_filter_sql = 'AND cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
+			}
 			$qr_results = $o_db->query("
 				SELECT cl.log_id i, cl.*, cls.* 
 				FROM ca_change_log cl
@@ -288,17 +300,26 @@ class ca_change_log extends BaseModel {
 				INNER JOIN ca_guids AS g ON g.table_num = cl.logged_table_num AND g.row_id = cl.logged_row_id
 				WHERE 
 					g.guid=?
-				{$vs_ignore_sql}
+				{$vs_table_filter_sql}
+				{$vs_limit_sql}
 			", [$ps_for_guid]);
-		} elseif ($ps_for_guid) {
+		} elseif ($ps_for_guid) {	
+			if(sizeof($va_only_tables)) {
+				$vs_table_filter_sql = 'AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ')) AND (csub.subject_table_num IN (' . join(',', $va_only_tables) . ') OR csub.subject_table_num IS NULL) ';
+				$vs_table_filter_subject_sql = 'AND csub.subject_table_num IN (' . join(',', $va_only_tables) . ') AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ')) ';
+			} elseif(sizeof($va_ignore_tables)) {
+				$vs_table_filter_sql = 'AND cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ') AND (csub.subject_table_num NOT IN (' . join(',', $va_ignore_tables) . ') OR csub.subject_table_num IS NULL) ';
+				$vs_table_filter_subject_sql = 'AND (csub.subject_table_num NOT IN (' . join(',', $va_ignore_tables) . ')) AND (cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')) ';
+			}
 			$qr_results = $o_db->query("
 				(SELECT cl.log_id i, cl.*, cls.* 
 				FROM ca_change_log cl
 				INNER JOIN ca_change_log_snapshots AS cls ON cl.log_id = cls.log_id
+				LEFT JOIN ca_change_log_subjects AS csub ON cl.log_id = csub.log_id
 				INNER JOIN ca_guids AS g ON g.table_num = cl.logged_table_num AND g.row_id = cl.logged_row_id
 				WHERE 
 					g.guid=?
-				{$vs_ignore_sql})
+				{$vs_table_filter_sql})
 				
 				UNION
 				
@@ -309,14 +330,19 @@ class ca_change_log extends BaseModel {
 				INNER JOIN ca_guids AS g ON g.table_num = csub.subject_table_num AND g.row_id = csub.subject_row_id
 				WHERE 
 					g.guid=?
-				{$vs_ignore_sql})
+				{$vs_table_filter_subject_sql})
 				{$vs_limit_sql}
 			", [$ps_for_guid, $ps_for_guid]);
-		} else {
+		} else {		
+			if(sizeof($va_only_tables)) {
+				$vs_table_filter_sql = 'AND cl.logged_table_num IN (' . join(',', $va_only_tables) . ')';
+			} elseif(sizeof($va_ignore_tables)) {
+				$vs_table_filter_sql = 'AND cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
+			}
 			$qr_results = $o_db->query("
 				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
 				WHERE cl.log_id = cls.log_id AND cl.log_id>=?
-				{$vs_ignore_sql}
+				{$vs_table_filter_sql}
 				ORDER BY cl.log_id
 				{$vs_limit_sql}
 			", [$pn_from]);
@@ -439,23 +465,23 @@ class ca_change_log extends BaseModel {
 							) {
 
 								// we only put the URL/path if it's still the latest file. can figure that out with a simple query
-								// $qr_future_entries = $o_db->query("
-// 										SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
-// 										WHERE cl.log_id = cls.log_id AND cl.log_id>?
-// 										AND cl.logged_row_id = ? AND cl.logged_table_num = ?
-// 										ORDER BY cl.log_id
-// 									", $va_row['log_id'], $va_row['logged_row_id'], $va_row['logged_table_num']);
-// 
-// 								$pb_is_latest = true;
-// 								while($qr_future_entries->nextRow()) {
-// 									$va_future_snap = caUnserializeForDatabase($qr_future_entries->get('snapshot'));
-// 									if(isset($va_future_snap[$vs_fld]) && $va_future_snap[$vs_fld]) {
-// 										$pb_is_latest = false;
-// 										break;
-// 									}
-// 								}
+								 $qr_future_entries = $o_db->query("
+ 										SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
+ 										WHERE cl.log_id = cls.log_id AND cl.log_id>?
+ 										AND cl.logged_row_id = ? AND cl.logged_table_num = ?
+ 										ORDER BY cl.log_id
+ 									", $va_row['log_id'], $va_row['logged_row_id'], $va_row['logged_table_num']);
+ 
+ 								$pb_is_latest = true;
+ 								while($qr_future_entries->nextRow()) {
+ 									$va_future_snap = caUnserializeForDatabase($qr_future_entries->get('snapshot'));
+ 									if(isset($va_future_snap[$vs_fld]) && $va_future_snap[$vs_fld]) {
+ 										$pb_is_latest = false;
+ 										break;
+ 									}
+ 								}
 
-								//if($pb_is_latest) {
+								if($pb_is_latest) {
 									// nowadays the change log entry is an <img> tag ... the default behavior for get('media'), presumably
 									// it usually points to a non-original version, so we have to actually load() here to get the original
 									if(is_string($va_snapshot[$vs_fld])) {
@@ -470,9 +496,9 @@ class ca_change_log extends BaseModel {
 										$o_coder = MediaInfoCoder::load();
 										$va_snapshot[$vs_fld] = $o_coder->getMediaUrl($va_snapshot[$vs_fld], 'original');
 									}
-								//} else { // if it's not the latest, we don't care about the media
-								//	unset($va_snapshot[$vs_fld]);
-								//}
+								} else { // if it's not the latest, we don't care about the media
+									unset($va_snapshot[$vs_fld]);
+								}
 								
 								
 
