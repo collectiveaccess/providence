@@ -1557,7 +1557,7 @@ class TimeExpressionParser {
 		
 		// multiword range conjunction?
 		foreach($this->getLanguageSettingsWordList("rangeConjunctions") as $vs_conjunction) {
-			if (preg_match("!^{$vs_token_lc} !", $vs_conjunction)) {
+			if (preg_match("!^".preg_quote($vs_token_lc, '!')."!", $vs_conjunction)) {
 				$va_pieces = preg_split("![ ]+!", $vs_conjunction);
 				array_shift($va_pieces);
 				
