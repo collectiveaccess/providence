@@ -409,6 +409,8 @@ abstract class Base {
 						$vm_val = $va_files[$va_snapshot[$vs_field]];
 						$this->getModelInstance()->set($vs_field, $vm_val);
 					}
+					
+					continue;
 				}
 
 				// handle list reference fields, like status, access, item_status_id, or even type_id

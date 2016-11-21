@@ -116,6 +116,13 @@ class ReplicationService {
 			}
 		}
 		
+		if($ps_only_tables = $po_request->getParameter('onlyTables', pString, null, array('retainBackslashes' => false))) {
+			$pa_only_tables = @json_decode($ps_only_tables, true);
+			if(is_array($pa_only_tables) && sizeof($pa_only_tables)) {
+				$pa_options['onlyTables'] = $pa_only_tables;
+			}
+		}
+		
 		if($ps_include_metadata = $po_request->getParameter('includeMetadata', pString, null, array('retainBackslashes' => false))) {
 			$pa_include_metadata = @json_decode($ps_include_metadata, true);
 			if(is_array($pa_include_metadata) && sizeof($pa_include_metadata)) {
@@ -159,7 +166,7 @@ class ReplicationService {
 					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
 					$vs_local_path = __CA_BASE_DIR__ . str_replace(__CA_URL_ROOT__, '', $vs_path_from_url);
 					
-					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize(filesize($vs_local_path))."]");
+					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize(@filesize($vs_local_path))."]");
 
 					// send media to remote service endpoint
 					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
@@ -419,7 +426,11 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function hasGUID($po_request) {
-		$va_guids_to_check = explode(";", $po_request->getParameter('guids', pString));
+		if($po_request->getRequestMethod() === 'POST') { 
+			$va_guids_to_check = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$va_guids_to_check = explode(";", $po_request->getParameter('guids', pString));
+		}
 		if ((!is_array($va_guids_to_check) || !sizeof($va_guids_to_check)) && ($vs_guid = $po_request->getParameter('guid', pString))) {
 			$va_guids_to_check = [$vs_guid];
 		}

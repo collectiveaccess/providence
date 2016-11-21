@@ -2109,6 +2109,8 @@ class BaseModel extends BaseObject {
 			$va_media_fields = array();
 			$va_file_fields = array();
 			
+			$vn_fields_that_have_been_set = 0;
+			
 			//
 			// Set any auto-set hierarchical fields (eg. HIERARCHY_LEFT_INDEX_FLD and HIERARCHY_RIGHT_INDEX_FLD indexing for all and HIERARCHY_ID_FLD for ad-hoc hierarchies) here
 			//
@@ -2123,6 +2125,7 @@ class BaseModel extends BaseObject {
 							if ($vn_parent_id = $this->getHierarchyRootID(null)) {
 								$this->set($this->getProperty('HIERARCHY_PARENT_ID_FLD'), $vn_parent_id);
 								$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
+								$vn_fields_that_have_been_set++;
 							}
 						}
 						break;
@@ -2134,6 +2137,7 @@ class BaseModel extends BaseObject {
 							if ($vn_parent_id = $this->getHierarchyRootID($vn_hierarchy_id)) {
 								$this->set($this->getProperty('HIERARCHY_PARENT_ID_FLD'), $vn_parent_id);
 								$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
+								$vn_fields_that_have_been_set++;
 							}
 						}
 						break;
@@ -2142,6 +2146,7 @@ class BaseModel extends BaseObject {
 							if ($va_parent_info) {
 								// set hierarchy to that of parent
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $va_parent_info[$this->getProperty('HIERARCHY_ID_FLD')]);
+								$vn_fields_that_have_been_set++;
 							} 
 							
 							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
@@ -2260,6 +2265,7 @@ class BaseModel extends BaseObject {
 							}
 							if (is_null($v)) { $v = 'null'; }
 							$vs_values .= "{$v},";		# output as is
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIME):
@@ -2277,6 +2283,7 @@ class BaseModel extends BaseObject {
 							}
 							if (is_null($v)) { $v = 'null'; }
 							$vs_values .= "{$v},";		# output as is
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIMESTAMP):	# insert on stamp
@@ -2284,6 +2291,7 @@ class BaseModel extends BaseObject {
 							$vs_fields .= $vs_field.",";
 							$vs_values .= $t.",";
 							$this->_FIELD_VALUES[$vs_field] = $t;
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_DATERANGE):
@@ -2318,6 +2326,7 @@ class BaseModel extends BaseObject {
 							
 							$vs_fields .= "{$start_field_name}, {$end_field_name},";
 							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
+							$vn_fields_that_have_been_set++;
 
 							break;
 						# -----------------------------
@@ -2352,6 +2361,7 @@ class BaseModel extends BaseObject {
 							
 							$vs_fields .= "{$start_field_name}, {$end_field_name},";
 							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
+							$vn_fields_that_have_been_set++;
 
 							break;
 						# -----------------------------
@@ -2375,6 +2385,7 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							$vs_values .= $v.",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIMECODE):
@@ -2387,18 +2398,21 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							$vs_values .= $v.",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_MEDIA):
 							$vs_fields .= $vs_field.",";
 							$vs_values .= "'',";
 							$va_media_fields[] = $vs_field;
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_FILE):
 							$vs_fields .= $vs_field.",";
 							$vs_values .= "'',";
 							$va_file_fields[] = $vs_field;
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TEXT):
@@ -2406,11 +2420,13 @@ class BaseModel extends BaseObject {
 							$vs_fields .= $vs_field.",";
 							$vs_value = $this->quote($this->get($vs_field));
 							$vs_values .= $vs_value.",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_VARS):
 							$vs_fields .= $vs_field.",";
 							$vs_values .= $this->quote(caSerializeForDatabase($this->get($vs_field), (isset($va_attr['COMPRESS']) && $va_attr['COMPRESS']) ? true : false)).",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						default:
@@ -2511,7 +2527,7 @@ class BaseModel extends BaseObject {
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, $va_index_options);
 					}
 					
-					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("I", null, ['log_id' => $vn_log_id = caGetOption('log_id', $pa_options, null)]); }
+					if (($vn_fields_that_have_been_set > 0) && !caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("I", null, ['log_id' => $vn_log_id = caGetOption('log_id', $pa_options, null)]); }
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
@@ -3098,7 +3114,7 @@ class BaseModel extends BaseObject {
 						}
 					}
 					
-					if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("U", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
+					if (($vn_fields_that_have_been_set > 0) && !caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("U", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
 	
 					$this->_FILES_CLEAR = array();
 				}
@@ -6398,6 +6414,7 @@ class BaseModel extends BaseObject {
 				$va_subjects[$this->get('table_num')][] = $vn_id;
 			}
 		} elseif ($vb_is_metadata_value) {
+			if(!sizeof($this->getChangedFieldValuesArray())) { return null; }	// don't log if nothing has changed
 			// special case for logging metadata changes
 			$t_attr = new ca_attributes($this->get('attribute_id'));
 			if (($vn_id = $t_attr->get('row_id')) > 0) {
