@@ -762,7 +762,6 @@
 					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
 					print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
-
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(sizeof($pa_mimetypes)) {
 						$vb_mimetype_match = false;
@@ -1863,7 +1862,6 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
-				"username" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
@@ -3479,7 +3477,9 @@
 					($t_instance instanceof BundlableLabelableBaseModelWithAttributes) ||
 					($t_instance instanceof BaseLabel) ||
 					($t_instance instanceof ca_attribute_values) ||
-					($t_instance instanceof ca_attributes)
+					($t_instance instanceof ca_users) ||
+					($t_instance instanceof ca_attributes) ||
+					($t_instance->getProperty('LOG_CHANGES_TO_SELF') && method_exists($t_instance, 'getGUIDByPrimaryKey'))
 				) {
 					$qr_results = $o_db->query("SELECT ". $t_instance->primaryKey() . " FROM ". $t_instance->tableName());
 					if($qr_results && ($qr_results->numRows() > 0)) {
@@ -3816,13 +3816,15 @@
 
 			UrlAttributeValue::checkIntegrityForAllElements([
 				'request' => $o_request,
-				'emailErrorsTo' => $po_opts->getOption('email')
+				'notifyUsers' => $po_opts->getOption('users'),
+				'notifyGroups' => $po_opts->getOption('groups')
 			]);
 		}
 		# -------------------------------------------------------
 		public static function check_url_reference_integrityParamList() {
 			return [
-				"email|e=s" => _t('Email address(es) to mail report to if there are errors.[Optional]'),
+				"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user named will be ignored. [Optional]'),
+				"groups|g=s" => _t('Groups to notify if there are errors. They\'re identified by group code. Multiple entries are delimited by comma or semicolon. Invalid or non-existing groups will be ignored. [Optional]'),
 			];
 		}
 		# -------------------------------------------------------

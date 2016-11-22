@@ -244,6 +244,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				case 'text':
 					$pa_options['returnIdno'] = false;
 					$pa_options['idsOnly'] = false;
+					$pa_options['returnDisplayText'] = true;
 					break;
 				default:
 					$pa_options['idsOnly'] = true;
@@ -253,6 +254,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
 			return caGetListItemIdno($this->opn_item_id);
+		}
+		if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
+			return caGetListItemForDisplayByItemID($this->opn_item_id, !$pa_options['useSingular']);
 		}
 
 		if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {

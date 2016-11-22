@@ -84,13 +84,29 @@
 		 * @param string $ps_delimiter Delimiter for text files. [Default is tab (\t)]
 		 * @param string $ps_text_marker Marker used to enclose text blocks in text files. [Default is double quote (")]
 		 * @param string $ps_filepath Path to parsable file. [Default is null]
+		 * @param array $pa_options Options include:
+		 *		worksheet = Worksheet number to read from when parsing Excel files. [Default is 0]
 		 */
-		public function __construct($ps_delimiter="\t", $ps_text_marker='"', $ps_filepath=null) {
+		public function __construct($ps_delimiter="\t", $ps_text_marker='"', $ps_filepath=null, $pa_options=null) {
 			$this->setDelimiter($ps_delimiter);
 			$this->setTextMarker($ps_text_marker);
 			$this->opr_file = null;
 			
-			if ($ps_filepath) { $this->parse($ps_filepath); }
+			if ($ps_filepath) { $this->parse($ps_filepath, $pa_options); }
+		}
+		# ----------------------------------------
+		/**
+		 * Parse a delimited data file (text or XLSX) and return parser instance
+		 *
+		 * @param string $ps_filepath Path to parsable file. [Default is null]
+		 * @param array $pa_options Options include:
+		 *		delimiter = Delimiter for text files. [Default is tab (\t)]
+		 *		textMarker = Marker used to enclose text blocks in text files. [Default is double quote (")]
+		 *		worksheet = Worksheet number to read from when parsing Excel files. [Default is 0]
+		 * @return DelimitedDataParser
+		 */
+		static public function load($ps_filepath, $pa_options=null) {
+			return new DelimitedDataParser(caGetOption('delimiter', $pa_options, "\t"), caGetOption('textMarker', $pa_options, '"'), $ps_filepath, $pa_options);
 		}
 		# ----------------------------------------
 		/**
@@ -104,13 +120,26 @@
 		 * Parse file. Text files and Excel files are supported.
 		 *
 		 * @param $ps_filepath Path to file
+		 * @param $pa_options array Options include:
+		 *		worksheet = Worksheet number to read from when parsing Excel files. [Default is 0]
 		 * @return bool True on success, false on failure
 		 */
-		public function parse($ps_filepath) {
+		public function parse($ps_filepath, $pa_options=null) {
 			$this->opn_current_row = 0;
 			try {
+				$vb_valid = false;
+				$va_excel_types = ['Excel2007', 'Excel5', 'Excel2003XML'];
+				foreach ($va_excel_types as $vs_type) {
+					$o_reader = PHPExcel_IOFactory::createReader($vs_type);
+					if ($o_reader->canRead($ps_filepath)) {
+						$vb_valid = true;
+						break;
+					}
+				}
+				
+				if(!$vb_valid) { throw new Exception("Not an Excel file"); }
 				$this->opo_excel = PHPExcel_IOFactory::load($ps_filepath);
-				$this->opo_excel->setActiveSheetIndex(0);
+				$this->opo_excel->setActiveSheetIndex(caGetOption('worksheet', $pa_options, 0));
 				
 				$o_sheet = $this->opo_excel->getActiveSheet();
 				$this->opr_file = $o_sheet->getRowIterator();

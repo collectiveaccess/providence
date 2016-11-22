@@ -75,10 +75,10 @@
  			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
 
  			$vb_we_set_transaction = false;
- 			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
+ 			//$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
  			if (!$o_trans) {
  				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction($t_subject->getDb());
+ 				//$o_trans = new Transaction($t_subject->getDb());
  			}
 
  			$o_log = new Batchlog(array(
@@ -86,7 +86,7 @@
  				'batch_type' => 'BE',
  				'table_num' => (int)$t_set->get('table_num'),
  				'notes' => '',
- 				'transaction' => $o_trans
+ 				//'transaction' => $o_trans
  			));
 
  			$vs_screen = $po_request->getActionExtra();
@@ -101,7 +101,7 @@
  			$vn_c = 0;
  			$vn_start_time = time();
  			foreach(array_keys($va_row_ids) as $vn_row_id) {
- 				$t_subject->setTransaction($o_trans);
+ 				//$t_subject->setTransaction($o_trans);
  				if ($t_subject->load($vn_row_id)) {
  					$po_request->clearActionErrors();
 
@@ -174,9 +174,9 @@
 
 			if ($vb_we_set_transaction) {
 				if (sizeof($va_errors) > 0) {
-					$o_trans->rollback();
+					//$o_trans->rollback();
 				} else {
-					$o_trans->commit();
+					//$o_trans->commit();
 				}
 			}
 

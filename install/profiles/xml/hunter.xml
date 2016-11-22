@@ -14119,48 +14119,8 @@
     </searchForm>
   </searchForms>
   <logins>
-    <login user_name="administrator" password="dublincore" fname="CollectiveAccess"
+    <login user_name="administrator" password="changeme" fname="CollectiveAccess"
       lname="Administrator" email="info@collectiveaccess.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Jose" password="Camacho" fname="Jose"
-      lname="Camacho" email="jcamac@hunter.cuny.edu">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Diego" password="Valencia" fname="Diego"
-      lname="Valencia" email="dvalenci@hunter.cuny.edu">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Joselito" password="DelaCruz" fname="Joselito"
-      lname="Dela Cruz" email="jd1167@hunter.cuny.edu">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Alberto" password="Hernandez" fname="Alberto"
-      lname="Hernandez" email="ahe0013@hunter.cuny.edu">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Ana-Rosa" password="Perez" fname="Ana-Rosa"
-      lname="Perez" email="asperez@hunter.cuny.edu">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Pedro" password="Hernandez" fname="Pedro"
-      lname="Hernandez" email="dhernand@hunter.cuny.edu">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Lindsay" password="Nicole" fname="Lindsay"
-      lname="Nicole" email="info@hunter.cuny.edu">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Anibal" password="Arocho" fname="Anibal"
-      lname="Arocho" email="info@hunter.cuny.edu">
       <role code="admin"/>
       <group code="admin"/>
     </login>

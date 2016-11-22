@@ -219,6 +219,12 @@ abstract class Base {
 	 */
 	public function getSnapshot() {
 		if(isset($this->opa_log['snapshot']) && is_array($this->opa_log['snapshot'])) {
+		
+			// Init unset value fields to null; this allows blanking of a field value to be replicated
+			foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1'] as $vs_f) {
+				if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
+			}
+		
 			return $this->opa_log['snapshot'];
 		}
 
@@ -339,9 +345,9 @@ abstract class Base {
 						// already established one of them is set, a few lines above
 						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];
 
-						if(!($vn_item_id = caGetListItemID($vs_list, $vs_code))) {
+						if(strlen($vs_code) && ($vs_code !== 'null') && !($vn_item_id = caGetListItemID($vs_list, $vs_code, ['includeDeleted' => true]))) {
 							throw new InvalidLogEntryException(
-								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
+								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}'. Field was {$vs_field}"
 							);
 						}
 					} else {
@@ -377,7 +383,9 @@ abstract class Base {
 	public function setIntrinsicsFromSnapshotInModelInstance() {
 		$va_snapshot = $this->getSnapshot();
 
+		$va_many_to_one_rels = $this->opo_datamodel->getManyToOneRelations($this->getModelInstance()->tableName());
 		foreach($va_snapshot as $vs_field => $vm_val) {
+		
 			// skip non existing "fake" fields
 			if(!$this->getModelInstance()->hasField($vs_field)) { continue; }
 
@@ -390,6 +398,20 @@ abstract class Base {
 
 			// only do something if this is a valid field
 			if($va_fld_info = $this->getModelInstance()->getFieldInfo($vs_field)) {
+			
+				// handle media in intrinsics
+				// was checksum? -> clean up stashed file
+				if (($va_fld_info['FIELD_TYPE'] == FT_MEDIA) && (strlen($va_snapshot[$vs_field]) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot[$vs_field])) {
+					$o_app_vars = new \ApplicationVars();
+					$va_files = $o_app_vars->getVar('pushMediaFiles');
+					
+					if(isset($va_files[$va_snapshot[$vs_field]])) {
+						$vm_val = $va_files[$va_snapshot[$vs_field]];
+						$this->getModelInstance()->set($vs_field, $vm_val);
+					}
+					
+					continue;
+				}
 
 				// handle list reference fields, like status, access, item_status_id, or even type_id
 				// in the source log, there should be fields like "type_code" or "access_code" that have
@@ -404,11 +426,11 @@ abstract class Base {
 
 						if($vn_item_id = caGetListItemID($vs_list, $vs_code)) {
 							if(isset($va_fld_info['LIST'])) { // access, status -> set item value (0,1 etc.)
-								$this->getModelInstance()->set($vs_field, caGetListItemValueForID($vn_item_id));
+								$this->getModelInstance()->set($vs_field, caGetListItemValueForID($vn_item_id), ['allowSettingOfTypeID' => true]);
 							} else { // type_id, source_id, etc. ...
-								$this->getModelInstance()->set($vs_field, $vn_item_id);
+								$this->getModelInstance()->set($vs_field, $vn_item_id, ['allowSettingOfTypeID' => true]);
 							}
-						} else {
+						} elseif(strlen($vs_code) && ($vs_code !== 'null')) {
 							throw new InvalidLogEntryException(
 								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
 							);
@@ -446,10 +468,13 @@ abstract class Base {
 
 					continue;
 				}
-
-				// just ignore user_ids
-				if($vs_field == 'user_id') {
-					continue;
+				
+				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
+				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
+					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
+						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
+						continue;
+					}
 				}
 
 				if(($this->getModelInstance() instanceof \ca_representation_annotations) && ($vs_field == 'representation_id')) {
@@ -465,8 +490,9 @@ abstract class Base {
 				}
 
 				// plain old field like idno, extent, source_info etc.
-				// model errors usually don't occurr on set(), so the implementations
+				// model errors usually don't occur on set(), so the implementations
 				// can still do whatever they want and possibly overwrite this
+				
 				$this->getModelInstance()->set($vs_field, $vm_val);
 			}
 		}
@@ -483,6 +509,10 @@ abstract class Base {
 		}
 
 		if($this->getModelInstance()->numErrors() > 0) { // is this critical or not? hmm
+			if (($this->getModelInstance()->numErrors() == 1) && ($o_error = $this->getModelInstance()->errors[0]) && ($o_error->getErrorNumber() == 251)) {
+				throw new IrrelevantLogEntry(_t("Log entry has already been applied"));
+			}
+		
 			throw new InvalidLogEntryException(
 				_t("There were errors processing record from log entry %1: %2",
 					$this->getLogId(), join(' ', $this->getModelInstance()->getErrors()))
@@ -519,6 +549,8 @@ abstract class Base {
 		} elseif($t_instance instanceof \ca_object_representations) {
 			return new Representation($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BundlableLabelableBaseModelWithAttributes) {
+			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
+		} elseif($t_instance instanceof \BaseModel) {
 			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		}
 

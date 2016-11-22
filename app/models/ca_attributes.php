@@ -214,7 +214,7 @@ class ca_attributes extends BaseModel {
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
 		if($vn_primary_key && $vn_rc) {
-			$this->removeGUID($vn_primary_key);
+			//$this->removeGUID($vn_primary_key);
 		}
 
 		return $vn_rc;
@@ -905,6 +905,20 @@ class ca_attributes extends BaseModel {
 
 		MemoryCache::save($this->getPrimaryKey(), $vs_element_code, 'AttributeToElementCodeCache');
 		return $vs_element_code;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getTableNumForAttribute($pn_attribute_id, $po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		if ($qr_res = $o_db->query("SELECT table_num FROM ca_attributes WHERE attribute_id = ?", [$pn_attribute_id])) {
+			if ($qr_res->nextRow()) {
+				return $qr_res->get('table_num');
+			}
+		}
+		return null;
 	}
 	# ------------------------------------------------------
 }

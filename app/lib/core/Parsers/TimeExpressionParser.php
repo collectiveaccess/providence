@@ -609,8 +609,8 @@ class TimeExpressionParser {
 				$vb_circa_is_set = false;
 				if ($va_token['type'] == TEP_TOKEN_RANGE_CONJUNCTION) {
 					$this->skipToken();
-					if (!$va_dates['start']['day']) { $va_dates['start']['day'] = 1; }
-					if (!$va_dates['start']['month']) { $va_dates['start']['month'] = 1; }
+					//if (!$va_dates['start']['day']) { $va_dates['start']['day'] = 1; }
+					//if (!$va_dates['start']['month']) { $va_dates['start']['month'] = 1; }
 					$vn_state = TEP_STATE_DATE_RANGE_END_DATE;
 				} else {
 					$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
@@ -966,6 +966,11 @@ class TimeExpressionParser {
 							
 							return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa);
 							
+							break;
+						# ----------------------
+						case TEP_TOKEN_RANGE_CONJUNCTION:
+							# assume month will be set by ending expression
+							return array('day' => $vn_day, 'month' => null, 'year' => null, 'is_circa' => $vb_is_circa);
 							break;
 						# ----------------------
 						default:
@@ -1549,6 +1554,32 @@ class TimeExpressionParser {
 		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("rangeConjunctions"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_RANGE_CONJUNCTION);
 		}
+		
+		// multiword range conjunction?
+		foreach($this->getLanguageSettingsWordList("rangeConjunctions") as $vs_conjunction) {
+			if (preg_match("!^".preg_quote($vs_token_lc, '!')."!", $vs_conjunction)) {
+				$va_pieces = preg_split("![ ]+!", $vs_conjunction);
+				array_shift($va_pieces);
+				
+				$vn_i = 1;
+				$vb_is_match = true;
+				foreach($va_pieces as $vs_piece) {
+					$va_peek_token = $this->peekToken($vn_i);
+					$vs_peek_token = $va_peek_token['value'];
+					if (trim(strtolower($vs_piece)) != ($vs_peek_token)) {
+						$vb_is_match = false;
+						break;
+					}
+					$vn_i++;
+				}
+				
+				if ($vb_is_match) {
+					foreach($va_pieces as $vs_piece) { $this->skipToken(); }
+					return array('value' => join(' ', array_merge([$vs_token_lc], $va_pieces)), 'type' => TEP_TOKEN_RANGE_CONJUNCTION);
+				}
+			}
+		}
+		
 			
 		// time conjunction
 		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateTimeConjunctions"))) {
@@ -1844,7 +1875,7 @@ class TimeExpressionParser {
 			
 			return true;
 		}
-		if (!$pa_dates['start']['month'] && !$pa_dates['start']['year']) {
+		if (!$pa_dates['start']['day'] && !$pa_dates['start']['month'] && !$pa_dates['start']['year']) {
 			# time-only expression
 			
 			if (($pa_options['mode']) && ($pa_options['mode'] != 'time')) {	// don't parse time expressions
@@ -1876,6 +1907,12 @@ class TimeExpressionParser {
 			}
 		
 			# date/time expression
+			
+			// Blank start month and year and year implies carry over of start date
+			if (!$pa_dates['start']['month'] && !$pa_dates['start']['year'] && $pa_dates['start']['day']) {
+				$pa_dates['start']['year'] = $pa_dates['end']['year'];
+				$pa_dates['start']['month'] = $pa_dates['end']['month'];
+			}
 			
 			// Blank end day and month and year implies carry over of start date
 			if (!$pa_dates['end']['year'] && !$pa_dates['end']['month'] && !$pa_dates['end']['day']) {

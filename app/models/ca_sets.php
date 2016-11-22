@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_APP_DIR__.'/models/ca_set_items.php');
+require_once(__CA_APP_DIR__.'/models/ca_set_item_labels.php');
 require_once(__CA_APP_DIR__.'/models/ca_users.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 
@@ -1216,15 +1217,20 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Note: this method doesn't check access rights for the set
 	 *
 	 * @param array $pa_row_ids
+	 * @param array $pa_options
+	 * 		queueIndexing = [Default is true]
+	 *		user_id = [Default is null]
 	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.
 	 */
-	public function addItems($pa_row_ids) {
+	public function addItems($pa_row_ids, $pa_options = []) {
 		$vn_set_id = $this->getPrimaryKey();
 		global $g_ui_locale_id;
 		if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 		if (!$vn_set_id) { return false; } 
 		if (!is_array($pa_row_ids)) { return false; } 
 		if (!sizeof($pa_row_ids)) { return false; } 
+		
+		$pn_user_id = caGetOption('user_id', $pa_options, null);
 		
 		$vn_table_num = $this->get('table_num');
 		$vn_type_id = $this->get('type_id');
@@ -1266,7 +1272,27 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			
 			// Index the links
-			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => true));
+			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => (bool) caGetOption('queueIndexing', $pa_options, true)));
+		
+			// Create change log entries
+			if(sizeof($va_item_ids)) {
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array($va_item_ids));
+			
+				$t_set_item = new ca_set_items();
+				while($qr_res->nextRow()) {
+					$va_snapshot = $qr_res->getRow();
+					$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+				}
+			
+				$t_set_item_label = new ca_set_item_labels();
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($va_item_ids));
+				while($qr_res->nextRow()) {
+					$va_snapshot = $qr_res->getRow();
+				
+					$t_set_item_label->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_item_labels.label_id'), 'snapshot' => $va_snapshot]);
+				}
+			}
+			
 		}
 		
 		return sizeof($va_item_values);
@@ -1692,8 +1718,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		", (int)$vn_set_id);
 
 		if($ps_template = caGetOption('template', $pa_options, null)) {
-			$qr_ids = $o_db->query("SELECT row_id FROM ca_set_items WHERE set_id = ? ORDER BY rank ASC", $this->getPrimaryKey());
-			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_ids->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$qr_res->seek(0);
 		}
 		$va_items = array();
 
@@ -1817,7 +1843,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}	
 		$vs_deleted_sql = '';
 		if ($t_rel_table->hasField('deleted')) {
-			$vs_deleted_sql = ' AND deleted = 0';
+			$vs_deleted_sql = ' AND '.$vs_rel_table_name.'.deleted = 0';
 		}
 		
 		$qr_res = $o_db->query("

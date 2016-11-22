@@ -1770,7 +1770,6 @@ table.listtable tbody td {
     padding: 4px;
     background-color: #FFF;
     vertical-align: middle;
-    width:42px;
 }
 table.listtable tbody td.listtableEditDelete {
 	width:55px;
@@ -1817,6 +1816,12 @@ td.listtableTotals {
     vertical-align: top;
 	font-weight: bold;
 	text-align: right;
+}
+
+td.listtableAggregateTotals {
+    vertical-align: top;
+	font-weight: normal;
+	text-align: left;
 }
 
 /* misc */
@@ -2714,8 +2719,10 @@ div.caMediaOverlayControls .download {
     margin-left:20px;
 }
 
-div.caMediaOverlayControls .download form a {
-	font-size: 12px;	
+div.caMediaOverlayControls .download form a, div.caMediaOverlayControls .download a {
+	font-size: 11px;	
+    font-weight: normal;
+    color:#FFF;
 }
 
 div.caMediaOverlayControls .objectInfo{
@@ -2965,19 +2972,6 @@ div.editorBundlePrintControl {
 }
 
 div.editorBundlePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}
-
-div.editorBundleValuePrintControl {
-    position: absolute; 
-    bottom: 2px; 
-    right: 5px;
-}
-
-div.editorBundleValuePrintControl select {
     font-size: 9px;
     font-weight: normal;
     height: 17px;
@@ -4609,6 +4603,7 @@ ul#displayItemList {
     background: url(../graphics/colorpicker/colorpicker_background.png);
     font-family: Arial, Helvetica, sans-serif;
     display: none;
+    z-index: 200000;
 }
 .colorpicker_color {
     width: 150px;

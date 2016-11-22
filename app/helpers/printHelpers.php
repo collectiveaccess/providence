@@ -400,3 +400,40 @@
 		return $va_barcode_files_to_delete;
 	}
 	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values) {
+		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => null]);
+		if(!is_array($va_formats) || (sizeof($va_formats) == 0)) { return ''; }
+		$vs_pk = $pt_related->primaryKey();
+		
+		$va_ids = [];
+		
+		foreach($pa_initial_values as $vn_relation_id => $va_info) {
+			$va_ids[$vn_relation_id] = $va_info[$vs_pk];
+		}
+		
+		$va_options = [];
+		foreach($va_formats as $vn_ => $va_form_info) {
+			$va_options[$va_form_info['name']] = $va_form_info['code'];
+		}
+		
+		uksort($va_options, 'strnatcasecmp');
+		
+		$vs_buf = "<div class='editorBundlePrintControl'>";
+		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList"), array('value' => null, 'width' => '150px'))."\n";
+		
+		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '12px']);
+		
+		$vs_buf .= "</div>";
+		$vs_buf .= "
+			<script type='text/javascript'>
+				function caGetExport{$ps_id_prefix}() {
+					window.location = '".caNavUrl($po_request, 'find', 'RelatedList', 'Export', ['relatedRelTable' => $pt_relation->tableName(), 'primaryTable' => $pt_primary->tableName(), 'primaryID' => $pt_primary->getPrimaryKey(), 'download' => 1, 'ids' => json_encode($va_ids), 'relatedTable' => $pt_related->tableName()])."/export_format/' + jQuery('#{$ps_id_prefix}_reportList').val();
+				}
+			</script>
+		";
+		return $vs_buf;
+	}
+	# ---------------------------------------

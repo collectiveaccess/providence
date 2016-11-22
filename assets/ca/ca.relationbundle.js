@@ -239,12 +239,14 @@ var caUI = caUI || {};
 				jQuery(v).detach();
 			});
 
-			var sortUrl = that.sortUrl + '/ids/' + Object.keys(indexedValues).join(',') + '/sortKeys/' + key;
+			var sortUrl = that.sortUrl + '/sortKeys/' + key;
 			var sortedValues = {};
 
 			// we actually have to wait for the result here ... hence, ajax() with async=false instead of getJSON()
 			jQuery.ajax({
 				url: sortUrl,
+				type: 'POST',
+				data: { 'ids': Object.keys(indexedValues).join(',') },
 				dataType: 'json',
 				async: false,
 				success: function(data) {

@@ -157,6 +157,13 @@
 				$this->errors = $t_label->errors; //array_merge($this->errors, $t_label->errors);
 				return false;
 			}
+			
+			/**
+			 * Execute "processLabelsAfterChange" if it is defined in a sub-class. This allows model-specific
+			 * functionality to be executed after a successful change to labels. For instance, if a sub-class caches labels
+			 * in a non-standard way, it can implement this method to reset the cache.
+			 */
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
 			return $vn_label_id;
 		}
 		# ------------------------------------------------------------------
@@ -231,14 +238,25 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$t_label->update(array('queueIndexing' => $pb_queue_indexing, 'subject' => $this));
+			try {
+				$t_label->update(array('queueIndexing' => $pb_queue_indexing, 'subject' => $this));
 			
-			$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
+				$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			if ($t_label->numErrors()) { 
-				$this->errors = $t_label->errors;
+				if ($t_label->numErrors()) { 
+					$this->errors = $t_label->errors;
+					return false;
+				}
+				return $t_label->getPrimaryKey();
+			} catch (DatabaseException $e) {
+				$this->postError($e->getNumber(), $e->getMessage());
 				return false;
 			}
+			
+			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
 			return $t_label->getPrimaryKey();
 		}
 		# ------------------------------------------------------------------
@@ -270,6 +288,11 @@
 				$this->errors = array_merge($this->errors, $t_label->errors);
 				return false;
 			}
+			
+			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
  			return true;
  		}
 		# ------------------------------------------------------------------
@@ -309,6 +332,11 @@
  					}
  				}
  			}
+ 			
+			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if (method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
  			return $vb_ret;
  		}
  		# ------------------------------------------------------------------
@@ -323,14 +351,20 @@
  			if (sizeof($va_labels)) {
  				$va_labels = caExtractValuesByUserLocale($va_labels);
  				$va_label = array_shift($va_labels);
- 				return $this->editLabel(
+ 				$vn_rc = $this->editLabel(
  					$va_label[0]['label_id'], $pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			} else {
- 				return $this->addLabel(
+ 				$vn_rc = $this->addLabel(
  					$pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			}
+ 			/**
+			 * @see LabelableBaseModelWithAttributes::addLabel()
+			 */ 
+			if ($vn_rc && method_exists($this, "processLabelsAfterChange")) { $this->processLabelsAfterChange(); }
+			
+ 			return $vn_rc;
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -431,6 +465,7 @@
 		 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
 		 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 	 *		includeDeleted =
  	 	 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
@@ -438,10 +473,14 @@
 			$t_instance = null;
 			$vs_table = get_called_class();
 			
-			if (!is_array($pa_values) && ((int)$pa_values > 0)) { 
-				$t_instance = new $vs_table;
-				$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
-				if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
+			if (!is_array($pa_values)) {
+				if ((int)$pa_values > 0) { 
+					$t_instance = new $vs_table;
+					$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
+					if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
+				} elseif($pa_values === '*') {
+					$pa_values = caGetOption('includeDeleted', $pa_options, false) ? [] : ['deleted' => 0];
+				}
 			}
 			if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 			
@@ -708,7 +747,7 @@
 				$va_sql_params[] = $pa_check_access;
 			}
 			
-			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
+			$vs_deleted_sql = (($t_instance->hasField('deleted')) && !caGetOption('includeDeleted', $pa_options, false)) ? "({$vs_table}.deleted = 0) AND " : '';
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
 			$vs_sql .=" WHERE {$vs_deleted_sql} {$vs_type_restriction_sql} (".join(" {$ps_boolean} ", $va_label_sql).")";
@@ -789,17 +828,16 @@
 				case 'searchresult':
 					$va_ids = array();
 					while($qr_res->nextRow()) {
-						$va_ids[] = $qr_res->get($vs_pk);
-						$vn_c++;
-						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+						$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
+						if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
 					}
 					if ($ps_return_as == 'searchresult') {
 						if (sizeof($va_ids) > 0) {
-							return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+							return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
 						}
 						return null;
 					} else {
-						return $va_ids;
+						return array_values($va_ids);
 					}
 					break;
 			}
@@ -2308,13 +2346,17 @@
 		 * 
 		 */ 
 		public function setUserGroups($pa_group_ids, $pa_effective_dates=null, $pa_options=null) {
-			if (is_array($va_groups = $this->getUserGroups())) {
-				$this->removeAllUserGroups();
-				if (!$this->addUserGroups($pa_group_ids, $pa_effective_dates, $pa_options)) { return false; }
-				
-				return true;
+			if(is_array($va_groups = $this->getUserGroups([]))) {
+				$va_group_ids_to_remove = [];
+				foreach($va_groups as $vn_group_id => $va_info) {
+					if (!isset($pa_group_ids[$vn_group_id])) {
+						$va_group_ids_to_remove[] = $vn_group_id;
+					}
+				}
+				if (!$this->removeUserGroups($va_group_ids_to_remove)) { return false; }
+				if (!$this->addUserGroups($pa_group_ids, $pa_effective_dates)) { return false; }
 			}
-			return null;
+			return true;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -2358,17 +2400,19 @@
 			if (!($vs_group_rel_table = $this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_db = $this->getDb();
-			
-			$qr_res = $o_db->query("
-				DELETE FROM {$vs_group_rel_table}
-				WHERE
-					{$vs_pk} = ?
-			", (int)$vn_id);
-			
-			if ($o_db->numErrors()) {
-				$this->errors = $o_db->errors;
-				return false;
+			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_group_rel_table, true);
+			if(is_array($va_groups = $this->getUserGroups(['returnAsInitialValuesForBundle' => true]))) {
+				foreach($va_groups as $vn_rel_id => $va_info) {
+					if($t_rel->load($vn_rel_id)) {
+						$t_rel->setMode(ACCESS_WRITE);
+						$t_rel->delete();
+						
+						if ($t_rel->numErrors()) {
+							$this->errors = $t_rel->errors;
+							return false;
+						}
+					}
+				}
 			}
 			return true;
 		}
@@ -2534,9 +2578,16 @@
 		 * 
 		 */ 
 		public function setUsers($pa_user_ids, $pa_effective_dates=null) {
-			$this->removeAllUsers();
-			if (!$this->addUsers($pa_user_ids, $pa_effective_dates)) { return false; }
-			
+			if(is_array($va_users = $this->getUsers([]))) {
+				$va_user_ids_to_remove = [];
+				foreach($va_users as $vn_user_id => $va_info) {
+					if (!isset($pa_user_ids[$vn_user_id])) {
+						$va_user_ids_to_remove[] = $vn_user_id;
+					}
+				}
+				if (!$this->removeUsers($va_user_ids_to_remove)) { return false; }
+				if (!$this->addUsers($pa_user_ids, $pa_effective_dates)) { return false; }
+			}
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -2581,16 +2632,19 @@
 			if (!($vs_user_rel_table = $this->getProperty('USERS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_db = $this->getDb();
-			
-			$qr_res = $o_db->query("
-				DELETE FROM {$vs_user_rel_table}
-				WHERE
-					{$vs_pk} = ?
-			", $vn_id);
-			if ($o_db->numErrors()) {
-				$this->errors = $o_db->errors;
-				return false;
+			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_user_rel_table, true);
+			if(is_array($va_users = $this->getUsers(['returnAsInitialValuesForBundle' => true]))) {
+				foreach($va_users as $vn_rel_id => $va_info) {
+					if($t_rel->load($vn_rel_id)) {
+						$t_rel->setMode(ACCESS_WRITE);
+						$t_rel->delete();
+						
+						if ($t_rel->numErrors()) {
+							$this->errors = $t_rel->errors;
+							return false;
+						}
+					}
+				}
 			}
 			return true;
 		}
@@ -2752,12 +2806,16 @@
 		 */ 
 		public function setUserRoles($pa_role_ids, $pa_options=null) {
 			if (is_array($va_roles = $this->getUserRoles())) {
-				$this->removeAllUserRoles();
-				if (!$this->addUserRoles($pa_role_ids, $pa_options)) { return false; }
-				
-				return true;
+				$va_role_ids_to_remove = [];
+				foreach($va_roles as $vn_role_id => $va_info) {
+					if (!isset($pa_role_ids[$vn_role_id])) {
+						$va_role_ids_to_remove[] = $vn_role_id;
+					}
+				}
+				if (!$this->removeUserRoles($va_role_ids_to_remove)) { return false; }
+				if (!$this->addUserRoles($pa_role_ids, $pa_effective_dates)) { return false; }
 			}
-			return null;
+			return true;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -2799,19 +2857,20 @@
 		public function removeAllUserRoles() {
 			if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
-			$vs_pk = $this->primaryKey();
 			
-			$o_db = $this->getDb();
-			
-			$qr_res = $o_db->query("
-				DELETE FROM {$vs_role_rel_table}
-				WHERE
-					{$vs_pk} = ?
-			", (int)$vn_id);
-			
-			if ($o_db->numErrors()) {
-				$this->errors = $o_db->errors;
-				return false;
+			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_role_rel_table, true);
+			if(is_array($va_roles = $this->getUserRoles(['returnAsInitialValuesForBundle' => true]))) {
+				foreach($va_roles as $vn_rel_id => $va_info) {
+					if($t_rel->load($vn_rel_id)) {
+						$t_rel->setMode(ACCESS_WRITE);
+						$t_rel->delete();
+						
+						if ($t_rel->numErrors()) {
+							$this->errors = $t_rel->errors;
+							return false;
+						}
+					}
+				}
 			}
 			return true;
 		}

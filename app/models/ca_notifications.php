@@ -30,17 +30,15 @@
  * ----------------------------------------------------------------------
  */
 
-/**
- *
- */
-
 define('__CA_NOTIFICATION_TYPE_GENERIC__', 0);
 define('__CA_NOTIFICATION_TYPE_METADATA_ALERT__', 1);
 define('__CA_NOTIFICATION_TYPE_URL_REFERENCE_CHECK__', 2);
 
+require_once(__CA_APP_DIR__.'/models/ca_notification_subjects.php');
+
 BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
-	'NAME_SINGULAR' 	=> _t('metadata alert notifications'),
-	'NAME_PLURAL' 		=> _t('metadata alert notifications'),
+	'NAME_SINGULAR' 	=> _t('notifications'),
+	'NAME_PLURAL' 		=> _t('notifications'),
 	'FIELDS' 			=> array(
 		'notification_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
@@ -62,37 +60,6 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			),
 			'LABEL' => _t('Notification type'), 'DESCRIPTION' => _t('Indicates the type of this notification.')
 		),
-		'table_num' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'LABEL' => 'Table', 'DESCRIPTION' => 'Table',
-			'BOUNDS_VALUE' => array(0,255)
-		),
-		'row_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'LABEL' => 'Row id', 'DESCRIPTION' => 'Row identifier'
-		),
-		'user_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for notification user'
-		),
-		'group_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for notification user group'
-		),
 		'datetime' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -100,20 +67,22 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			'DEFAULT' => '',
 			'LABEL' => _t('Notification date and time'), 'DESCRIPTION' => _t('Date and time for notification')
 		),
-		'was_read' => array(
-			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => _t('Was read?'),
-			'DESCRIPTION' => _t('Indicates if this notification was marked as read.'),
-		),
 		'message' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
 			'LABEL' => _t('Message'), 'DESCRIPTION' => _t('Notification message')
+		),
+		'is_system' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Is system notification'),
+			'DESCRIPTION' => _t('Set this if the notification is available system-wide and readable by everyone.'),
+			'BOUNDS_VALUE' => array(0,1),
+			'REQUIRES' => array('is_administrator')
 		),
 	)
 );
@@ -222,6 +191,54 @@ class ca_notifications extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 * Static utility to add a notification
+	 *
+	 * @param int $pn_type
+	 * @param string $ps_message
+	 * @param array $pa_subjects
+	 * @param bool $pb_system
+	 * @param array $pa_options
+	 * 		datetime --
+	 * @return bool
+	 */
+	public static function add($pn_type, $ps_message, array $pa_subjects, $pb_system=false, array $pa_options = []) {
+		$t_notification = new ca_notifications();
+
+		$t_notification->setMode(ACCESS_WRITE);
+		$t_notification->set('notification_type', $pn_type);
+		$t_notification->set('message', $ps_message);
+		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
+		$t_notification->set('is_system', $pb_system ? 1 : 0);
+
+		$t_notification->insert();
+
+		if(!$t_notification->getPrimaryKey()) {
+			return false;
+		}
+
+		foreach($pa_subjects as $va_subject) {
+			if(!is_array($va_subject) || !isset($va_subject['table_num']) || !isset($va_subject['row_id'])) {
+				continue;
+			}
+
+			$t_subject = new ca_notification_subjects();
+			$t_subject->setMode(ACCESS_WRITE);
+
+			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
+			$t_subject->set('table_num', $va_subject['table_num']);
+			$t_subject->set('row_id', $va_subject['row_id']);
+
+			$t_subject->insert();
+
+			if(!$t_subject->getPrimaryKey()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 	# ------------------------------------------------------
 }

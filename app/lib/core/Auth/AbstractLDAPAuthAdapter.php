@@ -335,7 +335,9 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
         if (strlen($vs_bind_rdn_filter) > 0) {
 			$this->bindServiceAccount($po_ldap, $pa_config);
 
-            $vo_dn_search_results = ldap_search($po_ldap, $vs_base_dn, $vs_bind_rdn_filter);
+            if(!($vo_dn_search_results = @ldap_search($po_ldap, $vs_base_dn, $vs_bind_rdn_filter))) {
+            	throw new LDAPException(_t("Couldn't apply bind RDN filter for directory. LDAP search failed"));
+			}
             $va_dn_search_results = ldap_get_entries($po_ldap, $vo_dn_search_results);
             if (isset($va_dn_search_results[0]['dn'])) {
                 $vs_bind_rdn = $va_dn_search_results[0]['dn'];

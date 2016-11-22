@@ -53,7 +53,7 @@ class Representation extends Bundlable {
 			if($this->getModelInstance()->numErrors() == 1) {
 				/** @var \ApplicationError $o_e */
 				$o_e = array_shift($this->getModelInstance()->errors());
-
+				
 				// 2710 = No media specified for new representation
 				// 1600 = File type is not supported for this field (happens when the index.php "clean url" rewrite rule kicks in)
 				if(in_array($o_e->getErrorNumber(), [1600, 2710])) { 
@@ -93,7 +93,8 @@ class Representation extends Bundlable {
 			$o_app_vars = new \ApplicationVars();
 			$va_files = $o_app_vars->getVar('pushMediaFiles');
 			if(!isset($va_files[$va_snapshot['media']])) {
-				throw new InvalidLogEntryException('Could not find media reference for checksum');
+				//throw new InvalidLogEntryException('Could not find media reference for checksum');
+				throw new IrrelevantLogEntry(_t("Could not find media reference for checksum"));
 			}
 
 			if(!file_exists($va_files[$va_snapshot['media']])) {
@@ -114,10 +115,13 @@ class Representation extends Bundlable {
 		if(isset($va_snapshot['media']) && (strlen($va_snapshot['media']) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot['media'])) {
 			$o_app_vars = new \ApplicationVars();
 			$va_files = $o_app_vars->getVar('pushMediaFiles');
+			
+			
 			if(isset($va_files[$va_snapshot['media']])) {
 				$this->getModelInstance()->set('media', $va_files[$va_snapshot['media']]);
 			} else {
-				throw new InvalidLogEntryException('Could not find media for checksum');
+				//throw new InvalidLogEntryException('Could not find media for checksum');
+				throw new IrrelevantLogEntry(_t("Could not find media for checksum"));
 			}
 		}
 	}
@@ -142,5 +146,4 @@ class Representation extends Bundlable {
 
 		return $vm_ret;
 	}
-
 }

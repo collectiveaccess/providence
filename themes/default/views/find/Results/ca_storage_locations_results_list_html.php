@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,9 +96,9 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_location_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_storage_locations', $vn_location_id, array())."</td>";
+					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_storage_locations', $vn_location_id, array());
 					if ($vs_mode == 'search') { 
-						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon(__CA_NAV_ICON_HIER__, 1)."</a>";
+						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon(__CA_NAV_ICON_HIER__, 2)."</a>";
 					}
 					print "</td>";		
 					foreach($va_display_list as $vn_placement_id => $va_info) {
@@ -112,10 +112,10 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			}
 ?>
 			</tbody>
+			<tfoot>
 <?php
 			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
 ?>
-				<tfoot>
 					<tr>
 						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
 <?php
@@ -124,10 +124,17 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						}
 ?>
 					</tr>
-				</tfoot>
 <?php
 			}
+			if ($vs_bottom_line_totals = $this->getVar('bottom_line_totals')) {
+?>				
+					<tr>
+						<td colspan="<?php print sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?php print $vs_bottom_line_totals; ?></td>
+					</tr>
+<?php		
+			}
 ?>
+			</tfoot>
 		</table>
 	</form>
 </div><!--end scrollingResults -->

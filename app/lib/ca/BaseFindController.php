@@ -372,7 +372,7 @@
 				$vb_printed_properly = true;
 				
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-				
+				exit;
 			} catch (Exception $e) {
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				
@@ -497,6 +497,7 @@
 					
 					$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
 					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
+					exit;
 				} catch (Exception $e) {
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
@@ -539,7 +540,7 @@
 						
 					}
 				
-					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
+					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add), ['user_id' => $this->request->getUserID()])) === false) {
 						$this->view->setVar('error', join('; ', $t_set->getErrors()));
 					}
 					
@@ -547,8 +548,8 @@
 					$this->view->setVar('error', _t('Invalid set'));
 				}
 			}
-			$this->view->setVar('num_items_added', $vn_added_items_count);
-			$this->view->setVar('num_items_already_in_set', $vn_dupe_item_count);
+			$this->view->setVar('num_items_added', (int)$vn_added_items_count);
+			$this->view->setVar('num_items_already_in_set', (int)$vn_dupe_item_count);
  			$this->render('Results/ajax_add_to_set_json.php');
  		}
  		# ------------------------------------------------------------------
@@ -592,7 +593,7 @@
 			
 				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
 			
-				$vn_added_items_count = $t_set->addItems($va_row_ids);
+				$vn_added_items_count = $t_set->addItems($va_row_ids, ['user_id' => $this->request->getUserID()]);
 				
 				$this->view->setVar('set_id', $t_set->getPrimaryKey());
 				$this->view->setVar('t_set', $t_set);
@@ -664,12 +665,12 @@
  		 * 
  		 * 
  		 */ 
- 		public function DownloadRepresentations() {
+ 		public function DownloadMedia() {
  			if ($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
 				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
 
  				$pa_ids = null;
- 				if ($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) {
+ 				if (($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($vs_ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
  					if ($vs_ids != 'all') {
 						$pa_ids = explode(';', $vs_ids);
 						
@@ -678,9 +679,13 @@
 						}
 					}
  				}
- 				
+ 		
  				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
  					$pa_ids = $this->opo_result_context->getResultList();
+ 				}
+ 				
+ 				if (($vn_limit = (int)$t_subject->getAppConfig()->get('maximum_download_file_count')) > 0) {
+ 					$pa_ids = array_slice($pa_ids, 0, $vn_limit);
  				}
  				
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
@@ -730,8 +735,8 @@
 										if ($vs_original_name) {
 											$va_tmp = explode('.', $vs_original_name);
 											if (sizeof($va_tmp) > 1) { 
-												if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
-													$va_tmp[] = $vs_ext;
+												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
+													$va_tmp[] = $vs_filename_ext;
 												}
 											}
 											$vs_filename = join('_', $va_tmp)."{$vn_index}.{$vs_ext}";
@@ -782,7 +787,7 @@
  			}
  			
  			// post error
- 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadRepresentation()");
+ 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadMedia()");
  		}
  		# ------------------------------------------------------------------
  		/**

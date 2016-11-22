@@ -120,8 +120,8 @@ if($vo_result->numHits() > 0) {
 ?>		
 			<div class="clear"> </div>
 		
-			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
-			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit();'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide"); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit(); return false;'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 
 		<div style='clear:both;height:1px;'>&nbsp;</div>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -190,14 +190,14 @@
 		static function getLoadHTML($po_request, $pa_options=null) {
 			global $g_asset_config, $g_asset_load_list, $g_asset_complementary;
 		
-			$vs_baseurlpath = $po_request->getBaseUrlPath();
-			$vs_themeurlpath = $po_request->getThemeUrlPath();
-			$vs_default_themeurlpath = $po_request->getDefaultThemeUrlPath();
+			$vs_base_url_path = $po_request->getBaseUrlPath();
+			$vs_theme_url_path = $po_request->getThemeUrlPath();
+			$vs_default_theme_url_path = $po_request->getDefaultThemeUrlPath();
 			
 			$vb_dont_load_app_assets = caGetOption('dontLoadAppAssets', $pa_options, false);
 			
-			$vs_themeDirectoryPath = $po_request->getThemeDirectoryPath();
-			$vs_default_themeDirectoryPath = $po_request->getDefaultThemeDirectoryPath();
+			$vs_theme_directory_path = $po_request->getThemeDirectoryPath();
+			$vs_default_theme_directory_path = $po_request->getDefaultThemeDirectoryPath();
 			
 			if (!$g_asset_config) { AssetLoadManager::init(); }
 			$vs_buf = '';
@@ -211,20 +211,32 @@
 							array_splice($va_tmp, -1, 0, array('min'));
 							$vs_lib = join('.', $va_tmp);
 						}
-					
-						if (preg_match('!(http[s]{0,1}://.*)!', $vs_lib, $va_matches)) { 
+						
+						if (substr($vs_lib, 0, 5) === '_css/') {							
+							//
+							// Load files in _css package from theme "css" directory rather than assets
+							//
+							list($_, $vs_css_file) = explode("/", $vs_lib);
+							if (file_exists("{$vs_theme_directory_path}/css/{$vs_css_file}")) {
+								$vs_url = "{$vs_theme_url_path}/css/{$vs_css_file}";
+							} elseif (file_exists("{$vs_default_theme_directory_path}/css/{$vs_css_file}")) {
+								$vs_url = "{$vs_default_theme_url_path}/css/{$vs_css_file}";
+							} else {
+								continue;
+							}
+						} elseif (preg_match('!(http[s]{0,1}://.*)!', $vs_lib, $va_matches)) { 
 							$vs_url = $va_matches[1];
 						} else {
 							if ($vs_type == 'THEME') {
-								if (file_exists("{$vs_themeDirectoryPath}/assets/{$vs_lib}")) {
-									$vs_url = "{$vs_themeurlpath}/assets/{$vs_lib}";
-								} elseif (file_exists("{$vs_default_themeDirectoryPath}/assets/{$vs_lib}")) {
-									$vs_url = "{$vs_default_themeurlpath}/assets/{$vs_lib}";
+								if (file_exists("{$vs_theme_directory_path}/assets/{$vs_lib}")) {
+									$vs_url = "{$vs_theme_url_path}/assets/{$vs_lib}";
+								} elseif (file_exists("{$vs_default_theme_directory_path}/assets/{$vs_lib}")) {
+									$vs_url = "{$vs_default_theme_url_path}/assets/{$vs_lib}";
 								} else {
 									continue;
 								}
 							} else {
-								$vs_url = "{$vs_baseurlpath}/assets/{$vs_lib}";
+								$vs_url = "{$vs_base_url_path}/assets/{$vs_lib}";
 							}
 						}
 					
@@ -247,4 +259,3 @@
 		}
 		# --------------------------------------------------------------------------------
 	}
-?>

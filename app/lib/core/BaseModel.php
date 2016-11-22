@@ -2087,7 +2087,8 @@ class BaseModel extends BaseObject {
 	 * Use this method to insert new record using supplied values
 	 * (assuming that you've constructed your BaseModel object as empty record)
 	 * @param $pa_options array optional associative array of options. Supported options include: 
-	 *				dont_do_search_indexing = if set to true then no search indexing on the inserted record is performed
+	 *		dont_do_search_indexing = if set to true then no search indexing on the inserted record is performed
+	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @return int primary key of the new record, false on error
 	 */
 	public function insert ($pa_options=null) {
@@ -2108,6 +2109,8 @@ class BaseModel extends BaseObject {
 			$va_media_fields = array();
 			$va_file_fields = array();
 			
+			$vn_fields_that_have_been_set = 0;
+			
 			//
 			// Set any auto-set hierarchical fields (eg. HIERARCHY_LEFT_INDEX_FLD and HIERARCHY_RIGHT_INDEX_FLD indexing for all and HIERARCHY_ID_FLD for ad-hoc hierarchies) here
 			//
@@ -2122,6 +2125,7 @@ class BaseModel extends BaseObject {
 							if ($vn_parent_id = $this->getHierarchyRootID(null)) {
 								$this->set($this->getProperty('HIERARCHY_PARENT_ID_FLD'), $vn_parent_id);
 								$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
+								$vn_fields_that_have_been_set++;
 							}
 						}
 						break;
@@ -2133,6 +2137,7 @@ class BaseModel extends BaseObject {
 							if ($vn_parent_id = $this->getHierarchyRootID($vn_hierarchy_id)) {
 								$this->set($this->getProperty('HIERARCHY_PARENT_ID_FLD'), $vn_parent_id);
 								$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
+								$vn_fields_that_have_been_set++;
 							}
 						}
 						break;
@@ -2141,6 +2146,7 @@ class BaseModel extends BaseObject {
 							if ($va_parent_info) {
 								// set hierarchy to that of parent
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $va_parent_info[$this->getProperty('HIERARCHY_ID_FLD')]);
+								$vn_fields_that_have_been_set++;
 							} 
 							
 							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
@@ -2259,6 +2265,7 @@ class BaseModel extends BaseObject {
 							}
 							if (is_null($v)) { $v = 'null'; }
 							$vs_values .= "{$v},";		# output as is
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIME):
@@ -2276,6 +2283,7 @@ class BaseModel extends BaseObject {
 							}
 							if (is_null($v)) { $v = 'null'; }
 							$vs_values .= "{$v},";		# output as is
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIMESTAMP):	# insert on stamp
@@ -2283,6 +2291,7 @@ class BaseModel extends BaseObject {
 							$vs_fields .= $vs_field.",";
 							$vs_values .= $t.",";
 							$this->_FIELD_VALUES[$vs_field] = $t;
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_DATERANGE):
@@ -2317,6 +2326,7 @@ class BaseModel extends BaseObject {
 							
 							$vs_fields .= "{$start_field_name}, {$end_field_name},";
 							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
+							$vn_fields_that_have_been_set++;
 
 							break;
 						# -----------------------------
@@ -2351,6 +2361,7 @@ class BaseModel extends BaseObject {
 							
 							$vs_fields .= "{$start_field_name}, {$end_field_name},";
 							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
+							$vn_fields_that_have_been_set++;
 
 							break;
 						# -----------------------------
@@ -2374,6 +2385,7 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							$vs_values .= $v.",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIMECODE):
@@ -2386,18 +2398,21 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							$vs_values .= $v.",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_MEDIA):
 							$vs_fields .= $vs_field.",";
 							$vs_values .= "'',";
 							$va_media_fields[] = $vs_field;
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_FILE):
 							$vs_fields .= $vs_field.",";
 							$vs_values .= "'',";
 							$va_file_fields[] = $vs_field;
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TEXT):
@@ -2405,11 +2420,13 @@ class BaseModel extends BaseObject {
 							$vs_fields .= $vs_field.",";
 							$vs_value = $this->quote($this->get($vs_field));
 							$vs_values .= $vs_value.",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_VARS):
 							$vs_fields .= $vs_field.",";
 							$vs_values .= $this->quote(caSerializeForDatabase($this->get($vs_field), (isset($va_attr['COMPRESS']) && $va_attr['COMPRESS']) ? true : false)).",";
+							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						default:
@@ -2510,7 +2527,7 @@ class BaseModel extends BaseObject {
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, $va_index_options);
 					}
 					
-					$this->logChange("I");
+					if (($vn_fields_that_have_been_set > 0) && !caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("I", null, ['log_id' => $vn_log_id = caGetOption('log_id', $pa_options, null)]); }
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
@@ -2579,6 +2596,7 @@ class BaseModel extends BaseObject {
 	 *		dontCheckCircularReferences = when dealing with strict monohierarchical lists (also known as trees), you can use this option to disable checks for circuits in the graph
 	 *		updateOnlyMediaVersions = when set to an array of valid media version names, media is only processed for the specified versions
 	 *		force = if set field values are not verified prior to performing the update
+	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @return bool success state
 	 */
 	public function update ($pa_options=null) {
@@ -3096,7 +3114,7 @@ class BaseModel extends BaseObject {
 						}
 					}
 					
-					$this->logChange("U");
+					if (($vn_fields_that_have_been_set > 0) && !caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("U", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
 	
 					$this->_FILES_CLEAR = array();
 				}
@@ -3175,6 +3193,7 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options Options for delete process. Options are:
 	 *		hard = if true records which can support "soft" delete are really deleted rather than simply being marked as deleted
 	 *		queueIndexing =
+	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @param array $pa_fields instead of deleting the record represented by this object instance you can
 	 * pass an array of field => value assignments which is used in a SQL-DELETE-WHERE clause.
 	 * @param array $pa_table_list this is your possibility to pass an array of table name => true assignments
@@ -3202,7 +3221,8 @@ class BaseModel extends BaseObject {
 						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
 					}
 				}
-				$this->logChange("D");
+				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
+				
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 				return $vn_rc;
 			} else {
@@ -3391,7 +3411,7 @@ class BaseModel extends BaseObject {
 					
 				//}
 				# clear object
-				$this->logChange("D");
+				if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
 				
 				$this->clear();
 			} else {
@@ -6342,13 +6362,19 @@ class BaseModel extends BaseObject {
 	# --- Change log
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Log a change
+	 * Log a change. Normally the changes logged are for the currently loaded row. In special cases you can use
+	 * the row_id and snapshot options to manually specify what gets logged. Manual logging is only supported for intrinsic fields
+	 * in tables. You cannot log metadata attribute changes manually.
 	 * 
 	 * @access private
 	 * @param string $ps_change_type 'I', 'U' or 'D', meaning INSERT, UPDATE or DELETE
 	 * @param int $pn_user_id user identifier, defaults to null
+	 * @param array $pa_options Options include:
+	 *		row_id = Force logging for specified row_id. [Default is to use id from currently loaded row]
+	 *		snapshot = Row snapshot array to use for logging. [Default is to use snapshot from currently loaded row]
+	 * 		log_id = Force logging using a specific log_id. [Default is to use next available log_id]
 	 */
-	protected function logChange($ps_change_type, $pn_user_id=null) {
+	public function logChange($ps_change_type, $pn_user_id=null, $pa_options=null) {
 		if(defined('__CA_DONT_LOG_CHANGES__')) { return null; }
 		if (!$this->logChanges()) { return null; }
 		$vb_is_metadata = $vb_is_metadata_value = false;
@@ -6364,14 +6390,16 @@ class BaseModel extends BaseObject {
 			$vb_log_changes_to_self = 	$this->getProperty('LOG_CHANGES_TO_SELF');
 			$va_subject_config = 		$this->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
 		}
+		
+		$pn_log_id = caGetOption('log_id', $pa_options, null);
 
 		global $AUTH_CURRENT_USER_ID;
 		if (!$pn_user_id) { $pn_user_id = $AUTH_CURRENT_USER_ID; }
 		if (!$pn_user_id) { $pn_user_id = null; }
-
+		
 		if (!in_array($ps_change_type, array('I', 'U', 'D'))) { return false; };		// invalid change type (shouldn't happen)
 
-		if (!($vn_row_id = $this->getPrimaryKey())) { return false; }					// no logging without primary key value
+		if (!($vn_row_id = $this->getPrimaryKey()) && !($vn_row_id = caGetOption('row_id', $pa_options, null))) { return false; }					// no logging without primary key value
 
 		// get unit id (if set)
 		global $g_change_log_unit_id;
@@ -6386,6 +6414,7 @@ class BaseModel extends BaseObject {
 				$va_subjects[$this->get('table_num')][] = $vn_id;
 			}
 		} elseif ($vb_is_metadata_value) {
+			if(!sizeof($this->getChangedFieldValuesArray())) { return null; }	// don't log if nothing has changed
 			// special case for logging metadata changes
 			$t_attr = new ca_attributes($this->get('attribute_id'));
 			if (($vn_id = $t_attr->get('row_id')) > 0) {
@@ -6474,11 +6503,11 @@ class BaseModel extends BaseObject {
 			if (!($this->opqs_change_log = $o_db->prepare("
 				INSERT INTO ".$vs_change_log_database."ca_change_log
 				(
-					log_datetime, user_id, unit_id, changetype,
+					log_id, log_datetime, user_id, unit_id, changetype,
 					logged_table_num, logged_row_id, batch_id
 				)
 				VALUES
-				(?, ?, ?, ?, ?, ?, ?)
+				(?, ?, ?, ?, ?, ?, ?, ?)
 			"))) {
 				// prepare failed - shouldn't happen
 				return false;
@@ -6508,7 +6537,7 @@ class BaseModel extends BaseObject {
 		}
 
 		// get snapshot of changes made to record
-		$va_snapshot = $this->getSnapshot(($ps_change_type === 'U') ? true : false);
+		if (!($va_snapshot = caGetOption('snapshot', $pa_options, null))) { $va_snapshot = $this->getSnapshot(($ps_change_type === 'U') ? true : false); }
 
 		$vs_snapshot = caSerializeForDatabase($va_snapshot, true);
 
@@ -6517,11 +6546,11 @@ class BaseModel extends BaseObject {
 			
 			global $g_change_log_batch_id;	// Log batch_id as set in global by ca_batch_log model (app/models/ca_batch_log.php)
 			$this->opqs_change_log->execute(
-				time(), $pn_user_id, $vn_unit_id, $ps_change_type,
+				$pn_log_id, time(), $pn_user_id, $vn_unit_id, $ps_change_type,
 				$this->tableNum(), $vn_row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
 			);
 			
-			$vn_log_id = $this->opqs_change_log->getLastInsertID();
+			$vn_log_id = ($pn_log_id > 0) ? $pn_log_id : $this->opqs_change_log->getLastInsertID();
 			$this->opqs_change_log_snapshot->execute(
 				$vn_log_id, $vs_snapshot
 			);
@@ -8708,11 +8737,11 @@ $pa_options["display_form_field_tips"] = true;
 	});
 </script>";
 							} else {
-								if (isset($va_attr['LOOKUP']) && ($va_attr['LOOKUP'])) {
+								if ((isset($va_attr['LOOKUP']) && ($va_attr['LOOKUP'])) || $pa_options['lookup_url']) {
 									if ((class_exists("AppController")) && ($app = AppController::getInstance()) && ($req = $app->getRequest())) {
 										AssetLoadManager::register('jquery', 'autocomplete');
 										$vs_element .= "<script type='text/javascript'>
-	jQuery('#".$pa_options["id"]."').autocomplete({ source: '".caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}", "max" => 500))."', minLength: 3, delay: 800});
+	jQuery('#".$pa_options["id"]."').autocomplete({ source: '".($pa_options['lookup_url'] ? $pa_options['lookup_url'] : caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}", "max" => 500)))."', minLength: 3, delay: 800});
 </script>";
 									}
 								}
@@ -9768,7 +9797,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 */
 	private function _getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_cache=true) {
-		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
+		$vs_table = $this->tableName();
+		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num])) {
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
 		}
 		if (is_numeric($pm_rel_table_name_or_num)) {
@@ -11494,17 +11524,16 @@ $pa_options["display_form_field_tips"] = true;
 			case 'searchresult':
 				$va_ids = array();
 				while($qr_res->nextRow()) {
-					$va_ids[] = $qr_res->get($vs_pk);
-					$vn_c++;
-					if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
+					if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
 					if (sizeof($va_ids) > 0) {
-						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+						return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
 					}
 					return null;
 				} else {
-					return $va_ids;
+					return array_values($va_ids);
 				}
 				break;
 		}
@@ -11525,7 +11554,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public static function exists($pm_id, $pa_options=null) {	
 		$o_dm = Datamodel::load();
-		$o_trans = caGetOption('transaction', $pa_option, null);
+		$o_trans = caGetOption('transaction', $pa_options, null);
 		if (is_numeric($pm_id) && $pm_id > 0) {
 			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
 			if ($vn_c > 0) { return true; }
@@ -11540,20 +11569,134 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Destructor
+	 * @param int $pn_type Indicates notification type
+	 * @param string $ps_message
+	 * @param bool $pb_system Indicates if this notification is global and can be seen and interacted with by everyone, system-wide
+	 * @param array $pa_options
+	 * 		datetime - timestamp for notification -- defaults to now
+	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y] pairs to add as additional subjects
+	 * @return bool sucess or not
 	 */
-	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
-		unset($this->o_db);
-		unset($this->_CONFIG);
-		unset($this->_DATAMODEL);
-		unset($this->_MEDIA_VOLUMES);
-		unset($this->_FILE_VOLUMES);
-		unset($this->opo_app_plugin_manager);
-		unset($this->_TRANSACTION);
-		
-		parent::__destruct();
+	public function addNotification($pn_type, $ps_message, $pb_system=false, array $pa_options=[]) {
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		}
+
+		$t_notification = new ca_notifications();
+
+		$t_notification->setMode(ACCESS_WRITE);
+		$t_notification->set('notification_type', $pn_type);
+		$t_notification->set('message', $ps_message);
+		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
+		$t_notification->set('is_system', $pb_system ? 1 : 0);
+
+		$t_notification->insert();
+
+		if(!$t_notification->getPrimaryKey()) {
+			$this->errors = array_merge($this->errors, $t_notification->errors);
+			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			return false;
+		}
+
+		// add current row as subject
+		if($this->getPrimaryKey() > 0) {
+			$t_subject = new ca_notification_subjects();
+			$t_subject->setMode(ACCESS_WRITE);
+
+			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
+			$t_subject->set('table_num', $this->tableNum());
+			$t_subject->set('row_id', $this->getPrimaryKey());
+
+			$t_subject->insert();
+
+			if(!$t_subject->getPrimaryKey()) {
+				$this->errors = array_merge($this->errors, $t_subject->errors);
+				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+				return false;
+			}
+		}
+
+		$va_additional_subjects = caGetOption('additionalSubjects', $pa_options, null);
+
+		if(is_array($va_additional_subjects)) {
+			foreach($va_additional_subjects as $va_subject) {
+				if(!is_array($va_subject) || !isset($va_subject['table_num']) || !isset($va_subject['row_id'])) {
+					continue;
+				}
+
+				$t_subject = new ca_notification_subjects();
+				$t_subject->setMode(ACCESS_WRITE);
+
+				$t_subject->set('notification_id', $t_notification->getPrimaryKey());
+				$t_subject->set('table_num', $va_subject['table_num']);
+				$t_subject->set('row_id', $va_subject['row_id']);
+
+				$t_subject->insert();
+
+				if(!$t_subject->getPrimaryKey()) {
+					$this->errors = array_merge($this->errors, $t_subject->errors);
+					if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get notifications pertaining to current row
+	 * @param array $pa_options
+	 * 			table_num -
+	 * 			row_id -
+	 * 			includeRead -
+	 *
+	 * @return array
+	 */
+	public function getNotifications(array $pa_options = []) {
+		$t_notification = new ca_notifications();
+
+		$pn_table_num = caGetOption('table_num', $pa_options, $this->tableNum());
+		$pn_row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
+		$va_additional_wheres = []; $vs_additional_wheres = '';
+
+		if(!caGetOption('includeRead', $pa_options, false)) {
+			$va_additional_wheres[] = 'ca_notification_subjects.was_read = 0';
+		}
+
+		if(!$pn_row_id || !$pn_table_num) { return false; }
+
+		if(sizeof($va_additional_wheres)) {
+			$vs_additional_wheres = ' AND ' . join(' AND ', $va_additional_wheres);
+		}
+
+
+		$qr_notifications = $this->getDb()->query("
+			SELECT DISTINCT
+				ca_notifications.notification_id, ca_notifications.message,
+				ca_notifications.notification_type, ca_notifications.datetime,
+				ca_notification_subjects.subject_id
+			FROM ca_notification_subjects, ca_notifications
+			WHERE ca_notification_subjects.notification_id = ca_notifications.notification_id
+			AND ca_notification_subjects.table_num = ?
+			AND ca_notification_subjects.row_id = ?
+			{$vs_additional_wheres}
+		", $pn_table_num, $pn_row_id);
+
+
+		$va_types = array_flip($t_notification->getFieldInfo('notification_type')['BOUNDS_CHOICE_LIST']);
+		$va_return = [];
+		while($qr_notifications->nextRow()) {
+			$va_row = $qr_notifications->getRow();
+			// translate for display
+			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
+
+			$va_return[$qr_notifications->get('notification_id')] = $va_row;
+		}
+
+		return $va_return;
 	}
 	# ------------------------------------------------------
  	/**
@@ -11819,6 +11962,24 @@ $pa_options["display_form_field_tips"] = true;
 
 		return $va_rels;
 	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Destructor
+	 */
+	public function __destruct() {
+		//print "Destruct ".$this->tableName()."\n";
+		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
+		unset($this->o_db);
+		unset($this->_CONFIG);
+		unset($this->_DATAMODEL);
+		unset($this->_MEDIA_VOLUMES);
+		unset($this->_FILE_VOLUMES);
+		unset($this->opo_app_plugin_manager);
+		unset($this->_TRANSACTION);
+		
+		parent::__destruct();
+	}
+	# --------------------------------------------------------------------------------------------
 }
 
 // includes for which BaseModel must already be defined
@@ -11829,3 +11990,4 @@ require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_items_x_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_comments.php');
+require_once(__CA_APP_DIR__.'/models/ca_notifications.php');

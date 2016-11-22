@@ -331,7 +331,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$vs_where = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					}
 					
-					if (in_array('NULL', $va_filter)) {
+					if (in_array('NULL', $va_filter, true)) {
 						switch($va_filter['operator']) {
 							case 'in':
 								if (strpos(strtolower($va_filter['value']), 'null') !== false) {
@@ -490,7 +490,27 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		$vs_table_num = $t_table->tableNum();
 		
-		if (is_numeric($vs_field)) {
+		// counts for relationship
+		if (strtolower($vs_field) == 'count') {
+			$vs_rel_type = null;
+			
+			if (sizeof($va_rel_type_ids) > 0) {
+				$vn_rel_type = $va_rel_type_ids[0];
+			} else {
+				$va_rel_type_ids = [0];
+			}
+			
+			return array(
+				'access_point' => "{$vs_table}.{$vs_field}",
+				'relationship_type' => (int)$vn_rel_type,
+				'table_num' => $vs_table_num,
+				'element_id' => null,
+				'field_num' => 'COUNT',
+				'datatype' => 'COUNT',
+				'element_info' => null,
+				'relationship_type_ids' => $va_rel_type_ids
+			);
+		} elseif (is_numeric($vs_field)) {
 			$vs_fld_num = $vs_field;
 		} else {
 			$vs_fld_num = $this->getFieldNum($vs_table, $vs_field);
@@ -498,20 +518,36 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (!strlen($vs_fld_num)) {
 			$t_element = new ca_metadata_elements();
+			
+			$vb_is_count = false;
+			if(strtolower($vs_subfield) == 'count') {
+				$vs_subfield = null;
+				$vb_is_count = true;
+				if (!is_array($va_rel_type_ids) || !sizeof($va_rel_type_ids)) { $va_rel_type_ids = [0]; }
+			}
 			if ($t_element->load(array('element_code' => ($vs_subfield ? $vs_subfield : $vs_field)))) {
-				switch ($t_element->get('datatype')) {
-					default:
-						return array(
-							'access_point' => $va_tmp[0],
-							'relationship_type' => $va_tmp[1],
-							'table_num' => $vs_table_num,
-							'element_id' => $t_element->getPrimaryKey(),
-							'field_num' => 'A'.$t_element->getPrimaryKey(),
-							'datatype' => $t_element->get('datatype'),
-							'element_info' => $t_element->getFieldValuesArray(),
-							'relationship_type_ids' => $va_rel_type_ids
-						);
-						break;
+				if ($vb_is_count) {
+					return array(
+						'access_point' => "{$vs_table}.{$vs_field}",
+						'relationship_type' => $va_tmp[1],
+						'table_num' => $vs_table_num,
+						'element_id' => $t_element->getPrimaryKey(),
+						'field_num' => 'COUNT'.$t_element->getPrimaryKey(),
+						'datatype' => 'COUNT',
+						'element_info' => $t_element->getFieldValuesArray(),
+						'relationship_type_ids' => $va_rel_type_ids
+					);
+				} else {
+					return array(
+						'access_point' => $va_tmp[0],
+						'relationship_type' => $va_tmp[1],
+						'table_num' => $vs_table_num,
+						'element_id' => $t_element->getPrimaryKey(),
+						'field_num' => 'A'.$t_element->getPrimaryKey(),
+						'datatype' => $t_element->get('datatype'),
+						'element_info' => $t_element->getFieldValuesArray(),
+						'relationship_type_ids' => $va_rel_type_ids
+					);
 				}
 			}
 		} else {
@@ -558,6 +594,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$vs_direct_sql_query = null;
 			$vn_direct_sql_target_table_num = $pn_subject_tablenum;
 			
+			$vb_dont_rewrite_direct_sql_query = false;
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
@@ -637,10 +674,29 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							$va_indexed_fields = $o_base->getFieldsToIndex($pn_subject_tablenum, $vn_direct_sql_target_table_num);
 							$vn_root_element_id = $va_element['element_info']['hier_element_id'];
-							if (!isset($va_indexed_fields['_ca_attribute_'.$va_element['element_id']]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
-											
-							
+							if (($va_element['datatype'] !== 'COUNT') && !isset($va_indexed_fields['_ca_attribute_'.$va_element['element_id']]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
+										
 							switch($va_element['datatype']) {
+								case 'COUNT':
+									$vb_dont_rewrite_direct_sql_query = true;
+									$vs_direct_sql_query = "
+										SELECT ca.row_id, 1
+										FROM ca_sql_search_word_index ca
+										INNER JOIN ca_sql_search_words AS sw ON ca.word_id = sw.word_id
+										^JOIN
+										WHERE
+											(ca.table_num = {$pn_subject_tablenum}) 
+											AND 
+											(ca.field_table_num = ?)
+											AND
+											(ca.rel_type_id IN (".join(',', (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) ? $va_element['relationship_type_ids'] : [0])."))
+											AND
+											(ca.field_num = '".$va_element['field_num']."')
+											AND
+											(sw.word BETWEEN ".(int)$va_lower_term->text." and ".(int)$va_upper_term->text.")
+											
+									".($this->getOption('omitPrivateIndexing') ? " AND ca.access = 0" : '');
+									break;
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 									$t_geocode = new GeocodeAttributeValue();
 									$va_parsed_value = $t_geocode->parseValue('['.$va_lower_term->text.']', $va_element['element_info']);
@@ -816,12 +872,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
 								
 								$qr_count = $this->opo_db->query("SELECT count(*) c FROM {$vs_temp_table}");
-								if (!$qr_count->nextRow() || !(int)$qr_count->get('c')) { 
-									foreach($va_temp_tables as $vs_temp_table) {
-										$this->_dropTempTable($vs_temp_table);
-									}
-									break(2); 
-								}
 								
 								$va_temp_tables[] = $vs_temp_table;	
 							}
@@ -926,6 +976,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 								if ($vb_output_term) { $va_raw_terms[] = $vs_raw_term; $va_raw_terms_escaped[] = '"'.$this->opo_db->escape($vs_raw_term).'"'; }
 							}
+							$va_raw_terms = array_unique($va_raw_terms);
+							$va_raw_terms_escaped = array_unique($va_raw_terms_escaped);
+							$va_ft_terms = array_unique($va_ft_terms);
+							$va_ft_stem_terms = array_unique($va_ft_stem_terms);
 							
 							break;
 					}
@@ -998,8 +1052,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_fld_num = 'I'.$vs_field;
 									$vn_fld_num = (int)$vs_field;
 								} else {
-									$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
-									$vs_fld_num = 'I'.$vn_fld_num;
+									if($vn_fld_num = $this->getFieldNum($vs_table, $vs_field)) {
+										$vs_fld_num = 'I'.$vn_fld_num;
+									}
 									
 									if (!strlen($vn_fld_num)) {
 										$t_element = new ca_metadata_elements();
@@ -1010,7 +1065,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											$vn_root_element_id = $t_element->get('hier_element_id');
 											
 											if (!isset($va_indexed_fields['_ca_attribute_'.$vn_fld_num]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
-											$vs_fld_num = 'A'.$vn_fld_num;
+											//$vs_fld_num = 'A'.$vn_fld_num;
 										
 											if (!$vb_is_blank_search && !$vb_is_not_blank_search) {
 												//
@@ -1403,6 +1458,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					// If we're querying on the fulltext index then we need to construct
 					// the query here... if we already have a direct SQL query to run then we can skip this
 					//
+					$va_sql_where = array();
 					if ($vb_is_blank_search) {
 						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id = 0))";
 						
@@ -1410,16 +1466,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$vs_sql_where = join(' OR ', $va_sql_where);
 					} elseif ($vb_is_not_blank_search) {
 						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id > 0))";
-						
 						if (!sizeof($va_sql_where)) { continue; }
 						$vs_sql_where = join(' OR ', $va_sql_where);
 					} elseif (!$vs_direct_sql_query) {
-						$va_sql_where = array();
 						if (sizeof($va_ft_terms)) {
 							if (($t_table) && (strlen($vs_fld_num) > 1)) {
 								$o_search = new SearchEngine();
 								if (!is_array($va_field_info = $o_search->getFieldOptions($pn_subject_tablenum, $vs_table_num, $vs_field))) { $va_field_info = array(); }
-								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (sw.word IN (".((in_array('DONT_TOKENIZE', $va_field_info) || in_array('INDEX_AS_IDNO', $va_field_info)) ? join(',', $va_raw_terms_escaped) : join(',', $va_ft_terms)).")))";
+								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (sw.word IN (".((in_array('DONT_TOKENIZE', $va_field_info, true) || in_array('INDEX_AS_IDNO', $va_field_info, true)) ? join(',', $va_raw_terms_escaped) : join(',', $va_ft_terms)).")))";
 							} else {
 								if (sizeof($va_ft_terms) == 1) {
 									$va_sql_where[] =  "(sw.word = ".$va_ft_terms[0].")";
@@ -1480,7 +1534,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					
 					
 					$va_join = array();
-					if ($vn_direct_sql_target_table_num != $pn_subject_tablenum) {
+					if (($vn_direct_sql_target_table_num != $pn_subject_tablenum) && !$vb_dont_rewrite_direct_sql_query) {
 						// We're doing direct queries on metadata in a related table, fun!
 						// Now let's rewrite the direct query to work...
 						
@@ -1545,7 +1599,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array();
 						if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
 						$this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
-
+						
 						$vn_i++;
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
 					} else {
@@ -1688,6 +1742,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		
 		if (!is_array($pm_content)) {
 			$pm_content = [$pm_content];
 		}
@@ -1735,7 +1791,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		} 
 		
-		if (!$pm_content || !sizeof($pm_content) || (((sizeof($pm_content) == 1) && strlen((string)$pm_content[0]) == 0))) { 
+		if ((!is_array($pm_content) && !strlen($pm_content)) || !sizeof($pm_content) || (((sizeof($pm_content) == 1) && strlen((string)$pm_content[0]) == 0))) { 
 			$va_words = null;
 		} else {
 			// Tokenize string
@@ -1778,7 +1834,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		// add new indexing
 		if (is_array(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
 			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > 0) {
+				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
+					$this->opo_db->query("SET unique_checks=0");
+					$this->opo_db->query("SET foreign_key_checks=0");
+				}
 				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
+				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
+					$this->opo_db->query("SET unique_checks=1");
+					$this->opo_db->query("SET foreign_key_checks=1");
+				}
 			}
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}
@@ -1839,7 +1903,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!$pn_rel_type_id) { $pn_rel_type_id = 0; }
 		
 		// remove dependent row indexing
-		if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
+		if ($pn_subject_tablenum && $pn_subject_row_id &&  !is_null($pn_field_tablenum) && !is_null($pn_field_row_id) && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
 			foreach($pa_field_nums as $pn_field_num) {
 				if(!$pn_field_num) { continue; }
 				//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num/$pn_field_row_id<br>";
@@ -1847,11 +1911,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 			return true;
 		} else {
-			if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
+			if ($pn_subject_tablenum && $pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
 				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_row_id<br>";
 				return $this->opqr_delete_with_field_row_id->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (int)$pn_field_row_id, $pn_rel_type_id);
 			} else {
-				if ($pn_field_tablenum && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
+				if (!is_null($pn_field_tablenum) && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
 					foreach($pa_field_nums as $pn_field_num) {
 						if(!$pn_field_num) { continue; }
 						//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num<br>";
@@ -1859,7 +1923,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					}
 					return true;
 				} else {
-					if (!$pn_subject_tablenum && !$pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
+					if (!$pn_subject_tablenum && !$pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
 						//print "DELETE DEP $pn_field_tablenum/$pn_field_row_id<br>";
 						$this->opqr_delete_dependent_sql->execute((int)$pn_field_tablenum, (int)$pn_field_row_id, $pn_rel_type_id);
 					} else {
@@ -1892,13 +1956,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, array($ps_content_fieldnum), $pn_content_row_id, caGetOption('relationship_type_id', $pa_options, null));
 		}
 		
-		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options)) {
+		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options, true)) {
 			$va_words = array($ps_content);
 		} else {
 			$va_words = $this->_tokenize($ps_content);
 		}
 		
-		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options)) {
+		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options, true)) {
 			$t_content = $this->opo_datamodel->getInstanceByTableNum($pn_content_tablenum, true);
 			if (method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
 				$va_values = $o_idno->getIndexValues($ps_content);

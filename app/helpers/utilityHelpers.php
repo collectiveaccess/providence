@@ -2458,6 +2458,30 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Get symbol for currency if available. "USD" will return "$", for example, while
+	 * "CAD" will return "CAD"
+	 *
+	 * @param $ps_value string Currency specifier (Ex. USD, EUR, CAD)
+	 *
+	 * @return string Symbol (Ex. $, £, ¥) or currency specifier if no symbol is available
+	 */
+	function caGetCurrencySymbol($ps_value) {
+		$o_config = Configuration::load();
+		$vs_dollars_are_this = strtolower($o_config->get('default_dollar_currency'));
+		switch(strtolower($ps_value)) {
+			case $vs_dollars_are_this:
+				return '$';
+			case 'eur':
+				return '€';
+			case 'gbp':
+				return '£';
+			case 'jpy':
+				return '¥';
+		}
+		return $ps_value;
+	}
+	# ----------------------------------------
+	/**
 	 * 
 	 *
 	 * @return array 
@@ -2545,7 +2569,7 @@ function caFileIsIncludable($ps_file) {
 		$size = array('B','KiB','MiB','GiB','TiB');
 		$factor = floor((strlen($bytes) - 1) / 3);
 
-		return sprintf("%,{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
+		return sprintf("%.{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
 	}
 	# ----------------------------------------
 	/**
@@ -2968,13 +2992,13 @@ function caFileIsIncludable($ps_file) {
 					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
 				}
 			} catch(Exception $e) {
-				if (preg_match("!^([\d]+)!", $vs_measurement, $va_matches)) {
+				if (preg_match("!^([\d\.]+)!", $vs_measurement, $va_matches)) {
 					$vs_measurement = $va_matches[0]." {$ps_units}";
 				} else {
 					continue;
 				}
 			}
-			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
+			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d\.]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
 		}
 		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
 		
@@ -3194,6 +3218,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
 		$num = round($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
