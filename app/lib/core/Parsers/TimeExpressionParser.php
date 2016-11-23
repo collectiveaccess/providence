@@ -1020,6 +1020,7 @@ class TimeExpressionParser {
 						switch($va_token['type']) {
 							# ----------------------
 							case TEP_TOKEN_PRESENT:
+							case TEP_TOKEN_QUESTION_MARK_UNCERTAINTY:
 								$va_date = array(
 									'month' => null, 'day' => null, 'year' => TEP_END_OF_UNIVERSE,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
