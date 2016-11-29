@@ -875,9 +875,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		// Lots
 		if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null)) && ($vn_lot_id = $this->get('lot_id'))) {
 			$t_lot = new ca_object_lots($vn_lot_id);
-			if (!$t_lot->get('deleted')) {
+			if (!$t_lot->get('ca_object_lots.deleted')) {
 				$va_lot_type_info = $t_lot->getTypeList(); 
-				$vn_type_id = $t_lot->get('type_id');
+				$vn_type_id = $t_lot->get('ca_object_lots.type_id');
 			
 				$vs_color = $va_lot_type_info[$vn_type_id]['color'];
 				if (!$vs_color || ($vs_color == '000000')) {
@@ -934,9 +934,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		// Loans
-		$va_loans = $this->get('ca_loans.loan_id', array('returnAsArray' => true));
+		$va_loans = $this->get('ca_objects_x_loans.loan_id', array('returnAsArray' => true));
 		if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans) && sizeof($va_loans)) {	
-			$qr_loans = caMakeSearchResult('ca_loans', $va_loans);
+			$qr_loans = caMakeSearchResult('ca_objects_x_loans', $va_loans);
 			
 			$t_loan = new ca_loans();
 			$va_loan_type_info = $t_loan->getTypeList(); 
@@ -951,9 +951,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			}
 		
 			while($qr_loans->nextHit()) {
-				$vn_loan_id = $qr_loans->get('loan_id');
+				$vn_loan_id = $qr_loans->get('ca_loans.loan_id');
 				if ((string)$qr_loans->get('ca_loans.deleted') !== '0') { continue; }	// filter out deleted
-				$vn_type_id = $qr_loans->get('type_id');
+				$vn_type_id = $qr_loans->get('ca_loans.type_id');
 				
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
@@ -1005,9 +1005,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		// Movements
-		$va_movements = $this->get('ca_movements.movement_id', array('returnAsArray' => true));
+		$va_movements = $this->get('ca_objects_x_movements.movement_id', array('returnAsArray' => true));
 		if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements) && sizeof($va_movements)) {	
-			$qr_movements = caMakeSearchResult('ca_movements', $va_movements);
+			$qr_movements = caMakeSearchResult('ca_objects_x_movements', $va_movements);
 			
 			$t_movement = new ca_movements();
 			$va_movement_type_info = $t_movement->getTypeList(); 
@@ -1022,7 +1022,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			}
 			
 			while($qr_movements->nextHit()) {
-				$vn_movement_id = $qr_movements->get('movement_id');
+				$vn_movement_id = $qr_movements->get('ca_movements.movement_id');
 				if ((string)$qr_movements->get('ca_movements.deleted') !== '0') { continue; }	// filter out deleted
 				$vn_type_id = $qr_movements->get('type_id');
 				
@@ -1078,9 +1078,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		
 		// Occurrences
-		$va_occurrences = $this->get('ca_occurrences.occurrence_id', array('returnAsArray' => true));
+		$va_occurrences = $this->get('ca_objects_x_occurrences.occurrence_id', array('returnAsArray' => true));
 		if(is_array($va_occurrence_types = caGetOption('ca_occurrences_showTypes', $pa_bundle_settings, null)) && is_array($va_occurrences) && sizeof($va_occurrences)) {	
-			$qr_occurrences = caMakeSearchResult('ca_occurrences', $va_occurrences);
+			$qr_occurrences = caMakeSearchResult('ca_objects_x_occurrences', $va_occurrences);
 			
 			$t_occurrence = new ca_occurrences();
 			$va_occurrence_type_info = $t_occurrence->getTypeList(); 
@@ -1095,9 +1095,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			}
 			
 			while($qr_occurrences->nextHit()) {
-				$vn_occurrence_id = $qr_occurrences->get('occurrence_id');
+				$vn_occurrence_id = $qr_occurrences->get('ca_occurrences.occurrence_id');
 				if ((string)$qr_occurrences->get('ca_occurrences.deleted') !== '0') { continue; }	// filter out deleted
-				$vn_type_id = $qr_occurrences->get('type_id');
+				$vn_type_id = $qr_occurrences->get('ca_occurrences.type_id');
 				
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
@@ -1149,9 +1149,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		// Collections
-		$va_collections = $this->get('ca_collections.collection_id', array('returnAsArray' => true));
+		$va_collections = $this->get('ca_objects_x_collections.relation_id', array('returnAsArray' => true));
 		if(is_array($va_collection_types = caGetOption('ca_collections_showTypes', $pa_bundle_settings, null)) && is_array($va_collections) && sizeof($va_collections)) {	
-			$qr_collections = caMakeSearchResult('ca_collections', $va_collections);
+			$qr_collections = caMakeSearchResult('ca_objects_x_collections', $va_collections);
 			
 			$t_collection = new ca_collections();
 			$va_collection_type_info = $t_collection->getTypeList(); 
@@ -1166,9 +1166,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			}
 			
 			while($qr_collections->nextHit()) {
-				$vn_collection_id = $qr_collections->get('collection_id');
+				$vn_collection_id = $qr_collections->get('ca_collections.collection_id');
 				if ((string)$qr_collections->get('ca_collections.deleted') !== '0') { continue; }	// filter out deleted
-				$vn_type_id = $qr_collections->get('type_id');
+				$vn_type_id = $qr_collections->get('ca_collections.type_id');
 				
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
