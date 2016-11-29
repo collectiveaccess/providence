@@ -407,28 +407,18 @@
         <item idno="work" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Work on Paper</name_singular>
-              <name_plural>Work on Paper</name_plural>
+              <name_singular>SHEET</name_singular>
+              <name_plural>SHEETS</name_plural>
             </label>
           </labels>
           <items>
             <item idno="side" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>Recto/Verso Entry</name_singular>
-                  <name_plural>Recto/Verso Entry</name_plural>
+                  <name_singular>IMAGE</name_singular>
+                  <name_plural>IMAGES</name_plural>
                 </label>
               </labels>
-              <items>
-                <item idno="page" enabled="1" default="0" value="0">
-                  <labels>
-                    <label locale="en_US" preferred="1">
-                      <name_singular>Page</name_singular>
-                      <name_plural>Page</name_plural>
-                    </label>
-                  </labels>
-                </item>
-              </items>
             </item>
           </items>
         </item>
@@ -1164,6 +1154,9 @@
               <name_plural>Individuals</name_plural>
             </label>
           </labels>
+          <settings>
+            <setting name="entity_class">IND</setting>
+          </settings>
         </item>
         <item idno="org" enabled="1" default="0">
           <labels>
@@ -1172,6 +1165,9 @@
               <name_plural>Organizations</name_plural>
             </label>
           </labels>
+          <settings>
+            <setting name="entity_class">ORG</setting>
+          </settings>
         </item>
         <item idno="publication" enabled="1" default="0">
           <labels>
@@ -1180,6 +1176,9 @@
               <name_plural>Publication</name_plural>
             </label>
           </labels>
+          <settings>
+            <setting name="entity_class">ORG</setting>
+          </settings>
         </item>
       </items>
     </list>
@@ -1672,6 +1671,14 @@
               </labels>
             </item>
           </items>
+        </item>
+        <item idno="sketchbook" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sketchbook</name_singular>
+              <name_plural>Sketchbook</name_plural>
+            </label>
+          </labels>
         </item>
       </items>
     </list>
@@ -2633,19 +2640,99 @@
             </label>
           </labels>
         </item>
+        <item idno="monograph" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Monograph</name_singular>
+              <name_plural>Monographs</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="exhibition_catalog" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Exhibition Catalog</name_singular>
-              <name_plural>Exhibition Catalog</name_plural>
+              <name_singular>Exhibition catalogue</name_singular>
+              <name_plural>Exhibition catalogues</name_plural>
             </label>
           </labels>
         </item>
         <item idno="article" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>article</name_singular>
-              <name_plural>article</name_plural>
+              <name_singular>Article</name_singular>
+              <name_plural>Articles</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="anthology" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Anthology</name_singular>
+              <name_plural>Anthology</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="biography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Biography</name_singular>
+              <name_plural>Biography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="conservation_study" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Conservation study</name_singular>
+              <name_plural>Conservation study</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exhibition_review" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Exhibition review</name_singular>
+              <name_plural>Exhibition review</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="journal_article" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Journal article</name_singular>
+              <name_plural>Journal article</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="newspaper_article" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Newspaper article</name_singular>
+              <name_plural>Newspaper article</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="artist_writing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Artist writing</name_singular>
+              <name_plural>Artist writing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dissertation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dissertation, PhD</name_singular>
+              <name_plural>Dissertation, PhD</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="thesis" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Thesis, MA</name_singular>
+              <name_plural>Thesis, MA</name_plural>
             </label>
           </labels>
         </item>
@@ -2933,8 +3020,8 @@
         <item idno="cronincon" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Cronincon</name_singular>
-              <name_plural>Cronincon</name_plural>
+              <name_singular>Cronicon</name_singular>
+              <name_plural>Cronicon</name_plural>
             </label>
           </labels>
           <items>
@@ -3985,8 +4072,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -4157,6 +4244,8 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>side</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -4467,6 +4556,7 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>work</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -4487,6 +4577,7 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>work</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -4507,6 +4598,7 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>work</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -4837,6 +4929,8 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>side</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -4879,6 +4973,14 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -5011,10 +5113,40 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
+        <setting name="default_text">© 1998 Kate Rothko Prizel &amp; Christopher Rothko / Artists Rights Society (ARS), New York</setting>
       </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="caption" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Caption</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">3</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_object_representations</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5057,6 +5189,8 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>side</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5074,6 +5208,26 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="double_sided" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Double Sided</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -6488,7 +6642,7 @@
           <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -6680,6 +6834,27 @@
         </label>
       </labels>
       <settings/>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="collection_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Collection Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">3</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
@@ -6896,15 +7071,14 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="sold_yn" datatype="List" list="yes_no_unknown">
+    <metadataElement code="sold_yn" datatype="List" list="yes_no">
       <labels>
         <label locale="en_US">
-          <name>Sold?</name>
+          <name>Did Not Sell?</name>
         </label>
       </labels>
       <settings>
-        <setting name="render">radio_buttons</setting>
-        <setting name="maxColumns">3</setting>
+        <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -6980,7 +7154,7 @@
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
               <settings>
-                <setting name="label" locale="en_US">Recto/Verso/Page entries</setting>
+                <setting name="label" locale="en_US">Recto/Verso entries</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -7010,6 +7184,9 @@
             <placement code="ca_attribute_paper_notes">
               <bundle>ca_attribute_paper_notes</bundle>
             </placement>
+            <placement code="ca_attribute_double_sided">
+              <bundle>ca_attribute_double_sided</bundle>
+            </placement>
             <placement code="ca_attribute_mount">
               <bundle>ca_attribute_mount</bundle>
             </placement>
@@ -7020,63 +7197,29 @@
               <bundle>ca_collections</bundle>
               <settings>
                  <setting name="label" locale="en_US">Related Collections/Provenance</setting>
+                <setting name="restrict_to_types">collection</setting>
+                <setting name="restrict_to_types">other</setting>
                </settings>
-            </placement>  
+            </placement>
+            <placement code="ca_sketch">
+              <bundle>ca_collections</bundle>
+              <settings>
+                 <setting name="label" locale="en_US">Related Sketchbooks</setting>
+                <setting name="restrict_to_types">sketchbook</setting>
+               </settings>
+            </placement>
             <placement code="ca_attribute_provenance_note">
               <bundle>ca_attribute_provenance_note</bundle>
             </placement> 
             <placement code="ca_attribute_copyright">
               <bundle>ca_attribute_copyright</bundle>
             </placement> 
-            <placement code="ca_attribute_binder">
-              <bundle>ca_attribute_binder</bundle>
-            </placement> 
             <placement code="ca_attribute_object_note">
               <bundle>ca_attribute_object_note</bundle>
             </placement> 
           </bundlePlacements>
         </screen>
-        <screen idno="id_numbers" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Id Numbers</name>
-            </label>
-          </labels>
-          <typeRestrictions>
-            <restriction code="work" type="work"/>
-          </typeRestrictions>
-          <bundlePlacements>
-            <placement code="idno">
-              <bundle>idno</bundle>
-              <settings>
-               <setting name="label" locale="en_US">ID Number</setting>
-                <setting name="description" locale="en_US">FM-assigned unique identifying number</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_catalog_number">
-              <bundle>ca_attribute_catalog_number</bundle>
-            </placement> 
-             <placement code="ca_attribute_institutional_id">
-              <bundle>ca_attribute_institutional_id</bundle>
-            </placement>
-            <placement code="ca_attribute_nga_accession_number">
-              <bundle>ca_attribute_nga_accession_number</bundle>
-            </placement>
-            <placement code="ca_attribute_marlborough_number">
-              <bundle>ca_attribute_marlborough_number</bundle>
-            </placement> 
-            <placement code="ca_attribute_pace_number">
-              <bundle>ca_attribute_pace_number</bundle>
-            </placement>             
-            <placement code="ca_attribute_beyeler_number">
-              <bundle>ca_attribute_beyeler_number</bundle>
-            </placement> 
-            <placement code="ca_attribute_section_number">
-              <bundle>ca_attribute_section_number</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="side" default="1">
+        <screen idno="basic_side" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic information</name>
@@ -7084,7 +7227,6 @@
           </labels>
           <typeRestrictions>
             <restriction code="side" type="side"/>
-            <restriction code="page" type="page"/>
           </typeRestrictions>
           <bundlePlacements>  
             <placement code="access">
@@ -7096,7 +7238,7 @@
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
               <settings>
-                <setting name="label" locale="en_US">Recto/Verso/Page entries</setting>
+                <setting name="label" locale="en_US">Recto/Verso entries</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -7232,6 +7374,40 @@
                 <setting name="display_template">^ca_entities.preferred_labels</setting>
               </settings>
             </placement>   
+          </bundlePlacements>
+        </screen>
+        <screen idno="id_numbers" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Id Numbers</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+               <setting name="label" locale="en_US">ID Number</setting>
+                <setting name="description" locale="en_US">FM-assigned unique identifying number</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_catalog_number">
+              <bundle>ca_attribute_catalog_number</bundle>
+            </placement> 
+             <placement code="ca_attribute_institutional_id">
+              <bundle>ca_attribute_institutional_id</bundle>
+            </placement>
+            <placement code="ca_attribute_marlborough_number">
+              <bundle>ca_attribute_marlborough_number</bundle>
+            </placement> 
+            <placement code="ca_attribute_pace_number">
+              <bundle>ca_attribute_pace_number</bundle>
+            </placement>             
+            <placement code="ca_attribute_beyeler_number">
+              <bundle>ca_attribute_beyeler_number</bundle>
+            </placement> 
+            <placement code="ca_attribute_section_number">
+              <bundle>ca_attribute_section_number</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
@@ -9329,7 +9505,7 @@
             <placement code="ca_attribute_occurrence_notes">
               <bundle>ca_attribute_occurrence_notes</bundle>
               <settings>
-                <setting name="label" locale="en_US">Reference Remarks</setting>
+                <setting name="label" locale="en_US">Exhibition Remarks</setting>
                 <setting name="add_label" locale="en_US">Add remarks</setting>
               </settings>
             </placement>
@@ -9484,6 +9660,48 @@
         </label>
       </labels>
       <screens>
+        <screen idno="basic_sketchbook" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="sketchbook" type="sketchbook"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="access">
+              <bundle>access</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Published/Not published</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">ID Number</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Sketchbook Name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_object_note">
+              <bundle>ca_attribute_object_note</bundle>
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Artworks in Sketchbook</setting>
+                <setting name="restrict_to_types">work</setting>
+                <setting name="restrict_to_relationship_types">included</setting>
+                <setting name="display_template"><![CDATA[^ca_objects.preferred_labels ^ca_objects.idno>]]></setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
         <screen idno="basic" default="1">
           <labels>
             <label locale="en_US">
@@ -9541,6 +9759,9 @@
                 <setting name="label" locale="en_US">Objects in Collection</setting>
                 <setting name="restrict_to_types">work</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_collection_notes">
+              <bundle>ca_attribute_collection_notes</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -9902,11 +10123,6 @@
             </placement>
             <placement code="ca_attribute_caption">
               <bundle>ca_attribute_caption</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -9927,16 +10143,9 @@
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_rights">
-              <bundle>ca_attribute_rights</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
+            <placement code="ca_attribute_copyright">
+              <bundle>ca_attribute_copyright</bundle>
+            </placement> 
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
               <settings>
@@ -11540,6 +11749,16 @@
           <subTypeLeft/>
           <subTypeRight>other</subTypeRight>
         </type>
+        <type code="included" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>included</typename>
+              <typename_reverse>included</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft/>
+          <subTypeRight>sketchbook</subTypeRight>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_objects">
@@ -12100,6 +12319,196 @@
       </types>
     </relationshipTable>
   </relationshipTypes>
+  <searchForms>
+    <searchForm code="ca_objects_Rothko_search" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Rothko Custom Search</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="form_width">3</setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="p1">
+          <bundle>ca_object_labels.name</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+            <setting name="width">90px</setting>
+          </settings>
+        </placement>
+        <placement code="p2">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US"/>
+            <setting name="width">90px</setting>
+          </settings>
+        </placement>
+        <placement code="p3">
+          <bundle>ca_objects.type_id</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Sheet/Image</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+        <placement code="p53">
+          <bundle>ca_objects.public_private</bundle>
+        </placement>
+        <placement code="p54">
+          <bundle>ca_objects.paper</bundle>
+        </placement>
+        <placement code="p55">
+          <bundle>ca_objects.beyeler_number</bundle>
+        </placement>
+        <placement code="p56">
+          <bundle>ca_objects.double_sided</bundle>
+        </placement>
+        <placement code="p57">
+          <bundle>ca_objects.mount</bundle>
+        </placement>
+        <placement code="p58">
+          <bundle>ca_objects.watermark</bundle>
+        </placement>
+        <placement code="p59">
+          <bundle>ca_objects.copyright</bundle>
+        </placement>
+        <placement code="p60">
+          <bundle>ca_objects.marlborough_number</bundle>
+        </placement>
+        <placement code="p61">
+          <bundle>ca_objects.pace_number</bundle>
+        </placement>
+        <placement code="p62">
+          <bundle>ca_objects.institutional_id</bundle>
+        </placement>
+        <placement code="p63">
+          <bundle>ca_objects.catalog_number</bundle>
+        </placement>
+        <placement code="p64">
+          <bundle>ca_objects.section_number</bundle>
+        </placement>
+        <placement code="p65">
+          <bundle>ca_objects.creation_date</bundle>
+        </placement>
+        <placement code="p66">
+          <bundle>ca_objects.date_group</bundle>
+        </placement>
+        <placement code="p67">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="p68">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>
+        <placement code="p69">
+          <bundle>ca_objects.inscription</bundle>
+        </placement>
+        <placement code="p70">
+          <bundle>ca_objects.catalogued</bundle>
+        </placement>
+        <placement code="p71">
+          <bundle>ca_objects.binder</bundle>
+        </placement>
+        <placement code="p72">
+          <bundle>ca_objects.b_w</bundle>
+        </placement>
+        <placement code="p73">
+          <bundle>ca_objects.publication_photography</bundle>
+        </placement>
+        <placement code="p74">
+          <bundle>ca_objects.photo_reproduction_rights</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Reproduction Rights</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+        <placement code="rep">
+          <bundle>ca_object_representation_labels.displayname</bundle>
+        </placement>
+        <placement code="p75">
+          <bundle>ca_objects.photography_credit_line</bundle>
+        </placement>
+        <placement code="p76">
+          <bundle>ca_objects.reproduction_rights</bundle>
+        </placement>
+      </bundlePlacements>
+    </searchForm>
+    <searchForm code="ca_occurrences_Exh_search" type="ca_occurrences" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Exhibition Search</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="form_width">3</setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="p19">
+          <bundle>ca_occurrence_labels.name</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+        <placement code="p77">
+          <bundle>ca_occurrences.exhibition_type</bundle>
+        </placement>
+        <placement code="location">
+          <bundle>ca_occurrences.georeference</bundle>
+        </placement>
+        <placement code="p78">
+          <bundle>ca_occurrences.exhibition_venue_type</bundle>
+        </placement>
+        <placement code="p79">
+          <bundle>ca_occurrences.installation_credit</bundle>
+        </placement>
+      </bundlePlacements>
+    </searchForm>
+    <searchForm code="ca_occurrences_Ref_search" type="ca_occurrences" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Reference search</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="form_width">3</setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="p19">
+          <bundle>ca_occurrence_labels.name</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+        <placement>
+          <bundle>ca_entity_labels.displayname</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Publication</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+        <placement code="p77">
+          <bundle>ca_occurrences.edition</bundle>
+        </placement>
+        <placement code="location">
+          <bundle>ca_occurrences.occurrence_dates</bundle>
+        </placement>
+        <placement code="p78">
+          <bundle>ca_occurrences.reference_type</bundle>
+        </placement>
+        <placement code="location">
+          <bundle>ca_occurrences.georeference</bundle>
+        </placement>
+        <placement code="p79">
+          <bundle>ca_occurrences.occurrence_notes</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Reference Remarks</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </searchForm>
+  </searchForms>
   <logins>
     <login user_name="administrator" password="rothko" fname="CollectiveAccess"
       lname="Administrator" email="info@collectiveaccess.org">
@@ -12115,7 +12524,7 @@
       <role code="admin"/>
       <group code="admin"/>
     </login>
-    <login user_name="Laili" password="l@k3s$" fname="Laili" lname="Nasir" email="L-NASR@NGA.GOV">
+    <login user_name="Laili" password="l@k3s$" fname="Laili" lname="Nasr" email="L-NASR@NGA.GOV">
       <role code="admin"/>
       <group code="admin"/>
     </login>
