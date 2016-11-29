@@ -337,7 +337,7 @@
 				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $vm_type);
 			}
 			
-			if ($vn_type_id && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
+			if ($vn_type_id && (!isset($pa_options['noChildren']) || !$pa_options['noChildren'])) {
 				if ($qr_children = $t_item->getHierarchy($vn_type_id, array())) {
 					while($qr_children->nextRow()) {
 						$va_type_ids[$qr_children->get('item_id')] = true;
@@ -460,7 +460,8 @@
 	 * into a single list of type_ids suitable for enforcing type restrictions.
 	 *
 	 * @param BaseModel $t_instance A model instance for the table to which the types apply
-	 * @param array $pa_options An array of options containing, if specified, a list of types for either the "restrict_to_types" or "restrictToTypes" keys
+	 * @param array $pa_options An array of options containing, if specified, a list of types for either the "restrict_to_types" or "restrictToTypes" keys. Other options include:
+	 *		dontIncludeSubtypesInTypeRestriction = Don't expand types to include child types. [Default is true]
 	 * 
 	 * @return array List of numeric type_ids for which the user has access
 	 */
@@ -470,7 +471,7 @@
 			$pa_options['restrictToTypes'] = $pa_options['restrict_to_types'];
 		}
 		if (is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
-			$va_restrict_to_type_ids = caMakeTypeIDList($t_instance->tableName(), $pa_options['restrictToTypes'], array('noChildren' => true));
+			$va_restrict_to_type_ids = caMakeTypeIDList($t_instance->tableName(), $pa_options['restrictToTypes'], array('noChildren' => caGetOption(['dontIncludeSubtypesInTypeRestriction', 'dont_include_subtypes_in_type_restriction'], $pa_options, true)));
 		}
 		
 		$va_types = null;

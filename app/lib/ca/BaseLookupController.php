@@ -117,6 +117,8 @@
 					foreach($pa_types as $ps_type) {
 						if (isset($va_types_proc[$ps_type])) {
 							$va_ids[$va_types_proc[$ps_type]] = true;
+						} elseif (is_numeric($ps_type)) {
+							$va_ids[(int)$ps_type] = true;
 						}
 					}
 					$va_ids = array_keys($va_ids);

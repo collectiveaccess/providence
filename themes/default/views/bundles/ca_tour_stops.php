@@ -48,7 +48,7 @@
 		
 	// params to pass during tour stop lookup
 	$va_lookup_params = array(
-		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
+		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
 		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
 	);

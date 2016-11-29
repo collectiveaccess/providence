@@ -1950,11 +1950,12 @@ function caFileIsIncludable($ps_file) {
 		if (is_array($pm_option)) { 
 			$vm_val = null;
 			foreach($pm_option as $ps_option) {
-				if (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option]) && ($vm_val = $pa_options[$ps_option])) {
+				if (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) {
+					$vm_val = $pa_options[$ps_option];
 					break;
 				}
 			}
-			if (!$vm_val) { $vm_val = $pm_default; }
+			if (is_null($vm_val)) { $vm_val = $pm_default; }
 		} else {
 			$vm_val = (isset($pa_options[$pm_option]) && !is_null($pa_options[$pm_option])) ? $pa_options[$pm_option] : $pm_default;
 		}
