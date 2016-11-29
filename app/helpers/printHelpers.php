@@ -426,11 +426,15 @@
 		
 		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '12px']);
 		
+		$vs_url = caNavUrl($po_request, 'find', 'RelatedList', 'Export', ['relatedRelTable' => $pt_relation->tableName(), 'primaryTable' => $pt_primary->tableName(), 'primaryID' => $pt_primary->getPrimaryKey(), 'download' => 1, 'relatedTable' => $pt_related->tableName()]);
 		$vs_buf .= "</div>";
 		$vs_buf .= "
 			<script type='text/javascript'>
 				function caGetExport{$ps_id_prefix}() {
-					window.location = '".caNavUrl($po_request, 'find', 'RelatedList', 'Export', ['relatedRelTable' => $pt_relation->tableName(), 'primaryTable' => $pt_primary->tableName(), 'primaryID' => $pt_primary->getPrimaryKey(), 'download' => 1, 'ids' => json_encode($va_ids), 'relatedTable' => $pt_related->tableName()])."/export_format/' + jQuery('#{$ps_id_prefix}_reportList').val();
+					var s = jQuery('#{$ps_id_prefix}_reportList').val();
+					var f = jQuery('<form id=\"caTempExportForm\" action=\"{$vs_url}/export_format/' + s + '\" method=\"post\"><textarea name=\"ids\">".json_encode($va_ids)."</textarea></form>');
+					jQuery('body #caTempExportForm').replaceWith(f).hide();
+					f.submit();
 				}
 			</script>
 		";

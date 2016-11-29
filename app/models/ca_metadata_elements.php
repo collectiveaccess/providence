@@ -1014,7 +1014,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		$vm_return = null;
-		$t_element = self::getInstance($pm_element_id);
+		if (!$t_element = self::getInstance($pm_element_id)) { return null; }
 
 		if($t_element->getPrimaryKey()) {
 			$vm_return = $t_element->get('element_code');

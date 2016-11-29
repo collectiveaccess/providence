@@ -2592,7 +2592,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if(in_array($vn_id, $va_exclude)) { continue; }
 			
 			
-			$vs_display = $va_item['_display'];
+			$vs_display = html_entity_decode($va_item['_display'], ENT_HTML5, "UTF-8");
 			if (isset($pa_options['stripTags']) && $pa_options['stripTags']) {
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_display, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
 					array_shift($va_matches);
