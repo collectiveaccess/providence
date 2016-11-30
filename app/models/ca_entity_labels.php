@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -277,7 +277,16 @@ class ca_entity_labels extends BaseLabel {
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			// auto-split entity name if displayname is set
 			if($vs_display_name = trim($this->get('displayname'))) {
-				$va_label = DataMigrationUtils::splitEntityName($vs_display_name);
+			
+				if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+					$va_label = [
+						'displayname' => $vs_display_name,
+						'surname' => $vs_display_name,
+						'forename' => ''	
+					];
+				} else {
+					$va_label = DataMigrationUtils::splitEntityName($vs_display_name);
+				}
 				if(is_array($va_label)) {
 					unset($va_label['displayname']); // just make sure we don't mangle the user-entered displayname
 
