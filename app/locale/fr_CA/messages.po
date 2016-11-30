@@ -16210,11 +16210,11 @@ msgstr "Lecture %1"
 
 #: app/models/ca_data_importers.php:1263
 msgid "Could not open source %1 (format=%2)"
-msgstr "Impossible d'ouvrir la source %1 (formation = %2)"
+msgstr "Impossible d'ouvrir la source %1 (format de fichier = %2)"
 
 #: app/models/ca_data_importers.php:1271
 msgid "Could not read source %1 (format=%2)"
-msgstr "Impossible de lire la source %1 (formation = %2)"
+msgstr "Impossible de lire la source %1 (format de fichier = %2)"
 
 #: app/models/ca_data_importers.php:1276
 msgid "Finished reading input source at %1 seconds"
