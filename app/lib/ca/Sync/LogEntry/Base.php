@@ -469,6 +469,14 @@ abstract class Base {
 					continue;
 				}
 				
+				// handle table_num/row_id based polymorphic relationships
+				if (($vs_field == 'row_id') && isset($va_snapshot['row_guid']) && ($t_rel_item = $this->opo_datamodel->getInstanceByTableNum($va_snapshot['table_num'], true))) {
+					if($t_rel_item->loadByGUID($va_snapshot['row_guid'])) {
+						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
+						continue;
+					}
+				}
+				
 				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
 				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
 					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
@@ -492,7 +500,6 @@ abstract class Base {
 				// plain old field like idno, extent, source_info etc.
 				// model errors usually don't occur on set(), so the implementations
 				// can still do whatever they want and possibly overwrite this
-				
 				$this->getModelInstance()->set($vs_field, $vm_val);
 			}
 		}

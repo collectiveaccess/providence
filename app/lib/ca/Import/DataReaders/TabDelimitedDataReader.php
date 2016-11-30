@@ -55,7 +55,7 @@ class TabDelimitedDataReader extends BaseDelimitedDataReader {
 		$this->ops_display_name = _t('Tab delimited');
 		$this->ops_description = _t('Reads tab delimited text files');
 		
-		$this->opa_formats = array('tabdelimited');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = array('tabdelimited', 'tab');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }
