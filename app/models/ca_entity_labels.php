@@ -278,7 +278,7 @@ class ca_entity_labels extends BaseLabel {
 			// auto-split entity name if displayname is set
 			if($vs_display_name = trim($this->get('displayname'))) {
 			
-				if ($t_entity->getTypeSetting('entity_class') == 'ORG') {
+				if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
 					$va_label = [
 						'displayname' => $vs_display_name,
 						'surname' => $vs_display_name,
