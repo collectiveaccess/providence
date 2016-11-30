@@ -464,12 +464,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_sql_wheres[] = "(di.table_num = ?)";
 			$va_sql_params[] = (int)$pn_table_num;
 		}
-		
-		
+		    
 		$vs_sql_wheres = sizeof($va_sql_wheres) ? " WHERE ".join(" AND ", $va_sql_wheres) : "";
 		
 		$qr_res = $o_db->query("
-			SELECT *
+			SELECT importer_id, importer_code, table_num, settings, rules
 			FROM ca_data_importers di
 			{$vs_sql_wheres}
 		", $va_sql_params);
