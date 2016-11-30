@@ -828,13 +828,15 @@ if (!$pb_omit_editing_info) {
 	 * @param array $pa_attributes Optional array of attributes to embed in HTML <select> tag. Keys are attribute names and values are attribute values.
 	 * @param array $pa_options Optional array of options. Supported options include:
 	 * 		Supports all options supported by caHTMLSelect() and ca_bundle_displays::getBundleDisplays() + the following:
-	 *			addDefaultDisplay - if true, the "default" display is included at the head of the list; this is simply a display called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
-	 *			addDefaultDisplayIfEmpty - same as 'addDefaultDisplay' except that the default value is only added if the display list is empty
+	 *			addDefaultDisplay = if true, the "default" display is included at the head of the list; this is simply a display called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
+	 *			addDefaultDisplayIfEmpty = same as 'addDefaultDisplay' except that the default value is only added if the display list is empty
+	 *			dontIncludeSubtypesInTypeRestriction = don't automatically include subtypes of a type when calculating type restrictions. [Default is true]
 	 * @return string HTML code defining <select> drop-down
 	 */
 	public function getBundleDisplaysAsHTMLSelect($ps_select_name, $pa_attributes=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
+		if (!isset($pa_options['dontIncludeSubtypesInTypeRestriction'])) { $pa_options['dontIncludeSubtypesInTypeRestriction'] = true; }
 		$va_available_displays = caExtractValuesByUserLocale($this->getBundleDisplays($pa_options));
 	
 		$va_content = array();
