@@ -2092,45 +2092,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 * @return string Output of processed template
 	 */
 	function caProcessTemplate($ps_template, $pa_values, $pa_options=null) {
-		$ps_prefix = caGetOption('prefix', $pa_options, null);
-		$ps_remove_prefix = caGetOption('removePrefix', $pa_options, null);
-		$pb_quote = caGetOption('quote', $pa_options, false);
-		
-		$va_tags = caGetTemplateTags($ps_template);
-		
-		$t_instance = null;
-		if (isset($pa_options['getFrom']) && (method_exists($pa_options['getFrom'], 'get'))) {
-			$t_instance = $pa_options['getFrom'];
-		}
-		
-		foreach($va_tags as $vs_tag) {
-			$va_tmp = explode("~", $vs_tag);
-			$vs_proc_tag = array_shift($va_tmp);
-			if ($ps_remove_prefix) {
-				$vs_proc_tag = str_replace($ps_remove_prefix, '', $vs_proc_tag);
-			}
-			if ($ps_prefix && !preg_match("!^".preg_quote($ps_prefix, "!")."!", $vs_proc_tag)) {
-				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
-			}
-			
-			if ($t_instance) {
-				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($vs_proc_tag, $pa_options), $va_tmp);
-				
-				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
-			} else {
-				if (is_array($vs_val = isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '')) {
-					// If value is an array try to make a string of it
-					$vs_val = join(" ", $vs_val);
-				}
-				
-				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
-				
-				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
-				$vs_tag_proc = preg_quote($vs_tag, '/');
-				$ps_template = preg_replace("/\^(?={$vs_tag_proc}[^A-Za-z0-9]+|{$vs_tag_proc}$){$vs_tag_proc}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
-			}
-		}
-		return $ps_template;
+		return DisplayTemplateParser::processTemplate($ps_template, $pa_values, $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2630,7 +2592,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if(in_array($vn_id, $va_exclude)) { continue; }
 			
 			
-			$vs_display = $va_item['_display'];
+			$vs_display = html_entity_decode($va_item['_display'], ENT_HTML5, "UTF-8");
 			if (isset($pa_options['stripTags']) && $pa_options['stripTags']) {
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_display, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
 					array_shift($va_matches);

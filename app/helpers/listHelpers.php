@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -390,15 +390,15 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @return int|bool
 	 */
 	function caGetRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id) {
-		if(CompositeCache::contains($pm_type_code_or_id, 'RelationshipTypeCodesToIDs')) {
-			return CompositeCache::fetch($pm_type_code_or_id, 'RelationshipTypeCodesToIDs');
+		if(CompositeCache::contains($pm_table_name_or_num.'/'.$pm_type_code_or_id, 'RelationshipTypeCodesToIDs')) {
+			return CompositeCache::fetch($pm_table_name_or_num.'/'.$pm_type_code_or_id, 'RelationshipTypeCodesToIDs');
 		}
 
 		$t_rel_types = new ca_relationship_types();
 		$vn_id = $t_rel_types->getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id);
 		if(!$vn_id) { return false; }
 
-		CompositeCache::save($pm_type_code_or_id, $vn_id, 'RelationshipTypeCodesToIDs');
+		CompositeCache::save($pm_table_name_or_num.'/'.$pm_type_code_or_id, $vn_id, 'RelationshipTypeCodesToIDs');
 		return $vn_id;
 	}
 	# ---------------------------------------

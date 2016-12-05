@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,8 @@
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
 	
+	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+	
 	$t_item->load($vn_lot_id = $t_subject->get('lot_id'));
 	
 	$va_force_new_values = $this->getVar('forceNewValues');
@@ -61,9 +63,9 @@
 
 	// params to pass during lookup
 	$va_lookup_params = array(
-		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
+		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+		'noInline' => (!$vb_quick_add_enabled || (bool)  preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
 
 	if ($vb_batch) {
@@ -266,12 +268,14 @@
 	</div>
 </div>
 
+<?php if($vb_quick_add_enabled) { ?>
 <div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
 	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
 	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
 </div>	
+<?php } ?>
 <div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
 	<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea">
 	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
@@ -284,13 +288,16 @@
 </div>	
 
 <script type="text/javascript">
+<?php if($vb_quick_add_enabled) { ?>
 	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
+<?php } ?>
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
 		
 		if (caUI.initPanel) {
+<?php if($vb_quick_add_enabled) { ?>
 			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
 				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
 				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
@@ -306,6 +313,7 @@
 					jQuery("#topNavContainer").show(250);
 				}
 			});
+<?php } ?>
 			caRelationEditorPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
 				panelID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
 				panelContentID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
@@ -372,8 +380,10 @@
 			isSortable: <?php print ($t_subject->tableName() != 'ca_objects') ? ($vb_read_only ? "false" : "true") : "false"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
+<?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>'
+<?php } ?>
 		});
 	});
 </script>

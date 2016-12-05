@@ -695,6 +695,10 @@
 		private static function _setAttributes($pt_instance, $pn_locale_id, $pa_values, $pa_options) {
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			$vb_attr_errors = false;
+			
+			$vb_separate_updates = caGetOption('separateUpdatesForAttributes', $pa_options, false);
+			
+			$pt_instance->setMode(ACCESS_WRITE);
 			if (is_array($pa_values)) {
 				foreach($pa_values as $vs_element => $va_values) {
 					if (!$pt_instance->hasElement($vs_element)) { continue; }
@@ -717,10 +721,15 @@
 								), $vs_element);
 							}
 						}
+						if ($vb_separate_updates) {
+							$pt_instance->update();
+						}
 					}
 				}
-				$pt_instance->setMode(ACCESS_WRITE);
-				$pt_instance->update();
+				
+				if (!$vb_separate_updates) {
+					$pt_instance->update();
+				}
 
 				if ($pt_instance->numErrors()) {
 					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
@@ -820,6 +829,7 @@
 		 *				  matchMediaFilesWithoutExtension = For ca_object_representations, if media path is invalid, attempt to find media in referenced directory and sub-directories that has a matching name, regardless of file extension. [default=false] 
 		 *                log = if KLogger instance is passed then actions will be logged
 		 *				  ignoreParent = Don't take into account parent_id value when looking for matching rows [Default is false]
+		 *				  separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
 		 * @return bool|BaseModel|mixed|null
 		 */
 		private static function _getID($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {

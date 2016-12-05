@@ -117,6 +117,8 @@
 					foreach($pa_types as $ps_type) {
 						if (isset($va_types_proc[$ps_type])) {
 							$va_ids[$va_types_proc[$ps_type]] = true;
+						} elseif (is_numeric($ps_type)) {
+							$va_ids[(int)$ps_type] = true;
 						}
 					}
 					$va_ids = array_keys($va_ids);
@@ -191,7 +193,7 @@
 					$va_opts['inlineCreateQuery'] = $ps_query;
 				} else {
 					$va_opts['emptyResultQuery'] = $ps_query;
-					$va_opts['emptyResultMessage'] = _t('No matches found for <em>%1</em>', $ps_query);
+					$va_opts['emptyResultMessage'] = _t('No matches found for "%1"', $ps_query);
 				}
 				
 				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);

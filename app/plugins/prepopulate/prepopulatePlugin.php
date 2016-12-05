@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -211,7 +211,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 									foreach ($vo_attr->getValues() as $o_val) {
 										if ($o_val->getElementCode() != $va_parts[2]) {
-											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue(['idsOnly' => true]);
 										}
 									}
 
@@ -223,11 +223,9 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 									$vb_update = false;
 									foreach ($vo_attr->getValues() as $o_val) {
 										if ($o_val->getElementCode() != $va_parts[2]) {
-											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
-										} else {
-											if (!$o_val->getDisplayValue()) {
-												$vb_update = true;
-											}
+											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue(['idsOnly' => true]);
+										} elseif (!$o_val->getDisplayValue()) {
+											$vb_update = true;
 										}
 									}
 

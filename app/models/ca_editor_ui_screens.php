@@ -482,8 +482,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Display template'),
 							'validForRootOnly' => 1,
 							'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
-						),
+						)
 					);
+					if (($va_info['type'] == 'preferred_label') && ($vs_table == 'ca_objects')) {
+						$va_additional_settings['use_list'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'showLists' => true,
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'allowNull' => true,
+							'allowAll' => true,
+							'label' => _t('Look up values using list'),
+							'description' => _t('Suggest values using a specific list. Select <em>All lists</em> to suggest any configured list value.')
+						);
+					}
 					break;
 				case 'attribute':
 					$va_additional_settings = array(
@@ -509,6 +523,32 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							),
 							'label' => _t('Sort direction'),
 							'description' => _t('Direction of sort.')
+						),
+						'colorEvenItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Even item color'),
+							'description' => _t('If set even items in list will use this color.')
+						),
+						'colorOddItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Odd item color'),
+							'description' => _t('If set odd items in list will use this color.')
+						),
+						'displayTemplate' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Display template'),
+							'description' => _t('Layout for preview of this field. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.my_element_code</i>.')
 						),
 						'documentation_url' => array(
 							'formatType' => FT_TEXT,
@@ -759,6 +799,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => '0',
 								'label' => _t('Show current only?'),
 								'description' => _t('If checked only the most recently dated relationship displayed.')
+							),
+							'disableQuickadd' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "10", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Disable quick add?'),
+								'description' => _t('If checked quickadd will be disabled regardless of user privileges.')
 							)
 						);
 					}
@@ -1283,7 +1332,52 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_displayTemplate";
 								}
-								
+
+								$va_additional_settings['ca_collections_showTypes'] = array(
+									'formatType' => FT_TEXT,
+									'displayType' => DT_SELECT,
+									'useList' => 'collection_types',
+									'takesLocale' => false,
+									'default' => '',
+									'width' => "275px", 'height' => "75px",
+									'label' => _t('Show collections'),
+									'description' => ''
+								);
+								$va_types = caGetTypeList("ca_collections");
+								foreach($va_types as $vn_type_id => $va_type) {
+									$va_additional_settings["ca_collections_{$va_type['idno']}_dateElement"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => ['ca_collections', 'ca_objects_x_collections'],
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('%1 date', $va_type['name_singular']),
+										'description' => ''
+									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_color"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for %1', $va_type['name_singular']),
+										'description' => _t('Color to use as highlight %1.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_displayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('%1 display template', $va_type['name_singular']),
+										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_collections.idno</i>.', $va_type['name_singular'])
+									);
+									
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_dateElement";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_color";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_displayTemplate";
+								}								
 								$va_additional_settings['ca_movements_showTypes'] = array(
 									'formatType' => FT_TEXT,
 									'displayType' => DT_SELECT,

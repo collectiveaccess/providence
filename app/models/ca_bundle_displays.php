@@ -539,13 +539,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$t_placement = new ca_bundle_display_placements();
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
+			$t_user = new ca_users($pn_user_id);
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
 				
+				$vb_user_can_edit = $t_subject->isSaveable($t_user, $vs_bundle_name);
+				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
-				$va_placements[$vn_placement_id]['allowEditing'] = true;
+				$va_placements[$vn_placement_id]['allowEditing'] = $vb_user_can_edit;
 							
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
@@ -564,7 +567,7 @@ if (!$pb_omit_editing_info) {
 						//
 						// Preferred labels are always inline editable
 						//
-						$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+						$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 						$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 					} elseif(in_array($va_bundle_name[1], ['created', 'modified'])) {
 						//
@@ -582,7 +585,7 @@ if (!$pb_omit_editing_info) {
 							$va_placements[$vn_placement_id]['allowEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 						} elseif ($vs_edit_bundle = $t_subject->getFieldInfo($va_bundle_name[1], 'RESULTS_EDITOR_BUNDLE')) {
-							$va_placements[$vn_placement_id]['allowEditing'] = true;
+							$va_placements[$vn_placement_id]['allowEditing'] = $vb_user_can_edit;
 							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 						} else {
@@ -595,9 +598,9 @@ if (!$pb_omit_editing_info) {
 									$vb_id_editable = $t_subject->opo_idno_plugin_instance->isFormatEditable($vs_subject_table);
 									
 									$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-									$va_placements[$vn_placement_id]['allowEditing'] = $vb_id_editable;
+									$va_placements[$vn_placement_id]['allowEditing'] = $vb_id_editable && $vb_user_can_edit;
 								} else {
-									$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+									$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 								}
 							}
 
@@ -637,7 +640,7 @@ if (!$pb_omit_editing_info) {
 						if (ca_bundle_displays::attributeTypeSupportsInlineEditing($vn_data_type)) {
 							switch($vn_data_type) {
 								default:
-									$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+									$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 									$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 									break;
 								case __CA_ATTRIBUTE_VALUE_LIST__:	
@@ -651,7 +654,7 @@ if (!$pb_omit_editing_info) {
 											case 'horiz_hierbrowser':
 											case 'horiz_hierbrowser_with_search':
 											case 'vert_hierbrowser':
-												$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+												$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 												$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
 												
 												$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
@@ -825,13 +828,15 @@ if (!$pb_omit_editing_info) {
 	 * @param array $pa_attributes Optional array of attributes to embed in HTML <select> tag. Keys are attribute names and values are attribute values.
 	 * @param array $pa_options Optional array of options. Supported options include:
 	 * 		Supports all options supported by caHTMLSelect() and ca_bundle_displays::getBundleDisplays() + the following:
-	 *			addDefaultDisplay - if true, the "default" display is included at the head of the list; this is simply a display called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
-	 *			addDefaultDisplayIfEmpty - same as 'addDefaultDisplay' except that the default value is only added if the display list is empty
+	 *			addDefaultDisplay = if true, the "default" display is included at the head of the list; this is simply a display called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
+	 *			addDefaultDisplayIfEmpty = same as 'addDefaultDisplay' except that the default value is only added if the display list is empty
+	 *			dontIncludeSubtypesInTypeRestriction = don't automatically include subtypes of a type when calculating type restrictions. [Default is true]
 	 * @return string HTML code defining <select> drop-down
 	 */
 	public function getBundleDisplaysAsHTMLSelect($ps_select_name, $pa_attributes=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
+		if (!isset($pa_options['dontIncludeSubtypesInTypeRestriction'])) { $pa_options['dontIncludeSubtypesInTypeRestriction'] = true; }
 		$va_available_displays = caExtractValuesByUserLocale($this->getBundleDisplays($pa_options));
 	
 		$va_content = array();
@@ -2435,7 +2440,7 @@ if (!$pb_omit_editing_info) {
 		$pn_type_id = caGetOption('type_id', $pa_options, null);
 		
 		if($this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
-			$va_placements = $this->getPlacements(array('settingsOnly' => true, 'hierarchicalDelimiter' => ' ➜ '));
+			$va_placements = $this->getPlacements(array('settingsOnly' => true, 'hierarchicalDelimiter' => ' ➜ ', 'user_id' => $pn_user_id));
 		
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
 				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
@@ -2685,6 +2690,11 @@ if (!$pb_omit_editing_info) {
 					
 					$vb_set_value = false;
 					foreach($va_bundles as $va_bundle) {
+						if (!$t_subject->isSaveable($po_request, $va_bundle['bundle_name'])) { 
+							$va_error_list[$va_bundle['bundle_name']] = _t('Could not save change');
+							continue; 
+						}
+						
 						$va_bundle_info = $t_subject->getBundleInfo($va_bundle['bundle_name']);
 						switch($va_bundle_info['type']) {
 							case 'intrinsic':

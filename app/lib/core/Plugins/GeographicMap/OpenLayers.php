@@ -473,7 +473,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				features.push(pl.join(';'));
 			}
 			
-			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val('[' + features.join(':') + ']');
+			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(map_{$vs_id}_loc_label + ' [' + features.join(':') + ']');
 		}
 		
 		// Set up layer for added points/paths
@@ -526,7 +526,9 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		// Grab current map coordinates from input
 		var map_{$vs_id}_loc_str = '{{".$pa_element_info['element_id']."}}';
-		var map_{$vs_id}_loc_features = map_{$vs_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
+		var map_{$vs_id}_loc_features = map_{$vs_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/);
+		var map_{$vs_id}_loc_label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
+		
 		if (map_{$vs_id}_loc_features && (map_{$vs_id}_loc_features.length > 1)) {
 			map_{$vs_id}_loc_features = map_{$vs_id}_loc_features[1].split(/:/);
 		} else {

@@ -60,6 +60,7 @@ var caUI = caUI || {};
 			that._files[jQuery(e.target).prop('name')] = e.target.files; 
 		});
 		
+		var formData;
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
@@ -71,7 +72,7 @@ var caUI = caUI || {};
 				instance.updateElement();
 			});
 			
-			var formData = jQuery("#" + that.formID).serializeObject();
+			formData = jQuery("#" + that.formID).serializeObject();
 			
 			// Added "forced relationship" settings if available
 			var relatedID = jQuery("#" + that.formID).parent().data('relatedID');
