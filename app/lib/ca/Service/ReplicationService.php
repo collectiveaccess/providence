@@ -283,10 +283,12 @@ class ReplicationService {
 				// skip log entry (still counts as "applied")
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id;
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
 				continue;
 			} catch (\Exception $e) {
 				// append log entry to message for easier debugging
 				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
+				ReplicationService::$s_logger->log("[ERROR] Sanity check error: ".$e->getMessage());
 			}
 
 			// if there were sanity check errors, return them here
@@ -304,9 +306,12 @@ class ReplicationService {
 			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
+				
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Apply error: ".$e->getMessage());
 			} catch(\Exception $e) {
 				$vs_error = get_class($e) . ': ' . $e->getMessage() . $e->getTraceAsString() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
 				$o_tx->rollback();
+				ReplicationService::$s_logger->log("[ERROR] Apply error: ".$e->getMessage());
 				break;
 			}
 			$o_tx->commit();

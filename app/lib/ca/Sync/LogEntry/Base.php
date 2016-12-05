@@ -221,8 +221,18 @@ abstract class Base {
 		if(isset($this->opa_log['snapshot']) && is_array($this->opa_log['snapshot'])) {
 		
 			// Init unset value fields to null; this allows blanking of a field value to be replicated
-			foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1'] as $vs_f) {
-				if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
+			if (
+				!isset($this->opa_log['snapshot']['item_id']) &&
+				!isset($this->opa_log['snapshot']['value_longtext1']) &&
+				!isset($this->opa_log['snapshot']['value_longtext2']) &&
+				!isset($this->opa_log['snapshot']['value_blob']) &&
+				!isset($this->opa_log['snapshot']['value_decimal1']) &&
+				!isset($this->opa_log['snapshot']['value_decimal2']) &&
+				!isset($this->opa_log['snapshot']['value_integer1'])
+			) {
+				foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1'] as $vs_f) {
+					if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
+				}
 			}
 		
 			return $this->opa_log['snapshot'];
@@ -482,6 +492,10 @@ abstract class Base {
 					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
+					} else {
+						if (!in_array($vs_field, ['type_id', 'locale_id'])) {	// let auto-resolved fields fall through
+							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system", $vs_field, $va_snapshot[$vs_field.'_guid']));
+						}
 					}
 				}
 
