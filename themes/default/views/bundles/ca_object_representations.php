@@ -61,7 +61,7 @@
 	$va_errors = array();
 	
 	$vn_rep_count = $t_subject->getRepresentationCount($va_settings);
-	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $va_settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request)));
+	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $va_settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
 
 	foreach($va_initial_values as $vn_representation_id => $va_rep) {
 		if(is_array($va_action_errors = $this->request->getActionErrors('ca_object_representations', $vn_representation_id))) {
