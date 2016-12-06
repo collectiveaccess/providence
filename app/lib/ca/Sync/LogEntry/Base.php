@@ -234,7 +234,6 @@ abstract class Base {
 					if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
 				}
 			}
-		
 			return $this->opa_log['snapshot'];
 		}
 
@@ -493,7 +492,7 @@ abstract class Base {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
 					} else {
-						if (!in_array($vs_field, ['type_id', 'locale_id'])) {	// let auto-resolved fields fall through
+						if (!in_array($vs_field, ['type_id', 'locale_id', 'item_id'])) {	// let auto-resolved fields fall through
 							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system", $vs_field, $va_snapshot[$vs_field.'_guid']));
 						}
 					}
