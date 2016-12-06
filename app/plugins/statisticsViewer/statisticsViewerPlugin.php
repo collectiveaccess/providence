@@ -74,6 +74,7 @@
 				foreach ($va_universes as $key => $value) {
 					$va_menu_items[$value] = array(
 						'displayName' => _t($value),
+						'requires' => array('action:can_use_statistics_viewer_plugin' => 'AND'),
 						"default" => array(
 							'module' => 'statisticsViewer', 
 							'controller' => 'Statistics', 
@@ -84,10 +85,11 @@
 				
 				$pa_menu_bar['statisticsViewer_menu'] = array(
 					'displayName' => _t('Statistics'),
-					'navigation' => $va_menu_items
+					'navigation' => $va_menu_items,
+					'requires' => array('action:can_use_statistics_viewer_plugin' => 'AND')
 				);
-			} 
-			
+			}
+
 			return $pa_menu_bar;
 		}
 		# -------------------------------------------------------
