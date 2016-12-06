@@ -376,7 +376,9 @@ class ca_change_log extends BaseModel {
 			foreach($va_snapshot as $vs_fld => $vm_val) {
 				switch($vs_fld) {
 					case 'element_id':
-						if($vs_code = ca_metadata_elements::getElementCodeForId($vm_val)) {
+						if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
+							goto deflabel;
+						} elseif($vs_code = ca_metadata_elements::getElementCodeForId($vm_val)) {
 							$va_snapshot['element_code'] = $vs_code;
 							
 							$vs_table_name = $o_dm->getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
@@ -406,7 +408,9 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					case 'type_id':
-						if($t_instance) {
+						if(preg_match("!^ca_relationship_type!", $t_instance->tableName())) {
+							goto deflabel;
+						} elseif($t_instance) {
 							if($t_instance instanceof BaseRelationshipModel) {
 								if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { continue(3); }
 							} elseif($t_instance instanceof BaseModel) {
@@ -426,6 +430,7 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					default:
+					deflabel:
 						if(
 							// don't break ca_list_items.item_id!!
 							($o_dm->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
