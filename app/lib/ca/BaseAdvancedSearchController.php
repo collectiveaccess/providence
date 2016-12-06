@@ -210,6 +210,10 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 
 		$this->view->setVar('result_context', $this->opo_result_context);
 		$this->view->setVar('browse', $po_search);
+		
+		$t_display = $this->view->getVar('t_display');
+		if (!is_array($va_display_list = $this->view->getVar('display_list'))) { $va_display_list = array(); }
+		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 
 		switch($pa_options['output_format']) {
 			# ------------------------------------

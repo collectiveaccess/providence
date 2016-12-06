@@ -222,6 +222,8 @@ abstract class Base {
 		
 			// Init unset value fields to null; this allows blanking of a field value to be replicated
 			if (
+				($this->opt_instance->tableName() == 'ca_attribute_values')
+				&&
 				!isset($this->opa_log['snapshot']['item_id']) &&
 				!isset($this->opa_log['snapshot']['value_longtext1']) &&
 				!isset($this->opa_log['snapshot']['value_longtext2']) &&
@@ -488,12 +490,13 @@ abstract class Base {
 				
 				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
 				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
+					$t_rel_item->setTransaction($this->getTx());
 					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
 					} else {
 						if (!in_array($vs_field, ['type_id', 'locale_id', 'item_id'])) {	// let auto-resolved fields fall through
-							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system", $vs_field, $va_snapshot[$vs_field.'_guid']));
+							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot[$vs_field.'_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 						}
 					}
 				}
