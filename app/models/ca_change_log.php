@@ -496,6 +496,7 @@ class ca_change_log extends BaseModel {
 										} else {
 											$t_instance->load($va_row['logged_row_id']);
 											$va_snapshot[$vs_fld] = $t_instance->getMediaUrl($vs_fld, 'original');
+											$va_snapshot[$vs_fld."_media_desc"] = array_shift($t_instance->get($vs_fld, array('returnWithStructure' => true)));
 										}
 									} elseif(is_array($va_snapshot[$vs_fld])) { // back in the day it would store the full media array here
 										$o_coder = MediaInfoCoder::load();
