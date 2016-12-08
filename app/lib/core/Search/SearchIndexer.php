@@ -2561,6 +2561,8 @@ class SearchIndexer extends SearchBase {
 	 * @throws ApplicationException
 	 */
 	private function _doCountIndexing($pt_subject, $pn_subject_row_id, $pt_rel, $pb_reindex_mode, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		
 		$va_query_info = $this->_getQueriesForRelatedRows($pt_subject, $pn_subject_row_id, $pt_rel, $pb_reindex_mode);
 		$va_queries 			= $va_query_info['queries'];
 		$va_fields_to_index 	= $va_query_info['fields_to_index'];
