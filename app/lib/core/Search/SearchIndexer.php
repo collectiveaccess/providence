@@ -1398,14 +1398,16 @@ class SearchIndexer extends SearchBase {
 							$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, [$vs_v], $pa_data);
 							$this->_genIndexInheritance($pt_subject, null, 'A'.$vn_element_id, $pn_row_id, $pn_row_id, [$vs_v], $pa_data, $pa_options);
 							
-							if ($va_hier_values = $this->_genHierarchicalPath($vn_item_id, "preferred_labels.".$t_item->getLabelDisplayField(), $t_item, $pa_data)) {
+							foreach(["preferred_labels.".$t_item->getLabelDisplayField(), $t_item->primaryKey()] as $vs_f) {
+								if ($va_hier_values = $this->_genHierarchicalPath($vn_item_id, $vs_f, $t_item, $pa_data)) {
 
-								$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, array_merge([$vs_v], $va_hier_values['values']), $pa_data);
-								$this->_genIndexInheritance($pt_subject, null, 'A'.$vn_element_id, $pn_row_id, $pn_row_id, array_merge([$vs_v], $va_hier_values['values']), $pa_data, $pa_options);
+									$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, array_merge([$vs_v], $va_hier_values['values']), $pa_data);
+									$this->_genIndexInheritance($pt_subject, null, 'A'.$vn_element_id, $pn_row_id, $pn_row_id, array_merge([$vs_v], $va_hier_values['values']), $pa_data, $pa_options);
 								
-								if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_data, false) !== false) {
-									$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, [$va_hier_values['path']], [$pa_data, ['DONT_TOKENIZE' => 1]]);
-									$this->_genIndexInheritance($pt_subject, null, 'A'.$vn_element_id, $pn_row_id, $pn_row_id, [$va_hier_values['path']], [$pa_data, ['DONT_TOKENIZE' => 1]], $pa_options);
+									if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_data, false) !== false) {
+										$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, [$va_hier_values['path']], [$pa_data, ['DONT_TOKENIZE' => 1]]);
+										$this->_genIndexInheritance($pt_subject, null, 'A'.$vn_element_id, $pn_row_id, $pn_row_id, [$va_hier_values['path']], [$pa_data, ['DONT_TOKENIZE' => 1]], $pa_options);
+									}
 								}
 							}
 							
