@@ -69,8 +69,8 @@
 		 */
 		public function hookRenderMenuBar($pa_menu_bar) {
 			if ($o_req = $this->getRequest()) {
-				if (!$o_req->user->canDoAction('can_import_worldcat')) { return false; }
-				if(!(bool)$this->opo_config->get('enabled')) { return false; }
+				if (!$o_req->user->canDoAction('can_import_worldcat')) { return true; }
+				if(!(bool)$this->opo_config->get('enabled')) { return true; }
 				
 				if (isset($pa_menu_bar['Import'])) {
 					$va_menu_items = $pa_menu_bar['Import']['navigation'];
