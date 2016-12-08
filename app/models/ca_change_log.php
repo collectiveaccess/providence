@@ -384,7 +384,7 @@ class ca_change_log extends BaseModel {
 							$vs_table_name = $o_dm->getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
 							
 							// Skip elements not in include list, when a list is provided for the current table
-							if (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code])) {
+							if (!$vs_table_name || (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code]))) {
 								$va_snapshot = ['SKIP' => true];
 								continue(2);
 							}
