@@ -318,25 +318,7 @@
 				$this->view->setVar('rowHeaders', $va_row_headers);
 			}
 			
-			//
-			// Bottom line
-			//
-			$va_bottom_line = array();
-			$vb_bottom_line_is_set = false;
-			foreach($va_display_list as $vn_placement_id => $va_placement) {
-				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
-					$va_bottom_line[$vn_placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $vo_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page));
-					$vb_bottom_line_is_set = true;
-				} else {
-					$va_bottom_line[$vn_placement_id] = '';
-				}
-			}
-			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
-			
-			//
-			// Bottom line for display
-			//
-			$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $t_display, $vo_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page)));
+			$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 			
  			switch($pa_options['output_format']) {
  				# ------------------------------------

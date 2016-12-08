@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/ca/ITakesSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/LabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
@@ -134,6 +135,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 );
 
 class ca_metadata_elements extends LabelableBaseModelWithAttributes implements ITakesSettings {
+	use SyncableBaseModel;
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -259,6 +261,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->set('settings', $this->getSettings());
 		if ($vn_rc =  parent::insert($pa_options)) {
 			$this->flushCacheForElement();
+			$this->setGUID($pa_options);
 		}
 		return $vn_rc;
 	}
@@ -271,7 +274,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# ------------------------------------------------------
 	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
 		$this->flushCacheForElement();
-		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+		
+		$vn_primary_key = $this->getPrimaryKey();
+		
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
+			$this->removeGUID($vn_primary_key);
+		}
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**

@@ -376,13 +376,15 @@ class ca_change_log extends BaseModel {
 			foreach($va_snapshot as $vs_fld => $vm_val) {
 				switch($vs_fld) {
 					case 'element_id':
-						if($vs_code = ca_metadata_elements::getElementCodeForId($vm_val)) {
+						if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
+							goto deflabel;
+						} elseif($vs_code = ca_metadata_elements::getElementCodeForId($vm_val)) {
 							$va_snapshot['element_code'] = $vs_code;
 							
 							$vs_table_name = $o_dm->getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
 							
 							// Skip elements not in include list, when a list is provided for the current table
-							if (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code])) {
+							if (!$vs_table_name || (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code]))) {
 								$va_snapshot = ['SKIP' => true];
 								continue(2);
 							}
@@ -406,7 +408,9 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					case 'type_id':
-						if($t_instance) {
+						if(preg_match("!^ca_relationship_type!", $t_instance->tableName())) {
+							goto deflabel;
+						} elseif($t_instance) {
 							if($t_instance instanceof BaseRelationshipModel) {
 								if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { continue(3); }
 							} elseif($t_instance instanceof BaseModel) {
@@ -426,6 +430,7 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					default:
+					deflabel:
 						if(
 							// don't break ca_list_items.item_id!!
 							($o_dm->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
@@ -491,6 +496,7 @@ class ca_change_log extends BaseModel {
 										} else {
 											$t_instance->load($va_row['logged_row_id']);
 											$va_snapshot[$vs_fld] = $t_instance->getMediaUrl($vs_fld, 'original');
+											$va_snapshot[$vs_fld."_media_desc"] = array_shift($t_instance->get($vs_fld, array('returnWithStructure' => true)));
 										}
 									} elseif(is_array($va_snapshot[$vs_fld])) { // back in the day it would store the full media array here
 										$o_coder = MediaInfoCoder::load();
