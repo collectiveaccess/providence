@@ -540,6 +540,8 @@ class Installer {
 			$va_lists = $this->opo_profile->lists->children();
 		}
 
+		$o_trans = new Transaction();
+
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
 		foreach($va_lists as $vo_list) {
@@ -548,7 +550,7 @@ class Installer {
 			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new ca_lists();
 			}
-			$t_list->setTransaction($o_trans = new Transaction($t_list->getDb()));
+			$t_list->setTransaction($o_trans);
 
 			if($t_list->getPrimaryKey()) {
 				$this->logStatus(_t('List %1 already exists', $vs_list_code));
