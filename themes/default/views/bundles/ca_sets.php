@@ -238,7 +238,7 @@
 <?php if($vb_quick_add_enabled) { ?><		
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form', array('set_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'table_num' => $t_subject->tableNum())); ?>',
-?php } ?>	
+<?php } ?>	
 
 			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
