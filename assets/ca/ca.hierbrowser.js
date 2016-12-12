@@ -400,7 +400,13 @@ var caUI = caUI || {};
 					for(var i in data['_sortOrder']) {
 						var item = data[data['_sortOrder'][i]];
 						if (!item) { continue; }
-						if (!item.name) { item.name = '??? ' + item['item_id']; }
+						if (!item.name) {
+							if (item['name_singular'] && item['idno']) {
+								item.name = item['name_singular'] + ' (' + item['idno'] + ')'
+							} else {
+								item.name = '??? ' + item['item_id']
+							}
+						};
 						if (item['item_id']) {
 							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
 								that.selectedItemIDs[0] = item['item_id'];
