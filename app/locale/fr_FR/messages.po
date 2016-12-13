@@ -16090,7 +16090,7 @@ msgstr "URL pointant vers la documentation de ce bloc relation. Laisser vide s'i
 #: app/models/ca_editor_ui_screens.php:635
 msgid ""
 "Minimum number of relationships of this kind to be associated with an item. "
-msgstr "Le nombre maximum de relations de ce type qui peuvent être associés avec un enregistrement."
+msgstr "Le nombre minimum de relations de ce type qui peuvent être associés avec un enregistrement."
 
 #: app/models/ca_editor_ui_screens.php:636
 msgid ""
