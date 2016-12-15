@@ -439,8 +439,6 @@
 						$this->render('Results/xlsx_results.php');
 						return;
                     case '_docx':
-                        require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
-                        \PhpOffice\PhpWord\Autoloader::register();
                         $this->render('Results/docx_results.php');
                         return;						
 					case '_csv':
