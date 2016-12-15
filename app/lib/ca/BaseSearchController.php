@@ -386,14 +386,16 @@
 				foreach($va_hier as $vn_item_id => $va_item) {
 					if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 					if ($va_item['parent_id'] != $vn_root_id) { continue; }
+					if (!$va_item['is_enabled']) { continue; }
+					
 					// does this item have sub-items?
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
 						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $va_restrict_to_types);
 					} else {
-						$va_subtypes = array();
+						$va_subtypes = method_exists($this, "_getSubTypeActionNav") ? $this->_getSubTypeActionNav($va_item) : [];
 					}
 					$va_types[] = array(
-						'displayName' =>$va_item['name_plural'],
+						'displayName' => $va_item['name_plural'],
 						'parameters' => array(
 							'type_id' => $va_item['item_id']
 						),
@@ -404,6 +406,8 @@
 			}
  			return $va_types;
  		}
+ 		
+ 	
  		# ------------------------------------------------------------------
 		private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pa_restrict_to_types=null) {
 			$va_subtypes = array();
