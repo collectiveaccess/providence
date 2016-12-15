@@ -1,3 +1,9 @@
+## Release 2.3.0
+- Allow global connectionParam configuration (via ClientBuilder->setConnectionParams()) [[e768e0]](http://github.com/elasticsearch/elasticsearch-php/commit/e768e0d64ef365ecc7eb837e3bedf32c5e943a67)
+
+## Release 2.2.3
+- [Backport] Manually convert true/false to "true"/"false" before http_build_query() [[6a5d804]](http://github.com/elasticsearch/elasticsearch-php/commit/6a5d804)
+
 ## Release 2.2.2
 - Normalizing Reindex name (#466) [[e0cc5f9]](http://github.com/elasticsearch/elasticsearch-php/commit/e0cc5f9)
 - Add "extended" host configuration syntax [[99cd83f]](http://github.com/elasticsearch/elasticsearch-php/commit/99cd83f)

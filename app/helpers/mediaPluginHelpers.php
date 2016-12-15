@@ -58,7 +58,7 @@
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null) {
-		if (CompositeCache::contains("mediahelper_imagemagick_installed")) { return CompositeCache::fetch("mediahelper_imagemagick_installed"); }
+		//if (CompositeCache::contains("mediahelper_imagemagick_installed")) { return CompositeCache::fetch("mediahelper_imagemagick_installed"); }
 		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick'); }
 
 		if (!caIsValidFilePath($ps_imagemagick_path)) { 
@@ -87,7 +87,7 @@
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null) {
-		if (CompositeCache::contains("mediahelper_graphicsmagick_installed")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed"); }
+		//if (CompositeCache::contains("mediahelper_graphicsmagick_installed")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed"); }
 		if(!$ps_graphicsmagick_path) { $ps_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick'); }
 
 		if (!caIsValidFilePath($ps_graphicsmagick_path)) { 
@@ -116,7 +116,7 @@
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null) {
-		if (CompositeCache::contains("mediahelper_dcraw_installed")) { return CompositeCache::fetch("mediahelper_dcraw_installed"); }
+		//if (CompositeCache::contains("mediahelper_dcraw_installed")) { return CompositeCache::fetch("mediahelper_dcraw_installed"); }
 		if(!$ps_path_to_dcraw) { $ps_path_to_dcraw = caGetExternalApplicationPath('dcraw'); }
 
 		if (!caIsValidFilePath($ps_path_to_dcraw)) { 
@@ -140,7 +140,7 @@
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null) {
-		if (CompositeCache::contains("mediahelper_ffmpeg_installed")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed"); }
+		//if (CompositeCache::contains("mediahelper_ffmpeg_installed")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed"); }
 		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
 
 		if (!caIsValidFilePath($ps_path_to_ffmpeg)) { 
@@ -169,7 +169,7 @@
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null) {
-		if (CompositeCache::contains("mediahelper_ghostscript_installed")) { return CompositeCache::fetch("mediahelper_ghostscript_installed"); }
+		//if (CompositeCache::contains("mediahelper_ghostscript_installed")) { return CompositeCache::fetch("mediahelper_ghostscript_installed"); }
 		if(!$ps_path_to_ghostscript) { $ps_path_to_ghostscript = caGetExternalApplicationPath('ghostscript'); }
 
 		if (!caIsValidFilePath($ps_path_to_ghostscript)) { 
@@ -198,7 +198,7 @@
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null) {
-		if (CompositeCache::contains("mediahelper_pdftotext_installed")) { return CompositeCache::fetch("mediahelper_pdftotext_installed"); }
+		//if (CompositeCache::contains("mediahelper_pdftotext_installed")) { return CompositeCache::fetch("mediahelper_pdftotext_installed"); }
 		if(!$ps_path_to_pdf_to_text) { $ps_path_to_pdf_to_text = caGetExternalApplicationPath('pdftotext'); }
 		
 		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { 
@@ -222,7 +222,7 @@
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null) {
-		if (CompositeCache::contains("mediahelper_libreoffice_installed")) { return CompositeCache::fetch("mediahelper_libreoffice_installed"); }
+		//if (CompositeCache::contains("mediahelper_libreoffice_installed")) { return CompositeCache::fetch("mediahelper_libreoffice_installed"); }
 		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
 		if (!caIsValidFilePath($ps_path_to_libreoffice)) { 
 			CompositeCache::save("mediahelper_libreoffice_installed", false);
@@ -283,7 +283,7 @@
 	 * @param string $ps_mediainfo_path path to mediainfo
 	 */
 	function caMediaInfoInstalled($ps_mediainfo_path=null) {
-		if (CompositeCache::contains("mediahelper_mediainfo_installed")) { return CompositeCache::fetch("mediahelper_mediainfo_installed"); }
+		//if (CompositeCache::contains("mediahelper_mediainfo_installed")) { return CompositeCache::fetch("mediahelper_mediainfo_installed"); }
 		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
 
 		if (!caIsValidFilePath($ps_mediainfo_path)) { 
@@ -310,7 +310,7 @@
 	 * @return bool
 	 */
 	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
-		if (CompositeCache::contains("mediahelper_openctm_installed")) { return CompositeCache::fetch("mediahelper_openctm_installed"); }
+		//if (CompositeCache::contains("mediahelper_openctm_installed")) { return CompositeCache::fetch("mediahelper_openctm_installed"); }
 		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
 
 		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { 
@@ -335,7 +335,7 @@
 	 * @return bool
 	 */
 	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
-		if (CompositeCache::contains("mediahelper_meshlabserver_installed")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed"); }
+		//if (CompositeCache::contains("mediahelper_meshlabserver_installed")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed"); }
 		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
 
 		if (!caIsValidFilePath($ps_meshlabserver_path)) { 
@@ -364,7 +364,7 @@
 	 * @return boolean
 	 */
 	function caPDFMinerInstalled($ps_pdfminer_path=null) {
-		if (CompositeCache::contains("mediahelper_pdfminer_installed")) { return CompositeCache::fetch("mediahelper_pdfminer_installed"); }
+		//if (CompositeCache::contains("mediahelper_pdfminer_installed")) { return CompositeCache::fetch("mediahelper_pdfminer_installed"); }
 		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 
 		if (!caIsValidFilePath($ps_pdfminer_path)) { 
@@ -396,7 +396,7 @@
 	 * @return boolean 
 	 */
 	function caPhantomJSInstalled($ps_phantomjs_path=null) {
-		if (CompositeCache::contains("mediahelper_phantomjs_installed")) { return CompositeCache::fetch("mediahelper_phantomjs_installed"); }
+		//if (CompositeCache::contains("mediahelper_phantomjs_installed")) { return CompositeCache::fetch("mediahelper_phantomjs_installed"); }
 		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
 		
 		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !@is_readable($ps_phantomjs_path)) { 
@@ -429,7 +429,7 @@
 	 * @return boolean 
 	 */
 	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
-		if (CompositeCache::contains("mediahelper_wkhtmltopdf_installed")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed"); }
+		//if (CompositeCache::contains("mediahelper_wkhtmltopdf_installed")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed"); }
 		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
 		
 		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !@is_readable($ps_wkhtmltopdf_path)) { 
@@ -462,7 +462,7 @@
 	 * @return boolean 
 	 */
 	function caExifToolInstalled($ps_exiftool_path=null) {
-		if (CompositeCache::contains("mediahelper_exiftool_installed")) { return CompositeCache::fetch("mediahelper_exiftool_installed"); }
+		//if (CompositeCache::contains("mediahelper_exiftool_installed")) { return CompositeCache::fetch("mediahelper_exiftool_installed"); }
 		if(!$ps_exiftool_path) { $ps_exiftool_path = caGetExternalApplicationPath('exiftool'); }
 		
 		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !@is_readable($ps_exiftool_path)) { 

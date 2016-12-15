@@ -752,7 +752,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		$pa_errors = array();
 		
-		$o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null;
+		if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
+			$this->postError(1100, _t("Cannot write log to %1. Please check the directory's permissions and retry loading.", $pa_options['logDirectory']));
+			return false;
+		}
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
 		//$o_excel->setActiveSheet(1);
@@ -1216,6 +1219,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::NOTICE = Notices (normal but significant conditions)
 	 *			KLogger::INFO = Informational messages
 	 *			KLogger::DEBUG = Debugging messages
+	 *		logToTempDirectoryIfLogDirectoryIsNotWritable = use system temporary directory for log location if specified logDirectory is not writable. [Default is false]
 	 *		dryRun = do import but don't actually save data
 	 *		environment = an array of environment values to provide to the import process. The keys manifest themselves as mappable tags.
 	 *		forceImportForPrimaryKeys = list of primary key ids to force mapped source data into. The number of keys passed should equal or exceed the number of rows in the source data. [Default is empty] 
@@ -1268,7 +1272,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!is_writeable($pa_options['logDirectory'])) { $pa_options['logDirectory'] = caGetTempDirPath(); }
+		if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
+			if (!caGetOption('logToTempDirectoryIfLogDirectoryIsNotWritable', $pa_options, false)) {
+				ca_data_importers::logImportError(_t("Cannot write log to %1. Please check the directory permissions and retry the import.", $pa_options['logDirectory']));
+				return false;
+			} else {
+				$vs_original_log_directory = $pa_options['logDirectory'];
+				ca_data_importers::logImportError(_t("Cannot write log to %1. Writing log to %2 instead.", $vs_original_log_directory, $pa_options['logDirectory'] = caGetTempDirPath()));
+				if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
+					ca_data_importers::logImportError(_t("Cannot write log to either %1 or %2. Please check the directory permissions and retry the import.", $vs_original_log_directory, $pa_options['logDirectory']));
+					return false;
+				}
+			}
+		}
 		$o_log = new KLogger($pa_options['logDirectory'], $pa_options['logLevel']);
 		
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
