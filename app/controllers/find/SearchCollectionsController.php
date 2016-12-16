@@ -93,4 +93,39 @@
  			return parent::Tools($pa_parameters, new CollectionSearch());
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function _getSubTypeActionNav($pa_item) {
+ 			return [
+				[
+					'displayName' => _t('Search'),
+					"default" => ['module' => 'find', 'controller' => 'SearchCollections', 'action' => 'Index'],
+					'parameters' => array(
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					),
+					'is_enabled' => true,
+				],
+				[
+					'displayName' => _t('Advanced search'),
+					"default" => ['module' => 'find', 'controller' => 'SearchCollectionsAdvanced', 'action' => 'Index'],
+					'useActionInPath' => 1,
+					'parameters' => array(
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					),
+					'is_enabled' => true,
+				],
+				[
+					'displayName' => _t('Browse'),
+					"default" => ['module' => 'find', 'controller' => 'BrowseCollections', 'action' => 'Index'],
+					'parameters' => array(
+						'type_id' => $pa_item['item_id']
+					),
+					'is_enabled' => true,
+				]
+			];
+ 		}
+ 		# -------------------------------------------------------
  	}

@@ -177,14 +177,17 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			$vs_section = file_get_contents($ps_filepath, NULL, NULL, 0, 79);
 			fseek($r_fp, 80);
 			$vs_data = fread($r_fp, 4);
-			$vn_num_facets = array_shift(unpack("I", $vs_data));
-			if ((84 + ($vn_num_facets * 50)) == ($vn_filesize = filesize($ps_filepath))) {
-				$this->properties = $this->handle = $this->ohandle = array(
-					"mimetype" => 'application/stl',
-					"filesize" => $vn_filesize,
-					"typename" => "Standard Tessellation Language File"
-				);
-				return "application/stl";
+			
+			if (is_array($va_facets = @unpack("I", $vs_data))) {
+				$vn_num_facets = array_shift($va_facets);
+				if ((84 + ($vn_num_facets * 50)) == ($vn_filesize = filesize($ps_filepath))) {
+					$this->properties = $this->handle = $this->ohandle = array(
+						"mimetype" => 'application/stl',
+						"filesize" => $vn_filesize,
+						"typename" => "Standard Tessellation Language File"
+					);
+					return "application/stl";
+				}
 			}
 		}
 
