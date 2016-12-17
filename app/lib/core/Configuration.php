@@ -967,9 +967,9 @@ class Configuration {
 	 * Destructor: Save config cache to disk/external provider
 	 */
 	public function __destruct() {
-		if(self::$s_have_to_write_config_cache) {
+		if(Configuration::$s_have_to_write_config_cache) {
 			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 0);
-			self::$s_have_to_write_config_cache = false;
+			Configuration::$s_have_to_write_config_cache = false;
 		}
 	}
 	# ---------------------------------------------------------------------------
