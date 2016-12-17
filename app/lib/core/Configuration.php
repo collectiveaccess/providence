@@ -199,7 +199,7 @@ class Configuration {
 			self::$s_config_cache[$vs_path_as_md5] = $this->ops_config_settings;
 			// we loaded this cfg from file, so we have to write the
 			// config cache to disk at least once on this request
-			self::$s_have_to_write_config_cache = true;
+			Configuration::$s_have_to_write_config_cache = true;
 		}
 	}
 	/* ---------------------------------------- */
@@ -967,7 +967,7 @@ class Configuration {
 	 * Destructor: Save config cache to disk/external provider
 	 */
 	public function __destruct() {
-		if(Configuration::$s_have_to_write_config_cache) {
+		if(isset(Configuration::$s_have_to_write_config_cache) && Configuration::$s_have_to_write_config_cache) {
 			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 0);
 			Configuration::$s_have_to_write_config_cache = false;
 		}
