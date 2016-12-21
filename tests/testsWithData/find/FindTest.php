@@ -115,6 +115,14 @@ class FindTest extends BaseTestWithData {
 						'currency_test' => '$100',
 					),
 				),
+				
+				// DateRange
+				'date' => array(
+					array(
+						'dates_value' => '6/1954',
+						'dc_dates_types' => 'created'
+					),
+				),
 
 				// Georeference
 				'georeference' => array(
@@ -186,6 +194,15 @@ Said, hey honey, take a walk on the wild side.'
 						'integer_test' => 500,
 					)
 				),
+				
+				
+				// DateRange
+				'date' => array(
+					array(
+						'dates_value' => '5/1/1975',
+						'dc_dates_types' => 'created'
+					),
+				),
 
 				// Currency
 				'currency_test' => array(
@@ -199,7 +216,7 @@ Said, hey honey, take a walk on the wild side.'
 	# -------------------------------------------------------
 	public function testBaseModelFindByIdnoNoPurify() {
 		$vm_ret = ca_objects::find(['idno' => 'TEST &amp; STUFF'], ['returnAs' => 'ids', 'purify' => false]);
-		
+	
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals($this->opn_object_id, $vm_ret[0]);
@@ -215,7 +232,7 @@ Said, hey honey, take a walk on the wild side.'
 	# -------------------------------------------------------
 	public function testFindByPreferredLabelNoPurify() {	
 		$vm_ret = ca_objects::find(['preferred_labels' => ['name' => 'Sound &amp; Motion']], ['purify' => false, 'returnAs' => 'ids']);
-	
+
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals($this->opn_object_id, $vm_ret[0]);
@@ -275,7 +292,7 @@ Said, hey honey, take a walk on the wild side.'
 	}
 	# -------------------------------------------------------
 	public function testFindByAttributeWithOperators() {	
-		$vm_ret = ca_objects::find(['internal_notes' => ['LIKE', '%ipsum%']], ['purify' => false, 'returnAs' => 'ids']);
+		$vm_ret = ca_objects::find(['internal_notes' => [['LIKE', '%ipsum%']]], ['purify' => false, 'returnAs' => 'ids']);
 	
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
@@ -333,7 +350,7 @@ Said, hey honey, take a walk on the wild side.'
 	}
 	# -------------------------------------------------------
 	public function testFindByContainerSubAttributeWithOperators() {	
-		$vm_ret = ca_objects::find(['external_link' => ['url_source' => ['=', 'wikipedia']]], ['purify' => true, 'returnAs' => 'ids']);
+		$vm_ret = ca_objects::find(['external_link' => ['url_source' => [['IN', ['wikipedia']], ['=', 'wikipedia']]]], ['purify' => true, 'returnAs' => 'ids']);
 
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
@@ -456,11 +473,57 @@ Said, hey honey, take a walk on the wild side.'
 	}
 	# -------------------------------------------------------
 	public function testFindWithArrayOfValues() {	
-		$vm_ret = ca_objects::find(['idno' => ['TEST & STUFF', 'Another TEST']], ['purify' => true, 'returnAs' => 'ids']);
+		$vm_ret = ca_objects::find(['idno' => [['LIKE', 'TEST%'], 'Another TEST']], ['boolean' => 'OR', 'purify' => true, 'returnAs' => 'ids']);
 
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['idno' => ['TEST & STUFF', 'Another TEST']], ['boolean' => 'AND', 'purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(0, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testLabelableFindByCurrencyValue() {	
+		$vm_ret = ca_objects::find(['currency_test' => '$100'], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['currency_test' => '€20'], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(0, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testLabelableFindByIntegerValue() {	
+		$vm_ret = ca_objects::find(['integer_test' => '23'], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['integer_test' => '534'], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(0, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testLabelableFindByDateRangeValue() {	
+		$vm_ret = ca_objects::find(['date' => ['dates_value' => '1954']], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['date' => ['dates_value' => ['5/1975']]], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
 	}
 	# -------------------------------------------------------
 }

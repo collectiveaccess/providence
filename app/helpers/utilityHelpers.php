@@ -2483,6 +2483,35 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Parse currency value and return array with value and currency type.
+	 *
+	 * @param string $ps_value
+	 * @return array 
+	 */
+	function caParseCurrencyValue($ps_value) {
+		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
+		
+		// either
+		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
+			$vs_decimal_value = $va_matches[2];
+			$vs_currency_specifier = trim($va_matches[1]);
+		// or 1
+		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
+			$vs_decimal_value = $va_matches[1];
+			$vs_currency_specifier = trim($va_matches[2]);
+		// or 2
+		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
+			$vs_decimal_value = $va_matches[1];
+			$vs_currency_specifier = null;
+		}
+		
+		if ($vs_currency_specifier || ($vs_decimal_value > 0)) {
+			return ['currency' => $vs_currency_specifier, 'value' => $vs_decimal_value];
+		}
+		return null;
+ 	}
+	# ----------------------------------------
+	/**
 	 * 
 	 *
 	 * @return array 
@@ -3355,23 +3384,47 @@ function caFileIsIncludable($ps_file) {
 				$o_purifier = new HTMLPurifier();	
 			}	
 		}
+		
 		foreach($pa_values as $vs_key => $vm_val) {
 			if (is_array($vm_val)) {
-				if (caIsValidSqlOperator($vm_val[0], ['nullable' => true, 'isList' => true])) {
-					if (is_array($vm_val[1]) && $o_purifier) { 
-						$va_vals_proc = [];
-						foreach($vm_val[1] as $vm_list_val) {
-							$va_vals_proc[] = $o_purifier->purify($vm_list_val);
-						}
-						$va_values_proc[$vs_key] = [$vm_val[0], $va_vals_proc];
-					} else {
-						$va_values_proc[$vs_key] = [$vm_val[0], $o_purifier ? $o_purifier->purify($vm_val[1]) : $vm_val[1]];
+				if(isset($vm_val[0]) && !is_array($vm_val[0]) && caIsValidSqlOperator($vm_val[0], ['nullable' => true, 'isList' => true])) {
+					$vm_val = [$vm_val];
+				}
+				foreach($vm_val as $vs_key2 => $vm_list_vals) {
+					if (is_array($vm_list_vals) && !is_array($vm_list_vals[0]) && caIsValidSqlOperator($vm_list_vals[0], ['nullable' => true, 'isList' => true])) {
+						$vm_list_vals = [$vm_list_vals];
 					}
-				} else {
-					$va_values_proc[$vs_key] = caNormalizeValueArray($vm_val, $pa_options);
+					if (!is_array($vm_list_vals)) { $vm_list_vals = [$vm_list_vals]; }
+					
+					foreach($vm_list_vals as $vm_list_val) {
+						
+						if(!is_array($vm_list_val)) { $vm_list_val = ['=', $vm_list_val]; }
+						if (caIsValidSqlOperator($vm_list_val[0], ['nullable' => true, 'isList' => true])) {
+							if (is_array($vm_list_val[1]) && $o_purifier) { 
+								$va_vals_proc = [];
+								foreach($vm_list_val[1] as $vm_sublist_val) {
+									$va_vals_proc[] = $o_purifier->purify($vm_sublist_val);
+								}
+							
+								if (!is_numeric($vs_key2)) { 
+									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $va_vals_proc];
+								} else {
+									$va_values_proc[$vs_key][] = [$vm_list_val[0], $va_vals_proc];
+								}
+							} else {
+								if (!is_numeric($vs_key2)) { 
+									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+								} else {
+									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+								}
+							}
+						} else {
+							$va_values_proc[$vs_key][$vs_key2][] = caNormalizeValueArray($vm_list_val, $pa_options);
+						}
+					}
 				}
 			} else {
-				$va_values_proc[$vs_key] = ['=', $o_purifier ? $o_purifier->purify($vm_val) : $vm_val];
+				$va_values_proc[$vs_key][] = ['=', $o_purifier ? $o_purifier->purify($vm_val) : $vm_val];
 			}
 		}
 		return $va_values_proc;

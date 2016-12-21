@@ -11389,14 +11389,17 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		$vs_type_field_name = null;
 		if (method_exists($t_instance, "getTypeFieldName")) {
-			if(is_array($va_field_value = $pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()])) {
-				$vs_op = strtolower($va_field_value[0]);
-				if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => false, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
-				$vm_value = $va_field_value[1];
+			if(is_array($va_field_values = $pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()])) {
 				
-				if (!is_numeric($vm_value)) {
-					if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
-						$pa_values[$vs_type_field_name] = [$vs_op, $vn_id];
+				foreach($va_field_values as $vn_i => $va_field_value) {
+					$vs_op = strtolower($va_field_value[0]);
+					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => false, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
+					$vm_value = $va_field_value[1];
+				
+					if (!is_numeric($vm_value)) {
+						if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+							$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
+						}
 					}
 				}
 			}
@@ -11406,77 +11409,81 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert other intrinsic list references
 		//
 		$vb_find_all = false;
-		foreach($pa_values as $vs_field => $va_field_value) {
-			if ($vs_field == $vs_type_field_name) { continue; }
+		foreach($pa_values as $vs_field => $va_field_values) {
+			foreach($va_field_values as $vn_i => $va_field_value) {
+				if ($vs_field == $vs_type_field_name) { continue; }
 			
-			$vs_op = strtolower($va_field_value[0]);
-			$vm_value = $va_field_value[1];
+				$vs_op = strtolower($va_field_value[0]);
+				$vm_value = $va_field_value[1];
+				
+				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
+					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
 			
-			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-				if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
-			
-				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-					$pa_values[$vs_field] = [$vs_op, $vn_id];
+					if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+						$pa_values[$vs_field][$vn_i] = [$vs_op, $vn_id];
+					}
 				}
 			}
 		}
 		
 		if (!$vb_find_all) {
-			foreach ($pa_values as $vs_field => $va_field_value) {
-
-				$vs_op = $va_field_value[0];
-				$vm_value = $va_field_value[1];
+			foreach($pa_values as $vs_field => $va_field_values) {
+				foreach($va_field_values as $va_field_value) {
+					$vs_op = $va_field_value[0];
+					$vm_value = $va_field_value[1];
 				
-				# support case where fieldname is in format table.fieldname
-				if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
-					if ($va_matches[1] != $vs_table) {
-						if ($t_instance->_DATAMODEL->tableExists($va_matches[1])) {
-							return false;
-						} else {
-							return false;
+					# support case where fieldname is in format table.fieldname
+					if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
+						if ($va_matches[1] != $vs_table) {
+							if ($t_instance->_DATAMODEL->tableExists($va_matches[1])) {
+								return false;
+							} else {
+								return false;
+							}
 						}
+						$vs_field = $va_matches[2]; # get field name alone
 					}
-					$vs_field = $va_matches[2]; # get field name alone
-				}
 
-				if (!$t_instance->hasField($vs_field)) {
-					return false;
-				}
-
-
-				if ($t_instance->_getFieldTypeType($vs_field) == 0) {
-					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
-					
-					if (is_array($vm_value)) {
-						$vm_value = array_map(function($v) { return (int)$v; }, $vm_value);
-					} elseif (!is_numeric($vm_value) && !is_null($vm_value)) {
-						$vm_value = (int)$vm_value;
+					if (!$t_instance->hasField($vs_field)) {
+						return false;
 					}
-				} else {
-					if (!caIsValidSqlOperator($vs_op, ['type' => 'string', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid string operator: %1', $vs_op)); }
+
+
+					if ($t_instance->_getFieldTypeType($vs_field) == 0) {
+						if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
 					
-					if (is_array($vm_value)) {
-						foreach($vm_value as $vn_i => $vs_value) {
-							$vm_value[$vn_i] = $t_instance->quote($vs_field, is_null($vs_value) ? '' : $vs_value);
+						if (is_array($vm_value)) {
+							$vm_value = array_map(function($v) { return (int)$v; }, $vm_value);
+						} elseif (!is_numeric($vm_value) && !is_null($vm_value)) {
+							$vm_value = (int)$vm_value;
 						}
 					} else {
-						$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+						if (!caIsValidSqlOperator($vs_op, ['type' => 'string', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid string operator: %1', $vs_op)); }
+					
+						if (is_array($vm_value)) {
+							foreach($vm_value as $vn_i => $vs_value) {
+								$vm_value[$vn_i] = $t_instance->quote($vs_field, is_null($vs_value) ? '' : $vs_value);
+							}
+						} else {
+							$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+						}
+					}
+
+					if (is_null($vm_value)) {
+						if ($vs_op !== '=') { $vs_op = 'IS'; }
+						$va_sql_wheres[] = "({$vs_field} {$vs_op} NULL)";
+					} elseif (is_array($vm_value) && sizeof($vm_value)) {
+						if ($vs_op !== '=') { $vs_op = 'IN'; }
+						$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
+					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+						$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
+					} else {
+						if ($vm_value === '') { continue; }
+						$va_sql_wheres[] = "({$vs_field} {$vs_op} {$vm_value})";
 					}
 				}
-
-				if (is_null($vm_value)) {
-					if ($vs_op !== '=') { $vs_op = 'IS'; }
-					$va_sql_wheres[] = "({$vs_field} {$vs_op} NULL)";
-				} elseif (is_array($vm_value) && sizeof($vm_value)) {
-					if ($vs_op !== '=') { $vs_op = 'IN'; }
-					$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
-				} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
-					$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
-				} else {
-					if ($vm_value === '') { continue; }
-					$va_sql_wheres[] = "({$vs_field} {$vs_op} {$vm_value})";
-				}
 			}
+			
 			if(!sizeof($va_sql_wheres)) { return null; }
 		}
 				
@@ -11521,8 +11528,7 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$qr_res = $o_db->query($vs_sql, $va_sql_params);
-//print $vs_sql;
-//print_R($va_sql_params);
+
 		if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 			return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
 		}
@@ -11573,12 +11579,9 @@ $pa_options["display_form_field_tips"] = true;
 					if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
-					if (sizeof($va_ids) > 0) {
-						return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
-					}
-					return null;
+					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
 				} else {
-					return array_values($va_ids);
+					return array_unique(array_values($va_ids));
 				}
 				break;
 		}
