@@ -11264,20 +11264,55 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return IDNO for primary key value
+	 *
+	 * @param int $pn_id Primary key value
+	 * @return string idno value
+	 */
+	public static function getIdnoForID($pn_id) {
+		$o_dm = Datamodel::load();
+		if (($t_instance = $o_dm->getTableInstance(static::class, true) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')))) {
+			$o_db = new Db();
+			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
+			if ($qr_res->nextRow()) {
+				return $qr_res->get($vs_idno_fld);
+			}
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Find row(s) with fields having values matching specific values. 
 	 * Results can be returned as model instances, numeric ids or search results (when possible).
 	 *
-	 * Exact matching is performed using values in $pa_values. Partial and pattern matching are not supported. Searches may include
+	 * Matching is performed using values in $pa_values. PPartial and pattern matching are supported as are inequalities. Searches may include
 	 * multiple fields with boolean AND and OR. For example, you can find ca_objects rows with idno = 2012.001 and access = 1 by passing the
 	 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
 	 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
 	 *
 	 * BaseModel::find() is not a replacement for the SearchEngine. It is intended as a quick and convenient way to programatically fetch rows using
 	 * simple, clear cut criteria. If you need to fetch rows based upon an identifer or status value BaseModel::find() will be quicker and less code than
-	 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
+	 * using the SearchEngine. For full-text searches or searches that require transformations or complex boolean operations use
 	 * the SearchEngine.
 	 *
-	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model. If you pass an integer instead of an array it will be used as the primary key value for the table; result will be returned as "firstModelInstance" unless the returnAs option is explicitly set.
+	 * @param array $pa_values An array of values to match. Keys in the $pa_values parameters must be valid fields in the table which the model 
+	 * 		sub-class represents. You may also search on preferred and non-preferred labels by specified keys and values for label table fields 
+	 * 		in "preferred_labels" and "nonpreferred_labels" sub-arrays. For example:
+	 *
+	 * 		["idno" => 2012.001", "access" => 1]
+	 *
+	 * 		will find rows with the idno, and access  values.
+	 *
+	 * 		You can specify operators with an expanded array format where each value is an array containing both an operator and a value. Ex.:
+	 *
+	 * 		["idno" => ['=', '2012.001'], "access" => ['>', 1]]
+	 *
+	 * 		You may also specify lists of values for use with the IN operator:
+	 *
+	 * 		["idno" => ['=', '2012.001'], "access" => ['IN', [1,2,3]]]
+	 *
+	 *		 If you pass an integer instead of an array it will be used as the primary key value for the table; result will be returned as "firstModelInstance" unless the returnAs option is explicitly set.
+	 *
 	 * @param array $pa_options Options are:
 	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 	 *		returnAs = what to return; possible values are:
@@ -11317,29 +11352,33 @@ $pa_options["display_form_field_tips"] = true;
 			$pa_values = array($t_instance->primaryKey() => (int)$pa_values); 
 			if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
 		}
+		
+		if ($pa_values === '*') { $pa_values = ['*']; }
+		
 		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
-		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count', 'arrays')));
-		$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
-		$o_trans = caGetOption('transaction', $pa_options, null);
-		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+		$ps_return_as			= caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+		$ps_boolean 			= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
+		$o_trans 				= caGetOption('transaction', $pa_options, null);
+		$pa_check_access 		= caGetOption('checkAccess', $pa_options, null);
 		
 		if (!$t_instance) { $t_instance = new $vs_table; }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
-		$va_sql_wheres = array();
+		$va_sql_wheres = [];
 		
 		$vb_purify_with_fallback = caGetOption('purifyWithFallback', $pa_options, false);
 		$vb_purify = $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
 		
-		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
+	
+		// Convert value array such that all values use operators
+		$pa_values = caNormalizeValueArray($pa_values, ['purify' => $vb_purify]);
 		
-		$va_sql_params = array();
-		
+		$va_sql_params = [];
 		
 		$vs_type_restriction_sql = '';
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
 			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
-				$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+				$va_sql_wheres[] = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) ";
 				$va_sql_params[] = $va_restrict_to_types;
 			}
 		}
@@ -11350,15 +11389,14 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		$vs_type_field_name = null;
 		if (method_exists($t_instance, "getTypeFieldName")) {
-			$vs_type_field_name = $t_instance->getTypeFieldName();
-			if(!is_array($pa_values[$vs_type_field_name]) && array_key_exists($vs_type_field_name, $pa_values)) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
-			
-			if(is_array($pa_values[$vs_type_field_name])) {
-				foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
-					if (!is_numeric($vm_value)) {
-						if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
-							$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
-						}
+			if(is_array($va_field_value = $pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()])) {
+				$vs_op = strtolower($va_field_value[0]);
+				if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => false, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
+				$vm_value = $va_field_value[1];
+				
+				if (!is_numeric($vm_value)) {
+					if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+						$pa_values[$vs_type_field_name] = [$vs_op, $vn_id];
 					}
 				}
 			}
@@ -11367,85 +11405,90 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		// Convert other intrinsic list references
 		//
-		foreach($pa_values as $vs_field => $vm_value) {
+		$vb_find_all = false;
+		foreach($pa_values as $vs_field => $va_field_value) {
 			if ($vs_field == $vs_type_field_name) { continue; }
+			
+			$vs_op = strtolower($va_field_value[0]);
+			$vm_value = $va_field_value[1];
+			
 			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-				if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
-				
-				foreach($vm_value as $vn_i => $vm_ivalue) {
-					if (is_numeric($vm_ivalue)) { continue; }
-					if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
-						$pa_values[$vs_field][$vn_i] = $vn_id;
-					}
+				if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
+			
+				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+					$pa_values[$vs_field] = [$vs_op, $vn_id];
 				}
 			}
 		}
 		
-		foreach ($pa_values as $vs_field => $vm_value) {
-			//if (is_array($vm_value)) { continue; }
-		
-			# support case where fieldname is in format table.fieldname
-			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
-				if ($va_matches[1] != $vs_table) {
-					if ($t_instance->_DATAMODEL->tableExists($va_matches[1])) {
-						return false;
-					} else {
-						return false;
+		if (!$vb_find_all) {
+			foreach ($pa_values as $vs_field => $va_field_value) {
+
+				$vs_op = $va_field_value[0];
+				$vm_value = $va_field_value[1];
+				
+				# support case where fieldname is in format table.fieldname
+				if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
+					if ($va_matches[1] != $vs_table) {
+						if ($t_instance->_DATAMODEL->tableExists($va_matches[1])) {
+							return false;
+						} else {
+							return false;
+						}
 					}
+					$vs_field = $va_matches[2]; # get field name alone
 				}
-				$vs_field = $va_matches[2]; # get field name alone
-			}
 
-			if (!$t_instance->hasField($vs_field)) {
-				return false;
-			}
+				if (!$t_instance->hasField($vs_field)) {
+					return false;
+				}
 
-			if ($t_instance->_getFieldTypeType($vs_field) == 0) {
-				if (!is_numeric($vm_value) && !is_null($vm_value)) {
+
+				if ($t_instance->_getFieldTypeType($vs_field) == 0) {
+					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
+					
 					if (is_array($vm_value)) {
-						foreach($vm_value as $vn_i => $vm_ivalue) {
-							$vm_value[$vn_i] = intval($vm_ivalue);
-						}
-					} else {
-						if(!is_null($vm_value)) {
-							$vm_value = intval($vm_value);
-						}
-					}
-				}
-			} else {
-				if (is_array($vm_value) && sizeof($vm_value)) {
-					foreach($vm_value as $vn_i => $vm_ivalue) {
-						$vm_value[$vn_i] = $t_instance->quote($vs_field, $vm_ivalue);
+						$vm_value = array_map(function($v) { return (int)$v; }, $vm_value);
+					} elseif (!is_numeric($vm_value) && !is_null($vm_value)) {
+						$vm_value = (int)$vm_value;
 					}
 				} else {
-					$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+					if (!caIsValidSqlOperator($vs_op, ['type' => 'string', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid string operator: %1', $vs_op)); }
+					
+					if (is_array($vm_value)) {
+						foreach($vm_value as $vn_i => $vs_value) {
+							$vm_value[$vn_i] = $t_instance->quote($vs_field, is_null($vs_value) ? '' : $vs_value);
+						}
+					} else {
+						$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+					}
 				}
-			}
 
-			if (is_null($vm_value)) {
-				$va_sql_wheres[] = "({$vs_field} IS NULL)";
-			} else {
-				if ($vm_value === '') { continue; }
-				if (is_array($vm_value)) {
-					if(!sizeof($vm_value)) { continue; }
-					$va_sql_wheres[] = "({$vs_field} IN (".join(",", $vm_value)."))";
+				if (is_null($vm_value)) {
+					if ($vs_op !== '=') { $vs_op = 'IS'; }
+					$va_sql_wheres[] = "({$vs_field} {$vs_op} NULL)";
+				} elseif (is_array($vm_value) && sizeof($vm_value)) {
+					if ($vs_op !== '=') { $vs_op = 'IN'; }
+					$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
 				} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
 					$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
 				} else {
-					$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+					if ($vm_value === '') { continue; }
+					$va_sql_wheres[] = "({$vs_field} {$vs_op} {$vm_value})";
 				}
 			}
+			if(!sizeof($va_sql_wheres)) { return null; }
 		}
-		if(!sizeof($va_sql_wheres)) { return null; }
 				
 		if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_instance->hasField('access')) {
 			$va_sql_wheres[] = "({$vs_table}.access IN (?))";
 			$va_sql_params[] = $pa_check_access;
 		}
 		
-		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
-		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_type_restriction_sql} {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
+		if ($t_instance->hasField('deleted')) { $va_sql_wheres[] = '(deleted = 0)'; }
 		
+		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql_wheres) > 0) ? " WHERE (".join(" {$ps_boolean} ", $va_sql_wheres).")" : "");
+	
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
 			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
@@ -11478,7 +11521,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$qr_res = $o_db->query($vs_sql, $va_sql_params);
-		
+//print $vs_sql;
+//print_R($va_sql_params);
 		if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 			return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
 		}
@@ -11520,16 +11564,6 @@ $pa_options["display_form_field_tips"] = true;
 			case 'count':
 				return $qr_res->numRows();
 				break;
-			case 'arrays':
-					$va_rows = [];
-					while($qr_res->nextRow()) {
-						//print_R($qr_res->getRow());
-						$va_rows[] = $qr_res->getRow();
-						$vn_c++;
-						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
-					}
-					return $va_rows;
-					break;
 			default:
 			case 'ids':
 			case 'searchresult':

@@ -3342,3 +3342,72 @@ function caFileIsIncludable($ps_file) {
 		return $va_ret;
 	}
 	# ----------------------------------------
+	/**
+	 * 
+	 * @return array
+	 */
+	function caNormalizeValueArray($pa_values, $pa_options=null) {
+		$va_values_proc = [];
+		
+		$o_purifier = null;
+		if($pb_purify = caGetOption('purify', $pa_options, false)) {
+			if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
+				$o_purifier = new HTMLPurifier();	
+			}	
+		}
+		foreach($pa_values as $vs_key => $vm_val) {
+			if (is_array($vm_val)) {
+				if (caIsValidSqlOperator($vm_val[0], ['nullable' => true, 'isList' => true])) {
+					if (is_array($vm_val[1]) && $o_purifier) { 
+						$va_vals_proc = [];
+						foreach($vm_val[1] as $vm_list_val) {
+							$va_vals_proc[] = $o_purifier->purify($vm_list_val);
+						}
+						$va_values_proc[$vs_key] = [$vm_val[0], $va_vals_proc];
+					} else {
+						$va_values_proc[$vs_key] = [$vm_val[0], $o_purifier ? $o_purifier->purify($vm_val[1]) : $vm_val[1]];
+					}
+				} else {
+					$va_values_proc[$vs_key] = caNormalizeValueArray($vm_val, $pa_options);
+				}
+			} else {
+				$va_values_proc[$vs_key] = ['=', $o_purifier ? $o_purifier->purify($vm_val) : $vm_val];
+			}
+		}
+		return $va_values_proc;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 * @return bool
+	 */
+	function caIsValidSqlOperator($ps_op, $pa_options=null) {
+		$ps_type = caGetOption('type', $pa_options, null, ['forceLowercase' => true]);
+		$pb_nullable = caGetOption('nullable', $pa_options, false);
+		$pb_is_list = caGetOption('isList', $pa_options, false);
+		
+		switch(strtolower($ps_op)) {
+			case '>':
+			case '<':
+			case '>=':
+			case '<=':
+				return (!$ps_type || ($ps_type == 'numeric')) ? true : false;
+				break;
+			case '=':
+			case '<>':
+			case '!=':
+				return true;
+				break;
+			case 'like':
+				return (!$ps_type || ($ps_type == 'string')) ? true : false;
+				break;
+			case 'is':
+				return ($pb_nullable) ? true : false;
+				break;
+			case 'in':
+				return ($pb_is_list) ? true : false;
+				break;
+		}
+		return false;
+	}
+	# ----------------------------------------

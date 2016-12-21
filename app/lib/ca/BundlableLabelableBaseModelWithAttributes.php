@@ -2237,6 +2237,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 										case 'is_set':
 											return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '[SET]'));
 											break;
+										case 'is':
+											return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => caGetOption('value', $pa_options, null)));
+											break;
 									}
 								}
 								if (caGetOption('select', $pa_options, false)) {
@@ -5716,7 +5719,11 @@ if (!$vb_batch) {
 			$va_ids = $va_ids_to_rel_ids = array();
 			$vs_rel_pk = $t_rel_item->primaryKey();
 			foreach($va_rels as $vn_i => $va_rel) {
-				$va_ids[$vn_i] = $va_rel[$vs_rel_pk];
+				if(is_array($va_rel)) {
+					$va_ids[$vn_i] = $va_rel[$vs_rel_pk];
+				} else {
+					$va_ids[$vn_i] = $va_rel;
+				}
 				$va_ids_to_rel_ids[$va_rel[$vs_rel_pk]][] = $vn_i;
 			}
 			if (sizeof($va_ids) > 0) {
@@ -6018,7 +6025,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
-		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		if (!is_array($pa_ids)) { return null; }
 		
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
 			$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
