@@ -537,7 +537,7 @@
 			$pa_options['ignoreParent'] = $pa_item['settings']["{$ps_refinery_name}_ignoreParent"];
 		}
 		
-		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
+		$pa_options['dontCreate'] = $pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = array();
 		$vn_c = 0;
@@ -759,7 +759,9 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_vals[][$vs_terminal] = $vn_item_id;
+							$va_val = [$vs_terminal => $vn_item_id, '_related_related' => $va_val['_related_related']];
+							if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
+							$va_vals[] = $va_val;
 							continue;
 						} else {
 							if ($o_log && !$pb_dont_create) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
@@ -830,6 +832,8 @@
 								continue(2);
 								break;	
 						}
+						
+						if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 						if (isset($pa_options['nonPreferredLabels']) && is_array($pa_options['nonPreferredLabels'])) {
 							$va_val['nonpreferred_labels'] = $pa_options['nonPreferredLabels'];
 						}
