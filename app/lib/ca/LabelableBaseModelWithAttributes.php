@@ -514,7 +514,7 @@
 			// If not array or "*" then bail
 			if (!is_array($pa_values)) { return null; }
 			
-			$ps_return_as 				= caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+			$ps_return_as 				= caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count', 'arrays')));
 	
 			$ps_boolean 				= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_label_boolean 			= caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
