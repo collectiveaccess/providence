@@ -255,6 +255,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('screen_id', $vn_screen_id);
 		$t_placement->set('bundle_name', $ps_bundle_name);
@@ -297,6 +298,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		//}
 		
 		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		if ($t_placement->getPrimaryKey() && ($t_placement->get('screen_id') == $vn_screen_id)) {
 			$t_placement->setMode(ACCESS_WRITE);
 			$t_placement->delete(true);
@@ -363,6 +365,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	
 		if ($qr_res->numRows() > 0) {
 			$t_placement = new ca_editor_ui_bundle_placements();
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				
@@ -422,6 +425,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, array());
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$va_defined_bundles = $t_instance->getBundleList(array('includeBundleInfo' => true));		// these are the bundles defined for this type of editor
 		
 		$va_available_bundles = array();
@@ -1589,6 +1593,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							case 'ca_set_items':
 								require_once(__CA_MODELS_DIR__."/ca_sets.php");
 								$t_set = new ca_sets();
+								if ($this->inTransaction()) { $t_set->setTransaction($this->getTransaction()); }
 								
 								$va_additional_settings = array();
 								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
@@ -1963,6 +1968,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_screen = new ca_editor_ui_screens($this->getPrimaryKey());
+			if ($this->inTransaction()) { $t_screen->setTransaction($this->getTransaction()); }
 			$va_placements = $t_screen->getPlacements(array('user_id' => $po_request->getUserID()));
 			
 			// remove deleted bundles
@@ -2019,6 +2025,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} else {
 					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, $va_available_bundles[$vs_bundle]['settings']);
+					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 					

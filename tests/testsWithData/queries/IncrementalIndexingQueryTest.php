@@ -97,7 +97,9 @@ class IncrementalIndexingQueryTest extends BaseTestWithData {
 		$this->opt_object->set('idno', 'fdsa');
 		$this->opt_object->setMode(ACCESS_WRITE);
 		$this->opt_object->update();
-
+		
+		$this->opt_object = null;	// force search indexer to write on destruction of model instance
+		
 		$o_search = caGetSearchInstance('ca_objects');
 		$o_result = $o_search->search('asdf');
 		$this->assertEquals(0, $o_result->numHits(), 'asdf should not be indexed anymore');
