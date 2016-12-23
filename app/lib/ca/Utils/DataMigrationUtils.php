@@ -282,14 +282,17 @@
 				return $vn_item_id;
 			}
 
-			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
-			//
-			// Need to create list item
-			//
 			if (!$t_list->load($vn_list_id)) {
 				if ($o_log) { $o_log->logError(_t("Could not find list with list id %1", $vn_list_id)); }
 				return null;
 			}
+			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) {
+				if ($o_log) { $o_log->logNotice(_t("Not adding \"%1\" to list %2 as dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); }
+				return false;
+			}
+			//
+			// Need to create list item
+			//
 			if ($o_event) { $o_event->beginItem($ps_event_source, 'ca_list_items', 'I'); }
 			if ($t_item = $t_list->addItem($ps_item_idno, $pa_values['is_enabled'], $pa_values['is_default'], $vn_parent_id, $pn_type_id, $ps_item_idno, '', (int)$pa_values['status'], (int)$pa_values['access'], $pa_values['rank'])) {
 				$vb_label_errors = false;
