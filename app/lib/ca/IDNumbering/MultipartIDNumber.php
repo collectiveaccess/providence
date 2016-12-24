@@ -46,6 +46,12 @@ class MultipartIDNumber extends IDNumber {
 	private $opo_idnumber_config;
 	
 	/**
+	 * A configuration object loaded with search.conf
+	 * @type Configuration
+	 */
+	private $opo_search_config;
+	
+	/**
 	 * The list of valid formats, related types and elements
 	 * @type array
 	 */
@@ -71,6 +77,7 @@ class MultipartIDNumber extends IDNumber {
 
 		parent::__construct();
 		$this->opo_idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
+		$this->opo_search_config = Configuration::load(__CA_APP_DIR__."/conf/search.conf");
 		$this->opa_formats = $this->opo_idnumber_config->getAssoc('formats');
 
 		if ($ps_format) { $this->setFormat($ps_format); }
@@ -919,10 +926,10 @@ class MultipartIDNumber extends IDNumber {
 		$va_output_values = array_unique($va_output_values);
 		
 		// generate tokenized version
-		if($va_tokens = preg_split("![^\pL\pN\pNd/_#\@\&\-\.]+!", $ps_value)) {
+		if($va_tokens = preg_split("![".$this->opo_search_config->get('indexing_tokenizer_regex')."]+!", $ps_value)) {
 			$va_output_values = array_merge($va_output_values, $va_tokens);
 		}
-
+		
 		return $va_output_values;
 	}
 	# -------------------------------------------------------
