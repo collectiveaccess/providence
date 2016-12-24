@@ -48,10 +48,6 @@
 		
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/page_id/'.$vn_page_id, 'SitePageEditorForm', null, 'POST', 'multipart/form-data');
 			
-			$va_form_elements = $t_page->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'SitePageEditorForm'));
-									
 			if (!$vn_page_id) {
 				// For new pages, show mandatory fields...
 				// ... BUT ...
@@ -70,6 +66,10 @@
 				}
 			}
 			
+			$va_form_elements = $t_page->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+									'request' => $this->request, 
+									'formName' => 'SitePageEditorForm'));
+												
 			print join("\n", $va_form_elements);
 			
 			if ($vb_can_edit) {

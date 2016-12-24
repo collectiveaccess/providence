@@ -47,14 +47,14 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this item')
+				'LABEL' => _t('CollectiveAccess ID'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this item')
 		),
 		'title' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Page title'), 'DESCRIPTION' => _t('Short descriptive title for page'),
+				'LABEL' => _t('Page metadata: title'), 'DESCRIPTION' => _t('A short descriptive title for page, used to distinguish the page from others.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'description' => array(
@@ -62,21 +62,21 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 2,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Page description'), 'DESCRIPTION' => _t('Long description for page')
+				'LABEL' => _t('Page metadata: description'), 'DESCRIPTION' => _t('Text describing the intended content and purpose of the page, to aid in distinguishing it from other pages.')
 		),
 		'template_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Template'), 'DESCRIPTION' => _t('Template selected for rendering of this page.')
+				'LABEL' => _t('Page metadata: template'), 'DESCRIPTION' => _t('The template selected to format this page for presentation.')
 		),
 		'path' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('URL path'), 'DESCRIPTION' => _t('Root relative path to access page.'),
+				'LABEL' => _t('Page metadata: URL path'), 'DESCRIPTION' => _t('The unique root-relative URL path used by the public to access this page. For example, if set to <em>/pages/staff</em> this page would be accessible to the public using a URL similiar to this: <em>http://your.domain.com/pages/staff</em>.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'access' => array(
@@ -89,7 +89,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 					_t('Accessible to public') => 1
 				),
 				'LIST' => 'access_statuses',
-				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if the list item is accessible to the public or not.')
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Controls whether the page is available publicly. Set to <em>accessible to public</em> to make it available to the public, or <em>not accessible to public</em> to prevent access to all but content editors.')
 		),
 		'content' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -103,7 +103,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 5,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Page keywords'), 'DESCRIPTION' => _t('Keywords for page metadata.')
+				'LABEL' => _t('Page metdata: keywords'), 'DESCRIPTION' => _t('Optional keywords for this page.')
 		),
 		'deleted' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -117,7 +117,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this page.'
 		)
  	)
 );
@@ -237,7 +237,11 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return array with information about all available pages
 	 *
+	 * @param array $pa_options No options are currently implemented
+	 * 
+	 * @return array An array of arrays, each of which contains fields values for an available page.
 	 */
 	public static function getPageList($pa_options=null) {
 		$va_pages = ca_site_pages::find('*', ['returnAs' => 'arrays']);
@@ -255,7 +259,12 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return a list of content tags and HTML form element present in the template for the 
+	 * currently loaded page.
 	 *
+	 * @param array $pa_options No options are currently implemented
+	 * 
+	 * @return array An array of arrays, each of which contains fields values for a content tag present in the page template.
 	 */
 	public function getHTMLFormElements($pa_options=null) {
 		if (!($vn_template_id = $this->get('template_id'))) { return null; }
@@ -264,7 +273,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_template = new ca_site_templates($vn_template_id);
 		
-		$va_element_defs = $t_template->getHTMLFormElements($va_page_content, $pa_options);
+		$va_element_defs = $t_template->getHTMLFormElements($va_page_content, array_merge($pa_options, ['addTooltips' => true]));
 		
 		$va_form_elements = [];
 		foreach($va_element_defs as $va_element_def) {
@@ -281,17 +290,32 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	
 	# ------------------------------------------------------
 	/**
+	 * Render content for the currently loaded page
 	 *
+	 * @param ActionController $po_controller The controller into which to render the content
+	 * @param array $pa_options Options include:
+	 *		incrementViewCount = increment view count value for page. [Default is false]
+	 *		checkAccess = Array of access values for which rendering should occur. If the page to render does not have one of the listed access values rendering will fail. [Default is null]
+	 *
+	 * @return string Returns null if page could not be rendered
 	 */
 	public function render($po_controller, $pa_options=null) {
 		return ca_site_pages::renderPageForPath($po_controller, $this->get('path'), $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
+	 * Render page content for a path
 	 *
+	 * @param ActionController $po_controller The controller into which to render the content
+	 * @param string $ps_path The path of the page to render
+	 * @param array $pa_options Options include:
+	 *		incrementViewCount = increment view count value for page. [Default is false]
+	 *		checkAccess = Array of access values for which rendering should occur. If the page to render does not have one of the listed access values rendering will fail. [Default is null]
+	 *
+	 * @return string Returns null if page cannot be rendered
 	 */
-	public static function renderPageForPath($po_controller, $ps_path) {
-		if (($t_page = ca_site_pages::find(['path' => $ps_path], ['returnAs' => 'firstModelInstance'])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))) {
+	public static function renderPageForPath($po_controller, $ps_path, $pa_options=null) {
+		if (($t_page = ca_site_pages::find(['path' => $ps_path], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $pa_options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))) {
 			$o_content_view = new View($po_controller->request, $po_controller->request->getViewsDirectoryPath());
 			
 			if (is_array($va_content = caUnserializeForDatabase($t_page->get('content')))) {
@@ -299,20 +323,36 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 					$o_content_view->setVar($vs_tag, $vs_content);
 				}
 			}
+			
+			// Set standard page fields for use in template
+			foreach(['title', 'description', 'path', 'access', 'keywords', 'view_count'] as $vs_field) {
+				$o_content_view->setVar("page_{$vs_field}", $t_page->get($vs_field));
+			}
+			
+			if (caGetOption('incrementViewCount', $pa_options, false)) {
+				$t_page->setMode(ACCESS_WRITE);
+				$t_page->set('view_count', (int)$t_page->get('view_count') + 1);
+				$t_page->update();
+			}
+			
 			return $o_content_view->render($t_template->get('template'), false, ['string' => true]); 
 		}
 		return false;
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return the total number of pages 
 	 *
+	 * @return int
 	 */
 	public static function pageCount() {
 		return ca_site_pages::find('*', ['returnAs' => 'count']);
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return the total number of pages with a given access setting
 	 *
+	 * @return int
 	 */
 	public static function pageCountForAccess($pn_access) {
 		return ca_site_pages::find(['access' => (int)$pn_access], ['returnAs' => 'count']);
@@ -343,10 +383,8 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$o_view->setVar('t_subject', $this);
- 		
  		$o_view->setVar('t_page', $this);
  		$o_view->setVar('t_template', new ca_site_templates($this->get('template_id')));
-		
 		
 		return $o_view->render('ca_site_pages_content.php');
 	}

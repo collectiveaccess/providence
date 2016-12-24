@@ -41,7 +41,6 @@
 	$t_page						= $this->getVar('t_page');
 	$t_template 				= $this->getVar('t_template');
 	
-
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>

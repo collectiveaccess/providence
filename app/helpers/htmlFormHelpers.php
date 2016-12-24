@@ -127,7 +127,16 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Render an HTML text form element (<input type="text"> or <textarea> depending upon height).
 	 *
+	 * @param string $ps_name The name of the rendered form element
+	 * @param array $pa_attributes An array of attributes to include in the rendered HTML form element. If you need to set class, id, alt or other attributes, set them here.
+	 * @param array Options include:
+	 *		width = Width of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
+	 *		height = Height of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
+	 * 		usewysiwygeditor = Use rich text editor for text element. Only available when the height of the text element is multi-line. [Default is false]
+	 *
+	 * @return string
 	 */
 	function caHTMLTextInput($ps_name, $pa_attributes=null, $pa_options=null) {
 		$vb_is_textarea = false;

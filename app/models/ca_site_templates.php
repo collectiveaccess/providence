@@ -230,6 +230,7 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_config = Configuration::load();
 		$vs_form_element_format = $o_config->get('form_element_display_format');
+		$pb_include_tooltips = caGetOption('addTooltips', $pa_options, false);
 		
 		$vs_tagname_prefix = caGetOption('tagnamePrefix', $pa_options, 'page_field');
 	
@@ -241,14 +242,21 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 			$va_form_elements[] = [
 				'code' => $vs_tag,
 				'label' => ($vs_label = trim($va_tag_info['label'])) ? $vs_label : $vs_tag,
-				'element' => caHTMLTextInput("{$vs_tagname_prefix}_{$vs_tag}", ['value' => $pa_values[$vs_tag]], ['width' => caGetOption('width', $va_tag_info, '300px'), 'height' => caGetOption('height', $va_tag_info, '35px'), 'usewysiwygeditor' => caGetOption('usewysiwygeditor', $va_tag_info, false)]),
+				'element' => caHTMLTextInput("{$vs_tagname_prefix}_{$vs_tag}", ['id' => "{$vs_tagname_prefix}_{$vs_tag}", 'value' => $pa_values[$vs_tag]], ['width' => caGetOption('width', $va_tag_info, '300px'), 'height' => caGetOption('height', $va_tag_info, '35px'), 'usewysiwygeditor' => caGetOption('usewysiwygeditor', $va_tag_info, false)]),
 				'value' => $pa_values[$vs_tag]
 			];
 			
 			if ($vs_form_element_format) {
 				$vn_partial_index = sizeof($va_form_elements)-1;
-				$va_form_elements[$vn_partial_index]['element_with_label'] = caProcessTemplate($vs_form_element_format, ["LABEL" => $va_form_elements[$vn_partial_index]['label'], "ELEMENT" => $va_form_elements[$vn_partial_index]['element'], "EXTRA" => '' ]);
+				$va_form_elements[$vn_partial_index]['element_with_label'] = caProcessTemplate($vs_form_element_format, ["LABEL" => "<span id='{$vs_tagname_prefix}_{$vs_tag}_label'>".$va_form_elements[$vn_partial_index]['label']."</span>", "ELEMENT" => $va_form_elements[$vn_partial_index]['element'], "EXTRA" => '' ]);
+							
+				if($pb_include_tooltips && $va_tag_info['label']) {
+					TooltipManager::add("#{$vs_tagname_prefix}_{$vs_tag}_label", "<strong>".$va_tag_info['label']."</strong><br/>".$va_tag_info['description']);
+				}
+			} elseif($pb_include_tooltips && $va_tag_info['label']) {
+				TooltipManager::add("#{$vs_tagname_prefix}_{$vs_tag}", "<strong>".$va_tag_info['label']."</strong><br/>".$va_tag_info['description']);
 			}
+			
 		}
 		return $va_form_elements;
 	}

@@ -128,7 +128,7 @@ class View extends BaseObject {
 		}
 		
 			if (caGetOption('includeDefaultThemePath', $pa_options, true)) {
-				$vs_default_theme_path = $this->opo_request->getDefaultThemeDirectoryPath().'/views'.$vs_suffix;
+				$vs_default_theme_path = $this->opo_request ? $this->opo_request->getDefaultThemeDirectoryPath().'/views'.$vs_suffix : __CA_THEME_DIR__."/default/views{$vs_suffix}";
 				if (!in_array($vs_default_theme_path, $pm_path) && !in_array($vs_default_theme_path.'/', $pm_path)) {
 					array_unshift($pm_path, $vs_default_theme_path);
 			}
