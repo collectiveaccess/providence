@@ -48,6 +48,14 @@ BaseModel::$s_ca_models_definitions['ca_site_templates'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Template id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this item')
 		),
+		'template_code' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Template code'), 'DESCRIPTION' => _t('Unique alphanumeric code for this template.'),
+				'BOUNDS_LENGTH' => array(1,100)
+		),
 		'title' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
@@ -72,7 +80,7 @@ BaseModel::$s_ca_models_definitions['ca_site_templates'] = array(
 				'LABEL' => _t('Template'), 'DESCRIPTION' => _t('Full template text.')
 		),
 		'tags' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 4,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -188,6 +196,61 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 * Generate list of available page templates as an HTML <select> element
+	 *
+	 * @param array $pa_options Options include:
+	 *		name = value used for HTML <select> "name" attribute. [Default is template_id]
+	 *		id = value used for HTML <select> "id" attribute. [Default is null]
+	 *		
+	 * @return string
+	 */
+	public static function getTemplateListAsHTMLSelect($pa_options=null) {
+		$va_rows = self::find(['deleted' => 0], ['returnAs' => 'arrays']);
+		if (!is_array($va_rows) || !sizeof($va_rows)) { return null; }
+		
+		$va_titles = caExtractValuesFromArrayList($va_rows, 'title');
+		$va_template_ids = caExtractValuesFromArrayList($va_rows, 'template_id');
+		
+		$va_options = [];
+		foreach($va_titles as $vn_i => $vs_title) {
+			$va_options[$vs_title] = $va_template_ids[$vn_i];
+		}
+		
+		return caHTMLSelect(caGetOption('name', $pa_options, 'template_id'), $va_options, ['id' => caGetOption('id', $pa_options, null)]);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getHTMLFormElements($pa_values=null, $pa_options=null) {
+		if (!($vn_template_id = $this->get('template_id'))) { return null; }
+		
+		$o_config = Configuration::load();
+		$vs_form_element_format = $o_config->get('form_element_display_format');
+		
+		$vs_tagname_prefix = caGetOption('tagnamePrefix', $pa_options, 'page_field');
+	
+		if (!is_array($va_tags = $this->get('tags'))) { return []; }
+		$va_form_elements = [];
+		foreach($va_tags as $vs_tag => $va_tag_info) {
+			if(!trim($vs_tag)) { continue; }
+			
+			$va_form_elements[] = [
+				'code' => $vs_tag,
+				'label' => ($vs_label = trim($va_tag_info['label'])) ? $vs_label : $vs_tag,
+				'element' => caHTMLTextInput("{$vs_tagname_prefix}_{$vs_tag}", ['value' => $pa_values[$vs_tag]], ['width' => caGetOption('width', $va_tag_info, '300px'), 'height' => caGetOption('height', $va_tag_info, '35px'), 'usewysiwygeditor' => caGetOption('usewysiwygeditor', $va_tag_info, false)]),
+				'value' => $pa_values[$vs_tag]
+			];
+			
+			if ($vs_form_element_format) {
+				$vn_partial_index = sizeof($va_form_elements)-1;
+				$va_form_elements[$vn_partial_index]['element_with_label'] = caProcessTemplate($vs_form_element_format, ["LABEL" => $va_form_elements[$vn_partial_index]['label'], "ELEMENT" => $va_form_elements[$vn_partial_index]['element'], "EXTRA" => '' ]);
+			}
+		}
+		return $va_form_elements;
 	}
 	# ------------------------------------------------------
 }

@@ -28,20 +28,46 @@
  
 	require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 	require_once(__CA_LIB_DIR__."/core/ApplicationVars.php");
+	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
-	require_once(__CA_MODELS_DIR__."/ca_sets.php");
-	require_once(__CA_MODELS_DIR__."/ca_objects.php");
+ 	
+	require_once(__CA_MODELS_DIR__."/ca_site_templates.php");
+	require_once(__CA_MODELS_DIR__."/ca_site_pages.php");
+	require_once(__CA_MODELS_DIR__."/ca_site_page_media.php");
  
  	class PawtucketController extends ActionController {
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			if(!$this->request->isLoggedIn() || !$this->request->getUser()->canDoAction('can_edit_theme_global_values')) {
- 				throw new ApplicationException("No access");
+ 			if(!$this->request->isLoggedIn() || (!$this->request->getUser()->canDoAction('can_edit_theme_global_values') && !$this->request->getUser()->canDoAction('can_edit_theme_page_content'))) {
+ 			//	throw new ApplicationException("No access");
  			}
  		}
+ 		# -------------------------------------------------------
+ 		# Pages
+ 		# -------------------------------------------------------
+		/** 
+		 * 
+		 */
+ 		public function pages() {
+ 			AssetLoadManager::register('tableList');
+ 			if(!$this->request->getUser()->canDoAction('can_edit_ca_site_pages')) { throw new ApplicationException("No access"); }
+ 		
+ 			$o_result_context = new ResultContext($this->request, 'ca_site_pages', 'basic_search');
+ 			$o_result_context->setAsLastFind();
+ 			$this->view->setVar('t_page', new ca_site_pages());
+ 			$this->view->setVar('page_list', $va_page_list = ca_site_pages::getPageList());
+ 			
+ 		
+ 			$o_result_context->setResultList(caExtractArrayValuesFromArrayOfArrays($va_page_list, 'page_id'));
+ 			$o_result_context->saveContext();
+ 		
+ 			$this->render("Pawtucket/page_list_html.php");	
+ 		}
+ 		# -------------------------------------------------------
+ 		# Global values
  		# -------------------------------------------------------
 		/** 
 		 * 
@@ -116,4 +142,19 @@
  			$this->editGlobalValues();
  		}
  		# ------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function Info() {
+ 			$this->view->setVar('result_context', new ResultContext($this->request, 'ca_site_pages', 'basic_search'));
+ 			if ($pn_page_id = $this->request->getParameter('page_id', pInteger)) { 
+ 				$this->view->setVar('page_id', $pn_page_id);
+ 				$this->view->setVar('t_item', new ca_site_pages($pn_page_id));
+ 			} else {
+ 				$this->view->setVar('num_pages', ca_site_pages::pageCount());
+ 				$this->view->setVar('num_public_pages', ca_site_pages::pageCountForAccess(1));
+ 			}
+ 			return $this->render('Pawtucket/widget_pawtucket_info_html.php', true);
+ 		}
+ 		# -------------------------------------------------------
  	}

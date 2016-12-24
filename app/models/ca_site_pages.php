@@ -35,6 +35,7 @@
    */
  
 require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_MODELS_DIR__.'/ca_site_templates.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
@@ -58,13 +59,13 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 		),
 		'description' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 2,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Page description'), 'DESCRIPTION' => _t('Long description for page')
 		),
 		'template_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -91,7 +92,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if the list item is accessible to the public or not.')
 		),
 		'content' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 5,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -192,6 +193,13 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	);
 	
 	# ------------------------------------------------------
+	# ID numbering
+	# ------------------------------------------------------
+	protected $ID_NUMBERING_ID_FIELD = 'path';				// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;		// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	
+	
+	# ------------------------------------------------------
 	# Search
 	# ------------------------------------------------------
 	protected $SEARCH_CLASSNAME = 'SitePageSearch';
@@ -221,6 +229,126 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+		$this->BUNDLES['ca_site_pages_content'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Page content'));
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getPageList($pa_options=null) {
+		$va_pages = ca_site_pages::find('*', ['returnAs' => 'arrays']);
+		
+		$va_templates_by_id = [];
+		foreach(ca_site_templates::find('*', ['returnAs' => 'arrays']) as $va_template) {
+			$va_templates_by_id[$va_template['template_id']] = $va_template['title'];
+		}
+		
+		foreach($va_pages as $vn_i => $va_page) {
+			$va_pages[$vn_i]['template_title'] = $va_templates_by_id[$va_pages[$vn_i]['template_id']]; 
+		}
+		
+		return $va_pages;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getHTMLFormElements($pa_options=null) {
+		if (!($vn_template_id = $this->get('template_id'))) { return null; }
+		
+		if(!is_array($va_page_content = $this->get('content'))) { $va_page_content = []; }
+		
+		$t_template = new ca_site_templates($vn_template_id);
+		
+		$va_element_defs = $t_template->getHTMLFormElements($va_page_content, $pa_options);
+		
+		$va_form_elements = [];
+		foreach($va_element_defs as $va_element_def) {
+			$va_form_elements[] = [
+				'code' => $va_element_def['code'],
+				'label' => $va_element_def['label'],
+				'element' => $va_element_def['element'],
+				'element_with_label' => $va_element_def['element_with_label'],
+				'value' => $va_page_content[$va_element_def['name']]
+			];
+		}
+		return $va_form_elements;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function render($po_controller, $pa_options=null) {
+		return ca_site_pages::renderPageForPath($po_controller, $this->get('path'), $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function renderPageForPath($po_controller, $ps_path) {
+		if (($t_page = ca_site_pages::find(['path' => $ps_path], ['returnAs' => 'firstModelInstance'])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))) {
+			$o_content_view = new View($po_controller->request, $po_controller->request->getViewsDirectoryPath());
+			
+			if (is_array($va_content = caUnserializeForDatabase($t_page->get('content')))) {
+				foreach($va_content as $vs_tag => $vs_content) {
+					$o_content_view->setVar($vs_tag, $vs_content);
+				}
+			}
+			return $o_content_view->render($t_template->get('template'), false, ['string' => true]); 
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function pageCount() {
+		return ca_site_pages::find('*', ['returnAs' => 'count']);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function pageCountForAccess($pn_access) {
+		return ca_site_pages::find(['access' => (int)$pn_access], ['returnAs' => 'count']);
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle (ca_site_pages_content) for page content 
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Supported options are 
+	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getPageContentHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+ 		
+ 		$o_view->setVar('t_page', $this);
+ 		$o_view->setVar('t_template', new ca_site_templates($this->get('template_id')));
+		
+		
+		return $o_view->render('ca_site_pages_content.php');
 	}
 	# ------------------------------------------------------
 }

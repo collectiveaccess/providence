@@ -808,7 +808,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 							$vs_label .= join(" / ", $va_collection_links).' &gt; ';
 						}
 					
-						if (method_exists($t_item, 'getLabelForDisplay')) {
+						if (method_exists($t_item, 'getLabelForDisplay') && ($t_item->getLabelTableInstance())) {
 							$vn_parent_index = (sizeof($va_ancestors) - 1);
 							if ($vn_parent_id && (($vs_table_name != 'ca_places') || ($vn_parent_index > 0))) {
 								$va_parent = $va_ancestors[$vn_parent_index];
@@ -831,7 +831,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 							
 							}
 						} else {
-							$vs_label .= $t_item->get('name');
+							$vs_label .= $t_item->hasField('name') ? $t_item->get('name') : $t_item->get(array_shift($t_item->getProperty('LIST_FIELDS')));
 						}
 					}
 				}
