@@ -80,7 +80,8 @@
 				$va_lists = explode(";", $ps_lists);
 			}
 			
-			if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
+			$vn_max_items_per_page = null;
+			if ($vn_max_items_per_page > 1000) {
 				$vn_max_items_per_page = 100;
 			}
 			
@@ -143,7 +144,7 @@
 							$va_list_items[$vn_item_id] = $va_item;
 							$vn_c++;
 							
-							if ($vn_c > ($vn_max_items_per_page)) { break; }
+							if (!is_null($vn_max_items_per_page) && ($vn_c > ($vn_max_items_per_page))) { break; }
 						}
 						
 						if (sizeof($va_list_items)) {
@@ -171,7 +172,7 @@
  				$va_list_items['_sortOrder'] = array_keys($va_list_items);
 
 				$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
-				$va_list_items['_itemCount'] = $t_list ? $t_list->numItemsInList() : ($qr_res ? $qr_res->numRows() : 0);
+				$va_list_items['_itemCount'] = ca_list_items::find(['list_id' => $vn_list_id, 'parent_id' => $vn_id], ['returnAs' => 'count']); //sizeof($va_list_items); //$t_list ? $t_list->numItemsInList() : ($qr_res ? $qr_res->numRows() : 0);
 			
 				$va_level_data[$pn_id] = $va_list_items;
 			}
