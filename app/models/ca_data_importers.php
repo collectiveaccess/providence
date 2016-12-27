@@ -834,8 +834,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
 							} else {
 								if (is_null($va_refinery_options = json_decode($vs_refinery_options_json, true))) {
-									$pa_errors[] = _t("Warning: invalid refinery options for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json);
-									if ($o_log) { $o_log->logWarn( _t("[loadImporterFromFile:%1] Invalid refinery options for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json)); }
+									// Error while json decode
+									$pa_errors[] = _t("invalid json for refinery options for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json);
+									if ($o_log) { $o_log->logError( _t("[loadImporterFromFile:%1] invalid json for refinery options for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json)); }
+									return;
 								}
 							}
 						}
