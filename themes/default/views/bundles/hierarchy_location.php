@@ -504,7 +504,7 @@
 				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 				
 						
-				allowDragAndDropSorting: <?php print caDragAndDropSortingForHierarchyEnabled($t_subject->tableName(), $t_subject->getPrimaryKey()) ? "true" : "false"; ?>,
+				allowDragAndDropSorting: <?php print caDragAndDropSortingForHierarchyEnabled($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey()) ? "true" : "false"; ?>,
 				sortSaveUrl: '<?php print $va_lookup_urls['sortSave']; ?>',
 				dontAllowDragAndDropSortForFirstLevel: true,
 		

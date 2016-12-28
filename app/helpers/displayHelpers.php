@@ -3824,17 +3824,21 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * 
-	 * @param string $ps_table
-	 * @param int $pn_id
+	 * Check if hierarchy browser drag-and-drop sorting is enabled for the current user in the current table for a given item.
+	 *
+	 * @param RequestHTTP $pt_request The current request
+	 * @param string $ps_table The table being browsed
+	 * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items.
 	 *
 	 * @return bool
 	 */
-	function caDragAndDropSortingForHierarchyEnabled($ps_table, $pn_id) {
+	function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id) {
 		$o_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		
 		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+		
+		if(!$pt_request->isLoggedIn() || (!$pt_request->user->canDoAction("can_edit_{$ps_table}") && (($vs_hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$pt_request->user->canDoAction("can_edit_{$vs_hier_table}") : false))) { return false; }
 		if (!$t_instance->isHierarchical()) { return false; }
 		if (!($vs_rank_fld = $t_instance->getProperty('RANK'))) { return false; }
 		if (!$t_instance->load($pn_id)) { return false; }
@@ -3852,13 +3856,20 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * 
-	 * @param string $ps_table
-	 * @param int $pn_id
+	 * Return an array of statuses for drag-and-drop reordering by row_id for a given table. If the table does not support separate
+	 * drag-and-drop statuses per row then a boolean value is returned that applies to the entire table. 
 	 *
-	 * @return bool
+	 * Currently, only ca_list_items supports per-row statuses.
+	 *
+	 * @param RequestHTTP $pt_request The current request
+	 * @param string $ps_table The table being browsed
+	 * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items.
+	 *
+	 * @return mixed An array if the table supports per-row drag-and-drop reordering statuses, boolean values as would be returned by caDragAndDropSortingForHierarchyEnabled() otherwise.
+	 *
+	 * @seealso caDragAndDropSortingForHierarchyEnabled
 	 */
-	function caGetDragAndDropSortingAvailabilityMap($ps_table, $pn_id) {
+	function caGetDragAndDropSortingAvailabilityMap($pt_request, $ps_table, $pn_id) {
 		$o_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		
@@ -3869,12 +3880,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			$va_map = [];
 			foreach($va_list_of_lists as $vn_list_id => $va_lists_by_locale) {
 				foreach($va_lists_by_locale as $vn_locale_id => $va_item) {
-					$va_map[$va_item['root_id']] = caDragAndDropSortingForHierarchyEnabled('ca_list_items', $va_item['root_id']);
+					$va_map[$va_item['root_id']] = caDragAndDropSortingForHierarchyEnabled($pt_request, 'ca_list_items', $va_item['root_id']);
 				}
 			}
 			return $va_map;
 		} else {
-			return caDragAndDropSortingForHierarchyEnabled($ps_table, $pn_id);
+			return caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id);
 		}
 	}
 	# ------------------------------------------------------------------
