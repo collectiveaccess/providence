@@ -6399,7 +6399,7 @@ class BaseModel extends BaseObject {
 		
 		if (!in_array($ps_change_type, array('I', 'U', 'D'))) { return false; };		// invalid change type (shouldn't happen)
 
-		if (!($vn_row_id = $this->getPrimaryKey()) && !($vn_row_id = caGetOption('row_id', $pa_options, null))) { return false; }					// no logging without primary key value
+		if (!($vn_row_id = caGetOption('row_id', $pa_options, null)) && !($vn_row_id = $this->getPrimaryKey())) { return false; }					// no logging without primary key value
 
 		// get unit id (if set)
 		global $g_change_log_unit_id;
@@ -12018,6 +12018,55 @@ $pa_options["display_form_field_tips"] = true;
 		}
 
 		return $va_rels;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function setRankAfter($pn_after_id, $pa_options=null) {
+		$o_db = $this->getDb();
+		
+		
+		$vs_item_pk = $this->primaryKey();
+		$vs_item_table = $this->tableName();
+		$vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
+		$vn_parent_id = (int)$this->get($vs_parent_id_fld);
+		
+		if (!($vs_rank_fld = $this->getProperty('RANK'))) { return null; }
+		
+		
+		// If "after_id" is null then change ranks such that the "id" row is at the beginning
+		if (!$pn_after_id) {
+			$qr_res = $o_db->query("
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE  {$vs_parent_id_fld} = ? ORDER BY {$vs_rank_fld} LIMIT 1
+			", [$vn_parent_id]);
+		} else {
+			$qr_res = $o_db->query("
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? AND {$vs_parent_id_fld} = ? ORDER BY {$vs_rank_fld} LIMIT 1
+			", [(int)$pn_after_id, $vn_parent_id]);
+		}
+	
+		if ($qr_res->nextRow()) {
+			$vn_after_rank = $qr_res->get($vs_rank_fld);
+		} else {
+			throw new ApplicationException(_t('Invalid id'));
+		}
+	
+		$qr_res = $o_db->query("
+			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE {$vs_parent_id_fld} = ? AND {$vs_rank_fld} > ?
+		", [$vn_parent_id, $vn_after_rank]);
+		
+		// Log changes to ranks
+		$qr_res = $o_db->query("
+			SELECT * FROM {$vs_item_table} WHERE {$vs_parent_id_fld} = ? AND {$vs_rank_fld} > ?
+		", [$vn_parent_id, $vn_after_rank]);
+		while($qr_res->nextRow()) {
+			$this->logChange("U", null, ['row_id' => $qr_res->get($vs_item_pk), 'snapshot' => $qr_res->getRow()]);
+		}
+	
+		$this->setMode(ACCESS_WRITE);
+		$this->set($vs_rank_fld, $vn_after_rank + 1);
+		return $this->update();
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

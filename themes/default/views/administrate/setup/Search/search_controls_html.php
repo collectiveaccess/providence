@@ -147,6 +147,10 @@
 						
 						disabledItems: 'full',
 						
+						allowDragAndDropSorting: <?php print is_array($vm_ret = caGetDragAndDropSortingAvailabilityMap($t_subject->tableName(), $t_subject->getPrimaryKey())) ? json_encode($vm_ret) : ($vm_ret ? "true" : "false"); ?>,
+						sortSaveUrl: '<?php print $va_lookup_urls['sortSave']; ?>',
+						dontAllowDragAndDropSortForFirstLevel: true,
+						
 						initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						typeMenuID: 'browseTypeMenu',

@@ -1310,7 +1310,8 @@
 			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
 			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
 			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes),
-			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes)
+			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes),
+			'sortSave' => caNavUrl($po_request, $vs_module, $vs_controller, 'SetSortOrder'),
 		);
 	}
 	# ------------------------------------------------------------------------------------------------

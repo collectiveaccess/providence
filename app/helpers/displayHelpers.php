@@ -3823,3 +3823,58 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		return caEscapeForBundlePreview(join($ps_delimiter, $va_previews));
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * 
+	 * @param string $ps_table
+	 * @param int $pn_id
+	 *
+	 * @return bool
+	 */
+	function caDragAndDropSortingForHierarchyEnabled($ps_table, $pn_id) {
+		$o_dm = Datamodel::load();
+		$o_config = Configuration::load();
+		
+		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+		if (!$t_instance->isHierarchical()) { return false; }
+		if (!($vs_rank_fld = $t_instance->getProperty('RANK'))) { return false; }
+		if (!$t_instance->load($pn_id)) { return false; }
+		
+		$vs_def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
+		$vs_def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
+		
+		if ($vs_def_table_name && ($t_def = $o_dm->getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
+			return true;
+		} else {
+			$va_sort_values = $o_config->getList("{$ps_table}_hierarchy_browser_sort_values");
+			if ((sizeof($va_sort_values) >= 1) && ($va_sort_values[0] === "{$ps_table}.{$vs_rank_fld}")) { return true; }
+		}
+		return false;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 * @param string $ps_table
+	 * @param int $pn_id
+	 *
+	 * @return bool
+	 */
+	function caGetDragAndDropSortingAvailabilityMap($ps_table, $pn_id) {
+		$o_dm = Datamodel::load();
+		$o_config = Configuration::load();
+		
+		if ($ps_table == 'ca_list_items') {
+			$t_list = new ca_lists();
+			$va_list_of_lists = $t_list->getListOfLists();
+			
+			$va_map = [];
+			foreach($va_list_of_lists as $vn_list_id => $va_lists_by_locale) {
+				foreach($va_lists_by_locale as $vn_locale_id => $va_item) {
+					$va_map[$va_item['root_id']] = caDragAndDropSortingForHierarchyEnabled('ca_list_items', $va_item['root_id']);
+				}
+			}
+			return $va_map;
+		} else {
+			return caDragAndDropSortingForHierarchyEnabled($ps_table, $pn_id);
+		}
+	}
+	# ------------------------------------------------------------------

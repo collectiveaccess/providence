@@ -1724,9 +1724,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_lists = $o_db->query("
-			SELECT cl.*, cll.name, cll.locale_id
+			SELECT cl.*, cll.name, cll.locale_id, cli.item_id root_id
 			FROM ca_lists cl
-			LEFT JOIN ca_list_labels cll ON cl.list_id = cll.list_id
+			LEFT JOIN ca_list_labels AS cll ON cl.list_id = cll.list_id
+			INNER JOIN ca_list_items AS cli ON cli.list_id = cl.list_id
+			WHERE
+				cli.parent_id IS NULL
 			ORDER BY
 				cll.list_id
 		");
@@ -1734,7 +1737,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		while($qr_lists->nextRow()) {
 			$va_tmp =  $qr_lists->getRow();
 			
-			if (!$va_tmp['name']) { $va_tmp['name'] = $va_tmp['list_code']; }				// if there's no label then use the list_code as its' name
+			if (!$va_tmp['name']) { $va_tmp['name'] = $va_tmp['list_code']; }				// if there's no label then use the list_code as its name
 			$va_lists[$qr_lists->get('list_id')][$qr_lists->get('locale_id')] = $va_tmp;
 		}
 		

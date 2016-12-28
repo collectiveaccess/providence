@@ -1490,7 +1490,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_existing_ranks = array_values($va_row_ranks);
 		$vn_rank_acc = end(array_values($va_row_ranks));
 		
-		$va_rank_updates = array();
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
 			if (isset($va_existing_ranks[$vn_rank])) {
 				$vn_rank_inc = $va_existing_ranks[$vn_rank];
@@ -1514,17 +1513,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $vn_user_id, $vn_rank_inc);
 			}
 		}
-		
-		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
-			if($vb_treat_row_ids_as_rids) {
-				$va_tmp = explode("_", $vn_row_id);
-				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", $x=array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
-
-			} else {
-				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
-			}
-		}
-		
 		
 		if(sizeof($va_errors)) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }
