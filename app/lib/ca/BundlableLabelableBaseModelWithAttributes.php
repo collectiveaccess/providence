@@ -1462,7 +1462,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
 								'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
 								
-								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name
+								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
+								'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
 							),
 							$pa_options,
 							$va_additional_field_options
@@ -1868,6 +1869,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						} else {
 							return null;
 						}
+						break;
+					# -------------------------------
+					// This bundle is only available items for ca_site_pages
+					case 'ca_site_pages_content':
+						$vs_element .= $this->getPageContentHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					default:
@@ -2482,7 +2488,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				
 				if ($vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $va_bundle['bundle_name'])) {
-					if ($o_element = ca_metadata_elements::getInstance($vs_element_set_code)) {
+					if (($o_element = ca_metadata_elements::getInstance($vs_element_set_code)) && ($this->hasElement($vs_element_set_code))) {
 						$va_bundle['bundle_name'] = "ca_attribute_{$vs_element_set_code}";
 					}
 				}
@@ -4605,6 +4611,21 @@ if (!$vb_batch) {
 								}
 							}
 							
+						}
+						break;
+					# -------------------------------
+					// This bundle is only available items for ca_site_pages
+					case 'ca_site_pages_content':
+						if(is_array($va_field_list = $this->getHTMLFormElements())) {
+							if (!is_array($va_content = $this->get('content'))) { $va_content = []; }
+							foreach($va_field_list as $vs_field => $va_element_info) {
+								$vs_value = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_{$va_element_info['code']}", pString);
+				
+								$va_content[$va_element_info['code']] = $vs_value;
+							}
+				
+							$this->set('content', $va_content);
+							$this->update();
 						}
 						break;
 					# -------------------------------

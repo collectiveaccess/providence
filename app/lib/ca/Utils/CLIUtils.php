@@ -1148,8 +1148,8 @@
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
 				return false;
 			} else {
-				if(is_array($va_errors) && (sizeof($va_errors)>0)) {
-					CLIUtils::textWithColor(_t("There were warnings when adding mapping from file '%1': %2", $vs_file_path, join("; ", $va_errors)), 'yellow');
+				if (is_array($va_errors) && (sizeof($va_errors)>0)) {
+					CLIUtils::addMessage(CLIUtils::textWithColor(_t("There were warnings when adding mapping from file '%1': %2", $vs_file_path, join("; ", $va_errors)), 'yellow'));
 				}
 
 				CLIUtils::addMessage(_t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path), array('color' => 'none'));
@@ -3849,6 +3849,51 @@
 		 */
 		public static function check_url_reference_integrityHelp() {
 			return _t('This utility checks the integrity for all URL attribute references in the database. It does so by trying to hit each URL and reading a few bytes. It does not download the whole file.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function scan_site_page_templates($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/ca/SitePageTemplateManager.php");
+			
+			CLIUtils::addMessage(_t("Scanning templates for tags"));
+			$va_results = SitePageTemplateManager::scan();
+			
+			CLIUtils::addMessage(_t("Added %1 templates; updated %2 templates", $va_results['insert'],$va_results['update']));
+			
+			if (is_array($va_results['errors']) && sizeof($va_results['errors'])) {
+				CLIUtils::addError(_t("Templates with errors: %1", join(", ", array_keys($va_results['errors']))));
+			}
+		}
+		# -------------------------------------------------------
+		public static function scan_site_page_templatesParamList() {
+			return [
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function scan_site_page_templatesUtilityClass() {
+			return _t('Content management');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function scan_site_page_templatesShortHelp() {
+			return _t('Scan site page templates for tags.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function scan_site_page_templatesHelp() {
+			return _t('Scan site page template for tags to build the content management editing user interface.');
 		}
 		# -------------------------------------------------------
 	}

@@ -543,6 +543,7 @@ div.inspectorCheckedOut {
 }
 #leftNav #widgets .searchType, 
 #leftNav #widgets .setStats, 
+#leftNav #widgets .pawtucketStats, 
 #leftNav #widgets .groupList, 
 #leftNav #widgets .watchedItems, 
 #leftNav #widgets .yourDisplays, 
@@ -572,7 +573,7 @@ div.inspectorCheckedOut {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
-.setStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
+.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
 	font-size:12px;
 	line-height:1.7em;
 }

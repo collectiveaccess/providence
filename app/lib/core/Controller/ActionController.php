@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2014 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -120,6 +120,7 @@ class ActionController extends BaseObject {
 	public function initView() {
 		$this->opo_view = new View($this->opo_request, $this->opa_view_paths);
 		$this->opo_view->setVar('request', $this->getRequest());
+		$this->opo_view->setVar('controller', $this);
 		
 		return $this->opo_view;
 	}

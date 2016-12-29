@@ -101,6 +101,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('search forms') => 121,
 					_t('displays') => 124,
 					_t('relationship types') => 79,
+					_t('site pages') => 235,
 					_t('user interfaces') => 101,
 					_t('user interface screens') => 100
 				)
