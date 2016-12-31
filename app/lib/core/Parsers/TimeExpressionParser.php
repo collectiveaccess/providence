@@ -3005,7 +3005,7 @@ class TimeExpressionParser {
 					(isset($pa_options['forceCommaAfterDay']) && $pa_options['forceCommaAfterDay'])
 				)
 				{
-					$vs_day .= ",";
+					if ($vs_year) { $vs_day .= ","; }
 				}
 				$va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_day) : $vs_day);
 			}
