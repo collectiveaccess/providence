@@ -82,7 +82,7 @@
 			$vs_default_actions["ca_tours"] = ($this->request->user->canDoAction("can_edit_ca_tours") ? "Edit" : "Summary");
 			$vs_default_actions["ca_tour_stops"] = ($this->request->user->canDoAction("can_edit_ca_tours") ? "Edit" : "Summary");
 
- 			$va_searches = QuickSearch::getSearches($this->request);
+ 			$va_searches = QuickSearch::getSearches($this->request->user);
  			
  			$t_list = new ca_lists();
  			$this->view->setVar('occurrence_types', caExtractValuesByUserLocale($t_list->getItemsForList('occurrence_types')));

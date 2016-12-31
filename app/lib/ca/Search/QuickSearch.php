@@ -81,12 +81,13 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 * Return sorted array with information about quick-search searches configured for display by the current user. 
  		 *
+ 		 * @param ca_users $pt_user The current user
+ 		 * @return array
  		 */
- 		public static function getSearches($po_request) {
- 			if (!$po_request->isLoggedIn()) { return null; }
- 			
- 			$va_selected_searches = array_filter($po_request->user->getPreference("quicksearch_search_list"), "strlen");
+ 		public static function getSearches($pt_user) {
+ 			$va_selected_searches = array_filter($pt_user->getPreference("quicksearch_search_list"), "strlen");
  			if (!is_array($va_selected_searches) || !sizeof($va_selected_searches)) { $va_selected_searches = array_keys(QuickSearch::availableSearches(['expandByType' => true])); }
  		
  			$va_available_searches = QuickSearch::availableSearches(['expandByType' => true]);
