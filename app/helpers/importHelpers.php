@@ -626,7 +626,7 @@
 						}
 			
 						if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-							$o_log->logWarn(_t("[{$ps_refinery_name}] No %2 type is set for %2 %1", $vs_item, $ps_item_prefix));
+							$o_log->logWarn(_t("[{$ps_refinery_name}] No %2 type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
 						}
 				
 						//
@@ -798,7 +798,7 @@
 						}
 
 						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 %1", $vs_item, $ps_item_prefix));
+							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
 						}
 	
 						switch($ps_table) {
