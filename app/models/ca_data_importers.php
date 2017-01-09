@@ -753,8 +753,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pa_errors = array();
 		
 		if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
-			$this->postError(1100, _t("Cannot write log to %1. Please check the directory's permissions and retry loading.", $pa_options['logDirectory']));
-			return false;
+			throw new ApplicationException(_t("Cannot write log to %1. Please check the directory's permissions and retry loading.", $pa_options['logDirectory']));
 		}
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
