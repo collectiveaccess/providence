@@ -1046,7 +1046,7 @@
 				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 					$t_instance->setTransaction($pa_options['transaction']);
 				}
-
+				
 				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->set('locale_id', $pn_locale_id);
 				$t_instance->set('type_id', $pn_type_id);
@@ -1090,6 +1090,7 @@
 				}
 
 				$t_instance->insert();
+				if ($o_log) { $o_log->logDebug(_t("Could not create %1 record: %2", $ps_table, join("; ", $t_instance->getErrors()))); }
 
 				if ($t_instance->numErrors()) {
 					if($pb_output_errors) {

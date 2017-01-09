@@ -1490,10 +1490,11 @@ class BaseEditorController extends ActionController {
 		$o_dm 				= Datamodel::load();
 		$t_item 			= $o_dm->getInstanceByTableName($this->ops_table_name, true);
 		$vs_pk 				= $t_item->primaryKey();
-		$vs_label_table 	= $t_item->getLabelTableName();
-		$t_label 			= $t_item->getLabelTableInstance();
-		$vs_display_field	= $t_label->getDisplayField();
-
+		if ($vs_label_table 	= $t_item->getLabelTableName()) {
+			$t_label 			= $t_item->getLabelTableInstance();
+			$vs_display_field	= $t_label->getDisplayField();
+		}
+		
 		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
 		$vn_type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 

@@ -454,9 +454,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('URL pointing to documentation for this field. Leave blank if no documentation URL exists.')
 						)
 					);
+					if ($t_instance->getFieldInfo($vs_bundle, 'FIELD_TYPE') == FT_TEXT) {
+						$va_additional_settings['usewysiwygeditor'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('yes') => 1,
+								_t('no') => 0
+							),
+							'default' => '',
+							'width' => "100px", 'height' => 1,
+							'label' => _t('Use rich text editor'),
+							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
+						);
+					};
 					break;
 				case 'preferred_label':
 				case 'nonpreferred_label':
+					if (!$t_instance->getLabelTableInstance()) { continue(2); }
+					
 					$va_additional_settings = array(
 						'usewysiwygeditor' => array(
 							'formatType' => FT_NUMBER,
@@ -1627,16 +1643,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$vs_label = $t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc) ?: $va_info['label'];
 			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
 
-			$va_additional_settings['bundleTypeRestrictions'] = [
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'default' => '',
-				'showTypesForTable' => $vs_table,
-				'width' => "275px", 'height' => 4,
-				'label' => _t('Display bundle for types: %1', $vs_table),
-				'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
-			];
-
+			if ($t_instance->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
+				$va_additional_settings['bundleTypeRestrictions'] = [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'default' => '',
+					'showTypesForTable' => $vs_table,
+					'width' => "275px", 'height' => 4,
+					'label' => _t('Display bundle for types: %1', $vs_table),
+					'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
+				];
+			}
+			
 			$va_available_bundles[$vs_display][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,

@@ -106,7 +106,6 @@
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
  			$t_instance 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
  			if (
@@ -125,10 +124,30 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			
+ 			
+			$t_display 					= $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  	
+ 			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay();
+ 			
+ 			// Default display is always there
+ 			$va_displays = array('0' => _t('Default'));
+
+			// Set display options
+			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
+			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+				$va_display_options['restrictToTypes'] = array($vn_type_id);
+			}
+
+			// Get current display list
+ 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
+ 				$va_displays[$va_display['display_id']] = $va_display['name'];
+ 			}
+ 			if (!isset($va_displays[$vn_display_id])) { $vn_display_id = 0; }
+ 			
+ 			$this->view->setVar('display_lists', $va_displays);	
 			
 			$va_display_list = $this->_getDisplayList($vn_display_id);
-
-			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  			
+		
  			
  			// figure out which items in the display are sortable
  			if (method_exists($t_instance, 'getApplicableElementCodes')) {
@@ -183,22 +202,6 @@
 			}
 			
  			$this->view->setVar('display_list', $va_display_list);
- 			
- 			// Default display is always there
- 			$va_displays = array('0' => _t('Default'));
-
-			// Set display options
-			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
-			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
-				$va_display_options['restrictToTypes'] = array($vn_type_id);
-			}
-
-			// Get current display list
- 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
- 				$va_displays[$va_display['display_id']] = $va_display['name'];
- 			}
- 			
- 			$this->view->setVar('display_lists', $va_displays);	
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
  			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));

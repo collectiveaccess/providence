@@ -2938,7 +2938,7 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	private function _dateToText($pa_date_pieces, $pa_options=null) {
-		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra') as $vs_opt) {
+		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra', 'forceCommaAfterDay') as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
 			}
@@ -3005,7 +3005,7 @@ class TimeExpressionParser {
 					(isset($pa_options['forceCommaAfterDay']) && $pa_options['forceCommaAfterDay'])
 				)
 				{
-					$vs_day .= ",";
+					if ($vs_year) { $vs_day .= ","; }
 				}
 				$va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_day) : $vs_day);
 			}
