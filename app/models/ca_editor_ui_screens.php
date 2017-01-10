@@ -1171,7 +1171,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								$va_to_hide_when_using_defaults = array(
 									'ca_object_lots_showTypes', 'ca_occurrences_showTypes', 'ca_loans_showTypes', 'ca_movements_showTypes',
 									'ca_storage_locations_showRelationshipTypes', 'ca_storage_locations_color', 'ca_storage_locations_displayTemplate',
-									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate'
+									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate', 'sortDirection'
 								);
 								$va_additional_settings = array(
 									'useAppConfDefaults' => array(
@@ -1194,6 +1194,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 1,
 										'label' => _t('Track location using'),
 										'description' => ''
+									),
+									'sortDirection' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => [_t('Ascending') => 'ASC', _t('Descending') => 'DESC'],
+										'default' => 'ASC',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Sort direction'),
+										'description' => _t('Set ascending or descending order for list.')
 									),
 									// no 'classic' expand/collapse for this bundle
 									'expand_collapse_value' => false,
