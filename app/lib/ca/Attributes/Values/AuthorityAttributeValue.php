@@ -154,6 +154,11 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 					break;
 			}
 		}
+		
+		
+		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null))) {
+			$o_log->logInfo(_t('Value %1 was not set because it does not refer to an existing %2', $ps_value, $t_item->getProperty('name_singular')));
+		}
 
 		if (!$vb_require_value && !$vn_id) {
 			return array(

@@ -5608,6 +5608,22 @@ table.preferenceColumnSelector tbody tr td.preferenceColumnSelectorLabel {
 	width: 300px;
 }
 
+div.preferenceColumnHeader {
+    font-family: "DIN-Regular", sans-serif;
+    font-size:13px;
+    color: #333;
+    margin-bottom: 10px;
+    padding-top: 5px;
+    font-weight: bold;
+    text-align: left;
+}
+
+div.preferencePlacementList {
+    width: 350px;
+    height: 350px;
+    overflow: auto;
+    margin-right:10px;
+}
 
 .searchReindexHelpText{
     padding:20px;

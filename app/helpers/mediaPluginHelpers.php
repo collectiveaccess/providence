@@ -1080,9 +1080,9 @@
 							$va_info['pages'] = (int)$vs_value;
 							break;
 						case 'page size':
-							if (preg_match_all("!([\d]+)!", $vs_value, $va_dims)) {
-								$va_info['width'] = $va_dims[1][0];
-								$va_info['height'] = $va_dims[1][1];
+							if (preg_match_all("!([\d\.]+)!", $vs_value, $va_dims)) {
+								$va_info['width'] = ceil((float)$va_dims[1][0]);
+								$va_info['height'] = ceil((float)$va_dims[1][1]);
 							}
 							break;
 						case 'pdf version':
