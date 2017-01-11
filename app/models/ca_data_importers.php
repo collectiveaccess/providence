@@ -835,8 +835,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);	
 						}
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							$pa_errors[] = _t("Warning: invalid options for group %1/source %2.", $vs_group, $vs_source);
-							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3. Options were: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json)); }
+							// Error while json decode
+							$pa_errors[] = _t("Warning: invalid json in \"options\" column for group %1/source %2. Json was: %3", $vs_group, $vs_source, $vs_options_json);
+							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid json in \"options\" column for group %2/source %3. Json was: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json)); }
+							return;
 						}
 					}
 					if ($vs_mode == 'Mapping') {
