@@ -5519,14 +5519,15 @@ div.listRel:first-of-type {
 .caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
+    text-align:right;
+    padding-top:6px;
 }
 
 .caItemListSortControlContainer {
     position: absolute;
-    right: 40px;
+    right: 230px;
     top: 0px;
     min-width: 50px;
-    
     z-index: 14000;
 }
 
