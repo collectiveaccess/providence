@@ -1640,7 +1640,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// get preferred labels
 				$va_pref_label_values = array();
 				foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_preferred_label_mapping_fld) {
-					$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment));
+					$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logIdno' => $vs_idno));
 				
 					// If a template is specified format the label value with it so merge-on-preferred_label doesn't fail
 					if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'])) {
@@ -1798,9 +1798,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach($va_items as $vn_item_id => $va_item) {
 						if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 							// Force repeating values to be imported as a single value
-							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null))));
+							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno)));
 						} else {
-							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null)));
+							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno));
 						}
 					
 						if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
@@ -1847,7 +1847,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
-								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log]))), array('getFrom' => $o_reader));
+								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logIdno' => $vs_idno]))), array('getFrom' => $o_reader));
 							}
 						
 							if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
@@ -2026,7 +2026,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									// Add delimited values
 									$vn_orig_c = $vn_c;
 									foreach($va_val_list as $vs_list_val) {
-										$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item, ['log' => $o_log]));
+										$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item, ['log' => $o_log, 'logIdno' => $vs_idno]));
 										if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
 											$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 										}
@@ -2446,7 +2446,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											} 
 											$va_elements_set_for_this_record[$vs_element] = true;
 										
-											$va_opts = array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true, 'log' => $o_log);
+											$va_opts = array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true, 'log' => $o_log, 'logIdno' => $vs_idno);
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
 											}
@@ -2933,8 +2933,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	static public function replaceValue($pm_value, $pa_item, $pa_options=null) {
 		if (strlen($pm_value) && is_array($pa_item['settings']['original_values'])) {
 			if (($vn_index = array_search(trim(mb_strtolower($pm_value)), $pa_item['settings']['original_values'])) !== false) {
-				if ($o_log = caGetOption('log', $pa_options, null)) { $o_log->logInfo(_t('Replaced value %1 with %2 using replacement values', $pm_value, $pa_item['settings']['replacement_values'][$vn_index])); }
-				$pm_value = $pa_item['settings']['replacement_values'][$vn_index];
+				if ($o_log = caGetOption('log', $pa_options, null)) { 
+					$va_element_tmp = explode('.', $pa_item['destination']);
+					
+					$vs_original_display_value = $pm_value;
+					$vs_replaced_display_value = $vs_replaced_value = $pa_item['settings']['replacement_values'][$vn_index];
+					
+					if (($vn_list_id = ca_metadata_elements::getElementListID(array_pop($va_element_tmp)))) {
+						$vs_original_display_value = caGetListItemForDisplay($vn_list_id, $pm_value);
+						$vs_replaced_display_value = caGetListItemForDisplay($vn_list_id, $vs_replaced_value);
+					}
+					
+					if ($pm_value !== $vs_replaced_value) {
+						$o_log->logInfo(
+							_t('Replaced value "%1" (%2) with "%3" (%4) for %5 using replacement values', $vs_original_display_value, $pm_value, $vs_replaced_display_value, $vs_replaced_value, caGetOption('logIdno', $pa_options, '???'))
+						);
+					} 
+				}
+				$pm_value = $vs_replaced_value;
 			}
 		}
 		
