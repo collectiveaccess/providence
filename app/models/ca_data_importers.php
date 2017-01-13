@@ -2935,11 +2935,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	static public function replaceValue($pm_value, $pa_item, $pa_options=null) {
 		if (strlen($pm_value) && is_array($pa_item['settings']['original_values'])) {
 			if (($vn_index = array_search(trim(mb_strtolower($pm_value)), $pa_item['settings']['original_values'])) !== false) {
+				$vs_replaced_display_value = $vs_replaced_value = $pa_item['settings']['replacement_values'][$vn_index];
 				if ($o_log = caGetOption('log', $pa_options, null)) { 
 					$va_element_tmp = explode('.', $pa_item['destination']);
 					
 					$vs_original_display_value = $pm_value;
-					$vs_replaced_display_value = $vs_replaced_value = $pa_item['settings']['replacement_values'][$vn_index];
 					
 					if (($vn_list_id = ca_metadata_elements::getElementListID(array_pop($va_element_tmp)))) {
 						$vs_original_display_value = caGetListItemForDisplay($vn_list_id, $pm_value);
