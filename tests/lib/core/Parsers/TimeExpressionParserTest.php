@@ -477,7 +477,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1955.123123595910");
 		$this->assertEquals($va_parse[0], "1950.010100000000");
 		$this->assertEquals($va_parse[1], "1955.123123595910");
-		$this->assertEquals($o_tep->getText(), "1950 - circa 1955");
+		$this->assertEquals($o_tep->getText(), "1950 – circa 1955");
 
 		$vb_res = $o_tep->parse('6/1950 to circa 1955');
 		$this->assertEquals($vb_res, true);
@@ -985,7 +985,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse[0], "2014.091218000000");
 		$this->assertEquals($va_parse[1], "2014.091300000000");
 		
-		$this->assertEquals($o_tep->getText(), 'September 12 at 18:00 - September 13 2014 at 0:00');
+		$this->assertEquals($o_tep->getText(), 'September 12 at 18:00 – September 13 2014 at 0:00');
 	}
 
 	public function testDatesWithImplicitYear() {
