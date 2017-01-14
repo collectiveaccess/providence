@@ -487,7 +487,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1955.123123595910");
 		$this->assertEquals($va_parse[0], "1950.060100000000");
 		$this->assertEquals($va_parse[1], "1955.123123595910");
-		$this->assertEquals($o_tep->getText(), "June 1950 - circa 1955");
+		$this->assertEquals($o_tep->getText(), "June 1950 – circa 1955");
 		
 		$vb_res = $o_tep->parse('circa June 1950 to circa 1955');
 		$this->assertEquals($vb_res, true);
