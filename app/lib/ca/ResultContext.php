@@ -448,6 +448,9 @@
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
 			} else {
+				if (!is_numeric($pn_type_id)) { 
+					$pn_type_id = array_shift(caMakeTypeIDList($this->ops_table_name, [$pn_type_id]));
+				}
 				$va_context = $this->getContext();
 				$this->setTypeRestriction($pn_type_id);
 				

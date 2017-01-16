@@ -87,7 +87,7 @@
  			$t_list = new ca_lists();
  			$this->view->setVar('occurrence_types', caExtractValuesByUserLocale($t_list->getItemsForList('occurrence_types')));
  			
- 			if(sizeof($va_aps_in_search = caSearchGetAccessPoints($ps_search))) {
+ 			if(is_array($va_aps_in_search = caSearchGetAccessPoints($ps_search)) && sizeof($va_aps_in_search)) {
  				$va_aps = caSearchGetTablesForAccessPoints($va_aps_in_search);
  				$vb_uses_aps = true;
  			} else {
@@ -95,28 +95,31 @@
  			}
  			$va_single_results = array();
  			$pn_multiple_results = 0;
- 			foreach($va_searches as $vs_table => $va_sorts) {
+ 			foreach($va_searches as $vs_target => $va_sorts) {
+ 				$va_table = explode('/', $vs_target);
+ 				$vs_table = $va_table[0]; $vs_type = (isset($va_table[1])) ? $va_table[1] : null;
+ 				
  				if (($o_config->get($vs_table.'_disable')) || (($vs_table == 'ca_tour_stops') && $o_config->get('ca_tours_disable')) || ($vb_uses_aps && (!in_array($vs_table, $va_aps)))) { 
- 					unset($va_searches[$vs_table]);
+ 					unset($va_searches[$vs_target]);
  					continue;
  				}
- 			 	if (!($vo_result = $this->_doSearch($vs_table, $ps_search, $va_sorts[$ps_sort]))) { unset($va_searches[$vs_table]); continue; }
+ 			 	if (!($vo_result = $this->_doSearch($vs_table, $ps_search, $va_sorts[$ps_sort], $vs_type))) { unset($va_searches[$vs_target]); continue; }
  			 	$vo_result->setOption('prefetch', $this->opn_num_results_per_item_type);							// get everything we need in one pass
  			 	$vo_result->setOption('dontPrefetchAttributes', true);		// don't bother trying to prefetch attributes as we don't need them
- 				$this->view->setVar($vs_table.'_results', $vo_result);
+ 				$this->view->setVar("{$vs_target}_results", $vo_result);
  				
  				$va_found_item_ids = array();
  				while($vo_result->nextHit()) {
 					$va_found_item_ids[] = $vo_result->get($va_sorts['primary_key']);
 				}
 				$vo_result->seek(0);
- 				$o_result_context = new ResultContext($this->request, $vs_table, 'quick_search');
+ 				$o_result_context = new ResultContext($this->request, $vs_table, 'quick_search', $vs_type);
  				$o_result_context->setAsLastFind();
 				$o_result_context->setResultList($va_found_item_ids);
 				$o_result_context->saveContext();
 				if($vo_result->numHits() > 0){
 					if ($vo_result->numHits() == 1) {
-						$va_single_results[$vs_table] = $va_found_item_ids[0];
+						$va_single_results[$vs_target] = $va_found_item_ids[0];
 					}else{
 						$pn_multiple_results = 1;
 					}
@@ -138,8 +141,9 @@
  			
  			// did we find only a single result in a single table? If so, then redirect to that record instead of showing results
  			if ((!$pn_multiple_results) && (sizeof($va_single_results) == 1)) {
- 				foreach($va_single_results as $vs_table => $vn_id) {
- 					$this->response->setRedirect(caEditorUrl($this->request, $vs_table, $vn_id));
+ 				foreach($va_single_results as $vs_target => $vn_id) {
+ 					$va_table = explode("/", $vs_target);
+ 					$this->response->setRedirect(caEditorUrl($this->request, $va_table[0], $vn_id));
  					return;
  				}
  			}
@@ -147,14 +151,15 @@
  			$this->render('Results/quick_search_results_html.php');
  		}
  		# -------------------------------------------------------
- 		private function _doSearch($ps_type, $ps_search, $ps_sort) {
+ 		private function _doSearch($ps_target, $ps_search, $ps_sort, $ps_type=null) {
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			$vb_no_cache = (bool)$this->request->getParameter('no_cache', pInteger);
- 			if (!$this->request->user->canDoAction('can_search_'.(($ps_type == 'ca_tour_stops') ? 'ca_tours' : $ps_type))) { return ''; }
- 			switch($ps_type) {
+ 			if (!$this->request->user->canDoAction('can_search_'.(($ps_target == 'ca_tour_stops') ? 'ca_tours' : $ps_target))) { return ''; }
+ 			switch($ps_target) {
  				case 'ca_objects':
  					$o_object_search = new ObjectSearch();
+ 					if ($ps_type) { $o_object_search->setTypeRestriction($ps_type); }
  					return $o_object_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_object_lots':
@@ -171,6 +176,7 @@
 					break;
 				case 'ca_occurrences':
 					$o_occurrence_search = new OccurrenceSearch();
+ 					if ($ps_type) { $o_occurrence_search->setTypeRestrictions([$ps_type]); }
 					return $o_occurrence_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_collections':
