@@ -488,6 +488,11 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 					var material = new THREE.MeshPhongMaterial( { ambient: 0xFFFFCC, color: 0xFFFFCC, specular: 0x111111, shininess: 200, side: THREE.DoubleSide } );
 					var mesh = new THREE.Mesh( geometry, material );
 					
+					if ((mesh.geometry.type == 'Geometry') && (!mesh.geometry.faces || (mesh.geometry.faces.length == 0))) {
+						material = new THREE.PointCloudMaterial({ vertexColors: true, size: 0.01 });
+						mesh = new THREE.PointCloud( geometry, material );
+					}
+					
 					var boundingBox = mesh.geometry.boundingBox.clone();
 					
 					var s = 3/Math.abs(boundingBox.max.x);
