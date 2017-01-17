@@ -816,9 +816,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_CHECKBOXES,
 								'width' => "10", 'height' => "1",
 								'takesLocale' => false,
+								'showOnSelect' => 'showCurrentUsingDate',
 								'default' => '0',
 								'label' => _t('Show current only?'),
 								'description' => _t('If checked only the most recently dated relationship displayed.')
+							),
+							'showCurrentUsingDate' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'table' => $va_path[1],
+								'showMetadataElementsWithDataType' => 2,
+								'includeIntrinsics' => ['effective_date'],
+								'takesLocale' => false,
+								'default' => '',
+								'width' => "275px", 'height' => "1",
+								'label' => _t('Base current status on date'),
+								'description' => ''
 							),
 							'disableQuickadd' => array(
 								'formatType' => FT_TEXT,
