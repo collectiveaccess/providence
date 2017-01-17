@@ -1320,6 +1320,15 @@
 				}
 			}
 		}
+		
+		if (($pa_allowed_sorts = caGetOption('allowedSorts', $pa_options, null)) && is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
+			foreach($va_base_fields as $vs_k => $vs_v) {
+				if (!in_array($vs_k, $pa_allowed_sorts)) { unset($va_base_fields[$vs_k]); }
+			}
+		}
+		
+		$va_base_fields = array_map(function($v) { return caUcFirstUTF8Safe($v); }, $va_base_fields);
+		
 		natcasesort($va_base_fields);
 		
 		return $va_base_fields;
