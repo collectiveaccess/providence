@@ -387,7 +387,7 @@
 				foreach($va_hier as $vn_item_id => $va_item) {
 					if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 					if ($va_item['parent_id'] != $vn_root_id) { continue; }
-					if (!$va_item['is_enabled']) { continue; }
+					//if (!$va_item['is_enabled']) { continue; }
 					
 					// does this item have sub-items?
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
