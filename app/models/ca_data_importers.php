@@ -754,8 +754,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pa_errors = array();
 		
 		if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
-			if ($o_log) { $o_log->logWarn(_t("Cannot write log to %1. Please check the directory's permissions and retry loading.", $pa_options['logDirectory'])); }
-			return false;
+			throw new ApplicationException(_t("Cannot write log to %1. Please check the directory's permissions and retry loading.", $pa_options['logDirectory']));
 		}
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
@@ -837,8 +836,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);	
 						}
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							$pa_errors[] = _t("Warning: invalid options for group %1/source %2.", $vs_group, $vs_source);
-							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3. Options were: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json)); }
+							// Error while json decode
+							$pa_errors[] = _t("Warning: invalid json in \"options\" column for group %1/source %2. Json was: %3", $vs_group, $vs_source, $vs_options_json);
+							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid json in \"options\" column for group %2/source %3. Json was: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json)); }
+							return;
 						}
 					}
 					if ($vs_mode == 'Mapping') {
@@ -1659,7 +1660,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// get preferred labels
 				$va_pref_label_values = array();
 				foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_preferred_label_mapping_fld) {
-					$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment));
+					$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logIdno' => $vs_idno));
 				
 					// If a template is specified format the label value with it so merge-on-preferred_label doesn't fail
 					if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'])) {
@@ -1817,9 +1818,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach($va_items as $vn_item_id => $va_item) {
 						if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 							// Force repeating values to be imported as a single value
-							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null))));
+							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno)));
 						} else {
-							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null)));
+							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno)));
 						}
 					
 						if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
@@ -1866,7 +1867,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
-								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))), array('getFrom' => $o_reader));
+								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logIdno' => $vs_idno]))), array('getFrom' => $o_reader));
 							}
 						
 							if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
@@ -2045,7 +2046,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									// Add delimited values
 									$vn_orig_c = $vn_c;
 									foreach($va_val_list as $vs_list_val) {
-										$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
+										$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item, ['log' => $o_log, 'logIdno' => $vs_idno]));
 										if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
 											$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 										}
@@ -2465,7 +2466,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											} 
 											$va_elements_set_for_this_record[$vs_element] = true;
 										
-											$va_opts = array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true);
+											$va_opts = array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true, 'log' => $o_log, 'logIdno' => $vs_idno);
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
 											}
@@ -2932,7 +2933,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				foreach($vm_value as $vs_k => $vs_v) {
 					if (is_array($vs_v)) { continue; }	// skip odd mappings that return arrays of arrays
 					$vs_v = stripslashes($vs_v);
-					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item);
+					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item, $pa_options);
 				}
 				if ($pb_return_as_array) {
 					return $vm_value;
@@ -2946,7 +2947,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_did_seek) { $po_reader->seek($vn_cur_pos); }
 		}
 		
-		$vm_value = ca_data_importers::replaceValue(stripslashes($vm_value), $pa_item);
+		$vm_value = ca_data_importers::replaceValue(stripslashes($vm_value), $pa_item, $pa_options);
 		
 		if ($pb_return_as_array) {
 			return is_array($vm_value) ? $vm_value : array($vm_value);
@@ -2957,10 +2958,27 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	static public function replaceValue($pm_value, $pa_item) {
+	static public function replaceValue($pm_value, $pa_item, $pa_options=null) {
 		if (strlen($pm_value) && is_array($pa_item['settings']['original_values'])) {
 			if (($vn_index = array_search(trim(mb_strtolower($pm_value)), $pa_item['settings']['original_values'])) !== false) {
-				$pm_value = $pa_item['settings']['replacement_values'][$vn_index];
+				$vs_replaced_display_value = $vs_replaced_value = $pa_item['settings']['replacement_values'][$vn_index];
+				if ($o_log = caGetOption('log', $pa_options, null)) { 
+					$va_element_tmp = explode('.', $pa_item['destination']);
+					
+					$vs_original_display_value = $pm_value;
+					
+					if (($vn_list_id = ca_metadata_elements::getElementListID(array_pop($va_element_tmp)))) {
+						$vs_original_display_value = caGetListItemForDisplay($vn_list_id, $pm_value);
+						$vs_replaced_display_value = caGetListItemForDisplay($vn_list_id, $vs_replaced_value);
+					}
+					
+					if ($pm_value !== $vs_replaced_value) {
+						$o_log->logInfo(
+							_t('Replaced value "%1" (%2) with "%3" (%4) for %5 using replacement values', $vs_original_display_value, $pm_value, $vs_replaced_display_value, $vs_replaced_value, caGetOption('logIdno', $pa_options, '???'))
+						);
+					} 
+				}
+				$pm_value = $vs_replaced_value;
 			}
 		}
 		

@@ -647,7 +647,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => 4,
 								'label' => _t('Relationship display template'),
 								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
-							),
+							)
 						);
 						
 						if (($t_instance->tableName() == 'ca_storage_locations') && ($t_rel->tableName() == 'ca_objects')) {
@@ -828,6 +828,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => '0',
 								'label' => _t('Disable quick add?'),
 								'description' => _t('If checked quickadd will be disabled regardless of user privileges.')
+							),
+							'allowedSorts' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'options' => array_flip(caGetAvailableSortFields($vs_bundle)),
+								'default' => null,
+								'width' => "275px", 'height' => 5,
+								'label' => _t('Sort options'),
+								'description' => _t('Limits sort options on this bundle.')
 							)
 						);
 					}
@@ -1171,7 +1180,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								$va_to_hide_when_using_defaults = array(
 									'ca_object_lots_showTypes', 'ca_occurrences_showTypes', 'ca_loans_showTypes', 'ca_movements_showTypes',
 									'ca_storage_locations_showRelationshipTypes', 'ca_storage_locations_color', 'ca_storage_locations_displayTemplate',
-									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate'
+									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate', 'sortDirection'
 								);
 								$va_additional_settings = array(
 									'useAppConfDefaults' => array(
@@ -1194,6 +1203,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 1,
 										'label' => _t('Track location using'),
 										'description' => ''
+									),
+									'sortDirection' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => [_t('Ascending') => 'ASC', _t('Descending') => 'DESC'],
+										'default' => 'ASC',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Sort direction'),
+										'description' => _t('Set ascending or descending order for list.')
 									),
 									// no 'classic' expand/collapse for this bundle
 									'expand_collapse_value' => false,
@@ -1650,7 +1668,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					'default' => '',
 					'showTypesForTable' => $vs_table,
 					'width' => "275px", 'height' => 4,
-					'label' => _t('Display bundle for types: %1', $vs_table),
+					'label' => _t('Display bundle for types: %1', $this->_DATAMODEL->getTableProperty($vs_table, 'NAME_PLURAL')),
 					'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
 				];
 			}

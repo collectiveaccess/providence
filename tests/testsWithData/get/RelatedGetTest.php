@@ -225,7 +225,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$this->assertEquals('Me; Homer; Bart', $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects_x_entities.effective_date', array('delimiter' => '; '));
-		$this->assertEquals('2015; 2014 - 2015; 2013', $vm_ret);
+		$this->assertEquals('2015; 2014 – 2015; 2013', $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_entities.internal_notes');
 		$this->assertEquals('Test notes', $vm_ret);

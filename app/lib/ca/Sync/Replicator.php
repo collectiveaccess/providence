@@ -325,6 +325,7 @@ class Replicator {
 									while(sizeof($va_source_log_entries_for_missing_guids) > 0) {
 										$va_log_entry = array_shift($va_source_log_entries_for_missing_guids);
 										$vn_log_id = $va_log_entry['log_id'];
+										if (!$vn_log_id) { continue; }
 										if ($vn_log_id >= $pn_start_replicated_id) { continue; }
 										
 										$va_entries[$vn_log_id] = $va_log_entry;

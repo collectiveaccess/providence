@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -448,6 +448,9 @@
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
 			} else {
+				if (!is_numeric($pn_type_id)) { 
+					$pn_type_id = array_shift(caMakeTypeIDList($this->ops_table_name, [$pn_type_id]));
+				}
 				$va_context = $this->getContext();
 				$this->setTypeRestriction($pn_type_id);
 				
@@ -475,18 +478,20 @@
 		/**
 		 * Returns the display_id for the currently set results bundle display (ca_bundle_displays), or null if none is set
 		 * 
-		 * @return integer - display_id of ca_bundle_displays row to use
+		 * @param int $pn_type_id Optional type_id to limit bundle display to
+		 *
+		 * @return int Display_id of ca_bundle_displays row to use
 		 */
-		public function getCurrentBundleDisplay() {
+		public function getCurrentBundleDisplay($pn_type_id=null) {
 			if (!strlen($pn_display_id = $this->opo_request->getParameter('display_id', pString))) { 
  				if ($va_context = $this->getContext()) {
-					$pn_display_id = $va_context['display_id'];
+					$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
 				}
  				if (!$pn_display_id) { $pn_display_id = null; }
  				return $pn_display_id;
  			} else {
  				// page set by request param so set context
- 				$this->setCurrentBundleDisplay((int)$pn_display_id);
+ 				$this->setCurrentBundleDisplay((int)$pn_display_id, $pn_type_id);
  				return $pn_display_id;
  			}
  			
@@ -496,11 +501,12 @@
 		/**
 		 * Sets the currently selected bundle display
 		 *
-		 * @param $pn_display_id - display_id of ca_bundle_displays row to use
-		 * @return integer - display_id as set
+		 * @param int $pn_display_id Display_id of ca_bundle_displays row to use
+		 * @param int $pn_type_id Optional type_id to limit bundle display to
+		 * @return int Display_id as set
 		 */
-		public function setCurrentBundleDisplay($pn_display_id) {
-			return $this->setContextValue('display_id', $pn_display_id);
+		public function setCurrentBundleDisplay($pn_display_id, $pn_type_id=null) {
+			return $this->setContextValue($pn_type_id ? "display_id_{$pn_type_id}" : "display_id", $pn_display_id);
 		}
 		# ------------------------------------------------------------------
 		/**
