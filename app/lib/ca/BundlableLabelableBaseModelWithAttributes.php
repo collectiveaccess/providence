@@ -4861,7 +4861,8 @@ if (!$vb_batch) {
  	 *			restrictToBundleValues = Restrict returned items to those with specified bundle values. Specify an associative array with keys set to bundle names and key values set to arrays of values to filter on (eg. [bundle_name1 => [value1, value2, ...]]). [Default is null]
  	 *			where = Restrict returned items to specified field values. The fields must be intrinsic and in the related table. This option can be useful when you want to efficiently fetch specific rows from a related table. Note that multiple fields/values are logically AND'ed together – all must match for a row to be returned - and that only equivalence is supported. [Default is null]			
  	 *			criteria = Restrict returned items using SQL criteria appended directly onto the query. Criteria is used as-is and must be compatible with the generated SQL query. [Default is null]
- 	 *			showCurrentOnly = Returns only relationships with the latest effective date for their row_id that is not greater than the current date. Note that effective dates are treated as point dates, not ranges, when analyzed for "current-ness". That is, the more recent dates in the past, even if the "end" date is in the past are treated as current. This option is only supported for standard many-many non-self relations and is ignored for all other kinds of relationships. [Default is false]
+ 	 *			showCurrentOnly = Returns the relationship with the latest effective date for the row_id that is not greater than the current date. This option is only supported for standard many-many self and non-self relations and is ignored for all other kinds of relationships. [Default is false]
+ 	 *			showCurrentUsingDate = Bundle (intrinsic or attribute) to use to select the "current" relationship. [Default is effective_date]
  	 *			currentOnly = Synonym for showCurrentOnly
  	 *		
  	 *		[Options controlling scope of data in return value]
@@ -4941,6 +4942,7 @@ if (!$vb_batch) {
 		$pb_group_fields = isset($pa_options['groupFields']) ? $pa_options['groupFields'] : false;
 		$pa_primary_ids = (isset($pa_options['primaryIDs']) && is_array($pa_options['primaryIDs'])) ? $pa_options['primaryIDs'] : null;
 		$pb_show_current_only = caGetOption('showCurrentOnly', $pa_options, caGetOption('currentOnly', $pa_options, false));
+		$ps_current_date_bundle = caGetOption('showCurrentUsingDate', $pa_options, 'effective_date');
 		
 		if (!isset($pa_options['useLocaleCodes']) && (isset($pa_options['returnLocaleCodes']) && $pa_options['returnLocaleCodes'])) { $pa_options['useLocaleCodes'] = $pa_options['returnLocaleCodes']; }
 		$pb_use_locale_codes = isset($pa_options['useLocaleCodes']) ? $pa_options['useLocaleCodes'] : false;
@@ -4955,6 +4957,7 @@ if (!$vb_batch) {
 		$o_tep = $this->getTimeExpressionParser();
 		
 		$vb_uses_effective_dates = false;
+		$vn_current_date = TimeExpressionParser::now();
 
 		if(isset($pa_options['sort']) && !is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
 		$pa_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? array_filter($pa_options['sort'], "strlen") : null;
@@ -5239,8 +5242,8 @@ if (!$vb_batch) {
 			if ($vs_label_table_name) {
 				$va_label_rel_info = $this->getAppDatamodel()->getRelationships($va_path[0], $vs_label_table_name);
 			}
-
-			$va_rels = array();
+	
+			$va_rels = $va_rels_by_date = [];
 
 			$vn_i = 0;
 			foreach($va_rel_info[$va_path[0]][$va_path[1]] as $va_possible_keys) {
@@ -5336,23 +5339,41 @@ if (!$vb_batch) {
 						$vs_rel_pk = $t_rel_item->primaryKey();
 						if ($t_rel_item_label) {
 							foreach($t_rel_item_label->getFormFields() as $vs_field => $va_field_info) {
-								if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
-								$va_rels[$vs_v]['preferred_labels'][$vs_field] = $va_rels[$vs_v][$vs_field];
-								unset($va_rels[$vs_v][$vs_field]);
+								if (!isset($va_rels[$vs_sort_key][$vn_id][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+								$va_rels[$vs_sort_key][$vn_id]['preferred_labels'][$vs_field] = $va_rels[$vs_sort_key][$vn_id][$vs_field];
+								unset($va_rels[$vs_sort_key][$vn_id][$vs_field]);
 							}
 						}
 						foreach($t_rel_item->getFormFields() as $vs_field => $va_field_info) {
-							if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
-							$va_rels[$vs_v]['intrinsic'][$vs_field] = $va_rels[$vs_v][$vs_field];
-							unset($va_rels[$vs_v][$vs_field]);
+							if (!isset($va_rels[$vs_sort_key][$vn_id][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+							$va_rels[$vs_sort_key][$vn_id]['intrinsic'][$vs_field] = $va_rels[$vs_sort_key][$vn_id][$vs_field];
+							unset($va_rel[$vs_sort_key][$vn_id][$vs_field]);
 						}
-						unset($va_rels[$vs_v]['_key']);
-						unset($va_rels[$vs_v]['row_id']);
+						unset($va_rels[$vs_sort_key][$vn_id]['_key']);
+						unset($va_rels[$vs_sort_key][$vn_id]['row_id']);
 					}
-				};
+					
+					// filter for current?
+					if($pb_show_current_only && $t_item_rel) {
+						$qr_rels = caMakeSearchResult($t_item_rel->tableName(), [$qr_res->get($vs_key)]);
+						
+						while($qr_rels->nextHit()) {
+							foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
+								$va_tmp = explode("/", $vs_date);
+								if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
+								$va_rels_by_date[$vs_date][$vs_sort_key][$vn_id] = $va_rels[$vs_sort_key][$vn_id];
+							}
+						}
+					}
+				}
 				$vn_i++;
 			}
 
+			if($pb_show_current_only && $t_item_rel) {
+				ksort($va_rels_by_date);
+				$va_rels = array_pop($va_rels_by_date);
+			}
+			
 			ksort($va_rels);	// sort by sort key... we'll remove the sort key in the next loop while we add the labels
 
 			// Set 'label' entry - display label in current user's locale
@@ -5374,6 +5395,8 @@ if (!$vb_batch) {
 			//
 			// START - from self relation itself (Eg. get related ca_objects from ca_objects_x_objects); in this case there are two possible paths (keys) to check, "left" and "right"
 			//
+			
+			$pb_show_current_only = false;
 			
 			$va_wheres[] = "({$vs_subject_table_name}.".$this->primaryKey()." IN (".join(",", $pa_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
@@ -5493,7 +5516,6 @@ if (!$vb_batch) {
 					}
 				}
 
-				//if (!isset($pa_options['idsOnly']) || !$pa_options['idsOnly']) {
 				if ($ps_return_as === 'data') {
 					// Set 'label' entry - display label in current user's locale
 					foreach($va_rels as $vs_v => $va_rel) {
@@ -5548,27 +5570,6 @@ if (!$vb_batch) {
 			}
 
 			$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
-			
-			//
-			// Filter to only current relationships
-			//
-			if ($pb_show_current_only && $vb_uses_effective_dates) {
-				// _filter_current.edatetime IS NULL criteria allows undated relationships to be considered "current"; if current filtering is done it
-				// is assumed that all relationships are dated and that undated relations are legacy and therefore should be considered potentially current 
-				$vs_filter_to_current_join = "
-					INNER JOIN (
-						SELECT {$vs_item_rel_table_name}.".$this->primaryKey().", max({$vs_item_rel_table_name}.edatetime) edatetime
-						FROM {$vs_subject_table_name}
-						".join("\n", array_merge($va_joins, $va_joins_post_add))."
-						WHERE
-							(".join(' AND ', array_merge($va_wheres, array("({$vs_item_rel_table_name}.sdatetime <= ".TimeExpressionParser::now().")"))).")
-							OR ({$vs_item_rel_table_name}.sdatetime IS NULL)
-						GROUP BY 
-							{$vs_item_rel_table_name}.".$this->primaryKey()."
-					) AS _filter_current ON _filter_current.".$this->primaryKey()." = {$vs_item_rel_table_name}.".$this->primaryKey()." AND (_filter_current.edatetime = {$vs_item_rel_table_name}.edatetime OR _filter_current.edatetime IS NULL)
-				";
-				$va_joins[] = $vs_filter_to_current_join;
-			}
 
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
@@ -5601,10 +5602,14 @@ if (!$vb_batch) {
 					$vs_direction = ($vs_left_table == $vs_subject_table_name) ? 'ltor' : 'rtol';
 				}
 			}
-			$va_rels = array();
+			
+			$va_rels = [];
+			$va_rels_by_date = [];
+			
 			$vn_c = 0;
 			if ($pn_start > 0) { $qr_res->seek($pn_start); }
 			$va_seen_row_ids = array();
+			$va_relation_ids = [];
 			while($qr_res->nextRow()) {
 				if ($vn_c >= $pn_limit) { break; }
 				
@@ -5612,7 +5617,6 @@ if (!$vb_batch) {
 					if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 				}
 				
-				//if (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) {
 				if ($ps_return_as !== 'data') {
 					$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
 					continue;
@@ -5632,13 +5636,6 @@ if (!$vb_batch) {
 						$o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);
 						$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
 					}
-					
-					
-					// Only allow one current item per row_id
-					//if ($pb_show_current_only && isset($va_seen_row_ids[$va_row['row_id']])) {
-					//	unset($va_rels[$vs_v]); 
-					//	continue;
-					//}
 				}
 
 				$vn_locale_id = $qr_res->get('locale_id');
@@ -5674,11 +5671,27 @@ if (!$vb_batch) {
 					unset($va_rels[$vs_v]['_key']);
 					unset($va_rels[$vs_v]['row_id']);
 				}
+							
+				// filter for current?
+				if($pb_show_current_only && $t_item_rel) {
+					$qr_rels = caMakeSearchResult($t_item_rel->tableName(), [$qr_res->get($vs_key)]);
+					while($qr_rels->nextHit()) {
+						foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
+							$va_tmp = explode("/", $vs_date);
+							if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
+							$va_rels_by_date[$vs_date][] = $va_rels[$vs_v];
+						}
+					}
+				}
 				
 				$va_seen_row_ids[$va_row['row_id']] = true;
 			}
+			
+			if($pb_show_current_only && $t_item_rel) {
+				ksort($va_rels_by_date);
+				if (sizeof($va_rels_by_date)) { $va_rels = array_pop($va_rels_by_date); }
+			}
 
-			//if (!isset($pa_options['idsOnly']) || !$pa_options['idsOnly']) {
 			if ($ps_return_as === 'data') {
 				// Set 'label' entry - display label in current user's locale
 				foreach($va_rels as $vs_v => $va_rel) {
@@ -5687,7 +5700,6 @@ if (!$vb_batch) {
 					$va_rels[$vs_v]['label'] = array_shift($va_tmp2);
 				}
 			}
-			
 			//
 			// END - non-self relation
 			//
