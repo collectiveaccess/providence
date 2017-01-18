@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -357,6 +357,23 @@
 						}
 						$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideDown(250);';
 						
+					}
+					if (isset($va_properties['showOnSelect'])) {
+						if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = array($va_properties['showOnSelect']); }
+						
+						$va_ids = array();
+						foreach($va_properties['showOnSelect'] as $vs_n) {
+							$va_ids[] = "#".$pa_options['id_prefix']."_{$vs_n}_container";
+						}
+						$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideUp(250);';
+						
+						if (!$va_attributes['checked']) {
+							$vs_return .= "<script type='text/javascript'>
+	jQuery(document).ready(function() {
+		jQuery('".join(",", $va_ids)."').hide();
+	});
+</script>\n";
+						}
 					}
 					$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes, array());
 					break;

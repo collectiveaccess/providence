@@ -4436,9 +4436,10 @@ create table ca_set_items (
     type_id     int unsigned not null,
 	rank		int unsigned not null default 0,
 	vars        longtext not null,
+	deleted     tinyint unsigned not null default 0,
 	
 	primary key (item_id),
-	key i_set_id (set_id),
+	key i_set_id (set_id, deleted),
 	key i_type_id (type_id),
 	key i_row_id (row_id),
 	key i_table_num (table_num)
@@ -6851,5 +6852,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 142 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (142, unix_timestamp());
+/* CURRENT MIGRATION: 143 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (143, unix_timestamp());

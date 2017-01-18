@@ -119,7 +119,7 @@ class ExcelDataReader extends BaseDataReader {
 						}
 						$this->opa_row_buf[] = $vs_val;
 					} else {
-						$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
+						$this->opa_row_buf[] = $vs_val = trim((string)self::getCellAsHTML($o_cell));
 					}
 					if (strlen($vs_val) > 0) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 				
@@ -127,6 +127,7 @@ class ExcelDataReader extends BaseDataReader {
 				
 					if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
 				}
+				print_r($this->opa_row_buf);
 				//if (!$vb_val_was_set) { 
 					//return $this->nextRow(); 
 				//	continue;
@@ -247,6 +248,39 @@ class ExcelDataReader extends BaseDataReader {
 		} catch (Exception $e) {
 			return false;
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getCellAsHTML($po_cell) {
+		$o_value = $po_cell->getValue();
+		
+		if ($o_value instanceof PHPExcel_RichText) {
+			$va_elements = $o_value->getRichTextElements();
+			
+			$va_values = [];
+			foreach($va_elements as $o_element) {
+				$vs_prefix = $vs_suffix = '';
+				if($o_element instanceof PHPExcel_RichText_Run) {
+					$o_font = $o_element->getFont();
+					if ($o_font->getBold()) { $vs_prefix = "<b>"; $vs_suffix = "</b>"; }
+					if ($o_font->getItalic()) { $vs_prefix .= "<i>"; $vs_suffix = "</i>{$vs_suffix}"; }
+					if ($o_font->getSuperScript()) { $vs_prefix .= "<sup>"; $vs_suffix = "</sup>{$vs_suffix}"; }
+					if ($o_font->getSubScript()) { $vs_prefix .= "<sub>"; $vs_suffix = "</sub>{$vs_suffix}"; }
+					
+					// PHPExcel seems to report underline in all cases where italics are present (doh) so remove for now
+					//if ($o_font->getUnderline()) { $vs_prefix .= "<u>"; $vs_suffix = "</u>{$vs_suffix}"; }
+					if ($o_font->getStrikethrough()) { $vs_prefix .= "<strike>"; $vs_suffix = "</strike>{$vs_suffix}"; }
+					$va_values[] = $vs_prefix.$o_element->getText().$vs_suffix;
+				} elseif ($o_element instanceof PHPExcel_RichText_TextElement) {
+					$va_values[] = $o_element->getText();
+				} 
+			}
+			return join('', $va_values);
+		}
+		
+		return $o_value;
 	}
 	# -------------------------------------------------------
 }

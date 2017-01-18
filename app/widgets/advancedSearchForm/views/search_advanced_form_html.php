@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@
 	$t_form = $this->getVar('t_form');
 	$vn_form_id = $t_form->getPrimaryKey();
 	$vs_controller_name = $this->getVar('controller_name');
+	$vs_widget_id = $this->getVar('widget_id');
 	
 	$o_dm = Datamodel::load();
 	
@@ -71,20 +72,20 @@
 				$va_flds[] = "'".$va_element['name']."'";
 			}
 ?>
-	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', "find/{$vs_controller_name}", 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
+	<?php print caFormTag($this->request, 'Index', "AdvancedSearchForm_{$vs_widget_id}", "find/{$vs_controller_name}", 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
 <?php 
-			print "<div style='float: right;'>".caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'AdvancedSearchForm').'<br/>'.
-				caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'))."</div>\n";
+			print "<div style='float: right;'>".caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), "AdvancedSearchForm_{$vs_widget_id}").'<br/>'.
+				caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), "AdvancedSearchForm_{$vs_widget_id}", array('onclick' => 'caAdvancedSearchFormReset()'))."</div>\n";
 			print $this->render('search_form_table_html.php');
 			print caHTMLHiddenInput('form_id', array('value' => $vn_form_id));
 ?>
 		<script type="text/javascript">
 			function caAdvancedSearchFormReset() {
-				jQuery('#AdvancedSearchForm textarea').val('');
-				jQuery('#AdvancedSearchForm input[type=text]').val('');
-				jQuery('#AdvancedSearchForm input[type=hidden]').val('');
-				jQuery('#AdvancedSearchForm select').prop('selectedIndex', -1);
-				jQuery('#AdvancedSearchForm input[type=checkbox]').attr('checked', 0);
+				jQuery('#AdvancedSearchForm_<?php print $vs_widget_id; ?> textarea').val('');
+				jQuery('#AdvancedSearchForm_<?php print $vs_widget_id; ?> input[type=text]').val('');
+				jQuery('#AdvancedSearchForm_<?php print $vs_widget_id; ?> input[type=hidden]').val('');
+				jQuery('#AdvancedSearchForm_<?php print $vs_widget_id; ?> select').prop('selectedIndex', -1);
+				jQuery('#AdvancedSearchForm_<?php print $vs_widget_id; ?> input[type=checkbox]').attr('checked', 0);
 			}
 		</script>
 	</form>

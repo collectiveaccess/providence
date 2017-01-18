@@ -227,22 +227,10 @@
 					'value_decimal1' => null
 				];
  			}
-
- 			// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
- 			
- 			// either
- 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
- 				$vs_decimal_value = $va_matches[2];
- 				$vs_currency_specifier = trim($va_matches[1]);
- 			// or 1
- 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
- 				$vs_decimal_value = $va_matches[1];
- 				$vs_currency_specifier = trim($va_matches[2]);
- 			// or 2
- 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
- 				$vs_decimal_value = $va_matches[1];
- 				$vs_currency_specifier = null;
- 			// derp
+			
+ 			if (is_array($va_parsed_value = caParseCurrencyValue($ps_value))) {
+ 				$vs_currency_specifier = $va_parsed_value['currency'];
+ 				$vs_decimal_value = $va_parsed_value['value'];
  			} else {
  				$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
  				return false;

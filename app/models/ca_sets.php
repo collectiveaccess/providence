@@ -1643,7 +1643,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				INNER JOIN ca_objects AS rel ON rel.object_id = casi.row_id
 				INNER JOIN ca_objects_x_object_representations AS coxor ON coxor.object_id = rel.object_id
 				WHERE
-					casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql}
+					casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} AND casi.deleted = 0
 				GROUP BY
 					rel.object_id
 			", (int)$vn_set_id);
@@ -1663,7 +1663,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
 			{$vs_label_join_sql}
 			WHERE
-				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql}
+				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} AND casi.deleted = 0
 			ORDER BY 
 				casi.rank ASC
 			{$vs_limit_sql}
@@ -1711,7 +1711,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			{$vs_label_join_sql}
 			{$vs_rep_join_sql}
 			WHERE
-				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql}
+				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql}  AND casi.deleted = 0
 			ORDER BY 
 				casi.rank ASC
 			{$vs_limit_sql}
@@ -1843,7 +1843,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}	
 		$vs_deleted_sql = '';
 		if ($t_rel_table->hasField('deleted')) {
-			$vs_deleted_sql = ' AND '.$vs_rel_table_name.'.deleted = 0';
+			$vs_deleted_sql = " AND {$vs_rel_table_name}.deleted = 0";
 		}
 		
 		$qr_res = $o_db->query("
@@ -1851,7 +1851,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			FROM ca_set_items
 			INNER JOIN {$vs_rel_table_name} ON {$vs_rel_table_name}.{$vs_rel_table_pk} = ca_set_items.row_id
 			WHERE
-				ca_set_items.set_id = ? {$vs_deleted_sql} {$vs_access_sql}
+				ca_set_items.set_id = ? {$vs_deleted_sql} {$vs_access_sql} AND (ca_set_items.deleted = 0)
 		", (int)$vn_set_id);
 		
 		if ($qr_res->nextRow()) {
@@ -1898,7 +1898,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			FROM ca_set_items casi
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
 			WHERE
-				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql}
+				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} AND casi.deleted = 0
 		", array($vn_set_id));
 		
 		$va_type_ids = array();
@@ -2216,7 +2216,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			INNER JOIN ca_object_representations AS caor ON caor.representation_id = caxor.representation_id
 			
 			WHERE
-				(casi.set_id = ?) AND (caxor.is_primary = 1) AND (o.deleted = 0)
+				(casi.set_id = ?) AND (caxor.is_primary = 1) AND (o.deleted = 0) AND (casi.deleted = 0)
 				{$vs_access_sql}
 			ORDER BY 
 				casi.rank ASC

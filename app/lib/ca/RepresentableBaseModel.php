@@ -101,7 +101,7 @@
 			
 			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
-			$qr_reps = $o_db->query("
+			$qr_reps = $o_db->query($vs_sql = "
 				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank, caoor.relation_id
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
@@ -119,17 +119,17 @@
 			$va_reps = array();
 			$t_rep = new ca_object_representations();
 			
+			$va_can_read = null;
 			if($AUTH_CURRENT_USER_ID) {
 				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'), null, array('returnAsArray' => true));
-			} else {
-				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
-			}
+			} 
 			
-			$qr_reps->seek(0);
+			// reexecute query as pdo doesn't support seek()
+			$qr_reps = $o_db->query($vs_sql, $va_type_restriction_filters['params']);
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
 				
-				if (!in_array($vn_rep_id, $va_can_read)) { continue; }
+				if ($va_can_read && !in_array($vn_rep_id, $va_can_read)) { continue; }
 			
 				$va_tmp = $qr_reps->getRow();
 				$va_tmp['tags'] = array();

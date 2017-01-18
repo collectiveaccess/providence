@@ -543,6 +543,7 @@ div.inspectorCheckedOut {
 }
 #leftNav #widgets .searchType, 
 #leftNav #widgets .setStats, 
+#leftNav #widgets .pawtucketStats, 
 #leftNav #widgets .groupList, 
 #leftNav #widgets .watchedItems, 
 #leftNav #widgets .yourDisplays, 
@@ -572,7 +573,7 @@ div.inspectorCheckedOut {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
-.setStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
+.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
 	font-size:12px;
 	line-height:1.7em;
 }
@@ -5518,14 +5519,15 @@ div.listRel:first-of-type {
 .caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
+    text-align:right;
+    padding-top:6px;
 }
 
 .caItemListSortControlContainer {
     position: absolute;
-    right: 40px;
+    right: 230px;
     top: 0px;
     min-width: 50px;
-    
     z-index: 14000;
 }
 
@@ -5607,6 +5609,22 @@ table.preferenceColumnSelector tbody tr td.preferenceColumnSelectorLabel {
 	width: 300px;
 }
 
+div.preferenceColumnHeader {
+    font-family: "DIN-Regular", sans-serif;
+    font-size:13px;
+    color: #333;
+    margin-bottom: 10px;
+    padding-top: 5px;
+    font-weight: bold;
+    text-align: left;
+}
+
+div.preferencePlacementList {
+    width: 350px;
+    height: 350px;
+    overflow: auto;
+    margin-right:10px;
+}
 
 .searchReindexHelpText{
     padding:20px;

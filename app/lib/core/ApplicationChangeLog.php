@@ -295,7 +295,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			$t_item = $o_datamodel->getInstanceByTableNum($pn_table_num, true);
 			
 			$vs_label_table_name = $vn_label_table_num = $vs_label_display_name = null;
-			if (method_exists($t_item, 'getLabelTableName')) {
+			if (method_exists($t_item, 'getLabelTableName') && $t_item->getLabelTableInstance()) {
 				$t_item_label = $t_item->getLabelTableInstance();
 				$vs_label_table_name = $t_item->getLabelTableName();
 				$vn_label_table_num = $t_item_label->tableNum();
