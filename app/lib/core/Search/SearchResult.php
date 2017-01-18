@@ -1678,8 +1678,8 @@ class SearchResult extends BaseObject {
 
 		$va_return_values = array();
 		$va_spec = array();
-		foreach(array('table_name', 'field_name', 'subfield_name') as $vs_f) {
-			if ($va_path_components[$vs_f]) { $va_spec[] = $va_path_components[$vs_f]; }
+		foreach($va_path_components['components'] as $vs_v) {
+			if ($vs_v) { $va_spec[] = $vs_v; }
 		}
 
 		while($qr_rel->nextHit()) {
@@ -2109,11 +2109,11 @@ class SearchResult extends BaseObject {
 			
 						if($pa_options['unserialize']) {
 							$va_return_values[$vn_id][$vm_locale_id] = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
-						} elseif ($vs_info_element) {
+						} elseif ($vs_info_element && (!in_array($vs_info_element, ['url', 'path', 'tag']))) {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
-						} elseif (isset($pa_options['returnURL']) && ($pa_options['returnURL'])) {
+						} elseif ((isset($pa_options['returnURL']) && ($pa_options['returnURL'])) || ($vs_info_element == 'url')) {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
-						} elseif (isset($pa_options['returnPath']) && ($pa_options['returnPath'])) {
+						} elseif ((isset($pa_options['returnPath']) && ($pa_options['returnPath'])) || ($vs_info_element == 'path')) {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaPath($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
 						} else {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaTag($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
@@ -2934,7 +2934,7 @@ class SearchResult extends BaseObject {
 			$va_tmp = array($vs_table_name, $vs_field_name, $vs_subfield_name);
 			$vb_is_related = ($vs_table_name !== $this->ops_table_name);
 		}
-		
+	
 		return SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path] = array(
 			'table_name' 		=> $vs_table_name,
 			'field_name' 		=> $vs_field_name,
