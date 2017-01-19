@@ -127,7 +127,7 @@ class ExcelDataReader extends BaseDataReader {
 				
 					if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
 				}
-				print_r($this->opa_row_buf);
+				
 				//if (!$vb_val_was_set) { 
 					//return $this->nextRow(); 
 				//	continue;
