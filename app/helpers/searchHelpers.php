@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -304,12 +304,14 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Extract access points from search expression
 	 * 
+	 * @param string $ps_search_expression 
 	 *
-	 * @return array 
+	 * @return array A List of access points
 	 */
 	function caSearchGetAccessPoints($ps_search_expression) {
-		if(preg_match("!\b([A-Za-z0-9\-\_]+):!", $ps_search_expression, $va_matches)) {
+		if(preg_match("!\b([A-Za-z0-9\-\_]+):[^ ]+!", $ps_search_expression, $va_matches)) {
 			array_shift($va_matches);
 			return $va_matches;
 		}
@@ -317,9 +319,11 @@
 	}
 	# ---------------------------------------
 	/**
-	 * 
+	 * Returns list of tables references by one or more provided access points
 	 *
-	 * @return array 
+	 * @param array $pa_access_points An array of access point strings
+	 * 
+	 * @return array A list of table names associated with the provided access points
 	 */
 	function caSearchGetTablesForAccessPoints($pa_access_points) {
 		$o_config = Configuration::load();

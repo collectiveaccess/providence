@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,25 +87,19 @@
  			$t_list = new ca_lists();
  			$this->view->setVar('occurrence_types', caExtractValuesByUserLocale($t_list->getItemsForList('occurrence_types')));
  			
- 			if(is_array($va_aps_in_search = caSearchGetAccessPoints($ps_search)) && sizeof($va_aps_in_search)) {
- 				$va_aps = caSearchGetTablesForAccessPoints($va_aps_in_search);
- 				$vb_uses_aps = true;
- 			} else {
- 				$vb_uses_aps = false;
- 			}
  			$va_single_results = array();
  			$pn_multiple_results = 0;
  			foreach($va_searches as $vs_target => $va_sorts) {
  				$va_table = explode('/', $vs_target);
  				$vs_table = $va_table[0]; $vs_type = (isset($va_table[1])) ? $va_table[1] : null;
  				
- 				if (($o_config->get($vs_table.'_disable')) || (($vs_table == 'ca_tour_stops') && $o_config->get('ca_tours_disable')) || ($vb_uses_aps && (!in_array($vs_table, $va_aps)))) { 
+ 				if (($o_config->get($vs_table.'_disable')) || (($vs_table == 'ca_tour_stops') && $o_config->get('ca_tours_disable'))) {
  					unset($va_searches[$vs_target]);
  					continue;
  				}
  			 	if (!($vo_result = $this->_doSearch($vs_table, $ps_search, $va_sorts[$ps_sort], $vs_type))) { unset($va_searches[$vs_target]); continue; }
- 			 	$vo_result->setOption('prefetch', $this->opn_num_results_per_item_type);							// get everything we need in one pass
- 			 	$vo_result->setOption('dontPrefetchAttributes', true);		// don't bother trying to prefetch attributes as we don't need them
+ 			 	$vo_result->setOption('prefetch', $this->opn_num_results_per_item_type);	// get everything we need in one pass
+ 			 	$vo_result->setOption('dontPrefetchAttributes', true);						// don't bother trying to prefetch attributes as we don't need them
  				$this->view->setVar("{$vs_target}_results", $vo_result);
  				
  				$va_found_item_ids = array();
