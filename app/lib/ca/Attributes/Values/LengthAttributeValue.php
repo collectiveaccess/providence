@@ -156,7 +156,14 @@
 			try {
 				$vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
 
-				switch($g_ui_units_pref) {
+				$o_config = Configuration::load();
+				if ($o_config->get('force_use_of_fractions_for_measurements')) {
+					$vs_units = 'fractions';
+				} else {
+					$vs_units = $g_ui_units_pref;
+				}
+
+				switch($vs_units) {
 					case 'metric':
 						$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Length::METER, 4);
 						break;
