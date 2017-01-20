@@ -2934,7 +2934,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		$ps_preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $ps_id_prefix);
 
 		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
-		$vs_buf .= "<span style='position: absolute; top: 2px; right: 7px;'>";
+		$vs_buf .= "<span class='iconButton'>";
+		#$vs_buf .= "<span style='position: absolute; top: 2px; right: 7px;'>";
 		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";	
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
@@ -2957,12 +2958,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
 		
 		$vs_buf = '';
-		$vs_buf .= "<span style='position: absolute; top: 2px; right: 26px;'>";
+		#$vs_buf .= "<span style='position: absolute; top: 2px; right: 26px;'>";
+		$vs_buf .= "<span class='iconButton'>";
 		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
-		$vs_buf .= "</span>\n";	
 		
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
+		$vs_buf .= "</span>\n";	
 		
 		return $vs_buf;
 	}
@@ -2973,35 +2975,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
 	 * @param string $ps_table
+	 * @param array $pa_options
 	 * 
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $pa_options=null) {
 		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
-		if(!$ps_table) { $ps_table = 'ca_entities'; }
-		$va_sort_fields = caGetAvailableSortFields($ps_table, null, $pa_options);
-
-		$vs_buf = "
-		<div class=\"caItemListSortControlContainer\">
-			<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
-				<span id='{$ps_id_prefix}_caCurrentSortLabel'>"._t('Sort by')."</span> <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
-			</div>
-		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
-			<a href='#' style='float:right;' class=\"caItemListSortControl\">".caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px')."</a>
-			<ul>\n";
-
-		foreach($va_sort_fields as $vs_key => $vs_label) {
-			$vs_short_label = caTruncateStringWithEllipsis($vs_label, 20);
-			$vs_buf .= "<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('{$vs_key}', '"._t('Sorted by').": {$vs_short_label}'); return false;\" class=\"caItemListSortControl\">".$vs_label."</a><br/></li>\n";
-		}
-
-		$vs_buf .=	"
-			</ul>
-		</div>
-		</div>";
+		if(!$ps_table) { return '???'; }
+		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options))) || !sizeof($va_sort_fields)) { return ''; }
 		
-		return $vs_buf;
+		return _t('Sort by %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", array_flip($va_sort_fields), ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 'id' => "{$ps_id_prefix}_RelationBundleSortControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']), caHTMLSelect("{$ps_id_prefix}_RelationBundleSortDirectionControl", [_t('↑') => 'ASC', _t('↓') => 'DESC'], ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']));
 	}
 	# ---------------------------------------
 	/**

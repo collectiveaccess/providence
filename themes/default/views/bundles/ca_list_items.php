@@ -364,7 +364,7 @@
 			itemColor: '<?php print $vs_color; ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
-			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item->tableName())); ?>',
+			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,

@@ -1142,7 +1142,6 @@
 	 *		includeUserSorts = 
 	 *		distinguishNonUniqueNames = 
 	 *		allowedSorts = 
-	 *		ui = 
 	 *		request = 
 	 * @return array
 	 */
@@ -1158,7 +1157,7 @@
 		
 		
 		$va_ui_bundle_label_map = [];
-		if ($t_ui = caGetOption('ui', $pa_options, null)) {
+		if (isset($pa_options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $pa_options['request'], $pn_type_id))) {
 			$va_screens = $t_ui->getScreens();
 			foreach($va_screens as $va_screen) {
 				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
@@ -1182,7 +1181,6 @@
 		switch($ps_table) {
 			case 'ca_list_items':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_list_items.preferred_labels.name_singular' => _t('name'),
 					'ca_list_items.idno_sort' => _t('idno')
 				);
@@ -1194,7 +1192,6 @@
 				break;
 			case 'ca_collections':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_collections.preferred_labels.name_sort' => _t('name'),
 					'ca_collections.type_id' => _t('type'),
 					'ca_collections.idno_sort' => _t('idno')
@@ -1202,7 +1199,6 @@
 				break;
 			case 'ca_loans':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_loans.preferred_labels.name_sort' => _t('short description'),
 					'ca_loans.type_id' => _t('type'),
 					'ca_loans.idno_sort' => _t('idno')
@@ -1210,7 +1206,6 @@
 				break;
 			case 'ca_movements':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_movements.preferred_labels.name' => _t('short description'),
 					'ca_movements.type_id;ca_movements.preferred_labels.name' => _t('type'),
 					'ca_movements.idno_sort' => _t('idno')
@@ -1218,7 +1213,6 @@
 				break;
 			case 'ca_entities':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_entities.preferred_labels.name_sort' => _t('display name'),
 					'ca_entities.preferred_labels.surname;ca_entities.preferred_labels.forename' => _t('surname, forename'),
 					'ca_entities.preferred_labels.forename' => _t('forename'),
@@ -1228,7 +1222,6 @@
 				break;
 			case 'ca_object_lots':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_object_lots.preferred_labels.name_sort' => _t('name'),
 					'ca_object_lots.type_id' => _t('type'),
 					'ca_object_lots.idno_stub_sort' => _t('idno')
@@ -1236,7 +1229,6 @@
 				break;
 			case 'ca_object_representations':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_object_representations.preferred_labels.name_sort' => _t('name'),
 					'ca_object_representations.type_id' => _t('type'),
 					'ca_object_representations.idno_sort' => _t('idno')
@@ -1244,7 +1236,6 @@
 				break;
 			case 'ca_objects':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_objects.preferred_labels.name_sort' => _t('title'),
 					'ca_objects.type_id' => _t('type'),
 					'ca_objects.idno_sort' => _t('idno')
@@ -1252,7 +1243,6 @@
 				break;
 			case 'ca_occurrences':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_occurrences.preferred_labels.name_sort' => _t('name'),
 					'ca_occurrences.type_id' => _t('type'),
 					'ca_occurrences.idno_sort' => _t('idno')
@@ -1260,7 +1250,6 @@
 				break;
 			case 'ca_places':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_places.preferred_labels.name_sort' => _t('name'),
 					'ca_places.type_id' => _t('type'),
 					'ca_places.idno_sort' => _t('idno')
@@ -1268,7 +1257,6 @@
 				break;
 			case 'ca_storage_locations':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_storage_locations.preferred_labels.name_sort' => _t('name'),
 					'ca_storage_locations.type_id' => _t('type'),
 					'ca_storage_locations.idno_sort' => _t('idno')
@@ -1276,13 +1264,11 @@
 				break;
 			case 'ca_tours':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_tours.preferred_labels.name' => _t('name')
 				);
 				break;
 			case 'ca_tour_stops':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
 					'ca_tour_stops.preferred_labels.name' => _t('name')
 				);
 				break;
@@ -1365,8 +1351,7 @@
 		foreach($va_base_fields as $vs_k => $vs_v) {
 			if (isset($va_ui_bundle_label_map[$vs_k])) {
 				 $va_base_fields[$vs_k] = $va_ui_bundle_label_map[$vs_k];
-			} else {
-				$va_tmp = explode('.', $vs_k);
+			} elseif(sizeof($va_tmp = explode('.', $vs_k)) > 2) {
 				array_pop($va_tmp);
 				if (isset($va_ui_bundle_label_map[join('.', $va_tmp)])) { $va_base_fields[$vs_k] = $va_ui_bundle_label_map[join('.', $va_tmp)]; }
 			}
@@ -1376,7 +1361,7 @@
 		
 		natcasesort($va_base_fields);
 		
-		return array_merge([$t_table->hasField('rank') ? "{$ps_table}.".$t_table->hasField('rank') : $t_table->getPrimaryKey(true) => _t('Rank')], $va_base_fields);
+		return array_merge(['_natural' => _t('Relevance')], $va_base_fields);
 	}
 	# ---------------------------------------
 	/**

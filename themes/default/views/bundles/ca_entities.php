@@ -273,7 +273,7 @@
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'EntityQuickAdd', 'Form', array('entity_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 <?php } ?>
-			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item->tableName())); ?>',
+			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,

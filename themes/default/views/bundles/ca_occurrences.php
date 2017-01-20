@@ -56,7 +56,6 @@
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
 		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
-
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
@@ -64,9 +63,11 @@
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
 	
+print "<div class='bundleSubLabel'>";	
 	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($va_settings, ['ui' => $this->getVar('ui')]));
 	}
+print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
@@ -273,7 +274,7 @@
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 <?php } ?>
-			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item->tableName())); ?>',
+			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,

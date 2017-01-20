@@ -1292,7 +1292,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		graphicsPath
 	 *		request
 	 */
-	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options, &$ps_bundle_label=null) {
+	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null, &$ps_bundle_label=null) {
 		global $g_ui_locale;
 		if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 		
@@ -2418,6 +2418,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		}
  		if (!$t_ui) { return false; }
  		
+ 		$pa_options['ui'] = $t_ui; 	// stash UI object and screen in options for use by getBundleFormHTML()
+ 		$pa_options['screen'] = $pm_screen;
+ 		
  		if (($vn_ui_access = ca_editor_uis::getAccessForUI($pa_options['request'], $t_ui->getPrimaryKey())) === __CA_BUNDLE_ACCESS_NONE__) {
  			// no access to UI
  			$this->postError(2320, _t('Access denied to UI %1', $t_ui->get('editor_code')), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");
@@ -2908,6 +2911,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('t_item', $t_item);
 		$o_view->setVar('t_item_rel', $t_item_rel);
 		$o_view->setVar('bundle_name', $ps_related_table);
+		
+		$o_view->setVar('ui', caGetOption('ui', $pa_options, null));
+		$o_view->setVar('screen', caGetOption('screen', $pa_options, null));
 		
 		$vb_read_only = ($po_request->user->getBundleAccessLevel($this->tableName(), $ps_related_table) == __CA_BUNDLE_ACCESS_READONLY__) ? true : false;
 		if (!$pa_bundle_settings['readonly']) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
