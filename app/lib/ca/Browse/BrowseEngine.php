@@ -4295,6 +4295,24 @@
 						$vs_dir = (strtoupper($va_facet_info['sort']) === 'DESC') ? "DESC" : "ASC";
 
 						$o_tep = new TimeExpressionParser();
+						
+						// If a date criterion is already set then force current facet to only return values within the
+						// envelope set by the existing criterion.
+						if (is_array($va_current_criteria = $this->getCriteria())) {
+							foreach($va_current_criteria as $vs_criteria_facet => $va_criteria_values) {
+								if (is_array($va_criteria_facet_info = $this->getInfoForFacet($vs_criteria_facet))) {
+									if ($va_criteria_facet_info['type'] == 'normalizedDates') {
+										foreach(array_keys($va_criteria_values) as $vs_date) {
+											if ($o_tep->parse($vs_date)) {
+												$va_facet_info['minimum_date'] = $o_tep->getText(['start_as_iso8601' => true]);
+												$va_facet_info['maximum_date'] = $o_tep->getText(['end_as_iso8601' => true]);
+											}
+										}
+									}
+								}
+							}
+						}
+						
 						$vn_min_date = $vn_max_date = null;
 						$vs_min_sql = $vs_max_sql = '';
 						if (isset($va_facet_info['minimum_date'])) {
