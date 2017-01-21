@@ -1095,7 +1095,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
 		$vm_return = null;
-		$t_element = self::getInstance($pm_element_code_or_id);
+		if (!($t_element = self::getInstance($pm_element_code_or_id))) { return null; }
 
 		if($t_element->getPrimaryKey()) {
 			$vm_return = (int) $t_element->get('list_id');

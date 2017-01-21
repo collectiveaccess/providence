@@ -127,7 +127,7 @@
  			
  			
 			$t_display 					= $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  	
- 			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
  			// Default display is always there
  			$va_displays = array('0' => _t('Default'));
@@ -900,7 +900,7 @@
  			AssetLoadManager::register("tableview");
  			
  			$va_ids 				= $this->opo_result_context->getResultList();
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$va_display_list 		= $this->_getDisplayList($vn_display_id);
  			
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
@@ -932,7 +932,7 @@
  			if (($pn_s = (int)$this->request->getParameter('s', pInteger)) < 0) { $pn_s = 0; }
  			if (($pn_c = (int)$this->request->getParameter('c', pInteger)) < 1) { $pn_c = 10; }
  			
- 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$t_display = new ca_bundle_displays($vn_display_id);
  			$va_ids = $this->opo_result_context->getResultList();
  			$qr_res = caMakeSearchResult($this->ops_tablename, $va_ids);
@@ -971,7 +971,7 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
- 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay());
+ 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id));
  			$va_response = $t_display->saveResultsEditorData($this->ops_tablename, ['request' => $this->request, 'user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			
 			$this->view->setVar('response', $va_response);
@@ -985,7 +985,7 @@
  		 */ 
  		public function resultsComplexDataEditor() {
  			$t_instance 			= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
  			$pn_placement_id = (int)$this->request->getParameter('pl', pString);
  			$ps_bundle = $this->request->getParameter('bundle', pString);

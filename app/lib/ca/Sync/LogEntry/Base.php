@@ -157,6 +157,8 @@ abstract class Base {
 	 */
 	public function isRelevant() {
 		$vs_t = $this->getModelInstance()->tableName();
+		
+		if (!method_exists($this->getModelInstance(), "loadByGUID")) { return false; }
 		if(preg_match("/^ca_locales/", $vs_t)) {
 			return false;
 		}

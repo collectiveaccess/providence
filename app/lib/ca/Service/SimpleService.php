@@ -64,6 +64,9 @@ class SimpleService {
 			case 'search':
 				$vm_return = self::runSearchEndpoint($va_endpoint_config, $po_request);
 				break;
+			case 'site_page':
+				$vm_return = self::runSitePageEndpoint($va_endpoint_config, $po_request);
+				break;
 			case 'detail':
 			default:
 				$vm_return = self::runDetailEndpoint($va_endpoint_config, $po_request);
@@ -120,6 +123,51 @@ class SimpleService {
 		
 		foreach($pa_config['content'] as $vs_key => $vm_template) {
 			$va_return[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($t_instance, $vs_key, $vm_template, $va_get_options);
+		}
+
+		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param array $pa_config
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	private static function runSitePageEndpoint($pa_config, $po_request) {
+		$o_dm = Datamodel::load();
+
+		// load instance
+		$t_instance = $o_dm->getInstance('ca_site_pages');
+		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+			throw new Exception('invalid table');
+		}
+
+		$va_get_options = array();
+
+		$ps_path = $po_request->getParameter('path', pString);
+	
+		if(!$t_instance->load(array("path" => $ps_path))) {
+			throw new Exception('invalid path');
+		}
+
+		if(!$t_instance->getPrimaryKey()) {
+			throw new Exception('Could not load record');
+		}
+
+		// checkAccess
+		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
+			if(!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
+				throw new Exception('Invalid parameters');
+			}
+		}
+
+		$va_return = array();
+		
+		# --- return all the configured tag/content for the page - nothing needs to be configured in services.conf
+		if($va_content = $t_instance->get("content")){
+			$va_return["data"] = $va_content;
 		}
 
 		return $va_return;
@@ -343,7 +391,7 @@ class SimpleService {
 			throw new Exception('Invalid service endpoint');
 		}
 
-		if(!isset($va_endpoints[$ps_endpoint]['type']) || !in_array($va_endpoints[$ps_endpoint]['type'], array('search', 'detail', 'refineablesearch', 'stats'))) {
+		if(!isset($va_endpoints[$ps_endpoint]['type']) || !in_array($va_endpoints[$ps_endpoint]['type'], array('search', 'detail', 'refineablesearch', 'stats', 'site_page'))) {
 			throw new Exception('Service endpoint config is invalid: type must be search or detail');
 		}
 

@@ -1216,6 +1216,31 @@ div.hint {
     border-top-right-radius: 4px;
     border-top-left-radius: 4px;
 }
+.bundleSubLabel{
+	clear:both;
+	background-color:#fbfbfb;
+	padding:8px 8px 0px 10px;
+	position:relative;
+	font-weight:normal;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel select{
+	position:relative;
+	padding-top:0px;
+	padding-bottom:0px;
+	top:-2px;
+}
+.bundleSubLabel .iconButton, .bundleLabel .iconButton{
+	float:right;
+	text-align:right;
+	margin-right:6px;
+	margin-left:6px;
+	font-size:15px;
+	position:relative;
+	font-size:16px;
+	top:-3px;
+}
 
 .bundleLabel a.bundleDocumentationLink {
     width:22px;
@@ -1979,6 +2004,7 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     border: 0px solid #e6e6e6;
     padding-left:0px;
+    clear:both;
 }
 .bundleContainer .caDeleteLabelButton .fa, .bundleContainer .caDeleteItemButton .fa{
 	font-size:18px;
@@ -5516,17 +5542,25 @@ div.listRel:first-of-type {
     overflow-y: auto;
 }
 
-.caItemListSortControlTrigger {
+div.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
+    text-align:right;
+    padding-top:6px;
+}
+
+select.caItemListSortControlTrigger {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
 }
 
 .caItemListSortControlContainer {
     position: absolute;
-    right: 40px;
+    right: 230px;
     top: 0px;
     min-width: 50px;
-    
     z-index: 14000;
 }
 
@@ -6630,6 +6664,13 @@ table.caUseHistoryUpdateLocationMetadata tr td {
     
 	font-weight: normal;
 	font-size: 12px;
+	position:absolute;
+	top:20px;
+	right:-30px;
+	width:400px;
+	z-index:10;
+	line-height:1.2em;
+	text-align:left;
 }
 
 div.caMetadataDictionaryViolationsList {

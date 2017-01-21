@@ -80,7 +80,8 @@
 				$va_available_display_items[$vs_bundle] = ['placement_id' => null, 'display' => $va_bundle_info['displayname'], 'bundle' => $vs_bundle];
 			}
  			
- 			$va_selected_searches = array_filter($this->request->user->getPreference("quicksearch_search_list"), "strlen");
+ 			if (!is_array($va_search_list = $this->request->user->getPreference("quicksearch_search_list"))) { $va_search_list = []; }
+ 			$va_selected_searches = array_filter($va_search_list, "strlen");
  			if (!is_array($va_selected_searches) || !sizeof($va_selected_searches)) { $va_selected_searches = array_keys(QuickSearch::availableSearches(['expandByType' => true])); }
  	
  			$va_selected_display_items = [];
