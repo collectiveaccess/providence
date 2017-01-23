@@ -560,7 +560,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				$vs_buf .=  '<span class="next disabled">'.caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2).'</span>';
 			}
 		} elseif ($vn_item_id) {
-			$vs_buf .= ResultContext::getResultsLinkForLastFind($po_request, $vs_table_name,  $vs_back_text, '');
+			$vs_buf .= "<span class='resultCount'>".ResultContext::getResultsLinkForLastFind($po_request, $vs_table_name,  $vs_back_text, '')."</span>";
 		} 
 		
 		return $vs_buf;
@@ -2935,7 +2935,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 
 		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
 		$vs_buf .= "<span class='iconButton'>";
-		#$vs_buf .= "<span style='position: absolute; top: 2px; right: 7px;'>";
 		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";	
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
@@ -2958,7 +2957,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
 		
 		$vs_buf = '';
-		#$vs_buf .= "<span style='position: absolute; top: 2px; right: 26px;'>";
 		$vs_buf .= "<span class='iconButton'>";
 		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
 		

@@ -1225,13 +1225,29 @@ div.hint {
 	font-size:11px;
 	line-height:1em;
 }
-.bundleSubLabel select{
+.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select{
 	position:relative;
 	padding-top:0px;
 	padding-bottom:0px;
-	top:-2px;
+	top:-4px;
+	font-size: 9px;
+	font-weight: normal;
+	height: 17px;
+	vertical-align: top;
 }
-.bundleSubLabel .iconButton, .bundleLabel .iconButton{
+.bundleSubLabel .editorBundlePrintControl{
+	float:right;
+	text-align:right;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel .editorBundlePrintControl a.form-button{
+	height:auto;
+	vertical-align:top;
+	padding:0px;
+	margin:-6px 0px 0px 0px;
+}
+.bundleLabel .iconButton{
 	float:right;
 	text-align:right;
 	margin-right:6px;
@@ -1240,6 +1256,12 @@ div.hint {
 	position:relative;
 	font-size:16px;
 	top:-3px;
+}
+.bundleLabel .iconButton select{
+	padding-top:0px;
+	padding-bottom:0px;
+	font-size: 9px;
+	font-weight: normal;
 }
 
 .bundleLabel a.bundleDocumentationLink {
@@ -2992,7 +3014,7 @@ a.editorFieldListLink {
     display: none;
 }
 
-div.editorBundlePrintControl {
+/*div.editorBundlePrintControl {
     position: absolute; 
     top: 2px; 
     right: 27px;
@@ -3003,7 +3025,7 @@ div.editorBundlePrintControl select {
     font-weight: normal;
     height: 17px;
     vertical-align: top;
-}
+}*/
 
 #caHierarchyOverviewHeader {
     font-size: 13px;

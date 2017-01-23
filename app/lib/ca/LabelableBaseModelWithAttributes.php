@@ -647,6 +647,7 @@
 				foreach(['preferred_labels', 'nonpreferred_labels'] as $vs_label_type) {
 					$va_label_sql_wheres = [];
 					if (isset($pa_values[$vs_label_type]) && is_array($pa_values[$vs_label_type])) {
+						$vn_label_field_where_count = 0;
 						$va_label_sql_wheres[] = "({$vs_label_table}.is_preferred = ".(($vs_label_type == 'preferred_labels') ? "1" : "0").")";
 					
 						foreach ($pa_values[$vs_label_type] as $vs_field => $va_field_values) {
@@ -656,6 +657,8 @@
 								}
 								$vs_op = $va_field_value[0];
 								$vm_value = $va_field_value[1];
+								
+								$vn_label_field_where_count++;
 
 								if ($t_label->_getFieldTypeType($vs_field) == 0) {
 									if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
@@ -689,7 +692,9 @@
 								}
 							}
 				
-							$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_label_sql_wheres).")";
+							if ($vn_label_field_where_count > 0) {
+								$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_label_sql_wheres).")";
+							}
 						}
 					}
 				}
