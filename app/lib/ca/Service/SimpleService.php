@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_LIB_DIR__."/ca/Browse/BrowseEngine.php");
+require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");
+
 class SimpleService {
 	# -------------------------------------------------------
 	/**
@@ -51,7 +54,13 @@ class SimpleService {
 
 		$va_endpoint_config = self::getEndpointConfig($ps_endpoint); // throws exception if it can't be found
 
-		switch($va_endpoint_config['type']) {
+		switch(strtolower($va_endpoint_config['type'])) {
+			case 'stats':
+				$vm_return = self::runStatsEndpoint($va_endpoint_config, $po_request);
+				break;
+			case 'refineablesearch':
+				$vm_return = self::runRefineableSearchEndpoint($va_endpoint_config, $po_request);
+				break;
 			case 'search':
 				$vm_return = self::runSearchEndpoint($va_endpoint_config, $po_request);
 				break;
@@ -81,10 +90,10 @@ class SimpleService {
 		// load instance
 		$t_instance = $o_dm->getInstance($pa_config['table']);
 		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			throw new Exception('invalid table');
+			throw new Exception('Invalid table');
 		}
 
-		$va_get_options = array();
+		$va_get_options = [];
 
 		$pm_id = $po_request->getParameter('id', pString);
 		if(!$t_instance->load($pm_id)) {
@@ -110,7 +119,7 @@ class SimpleService {
 			}
 		}
 
-		$va_return = array();
+		$va_return = [];
 		
 		foreach($pa_config['content'] as $vs_key => $vm_template) {
 			$va_return[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($t_instance, $vs_key, $vm_template, $va_get_options);
@@ -178,7 +187,7 @@ class SimpleService {
 		// load blank instance
 		$t_instance = $o_dm->getInstance($pa_config['table']);
 		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			throw new Exception('invalid table');
+			throw new Exception('Invalid table');
 		}
 
 		if(!($ps_q = $po_request->getParameter('q', pString))) {
@@ -192,11 +201,7 @@ class SimpleService {
 
 		// restrictToTypes
 		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
-			$va_type_filter = array();
-			foreach($pa_config['restrictToTypes'] as $vs_type_code) {
-				$va_type_filter[] = caGetListItemID($t_instance->getTypeListCode(), $vs_type_code);
-			}
-			$o_search->addResultFilter($t_instance->tableName().'.type_id', 'IN', join(",",$va_type_filter));
+			$o_search->setTypeRestrictions($pa_config['restrictToTypes']);
 		}
 
 		/** @var SearchResult $o_res */
@@ -208,21 +213,21 @@ class SimpleService {
 
 		if($vn_start = $po_request->getParameter('start', pInteger)) {
 			if(!$o_res->seek($vn_start)) {
-				return array();
+				return [];
 			}
 		}
 
 		$vn_limit = $po_request->getParameter('limit', pInteger);
 		if(!$vn_limit) { $vn_limit = 0; }
 
-		$va_return = array();
-		$va_get_options = array();
+		$va_return = [];
+		$va_get_options = [];
 		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
 			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
 		}
 
 		while($o_res->nextHit()) {
-			$va_hit = array();
+			$va_hit = [];
 
 			foreach($pa_config['content'] as $vs_key => $vm_template) {
 				$va_hit[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($o_res, $vs_key, $vm_template, $va_get_options);
@@ -243,6 +248,134 @@ class SimpleService {
 	}
 	# -------------------------------------------------------
 	/**
+	 * @param array $pa_config
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	private static function runRefineableSearchEndpoint($pa_config, $po_request) {
+		$o_dm = Datamodel::load();
+		
+		$vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
+
+		// load blank instance
+		$t_instance = $o_dm->getInstance($pa_config['table']);
+		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+			throw new Exception('Invalid table');
+		}
+
+		if(!($ps_q = $po_request->getParameter('q', pString))) {
+			throw new Exception('No query specified');
+		}
+
+		$o_browse = caGetBrowseInstance($pa_config['table']);
+		if(!$o_browse instanceof BrowseEngine) {
+			throw new Exception('Invalid table in config');
+		}
+		
+		if (isset($pa_config['facet_group']) && $pa_config['facet_group']) {
+			$o_browse->setFacetGroup($pa_config['facet_group']);
+		}
+
+		// restrictToTypes
+		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
+			$o_browse->setTypeRestrictions($pa_config['restrictToTypes']);
+		}
+		$o_browse->addCriteria("_search", $ps_q);
+		
+		if(is_array($pa_criteria_to_add = $po_request->getParameter('criteria', pArray))) {
+			foreach($pa_criteria_to_add as $vs_facet_value) {
+				list($vs_facet, $vs_value) = explode(":", $vs_facet_value);
+				$o_browse->addCriteria($vs_facet, $vs_value);
+			}
+		}
+
+		
+		$va_search_opts = array(
+					'sort' => ($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort'], 
+					'sort_direction' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'], 
+					'appendToSearch' => $vs_append_to_search,
+					'checkAccess' => $pa_config['checkAccess'],
+					'no_cache' => true,
+					'dontCheckFacetAvailability' => true,
+					'filterNonPrimaryRepresentations' => true
+				);
+		$o_browse->execute();
+		
+		/** @var SearchResult $o_res */
+		$o_res = $o_browse->getResults();
+		
+		if($vn_start = $po_request->getParameter('start', pInteger)) {
+			if(!$o_res->seek($vn_start)) {
+				return [];
+			}
+		}
+
+		$vn_limit = $po_request->getParameter('limit', pInteger);
+		if(!$vn_limit) { $vn_limit = 0; }
+
+		$va_return = ['resultCount' => $o_res->numHits()];
+		$va_get_options = [];
+		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
+		}
+		
+		if (!is_array($va_include_facets = $pa_config['facets'])) { $va_include_facets = []; }
+		
+		if (is_array($va_facets = $o_browse->getInfoForAvailableFacets())) {
+			foreach($va_facets as $vs_facet => $va_facet_info) {
+				if (sizeof($va_include_facets) && !in_array($vs_facet, $va_include_facets)) { continue; }
+			
+				if(!is_array($va_content = $o_browse->getFacetContent($vs_facet))) { continue; }
+				
+				$va_ret_content = [];
+				foreach($va_content as $vn_id => $va_content_item) {
+					$va_ret_content[] = [
+						'id' => $va_content_item['id'],
+						'label' => $va_content_item['label']
+					];
+				}
+				$va_return['facets'][$vs_facet] = [
+					'type' => $va_facet_info['type'],
+					'table' => isset($va_facet_info['table']) ? $va_facet_info['table'] : null,
+					'label_singular' => $va_facet_info['label_singular'],
+					'label_plural' => $va_facet_info['label_plural'],
+					'content' => $va_ret_content
+				];
+			}
+		}
+
+		while($o_res->nextHit()) {
+			$va_hit = [];
+
+			foreach($pa_config['content'] as $vs_key => $vm_template) {
+				$va_hit[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($o_res, $vs_key, $vm_template, $va_get_options);
+			}
+			
+			if ($vb_return_data_as_list) {
+				$va_return['results']['data'][] = $va_hit;
+				if($vn_limit && (sizeof($va_return['results']['data']) >= $vn_limit)) { break; }
+			} else {
+				$va_return['results'][$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+				if($vn_limit && (sizeof($va_return['results']) >= $vn_limit)) { break; }
+			}
+			
+		}
+
+		$va_return['criteria'] = $o_browse->getCriteriaWithLabels();
+		
+		$va_return['criteria_facet_names'] = [];
+		foreach($va_return['criteria'] as $vs_facet => $va_facet_values) {
+			if ($vs_facet == '_search') { continue; }
+			$va_facet_info = $o_browse->getInfoForFacet($vs_facet);
+			$va_return['criteria_facet_names'][$vs_facet] = $va_facet_info['label_plural'];
+		}
+		
+		return $va_return;
+
+	}
+	# -------------------------------------------------------
+	/**
 	 * Get configuration for endpoint. Also does config validation.
 	 * @param string $ps_endpoint
 	 * @return array
@@ -258,7 +391,7 @@ class SimpleService {
 			throw new Exception('Invalid service endpoint');
 		}
 
-		if(!isset($va_endpoints[$ps_endpoint]['type']) || !in_array($va_endpoints[$ps_endpoint]['type'], array('search', 'detail', 'site_page'))) {
+		if(!isset($va_endpoints[$ps_endpoint]['type']) || !in_array($va_endpoints[$ps_endpoint]['type'], array('search', 'detail', 'refineablesearch', 'stats', 'site_page'))) {
 			throw new Exception('Service endpoint config is invalid: type must be search or detail');
 		}
 

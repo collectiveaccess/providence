@@ -753,6 +753,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		$pa_errors = array();
 		
+		$o_config = Configuration::load();
+		
+		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
+			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
+				$pa_options['logDirectory'] = ".";
+			}
+		}
+		
 		if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
 			throw new ApplicationException(_t("Cannot write log to %1. Please check the directory's permissions and retry loading.", $pa_options['logDirectory']));
 		}
@@ -1239,6 +1247,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_importers::$s_num_records_skipped = 0;
 		ca_data_importers::$s_import_error_list = array();
 		
+		$o_config = Configuration::load();
+		
 		$opa_app_plugin_manager = new ApplicationPluginManager();
 		
 		$va_notices = $va_errors = array();
@@ -1280,8 +1290,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			if (!$pb_no_transaction) { $t_add_to_set->setTransaction($o_trans); }
 		}
-		
-		$o_config = Configuration::load();
 		
 		if (!is_array($pa_options) || !isset($pa_options['logLevel']) || !$pa_options['logLevel']) {
 			$pa_options['logLevel'] = KLogger::INFO;

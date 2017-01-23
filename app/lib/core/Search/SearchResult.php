@@ -1106,6 +1106,7 @@ class SearchResult extends BaseObject {
 			
 			if ($vb_assume_display_field && in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels')) && !$va_path_components['subfield_name']) {
 				$va_path_components['subfield_name'] = $va_path_components['components'][2] = $t_instance->getLabelDisplayField();
+				$va_path_components['num_components'] = sizeof($va_path_components['components']);
 			}
 		
 			switch($va_path_components['hierarchical_modifier']) {
@@ -1657,13 +1658,15 @@ class SearchResult extends BaseObject {
 				return $pa_value_list;
 			} else {
 				// ... by returning a list of preferred label values 
-				$va_path_components['field_name'] = 'preferred_labels';
-				$va_path_components['subfield_name'] = $t_rel_instance->getLabelDisplayField();
+				$va_path_components['field_name'] = $va_path_components['components'][1] = 'preferred_labels';
+				$va_path_components['subfield_name'] = $va_path_components['components'][2] = $t_rel_instance->getLabelDisplayField();
+				$va_path_components['num_components'] = sizeof($va_path_components['components']);
 			}	
 		}
 		
 		if ($vb_assume_display_field && in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels')) && !$va_path_components['subfield_name']) {
 			$va_path_components['subfield_name'] = $va_path_components['components'][2] = $t_rel_instance->getLabelDisplayField();
+			$va_path_components['num_components'] = sizeof($va_path_components['components']);
 		}
 		$vs_pk = $t_rel_instance->primaryKey();
 		
