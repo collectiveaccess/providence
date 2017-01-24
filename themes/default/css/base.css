@@ -1750,7 +1750,8 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 .listtableEditDelete {
 	width: 36px;
 	text-align: center;
-	padding: 3px !important;
+	padding: 3px !important;	
+	white-space: nowrap;
 }
 
 #caWatchedItemsList.listtable {
