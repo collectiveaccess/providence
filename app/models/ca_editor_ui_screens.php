@@ -842,6 +842,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Disable quick add?'),
 								'description' => _t('If checked quickadd will be disabled regardless of user privileges.')
 							),
+							'disableSorts' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "10", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Disable sorting?'),
+								'hideOnSelect' => ['allowedSorts'],
+								'description' => _t('If checked sorting of related items will be disabled.')
+							),
 							'allowedSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
