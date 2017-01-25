@@ -6784,7 +6784,8 @@ create table ca_site_templates (
   template_id		    int unsigned        not null AUTO_INCREMENT,
   title					varchar(255)		not null,
   description			text				not null,
-  template				longtext			not null,
+  template				longtext			not null, 
+  template_code 		varchar(100)		not null,
   tags                  longtext            not null,
   deleted               tinyint unsigned    not null default 0,
 
