@@ -1142,10 +1142,13 @@
 	 *		includeUserSorts = 
 	 *		distinguishNonUniqueNames = 
 	 *		allowedSorts = 
+	 *		disableSorts = 
 	 *		request = 
 	 * @return array
 	 */
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
+		if (caGetOption('disableSorts', $pa_options, false)) { return []; }
+	
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
 		require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 		global $g_ui_locale_id;
