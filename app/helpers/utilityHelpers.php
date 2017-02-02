@@ -946,7 +946,7 @@ function caFileIsIncludable($ps_file) {
 			foreach([
 				'½' => $sep.'5', '⅓' => $sep.'333', '¼' => $sep.'25', '⅛' => $sep.'125',
 				'⅔' => $sep.'667', 
-				'¾'	=> $sep.'75', '⅜' => $sep.'375', '⅝' => $sep.'625', '⅞' => $sep.'875'] as $vs_glyph => $vs_val
+				'¾'	=> $sep.'75', '⅜' => $sep.'375', '⅝' => $sep.'625', '⅞' => $sep.'875', '⅒' => $sep.'1'] as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -3300,6 +3300,8 @@ function caFileIsIncludable($ps_file) {
 					$frac = "⅝";
 				} elseif (($num === 7) && ($pn_denom == 8)) {
 					$frac = "⅞";
+				} elseif (($num === 1) && ($pn_denom == 10)) {
+					$frac = "⅒";
 				} else {
 					$frac = "{$num}/{$pn_denom}";
 				}

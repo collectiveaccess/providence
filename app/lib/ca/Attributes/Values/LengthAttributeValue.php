@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -171,7 +171,8 @@
 						$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Length::FEET, 4);
 						break;
 					case 'fractions':
-						$this->ops_text_value = caLengthToFractions($vo_measurement->convertTo(Zend_Measure_Length::INCH, 8), 16);
+						$vn_in_inches = preg_replace("![^\d\.\-]+!", "", $vo_measurement->convertTo(Zend_Measure_Length::INCH, 8));
+						$this->ops_text_value = caLengthToFractions($vo_measurement->convertTo(Zend_Measure_Length::INCH, 8), preg_match("!\.1[0]*$!", $vn_in_inches) ? 10 : 16);	// if decimal is 1/10 set base-10 denominator to ensure use of 1/10 glyph
 						break;
 					default: // show value in unit entered, but adjusted for the UI locale
 						$this->ops_text_value = $vo_measurement->convertTo($pa_value_array['value_longtext2'], 4);
