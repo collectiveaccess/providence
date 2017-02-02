@@ -3436,7 +3436,7 @@ function caFileIsIncludable($ps_file) {
 							if (is_array($vm_list_val[1]) && $o_purifier) { 
 								$va_vals_proc = [];
 								foreach($vm_list_val[1] as $vm_sublist_val) {
-									$va_vals_proc[] = $o_purifier->purify($vm_sublist_val);
+									$va_vals_proc[] = !is_null($vm_sublist_val) ? $o_purifier->purify($vm_sublist_val) : $vm_sublist_val;
 								}
 							
 								if (!is_numeric($vs_key2)) { 
@@ -3446,9 +3446,9 @@ function caFileIsIncludable($ps_file) {
 								}
 							} else {
 								if (!is_numeric($vs_key2)) { 
-									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
 								} else {
-									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
 								}
 							}
 						} else {
@@ -3457,7 +3457,7 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 			} else {
-				$va_values_proc[$vs_key][] = ['=', $o_purifier ? $o_purifier->purify($vm_val) : $vm_val];
+				$va_values_proc[$vs_key][] = ['=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
 			}
 		}
 		return $va_values_proc;

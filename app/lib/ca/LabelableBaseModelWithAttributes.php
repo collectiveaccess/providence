@@ -718,7 +718,7 @@
 						}
 
 						if (is_null($vm_value)) {
-							if ($vs_op !== '=') { $vs_op = 'IS'; }
+							$vs_op = 'IS'; 
 							$va_label_sql[] = "({$vs_table}.{$vs_field} {$vs_op} NULL)";
 						} elseif (caGetOption('allowWildcards', $pa_options, false) && !is_array($vm_value) && (strpos($vm_value, '%') !== false)) {
 							$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";

@@ -632,7 +632,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	public function _parseOBJ($ps_filepath) {
 		if (!($r_rp = fopen($ps_filepath, "r"))) { return false; }
 		
-		while(($vs_line = trim(fgets($r_rp), "\n")) !== false) {
+		$vn_c = 0;
+		while((($vs_line = trim(fgets($r_rp), "\n")) !== false) && ($vn_c > 100)) {
 			if ($vs_line[0] === '#') { continue; }
 			
 			$va_toks = preg_split('![ ]+!', $vs_line);
@@ -644,6 +645,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				fclose($r_rp);
 				return true;
 			}
+			
+			$vn_c++;
 		}
 		fclose($r_rp);
 		return false;
