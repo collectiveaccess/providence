@@ -284,7 +284,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		return $g_default_list_item_id_cache[$ps_list_code] = $t_list->getDefaultItemID($ps_list_code);
+		return $g_default_list_item_id_cache[$ps_list_code] = $t_list->getDefaultItemID($ps_list_code, ['useFirstElementAsDefaultDefault' => true]);
 	}
 	# ---------------------------------------
 	/**

@@ -1013,7 +1013,7 @@
 			
 			// Bail and return list default
 			$t_list = new ca_lists();
-			return $t_list->getDefaultItemID($this->getSourceListCode());
+			return $t_list->getDefaultItemID($this->getSourceListCode(), ['useFirstElementAsDefaultDefault' => true]);
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1179,7 +1179,7 @@
 		 */
 		public function getDefaultTypeID() {
 			$t_list = new ca_lists();
-			return $t_list->getDefaultItemID($this->getTypeListCode(), array('omitRoot' => true));
+			return $t_list->getDefaultItemID($this->getTypeListCode(), ['omitRoot' => true, 'useFirstElementAsDefaultDefault' => true]);
 		}
 		# ------------------------------------------------------------------
 		/**
