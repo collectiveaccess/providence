@@ -61,7 +61,7 @@
 	$va_errors = array();
 	
 	$vn_rep_count = $t_subject->getRepresentationCount($va_settings);
-	$va_initial_values = $t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $va_settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request));
+	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $va_settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
 
 	foreach($va_initial_values as $vn_representation_id => $va_rep) {
 		if(is_array($va_action_errors = $this->request->getActionErrors('ca_object_representations', $vn_representation_id))) {
@@ -85,27 +85,7 @@
 	}
 	
 	if ($vb_batch) {
-		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
-			caHTMLSelect($vs_id_prefix."_batch_mode", array(
-				_t("do not use") => "_disabled_", 
-				_t('add to each item') => '_add_', 
-				_t('replace values') => '_replace_',
-				_t('remove all values') => '_delete_'
-			), array('id' => $vs_id_prefix.$t_item->tableNum()."_rel_batch_mode_select"))."</div>\n";
-?>
-	<script type="text/javascript">
-		jQuery(document).ready(function() {
-			jQuery('#<?php print $vs_id_prefix.$t_item->tableNum(); ?>_rel_batch_mode_select').change(function() {
-				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
-					jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').slideUp(250);
-				} else {
-					jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').slideDown(250);
-				}
-			});
-			jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').hide();
-		});
-	</script>
-<?php
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, (sizeof($va_initial_values) > 0), _t("Number of representations: %1", sizeof($va_initial_values)));
 	}

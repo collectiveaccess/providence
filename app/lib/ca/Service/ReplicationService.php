@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,10 +32,16 @@
 
 require_once(__CA_MODELS_DIR__.'/ca_change_log.php');
 require_once(__CA_MODELS_DIR__.'/ca_replication_log.php');
-
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
+require_once(__CA_LIB_DIR__."/core/Logging/Logger.php");
 
 class ReplicationService {
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	static $s_logger = null;
+	
 	# -------------------------------------------------------
 	/**
 	 * Dispatch service call
@@ -45,6 +51,10 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
+	
+		if (is_null(ReplicationService::$s_logger)) { 
+			ReplicationService::$s_logger = new Logger('replication');
+		}
 
 		switch(strtolower($ps_endpoint)) {
 			case 'getlog':
@@ -67,6 +77,9 @@ class ReplicationService {
 				break;
 			case 'pushmedia':
 				$va_return = self::pushMedia($po_request);
+				break;
+			case 'hasguid':
+				$va_return = self::hasGUID($po_request);
 				break;
 			default:
 				throw new Exception('Unknown endpoint');
@@ -102,6 +115,32 @@ class ReplicationService {
 				$pa_options['ignoreTables'] = $pa_ignore_tables;
 			}
 		}
+		
+		if($ps_only_tables = $po_request->getParameter('onlyTables', pString, null, array('retainBackslashes' => false))) {
+			$pa_only_tables = @json_decode($ps_only_tables, true);
+			if(is_array($pa_only_tables) && sizeof($pa_only_tables)) {
+				$pa_options['onlyTables'] = $pa_only_tables;
+			}
+		}
+		
+		if($ps_include_metadata = $po_request->getParameter('includeMetadata', pString, null, array('retainBackslashes' => false))) {
+			$pa_include_metadata = @json_decode($ps_include_metadata, true);
+			if(is_array($pa_include_metadata) && sizeof($pa_include_metadata)) {
+				$pa_options['includeMetadata'] = $pa_include_metadata;
+			}
+		}
+		if($ps_exclude_metadata = $po_request->getParameter('excludeMetadata', pString, null, array('retainBackslashes' => false))) {
+			$pa_exclude_metadata = @json_decode($ps_exclude_metadata, true);
+			if(is_array($pa_exclude_metadata) && sizeof($pa_exclude_metadata)) {
+				$pa_options['excludeMetadata'] = $pa_exclude_metadata;
+			}
+		}
+		if ($ps_for_guid = $po_request->getParameter('forGUID', pString)) {
+			$pa_options['forGUID'] = $ps_for_guid;
+		}
+		if ($ps_for_logged_guid = $po_request->getParameter('forLoggedGUID', pString)) {
+			$pa_options['forLoggedGUID'] = $ps_for_logged_guid;
+		}
 
 		// if log contains media, and pushMediaTo is set, copy media first before sending log. that way the
 		// other side of the sync doesn't have to pull the media from us (which may not be possible due to networking
@@ -118,45 +157,64 @@ class ReplicationService {
 			$va_log = ca_change_log::getLog($pn_from, $pn_limit, $pa_options, $va_media);
 
 			if(sizeof($va_media) > 0) {
+				$va_push_list = [];
 				foreach($va_media as $vs_md5 => $vs_url) {
+					if (!$vs_url) { continue; }
+					if (isset($va_push_list[$vs_md5])) { continue; }
 
 					// translate url to absolute media path
 					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
 					$vs_local_path = __CA_BASE_DIR__ . str_replace(__CA_URL_ROOT__, '', $vs_path_from_url);
-
+					if (!file_exists(realpath($vs_local_path))) { continue; }
+					
+					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize($vn_filesize = @filesize($vs_local_path))."]");
+					if ($vn_filesize > (1024 * 1024 * 250)) { continue; } // bail if file > 250megs
 					// send media to remote service endpoint
 					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
 					$o_file = new CURLFile(realpath($vs_local_path));
 
-					curl_setopt($o_curl, CURLOPT_POST, true);
-					curl_setopt(
-						$o_curl,
-						CURLOPT_POSTFIELDS,
-						[
-							'file' => $o_file,
-							'url_checksum' => $vs_md5
-						]
-					);
+					$vn_retries = 5;
+					while($vn_retries > 0) {
+						$vn_retries--;
+						
+						curl_setopt($o_curl, CURLOPT_POST, true);
+						curl_setopt(
+							$o_curl,
+							CURLOPT_POSTFIELDS,
+							[
+								'file' => $o_file,
+								'url_checksum' => $vs_md5
+							]
+						);
+					
+						curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, true);
+						curl_setopt($o_curl, CURLOPT_SSL_VERIFYHOST, 0);
+						curl_setopt($o_curl, CURLOPT_SSL_VERIFYPEER, 0);
+						curl_setopt($o_curl, CURLOPT_FOLLOWLOCATION, true);
+						curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 60);
+						curl_setopt($o_curl, CURLOPT_TIMEOUT, 7200);
 
-					curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, true);
-					curl_setopt($o_curl, CURLOPT_SSL_VERIFYHOST, 0);
-					curl_setopt($o_curl, CURLOPT_SSL_VERIFYPEER, 0);
-					curl_setopt($o_curl, CURLOPT_FOLLOWLOCATION, true);
-					curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 60);
-					curl_setopt($o_curl, CURLOPT_TIMEOUT, 7200);
+						// basic auth
+						curl_setopt($o_curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+						curl_setopt($o_curl, CURLOPT_USERPWD, $va_target_conf['service_user'].':'.$va_target_conf['service_key']);
 
-					// basic auth
-					curl_setopt($o_curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-					curl_setopt($o_curl, CURLOPT_USERPWD, $va_target_conf['service_user'].':'.$va_target_conf['service_key']);
+						curl_exec($o_curl);
 
-					curl_exec($o_curl);
+						$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
+						if($vn_code != 200) {
+							if ($vn_retries == 0) {
+								throw new Exception(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code));
+							}
+							ReplicationService::$s_logger->log(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3. Retrying (%4 remaining)", $vs_local_path, $ps_push_media_to, $vn_code, $vn_retries));
+							sleep(2);
+							continue;
+						}
 
-					$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
-					if($vn_code != 200) {
-						throw new Exception(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code));
+						curl_close($o_curl);
+						break;
 					}
-
-					curl_close($o_curl);
+					
+					$va_push_list[$vs_md5] = true;
 				}
 			}
 		} else {
@@ -229,16 +287,20 @@ class ReplicationService {
 		foreach($va_log as $vn_log_id => $va_log_entry) {
 			$o_tx = new \Transaction($o_db);
 			try {
+				if ($va_log_entry['SKIP']) { throw new CA\Sync\LogEntry\IrrelevantLogEntry(_t('Skip log entry')); }
+				
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->sanityCheck();
 			} catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				// skip log entry (still counts as "applied")
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id;
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
 				continue;
 			} catch (\Exception $e) {
 				// append log entry to message for easier debugging
 				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
+				ReplicationService::$s_logger->log("[ERROR] Sanity check error: ".$e->getMessage());
 			}
 
 			// if there were sanity check errors, return them here
@@ -256,9 +318,12 @@ class ReplicationService {
 			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
+				
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Apply error: ".$e->getMessage());
 			} catch(\Exception $e) {
 				$vs_error = get_class($e) . ': ' . $e->getMessage() . $e->getTraceAsString() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
 				$o_tx->rollback();
+				ReplicationService::$s_logger->log("[ERROR] Apply error: ".$e->getMessage());
 				break;
 			}
 			$o_tx->commit();
@@ -273,6 +338,8 @@ class ReplicationService {
 			$t_replication_log->set('status', 'C');
 			$t_replication_log->set('log_id', $vn_last_applied_log_id);
 			$t_replication_log->insert();
+		} else {
+			$vn_last_applied_log_id = ca_replication_log::getLastReplicatedLogID($vs_source_system_guid);
 		}
 
 		if($vs_error) {
@@ -355,8 +422,8 @@ class ReplicationService {
 
 		$va_files[$vs_checksum] = $vs_new_file_path;
 
-		// only stash 100 files tops
-		if(sizeof($va_files) > 100) {
+		// only stash 500 files tops
+		if(sizeof($va_files) > 500) {
 			$va_excess_files = array_splice($va_files, 99);
 
 			foreach($va_excess_files as $vs_file) {
@@ -368,6 +435,32 @@ class ReplicationService {
 		$o_app_vars->save();
 
 		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function hasGUID($po_request) {
+		if($po_request->getRequestMethod() === 'POST') { 
+			$va_guids_to_check = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$va_guids_to_check = explode(";", $po_request->getParameter('guids', pString));
+		}
+		if ((!is_array($va_guids_to_check) || !sizeof($va_guids_to_check)) && ($vs_guid = $po_request->getParameter('guid', pString))) {
+			$va_guids_to_check = [$vs_guid];
+		}
+		
+		$va_results = [];
+		if(is_array($va_guids_to_check)) {
+			foreach($va_guids_to_check as $vs_guid) {
+				if (!($va_results[$vs_guid] = ca_guids::getInfoForGUID($vs_guid))) {
+					$va_results[$vs_guid] = '???';
+				}
+			}
+		}
+		return $va_results;
 	}
 	# -------------------------------------------------------
 }

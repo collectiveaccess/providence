@@ -244,6 +244,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				case 'text':
 					$pa_options['returnIdno'] = false;
 					$pa_options['idsOnly'] = false;
+					$pa_options['returnDisplayText'] = true;
 					break;
 				default:
 					$pa_options['idsOnly'] = true;
@@ -253,6 +254,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
 			return caGetListItemIdno($this->opn_item_id);
+		}
+		if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
+			return caGetListItemForDisplayByItemID($this->opn_item_id, !$pa_options['useSingular']);
 		}
 
 		if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {
@@ -345,12 +349,15 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				default:
 					if ($vn_id = ca_list_items::find(array('item_id' => (int)$ps_value, 'list_id' => $pa_element_info['list_id']), array('returnAs' => 'firstId', 'transaction' => $o_trans))) {
 						break(2);
-						//} else {
-						//$this->postError(1970, _t('Value with item_id %1 does not exist in list %2', $ps_value, $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
 					}
 					break;
 			}
 		}
+		
+		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null)) && (strlen($ps_value) > 0)) {
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
+		}
+		
 		if (!$vb_require_value && !$vn_id) {
 			return array(
 				'value_longtext1' => null,

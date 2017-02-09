@@ -47,18 +47,15 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
-		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/base.css" type="text/css" media="screen" />
-		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/sets.css" type="text/css" media="screen" />
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
-		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
 <?php
 	print AssetLoadManager::getLoadHTML($this->request);
 	print MetaTagManager::getHTML();
 	
-	if (file_exists($this->request->getThemeDirectoryPath().'/css/local.css')) {
-		print '<link rel="stylesheet" href="'.$this->request->getThemeUrlPath().'/css/local.css" type="text/css" media="screen" />
-';
+	if ($vs_local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
+		print "<link rel='stylesheet' href='{$vs_local_css_url_path}' type='text/css' media='screen' />
+";
 	}
 	
 	//

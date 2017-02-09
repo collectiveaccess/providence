@@ -170,7 +170,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertContains('foo', $va_tables);
 		$this->assertContains('bar', $va_tables);
-		$this->assertEquals(218, sizeof($va_tables)); // 216 CA tables plus 2 we created!
+		$this->assertEquals(222, sizeof($va_tables)); // 220 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {

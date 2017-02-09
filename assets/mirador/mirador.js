@@ -30593,7 +30593,8 @@ bindEvents: function() {
     bounds.bottom = bounds.top + el.height();
     bounds.right = bounds.left + el.width();
 
-    return (!(viewport.right < bounds.left || viewport.left > bounds.right || viewport.bottom < bounds.top || viewport.top > bounds.bottom));
+	// disregard vertical scroll because when opening in a fixed position overlay scroll may prevent loading of images
+    return (!(viewport.right < bounds.left || viewport.left > bounds.right)); // || viewport.bottom < bounds.top || viewport.top > bounds.bottom));
   };
 
   $.getRangeIDByCanvasID = function(structures, canvasID /*, [given parent range] (for multiple ranges, later) */) {

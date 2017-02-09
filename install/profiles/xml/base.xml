@@ -3994,6 +3994,45 @@
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="site_page_editor_ui" type="ca_site_pages">
+      <labels>
+        <label locale="en_US">
+          <name>Site page editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="title">
+              <bundle>title</bundle>
+            </placement>
+            <placement code="path">
+              <bundle>path</bundle>
+            </placement>
+            <placement code="template_id">
+              <bundle>template_id</bundle>
+            </placement>
+            <placement code="description">
+              <bundle>description</bundle>
+            </placement>
+            <placement code="ca_site_pages_content">
+              <bundle>ca_site_pages_content</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="keywords">
+              <bundle>keywords</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_loans_x_entities">

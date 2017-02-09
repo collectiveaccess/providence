@@ -126,9 +126,25 @@
 		return $vs_element;
 	}
 	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Render an HTML text form element (<input type="text"> or <textarea> depending upon height).
+	 *
+	 * @param string $ps_name The name of the rendered form element
+	 * @param array $pa_attributes An array of attributes to include in the rendered HTML form element. If you need to set class, id, alt or other attributes, set them here.
+	 * @param array Options include:
+	 *		width = Width of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
+	 *		height = Height of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
+	 * 		usewysiwygeditor = Use rich text editor for text element. Only available when the height of the text element is multi-line. [Default is false]
+	 *
+	 * @return string
+	 */
 	function caHTMLTextInput($ps_name, $pa_attributes=null, $pa_options=null) {
 		$vb_is_textarea = false;
 		$va_styles = array();
+		
+		$vb_use_wysiwyg_editor = caGetOption('usewysiwygeditor', $pa_options, false);
+		$vn_width = $vn_height = null;
+		
 		if (is_array($va_dim = caParseFormElementDimension(
 			(isset($pa_options['width']) ? $pa_options['width'] : 
 				(isset($pa_attributes['size']) ? $pa_attributes['size'] : 
@@ -137,22 +153,25 @@
 			)
 		))) {
 			if ($va_dim['type'] == 'pixels') {
-				$va_styles[] = "width: ".$va_dim['dimension']."px;";
+				$va_styles[] = "width: ".($vn_width = $va_dim['dimension'])."px;";
 				unset($pa_attributes['width']);
 				unset($pa_attributes['size']);
 				unset($pa_attributes['cols']);
 			} else {
 				// width is in characters
-				$pa_attributes['size'] =$va_dim['dimension'];
+				$pa_attributes['size'] = $va_dim['dimension'];
+				$vn_width = $va_dim['dimension'] * 6;
 			}
 		}	
+		if (!$vn_width) $vn_width = 300; 
+		
 		if (is_array($va_dim = caParseFormElementDimension(
 			(isset($pa_options['height']) ? $pa_options['height'] : 
 				(isset($pa_attributes['height']) ? $pa_attributes['height'] : null)
 			)
 		))) {
 			if ($va_dim['type'] == 'pixels') {
-				$va_styles[] = "height: ".$va_dim['dimension']."px;";
+				$va_styles[] = "height: ".($vn_height = $va_dim['dimension'])."px;";
 				unset($pa_attributes['height']);
 				unset($pa_attributes['rows']);
 				$vb_is_textarea = true;
@@ -161,6 +180,7 @@
 				if (($pa_attributes['rows'] = $va_dim['dimension']) > 1) {
 					$vb_is_textarea = true;
 				}
+				$vn_height = $va_dim['dimension'] * 12;
 			}
 		} else {
 			if (($pa_attributes['rows'] = (isset($pa_attributes['height']) && $pa_attributes['height']) ? $pa_attributes['height'] : 1) > 1) {
@@ -168,7 +188,14 @@
 			}
 		}
 		
+		if (!$vn_height) $vn_height = 300; 
+		
 		$pa_attributes['style'] = join(" ", $va_styles);
+		
+		// WYSIWYG editor requires an DOM ID so generate one if none is explicitly set
+		if ($vb_use_wysiwyg_editor && !isset($pa_attributes['id'])) {
+			$pa_attributes['id'] = "{$ps_name}_element";
+		}
 		
 		if ($vb_is_textarea) {
 			$vs_value = $pa_attributes['value'];
@@ -181,6 +208,29 @@
 			$pa_attributes['size']  = !$pa_attributes['size'] ?  $pa_attributes['width'] : $pa_attributes['size'];
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='text'/>\n";
+		}
+		
+		if ($vb_use_wysiwyg_editor) {
+			AssetLoadManager::register("ckeditor");
+								
+			$o_config = Configuration::load();
+			if(!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = []; }
+			
+			$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
+			var ckEditor = CKEDITOR.replace( '".$pa_attributes['id']."',
+			{
+				toolbar : ".json_encode(array_values($va_toolbar_config)).",
+				width: '{$vn_width}px',
+				height: '{$vn_height}px',
+				toolbarLocation: 'top',
+				enterMode: CKEDITOR.ENTER_BR
+			});
+	
+			ckEditor.on('instanceReady', function(){ 
+				 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+			});
+ 	});									
+</script>";
 		}
 		return $vs_element;
 	}

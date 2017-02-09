@@ -295,6 +295,14 @@ class Connection implements ConnectionInterface
     private function getURI($uri, $params)
     {
         if (isset($params) === true && !empty($params)) {
+            array_walk($params, function (&$value, &$key) {
+                if ($value === true) {
+                    $value = 'true';
+                } else if ($value === false) {
+                    $value = 'false';
+                }
+            });
+
             $uri .= '?' . http_build_query($params);
         }
 
@@ -640,7 +648,7 @@ class Connection implements ConnectionInterface
         $error = $this->serializer->deserialize($response['body'], $response['transfer_stats']);
         if (is_array($error) === true) {
             // 2.0 structured exceptions
-            if (isset($error['error']['reason']) === true) {
+            if (isset($error['error']['root_cause']) === true) {
 
                 // Try to use root cause first (only grabs the first root cause)
                 $root = $error['error']['root_cause'];

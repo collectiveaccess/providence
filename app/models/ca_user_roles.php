@@ -34,9 +34,10 @@
    *
    */
 
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-	require_once(__CA_LIB_DIR__."/ca/WidgetManager.php");
-	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/ca/WidgetManager.php");
+require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
  	
 
 BaseModel::$s_ca_models_definitions['ca_user_roles'] = array(
@@ -100,6 +101,8 @@ BaseModel::$s_ca_models_definitions['ca_user_roles'] = array(
 );
 
 class ca_user_roles extends BaseModel {
+	use SyncableBaseModel;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

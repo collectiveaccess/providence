@@ -13,6 +13,7 @@ namespace Symfony\Component\VarDumper\Tests\Caster;
 
 use Symfony\Component\VarDumper\Test\VarDumperTestTrait;
 use Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo;
+use Symfony\Component\VarDumper\Tests\Fixtures\NotLoadableClass;
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
@@ -49,7 +50,7 @@ ReflectionClass {
     "export" => ReflectionMethod {
       +name: "export"
       +class: "ReflectionClass"
-      parameters: {
+%A    parameters: {
         $%s: ReflectionParameter {
 %A         position: 0
 %A
@@ -75,7 +76,7 @@ Closure {
     \$b: & 123
   }
   file: "%sReflectionCasterTest.php"
-  line: "65 to 65"
+  line: "66 to 66"
 }
 EOTXT
             , $var
@@ -91,7 +92,7 @@ EOTXT
 ReflectionParameter {
   +name: "arg1"
   position: 0
-  typeHint: "Symfony\Component\VarDumper\Tests\Caster\NotExistingClass"
+  typeHint: "Symfony\Component\VarDumper\Tests\Fixtures\NotLoadableClass"
   default: null
 }
 EOTXT
@@ -146,6 +147,10 @@ EOTXT
      */
     public function testGenerator()
     {
+        if (extension_loaded('xdebug')) {
+            $this->markTestSkipped('xdebug is active');
+        }
+
         $g = new GeneratorDemo();
         $g = $g->baz();
         $r = new \ReflectionGenerator($g);
@@ -155,11 +160,11 @@ Generator {
   this: Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo { …}
   executing: {
     Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo->baz(): {
-      %sGeneratorDemo.php:14: """
-        {\n
-            yield from bar();\n
-        }\n
-        """
+      %sGeneratorDemo.php:14: {
+        : {
+        :     yield from bar();
+        : }
+      }
     }
   }
 }
@@ -176,43 +181,31 @@ array:2 [
   0 => ReflectionGenerator {
     this: Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo { …}
     trace: {
-      3. Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo::foo() ==> yield(): {
-        src: {
-          %sGeneratorDemo.php:9: """
-            {\n
-                yield 1;\n
-            }\n
-            """
-        }
+      %sGeneratorDemo.php:9: {
+        : {
+        :     yield 1;
+        : }
       }
-      2. Symfony\Component\VarDumper\Tests\Fixtures\bar() ==> Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo::foo(): {
-        src: {
-          %sGeneratorDemo.php:20: """
-            {\n
-                yield from GeneratorDemo::foo();\n
-            }\n
-            """
-        }
+      %sGeneratorDemo.php:20: {
+        : {
+        :     yield from GeneratorDemo::foo();
+        : }
       }
-      1. Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo->baz() ==> Symfony\Component\VarDumper\Tests\Fixtures\bar(): {
-        src: {
-          %sGeneratorDemo.php:14: """
-            {\n
-                yield from bar();\n
-            }\n
-            """
-        }
+      %sGeneratorDemo.php:14: {
+        : {
+        :     yield from bar();
+        : }
       }
     }
   }
   1 => Generator {
     executing: {
       Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo::foo(): {
-        %sGeneratorDemo.php:10: """
-                  yield 1;\n
-              }\n
-          \n
-          """
+        %sGeneratorDemo.php:10: {
+          :     yield 1;
+          : }
+          : 
+        }
       }
     }
   }
@@ -223,6 +216,6 @@ EODUMP;
     }
 }
 
-function reflectionParameterFixture(NotExistingClass $arg1 = null, $arg2)
+function reflectionParameterFixture(NotLoadableClass $arg1 = null, $arg2)
 {
 }

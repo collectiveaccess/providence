@@ -155,6 +155,8 @@
 					return "SearchPlacesAdvanced";
 				case "ca_storage_locations":
 					return "SearchStorageLocationsAdvanced";
+				case "ca_object_representations":
+					return "SearchObjectRepresentationsAdvanced";
 				case "ca_objects":
 				default:
 					return "SearchObjectsAdvanced";

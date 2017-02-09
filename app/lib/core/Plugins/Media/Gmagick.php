@@ -227,6 +227,11 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	private $ops_dcraw_path;
 	private $ops_graphicsmagick_path;
 	private $ops_imagemagick_path;
+	
+	/**
+	 * Per-request cache of extracted metadata from read files
+	 */
+	static $s_metadata_read_cache = [];
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Provides image processing and conversion services using ImageMagick via the PECL Gmagick PHP extension');
@@ -1173,9 +1178,11 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle = $handle;
 			$this->filepath = $ps_filepath;
 
-
 			$this->metadata = array();
 
+		if (WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath]) {
+			$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath];
+		} else {
 			// handle metadata
 
 			/* EXIF */
@@ -1237,62 +1244,64 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 
 			// try to get IPTC and DPX with GraphicsMagick, if available
-			if(caMediaPluginGraphicsMagickInstalled()) {
-				/* IPTC metadata */
-				$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
-				@rename($vs_iptc_file, $vs_iptc_file.'.iptc'); // GM uses the file extension to figure out what we want
-				$vs_iptc_file .= '.iptc';
-				exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			 if(caMediaPluginGraphicsMagickInstalled()) {
+ 				/* IPTC metadata */
+ 				$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
+ 				@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
+ 				$vs_iptc_file .= '.iptc';
+ 				exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+ 
+ 				$vs_iptc_data = file_get_contents($vs_iptc_file);
+ 				@unlink($vs_iptc_file);
+ 
+ 				$va_iptc_raw = iptcparse($vs_iptc_data);
+ 
+ 				$va_iptc_tags = array(
+ 					'2#004'=>'Genre',
+ 					'2#005'=>'DocumentTitle',
+ 					'2#010'=>'Urgency',
+ 					'2#015'=>'Category',
+ 					'2#020'=>'Subcategories',
+ 					'2#025'=>'Keywords',
+ 					'2#040'=>'SpecialInstructions',
+ 					'2#055'=>'CreationDate',
+ 					'2#060'=>'TimeCreated',
+ 					'2#080'=>'AuthorByline',
+ 					'2#085'=>'AuthorTitle',
+ 					'2#090'=>'City',
+ 					'2#095'=>'State',
+ 					'2#100'=>'CountryCode',
+ 					'2#101'=>'Country',
+ 					'2#103'=>'OTR',
+ 					'2#105'=>'Headline',
+ 					'2#110'=>'Credit',
+ 					'2#115'=>'PhotoSource',
+ 					'2#116'=>'Copyright',
+ 					'2#120'=>'Caption',
+ 					'2#122'=>'CaptionWriter'
+ 				);
+ 
+ 				$va_iptc = array();
+ 				if (is_array($va_iptc_raw)) {
+ 					foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
+ 						if(isset($va_iptc_tags[$vs_iptc_tag])) {
+ 							$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
+ 						}
+ 					}
+ 				}
+ 
+ 				if (sizeof($va_iptc)) {
+ 					$va_metadata['IPTC'] = $va_iptc;
+ 				}
+ 
+ 				/* DPX metadata */
+ 				exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+ 				if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
+ 			}
 
-				$vs_iptc_data = file_get_contents($vs_iptc_file);
-				@unlink($vs_iptc_file);
-
-				$va_iptc_raw = iptcparse($vs_iptc_data);
-
-				$va_iptc_tags = array(
-					'2#004'=>'Genre',
-					'2#005'=>'DocumentTitle',
-					'2#010'=>'Urgency',
-					'2#015'=>'Category',
-					'2#020'=>'Subcategories',
-					'2#025'=>'Keywords',
-					'2#040'=>'SpecialInstructions',
-					'2#055'=>'CreationDate',
-					'2#060'=>'TimeCreated',
-					'2#080'=>'AuthorByline',
-					'2#085'=>'AuthorTitle',
-					'2#090'=>'City',
-					'2#095'=>'State',
-					'2#100'=>'CountryCode',
-					'2#101'=>'Country',
-					'2#103'=>'OTR',
-					'2#105'=>'Headline',
-					'2#110'=>'Credit',
-					'2#115'=>'PhotoSource',
-					'2#116'=>'Copyright',
-					'2#120'=>'Caption',
-					'2#122'=>'CaptionWriter'
-				);
-
-				$va_iptc = array();
-				if (is_array($va_iptc_raw)) {
-					foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
-						if(isset($va_iptc_tags[$vs_iptc_tag])) {
-							$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
-						}
-					}
-				}
-
-				if (sizeof($va_iptc)) {
-					$va_metadata['IPTC'] = $va_iptc;
-				}
-
-				/* DPX metadata */
-				exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-				if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
-			}
-
-			$this->metadata = $va_metadata;
+			if (sizeof(WLPlugMediaGmagick::$s_metadata_read_cache) > 100) { WLPlugMediaGmagick::$s_metadata_read_cache = array_slice(WLPlugMediaGmagick::$s_metadata_read_cache, 50); }
+			$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath] = $va_metadata;
+		}
 
 			return $handle;
 		} catch(Exception $e) {

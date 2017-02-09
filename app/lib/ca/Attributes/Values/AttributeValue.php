@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -169,7 +169,7 @@ abstract class AttributeValue extends BaseObject {
 	 *
 	 * @return int Attribute value type code
 	 */
-	/*abstract public function getType();*/
+	abstract public function getType();
 	# ------------------------------------------------------------------
 	/**
 	 * Get extra values to add to search index.

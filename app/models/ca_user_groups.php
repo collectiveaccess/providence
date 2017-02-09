@@ -35,6 +35,7 @@
    */
 
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
@@ -121,6 +122,8 @@ BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
 );
 
 class ca_user_groups extends BaseModel {
+	use SyncableBaseModel;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,9 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Stream.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Syslog.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Log/Formatter/Simple.php");
+require_once(__CA_LIB_DIR__."/core/Logging/Logger.php");
+require_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
 use \CollectiveAccessService as CAS;
 
@@ -44,33 +43,13 @@ class Replicator {
 	protected $opo_replication_conf;
 
 	/**
-	 * @var Zend_Log
+	 * @var Logger
 	 */
-	protected $opo_replication_log = null;
+	static $s_logger = null;
 
 	public function __construct() {
 		$this->opo_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
-
-		$o_writer = null;
-		if($vs_log = $this->opo_replication_conf->get('replication_log')) {
-			try {
-				$o_writer = new Zend_Log_Writer_Stream($vs_log);
-				$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%timestamp% %priorityName%: %message%' . PHP_EOL));
-			} catch (Zend_Log_Exception $e) { // error while opening the file (usually permissions)
-				$o_writer = null;
-				print CLIUtils::textWithColor("Couldn't open log file. Now logging via system log.", "bold_red") . PHP_EOL . PHP_EOL;
-			}
-		}
-
-			// default: log everything to syslog
-		if(!$o_writer) {
-			$o_writer = new Zend_Log_Writer_Syslog(array('application' => 'CollectiveAccess Replicator', 'facility' => LOG_USER));
-			// no need for timespamps in syslog ... the syslog itsself provides that
-			$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%priorityName%: %message%'.PHP_EOL));
-		}
-
-		$this->opo_replication_log = new Zend_Log($o_writer);
-		$this->opo_replication_log->setTimestampFormat('D Y-m-d H:i:s');
+		Replicator::$s_logger = new Logger('replication');
 	}
 
 	protected function getSourcesAsServiceClients() {
@@ -99,7 +78,7 @@ class Replicator {
 		}
 		return $va_return;
 	}
-
+	
 	/**
 	 * Log message with given log level
 	 * @param string $ps_msg
@@ -107,30 +86,9 @@ class Replicator {
 	 *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
 	 */
 	public function log($ps_msg, $pn_level) {
-		if(!in_array($pn_level, array(Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR))){
-			$pn_level = Zend_Log::INFO;
-		}
-
-		$this->opo_replication_log->log($ps_msg, $pn_level);
-
-		switch($pn_level) {
-			case Zend_Log::DEBUG:
-				if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-					print CLIUtils::textWithColor($ps_msg, 'purple') . PHP_EOL;
-				}
-				break;
-			case Zend_Log::INFO:
-				print CLIUtils::textWithColor($ps_msg, 'green') . PHP_EOL;
-				break;
-			case Zend_Log::WARN:
-				print CLIUtils::textWithColor($ps_msg, 'yellow') . PHP_EOL;
-				break;
-			case Zend_Log::ERR:
-				CLIUtils::addError($ps_msg);
-				break;
-		}
+		Replicator::$s_logger->log($ps_msg, $pn_level);
 	}
-
+	
 	public function replicate() {
 		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
@@ -158,6 +116,7 @@ class Replicator {
 					->addGetParameter('system_guid', $vs_source_system_guid)
 					->request();
 				$pn_replicated_log_id = $o_result->getRawData()['replicated_log_id'];
+				$va_backlog = [];
 
 				if($pn_replicated_log_id) {
 					$pn_replicated_log_id = ((int) $pn_replicated_log_id) + 1;
@@ -185,7 +144,10 @@ class Replicator {
 				} else {
 					$pn_min_log_id = (int) $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_id'];
 				}
-				if($pn_min_log_id > $pn_replicated_log_id) { $pn_replicated_log_id = $pn_min_log_id; }
+				if($pn_min_log_id > $pn_replicated_log_id) { 
+					$pn_replicated_log_id = $pn_min_log_id; 
+					$this->log(_t("Set log id to minimum ({$pn_replicated_log_id})"), Zend_Log::INFO);
+				}
 
 				// get skip if expression
 				$pa_skip_if_expression = $this->opo_replication_conf->get('sources')[$vs_source_key]['skipIfExpression'];
@@ -204,18 +166,183 @@ class Replicator {
 				if(is_array($pa_ignore_tables) && sizeof($pa_ignore_tables)) {
 					$vs_ignore_tables = json_encode(array_unique(array_values($pa_ignore_tables)));
 				}
+				
+				// get only tables
+				$pa_only_tables = $this->opo_replication_conf->get('sources')[$vs_source_key]['onlyTables'];
+				if(!is_array($pa_only_tables)) { $pa_only_tables = []; }
+				if(is_array($pa_only_tables_global = $this->opo_replication_conf->get('sources')['onlyTables'])) {
+					$pa_only_tables = array_merge($pa_only_tables_global, $pa_only_tables);
+				}
+				$vs_only_tables = null;
+				if(is_array($pa_only_tables) && sizeof($pa_only_tables)) {
+					$vs_only_tables = json_encode(array_unique(array_values($pa_only_tables)));
+				}
+				
+				// get includeMetadata list
+				$pa_include_metadata = $this->opo_replication_conf->get('sources')[$vs_source_key]['includeMetadata'];
+				$vs_include_metadata = null;
+				if(is_array($pa_include_metadata) && sizeof($pa_include_metadata)) {
+					$vs_include_metadata = json_encode($pa_include_metadata);
+				}
+				// get excludeMetadata list
+				$pa_exclude_metadata = $this->opo_replication_conf->get('sources')[$vs_source_key]['excludeMetadata'];
+				$vs_exclude_metadata = null;
+				if(is_array($pa_exclude_metadata) && sizeof($pa_exclude_metadata)) {
+					$vs_exclude_metadata = json_encode($pa_exclude_metadata);
+				}
+				// get filter_on_access_settings
+				if (!is_array($pa_filter_on_access_settings = $this->opo_replication_conf->get('sources')[$vs_source_key]['filter_on_access_settings']) || !sizeof($pa_filter_on_access_settings)) {
+					$pa_filter_on_access_settings = null;
+				}
+				
 
+				$pn_start_replicated_id = $pn_replicated_log_id;
+				
+				$va_back_log = [];
 				$pb_ok = true;
 				while(true) { // use chunks of 10 entries until something happens (success/err)
 					// get change log from source, starting with the log id we got above
-					$va_source_log_entries = $o_source->setEndpoint('getlog')
+					$va_source_log_entries = $o_source->setEndpoint('getlog')->clearGetParameters()
 						->addGetParameter('from', $pn_replicated_log_id)
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
 						->addGetParameter('limit', 10)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
+						->addGetParameter('onlyTables', $vs_only_tables)
+						->addGetParameter('includeMetadata', $vs_include_metadata)
+						->addGetParameter('excludeMetadata', $vs_exclude_metadata)
 						->addGetParameter('pushMediaTo', $vs_push_media_to)
 						->request()->getRawData();
 
+					if (
+						(bool)$this->opo_replication_conf->get('sources')[$vs_source_key]['push_missing']
+						||
+						(bool)$this->opo_replication_conf->get('sources')[$vs_target_key]['push_missing']
+					) {
+						// harvest guids used for updates
+						$va_guid_list = [];
+						$va_source_log_entries_for_missing_guids = [];
+						
+						$o_guid_already_exists = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
+											->setRequestBody(caExtractArrayValuesFromArrayOfArrays($va_source_log_entries, 'guid'))
+											->request();
+						$va_guid_already_exists = $o_guid_already_exists->getRawData();
+					
+						foreach($va_source_log_entries as $vn_log_id => $va_source_log_entry) {
+							if (is_array($va_source_log_entry['subjects'])) {
+								$vb_have_access = false;
+								foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
+									if (!($vb_have_access = (is_array($va_guid_already_exists[$va_source_log_subject['guid']])))) {									
+										// TODO: this assumes the source is where we're running replication from (eg. PUSH)
+										// should replace with a service call to the source
+										$vb_have_access = (($pa_filter_on_access_settings && !ca_change_log::rowHasAccess($va_source_log_subject['subject_table_num'], $va_source_log_subject['subject_row_id'], $pa_filter_on_access_settings))) ? 0 : 1;
+									}
+									if ($vb_have_access) {
+										$va_guid_list[$va_source_log_subject['guid']] = 1;
+									}
+								}
+								
+								if (!$vb_have_access) {
+									$va_source_log_entries[$vn_log_id]['SKIP'] = 1;
+								}
+							}
+						}
+						
+						// are any of these guids not present on the target?
+						$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
+								->setRequestBody(array_keys($va_guid_list))
+								->request();
+						$va_guid_presence_map = $o_resp->getRawData();
+					
+						if (is_array($va_guid_presence_map) && sizeof($va_guid_presence_map)) {
+							// run log entries for those guids
+							foreach($va_guid_presence_map as $vs_guid => $va_guid_info) {
+								if ($vs_guid && !is_array($va_guid_info) && ($va_guid_list[$vs_guid])) {	// Only process related if the guid is not present and access is set
+									if ($va_back_log[$vs_guid]) { continue; }
+									$va_back_log[$vs_guid] = true;
+									$this->log(_t("Getting log for missing guid %1", $vs_guid), Zend_Log::DEBUG);
+									$va_log = $o_source->setEndpoint('getlog')
+										->clearGetParameters()
+										->addGetParameter('forGUID', $vs_guid)
+										->addGetParameter('skipIfExpression', $vs_skip_if_expression)
+										->addGetParameter('ignoreTables', $vs_ignore_tables)
+										->addGetParameter('onlyTables', $vs_only_tables)
+										->addGetParameter('includeMetadata', $vs_include_metadata)
+										->addGetParameter('excludeMetadata', $vs_exclude_metadata)
+										->addGetParameter('pushMediaTo', $vs_push_media_to)
+										->request()->getRawData();
+									if (is_array($va_log)) {
+										$va_source_log_entries_for_missing_guids = array_replace($va_source_log_entries_for_missing_guids, $va_log);
+									} else {
+										$this->log(_t("No log for %1.", $vs_guid), Zend_Log::DEBUG);
+									}
+								}
+							}
+							
+							// expand to related subjects
+							$va_expanded_guid_list = [];
+							foreach($va_source_log_entries_for_missing_guids as $vn_log_id => $va_source_log_entry) {
+								if ($vn_log_id >= $pn_start_replicated_id) { continue; }
+								if (is_array($va_source_log_entry['subjects'])) {
+									foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
+										if (!($va_guid_list[$va_source_log_subject['guid']] = ($pa_filter_on_access_settings && !ca_change_log::rowHasAccess($va_source_log_subject['subject_table_num'], $va_source_log_subject['subject_row_id'], $pa_filter_on_access_settings)) ? 0 : 1)) {
+											continue; 	 // skip entry because no access
+										}
+										$va_expanded_guid_list[$va_source_log_subject['guid']]++;
+									}
+								}
+							}
+							$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
+								->setRequestBody(array_keys($va_expanded_guid_list))
+								->request();
+							$va_expanded_guid_presence_map = $o_resp->getRawData();
+							
+							foreach($va_expanded_guid_presence_map as $vs_guid => $va_guid_info) {
+								if ($vs_guid && !is_array($va_guid_info)) {
+									if ($va_back_log[$vs_guid]) { continue; }
+									$va_back_log[$vs_guid] = true;
+									$this->log(_t("Getting log for related subject guid %1", $vs_guid), Zend_Log::DEBUG);
+									$va_log = $o_source->setEndpoint('getlog')
+										->clearGetParameters()
+										->addGetParameter('forGUID', $vs_guid)
+										->addGetParameter('skipIfExpression', $vs_skip_if_expression)
+										->addGetParameter('ignoreTables', $vs_ignore_tables)
+										->addGetParameter('onlyTables', $vs_only_tables)
+										->addGetParameter('includeMetadata', $vs_include_metadata)
+										->addGetParameter('excludeMetadata', $vs_exclude_metadata)
+										->addGetParameter('pushMediaTo', $vs_push_media_to)
+										->request()->getRawData();
+									if(is_array($va_log)) {
+										$va_source_log_entries_for_missing_guids = array_replace($va_source_log_entries_for_missing_guids, $va_log);
+									}
+								}
+							}
+						
+							ksort($va_source_log_entries_for_missing_guids, SORT_NUMERIC);
+							
+							if(sizeof($va_source_log_entries_for_missing_guids)) {
+								while(sizeof($va_source_log_entries_for_missing_guids) > 0) {
+									$va_entries = [];
+									while(sizeof($va_source_log_entries_for_missing_guids) > 0) {
+										$va_log_entry = array_shift($va_source_log_entries_for_missing_guids);
+										$vn_log_id = $va_log_entry['log_id'];
+										if (!$vn_log_id) { continue; }
+										if ($vn_log_id >= $pn_start_replicated_id) { continue; }
+										
+										$va_entries[$vn_log_id] = $va_log_entry;
+										if ((sizeof($va_entries) >= 10) || (sizeof($va_source_log_entries_for_missing_guids) == 0)) { break; }
+									}
+									
+									$this->log(_t("Pushing missing log entries starting with %1.", $vn_log_id), Zend_Log::DEBUG);
+									$o_backlog_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
+										->addGetParameter('system_guid', $vs_source_system_guid)
+										->setRequestBody($va_entries)
+										->request();
+								}
+							}
+
+						}
+					}
+					
 					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {
 						$this->log(_t("No new log entries found for source %1 and target %2. Skipping this combination now.",
 							$vs_source_key, $vs_target_key), Zend_Log::INFO);
@@ -241,7 +368,7 @@ class Replicator {
 						->request();
 
 					$va_response_data = $o_resp->getRawData();
-
+					
 					if (!$o_resp->isOk() || !isset($va_response_data['replicated_log_id'])) {
 						$this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
 						$pb_ok = false;
@@ -249,7 +376,8 @@ class Replicator {
 					} else {
 						$pn_replicated_log_id = ((int) $va_response_data['replicated_log_id']) + 1;
 						$this->log(_t("Chunk sync for source %1 and target %2 successful.", $vs_source_key, $vs_target_key), Zend_Log::DEBUG);
-						$this->log(_t("Last replicated log ID is: %1", $va_response_data['replicated_log_id']), Zend_Log::DEBUG);
+						$va_last_log_entry = array_pop($va_source_log_entries);
+						$this->log(_t("Last replicated log ID is: %1 (%2)", $va_response_data['replicated_log_id'], date(DATE_RFC2822, $va_last_log_entry['log_datetime'])), Zend_Log::DEBUG);
 					}
 
 					/*if (isset($va_response_data['warnings']) && is_array($va_response_data['warnings']) && sizeof($va_response_data['warnings'])) {

@@ -38,6 +38,7 @@
 	$resp = $app->getResponse();
 
 	// Prevent caching
+	$resp->addHeader('Access-Control-Allow-Origin', '*');
 	$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
 	$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
 	

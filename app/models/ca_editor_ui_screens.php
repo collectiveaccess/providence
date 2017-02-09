@@ -255,6 +255,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('screen_id', $vn_screen_id);
 		$t_placement->set('bundle_name', $ps_bundle_name);
@@ -297,6 +298,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		//}
 		
 		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		if ($t_placement->getPrimaryKey() && ($t_placement->get('screen_id') == $vn_screen_id)) {
 			$t_placement->setMode(ACCESS_WRITE);
 			$t_placement->delete(true);
@@ -363,6 +365,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	
 		if ($qr_res->numRows() > 0) {
 			$t_placement = new ca_editor_ui_bundle_placements();
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				
@@ -422,6 +425,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, array());
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$va_defined_bundles = $t_instance->getBundleList(array('includeBundleInfo' => true));		// these are the bundles defined for this type of editor
 		
 		$va_available_bundles = array();
@@ -450,9 +454,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('URL pointing to documentation for this field. Leave blank if no documentation URL exists.')
 						)
 					);
+					if ($t_instance->getFieldInfo($vs_bundle, 'FIELD_TYPE') == FT_TEXT) {
+						$va_additional_settings['usewysiwygeditor'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('yes') => 1,
+								_t('no') => 0
+							),
+							'default' => '',
+							'width' => "100px", 'height' => 1,
+							'label' => _t('Use rich text editor'),
+							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
+						);
+					};
 					break;
 				case 'preferred_label':
 				case 'nonpreferred_label':
+					if (!$t_instance->getLabelTableInstance()) { continue(2); }
+					
 					$va_additional_settings = array(
 						'usewysiwygeditor' => array(
 							'formatType' => FT_NUMBER,
@@ -482,8 +502,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Display template'),
 							'validForRootOnly' => 1,
 							'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
-						),
+						)
 					);
+					if (($va_info['type'] == 'preferred_label') && ($vs_table == 'ca_objects')) {
+						$va_additional_settings['use_list'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'showLists' => true,
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'allowNull' => true,
+							'allowAll' => true,
+							'label' => _t('Look up values using list'),
+							'description' => _t('Suggest values using a specific list. Select <em>All lists</em> to suggest any configured list value.')
+						);
+					}
 					break;
 				case 'attribute':
 					$va_additional_settings = array(
@@ -509,6 +543,32 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							),
 							'label' => _t('Sort direction'),
 							'description' => _t('Direction of sort.')
+						),
+						'colorEvenItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Even item color'),
+							'description' => _t('If set even items in list will use this color.')
+						),
+						'colorOddItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Odd item color'),
+							'description' => _t('If set odd items in list will use this color.')
+						),
+						'displayTemplate' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Display template'),
+							'description' => _t('Layout for preview of this field. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.my_element_code</i>.')
 						),
 						'documentation_url' => array(
 							'formatType' => FT_TEXT,
@@ -537,9 +597,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'related_table':
 					if(preg_match("/^([a-z_]+)_(related_list|table)$/", $vs_bundle, $va_matches)) {
-						$vs_table = $va_matches[1];
-						$t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
-						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_table));
+						$vs_rel_table = $va_matches[1];
+						$t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_rel_table, true);
+						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_rel_table));
 						if(!is_array($va_path)) { continue 2; }
 
 						$va_additional_settings = array(
@@ -587,8 +647,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => 4,
 								'label' => _t('Relationship display template'),
 								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
-							),
+							)
 						);
+						
+						if (($t_instance->tableName() == 'ca_storage_locations') && ($t_rel->tableName() == 'ca_objects')) {
+							$va_additional_settings['locationTrackingMode'] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t('none') => '',
+											_t('movements') => 'ca_movements',
+											_t('object-location relationships') => 'ca_storage_locations'
+										),
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Only show items currently in this location using'),
+										'description' => ''
+									);
+						}
+						
 						break;
 					} else {
 						if (!($t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_bundle, true))) { continue; }
@@ -739,9 +816,50 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_CHECKBOXES,
 								'width' => "10", 'height' => "1",
 								'takesLocale' => false,
+								'showOnSelect' => 'showCurrentUsingDate',
 								'default' => '0',
 								'label' => _t('Show current only?'),
 								'description' => _t('If checked only the most recently dated relationship displayed.')
+							),
+							'showCurrentUsingDate' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'table' => $va_path[1],
+								'showMetadataElementsWithDataType' => 2,
+								'includeIntrinsics' => ['effective_date'],
+								'takesLocale' => false,
+								'default' => '',
+								'width' => "275px", 'height' => "1",
+								'label' => _t('Base current status on date'),
+								'description' => ''
+							),
+							'disableQuickadd' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "10", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Disable quick add?'),
+								'description' => _t('If checked quickadd will be disabled regardless of user privileges.')
+							),
+							'disableSorts' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "10", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Disable sorting?'),
+								'hideOnSelect' => ['allowedSorts'],
+								'description' => _t('If checked sorting of related items will be disabled.')
+							),
+							'allowedSorts' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'options' => array_flip(caGetAvailableSortFields($vs_bundle)),
+								'default' => null,
+								'width' => "275px", 'height' => 5,
+								'label' => _t('Sort options'),
+								'description' => _t('Limits sort options on this bundle.')
 							)
 						);
 					}
@@ -1085,7 +1203,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								$va_to_hide_when_using_defaults = array(
 									'ca_object_lots_showTypes', 'ca_occurrences_showTypes', 'ca_loans_showTypes', 'ca_movements_showTypes',
 									'ca_storage_locations_showRelationshipTypes', 'ca_storage_locations_color', 'ca_storage_locations_displayTemplate',
-									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate'
+									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate', 'sortDirection'
 								);
 								$va_additional_settings = array(
 									'useAppConfDefaults' => array(
@@ -1108,6 +1226,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 1,
 										'label' => _t('Track location using'),
 										'description' => ''
+									),
+									'sortDirection' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => [_t('Ascending') => 'ASC', _t('Descending') => 'DESC'],
+										'default' => 'ASC',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Sort direction'),
+										'description' => _t('Set ascending or descending order for list.')
 									),
 									// no 'classic' expand/collapse for this bundle
 									'expand_collapse_value' => false,
@@ -1266,7 +1393,52 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_displayTemplate";
 								}
-								
+
+								$va_additional_settings['ca_collections_showTypes'] = array(
+									'formatType' => FT_TEXT,
+									'displayType' => DT_SELECT,
+									'useList' => 'collection_types',
+									'takesLocale' => false,
+									'default' => '',
+									'width' => "275px", 'height' => "75px",
+									'label' => _t('Show collections'),
+									'description' => ''
+								);
+								$va_types = caGetTypeList("ca_collections");
+								foreach($va_types as $vn_type_id => $va_type) {
+									$va_additional_settings["ca_collections_{$va_type['idno']}_dateElement"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => ['ca_collections', 'ca_objects_x_collections'],
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('%1 date', $va_type['name_singular']),
+										'description' => ''
+									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_color"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for %1', $va_type['name_singular']),
+										'description' => _t('Color to use as highlight %1.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_displayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('%1 display template', $va_type['name_singular']),
+										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_collections.idno</i>.', $va_type['name_singular'])
+									);
+									
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_dateElement";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_color";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_displayTemplate";
+								}								
 								$va_additional_settings['ca_movements_showTypes'] = array(
 									'formatType' => FT_TEXT,
 									'displayType' => DT_SELECT,
@@ -1478,6 +1650,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							case 'ca_set_items':
 								require_once(__CA_MODELS_DIR__."/ca_sets.php");
 								$t_set = new ca_sets();
+								if ($this->inTransaction()) { $t_set->setTransaction($this->getTransaction()); }
 								
 								$va_additional_settings = array();
 								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
@@ -1514,16 +1687,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$vs_label = $t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc) ?: $va_info['label'];
 			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
 
-			$va_additional_settings['bundleTypeRestrictions'] = [
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'default' => '',
-				'showTypesForTable' => $vs_table,
-				'width' => "275px", 'height' => 4,
-				'label' => _t('Display bundle for types'),
-				'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
-			];
-
+			if ($t_instance->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
+				$va_additional_settings['bundleTypeRestrictions'] = [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'default' => '',
+					'showTypesForTable' => $vs_table,
+					'width' => "275px", 'height' => 4,
+					'label' => _t('Display bundle for types: %1', $this->_DATAMODEL->getTableProperty($vs_table, 'NAME_PLURAL')),
+					'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
+				];
+			}
+			
 			$va_available_bundles[$vs_display][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
@@ -1855,6 +2030,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_screen = new ca_editor_ui_screens($this->getPrimaryKey());
+			if ($this->inTransaction()) { $t_screen->setTransaction($this->getTransaction()); }
 			$va_placements = $t_screen->getPlacements(array('user_id' => $po_request->getUserID()));
 			
 			// remove deleted bundles
@@ -1911,6 +2087,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} else {
 					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, $va_available_bundles[$vs_bundle]['settings']);
+					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 					

@@ -62,7 +62,7 @@ var caUI = caUI || {};
 						)
 					) {
 						var msg = that.alreadyInUseMessage;
-						jQuery('#' + that.statusID).html((that.errorIcon ? '<img src=\'' + that.errorIcon + '\' border=\'0\'/> ' : '') + msg).show(0);
+						jQuery('#' + that.statusID).html((that.errorIcon ? that.errorIcon : '') + msg).show(0);
 					} else{
 						jQuery('#' + that.statusID).html('').hide(0);
 					}

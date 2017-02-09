@@ -253,15 +253,8 @@
  			}
 
 			if(isset($va_settings['mustBeUnique']) && (bool)$va_settings['mustBeUnique'] && ($vn_strlen > 0)) {
-				if(isset($pa_options['transaction']) && ($o_trans = $pa_options['transaction'])) {
-					$o_db = $o_trans->getDb();
-				} else {
-					$o_db = new Db();
-				}
-
-				$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_longtext1=?', $pa_element_info['element_id'], $ps_value);
-
-				if($qr_values->numRows()>0) {
+				
+				if (BaseModelWithAttributes::valueExistsForElement($pa_element_info['element_id'], $ps_value, ['transaction' => $pa_options['transaction'], 'value_id' => $this->getValueID()])) {
 					$this->postError(1970, _t('%1 must be unique across all values. The value you entered already exists.', $pa_element_info['displayLabel']), 'TextAttributeValue->parseValue()');
 					return false;
 				}
@@ -402,17 +395,13 @@
  			}
 
 			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
-				$vs_unique_lookup_url = caJSONLookupServiceUrl(
-					$pa_options['request'],
-					$pa_options['t_subject']->tableName(),
-					['element_id' => $pa_element_info['element_id']]
-				)['attribute'];
-
+				$vs_unique_lookup_url = caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'ValueExists', array('bundle' => $vs_bundle_name));
 				$vs_element .= "<script type='text/javascript'>
 					var warnSpan = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning');
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').keyup(function() {
 						jQuery.getJSON('{$vs_unique_lookup_url}', {n: jQuery(this).val()}).done(function(data) {
-							if(data.length > 0) {
+							console.log('data', data);
+							if(data.exists >= 1) {
 								warnSpan.show();
 							} else {
 								warnSpan.hide();

@@ -272,14 +272,14 @@
 		 *
 		 * @param array $pa_hits
 		 * @param string $ps_table The table being sorted
-		 * @param string $ps_field A semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
+		 * @param string $pm_field An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
 		 * @param string $ps_key Key to use for temporary storage
 		 * @param string $ps_direction Direction to sort
 		 * @param array $pa_options
 		 *
 		 * @return array
 		 */
-		public function sortHits(&$pa_hits, $ps_table, $ps_field, $ps_direction='asc', $pa_options=null) {
+		public function sortHits(&$pa_hits, $ps_table, $pm_field, $ps_direction='asc', $pa_options=null) {
 			if (!$t_table = $this->opo_datamodel->getInstanceByTableName($ps_table, true)) { return null; } // invalid table
 			$vs_table_pk = $t_table->primaryKey();
 			$vn_table_num = $t_table->tableNum();
@@ -292,11 +292,10 @@
 			if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
 			
 			// Get field list
-			//$va_sort_tmp = explode('/', $ps_field);		// strip any relationship type
-			//$ps_field = $va_sort_tmp[0];
+			//$va_sort_tmp = explode('/', $pm_field);		// strip any relationship type
+			//$pm_field = $va_sort_tmp[0];
 			//$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;
-			$va_bundles = explode(';', $ps_field); // $va_sort_tmp[0]);
-			
+			$va_bundles = is_array($pm_field) ? $pm_field : explode(';', $pm_field); // $va_sort_tmp[0]);
 			$va_sorted_hits = array();
 			
 			$vs_sort_tmp_table = null;
@@ -366,6 +365,7 @@
 				
 						$vs_is_preferred_sql = null;
 						$va_joins = array();
+						
 						if (sizeof($va_path) > 2) {
 							// many-many
 							$vs_last_table = null;
@@ -416,7 +416,7 @@
 										$va_rewritten_sort_keys = array();
 										foreach($va_sort_keys as $vn_key_in_rel_table => $vs_sort_key) {
 
-											// there can me multiple related keys for one key in the primary table. for now we just decide the first one "wins"
+											// there can be multiple related keys for one key in the primary table. for now we just decide the first one "wins"
 											// @todo: is there a better way to deal with this?
 											if(!isset($va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]])) {
 												$va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]] = $vs_sort_key;
@@ -487,8 +487,13 @@
 					$va_sort_buffer[$vs_key.str_pad($vn_c, 8, '0', STR_PAD_LEFT)] = $vb_return_index ? $vn_idx . '/' . $vn_hit : $vn_hit;
 					$vn_c++;
 				}
+				
+				$o_conf = caGetSearchConfig();
 
-				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
+				$vn_sort_mode = SORT_FLAG_CASE;
+				if (!$o_conf->get('dont_use_natural_sort')) { $vn_sort_mode |= SORT_NATURAL; } else { $vn_sort_mode |= SORT_STRING; }
+				
+				ksort($va_sort_buffer, $vn_sort_mode);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
 
 				if($vb_return_index) {
@@ -560,18 +565,6 @@
 
 			switch($vn_datatype = (int)$t_element->get('datatype')) {
 				case __CA_ATTRIBUTE_VALUE_LIST__:
-					$vs_sql = "
-							SELECT attr.row_id, lower(lil.name_plural) name_plural
-							FROM ca_attributes attr
-							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
-							WHERE
-								(attr_vals.element_id = ?) AND
-								(attr.table_num = ?) AND
-								(lil.name_plural IS NOT NULL) AND
-								(attr.row_id IN (?))
-						";
-					break;
 				case __CA_ATTRIBUTE_VALUE_OBJECTS__:
 				case __CA_ATTRIBUTE_VALUE_ENTITIES__:
 				case __CA_ATTRIBUTE_VALUE_PLACES__:
@@ -583,6 +576,7 @@
 				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 					if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
 					$vs_sortable_value_fld = $t_auth_instance->getLabelSortField();
+					$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
 					$vs_sql = "
 							SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
 							FROM ca_attributes attr
@@ -642,7 +636,7 @@
 			if(!($t_original_table = $this->opo_datamodel->getInstance($pn_original_table_num, true))) { return false; }
 			if(!($t_target_table = $this->opo_datamodel->getInstance($pn_target_table, true))) { return false; }
 
-			$va_sql_params = array($pa_hits);
+			$va_sql_params = [];
 
 			$va_primary_ids = $vs_resolve_links_using = null;
 			if($vs_resolve_links_using = caGetOption('resolveLinksUsing', $pa_options)) {
@@ -670,18 +664,22 @@
 
 			}
 
-			$vs_sql = "
-				SELECT * FROM {$vs_target_table}
-				INNER JOIN {$vs_original_table} AS o ON
-					o.{$va_relationships[$vs_target_table][$vs_original_table][0][0]}
-					=
-					{$vs_target_table}.{$va_relationships[$vs_target_table][$vs_original_table][0][1]}
-				WHERE o.{$t_original_table->primaryKey()} IN (?)
-				{$vs_primary_id_sql}
-			";
+			$va_sql = $va_params = [];
+			foreach($va_relationships[$vs_original_table][$vs_target_table] as $va_rel) {
+					$va_sql[] = "
+						SELECT * 
+						FROM {$vs_target_table}
+						INNER JOIN {$vs_original_table} AS o ON
+							o.{$va_rel[0]} = {$vs_target_table}.{$va_rel[1]}
+						WHERE 
+							o.{$t_original_table->primaryKey()} IN (?)
+							{$vs_primary_id_sql}
+					";
+					array_unshift($va_sql_params, $pa_hits);
+			}
 
-			$qr_rel = $this->opo_db->query($vs_sql, $va_sql_params);
-			$va_return = array();
+			$qr_rel = $this->opo_db->query(join(" UNION ", $va_sql), $va_sql_params);
+			$va_return = [];
 			while($qr_rel->nextRow()) {
 				$va_return['list'][] = $qr_rel->get("{$vs_target_table}.{$t_target_table->primaryKey()}");
 

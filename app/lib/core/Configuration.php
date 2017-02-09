@@ -199,7 +199,7 @@ class Configuration {
 			self::$s_config_cache[$vs_path_as_md5] = $this->ops_config_settings;
 			// we loaded this cfg from file, so we have to write the
 			// config cache to disk at least once on this request
-			self::$s_have_to_write_config_cache = true;
+			Configuration::$s_have_to_write_config_cache = true;
 		}
 	}
 	/* ---------------------------------------- */
@@ -933,7 +933,12 @@ class Configuration {
 		// assumes translation function _t() is present; if not loaded will not attempt translation
 		if (preg_match("/_\(([^\"\)]+)\)/", $ps_text, $va_matches)) {
 			if(function_exists('_t')) {
-				return _t($va_matches[1]);
+				$vs_trans_text = $ps_text;
+				array_shift($va_matches);
+				foreach($va_matches as $vs_match) {
+					$vs_trans_text = str_replace("_({$vs_match})", _t($vs_match), $vs_trans_text);
+				}
+				return $vs_trans_text;
 			}
 		}
 		return $ps_text;
@@ -962,9 +967,9 @@ class Configuration {
 	 * Destructor: Save config cache to disk/external provider
 	 */
 	public function __destruct() {
-		if(self::$s_have_to_write_config_cache) {
+		if(isset(Configuration::$s_have_to_write_config_cache) && Configuration::$s_have_to_write_config_cache) {
 			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 0);
-			self::$s_have_to_write_config_cache = false;
+			Configuration::$s_have_to_write_config_cache = false;
 		}
 	}
 	# ---------------------------------------------------------------------------

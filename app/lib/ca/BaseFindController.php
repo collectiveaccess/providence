@@ -106,7 +106,6 @@
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
  			$t_instance 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
  			if (
@@ -125,10 +124,30 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			
+ 			
+			$t_display 					= $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  	
+ 			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
+ 			
+ 			// Default display is always there
+ 			$va_displays = array('0' => _t('Default'));
+
+			// Set display options
+			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
+			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+				$va_display_options['restrictToTypes'] = array($vn_type_id);
+			}
+
+			// Get current display list
+ 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
+ 				$va_displays[$va_display['display_id']] = $va_display['name'];
+ 			}
+ 			if (!isset($va_displays[$vn_display_id])) { $vn_display_id = 0; }
+ 			
+ 			$this->view->setVar('display_lists', $va_displays);	
 			
 			$va_display_list = $this->_getDisplayList($vn_display_id);
-
-			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  			
+		
  			
  			// figure out which items in the display are sortable
  			if (method_exists($t_instance, 'getApplicableElementCodes')) {
@@ -184,22 +203,6 @@
 			
  			$this->view->setVar('display_list', $va_display_list);
  			
- 			// Default display is always there
- 			$va_displays = array('0' => _t('Default'));
-
-			// Set display options
-			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
-			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
-				$va_display_options['restrictToTypes'] = array($vn_type_id);
-			}
-
-			// Get current display list
- 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
- 				$va_displays[$va_display['display_id']] = $va_display['name'];
- 			}
- 			
- 			$this->view->setVar('display_lists', $va_displays);	
- 			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
  			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
  			
@@ -254,6 +257,34 @@
 			
 			$this->view->setVar('result_context', $this->opo_result_context);
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
+ 		}
+ 		# -------------------------------------------------------
+		/**
+		  * 
+		  */
+ 		protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display) {
+ 			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
+			if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
+ 				$vn_items_per_page = $this->opn_items_per_page_default; 
+ 			}
+ 			
+			$va_bottom_line = array();
+			$vb_bottom_line_is_set = false;
+			foreach($pa_display_list as $vn_placement_id => $va_placement) {
+				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
+					$va_bottom_line[$vn_placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $po_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page));
+					$vb_bottom_line_is_set = true;
+				} else {
+					$va_bottom_line[$vn_placement_id] = '';
+				}
+			}
+			
+			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
+			
+			//
+			// Bottom line for display
+			//
+			$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $pt_display, $po_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page)));
  		}
 		# -------------------------------------------------------
 		# Printing
@@ -372,7 +403,7 @@
 				$vb_printed_properly = true;
 				
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-				
+				exit;
 			} catch (Exception $e) {
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				
@@ -411,8 +442,6 @@
 						$this->render('Results/xlsx_results.php');
 						return;
                     case '_docx':
-                        require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
-                        \PhpOffice\PhpWord\Autoloader::register();
                         $this->render('Results/docx_results.php');
                         return;						
 					case '_csv':
@@ -497,6 +526,7 @@
 					
 					$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
 					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
+					exit;
 				} catch (Exception $e) {
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
@@ -539,7 +569,7 @@
 						
 					}
 				
-					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
+					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add), ['user_id' => $this->request->getUserID()])) === false) {
 						$this->view->setVar('error', join('; ', $t_set->getErrors()));
 					}
 					
@@ -547,8 +577,8 @@
 					$this->view->setVar('error', _t('Invalid set'));
 				}
 			}
-			$this->view->setVar('num_items_added', $vn_added_items_count);
-			$this->view->setVar('num_items_already_in_set', $vn_dupe_item_count);
+			$this->view->setVar('num_items_added', (int)$vn_added_items_count);
+			$this->view->setVar('num_items_already_in_set', (int)$vn_dupe_item_count);
  			$this->render('Results/ajax_add_to_set_json.php');
  		}
  		# ------------------------------------------------------------------
@@ -592,7 +622,7 @@
 			
 				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
 			
-				$vn_added_items_count = $t_set->addItems($va_row_ids);
+				$vn_added_items_count = $t_set->addItems($va_row_ids, ['user_id' => $this->request->getUserID()]);
 				
 				$this->view->setVar('set_id', $t_set->getPrimaryKey());
 				$this->view->setVar('t_set', $t_set);
@@ -664,12 +694,12 @@
  		 * 
  		 * 
  		 */ 
- 		public function DownloadRepresentations() {
+ 		public function DownloadMedia() {
  			if ($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
 				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
 
  				$pa_ids = null;
- 				if ($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) {
+ 				if (($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($vs_ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
  					if ($vs_ids != 'all') {
 						$pa_ids = explode(';', $vs_ids);
 						
@@ -678,9 +708,13 @@
 						}
 					}
  				}
- 				
+ 		
  				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
  					$pa_ids = $this->opo_result_context->getResultList();
+ 				}
+ 				
+ 				if (($vn_limit = (int)$t_subject->getAppConfig()->get('maximum_download_file_count')) > 0) {
+ 					$pa_ids = array_slice($pa_ids, 0, $vn_limit);
  				}
  				
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
@@ -730,8 +764,8 @@
 										if ($vs_original_name) {
 											$va_tmp = explode('.', $vs_original_name);
 											if (sizeof($va_tmp) > 1) { 
-												if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
-													$va_tmp[] = $vs_ext;
+												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
+													$va_tmp[] = $vs_filename_ext;
 												}
 											}
 											$vs_filename = join('_', $va_tmp)."{$vn_index}.{$vs_ext}";
@@ -782,7 +816,7 @@
  			}
  			
  			// post error
- 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadRepresentation()");
+ 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadMedia()");
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -866,7 +900,7 @@
  			AssetLoadManager::register("tableview");
  			
  			$va_ids 				= $this->opo_result_context->getResultList();
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$va_display_list 		= $this->_getDisplayList($vn_display_id);
  			
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
@@ -898,7 +932,7 @@
  			if (($pn_s = (int)$this->request->getParameter('s', pInteger)) < 0) { $pn_s = 0; }
  			if (($pn_c = (int)$this->request->getParameter('c', pInteger)) < 1) { $pn_c = 10; }
  			
- 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$t_display = new ca_bundle_displays($vn_display_id);
  			$va_ids = $this->opo_result_context->getResultList();
  			$qr_res = caMakeSearchResult($this->ops_tablename, $va_ids);
@@ -937,7 +971,7 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
- 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay());
+ 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id));
  			$va_response = $t_display->saveResultsEditorData($this->ops_tablename, ['request' => $this->request, 'user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			
 			$this->view->setVar('response', $va_response);
@@ -951,7 +985,7 @@
  		 */ 
  		public function resultsComplexDataEditor() {
  			$t_instance 			= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
  			$pn_placement_id = (int)$this->request->getParameter('pl', pString);
  			$ps_bundle = $this->request->getParameter('bundle', pString);
