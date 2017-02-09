@@ -1959,6 +1959,10 @@
 						}
 					}
 
+					// preserve sort order using first facet if first facet is a search
+					// (needed for relevance sort)
+					$vb_preserve_order = (bool)(array_keys($va_criteria)[0]== '_search');
+					
 					foreach($va_acc as $vn_i => $va_hits) {
 						$va_acc[$vn_i] = array_flip($va_hits);
 					}
@@ -1978,6 +1982,14 @@
 							}
 							$va_res[$vn_row_id] = true;
 						}
+					}
+					
+					if ($vb_preserve_order) {
+						$va_tmp = [];
+						foreach(array_keys($va_acc[0]) as $vn_x) {
+							if (isset($va_res[$vn_x])) { $va_tmp[] = $vn_x; }
+						}
+						$va_res = array_flip($va_tmp);
 					}
 					
 					if (sizeof($va_res)) {
@@ -2040,9 +2052,9 @@
 							FROM ".$this->ops_browse_table_name."
 							{$vs_filter_join_sql}
 							{$vs_filter_where_sql}
-						", array(array_keys($va_res)));
+						", array($va_possible_values = array_keys($va_res)));
 
-						$va_results = $qr_res->getAllFieldValues($t_item->primaryKey());
+						$va_results = $vb_preserve_order ? array_intersect($va_possible_values, $qr_res->getAllFieldValues($t_item->primaryKey())) : $qr_res->getAllFieldValues($t_item->primaryKey());
 
 						if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
 							$va_results = $this->filterHitsByACL($va_results, $this->opn_browse_table_num, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
@@ -2913,8 +2925,8 @@
 							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
 								'id' => $vn_id,
 								'parent_id' => $vn_parent_id,
-								'label' => mb_strtolower($vs_sort_label ? $vs_sort_label : $vs_label),
-								'display_label' => $vs_label
+								'label' => $vs_label,
+								'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label)
 							));
 							if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 								$vb_single_value_is_present = true;
@@ -4311,8 +4323,6 @@
 					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
 						$vs_where_sql = ' AND ('.$vs_where_sql.')';
 					}
-
-
 
 					$vs_join_sql = join("\n", $va_joins);
 

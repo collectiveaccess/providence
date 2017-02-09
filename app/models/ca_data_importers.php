@@ -1675,7 +1675,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$vs_label_val = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'], $va_row);
 					}
 					if ($vs_opt = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['displaynameFormat']) {
-						$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, array('displaynameFormat' => $vs_opt));
+						$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, array('displaynameFormat' => $vs_opt, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']));
 						$vs_label_val = $va_label_val['displayname'];
 					}
 					$va_pref_label_values[$vs_preferred_label_mapping_fld] = $vs_label_val;
