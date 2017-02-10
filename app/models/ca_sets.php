@@ -1814,7 +1814,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}	
 		$vs_deleted_sql = '';
 		if ($t_rel_table->hasField('deleted')) {
-			$vs_deleted_sql = ' AND deleted = 0';
+			$vs_deleted_sql = ' AND '.$vs_rel_table_name.'deleted = 0';
 		}
 		
 		$qr_res = $o_db->query("
