@@ -1419,6 +1419,7 @@ if (!$pb_omit_editing_info) {
 					'useRelationshipTypeList' => $va_path[1],
 					'width' => 35, 'height' => 5,
 					'takesLocale' => false,
+					'multiple' => 1,
 					'default' => '',
 					'label' => _t('Restrict to relationship types'),
 					'description' => _t('Restricts display to items related using the specified relationship type(s). Leave all unchecked for no restriction.')
@@ -1429,6 +1430,7 @@ if (!$pb_omit_editing_info) {
 					'useList' => $t_rel_instance->getTypeListCode(),
 					'width' => 35, 'height' => 5,
 					'takesLocale' => false,
+					'multiple' => 1,
 					'default' => '',
 					'label' => _t('Restrict to types'),
 					'description' => _t('Restricts display to items of the specified type(s). Leave all unchecked for no restriction.')
@@ -1461,6 +1463,7 @@ if (!$pb_omit_editing_info) {
 					'displayType' => DT_SELECT,
 					'showLists' => true,
 					'width' => 60, 'height' => 5,
+					'multiple' => 1,
 					'takesLocale' => false,
 					'label' => _t('Restrict to list'),
 					'description' => _t('Display related items from selected lists only. If no lists are selected then all related items are displayed.')
