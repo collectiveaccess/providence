@@ -855,7 +855,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'allowedSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
-								'options' => array_flip(caGetAvailableSortFields($vs_bundle)),
+								'options' => array_flip(caGetAvailableSortFields($vs_bundle, null, ['includeInterstitialSortsFor' => $vs_table, 'distinguishInterstitials' => true])),
 								'default' => null,
 								'width' => "275px", 'height' => 5,
 								'label' => _t('Sort options'),
