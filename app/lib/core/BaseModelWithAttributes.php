@@ -1761,8 +1761,7 @@
 						if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
 							$pa_options['value'] = $this->get($ps_field);
 							$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
-							
-							return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
+							return $this->getSourceListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
 						}
 						break;
 				}

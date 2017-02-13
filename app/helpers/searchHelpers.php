@@ -1142,8 +1142,10 @@
 	 *		includeUserSorts = 
 	 *		distinguishNonUniqueNames = 
 	 *		allowedSorts = 
-	 *		disableSorts = 
-	 *		request = 
+	 *		disableSorts = Don't return any available sorts. [Default is false]
+	 *		request = The current request. [Default is null]
+	 *		includeInterstitialSortsFor = Related table [Default is false]
+	 *		distinguishInterstitials = [Default is false]
 	 * @return array
 	 */
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
@@ -1159,6 +1161,13 @@
 		}
 		if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return []; }
 		
+		$t_rel = null;
+		if ($ps_related_table = caGetOption('includeInterstitialSortsFor', $pa_options, null)) {
+			$o_dm = Datamodel::load();
+			if (is_array($va_path = array_keys($o_dm->getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
+				$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
+			}
+		} 
 		
 		$va_ui_bundle_label_map = [];
 		if (isset($pa_options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $pa_options['request'], $pn_type_id))) {
@@ -1308,6 +1317,18 @@
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
 			}
+			
+			
+		
+			// Add interstitial sorts
+			if ($t_rel) {
+				$va_sortable_elements = ca_metadata_elements::getSortableElements($vs_relation_table = $t_rel->tableName(), null, ['indexByElementCode' => true]);
+				
+				$pb_distinguish_interstitials = caGetOption('distinguishInterstitials', $pa_options, true);
+				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+					$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
+				}
+			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
 				foreach(array_count_values($va_base_fields) as $vn_v => $vn_c) {
@@ -1346,7 +1367,9 @@
 			}
 		}
 		
-		if (($pa_allowed_sorts = caGetOption('allowedSorts', $pa_options, null)) && is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
+		if (($pa_allowed_sorts = caGetOption('allowedSorts', $pa_options, null)) && !is_array($pa_allowed_sorts)) { $pa_allowed_sorts = [$pa_allowed_sorts]; }
+		
+		if(is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
 			foreach($va_base_fields as $vs_k => $vs_v) {
 				if (!in_array($vs_k, $pa_allowed_sorts)) { unset($va_base_fields[$vs_k]); }
 			}
