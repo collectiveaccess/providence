@@ -365,6 +365,7 @@ class ca_data_importer_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the the mapping to only records of the designated type.  For example the Duration field is only applicable to objects of the type moving_image and not photograph.')
