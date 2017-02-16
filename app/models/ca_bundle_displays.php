@@ -1929,6 +1929,10 @@ if (!$pb_omit_editing_info) {
 			$vs_template = $this->getAppConfig()->get($va_bundle_bits[0]."_default_bundle_display_template");
 		}
 		
+		if ((!$vs_template) && ($t_element = ca_metadata_elements::getInstance($va_bundle_bits[sizeof($va_bundle_bits)-1]))) { 
+			$vs_template = $t_element->getSetting('displayTemplate'); 
+		}
+		
 		if($vs_template) {
 			unset($pa_options['template']);
 			
