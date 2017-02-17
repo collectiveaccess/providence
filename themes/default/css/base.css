@@ -1596,6 +1596,11 @@ a span.form-button.approve .formtext{
 	margin-bottom: 13px;
 	display: inline-block;
 }
+span.form-button.approveDelete {
+	background-color: #eee;
+	padding: 10px 12px 0px 6px;
+	border-radius: 4px;
+}
 span.form-button button{
     line-height:2.5;/*Opera need this*/
 }
