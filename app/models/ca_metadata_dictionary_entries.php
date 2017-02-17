@@ -71,6 +71,7 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 		'displayType' => DT_FIELD,
 		'width' => 35, 'height' => 5,
 		'takesLocale' => false,
+		'multiple' => 1,
 		'default' => '',
 		'label' => _t('Restrict to types'),
 		'description' => _t('Restricts entry to items of the specified type(s). Leave all unchecked for no restriction.')
@@ -80,6 +81,7 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 		'displayType' => DT_FIELD,
 		'width' => 35, 'height' => 5,
 		'takesLocale' => false,
+		'multiple' => 1,
 		'default' => '',
 		'label' => _t('Restrict to relationship types'),
 		'description' => _t('Restricts entry to items related using the specified relationship type(s). Leave all unchecked for no restriction.')

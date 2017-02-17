@@ -1816,7 +1816,9 @@ th.list-header-sorted-asc {
     background-image: url('../graphics/icons/asc.gif');
     background-color: #cccccc;
 }
-
+th.list-header-nolink{
+	cursor: default !important;
+}
 /* table fields */
 
 table.listtable tbody td {
@@ -7268,4 +7270,17 @@ div.caResultsComplexDataEditorErrorContainer {
   height: 100%;
   margin-top: 0;
   padding-top: 200px;
+}
+/* set items list in set editor */
+.setItemCounter{
+	float:left;
+	background-color:#bbb;
+	color:#FFF;
+	border-radius: 6px;
+	padding:3px 4px 1px 4px;
+	line-height:1em;
+	font-size:9px;
+	font-weight:normal;
+	margin:5px 0px 0px 5px;
+	text-align:bottom;
 }

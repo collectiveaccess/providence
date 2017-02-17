@@ -26,6 +26,21 @@
 	margin: 140px 0 0 0;
 }
 
+.caWorldCatResultsContainer {
+	position: relative;
+}
+
+.caWorldCatExistingObjectIcon a, .caWorldCatExistingObjectIcon a:hover {
+	color: #000;
+	text-decoration: none;
+}
+
+.caWorldCatExistingObjectKey {
+	position: absolute;
+	right: 5px;
+	bottom: 5px;
+}
+
 li.caWorldCatResultItem {
 	list-style-type: none;
 }

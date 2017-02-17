@@ -314,7 +314,7 @@ class SearchEngine extends SearchBase {
 			
 			if ($vs_sort && ($vs_sort !== '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $vs_sort, $vs_sort_direction);
-			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
+			} elseif ((($vs_sort == '_natural') || !$vs_sort) && ($vs_sort_direction == 'desc')) {
 				$va_hits = array_reverse($va_hits);
 			}
 			

@@ -244,6 +244,10 @@ class Replicator {
 								if (!$vb_have_access) {
 									$va_source_log_entries[$vn_log_id]['SKIP'] = 1;
 								}
+								
+								if (isset($va_source_log_entry['snapshot']['parent_id_guid'])) {
+									$va_guid_list[$va_source_log_entry['snapshot']['parent_id_guid']] = 1;
+								}
 							}
 						}
 						

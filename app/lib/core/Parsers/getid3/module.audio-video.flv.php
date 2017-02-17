@@ -37,6 +37,8 @@
 //                                                             //
 //  * version 0.6.1 (30 May 2011)                              //
 //    prevent infinite loops in expGolombUe()                  //
+//															   //
+//	* Added support for VP6 video (16 February 2017)		   //
 //                                                             //
 /////////////////////////////////////////////////////////////////
 //                                                             //
@@ -171,8 +173,8 @@ class getid3_flv extends getid3_handler
 							}
 							// end: moysevichØgmail*com
 
-						} elseif ($info['flv']['video']['videoCodec'] == GETID3_FLV_VIDEO_H263) {
-
+						//} elseif ($info['flv']['video']['videoCodec'] == GETID3_FLV_VIDEO_H263) {
+						} elseif (in_array($info['flv']['video']['videoCodec'], [GETID3_FLV_VIDEO_H263, GETID3_FLV_VIDEO_VP6FLV, GETID3_FLV_VIDEO_VP6FLV_ALPHA])) {
 							$PictureSizeType = (getid3_lib::BigEndian2Int(substr($FLVvideoHeader, 3, 2))) >> 7;
 							$PictureSizeType = $PictureSizeType & 0x0007;
 							$info['flv']['header']['videoSizeType'] = $PictureSizeType;

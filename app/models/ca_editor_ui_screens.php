@@ -514,6 +514,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '',
 							'allowNull' => true,
 							'allowAll' => true,
+							'multiple' => true,
 							'label' => _t('Look up values using list'),
 							'description' => _t('Suggest values using a specific list. Select <em>All lists</em> to suggest any configured list value.')
 						);
@@ -527,6 +528,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "200px", 'height' => "1",
 							'takesLocale' => false,
 							'default' => '1',
+							'multiple' => true,
 							'label' => _t('Sort using'),
 							'showSortableElementsFor' => $va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['element_id'],
 							'description' => _t('Method used to sort repeating values.')
@@ -610,6 +612,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to relationship types'),
 								'description' => _t('Restricts display to items related using the specified relationship type(s). Leave all unselected for no restriction.')
 							),
@@ -620,6 +623,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to types'),
 								'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
 							),
@@ -643,7 +647,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'display_template' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_FIELD,
-								'default' => '^' . $t_rel->tableName() . '.preferred_labels',
+								'default' => '',
 								'width' => "275px", 'height' => 4,
 								'label' => _t('Relationship display template'),
 								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
@@ -678,6 +682,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to relationship types'),
 								'description' => _t('Restricts display to items related using the specified relationship type(s). Leave all unselected for no restriction.')
 							),
@@ -688,6 +693,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to types'),
 								'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
 							),
@@ -782,7 +788,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'display_template' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_FIELD,
-								'default' => '^' . $t_rel->tableName() . '.preferred_labels',
+								'default' => '',
 								'width' => "275px", 'height' => 4,
 								'label' => _t('Relationship display template'),
 								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
@@ -855,8 +861,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'allowedSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
-								'options' => array_flip(caGetAvailableSortFields($vs_bundle)),
+								'options' => array_flip(caGetAvailableSortFields($vs_bundle, null, ['includeInterstitialSortsFor' => $vs_table, 'distinguishInterstitials' => true])),
 								'default' => null,
+								'multiple' => true,
 								'width' => "275px", 'height' => 5,
 								'label' => _t('Sort options'),
 								'description' => _t('Limits sort options on this bundle.')
@@ -877,6 +884,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => "125px",
 							'takesLocale' => false,
 							'default' => '',
+							'multiple' => true,
 							'label' => _t('Restrict to list'),
 							'description' => _t('Restricts display to items from the specified list(s). Leave all unselected for no restriction.')
 						);
@@ -886,7 +894,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						$va_additional_settings['display_template'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_FIELD,
-							'default' => '^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)',
+							'default' => '',
 							'width' => "275px", 'height' => 4,
 							'label' => _t('Relationship display template'),
 							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
@@ -933,6 +941,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => "75px",
 							'takesLocale' => false,
 							'default' => '',
+							'multiple' => true,
 							'label' => _t('Restrict checklist to terms related to collection as'),
 							'description' => _t('Will restrict checklist to terms related to collections with the specified relationship type. Leave all unselected for no restriction.')
 						);
@@ -1288,6 +1297,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useList' => 'occurrence_types',
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show "Add to" occurrence controls for'),
 										'description' => ''
@@ -1307,6 +1317,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useList' => 'object_lot_types',
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show lots'),
 										'description' => ''
@@ -1322,6 +1333,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Lot (%1) date', $va_type['name_singular']),
 										'description' => ''
@@ -1354,6 +1366,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'occurrence_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show occurrences'),
 									'description' => ''
@@ -1367,6 +1380,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1400,6 +1414,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'collection_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show collections'),
 									'description' => ''
@@ -1413,6 +1428,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1445,6 +1461,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'movement_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show movements'),
 									'description' => ''
@@ -1458,6 +1475,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1491,6 +1509,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'loan_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show loans'),
 									'description' => ''
@@ -1505,6 +1524,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1539,6 +1559,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useRelationshipTypeList' => 'ca_objects_x_storage_locations',
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show storage locations'),
 										'description' => _t('Show storage locations with selected relationship types.')
@@ -1556,6 +1577,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'default' => '',
+										'multiple' => true,
 										'takesLocale' => false,
 										'table' => 'ca_objects_x_storage_locations',
 										'showMetadataElementsWithDataType' => "*",

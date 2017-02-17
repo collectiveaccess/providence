@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,12 @@
  */ 
  	$vo_result = $this->getVar('result');
 	$vn_items_per_page = $this->getVar('current_items_per_page');
+	
+	
+	$o_dm = Datamodel::load();
+	$i = 0;
+	$vn_item_count = 0;
+	
 	
 ?>
 	<div id="commentsResults">
@@ -65,14 +71,9 @@
 			</thead>
 			<tbody>
 
-<?php
-		$i = 0;
-		$vn_item_count = 0;
-		$o_tep = new TimeExpressionParser();
-		$o_datamodel = Datamodel::load();
-		
+<?php	
 		while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-			if (!($t_table = $o_datamodel->getInstanceByTableNum($vo_result->get('ca_item_comments.table_num'), true))) {
+			if (!($t_table = $o_dm->getInstanceByTableNum($vo_result->get('ca_item_comments.table_num'), true))) {
 				continue;
 			}
 ?>
@@ -107,8 +108,7 @@
 					</td>
 					<td>
 <?php 
-						$o_tep->setUnixTimestamps($vn_tmp = $vo_result->get('ca_item_comments.created_on'), $vn_tmp);
-						print $o_tep->getText();
+						print $vo_result->get('ca_item_comments.created_on');
 ?>
 					</td>
 					<td>
