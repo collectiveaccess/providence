@@ -2581,7 +2581,7 @@ class BaseModel extends BaseObject {
 		}
 		if ($this->getMode() == ACCESS_WRITE) {
 			// do form timestamp check
-			if (isset($_REQUEST['form_timestamp']) && ($vn_form_timestamp = $_REQUEST['form_timestamp'])) {
+			if (!caGetOption('force', $pa_options, false) && isset($_REQUEST['form_timestamp']) && ($vn_form_timestamp = $_REQUEST['form_timestamp'])) {
 				$va_possible_conflicts = $this->getChangeLog(null, array('forTable' => true, 'range' => array('start' => $vn_form_timestamp, 'end' => time()), 'excludeUnitID' => $this->getCurrentLoggingUnitID()));
 				
 				if (sizeof($va_possible_conflicts)) {
