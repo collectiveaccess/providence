@@ -9010,6 +9010,7 @@
                 <setting name="showCurrentOnly">1</setting>
                 <setting name="showCurrentUsingDate">ca_objects_x_collections.collection_date</setting>
                 <setting name="label" locale="en_US">Current Collection</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.preferred_labels</l> <ifdef code="ca_objects_x_collections.collection_date">(</ifdef>^ca_objects_x_collections.collection_date<ifdef code="ca_objects_x_collections.collection_date">)</ifdef>]]></setting>
               </settings>
             </placement>
             <placement code="ca_collections">
@@ -9017,8 +9018,11 @@
               <settings>
                  <setting name="label" locale="en_US">Related Collections/Provenance</setting>
                 <setting name="restrict_to_types">collection</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.preferred_labels</l> <ifdef code="ca_objects_x_collections.collection_date">(</ifdef>^ca_objects_x_collections.collection_date<ifdef code="ca_objects_x_collections.collection_date">)</ifdef> ]]></setting>
                </settings>
             </placement>
+            
+            
             <placement code="ca_sale">
               <bundle>ca_collections</bundle>
               <settings>
@@ -9130,7 +9134,7 @@
                <settings>
                  <setting name="label" locale="en_US">Exhibitions</setting>
                  <setting name="restrict_to_types">exhibition</setting>
-                 <setting name="list_format">list</setting>
+                 <setting name="list_format">bubbles</setting>
                  <setting name="restrict_to_relationship_types">exhibited</setting>
                  <setting name="display_template"><![CDATA[
                   <l>^ca_occurrences.preferred_labels</l> ^ca_occurrences.occurrence_dates<br>
@@ -9147,7 +9151,7 @@
                <settings>
                  <setting name="label" locale="en_US">References</setting>
                  <setting name="restrict_to_types">reference</setting>
-                 <setting name="list_format">list</setting>
+                 <setting name="list_format">bubbles</setting>
                  <setting name="restrict_to_relationship_types">reference</setting>
                  <setting name="display_template"><![CDATA[
                   <l>^ca_occurrences.preferred_labels</l> ^ca_occurrences.nonpreferred_labels ^ca_occurrences.occurrence_dates<br>
@@ -11285,13 +11289,6 @@
                  <setting name="display_template">^ca_places.hierarchy.preferred_labels.name%delimiter=_➜_</setting>
                </settings>
             </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Exhibition Location (Geocode)</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
-            </placement>
             <placement code="ca_attribute_occurrence_notes">
               <bundle>ca_attribute_occurrence_notes</bundle>
               <settings>
@@ -11391,13 +11388,6 @@
                <settings>
                  <setting name="label" locale="en_US">Related Places</setting>
                </settings>
-            </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Reference Location</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_occurrence_notes">
               <bundle>ca_attribute_occurrence_notes</bundle>
@@ -11583,13 +11573,6 @@
                  <setting name="display_template">^ca_places.hierarchy.preferred_labels.name%delimiter=_➜_</setting>
                </settings>
             </placement> 
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Collection/Provenance Location (Geocode)</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
-            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
@@ -11640,14 +11623,8 @@
               <bundle>ca_places</bundle>
                <settings>
                  <setting name="label" locale="en_US">Related Places</setting>
+                 <setting name="display_template">^ca_places.hierarchy.preferred_labels.name%delimiter=_➜_</setting>
                </settings>
-            </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Sale/Auction Location (Geocode)</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
             </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
@@ -14260,6 +14237,8 @@
             <setting name="restrict_to_types">collection</setting>
             <setting name="restrict_to_types">other</setting>
             <setting name="delimiter">; </setting>
+            <setting name="format"><![CDATA[
+                  <l>^ca_collections.preferred_labels</l>]]></setting>
           </settings>
         </placement>
       </bundlePlacements>
@@ -14303,6 +14282,9 @@
         </placement>
         <placement code="ca_attribute_inscription">
           <bundle>ca_objects.inscription</bundle>
+        </placement>
+        <placement code="ca_attribute_institutional_id">
+          <bundle>ca_objects.institutional_id</bundle>
         </placement>
         <placement code="ca_exhibitions">
           <bundle>ca_occurrences</bundle>
@@ -14503,7 +14485,7 @@
           </settings>
         </placement>
         <placement code="ca_attribute_public_private">
-          <bundle>ca_collections.a_collections.public_private</bundle>
+          <bundle>ca_collections.public_private</bundle>
         </placement>
         <placement code="ca_places">
           <bundle>ca_places</bundle>
@@ -14838,13 +14820,6 @@
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="location">
-          <bundle>ca_occurrences.georeference</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Location</setting>
-            <setting name="width">400px</setting>
-          </settings>
-        </placement>
         <placement code="p4">
           <bundle>ca_entity_labels.displayname</bundle>
           <settings>
@@ -14913,13 +14888,6 @@
         </placement>
         <placement code="p78">
           <bundle>ca_occurrences.reference_type</bundle>
-        </placement>
-        <placement code="location">
-          <bundle>ca_occurrences.georeference</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Publication Location</setting>
-            <setting name="width">400px</setting>
-          </settings>
         </placement>
         <placement code="p79">
           <bundle>ca_occurrences.occurrence_notes</bundle>
@@ -14997,13 +14965,6 @@
           <bundle>ca_collection_labels.name</bundle>
           <settings>
             <setting name="label" locale="en_US">Provenance / Name</setting>
-            <setting name="width">400px</setting>
-          </settings>
-        </placement>
-        <placement code="coll_location">
-          <bundle>ca_collections.georeference</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Provenance Location</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>

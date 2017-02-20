@@ -4177,6 +4177,10 @@ div.quickSearchNoResults {
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	font-weight: bold;
 }
+.facetHeadingLink .caIcon{
+	top: -2px;
+    position: relative;
+}
 #refineBrowse a.facetLink.active{
 	background-color:#aaa;
 }
@@ -4262,7 +4266,7 @@ div.quickSearchNoResults {
 }
 /* browse pop up panel */
 #splashBrowsePanel {
-	margin-bottom: 5px;
+	margin-bottom: 25px;
 	float: left;
 	width:100%;
 }
@@ -4335,6 +4339,7 @@ h2.browse {
     height: auto;
     overflow: auto;
     padding: 0px;
+    max-height:400px;
 }
 td.browseSelectPanelListCell {
 	padding-bottom: 8px;
@@ -4406,6 +4411,31 @@ div.browseCriterion {
 .browseCriterionLabel {
     padding: 5px;
     height: 40px;
+}
+.browseSelectMultiplePanelContentArea .facetItem{
+	position:relative;
+	padding-left:20px;
+}
+[facet_item_selected="1"]::before {
+	font-family: FontAwesome;
+	content: "\f067"; 
+	padding-right:6px;
+	position:absolute;
+	left:7px;
+	top:4px;
+}
+.applyFacetContainer{
+	float:right;
+}
+.applyFacetContainer a.facetApply {
+    background-color: #aaa;
+    color: #fff;
+    font-size: 13px;
+    border-radius: 3px;
+    padding:4px;
+    text-transform:uppercase;
+    text-decoration:none;
+	text-align:center;
 }
 
 #resultBox {
