@@ -66,6 +66,15 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 		'label' => _t('Bundle is mandatory'),
 		'description' => _t('Bundle is mandatory and a valid value must be set before it can be saved.')
 	),
+	'restrict_to' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 35, 'height' => 5,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Restrict to'),
+		'description' => _t('Restrict entry to specific table.')
+	),
 	'restrict_to_types' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
@@ -352,13 +361,14 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	 * entities) you can have different dictionary entries return when ca_entities is restricted to authors vs. publishers.
 	 *
 	 * @param string $ps_bundle_name The bundle name to find a dictionary entry for. 
+	 * @param BaseModel $pt_subject 
 	 * @param array $pa_settings Bundle settings to use when matching definitions. The bundle settings restrict_to_types and restrict_to_relationship_types will be used, when present, to find type-restricted dictionary entries.
 	 * @param array $pa_options Options include:
 	 *		noCache = Bypass cache (typically loaded using ca_metadata_dictionary_entries::preloadDefinitions()) and check entry directly. [Default=false]
 	 *
 	 * @return array An array with entry data. Keys are entry field names. The 'settings' key contains the label, definition text and any type restrictions. Returns null if no entry is defined.
 	 */
-	public static function getEntry($ps_bundle_name, $pa_settings=null, $pa_options=null) {
+	public static function getEntry($ps_bundle_name, $pt_subject, $pa_settings=null, $pa_options=null) {
 		if (caGetOption('noCache', $pa_options, false)) {
 			ca_metadata_dictionary_entries::preloadDefinitions(array($ps_bundle_name));
 		}
@@ -382,10 +392,17 @@ class ca_metadata_dictionary_entries extends BaseModel {
 		if ($va_entry_list = ca_metadata_dictionary_entries::entryExists($ps_bundle_name)) {
 			$vn_entry_id = null;
 			
-			if (sizeof($va_types) || sizeof($va_relationship_types)) {
+			//if (sizeof($va_types) || sizeof($va_relationship_types)) {
 				foreach(array_keys($va_entry_list) as $vn_id) {
 					$va_entry = ca_metadata_dictionary_entries::$s_definition_cache[$vn_id];
-					
+					if (is_array($va_tables = $va_entry['settings']['restrict_to']) && sizeof($va_tables)) {
+						if(in_array($pt_subject->tableName(), $va_tables)) { 
+							$vn_entry_id = $vn_id;
+						} else {
+							$vn_entry_id = null;
+							continue;
+						}
+					}
 					if (sizeof($va_relationship_types)) {
 						if(
 							is_array($va_entry_types = $va_entry['settings']['restrict_to_relationship_types'])
@@ -413,7 +430,7 @@ class ca_metadata_dictionary_entries extends BaseModel {
 					
 					if ($vn_entry_id) { break; }
 				}
-			}
+			//}
 			
 			if (!$vn_entry_id)  { $vn_entry_id = array_pop(array_keys($va_entry_list)); }
 			return ca_metadata_dictionary_entries::$s_definition_cache[$vn_entry_id];
