@@ -42,6 +42,7 @@ define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
 define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
 define("__CA_MEDIA_3D_DEFAULT_ICON__", '3d');
 define("__CA_MEDIA_SPIN_DEFAULT_ICON__", '3d');
+define("__CA_MEDIA_BINARY_FILE_DEFAULT_ICON__", 'document');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------
@@ -83,14 +84,18 @@ class Media extends BaseObject {
 		$dir = opendir(Media::$plugin_path);
 		if (!$dir) { throw new ApplicationException(_t('Cannot open media plugin directory %1', Media::$plugin_path)); }
 	
+		$vb_binary_file_plugin_installed = false;
 		while (($plugin = readdir($dir)) !== false) {
 			if ($plugin == "BaseMediaPlugin.php") { continue; }
+			if ($plugin == "BinaryFile.php") { $vb_binary_file_plugin_installed = true; continue; }
 			if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $plugin, $m)) {
 				Media::$WLMedia_plugin_names[] = $m[1];
 			}
 		}
 		
 		sort(Media::$WLMedia_plugin_names);
+		
+		if ($vb_binary_file_plugin_installed) { Media::$WLMedia_plugin_names[] = "BinaryFile"; }
 		
 		return Media::$WLMedia_plugin_names;
 	}

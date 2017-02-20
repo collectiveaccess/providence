@@ -241,12 +241,15 @@ var caUI = caUI || {};
 
 			var sortUrl = that.sortUrl + '/sortKeys/' + key;
 			var sortedValues = {};
+			
+			var sortDirection = jQuery('#' + that.fieldNamePrefix + 'RelationBundleSortDirectionControl').val();
+			if (sortDirection.toLowerCase() !== 'desc') { sortDirection = 'asc'; }
 
 			// we actually have to wait for the result here ... hence, ajax() with async=false instead of getJSON()
 			jQuery.ajax({
 				url: sortUrl,
 				type: 'POST',
-				data: { 'ids': Object.keys(indexedValues).join(',') },
+				data: { 'ids': Object.keys(indexedValues).join(','), 'sortDirection': sortDirection },
 				dataType: 'json',
 				async: false,
 				success: function(data) {
@@ -268,7 +271,6 @@ var caUI = caUI || {};
 			
 			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).append(whatsLeft);
 			
-			caUI.utils.showUnsavedChangesWarning(true);
 			that._updateSortOrderListIDFormElement();
 		};
 	

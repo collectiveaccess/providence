@@ -506,7 +506,7 @@ class IIIFService {
 		
 		$va_possible_formats = ['jpg', 'tif', 'tiff', 'png', 'gif'];
 		$o_media  = new Media();
-		if (!$o_media->read($pt_media->getMediaPath($ps_fldname, 'original'))) { 
+		if (!$o_media->read($pt_media->getMediaPath($ps_fldname, 'original')) && !$o_media->read($pt_media->getMediaPath($ps_fldname, 'large'))) { 
 			throw new Exception("Cannot open file");
 		}
 		

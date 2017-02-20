@@ -165,6 +165,7 @@ class ReplicationService {
 					// translate url to absolute media path
 					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
 					$vs_local_path = __CA_BASE_DIR__ . str_replace(__CA_URL_ROOT__, '', $vs_path_from_url);
+					if (!file_exists(realpath($vs_local_path))) { continue; }
 					
 					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize($vn_filesize = @filesize($vs_local_path))."]");
 					if ($vn_filesize > (1024 * 1024 * 250)) { continue; } // bail if file > 250megs

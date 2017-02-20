@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,17 +38,15 @@
  * Plugin for processing Microsoft Word and Excel documents
  */
  
-include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
-include_once(__CA_LIB_DIR__."/core/Media.php");
-include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/UnZipFile.php");
+require_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
+require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
+require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/core/Media.php");
+require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+require_once(__CA_LIB_DIR__."/core/Parsers/UnZipFile.php");
 
-include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/OpenXml.php");
-include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Docx.php");
-include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Xlsx.php");
-include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Pptx.php");
+require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 
 class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
@@ -190,85 +188,98 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function divineFileFormat($ps_filepath) {
-		if ($ps_filepath == '') {
-			return '';
-		}
+		if ($ps_filepath == '') { return ''; }
 		
-		if ($r_fp = @fopen($ps_filepath, "r")) {
-			$vs_sig = fgets($r_fp, 9);
-			if ($this->isWord972000doc($vs_sig, $r_fp)) {
-				$this->properties = $this->handle = $this->ohandle = array(
-					"mimetype" => 'application/msword',
-					"filesize" => filesize($ps_filepath),
-					"typename" => "Microsoft Word",
-					"content" => ""
-				);
-				fclose($r_fp);
-				return "application/msword";
-			}
-			
-			fclose($r_fp);
-			
-			if ($vs_type = $this->isWordExcelorPPTXMLdoc($ps_filepath, $vs_sig)) {
-				switch($vs_type) {
-					case 'WORD':
-					default:
-						$this->properties = $this->handle = $this->ohandle = array(
-							"mimetype" => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-							"filesize" => filesize($ps_filepath),
-							"typename" => "Microsoft Word/OpenOffice",
-							"content" => ""
-						);
-						return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-						break;
-					case 'EXCEL':
-						$this->properties = $this->handle = $this->ohandle = array(
-							"mimetype" => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-							"filesize" => filesize($ps_filepath),
-							"typename" => "Microsoft Excel/OpenOffice",
-							"content" => ""
-						);
-						return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-						break;
-					case 'PPT':
-						$this->properties = $this->handle = $this->ohandle = array(
-							"mimetype" => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-							"filesize" => filesize($ps_filepath),
-							"typename" => "Microsoft PowerPoint/OpenOffice",
-							"content" => ""
-						);
-						return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-						break;
-				}	
-			}
-			
+		if ($vs_mimetype = $this->isWordExcelorPPTdoc($ps_filepath)) {
+			switch($vs_mimetype) {
+				case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+					$this->properties = $this->handle = $this->ohandle = array(
+						"mimetype" => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+						"filesize" => filesize($ps_filepath),
+						"typename" => "Microsoft Word/OpenOffice",
+						"content" => ""
+					);
+					break;
+				case 'application/msword':
+					$this->properties = $this->handle = $this->ohandle = array(
+						"mimetype" => 'application/msword',
+						"filesize" => filesize($ps_filepath),
+						"typename" => "Microsoft Word",
+						"content" => ""
+					);
+					break;
+				case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+					$this->properties = $this->handle = $this->ohandle = array(
+						"mimetype" => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+						"filesize" => filesize($ps_filepath),
+						"typename" => "Microsoft Excel/OpenOffice",
+						"content" => ""
+					);
+					break;
+				case 'application/vnd.ms-excel':
+					$this->properties = $this->handle = $this->ohandle = array(
+						"mimetype" => 'application/vnd.ms-excel',
+						"filesize" => filesize($ps_filepath),
+						"typename" => "Microsoft Excel",
+						"content" => ""
+					);
+					break;
+				case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+					$this->properties = $this->handle = $this->ohandle = array(
+						"mimetype" => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+						"filesize" => filesize($ps_filepath),
+						"typename" => "Microsoft PowerPoint/OpenOffice",
+						"content" => ""
+					);
+					break;
+				case 'application/vnd.ms-powerpoint':
+					$this->properties = $this->handle = $this->ohandle = array(
+						"mimetype" => 'application/vnd.ms-powerpoint',
+						"filesize" => filesize($ps_filepath),
+						"typename" => "Microsoft PowerPoint",
+						"content" => ""
+					);
+					break;
+				default;
+					throw new ApplicationException(_t('Unsupported mimetype %1', $vs_mimetype));
+					break;
+			}	
+			return $vs_mimetype;
 		}
+			
 		return '';
 	}
 	# ----------------------------------------------------------
-	private function isWord972000doc($ps_sig, $r_fp) {
-		// Testing on the first 8 bytes of the file isn't great... 
-		// any Microsoft Compound Document formated
-		// file will be accepted by this test.
-		if (
-			(ord($ps_sig{0}) == 0xD0) &&
-			(ord($ps_sig{1}) == 0xCF) &&
-			(ord($ps_sig{2}) == 0x11) &&
-			(ord($ps_sig{3}) == 0xE0) &&
-			(ord($ps_sig{4}) == 0xA1) &&
-			(ord($ps_sig{5}) == 0xB1) &&
-			(ord($ps_sig{6}) == 0x1A) &&
-			(ord($ps_sig{7}) == 0xE1)
-		) {
-			// Look for Word string in doc... this is hacky but seems to work well
-			// If it has both the file sig above and this string it's pretty likely
-			// a Word file
-			while (!feof($r_fp)) {
-				$buffer = fgets($r_fp, 32000);
-			if (preg_match("!W.{1}o.{1}r.{1}d.{1}D.{1}o.{1}c.{1}u.{1}m.{1}e.{1}n.{1}t!", $buffer) !== false) {
-        			return true;
-        		}
-   			}
+	/**
+	 * 
+	 */
+	private function isWord972000doc($ps_filepath) {
+		if ($r_fp = @fopen($ps_filepath, "r")) {
+			$vs_sig = fgets($r_fp, 9);
+			// Testing on the first 8 bytes of the file isn't great... 
+			// any Microsoft Compound Document formated
+			// file will be accepted by this test.
+			if (
+				(ord($ps_sig{0}) == 0xD0) &&
+				(ord($ps_sig{1}) == 0xCF) &&
+				(ord($ps_sig{2}) == 0x11) &&
+				(ord($ps_sig{3}) == 0xE0) &&
+				(ord($ps_sig{4}) == 0xA1) &&
+				(ord($ps_sig{5}) == 0xB1) &&
+				(ord($ps_sig{6}) == 0x1A) &&
+				(ord($ps_sig{7}) == 0xE1)
+			) {
+				// Look for Word string in doc... this is hacky but seems to work well
+				// If it has both the file sig above and this string it's pretty likely
+				// a Word file
+				while (!feof($r_fp)) {
+					$buffer = fgets($r_fp, 32000);
+				if (preg_match("!W.{1}o.{1}r.{1}d.{1}D.{1}o.{1}c.{1}u.{1}m.{1}e.{1}n.{1}t!", $buffer) !== false) {
+						return true;
+					}
+				}
+			}
+			fclose($r_fp);
 		}
 		
 		return false;
@@ -281,70 +292,48 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 * @param string $ps_sig The signature (first 9 bytes) of the file
 	 * @return string WORD if the document is a Word doc, EXCEL if the document is an Excel doc, PPT if it is a PowerPoint doc or boolean false if it's not a valid Word or Excel XML (OpenOffice) file
 	 */
-	private function isWordExcelorPPTXMLdoc($ps_filepath, $ps_sig) {
-	
-		if (
-			substr($ps_sig, 0, 2) == 'PK'		// is a PKZip file... so open it up
-		) {
-			$o_unzip = new UnZipFile($ps_filepath);
-			if (is_array($va_list = $o_unzip->getFileList())) {
-				foreach($va_list as $vs_file => $vn_size) {
-					if (substr($vs_file, 0, 5) == 'word/') {
-						try {
-							$o_doc = Zend_Search_Lucene_Document_Docx::loadDocxFile($ps_filepath);
-							$this->opa_metadata = array('WORD' => array(
-									'title' => $o_doc->getFieldUtf8Value('title'),
-									'subject' => $o_doc->getFieldUtf8Value('subject'),
-									'creator' => $o_doc->getFieldUtf8Value('creator'),
-									'created' => $o_doc->getFieldUtf8Value('created'),
-									'modified' => $o_doc->getFieldUtf8Value('modified')
-								)
-							);
-							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-						} catch (Exception $e) {
-							// noop
-						}
-						return 'WORD';
-					}
-					if (substr($vs_file, 0, 3) == 'xl/') {
-						try {
-							$o_doc = Zend_Search_Lucene_Document_Xlsx::loadXlsxFile($ps_filepath);
-							$this->opa_metadata = array('EXCEL' => array(
-									'title' => $o_doc->getFieldUtf8Value('title'),
-									'creator' => $o_doc->getFieldUtf8Value('creator'),
-									'created' => $o_doc->getFieldUtf8Value('created'),
-									'modified' => $o_doc->getFieldUtf8Value('modified')
-								)
-							);
-							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							
-						} catch (Exception $e) {
-							// noop
-						}
-						return 'EXCEL';
-					}
-					
-					if (substr($vs_file, 0, 4) == 'ppt/') {
-						try {
-							$o_doc = Zend_Search_Lucene_Document_Pptx::loadPptxFile($ps_filepath);
-							$this->opa_metadata = array('PPT' => array(
-									'title' => $o_doc->getFieldUtf8Value('title'),
-									'creator' => $o_doc->getFieldUtf8Value('creator'),
-									'created' => $o_doc->getFieldUtf8Value('created'),
-									'modified' => $o_doc->getFieldUtf8Value('modified')
-								)
-							);
-							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-						} catch (Exception $e) {
-							// noop
-						}
-						return 'PPT';
-					}
+	private function isWordExcelorPPTdoc($ps_filepath) {
+		// Check Powerpoint
+		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['ppt', 'pptx'])) {
+			$va_ppt_types = ['PowerPoint2007' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'PowerPoint97' => 'application/vnd.ms-powerpoint'];
+		
+			foreach ($va_ppt_types as $vs_type => $vs_mimetype) {
+				$o_reader = \PhpOffice\PhpPresentation\IOFactory::createReader($vs_type);
+				if ($o_reader->canRead($ps_filepath)) {
+					return $vs_mimetype;
 				}
 			}
-			return false;
 		}
-			
+		
+		// 2007+ .docx files
+		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['doc', 'docx'])) {	// PhpWord often will identify Excel docs as Word (and PHPExcel will identify Word docs as Excel...) so we test file extensions here			
+			// Check Word
+			if ($this->isWord972000doc($ps_filepath)) {		// old-style .doc files
+				return 'application/msword';
+			}
+		
+			$va_word_types = ['Word2007' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+		
+			foreach ($va_word_types as $vs_type => $vs_mimetype) {
+				$o_reader = \PhpOffice\PhpWord\IOFactory::createReader($vs_type);
+				if ($o_reader->canRead($ps_filepath)) {
+					return $vs_mimetype;
+				}
+			}
+		}
+		
+		
+		// Check Excel
+		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['xls', 'xlsx'])) {
+			$va_excel_types = ['Excel2007' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Excel5' => 'application/vnd.ms-excel', 'Excel2003XML' => 'application/vnd.ms-excel'];
+			foreach ($va_excel_types as $vs_type => $vs_mimetype) {
+				$o_reader = PHPExcel_IOFactory::createReader($vs_type);
+				if ($o_reader->canRead($ps_filepath)) {
+					return $vs_mimetype;
+				}
+			}
+		}
+	
 		return false;
 	}
 	# ----------------------------------------------------------

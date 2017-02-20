@@ -525,7 +525,7 @@
 			$va_submenu_nav_info = $o_action_controller->{$va_info['handler']['action']}($va_info);
 		
 			if ($o_action_controller->numErrors()) {
-				$this->postError(2300, _t("Controller error: %1", join('; ', $o_action_controller->getErrors())), "AppNavigation->getDynamicNavigation()");
+				$this->postError(2300, _t("Controller error: %1", join('; ', $o_action_controller->getErrors())), "AppNavigation->getDynamicSubmenu()");
 				return false;
 			}
 			return $va_submenu_nav_info;

@@ -69,7 +69,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'takesLocale' => false,
 		'default' => "",
 		'label' => _t('Width'),
-		'description' => _t('Width, in characters or pixels, of search form elements.')
+		'description' => _t('Width, in characters or pixels.')
 	),
 	'height' => array(
 		'formatType' => FT_TEXT,
@@ -78,7 +78,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'takesLocale' => false,
 		'default' => "",
 		'label' => _t('Height'),
-		'description' => _t('Width, in characters or pixels, of search form elements.')
+		'description' => _t('Width, in characters or pixels.')
 	),
 	'readonly' => array(
 		'formatType' => FT_NUMBER,

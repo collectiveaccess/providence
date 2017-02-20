@@ -543,6 +543,7 @@ div.inspectorCheckedOut {
 }
 #leftNav #widgets .searchType, 
 #leftNav #widgets .setStats, 
+#leftNav #widgets .pawtucketStats, 
 #leftNav #widgets .groupList, 
 #leftNav #widgets .watchedItems, 
 #leftNav #widgets .yourDisplays, 
@@ -572,7 +573,7 @@ div.inspectorCheckedOut {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
-.setStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
+.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
 	font-size:12px;
 	line-height:1.7em;
 }
@@ -1215,6 +1216,53 @@ div.hint {
     border-top-right-radius: 4px;
     border-top-left-radius: 4px;
 }
+.bundleSubLabel{
+	clear:both;
+	background-color:#fbfbfb;
+	padding:8px 8px 0px 10px;
+	position:relative;
+	font-weight:normal;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select{
+	position:relative;
+	padding-top:0px;
+	padding-bottom:0px;
+	top:-4px;
+	font-size: 9px;
+	font-weight: normal;
+	height: 17px;
+	vertical-align: top;
+}
+.bundleSubLabel .editorBundlePrintControl{
+	float:right;
+	text-align:right;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel .editorBundlePrintControl a.form-button{
+	height:auto;
+	vertical-align:top;
+	padding:0px;
+	margin:-6px 0px 0px 0px;
+}
+.bundleLabel .iconButton{
+	float:right;
+	text-align:right;
+	margin-right:6px;
+	margin-left:6px;
+	font-size:15px;
+	position:relative;
+	font-size:16px;
+	top:-3px;
+}
+.bundleLabel .iconButton select{
+	padding-top:0px;
+	padding-bottom:0px;
+	font-size: 9px;
+	font-weight: normal;
+}
 
 .bundleLabel a.bundleDocumentationLink {
     width:22px;
@@ -1548,6 +1596,11 @@ a span.form-button.approve .formtext{
 	margin-bottom: 13px;
 	display: inline-block;
 }
+span.form-button.approveDelete {
+	background-color: #eee;
+	padding: 10px 12px 0px 6px;
+	border-radius: 4px;
+}
 span.form-button button{
     line-height:2.5;/*Opera need this*/
 }
@@ -1702,7 +1755,8 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 .listtableEditDelete {
 	width: 36px;
 	text-align: center;
-	padding: 3px !important;
+	padding: 3px !important;	
+	white-space: nowrap;
 }
 
 #caWatchedItemsList.listtable {
@@ -1762,7 +1816,9 @@ th.list-header-sorted-asc {
     background-image: url('../graphics/icons/asc.gif');
     background-color: #cccccc;
 }
-
+th.list-header-nolink{
+	cursor: default !important;
+}
 /* table fields */
 
 table.listtable tbody td {
@@ -1978,6 +2034,7 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     border: 0px solid #e6e6e6;
     padding-left:0px;
+    clear:both;
 }
 .bundleContainer .caDeleteLabelButton .fa, .bundleContainer .caDeleteItemButton .fa{
 	font-size:18px;
@@ -2965,7 +3022,7 @@ a.editorFieldListLink {
     display: none;
 }
 
-div.editorBundlePrintControl {
+/*div.editorBundlePrintControl {
     position: absolute; 
     top: 2px; 
     right: 27px;
@@ -2976,7 +3033,7 @@ div.editorBundlePrintControl select {
     font-weight: normal;
     height: 17px;
     vertical-align: top;
-}
+}*/
 
 #caHierarchyOverviewHeader {
     font-size: 13px;
@@ -5515,17 +5572,25 @@ div.listRel:first-of-type {
     overflow-y: auto;
 }
 
-.caItemListSortControlTrigger {
+div.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
+    text-align:right;
+    padding-top:6px;
+}
+
+select.caItemListSortControlTrigger {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
 }
 
 .caItemListSortControlContainer {
     position: absolute;
-    right: 40px;
+    right: 230px;
     top: 0px;
     min-width: 50px;
-    
     z-index: 14000;
 }
 
@@ -5607,6 +5672,22 @@ table.preferenceColumnSelector tbody tr td.preferenceColumnSelectorLabel {
 	width: 300px;
 }
 
+div.preferenceColumnHeader {
+    font-family: "DIN-Regular", sans-serif;
+    font-size:13px;
+    color: #333;
+    margin-bottom: 10px;
+    padding-top: 5px;
+    font-weight: bold;
+    text-align: left;
+}
+
+div.preferencePlacementList {
+    width: 350px;
+    height: 350px;
+    overflow: auto;
+    margin-right:10px;
+}
 
 .searchReindexHelpText{
     padding:20px;
@@ -6613,6 +6694,13 @@ table.caUseHistoryUpdateLocationMetadata tr td {
     
 	font-weight: normal;
 	font-size: 12px;
+	position:absolute;
+	top:20px;
+	right:-30px;
+	width:400px;
+	z-index:10;
+	line-height:1.2em;
+	text-align:left;
 }
 
 div.caMetadataDictionaryViolationsList {
@@ -7182,4 +7270,17 @@ div.caResultsComplexDataEditorErrorContainer {
   height: 100%;
   margin-top: 0;
   padding-top: 200px;
+}
+/* set items list in set editor */
+.setItemCounter{
+	float:left;
+	background-color:#bbb;
+	color:#FFF;
+	border-radius: 6px;
+	padding:3px 4px 1px 4px;
+	line-height:1em;
+	font-size:9px;
+	font-weight:normal;
+	margin:5px 0px 0px 5px;
+	text-align:bottom;
 }

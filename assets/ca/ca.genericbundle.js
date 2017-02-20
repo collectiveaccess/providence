@@ -452,7 +452,6 @@ var caUI = caUI || {};
 				}
 			} else if((options.oddColor) || (options.evenColor)) {
 				if (options.oddColor) {		// use :even because jQuery is zero-based (eg. 1, 3, 5... are "even" but we consider them "odd")
-				console.log(this.container + " ." + options.listItemClassName + ":even");
 					jQuery(this.container + " ." + options.listItemClassName + ":even").css('background-color', '#' + options.oddColor);
 				}	
 				if (options.evenColor) {	// use :odd because jQuery is zero-based (eg. 0, 2, 4... are "odd" but we consider them "even")
