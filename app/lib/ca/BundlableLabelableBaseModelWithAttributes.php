@@ -1366,9 +1366,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
 		$va_violations = null;
 		if (
-			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($ps_bundle_name_proc, $pa_bundle_settings))
+			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($ps_bundle_name_proc, $this, $pa_bundle_settings))
 			||
-			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc, $pa_bundle_settings))
+			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc, $this, $pa_bundle_settings))
 		) {
 			$pa_bundle_settings['definition'][$g_ui_locale] = $va_dictionary_entry['settings']['definition'];
 			if ($va_dictionary_entry['settings']['mandatory']) {
