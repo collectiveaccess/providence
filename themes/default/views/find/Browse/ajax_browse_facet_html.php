@@ -62,9 +62,9 @@
 
 <div class="browseSelectPanelContentArea <?php print ($vb_multiple_selection_facet) ? "browseSelectMultiplePanelContentArea" : "" ?>" id="browseSelectPanelContentArea">
 <?php
-	if ($vb_multiple_selection_facet && ($va_facet_info['group_mode'] != 'hierarchical')) {
+	if ($vb_multiple_selection_facet) {
 ?>
-		<div class='applyFacetContainer'><a href="#" id="<?php print $vs_facet_name; ?>_facet_apply" data-facet="<?php print $vs_facet_name; ?>" class="facetApply">Apply</a></div>
+		<div class='applyFacetContainer'><a href="#" id="facet_apply" data-facet="<?php print $vs_facet_name; ?>" class="facetApply">Apply</a></div>
 <?php
 	}
 
@@ -75,7 +75,7 @@
 ?>
 	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
-	<div id="hierarchyBrowserContainer">
+	<div id="hierarchyBrowserContainer"><div id="<?php print $vs_facet_name; ?>_facet_container">
 		<div id="hierarchyBrowser" class='hierarchyBrowser'>
 			<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 		</div>
@@ -88,12 +88,12 @@
 		if ($t_item && $t_subject) {
 ?>
 			<div class="hierarchyBrowserHelpText">
-				<?php print _t("Click on a %1 to see more specific %2 within that %3, or use the search field. Click on the arrow next to a %4 to find %5 related to it.", $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL') ); ?>
+				<?php print _t("Click on a %1 to find %2 related to it. Click on the arrow next to a %3 to see more specific %4 within that %5, or use the search field.", $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR') ); ?>
 			</div>
 <?php
 		}
 ?>
-	</div>
+	</div></div>
 	
 	<script type="text/javascript">
 		var oHierBrowser;
@@ -110,7 +110,9 @@
 				initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
-				currentSelectionDisplayID: 'browseCurrentSelection'
+				currentSelectionDisplayID: 'browseCurrentSelection',
+				
+				selectMultiple: <?php print ($vb_multiple_selection_facet) ? 1 : 0; ?>
 			});
 
 			jQuery('#hierarchyBrowserSearch').autocomplete({
@@ -143,7 +145,7 @@
 			foreach($va_facet as $vn_i => $va_item) {
 				$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
 				
-				$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet='{$vs_facet_name}' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
+				$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
 				
 				if (sizeof($va_row) == $va_row_size) {
 					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -192,7 +194,7 @@
 		}
 ?>	
 		</div><!-- end jumpToGroup-->
-		<div style="float: right;" id='browseFacetGroupingControls'>
+		<div style="float: right; clear:right;" id='browseFacetGroupingControls'>
 		<?php 
 			if (isset($va_facet_info['groupings']) && is_array($va_facet_info['groupings']) && sizeof($va_facet_info['groupings'] )) {
 				print _t('Group by').': '; 
@@ -204,7 +206,7 @@
 		?>
 		</div>		
 	</div>
-	<div class="browseSelectPanelList" id="browseSelectPanelList">
+	<div class="browseSelectPanelList" id="browseSelectPanelList"><div id='<?php print $vs_facet_name; ?>_facet_container'>
 <?php
 			
 			if (($vs_g) && (isset($va_facet[$vs_g]))) {
@@ -217,12 +219,12 @@
 				}
 				print "<div class='browseSelectPanelListGroupHeading'><a name='{$vs_group}' class='browseSelectPanelListGroupHeading'>{$vs_group}</a></div>\n";
 ?>
-		<table class='browseSelectPanelListTable' id='<?php print $vs_facet_name; ?>_facet_container'>
+		<table class='browseSelectPanelListTable'>
 <?php
 				foreach($va_items as $va_item) {
 					$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
 				
-					$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet='{$vs_facet_name}' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
+					$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
 					
 					if (sizeof($va_row) == $va_row_size) {
 						print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -243,7 +245,7 @@
 <?php
 			}
 ?>
-	</div>
+	</div></div>
 <?php
 			break;
 		# ------------------------------------------------------------
@@ -275,9 +277,9 @@ if($vb_multiple_selection_facet){
 			}
 			
 			if (jQuery(".facetItem[facet_item_selected='1']").length > 0) {
-				jQuery("#" + jQuery(this).data('facet') + "_facet_apply").show();
+				jQuery("#facet_apply").show();
 			} else {
-				jQuery("#" + jQuery(this).data('facet') + "_facet_apply").hide();
+				jQuery("#facet_apply").hide();
 			}
 			
 			e.preventDefault();
@@ -285,15 +287,16 @@ if($vb_multiple_selection_facet){
 		});
 		
 		jQuery(".facetApply").on('click', function(e) { 
-			var facet = jQuery(this).data('facet');
+			var facet = '<?php print $vs_facet_name; ?>';
 			
 			var ids = [];
 			jQuery.each(jQuery("#" + facet + "_facet_container").find("[facet_item_selected=1]"), function(k,v) {
 				ids.push(jQuery(v).data('facet_item_id'));
 			});
 
-			window.location = '<?php print caNavUrl($this->request, 'find', $this->request->getController(),((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('mod_id' => $vm_modify_id)); ?>/facet/' + facet + '/id/' + ids.join('|');
-			
+			if(ids.length){
+				window.location = '<?php print caNavUrl($this->request, 'find', $this->request->getController(),((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('mod_id' => $vm_modify_id)); ?>/facet/' + facet + '/id/' + ids.join('|');
+			}
 			e.preventDefault();
 		});
 	});	

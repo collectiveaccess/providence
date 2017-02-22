@@ -4412,7 +4412,7 @@ div.browseCriterion {
     padding: 5px;
     height: 40px;
 }
-.browseSelectMultiplePanelContentArea .facetItem{
+.browseSelectMultiplePanelContentArea td.facetItem, .browseSelectMultiplePanelContentArea li{ /* li is for hier browser */
 	position:relative;
 	padding-left:20px;
 }
@@ -4423,6 +4423,10 @@ div.browseCriterion {
 	position:absolute;
 	left:7px;
 	top:4px;
+	color:#000 !important;
+}
+.browseSelectMultiplePanelContentArea li [facet_item_selected="1"]::before {
+	top:2px; /* hierbrowser */
 }
 .applyFacetContainer{
 	float:right;
