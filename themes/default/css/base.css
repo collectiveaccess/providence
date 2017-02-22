@@ -4177,6 +4177,10 @@ div.quickSearchNoResults {
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	font-weight: bold;
 }
+#refineBrowse a.facetLink .caIcon{
+	top:-2px;
+	position: relative;
+}
 .facetHeadingLink .caIcon{
 	top: -2px;
     position: relative;
