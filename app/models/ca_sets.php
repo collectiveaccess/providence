@@ -379,7 +379,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vs_set_code = trim($this->get('set_code'));
 		
-		if ((($vs_set_code_proc = preg_replace("![A-Za-z0-9]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
+		if ((($vs_set_code_proc = preg_replace("![^A-Za-z0-9]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
 			$this->setMode(ACCESS_WRITE);
 			
 			if (!strlen($vs_set_code)) {
