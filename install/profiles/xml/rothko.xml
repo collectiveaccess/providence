@@ -6064,7 +6064,7 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
-          <type>work</type>
+          <type>side</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -9010,6 +9010,8 @@
                 <setting name="showCurrentOnly">1</setting>
                 <setting name="showCurrentUsingDate">ca_objects_x_collections.collection_date</setting>
                 <setting name="label" locale="en_US">Current Collection</setting>
+                <setting name="restrict_to_types">collection</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.preferred_labels</l> <ifdef code="ca_objects_x_collections.collection_date">(</ifdef>^ca_objects_x_collections.collection_date<ifdef code="ca_objects_x_collections.collection_date">)</ifdef>]]></setting>
               </settings>
             </placement>
             <placement code="ca_collections">
@@ -9017,6 +9019,8 @@
               <settings>
                  <setting name="label" locale="en_US">Related Collections/Provenance</setting>
                 <setting name="restrict_to_types">collection</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.preferred_labels</l> <ifdef code="ca_objects_x_collections.collection_date">(</ifdef>^ca_objects_x_collections.collection_date<ifdef code="ca_objects_x_collections.collection_date">)</ifdef> ]]></setting>
+                <setting name="allowedSorts">ca_objects_x_collections.collection_date</setting>
                </settings>
             </placement>
             <placement code="ca_sale">
@@ -9025,6 +9029,7 @@
                  <setting name="label" locale="en_US">Related Sale</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
                 <setting name="restrict_to_types">other</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.preferred_labels</l> <ifdef code="ca_objects_x_collections.collection_date">(</ifdef>^ca_objects_x_collections.collection_date<ifdef code="ca_objects_x_collections.collection_date">)</ifdef> ]]></setting>
                </settings>
             </placement>
             <placement code="ca_sketch">
@@ -9130,7 +9135,7 @@
                <settings>
                  <setting name="label" locale="en_US">Exhibitions</setting>
                  <setting name="restrict_to_types">exhibition</setting>
-                 <setting name="list_format">list</setting>
+                 <setting name="list_format">bubbles</setting>
                  <setting name="restrict_to_relationship_types">exhibited</setting>
                  <setting name="display_template"><![CDATA[
                   <l>^ca_occurrences.preferred_labels</l> ^ca_occurrences.occurrence_dates<br>
@@ -9147,7 +9152,7 @@
                <settings>
                  <setting name="label" locale="en_US">References</setting>
                  <setting name="restrict_to_types">reference</setting>
-                 <setting name="list_format">list</setting>
+                 <setting name="list_format">bubbles</setting>
                  <setting name="restrict_to_relationship_types">reference</setting>
                  <setting name="display_template"><![CDATA[
                   <l>^ca_occurrences.preferred_labels</l> ^ca_occurrences.nonpreferred_labels ^ca_occurrences.occurrence_dates<br>
@@ -9157,6 +9162,14 @@
                <setting name="allowedSorts">ca_occurrences.preferred_labels.name_sort</setting>
                 <setting name="allowedSorts">ca_occurrences.occurrence_dates</setting>
                 <setting name="allowedSorts">ca_occurrences.reference_type</setting>
+              </settings>
+            </placement>
+           <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+             <settings>
+                 <setting name="label" locale="en_US">Related Images</setting>
+                 <setting name="restrict_to_types">side</setting>
+               <setting name="restrict_to_relationship_types">related</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_object_note">
@@ -11285,13 +11298,6 @@
                  <setting name="display_template">^ca_places.hierarchy.preferred_labels.name%delimiter=_➜_</setting>
                </settings>
             </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Exhibition Location (Geocode)</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
-            </placement>
             <placement code="ca_attribute_occurrence_notes">
               <bundle>ca_attribute_occurrence_notes</bundle>
               <settings>
@@ -11391,13 +11397,6 @@
                <settings>
                  <setting name="label" locale="en_US">Related Places</setting>
                </settings>
-            </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Reference Location</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_occurrence_notes">
               <bundle>ca_attribute_occurrence_notes</bundle>
@@ -11575,6 +11574,9 @@
             </placement>
             <placement code="ca_attribute_public_private">
               <bundle>ca_attribute_public_private</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Anonymous / Publicly Identifiable</setting>
+              </settings>
             </placement> 
             <placement code="ca_places">
               <bundle>ca_places</bundle>
@@ -11583,13 +11585,6 @@
                  <setting name="display_template">^ca_places.hierarchy.preferred_labels.name%delimiter=_➜_</setting>
                </settings>
             </placement> 
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Collection/Provenance Location (Geocode)</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
-            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
@@ -11640,14 +11635,8 @@
               <bundle>ca_places</bundle>
                <settings>
                  <setting name="label" locale="en_US">Related Places</setting>
+                 <setting name="display_template">^ca_places.hierarchy.preferred_labels.name%delimiter=_➜_</setting>
                </settings>
-            </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Sale/Auction Location (Geocode)</setting>
-                <setting name="add_label" locale="en_US">Add location</setting>
-              </settings>
             </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
@@ -12450,6 +12439,9 @@
             </placement> 
             <placement code="ca_attribute_collection_date">
               <bundle>ca_attribute_collection_date</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Date (invisible)</setting>
+              </settings>
             </placement> 
             <placement code="ca_attribute_display_date">
               <bundle>ca_attribute_display_date</bundle>
@@ -12462,6 +12454,9 @@
             </placement> 
             <placement code="ca_attribute_collection_line">
               <bundle>ca_attribute_collection_line</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Provenance Remark</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_inst_id">
               <bundle>ca_attribute_inst_id</bundle>
@@ -14260,6 +14255,8 @@
             <setting name="restrict_to_types">collection</setting>
             <setting name="restrict_to_types">other</setting>
             <setting name="delimiter">; </setting>
+            <setting name="format"><![CDATA[
+                  <l>^ca_collections.preferred_labels</l>]]></setting>
           </settings>
         </placement>
       </bundlePlacements>
@@ -14303,6 +14300,12 @@
         </placement>
         <placement code="ca_attribute_inscription">
           <bundle>ca_objects.inscription</bundle>
+        </placement>
+        <placement code="ca_attribute_institutional_id">
+          <bundle>ca_objects.institutional_id</bundle>
+        </placement>
+        <placement code="ca_attribute_estate_number">
+          <bundle>ca_objects.estate_number</bundle>
         </placement>
         <placement code="ca_exhibitions">
           <bundle>ca_occurrences</bundle>
@@ -14503,7 +14506,10 @@
           </settings>
         </placement>
         <placement code="ca_attribute_public_private">
-          <bundle>ca_collections.a_collections.public_private</bundle>
+          <bundle>ca_collections.public_private</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Anonymous / Publicly Identifiable</setting>
+          </settings>
         </placement>
         <placement code="ca_places">
           <bundle>ca_places</bundle>
@@ -14518,7 +14524,7 @@
     <searchForm code="ca_objects_Rothko_search_revised" type="ca_objects" system="1">
       <labels>
         <label locale="en_US">
-          <name>Rothko Custom Search</name>
+          <name>Rothko Custom Object Search</name>
         </label>
       </labels>
       <settings>
@@ -14817,62 +14823,58 @@
         <setting name="form_width">1</setting>
       </settings>
       <bundlePlacements>
-        <placement code="occurrences_idno">
+        <placement code="p76">
           <bundle>ca_occurrences.idno</bundle>
           <settings>
             <setting name="label" locale="en_US">Exhibition Identifier</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="p19">
+        <placement code="p77">
           <bundle>ca_occurrence_labels.name</bundle>
           <settings>
             <setting name="label" locale="en_US">Title</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="date">
+        <placement code="p78">
           <bundle>ca_occurrences.occurrence_dates</bundle>
           <settings>
             <setting name="label" locale="en_US">Date</setting>
             <setting name="width">400px</setting>
           </settings>
-        </placement>
-        <placement code="location">
-          <bundle>ca_occurrences.georeference</bundle>
+        </placement><placement code="p104">
+          <bundle>ca_place_labels.name</bundle>
           <settings>
-            <setting name="label" locale="en_US">Location</setting>
+            <setting name="label" locale="en_US">Exhibition Location</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="p4">
+        <placement code="p80">
           <bundle>ca_entity_labels.displayname</bundle>
           <settings>
             <setting name="label" locale="en_US">Venue</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="p78">
+        <placement code="p105">
+          <bundle>ca_occurrences.exhibition_type</bundle>
+        </placement>
+        <placement code="p81">
           <bundle>ca_occurrences.exhibition_venue_type</bundle>
           <settings>
-            <setting name="width">400px</setting>
+            <setting name="width">100px</setting>
+            <setting name="label" locale="en_US"/>
           </settings>
         </placement>
-        <placement code="rep">
-          <bundle>ca_object_representation_labels.name</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Representation label</setting>
-            <setting name="width">400px</setting>
-          </settings>
-        </placement>
-        <placement code="p79">
+        <placement code="p83">
           <bundle>ca_occurrences.installation_credit</bundle>
           <settings>
             <setting name="label" locale="en_US">Exhibition Installation Credit Line</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="exh_access">
+        <placement code="p84">
           <bundle>ca_occurrences.access</bundle>
           <settings>
             <setting name="label" locale="en_US">Exhibition Published/Not Published</setting>
@@ -14890,38 +14892,38 @@
         <setting name="form_width">1</setting>
       </settings>
       <bundlePlacements>
-        <placement>
+        <placement code="p85">
           <bundle>ca_entity_labels.displayname</bundle>
           <settings>
-            <setting name="label" locale="en_US">Author/Editor/Publisher</setting>
-            <setting name="width">400px</setting>
+            <setting name="label" locale="en_US">Author/Editor/Publisher/Institution</setting>
+            <setting name="width">600px</setting>
           </settings>
         </placement>
-        <placement code="title">
+        <placement code="p86">
           <bundle>ca_occurrence_labels.name</bundle>
           <settings>
             <setting name="label" locale="en_US">Title [Title 1]</setting>
             <setting name="width">100px</setting>
           </settings>
         </placement>
-        <placement code="location">
+        <placement code="p87">
           <bundle>ca_occurrences.occurrence_dates</bundle>
           <settings>
-            <setting name="label" locale="en_US">Date</setting>
+            <setting name="label" locale="en_US">Publication Date</setting>
             <setting name="width">300px</setting>
           </settings>
         </placement>
-        <placement code="p78">
+        <placement code="p88">
           <bundle>ca_occurrences.reference_type</bundle>
         </placement>
-        <placement code="location">
-          <bundle>ca_occurrences.georeference</bundle>
+        <placement code="p103">
+          <bundle>ca_place_labels.name</bundle>
           <settings>
-            <setting name="label" locale="en_US">Publication Location</setting>
-            <setting name="width">400px</setting>
+            <setting name="label" locale="en_US">Location</setting>
+            <setting name="width">100px</setting>
           </settings>
         </placement>
-        <placement code="p79">
+        <placement code="p90">
           <bundle>ca_occurrences.occurrence_notes</bundle>
           <settings>
             <setting name="label" locale="en_US">Reference Remarks</setting>
@@ -14930,45 +14932,45 @@
         </placement>
       </bundlePlacements>
     </searchForm>
-    <searchForm code="ca_entities_adv_search_revised" type="ca_entities" system="1">
+    <searchForm code="adv_search_revised" type="ca_entities" system="1">
       <labels>
         <label locale="en_US">
-          <name>Extended search</name>
+          <name>Custom Rothko</name>
         </label>
       </labels>
       <settings>
-        <setting name="form_width">1</setting>
+        <setting name="form_width">3</setting>
       </settings>
       <bundlePlacements>
-        <placement code="p10">
+        <placement code="p91">
           <bundle>ca_entities.idno</bundle>
           <settings>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="p11">
+        <placement code="p92">
           <bundle>ca_entities.type_id</bundle>
         </placement>
-        <placement code="p9">
+        <placement code="p93">
           <bundle>ca_entity_labels.surname</bundle>
           <settings>
             <setting name="label" locale="en_US">Organization Name/Surname</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="p7">
+        <placement code="p94">
           <bundle>ca_entity_labels.forename</bundle>
           <settings>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="p8">
+        <placement code="p95">
           <bundle>ca_entity_labels.middlename</bundle>
           <settings>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="p12">
+        <placement code="p96">
           <bundle>ca_entities.access</bundle>
           <settings>
             <setting name="label" locale="en_US">Published/Not Published</setting>
@@ -14979,7 +14981,7 @@
     <searchForm code="ca_collections_adv_search_revised" type="ca_collections" system="1">
       <labels>
         <label locale="en_US">
-          <name>Extended search</name>
+          <name>Custom Provenance search</name>
         </label>
       </labels>
       <settings>
@@ -14996,15 +14998,15 @@
         <placement code="p23">
           <bundle>ca_collection_labels.name</bundle>
           <settings>
-            <setting name="label" locale="en_US">Provenance / Name</setting>
+            <setting name="label" locale="en_US">Provenance / Collection Name</setting>
             <setting name="width">400px</setting>
           </settings>
         </placement>
-        <placement code="coll_location">
-          <bundle>ca_collections.georeference</bundle>
+        <placement code="p103">
+          <bundle>ca_place_labels.name</bundle>
           <settings>
-            <setting name="label" locale="en_US">Provenance Location</setting>
-            <setting name="width">400px</setting>
+            <setting name="label" locale="en_US">Location</setting>
+            <setting name="width">100px</setting>
           </settings>
         </placement>
         <placement code="p26">
@@ -15014,7 +15016,10 @@
           </settings>
         </placement>
         <placement code="public_private">
-          <bundle>ca_objects.public_private</bundle>
+          <bundle>ca_collections.public_private</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Anonymous / Publicly Identifiable</setting>
+          </settings>
         </placement>
       </bundlePlacements>
     </searchForm>
