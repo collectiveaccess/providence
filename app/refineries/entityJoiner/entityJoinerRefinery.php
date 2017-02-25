@@ -146,8 +146,8 @@
 				}
 				
 				// nonpreferred labels
+				$va_non_preferred_labels = array();
 				if (is_array($pa_item['settings']['entityJoiner_nonPreferredLabels'])) {
-					$va_non_preferred_labels = array();
 					foreach($pa_item['settings']['entityJoiner_nonPreferredLabels'] as $vn_index => $va_elements) {
 						if(is_array($va_elements)) {
 							$vb_non_pref_label_was_set = false;
@@ -173,14 +173,20 @@
 						if (!$vb_non_pref_label_was_set) { unset($va_non_preferred_labels[$vn_index]); }
 					}
 					
-					if (sizeof($va_non_preferred_labels)) {
-						$va_val['nonpreferred_labels'] = $va_non_preferred_labels;
+				} elseif(strlen(trim($pa_item['settings']['entityJoiner_nonPreferredLabels']))) {
+					if ($va_non_preferred_labels[0] = DataMigrationUtils::splitEntityName(trim(BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_nonPreferredLabels'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '))))) {
+						$vb_non_pref_label_was_set = true;
 					}
+				}
+			
+				if (sizeof($va_non_preferred_labels)) {
+					$va_val['nonpreferred_labels'] = $va_non_preferred_labels;
 				}
 				
 				$va_vals[] = $va_val;
 				$vn_c++;
 			}
+		
 			return $va_vals;
 		}
 		# -------------------------------------------------------	
