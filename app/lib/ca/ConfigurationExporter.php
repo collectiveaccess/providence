@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2016 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -899,6 +899,10 @@ final class ConfigurationExporter {
 						$vo_placements->appendChild($vo_placement);
 
 						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
+						
+						if (isset($va_placement['settings']['bundleTypeRestrictions']) && is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions'])) {
+							$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+						}
 						$va_used_codes[$vs_code] = true;
 						
 						$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($va_placement["bundle"])));
