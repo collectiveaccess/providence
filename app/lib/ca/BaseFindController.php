@@ -1027,5 +1027,35 @@
 		
  			return $va_ret['displayList'];
  		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Returns string representing the name of the item the search will return
+ 		 *
+ 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
+ 		 */
+ 		public function getResultsDisplayName($ps_mode='singular') {
+ 			$vb_type_restriction_has_changed = false;
+ 			$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type_restriction_has_changed);
+ 			
+ 			$t_list = new ca_lists();
+ 			if (!($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true))) {
+ 				return '???';
+ 			}
+ 			
+ 			if ($this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_menu')) {
+				$t_list->load(array('list_code' => $t_instance->getTypeListCode()));
+			
+				$t_list_item = new ca_list_items();
+				$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
+				$va_hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
+			
+				if (!($vs_name = ($ps_mode == 'singular') ? $va_hier[$vn_type_id]['name_singular'] : $va_hier[$vn_type_id]['name_plural'])) {
+					$vs_name = '???';
+				}
+				return mb_strtolower($vs_name);
+			} else {
+				return mb_strtolower(($ps_mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+			}
+ 		}
  		# ------------------------------------------------------------------
 	}

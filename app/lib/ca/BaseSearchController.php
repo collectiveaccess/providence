@@ -494,8 +494,7 @@
  		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
  		 */
  		public function searchName($ps_mode='singular') {
- 			// MUST BE OVERRIDDEN 
- 			return "undefined";
+ 			return $this->getResultsDisplayName($ps_mode);
  		}
  		# -------------------------------------------------------
  		public function usesHierarchyBrowser() {

@@ -78,15 +78,6 @@
  			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
- 		/**
- 		 * Returns string representing the name of the item the search will return
- 		 *
- 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
- 		 */
- 		public function searchName($ps_mode='singular') {
- 			return ($ps_mode == 'singular') ? _t("lot") : _t("lots");
- 		}
- 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		/**
