@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,10 +141,14 @@
 
 				caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, $vn_c, $o_log, caGetOption('reader', $pa_options, null), $va_val, $va_vals, $pa_options);
 				
+				if(isset($pa_item['settings']['entityJoiner_nonpreferred_labels']) && !isset($pa_item['settings']['entityJoiner_nonPreferredLabels'])) {
+					$pa_item['settings']['entityJoiner_nonPreferredLabels'] = $pa_item['settings']['entityJoiner_nonpreferred_labels'];
+				}
+				
 				// nonpreferred labels
-				if (is_array($pa_item['settings']['entityJoiner_nonpreferred_labels'])) {
+				if (is_array($pa_item['settings']['entityJoiner_nonPreferredLabels'])) {
 					$va_non_preferred_labels = array();
-					foreach($pa_item['settings']['entityJoiner_nonpreferred_labels'] as $vn_index => $va_elements) {
+					foreach($pa_item['settings']['entityJoiner_nonPreferredLabels'] as $vn_index => $va_elements) {
 						if(is_array($va_elements)) {
 							$vb_non_pref_label_was_set = false;
 							foreach($va_elements as $vs_k => $vs_v) {
@@ -161,6 +165,10 @@
 									}
 								}
 							}
+						} elseif(strlen(trim($va_elements))) {
+							if ($va_non_preferred_labels[$vn_index]['displayname'] = trim(BaseRefinery::parsePlaceholder($va_elements, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) {
+								$vb_non_pref_label_was_set = true;
+							}
 						}
 						if (!$vb_non_pref_label_was_set) { unset($va_non_preferred_labels[$vn_index]); }
 					}
@@ -173,7 +181,6 @@
 				$va_vals[] = $va_val;
 				$vn_c++;
 			}
-			
 			return $va_vals;
 		}
 		# -------------------------------------------------------	
@@ -306,7 +313,7 @@
 				'label' => _t('Skip if value'),
 				'description' => _t('Skip if imported value is in the specified list of values.')
 			),
-			'entityJoiner_nonpreferred_labels' => array(
+			'entityJoiner_nonPreferredLabels' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
