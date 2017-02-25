@@ -1073,8 +1073,8 @@ class Installer {
 						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
 						// as settings on the placement record.
 						if ($t_instance instanceof BaseRelationshipModel) {
-							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
-						} else if($t_instance instanceof ca_representation_annotations) {
+							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
+						} elseif($t_instance instanceof ca_representation_annotations) {
 							$va_ids = [];
 							foreach(explode(',', $vs_bundle_type_restrictions) as $vs_annotation_type) {
 								if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
@@ -1082,7 +1082,7 @@ class Installer {
 								}
 							}
 						} else {
-							$va_ids = caMakeTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+							$va_ids = caMakeTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
 						}
 						
 						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }

@@ -1711,6 +1711,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					'formatType' => FT_TEXT,
 					'displayType' => DT_SELECT,
 					'default' => '',
+					'multiple' => true,
 					'showTypesForTable' => $vs_table,
 					'width' => "275px", 'height' => 4,
 					'label' => _t('Display bundle for types: %1', $this->_DATAMODEL->getTableProperty($vs_table, 'NAME_PLURAL')),
