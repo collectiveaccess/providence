@@ -936,6 +936,10 @@ final class ConfigurationExporter {
 												$vs_value = $t_rel_type->get('type_code');
 											}
 											break;
+										case 'bundleTypeRestrictions':
+											// skip; these are output as an attribute on <placement>, not as <setting> tags
+											continue(2);
+											break;
 									}
 									if(strlen($vs_value)>0) {
 										// caEscapeForXML mangles zero values for some reason -> catch them here.
