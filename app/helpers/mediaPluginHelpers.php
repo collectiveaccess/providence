@@ -992,14 +992,16 @@
 
 			array_pop($va_output); // last line is blank
 			if (is_array($va_output) && (sizeof($va_output) > 0)) {
-				$va_tmp = explode(';', $va_output[0]);
-				if ($va_tmp[0] === 'PDF') {
-					return array(
-						'width' => intval($va_tmp[1]),
-						'height' => intval($va_tmp[2]),
-						'pages' => sizeof($va_output)
-					);
-				}
+				do {
+					$va_tmp = explode(';', array_shift($va_output));
+					if ($va_tmp[0] === 'PDF') {
+						return array(
+							'width' => intval($va_tmp[1]),
+							'height' => intval($va_tmp[2]),
+							'pages' => sizeof($va_output) + 1
+						);
+					}
+				} while((sizeof($va_output) > 0) && ($va_tmp[0] !== 'PDF'));
 			} else {
 				return null;
 			}
@@ -1012,14 +1014,16 @@
 		
 			array_pop($va_output); // last line is blank
 			if (is_array($va_output) && (sizeof($va_output) > 0)) {
-				$va_tmp = explode(';', $va_output[0]);
-				if ($va_tmp[0] === 'PDF') {
-					return array(
-						'width' => intval($va_tmp[1]),
-						'height' => intval($va_tmp[2]),
-						'pages' => sizeof($va_output)
-					);
-				}
+				do {
+					$va_tmp = explode(';', array_shift($va_output));
+					if ($va_tmp[0] === 'PDF') {
+						return array(
+							'width' => intval($va_tmp[1]),
+							'height' => intval($va_tmp[2]),
+							'pages' => sizeof($va_output) + 1
+						);
+					}
+				} while((sizeof($va_output) > 0) && ($va_tmp[0] !== 'PDF'));
 			} else {
 				return null;
 			}
@@ -1080,9 +1084,9 @@
 							$va_info['pages'] = (int)$vs_value;
 							break;
 						case 'page size':
-							if (preg_match_all("!([\d]+)!", $vs_value, $va_dims)) {
-								$va_info['width'] = $va_dims[1][0];
-								$va_info['height'] = $va_dims[1][1];
+							if (preg_match_all("!([\d\.]+)!", $vs_value, $va_dims)) {
+								$va_info['width'] = ceil((float)$va_dims[1][0]);
+								$va_info['height'] = ceil((float)$va_dims[1][1]);
 							}
 							break;
 						case 'pdf version':

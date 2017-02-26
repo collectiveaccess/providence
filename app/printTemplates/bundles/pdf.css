@@ -3,7 +3,7 @@
 #header .pagingText:after { content: counter(page, decimal); }
 #body { z-index: 30000; position: relative; }
 
-img.headerImg {width:90px;height:21px;}
+img.headerImg {width:90px;}
 .headerText { font: "helvetica, sans-serif"; font-size: 11px; margin: 0px 0px 10px 25px; }
 .pagingText { position: absolute; top: 0px; right: 10px; font: "helvetica, sans-serif"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px; }
 .footerText { font: "helvetica, sans-serif"; font-size: 11px;  margin: -5px 0px 0px 45px;  }  

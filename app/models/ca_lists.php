@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1129,9 +1129,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * If no list is specified the currently loaded list is used.
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id of list to return default item_id for. If omitted the currently loaded list will be used.
-	 * @param array $pa_options Options include options for @see ca_list_items::getItemsForList()
+	 * @param array $pa_options Options include options for @see ca_list_items::getItemsForList() as well as:
+	 *		useFirstElementAsDefaultDefault = return first item in list if not explicit default is set for the list. [Default is false]
 	 *
-	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
+	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question null is returned
 	 */
 	public function getDefaultItemID($pm_list_name_or_id=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -1149,7 +1150,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true))));
+		return caGetOption('useFirstElementAsDefaultDefault', $pa_options, false) ? array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true)))) : null; 
 	}
 	# ------------------------------------------------------
 	/**

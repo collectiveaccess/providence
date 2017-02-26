@@ -86,6 +86,7 @@
 		<div id="caHierarchyOverviewHeader"><?php print _t('Browse hierarchy'); ?></div>
 		<div id="caHierarchyOverviewContentArea"></div>
 	</div>
+	<div id='caTempExportForm' style='display:none;'></div>
 	
 	<script type="text/javascript">
 	/*

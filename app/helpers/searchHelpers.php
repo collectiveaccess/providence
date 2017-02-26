@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -304,12 +304,14 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Extract access points from search expression
 	 * 
+	 * @param string $ps_search_expression 
 	 *
-	 * @return array 
+	 * @return array A List of access points
 	 */
 	function caSearchGetAccessPoints($ps_search_expression) {
-		if(preg_match("!\b([A-Za-z0-9\-\_]+):!", $ps_search_expression, $va_matches)) {
+		if(preg_match("!\b([A-Za-z0-9\-\_]+):[^ ]+!", $ps_search_expression, $va_matches)) {
 			array_shift($va_matches);
 			return $va_matches;
 		}
@@ -317,9 +319,11 @@
 	}
 	# ---------------------------------------
 	/**
-	 * 
+	 * Returns list of tables references by one or more provided access points
 	 *
-	 * @return array 
+	 * @param array $pa_access_points An array of access point strings
+	 * 
+	 * @return array A list of table names associated with the provided access points
 	 */
 	function caSearchGetTablesForAccessPoints($pa_access_points) {
 		$o_config = Configuration::load();
@@ -1134,21 +1138,63 @@
 	 *
 	 * @param string $ps_table
 	 * @param null|int $pn_type_id
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		includeUserSorts = 
+	 *		distinguishNonUniqueNames = 
+	 *		allowedSorts = 
+	 *		disableSorts = Don't return any available sorts. [Default is false]
+	 *		request = The current request. [Default is null]
+	 *		includeInterstitialSortsFor = Related table [Default is false]
+	 *		distinguishInterstitials = [Default is false]
 	 * @return array
 	 */
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
+		if (caGetOption('disableSorts', $pa_options, false)) { return []; }
+	
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
+		require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
+		global $g_ui_locale_id;
 
+		$o_dm = Datamodel::load();
 		if(is_numeric($ps_table)) {
-			$ps_table = Datamodel::load()->getTableName($ps_table);
+			$ps_table = $o_dm->getTableName($ps_table);
 		}
-
+		if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return []; }
+		
+		$t_rel = null;
+		if ($ps_related_table = caGetOption('includeInterstitialSortsFor', $pa_options, null)) {
+			$o_dm = Datamodel::load();
+			if (is_array($va_path = array_keys($o_dm->getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
+				$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
+			}
+		} 
+		
+		$va_ui_bundle_label_map = [];
+		if (isset($pa_options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $pa_options['request'], $pn_type_id))) {
+			$va_screens = $t_ui->getScreens();
+			foreach($va_screens as $va_screen) {
+				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
+					foreach($va_placements as $va_placement) {
+						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
+						$va_bundle_bits = explode('.', $vs_bundle_name);
+						if (!$o_dm->tableExists($va_bundle_bits[0])) {
+							array_unshift($va_bundle_bits, $ps_table);
+							$vs_bundle_name = join('.', $va_bundle_bits);	
+						}
+						
+						if (isset($va_placement['settings']['label'])) {
+							$va_ui_bundle_label_map[$vs_bundle_name] = isset($va_placement['settings']['label'][$g_ui_locale_id]) ? $va_placement['settings']['label'][$g_ui_locale_id] : array_shift($va_placement['settings']['label']);
+						}
+						
+					}
+				}
+				
+			}
+		}
 		switch($ps_table) {
 			case 'ca_list_items':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_list_item_labels.name_singular' => _t('name'),
+					'ca_list_items.preferred_labels.name_singular' => _t('name'),
 					'ca_list_items.idno_sort' => _t('idno')
 				);
 				break;
@@ -1159,96 +1205,84 @@
 				break;
 			case 'ca_collections':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_collection_labels.name_sort' => _t('name'),
+					'ca_collections.preferred_labels.name_sort' => _t('name'),
 					'ca_collections.type_id' => _t('type'),
 					'ca_collections.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_loans':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_loan_labels.name_sort' => _t('short description'),
+					'ca_loans.preferred_labels.name_sort' => _t('short description'),
 					'ca_loans.type_id' => _t('type'),
 					'ca_loans.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_movements':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_movement_labels.name' => _t('short description'),
-					'ca_movements.type_id;ca_movement_labels.name' => _t('type'),
+					'ca_movements.preferred_labels.name' => _t('short description'),
+					'ca_movements.type_id;ca_movements.preferred_labels.name' => _t('type'),
 					'ca_movements.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_entities':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_entity_labels.name_sort' => _t('display name'),
-					'ca_entity_labels.surname;ca_entity_labels.forename' => _t('surname, forename'),
-					'ca_entity_labels.forename' => _t('forename'),
-					'ca_entities.type_id;ca_entity_labels.surname;ca_entity_labels.forename' => _t('type'),
+					'ca_entities.preferred_labels.name_sort' => _t('display name'),
+					'ca_entities.preferred_labels.surname;ca_entities.preferred_labels.forename' => _t('surname, forename'),
+					'ca_entities.preferred_labels.forename' => _t('forename'),
+					'ca_entities.type_id;ca_entities.preferred_labels.surname;ca_entities.preferred_labels.forename' => _t('type'),
 					'ca_entities.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_object_lots':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_object_lot_labels.name_sort' => _t('name'),
+					'ca_object_lots.preferred_labels.name_sort' => _t('name'),
 					'ca_object_lots.type_id' => _t('type'),
 					'ca_object_lots.idno_stub_sort' => _t('idno')
 				);
 				break;
 			case 'ca_object_representations':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_object_representation_labels.name_sort' => _t('name'),
+					'ca_object_representations.preferred_labels.name_sort' => _t('name'),
 					'ca_object_representations.type_id' => _t('type'),
 					'ca_object_representations.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_objects':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_object_labels.name_sort' => _t('title'),
+					'ca_objects.preferred_labels.name_sort' => _t('title'),
 					'ca_objects.type_id' => _t('type'),
 					'ca_objects.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_occurrences':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_occurrence_labels.name_sort' => _t('name'),
+					'ca_occurrences.preferred_labels.name_sort' => _t('name'),
 					'ca_occurrences.type_id' => _t('type'),
 					'ca_occurrences.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_places':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_place_labels.name_sort' => _t('name'),
+					'ca_places.preferred_labels.name_sort' => _t('name'),
 					'ca_places.type_id' => _t('type'),
 					'ca_places.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_storage_locations':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_storage_locations_labels.name_sort' => _t('name'),
+					'ca_storage_locations.preferred_labels.name_sort' => _t('name'),
 					'ca_storage_locations.type_id' => _t('type'),
 					'ca_storage_locations.idno_sort' => _t('idno')
 				);
 				break;
 			case 'ca_tours':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_tour_labels.name' => _t('name')
+					'ca_tours.preferred_labels.name' => _t('name')
 				);
 				break;
 			case 'ca_tour_stops':
 				$va_base_fields = array(
-					'_natural' => _t('relevance'),
-					'ca_tour_stop_labels.name' => _t('name')
+					'ca_tour_stops.preferred_labels.name' => _t('name')
 				);
 				break;
 			case 'ca_item_comments':
@@ -1282,6 +1316,18 @@
 			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id, ['indexByElementCode' => true]);
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			}
+			
+			
+		
+			// Add interstitial sorts
+			if ($t_rel) {
+				$va_sortable_elements = ca_metadata_elements::getSortableElements($vs_relation_table = $t_rel->tableName(), null, ['indexByElementCode' => true]);
+				
+				$pb_distinguish_interstitials = caGetOption('distinguishInterstitials', $pa_options, true);
+				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+					$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
+				}
 			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
@@ -1320,9 +1366,29 @@
 				}
 			}
 		}
+		
+		if (($pa_allowed_sorts = caGetOption('allowedSorts', $pa_options, null)) && !is_array($pa_allowed_sorts)) { $pa_allowed_sorts = [$pa_allowed_sorts]; }
+		
+		if(is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
+			foreach($va_base_fields as $vs_k => $vs_v) {
+				if (!in_array($vs_k, $pa_allowed_sorts)) { unset($va_base_fields[$vs_k]); }
+			}
+		}
+		
+		foreach($va_base_fields as $vs_k => $vs_v) {
+			if (isset($va_ui_bundle_label_map[$vs_k])) {
+				 $va_base_fields[$vs_k] = $va_ui_bundle_label_map[$vs_k];
+			} elseif(sizeof($va_tmp = explode('.', $vs_k)) > 2) {
+				array_pop($va_tmp);
+				if (isset($va_ui_bundle_label_map[join('.', $va_tmp)])) { $va_base_fields[$vs_k] = $va_ui_bundle_label_map[join('.', $va_tmp)]; }
+			}
+		}
+		
+		$va_base_fields = array_map(function($v) { return caUcFirstUTF8Safe($v); }, $va_base_fields);
+		
 		natcasesort($va_base_fields);
 		
-		return $va_base_fields;
+		return array_merge(['_natural' => _t('Relevance')], $va_base_fields);
 	}
 	# ---------------------------------------
 	/**

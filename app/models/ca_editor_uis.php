@@ -321,15 +321,19 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!isset($pa_options['editorPref'])) { $pa_options['editorPref'] = 'cataloguing'; }
 		
-		switch($pa_options['editorPref']) {
-			case 'quickadd':
-				$va_uis_by_type = $po_request->user->getPreference("quickadd_{$vs_table_name}_editor_ui");
-				break;
-			default:
-				$va_uis_by_type = $po_request->user->getPreference("cataloguing_{$vs_table_name}_editor_ui");
-				break;
+		if ($po_request->user) {
+			switch($pa_options['editorPref']) {
+				case 'quickadd':
+					$va_uis_by_type = $po_request->user->getPreference("quickadd_{$vs_table_name}_editor_ui");
+					break;
+				default:
+					$va_uis_by_type = $po_request->user->getPreference("cataloguing_{$vs_table_name}_editor_ui");
+					break;
+			}
+			$va_available_uis_by_type = $po_request->user->_getUIListByType($vn_table_num);
+		} else {
+			$va_uis_by_type = $va_available_uis_by_type = [];
 		}
-		$va_available_uis_by_type = $po_request->user->_getUIListByType($vn_table_num);
 
 		$vn_type_id = $pn_type_id;
 		if ($vn_type_id && $va_uis_by_type) {

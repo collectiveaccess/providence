@@ -226,7 +226,8 @@
  				if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
-					if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
+					//if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
+					$vn_page_num = 1; 
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());
  				$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
@@ -386,7 +387,7 @@
 				foreach($va_hier as $vn_item_id => $va_item) {
 					if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 					if ($va_item['parent_id'] != $vn_root_id) { continue; }
-					if (!$va_item['is_enabled']) { continue; }
+					//if (!$va_item['is_enabled']) { continue; }
 					
 					// does this item have sub-items?
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
@@ -493,8 +494,7 @@
  		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
  		 */
  		public function searchName($ps_mode='singular') {
- 			// MUST BE OVERRIDDEN 
- 			return "undefined";
+ 			return $this->getResultsDisplayName($ps_mode);
  		}
  		# -------------------------------------------------------
  		public function usesHierarchyBrowser() {

@@ -647,6 +647,7 @@
 				foreach(['preferred_labels', 'nonpreferred_labels'] as $vs_label_type) {
 					$va_label_sql_wheres = [];
 					if (isset($pa_values[$vs_label_type]) && is_array($pa_values[$vs_label_type])) {
+						$vn_label_field_where_count = 0;
 						$va_label_sql_wheres[] = "({$vs_label_table}.is_preferred = ".(($vs_label_type == 'preferred_labels') ? "1" : "0").")";
 					
 						foreach ($pa_values[$vs_label_type] as $vs_field => $va_field_values) {
@@ -656,6 +657,8 @@
 								}
 								$vs_op = $va_field_value[0];
 								$vm_value = $va_field_value[1];
+								
+								$vn_label_field_where_count++;
 
 								if ($t_label->_getFieldTypeType($vs_field) == 0) {
 									if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
@@ -689,7 +692,9 @@
 								}
 							}
 				
-							$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_label_sql_wheres).")";
+							if ($vn_label_field_where_count > 0) {
+								$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_label_sql_wheres).")";
+							}
 						}
 					}
 				}
@@ -713,7 +718,7 @@
 						}
 
 						if (is_null($vm_value)) {
-							if ($vs_op !== '=') { $vs_op = 'IS'; }
+							$vs_op = 'IS'; 
 							$va_label_sql[] = "({$vs_table}.{$vs_field} {$vs_op} NULL)";
 						} elseif (caGetOption('allowWildcards', $pa_options, false) && !is_array($vm_value) && (strpos($vm_value, '%') !== false)) {
 							$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";
@@ -1778,9 +1783,10 @@
 		 * Returns number of preferred or nonpreferred labels for the current row
 		 *
 		 * @param bool $pb_preferred
+		 * @param int $pn_locale_id
 		 * @return int Number of labels
 		 */
- 		public function getLabelCount($pb_preferred=true) {
+ 		public function getLabelCount($pb_preferred=true, $pn_locale_id=null) {
  			if (!$this->getPrimaryKey()) { return null; }
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
@@ -1788,24 +1794,31 @@
 				$t_label->setTransaction($o_trans);
 			}
 			$o_db = $this->getDb();
+			
+			$vn_is_preferred = ($pb_preferred ? 1 : 0);
+			$va_params = [$vn_is_preferred, $this->getPrimaryKey()];
+			$vs_locale_sql = '';
+			if ((int)$pn_locale_id > 0) { 
+				$vs_locale_sql = ' AND (l.locale_id = ?)';
+				$va_params[] = (int)$pn_locale_id;
+			}
  			
  			if (!$t_label->hasField('is_preferred')) { 
+ 				array_shift($va_params);
  				$qr_res = $o_db->query("
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.".$this->primaryKey()." = ?)
-				", $this->getPrimaryKey());
+						(l.".$this->primaryKey()." = ?) {$vs_locale_sql}
+				", $va_params);
  			} else {
-				$vn_is_preferred = ($pb_preferred ? 1 : 0);
-				$qr_res = $o_db->query("
+				$qr_res = $o_db->query($x="
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?)
-				", $vn_is_preferred, $this->getPrimaryKey());
+						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?) {$vs_locale_sql}
+				", $va_params);
 			}
- 			
  			return $qr_res->numRows();
 		}
 		# ------------------------------------------------------------------

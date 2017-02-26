@@ -464,7 +464,7 @@ class MultipartIDNumber extends IDNumber {
 					break;
 				case 'CONSTANT':
 					if ($vs_value && ($vs_value != $va_element_info['value'])) {
-						$va_element_errors[$vs_element_name] = _t("%1 must be set to %2", $va_element_info['description'], $va_element_info['value']);
+						$va_element_errors[$vs_element_name] = _t("%1 must be set to %2; was %3", $va_element_info['description'], $va_element_info['value'], $vs_value);
 					}
 					break;
 				case 'FREE':

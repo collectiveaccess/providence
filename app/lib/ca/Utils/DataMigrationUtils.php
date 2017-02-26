@@ -999,6 +999,7 @@
 					// For entities only
 					//
 					case 'surname':
+						if ($ps_table !== 'ca_entities') { break; }
 						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
@@ -1006,6 +1007,7 @@
 						if ($vn_id) { break(2); }
 						break;
 					case 'forename':
+						if ($ps_table !== 'ca_entities') { break; }
 						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
@@ -1013,12 +1015,16 @@
 						if ($vn_id) { break(2); }
 						break;
 					case 'displayname':
+						if ($ps_table !== 'ca_entities') { break; }
 						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						if ($vn_id) { break(2); }
 						break;
+					//
+					//
+					//
 					default:
 						// is it an attribute?
 						$va_tmp = explode('.', $vs_match_on);

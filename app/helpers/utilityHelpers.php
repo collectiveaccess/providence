@@ -943,10 +943,10 @@ function caFileIsIncludable($ps_file) {
 		} else {
 			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
-			foreach(array(
-				'½' => $sep.'5', '⅓' => $sep.'333',
-				'⅔' => $sep.'667', '¼' => $sep.'25',
-				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
+			foreach([
+				'½' => $sep.'5', '⅓' => $sep.'333', '¼' => $sep.'25', '⅛' => $sep.'125',
+				'⅔' => $sep.'667', 
+				'¾'	=> $sep.'75', '⅜' => $sep.'375', '⅝' => $sep.'625', '⅞' => $sep.'875', '⅒' => $sep.'1'] as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -3248,13 +3248,15 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$o_config = Configuration::load();
+		
 		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
 		$num = round($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
 
 		if (!$num) {
-			return "$int in";
+			return "{$int} in";
 		}
 
 		if ($pb_reduce) {
@@ -3276,7 +3278,38 @@ function caFileIsIncludable($ps_file) {
 			if ($num < 0) {
 				$num *= -1;
 			}
-			return "$int $num/$pn_denom in";
+			
+			if ($o_config->get('use_unicode_fractions_for_measurements')) {
+				if (($num === 1) && ($pn_denom == 4)) {
+					$frac = "¼";
+				} elseif (($num === 1) && ($pn_denom == 2)) {
+					$frac = "½";
+				} elseif (($num === 1) && ($pn_denom == 3)) {
+					$frac = "⅓";
+				} elseif (($num === 1) && ($pn_denom == 4)) {
+					$frac = "¼";
+				} elseif (($num === 1) && ($pn_denom == 8)) {
+					$frac = "⅛";
+				} elseif (($num === 2) && ($pn_denom == 3)) {
+					$frac = "⅔";
+				} elseif (($num === 3) && ($pn_denom == 4)) {
+					$frac = "¾";
+				} elseif (($num === 3) && ($pn_denom == 8)) {
+					$frac = "⅜";
+				} elseif (($num === 5) && ($pn_denom == 8)) {
+					$frac = "⅝";
+				} elseif (($num === 7) && ($pn_denom == 8)) {
+					$frac = "⅞";
+				} elseif (($num === 1) && ($pn_denom == 10)) {
+					$frac = "⅒";
+				} else {
+					$frac = "{$num}/{$pn_denom}";
+				}
+			} else {
+				$frac = "{$num}/{$pn_denom}";
+			}
+			
+			return "$int $frac in";
 		}
 
 		return "$num/$pn_denom in";
@@ -3403,7 +3436,7 @@ function caFileIsIncludable($ps_file) {
 							if (is_array($vm_list_val[1]) && $o_purifier) { 
 								$va_vals_proc = [];
 								foreach($vm_list_val[1] as $vm_sublist_val) {
-									$va_vals_proc[] = $o_purifier->purify($vm_sublist_val);
+									$va_vals_proc[] = !is_null($vm_sublist_val) ? $o_purifier->purify($vm_sublist_val) : $vm_sublist_val;
 								}
 							
 								if (!is_numeric($vs_key2)) { 
@@ -3413,9 +3446,9 @@ function caFileIsIncludable($ps_file) {
 								}
 							} else {
 								if (!is_numeric($vs_key2)) { 
-									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
 								} else {
-									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
 								}
 							}
 						} else {
@@ -3424,7 +3457,7 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 			} else {
-				$va_values_proc[$vs_key][] = ['=', $o_purifier ? $o_purifier->purify($vm_val) : $vm_val];
+				$va_values_proc[$vs_key][] = ['=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
 			}
 		}
 		return $va_values_proc;

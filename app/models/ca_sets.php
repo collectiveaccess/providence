@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -379,7 +379,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vs_set_code = trim($this->get('set_code'));
 		
-		if ((($vs_set_code_proc = preg_replace("![ ]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
+		if ((($vs_set_code_proc = preg_replace("![^A-Za-z0-9]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
 			$this->setMode(ACCESS_WRITE);
 			
 			if (!strlen($vs_set_code)) {
@@ -1831,11 +1831,11 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}	
 		$vs_deleted_sql = '';
 		if ($t_rel_table->hasField('deleted')) {
-			$vs_deleted_sql = ' AND '.$vs_rel_table_name.'.deleted = 0';
+			$vs_deleted_sql = " AND {$vs_rel_table_name}.deleted = 0";
 		}
 		
 		$qr_res = $o_db->query("
-			SELECT count(distinct row_id) c
+			SELECT count(distinct ca_set_items.row_id) c
 			FROM ca_set_items
 			INNER JOIN {$vs_rel_table_name} ON {$vs_rel_table_name}.{$vs_rel_table_pk} = ca_set_items.row_id
 			WHERE

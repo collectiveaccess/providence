@@ -2613,7 +2613,7 @@ class BaseModel extends BaseObject {
 		}
 		if ($this->getMode() == ACCESS_WRITE) {
 			// do form timestamp check
-			if (isset($_REQUEST['form_timestamp']) && ($vn_form_timestamp = $_REQUEST['form_timestamp'])) {
+			if (!caGetOption('force', $pa_options, false) && isset($_REQUEST['form_timestamp']) && ($vn_form_timestamp = $_REQUEST['form_timestamp'])) {
 				$va_possible_conflicts = $this->getChangeLog(null, array('forTable' => true, 'range' => array('start' => $vn_form_timestamp, 'end' => time()), 'excludeUnitID' => $this->getCurrentLoggingUnitID()));
 				
 				if (sizeof($va_possible_conflicts)) {
@@ -10975,7 +10975,7 @@ $pa_options["display_form_field_tips"] = true;
 							continue;
 						}
 					}
-					if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && ($this->hasField('access')) && !in_array($qr_res->get("{$vs_table_name}.access"))) {
+					if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && ($this->hasField('access')) && !in_array($pa_options['checkAccess'], $qr_res->get("{$vs_table_name}.access"))) {
 						continue;
 					}
 					if (($vs_type_field_name) && (is_array($va_type_ids) && sizeof($va_type_ids))){
@@ -11353,9 +11353,6 @@ $pa_options["display_form_field_tips"] = true;
 			if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
 		}
 		
-		if ($pa_values === '*') { $pa_values = ['*']; }
-		
-		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 		$ps_return_as			= caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count', 'arrays')));
 		$ps_boolean 			= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 		$o_trans 				= caGetOption('transaction', $pa_options, null);
@@ -11363,6 +11360,9 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (!$t_instance) { $t_instance = new $vs_table; }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
+		
+		if ($pa_values === '*') { $pa_values = [$t_instance->primaryKey() => '*']; }
+		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 		
 		$va_sql_wheres = [];
 		
@@ -11415,6 +11415,8 @@ $pa_options["display_form_field_tips"] = true;
 			
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
+				
+				if (($vs_op == '=') && ($vm_value == '*')) { $vb_find_all = true; break(2); }
 				
 				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
@@ -11492,10 +11494,17 @@ $pa_options["display_form_field_tips"] = true;
 			$va_sql_params[] = $pa_check_access;
 		}
 		
-		if ($t_instance->hasField('deleted')) { $va_sql_wheres[] = '(deleted = 0)'; }
+		$vs_deleted_sql = '';
+		if ($t_instance->hasField('deleted')) { 
+			if (sizeof($va_sql_wheres) == 0) { 
+				$va_sql_wheres[] = "deleted = 0";
+			} else {
+				$vs_deleted_sql = ' AND (deleted = 0)'; 
+			}
+		}
 		
-		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql_wheres) > 0) ? " WHERE (".join(" {$ps_boolean} ", $va_sql_wheres).")" : "");
-	
+		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql_wheres) > 0) ? " WHERE (".join(" {$ps_boolean} ", $va_sql_wheres).") {$vs_deleted_sql}" : "");
+
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
 			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));

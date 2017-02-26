@@ -244,6 +244,10 @@ class Replicator {
 								if (!$vb_have_access) {
 									$va_source_log_entries[$vn_log_id]['SKIP'] = 1;
 								}
+								
+								if (isset($va_source_log_entry['snapshot']['parent_id_guid'])) {
+									$va_guid_list[$va_source_log_entry['snapshot']['parent_id_guid']] = 1;
+								}
 							}
 						}
 						
@@ -325,6 +329,7 @@ class Replicator {
 									while(sizeof($va_source_log_entries_for_missing_guids) > 0) {
 										$va_log_entry = array_shift($va_source_log_entries_for_missing_guids);
 										$vn_log_id = $va_log_entry['log_id'];
+										if (!$vn_log_id) { continue; }
 										if ($vn_log_id >= $pn_start_replicated_id) { continue; }
 										
 										$va_entries[$vn_log_id] = $va_log_entry;

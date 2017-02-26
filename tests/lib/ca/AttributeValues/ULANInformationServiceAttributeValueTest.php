@@ -36,7 +36,7 @@ class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCas
 	public function testBasic() {
 		$o_service = new WLPlugInformationServiceULAN();
 		$va_return = $o_service->lookup(array(), 'Keith Haring');
-		$this->assertEquals(2, sizeof($va_return['results']));
+		$this->assertEquals(1, sizeof($va_return['results']));
 	}
 
 	public function testGetExtendedInfo() {

@@ -809,7 +809,7 @@ class Installer {
 			$vn_list_id = null;
 		}
 		$t_md_element->set('list_id', $vn_list_id);
-		$this->_processSettings($t_md_element, $po_element->settings);
+		$this->_processSettings($t_md_element, $po_element->settings, ['settingsInfo' => $t_md_element->getAvailableSettings()]);
 
 		if($t_md_element->getPrimaryKey()) {
 			$t_md_element->update();
@@ -895,12 +895,15 @@ class Installer {
 	public function processUserInterfaces() {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
+		require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
 		$vo_dm = Datamodel::load();
 		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+
+		$t_placement = new ca_editor_ui_bundle_placements();
 
 		$t_list = new ca_lists();
 		$t_rel_types = new ca_relationship_types();
@@ -1070,8 +1073,8 @@ class Installer {
 						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
 						// as settings on the placement record.
 						if ($t_instance instanceof BaseRelationshipModel) {
-							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
-						} else if($t_instance instanceof ca_representation_annotations) {
+							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
+						} elseif($t_instance instanceof ca_representation_annotations) {
 							$va_ids = [];
 							foreach(explode(',', $vs_bundle_type_restrictions) as $vs_annotation_type) {
 								if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
@@ -1079,7 +1082,7 @@ class Installer {
 								}
 							}
 						} else {
-							$va_ids = caMakeTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+							$va_ids = caMakeTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
 						}
 						
 						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }
@@ -1090,7 +1093,7 @@ class Installer {
 						}
 					}
 					
-					$va_settings = $this->_processSettings(null, $vo_placement->settings);
+					$va_settings = $this->_processSettings(null, $vo_placement->settings, ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($va_available_bundles[$vs_bundle]['settings']) ? $va_available_bundles[$vs_bundle]['settings'] : [])]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $vs_bundle, $vs_placement_code, $vs_screen_idno, $vs_ui_code));
 
 					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
@@ -2034,8 +2037,11 @@ class Installer {
 		return $ps_password;
 	}
 	# --------------------------------------------------
-	private function _processSettings($pt_instance, $po_settings_node) {
+	private function _processSettings($pt_instance, $po_settings_node, $pa_options=null) {
 		$va_settings = array();
+		
+		$pa_settings_info = caGetOption('settingsInfo', $pa_options, []);
+		
 		if($po_settings_node) {
 			foreach($po_settings_node->children() as $vo_setting) {
 				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
@@ -2055,7 +2061,7 @@ class Installer {
 					} else {
 						// some settings allow multiple values under the same key, for instance restrict_to_types.
 						// in those cases $va_settings[$vs_setting_name] becomes an array of values
-						if (isset($va_settings[$vs_setting_name])) {
+						if (isset($va_settings[$vs_setting_name]) && (!isset($pa_settings_info[$vs_setting_name]) || ($pa_settings_info[$vs_setting_name]['multiple']))) {
 							if (!is_array($va_settings[$vs_setting_name])) {
 								$va_settings[$vs_setting_name] = array($va_settings[$vs_setting_name]);
 							}
