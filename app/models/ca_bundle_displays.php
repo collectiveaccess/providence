@@ -731,25 +731,26 @@ if (!$pb_omit_editing_info) {
 		
 		$o_db = $this->getDb();
 		
-		$va_sql_wheres = array(
-			'((bdl.is_preferred = 1) OR (bdl.is_preferred is null))'
-		);
+		$va_params = [];
+		$va_wheres = ['((bdl.is_preferred = 1) OR (bdl.is_preferred is null))'];
+		
 		if ($vn_table_num > 0) {
-			$va_sql_wheres[] = "(bd.table_num = ".intval($vn_table_num).")";
+			$va_wheres[] = "(bd.table_num = ".intval($vn_table_num).")";
 		}
 		
-		if(is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types)) {
-			$va_type_list = caMakeTypeIDList($pm_table_name_or_num, $pa_restrict_to_types, array('dontIncludeSubtypesInTypeRestriction' => $pb_dont_include_subtypes_in_type_restriction));
-			if (sizeof($va_type_list) > 0) {
-				$va_sql_wheres[] = "(cbdtr.type_id IS NULL OR cbdtr.type_id IN (".join(",", $va_type_list)."))";
-			}
+		if ($pm_table_name_or_num && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types)) {
+			$va_wheres[] = "(cbdtr.type_id IS NULL OR cbdtr.type_id IN (?) OR (cbdtr.include_subtypes = 1 AND cbdtr.type_id IN (?)))";
+			$va_params[] = $pa_restrict_to_types;
+			$va_params[] = caGetAncestorsForItemID($pa_restrict_to_types, ['includeSelf' => true]);
 		}
+		
 		if (is_array($pa_access) && (sizeof($pa_access))) {
 			$pa_access = array_map("intval", $pa_access);
-			$va_sql_wheres[] = "(bd.access IN (".join(",", $pa_access)."))";
+			$va_wheres[] = "(bd.access IN (?))";
+			$va_params[] = $pa_access;
 		}
 		
-		$va_sql_access_wheres = [];
+		$va_access_wheres = [];
 		if ($pn_user_id) {
 			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
 			$t_user->load($pn_user_id);
@@ -780,16 +781,16 @@ if (!$pb_omit_editing_info) {
 								)";
 				
 				
-				$va_sql_access_wheres[] = "({$vs_sql})";
+				$va_access_wheres[] = "({$vs_sql})";
 			}
 		}
 		
 		if (($pn_user_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__) || $pb_system_only) {
-			$va_sql_access_wheres[] = "(bd.is_system = 1)";
+			$va_access_wheres[] = "(bd.is_system = 1)";
 		}
 		
-		if (sizeof($va_sql_access_wheres)) {
-			$va_sql_wheres[] = "(".join(" OR ", $va_sql_access_wheres).")";
+		if (sizeof($va_access_wheres)) {
+			$va_wheres[] = "(".join(" OR ", $va_access_wheres).")";
 		}
 		
 		// get displays
@@ -803,10 +804,10 @@ if (!$pb_omit_editing_info) {
 			LEFT JOIN ca_locales AS l ON bdl.locale_id = l.locale_id
 			LEFT JOIN ca_bundle_display_type_restrictions AS cbdtr ON bd.display_id = cbdtr.display_id
 			INNER JOIN ca_users AS u ON bd.user_id = u.user_id
-			".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-			".join(' AND ', $va_sql_wheres)."
+			".(sizeof($va_wheres) ? 'WHERE ' : '')."
+			".join(' AND ', $va_wheres)."
 			ORDER BY -cbdtr.display_id DESC, bdl.name ASC
-		");
+		", $va_params);
 		//print "got $vs_sql";
 		$va_displays = [];
 
