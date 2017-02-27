@@ -425,7 +425,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$t_rel->set('type_code', $pm_type_code_or_id);
 			$t_rel->set('table_num', $vn_table_num);
 			$t_rel->set('sub_type_left_id', isset($pa_values['sub_type_left_id']) ? (int)$pa_values['sub_type_left_id'] : null);
+			$t_rel->set('include_subtypes_left', (isset($pa_values['include_subtypes_left']) && (bool)$pa_values['include_subtypes_left']) ? 1 : 0);
 			$t_rel->set('sub_type_right_id', isset($pa_values['sub_type_right_id']) ? (int)$pa_values['sub_type_right_id'] : null);
+			$t_rel->set('include_subtypes_right', (isset($pa_values['include_subtypes_right']) && (bool)$pa_values['include_subtypes_right']) ? 1 : 0);
 			$t_rel->set('parent_id', isset($pa_values['parent_id']) ? (int)$pa_values['parent_id'] : null);
 			$t_rel->set('rank', isset($pa_values['rank']) ? (int)$pa_values['rank'] : 0);
 			$t_rel->set('is_default', isset($pa_values['is_default']) ? (int)$pa_values['is_default'] : 0);
