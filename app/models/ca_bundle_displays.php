@@ -2210,13 +2210,14 @@ if (!$pb_omit_editing_info) {
 	 * Adds restriction (a binding between the display and item type)
 	 *
 	 * @param int $pn_type_id the type
-	 * @param array $pa_settings Array of options for the restriction. (No options are currently implemented).
+	 * @param array $pa_settings Options include:
+	 *		includeSubtypes = automatically expand type restriction to include sub-types. [Default is false]
 	 * @return bool True on success, false on error, null if no screen is loaded
 	 * 
 	 */
-	public function addTypeRestriction($pn_type_id, $va_settings=null) {
+	public function addTypeRestriction($pn_type_id, $pa_settings=null) {
 		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
-		if (!is_array($va_settings)) { $va_settings = array(); }
+		if (!is_array($pa_settings)) { $pa_settings = array(); }
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
 		
@@ -2229,7 +2230,10 @@ if (!$pb_omit_editing_info) {
 		$t_restriction->set('table_num', $this->get('table_num'));
 		$t_restriction->set('type_id', $pn_type_id);
 		$t_restriction->set('display_id', $this->getPrimaryKey());
-		foreach($va_settings as $vs_setting => $vs_setting_value) {
+		$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $pa_settings, 0));
+		
+		unset($pa_settings['includeSubtypes']);
+		foreach($pa_settings as $vs_setting => $vs_setting_value) {
 			$t_restriction->setSetting($vs_setting, $vs_setting_value);
 		}
 		$t_restriction->insert();

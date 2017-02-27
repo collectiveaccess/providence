@@ -1771,9 +1771,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * Adds restriction (a binding between the screen and item type)
 	 *
 	 * @param int $pn_type_id the type
-	 * @param array $pa_settings Array of options for the restriction. (No options are currently implemented).
+	 * @param array $pa_settings Options include:
+	 *		includeSubtypes = automatically expand type restriction to include sub-types. [Default is false]
 	 * @return bool True on success, false on error, null if no screen is loaded
-	 * 
 	 */
 	public function addTypeRestriction($pn_type_id, $pa_settings=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
@@ -1803,6 +1803,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$t_restriction->set('table_num', $t_ui->get('editor_type'));
 		$t_restriction->set('type_id', $pn_type_id);
 		$t_restriction->set('screen_id', $this->getPrimaryKey());
+		$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $pa_settings, 0));
+		
+		unset($pa_settings['includeSubtypes']);
 		foreach($pa_settings as $vs_setting => $vs_setting_value) {
 			$t_restriction->setSetting($vs_setting, $vs_setting_value);
 		}
@@ -1819,10 +1822,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * Sets restrictions for currently loaded screen
 	 *
 	 * @param array $pa_type_ids list of types to restrict to
+	 * @param array $pa_options Options include:
+	 *		includeSubtypes = Automatically include subtypes for all set type restrictions. [Default is false]
 	 * @return bool True on success, false on error, null if no screen is loaded
-	 * 
 	 */
-	public function setTypeRestrictions($pa_type_ids) {
+	public function setTypeRestrictions($pa_type_ids, $pa_options=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
 		if (!is_array($pa_type_ids)) {
 			if (is_numeric($pa_type_ids)) { 
@@ -1858,7 +1862,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			if(in_array($vn_type_id, $pa_type_ids)) {
 				// need to set
 				if(!isset($va_current_type_ids[$vn_type_id])) {
-					$this->addTypeRestriction($vn_type_id);
+					$this->addTypeRestriction($vn_type_id, $pa_options);
 				}
 			} else {
 				// need to unset
@@ -2157,14 +2161,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_type_restrictions = $this->getTypeRestrictions();
 		$va_restriction_type_ids = array();
+		
+		$vb_include_subtypes = false;
 		foreach($va_type_restrictions as $vn_i => $va_restriction) {
 			$va_restriction_type_ids[] = $va_restriction['type_id'];
+			if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
 		}
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->getTableNum()))) { return null; }
-
+		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
+			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
+		]);
+		
 		if($t_instance instanceof BaseRelationshipModel) { // interstitial
-			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)).$vs_subtype_element);
 		} elseif($t_instance instanceof ca_representation_annotations) { // config based
 			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
 			$va_annotation_type_select_list = array();
@@ -2173,9 +2183,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
 			}
 
-			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
 		} else { // list-based
-			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
 		}
 	
 		return $o_view->render('ca_editor_ui_screen_type_restrictions.php');
@@ -2184,7 +2194,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));
+		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray), ['includeSubtypes' => $po_request->getParameter('type_restriction_include_subtypes', pInteger)]);
 	}
 	# ----------------------------------------
 }

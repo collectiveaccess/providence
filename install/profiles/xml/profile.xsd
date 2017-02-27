@@ -385,6 +385,7 @@
                     <xs:complexType>
                       <xs:attribute name="code" type="codeType" use="optional"/>
                       <xs:attribute name="type" type="xs:string" use="required"/>
+                  	  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
                     </xs:complexType>
                   </xs:element>
                 </xs:sequence>
@@ -395,6 +396,8 @@
           <xs:attribute name="idno" type="codeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
           <xs:attribute name="deleted" type="booleanType" use="optional"/>
+          <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+          <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
         </xs:complexType>
 
         <!-- placement codes must be unique inside a screen -->
@@ -696,6 +699,7 @@
                             <xs:complexType>
                               <xs:attribute name="code" type="xs:string" use="optional"/>
                               <xs:attribute name="type" type="xs:string" use="required"/>
+                              <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -736,6 +740,8 @@
                   <xs:attribute name="code" type="codeType" use="required"/>
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
+				  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+				  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
                 </xs:complexType>
 
                 <!-- ui screen idnos must be unique inside a UI -->
@@ -958,6 +964,8 @@
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="system" type="booleanType" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
+                  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+                  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
 
                 </xs:complexType>
               </xs:element>
@@ -1030,6 +1038,8 @@
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="system" type="booleanType" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
+                  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+                  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
 
                 </xs:complexType>
               </xs:element>
