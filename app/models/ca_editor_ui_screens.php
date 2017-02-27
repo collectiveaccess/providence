@@ -1819,6 +1819,28 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 	/**
+	 * Edit settings for an existing type restriction on the currently loaded row
+	 *
+	 * @param int $pn_restriction_id
+	 * @param int $pn_type_id New type for relationship
+	 */
+	public function editTypeRestriction($pn_restriction_id, $pa_settings=null) {
+		if (!($vn_ui_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
+		$t_restriction = new ca_editor_ui_screen_type_restrictions($pn_restriction_id);
+		if ($t_restriction->isLoaded()) {
+			$t_restriction->setMode(ACCESS_WRITE);
+			$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $pa_settings, 0));
+			$t_restriction->update();
+			if ($t_restriction->numErrors()) {
+				$this->errors = $t_restriction->errors();
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
 	 * Sets restrictions for currently loaded screen
 	 *
 	 * @param array $pa_type_ids list of types to restrict to
@@ -1855,7 +1877,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_current_restrictions = $this->getTypeRestrictions();
 		$va_current_type_ids = array();
 		foreach($va_current_restrictions as $vn_i => $va_restriction) {
-			$va_current_type_ids[$va_restriction['type_id']] = true;
+			$va_current_type_ids[$va_restriction['type_id']] = $va_restriction['restriction_id'];
 		}
 		
 		foreach($va_type_list as $vn_type_id => $va_type_info) {
@@ -1863,12 +1885,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				// need to set
 				if(!isset($va_current_type_ids[$vn_type_id])) {
 					$this->addTypeRestriction($vn_type_id, $pa_options);
+				} else {
+					$this->editTypeRestriction($va_current_type_ids[$vn_type_id], $pa_options);
 				}
-			} else {
+			} elseif(isset($va_current_type_ids[$vn_type_id])) {	
 				// need to unset
-				if(isset($va_current_type_ids[$vn_type_id])) {
-					$this->removeTypeRestriction($vn_type_id);
-				}
+				$this->removeTypeRestriction($vn_type_id);
 			}
 		}
 		return true;
@@ -1880,20 +1902,21 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_type_id The type of the restriction
 	 * @return bool True on success, false on error, null if no screen is loaded
 	 */
-	public function removeTypeRestriction($pn_type_id) {
-		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
+	public function removeTypeRestriction($pn_type_id=null) {
+		if (!($vn_screen_id = (int)$this->getPrimaryKey())) { return null; }
 		
-		$o_db = $this->getDb();
-		
-		$qr_res = $o_db->query("
-			DELETE FROM ca_editor_ui_screen_type_restrictions
-			WHERE
-				screen_id = ? AND type_id = ?
-		", (int)$this->getPrimaryKey(), (int)$pn_type_id);
-		
-		if ($o_db->numErrors()) {
-			$this->errors = $o_db->errors();
-			return false;
+		$va_params = ['screen_id' => $vn_screen_id];
+		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
+
+		if (is_array($va_screens = ca_editor_ui_screen_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
+			foreach($va_screens as $t_screen) {
+				$t_screen->setMode(ACCESS_WRITE);
+				$t_screen->delete(true);
+				if ($t_screen->numErrors()) {
+					$this->errors = $t_screen->errors();
+					return false;
+				}
+			}
 		}
 		return true;
 	}
@@ -1904,21 +1927,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @return bool True on success, false on error, null if no screen is loaded 
 	 */
 	public function removeAllTypeRestrictions() {
-		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
-		
-		$o_db = $this->getDb();
-		
-		$qr_res = $o_db->query("
-			DELETE FROM ca_editor_ui_screen_type_restrictions
-			WHERE
-				screen_id = ?
-		", (int)$this->getPrimaryKey());
-		
-		if ($o_db->numErrors()) {
-			$this->errors = $o_db->errors();
-			return false;
-		}
-		return true;
+		return $this->removeTypeRestriction();
 	}
 	# ----------------------------------------
 	/**
@@ -1930,29 +1939,10 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function getTypeRestrictions($pn_type_id=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
 		
-		$o_db = $this->getDb();
-		
-		$vs_table_type_sql = '';
-		if ($pn_type_id > 0) {
-			$vs_table_type_sql .= ' AND type_id = '.intval($pn_type_id);
-		}
-		$qr_res = $o_db->query("
-			SELECT *
-			FROM ca_editor_ui_screen_type_restrictions
-			WHERE
-				screen_id = ? {$vs_table_type_sql}
-		", (int)$this->getPrimaryKey());
-		
-		if ($o_db->numErrors()) {
-			$this->errors = $o_db->errors();
-			return false;
-		}
-		
-		$va_restrictions = array();
-		while($qr_res->nextRow()) {
-			$va_restrictions[] = $qr_res->getRow();
-		}
-		return $va_restrictions;
+		$va_params = ['screen_id' => $vn_screen_id];
+		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
+
+		return ca_editor_ui_screen_type_restrictions::find($va_params, ['returnAs' => 'arrays']);
 	}
 	# ------------------------------------------------------
 	/**
