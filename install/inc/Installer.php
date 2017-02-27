@@ -1019,7 +1019,7 @@ class Installer {
 						}
 					}
 				} else {
-					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes);
+					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
 				}
 				
 				foreach($va_ids as $vn_i => $vn_type_id) {
@@ -1104,7 +1104,7 @@ class Installer {
 								}
 							}
 						} else {
-							$va_ids = caMakeTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
+							$va_ids = caMakeTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions), ['dontIncludeSubtypesInTypeRestriction' => true]);
 						}
 						
 						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }
@@ -1172,7 +1172,7 @@ class Installer {
 						}
 					}
 				} else {
-					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes);
+					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
 				}
 				
 				foreach($va_ids as $vn_i => $vn_type_id) {
@@ -1666,7 +1666,7 @@ class Installer {
 					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
 					
-					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
 					
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
@@ -1677,7 +1677,7 @@ class Installer {
 			}
 			if ($vs_type_restrictions = self::getAttribute($vo_display, "typeRestrictions")) {
 				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes);
+				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
 				
 				foreach($va_ids as $vn_i => $vn_type_id) {
 					$t_display->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_display, "includeSubtypes")]);
@@ -1851,7 +1851,7 @@ class Installer {
 					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
 					
-					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
 					
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_restriction->getErrors()));
@@ -1862,7 +1862,7 @@ class Installer {
 			}
 			if ($vs_type_restrictions = self::getAttribute($vo_form, "typeRestrictions")) {
 				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes);
+				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
 				
 				foreach($va_ids as $vn_i => $vn_type_id) {
 					$t_form->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_form, "includeSubtypes")]);
