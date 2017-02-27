@@ -972,6 +972,7 @@ class Installer {
 			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->opa_locales);
 
 			$va_annotation_types = $o_annotation_type_conf->get('types');
+			
 			// create ui type restrictions
 			if($vo_ui->typeRestrictions) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
@@ -996,13 +997,34 @@ class Installer {
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
 						}
-
-						if($vn_type_id) {
-							$t_ui->addTypeRestriction($vn_type_id);
-						}
-
+						
+						$t_ui->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_restriction, "includeSubtypes")]);
+					
 						$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $vs_restriction_type, $vs_ui_code));
 					}
+				}
+			}
+			
+			if ($vs_type_restrictions = self::getAttribute($vo_ui, "typeRestrictions")) {
+				// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
+				// as settings on the placement record.
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				if ($t_instance instanceof BaseRelationshipModel) {
+					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
+				} elseif($t_instance instanceof ca_representation_annotations) {
+					$va_ids = [];
+					foreach($va_codes as $vs_annotation_type) {
+						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+							$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+						}
+					}
+				} else {
+					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes);
+				}
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_ui->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_ui, "includeSubtypes")]);
+					$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $va_codes[$vn_i], $vs_ui_code));
 				}
 			}
 
@@ -1052,7 +1074,7 @@ class Installer {
 				$this->logStatus(_t('Successfully updated/inserted screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
-
+			
 				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// nuke previous placements. there shouldn't be any if we're installing from scratch.
@@ -1130,12 +1152,32 @@ class Installer {
 							}
 
 							if($vn_type_id) {
-								$t_ui_screens->addTypeRestriction($vn_type_id);
+								$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
 							}
 
 							$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $vs_restriction_type, $vs_screen_idno, $vs_ui_code));
 						}
 					}
+				}
+			}
+			if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				if ($t_instance instanceof BaseRelationshipModel) {
+					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
+				} elseif($t_instance instanceof ca_representation_annotations) {
+					$va_ids = [];
+					foreach($va_codes as $vs_annotation_type) {
+						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+							$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+						}
+					}
+				} else {
+					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes);
+				}
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
+					$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
 				}
 			}
 
@@ -1648,6 +1690,15 @@ class Installer {
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for display with code %3', $vs_restriction_code, $vs_type, $vs_display_code));
+				}
+			}
+			if ($vs_type_restrictions = self::getAttribute($vo_display, "typeRestrictions")) {
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes);
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_display->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_display, "includeSubtypes")]);
+					$this->logStatus(_t('Added type restriction with type %1 for display with code %2', $va_codes[$vn_i], $vs_display_code));
 				}
 			}
 
