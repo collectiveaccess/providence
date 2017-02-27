@@ -1663,28 +1663,11 @@ class Installer {
 				}
 
 				foreach($vo_display->typeRestrictions->children() as $vo_restriction) {
-					$t_list = new ca_lists();
-					$t_list_item = new ca_list_items();
 					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
-
-					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num);
-					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-					if ($vs_type) {
-						$t_list->load(array('list_code' => $vs_type_list_name));
-						$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_type));
-					}
-					$vn_type_id = ($vs_type) ? $t_list_item->getPrimaryKey() : null;
-					$t_restriction = new ca_bundle_display_type_restrictions();
-					$t_restriction->setMode(ACCESS_WRITE);
-					$t_restriction->set('table_num', $vn_table_num);
-					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
-					$t_restriction->set('type_id', $vn_type_id);
-					$t_restriction->set('display_id', $t_display->getPrimaryKey());
-
-					$this->_processSettings($t_restriction, $vo_restriction->settings);
-					$t_restriction->insert();
-
+					
+					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
 					}
@@ -1694,7 +1677,7 @@ class Installer {
 			}
 			if ($vs_type_restrictions = self::getAttribute($vo_display, "typeRestrictions")) {
 				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes);
+				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes);
 				
 				foreach($va_ids as $vn_i => $vn_type_id) {
 					$t_display->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_display, "includeSubtypes")]);
@@ -1853,6 +1836,37 @@ class Installer {
 				}
 				if(!$this->processSearchFormPlacements($t_form, $vo_form->bundlePlacements, null)) {
 					return false;
+				}
+			}
+			
+			if ($vo_form->typeRestrictions) {
+				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of restrictions to include all restrictions!
+				if(sizeof($vo_form->typeRestrictions->children())) {
+					$this->opo_db->query('DELETE FROM ca_search_form_type_restrictions WHERE form_id=?', $t_display->getPrimaryKey());
+					$this->logStatus(_t('Successfully nuked all type restrictions for form with code %1', $vs_form_code));
+				}
+
+				foreach($vo_form->typeRestrictions->children() as $vo_restriction) {
+					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
+					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
+					
+					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					
+					if ($t_restriction->numErrors()) {
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_restriction->getErrors()));
+					}
+
+					$this->logStatus(_t('Added type restriction with code %1 and type %2 for form with code %3', $vs_restriction_code, $vs_type, $vs_form_code));
+				}
+			}
+			if ($vs_type_restrictions = self::getAttribute($vo_form, "typeRestrictions")) {
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes);
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_form->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_form, "includeSubtypes")]);
+					$this->logStatus(_t('Added type restriction with type %1 for form with code %2', $va_codes[$vn_i], $vs_form_code));
 				}
 			}
 
