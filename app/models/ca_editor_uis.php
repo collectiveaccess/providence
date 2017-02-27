@@ -390,24 +390,22 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			$va_types = $t_instance->getTypeList();	
 		}
-		
-		$va_sql_params = array((int)$this->getPrimaryKey());
-		
 		$o_db = $this->getDb();
-		$va_type_list = caMakeTypeIDList($this->get('editor_type'), array($pn_type_id));
-		if (!sizeof($va_type_list)) { $va_type_list = array($pn_type_id); }
 		
-		if ($pn_type_id) { 
-			$va_sql_params[] = (int)$pn_type_id; $va_sql_params[] = $va_type_list;
-		}
+		$va_wheres = ["(ceus.ui_id = ?)"];
+		$va_params = array((int)$this->getPrimaryKey());
 		
-		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id = ? OR (ceustr.include_subtypes = 1 AND ceustr.type_id IN (?)))" : '';
 	
-		$vs_access_sql = '';
+		if ($pn_type_id > 0) {
+			$va_wheres[] = "(ceustr.type_id IS NULL OR ceustr.type_id = ? OR (ceustr.include_subtypes = 1 AND ceustr.type_id IN (?)))";
+			$va_params[] = $pn_type_id;
+			$va_params[] = caGetAncestorsForItemID($pn_type_id, ['includeSelf' => true]);
+		}
+	
 		
 		$t_user = new ca_users();
 		if (($vn_user_id = caGetOption('user_id', $pa_options, null)) && ($t_user->load($vn_user_id))) {
-			$vs_access_sql = " AND ((ceus.screen_id IN 
+			$vs_access_sql = "((ceus.screen_id IN 
 					(
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_users
@@ -415,7 +413,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 							user_id = ?
 					)
 				)";
-				$va_sql_params[] = $vn_user_id;
+				$va_params[] = $vn_user_id;
 				
 			$va_groups = $t_user->getUserGroups();
 			if (is_array($va_groups) && sizeof($va_groups)) {
@@ -427,7 +425,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 							group_id IN (?)
 					)
 				)";
-				$va_sql_params[] = array_keys($va_groups);
+				$va_params[] = array_keys($va_groups);
 			}
 			
 			$va_roles = $t_user->getUserRoles();
@@ -440,7 +438,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 							role_id IN (?)
 					)
 				)";
-				$va_sql_params[] = array_keys($va_roles);
+				$va_params[] = array_keys($va_roles);
 			}
 			$vs_access_sql .= "
 				OR (
@@ -457,19 +455,19 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					)
 				)
 			)";
+			$va_wheres[] = $vs_access_sql;
 		}
-	
+		
 		$qr_res = $o_db->query("
 			SELECT ceus.*, ceusl.*, ceustr.type_id restriction_type_id
 			FROM ca_editor_ui_screens ceus
 			INNER JOIN ca_editor_ui_screen_labels AS ceusl ON ceus.screen_id = ceusl.screen_id
 			LEFT JOIN ca_editor_ui_screen_type_restrictions AS ceustr ON ceus.screen_id = ceustr.screen_id
 			WHERE
-				(ceus.ui_id = ?) {$vs_type_sql}
-				{$vs_access_sql}
+				 ".join(" AND ", $va_wheres)."
 			ORDER BY 
 				ceus.rank, ceus.screen_id
-		", $va_sql_params);
+		", $va_params);
 		
 		$va_screens = [];
 		
