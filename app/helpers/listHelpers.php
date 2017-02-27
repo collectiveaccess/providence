@@ -318,6 +318,34 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Return item_ids for ancestors of an item
+	 *
+	 * @param mixed $pm_item_id 
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default is null]
+	 *		includeSelf = include $pn_item_id in returned list. [Default is false]
+	 *		noCache = don't use cached results. [Default is false]
+	 * @return array An array of item_ids for items that are ancestors of the specified item. The specified item_id is only included in the returned list if the includeSelf option is set.
+	 */
+	$g_list_item_id_ancestors_cache = array();
+	function caGetAncestorsForItemID($pm_item_id, $pa_options=null) {
+		if(!$pm_item_id) { return null; }
+		global $g_list_item_id_ancestors_cache;
+		if(isset($g_list_item_id_ancestors_cache[$pn_item_id]) && !caGetOption('noCache', $pa_options, false)) { return $g_list_item_id_ancestors_cache[$pn_item_id]; }
+		$t_item = new ca_list_items();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
+		
+		if (!is_array($pm_item_id)) { $pm_item_id = [$pm_item_id]; }
+		
+		$va_acc = [];
+		foreach($pm_item_id as $pn_item_id) {
+			$va_acc = array_merge($va_acc, $t_item->getHierarchyAncestors($pn_item_id, ['idsOnly' => true, 'includeSelf' => caGetOption('includeSelf', $pa_options, false)]));
+		}
+		
+		return $g_list_item_id_ancestors_cache[$pn_item_id] = $va_acc;
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch the list of defined types for a table 
 	 *
 	 * @param mixed $pm_table_name_or_num 

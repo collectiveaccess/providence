@@ -983,6 +983,19 @@
                   <xs:sequence>
                     <xs:element name="labels" type="searchFormLabels"
                                 minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
+					  <xs:complexType>
+						<xs:sequence>
+						  <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
+							<xs:complexType>
+							  <xs:attribute name="code" type="codeType" use="optional"/>
+							  <xs:attribute name="type" type="xs:string" use="required"/>
+							  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
+							</xs:complexType>
+						  </xs:element>
+						</xs:sequence>
+					  </xs:complexType>
+					</xs:element>
                     <xs:element name="settings" minOccurs="0" maxOccurs="1">
                       <xs:complexType>
                         <xs:sequence>

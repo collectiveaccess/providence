@@ -86,7 +86,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			 && 
 			 ($t_form->get('table_num') == $this->opo_datamodel->getTableNum($this->ops_tablename))
 		)) {
-			if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
+			if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'restrictToTypes' => [$this->opn_type_restriction_id])))) {
 				$va_tmp = array_keys($va_forms);
 				$vn_form_id = array_shift($va_tmp);
 				if (!$t_form->load($vn_form_id)) {
@@ -271,7 +271,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		$t_form = new ca_search_forms();
 		if (!($vn_form_id = $this->request->getParameter('form_id', pInteger))) {
 			if ((!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) || (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__, $vn_form_id))) {
-				if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
+				if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'restrictToTypes' => [$this->opn_type_restriction_id])))) {
 					$va_tmp = array_keys($va_forms);
 					$vn_form_id = array_shift($va_tmp);
 				}
@@ -291,6 +291,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		$this->view->setVar('t_form', $t_form);
 		$this->view->setVar('settings', $t_form->getSettings());
 		$this->view->setVar('form_id', $vn_form_id);
+		$this->view->setVar('type_id', $this->opn_type_restriction_id);
 
 		$this->view->setVar('table_name', $this->ops_tablename);
 
@@ -309,7 +310,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		$t_form = new ca_search_forms();
 		if (!($vn_form_id = $pn_form_id)) {
 			if ((!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) || (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__, $vn_form_id))) {
-				if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
+				if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'restrictToTypes' => [$this->opn_type_restriction_id])))) {
 					$va_tmp = array_keys($va_forms);
 					$vn_form_id = array_shift($va_tmp);
 				}

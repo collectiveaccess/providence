@@ -71,7 +71,7 @@ BaseModel::$s_ca_models_definitions['ca_search_forms'] = array(
 			'LABEL' => _t('Form code'), 'DESCRIPTION' => _t('Unique code for form, used to identify the form for configuration purposes. You will need to specify this if you are using this form in a special context (on a web front-end, for example) in which the form must be unambiguously identified.'),
 			'BOUNDS_LENGTH' => array(0,100),
 			'REQUIRES' => array('is_administrator'),
-			'UNIQUE_WITHIN' => array()
+			'UNIQUE_WITHIN' => []
 		),
 		'is_system' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
@@ -248,7 +248,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	protected $FIELDS;
 
 	# cache for haveAccessToForm()
-	static $s_have_access_to_form_cache = array();
+	static $s_have_access_to_form_cache = [];
 
 	/**
 	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
@@ -483,14 +483,14 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 
 		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __ca_search_form_READ_ACCESS__)) {
-			return array();
+			return [];
 		}
 
 		if (!($vn_form_id = $this->getPrimaryKey())) {
 			if ($pb_return_all_available_if_empty && $ps_table) {
 				return ca_search_forms::$s_placement_list_cache[$vn_form_id] = $this->getAvailableBundles($ps_table);
 			}
-			return array();
+			return [];
 		}
 
 		if (!$pb_no_cache && isset(ca_search_forms::$s_placement_list_cache[$vn_form_id]) && ca_search_forms::$s_placement_list_cache[$vn_form_id]) {
@@ -507,8 +507,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			ORDER BY rank
 		", (int)$vn_form_id);
 
-		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles();
-		$va_placements = array();
+		$va_available_bundles = ($pb_settings_only) ? [] : $this->getAvailableBundles();
+		$va_placements = [];
 
 		if ($qr_res->numRows() > 0) {
 			$t_placement = new ca_search_form_placements();
@@ -535,29 +535,31 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * Returns list of search forms subject to options
 	 *
 	 * @param array $pa_options Optional array of options. Supported options are:
-	 *			table - if set, list is restricted to forms that pertain to the specified table. You can pass a table name or number. If omitted forms for all tables will be returned.
-	 *			user_id - Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned.
-	 *			access - Restricts returned forms to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then forms where the user has at least read access will be returned.
+	 *			table = if set, list is restricted to forms that pertain to the specified table. You can pass a table name or number. If omitted forms for all tables will be returned. [Default is null]
+	 *			user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned. [Default is null]
+	 *			access = Restricts returned forms to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then forms where the user has at least read access will be returned. [Default is null]
+	 *			restrictToTypes = restrict forms to specific types; only relevant if table option is set. [Default is null]
 	 * @return array Array of forms keyed on form_id and then locale_id. Keys for the per-locale value array include: form_id,  form_code, user_id, table_num,  label_id, name (display name of form), locale_id (locale of form name), search_form_content_type (display name of content this form searches on)
 	 */
 	public function getForms($pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		$pm_table_name_or_num = isset($pa_options['table']) ? $pa_options['table'] : null;
-		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
-		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
-
+		if (!is_array($pa_options)) { $pa_options = []; }
+		$pm_table_name_or_num = caGetOption('table', $pa_options, null);
+		$pn_user_id = caGetOption('user_id', $pa_options, null);
+		$pn_access = caGetOption('access', $pa_options, null);
+		$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null);
 
 		$o_dm = $this->getAppDatamodel();
-		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return array(); }
+		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return []; }
 
 		$o_db = $this->getDb();
 
-		$va_sql_wheres = array('((sfl.is_preferred = 1) or (sfl.is_preferred is null))');
+		$va_wheres = array('((sfl.is_preferred = 1) or (sfl.is_preferred is null))');
 		if ($vn_table_num > 0) {
-			$va_sql_wheres[] = "(sf.table_num = ".intval($vn_table_num).")";
+			$va_wheres[] = "(sf.table_num = ".intval($vn_table_num).")";
 		}
 
-		$va_sql_access_wheres = array();
+		$va_params = [];
+		$va_access_wheres = [];
 		if ($pn_user_id) {
 			$o_dm = $this->getAppDatamodel();
 			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
@@ -589,17 +591,23 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								)";
 
 
-				$va_sql_access_wheres[] = "({$vs_sql})";
+				$va_access_wheres[] = "({$vs_sql})";
 			}
 		}
 
+		if ($pm_table_name_or_num && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types)) {
+			$va_wheres[] = "(sftr.type_id IS NULL OR sftr.type_id IN (?) OR (sftr.include_subtypes = 1 AND sftr.type_id IN (?)))";
+			$va_params[] = $pa_restrict_to_types;
+			$va_params[] = caGetAncestorsForItemID($pa_restrict_to_types, ['includeSelf' => true]);
+		}
+	
 
 		if ($pn_access == __CA_SEARCH_FORM_READ_ACCESS__) {
-			$va_sql_access_wheres[] = "(sf.is_system = 1)";
+			$va_access_wheres[] = "(sf.is_system = 1)";
 		}
 
-		if (sizeof($va_sql_access_wheres)) {
-			$va_sql_wheres[] = "(".join(" OR ", $va_sql_access_wheres).")";
+		if (sizeof($va_access_wheres)) {
+			$va_wheres[] = "(".join(" OR ", $va_access_wheres).")";
 		}
 
 		// get forms
@@ -611,14 +619,15 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_search_forms sf
 			LEFT JOIN ca_search_form_labels AS sfl ON sf.form_id = sfl.form_id
 			LEFT JOIN ca_locales AS l ON sfl.locale_id = l.locale_id
+			LEFT JOIN ca_search_form_type_restrictions AS sftr ON sf.form_id = sftr.form_id
 			INNER JOIN ca_users AS u ON sf.user_id = u.user_id
-			".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-			".join(' AND ', $va_sql_wheres)."
-		");
-		$va_displays = array();
+			".(sizeof($va_wheres) ? 'WHERE ' : '')."
+			".join(' AND ', $va_wheres)."
+		", $va_params);
+		$va_displays = [];
 
 		$t_list = new ca_lists();
-		$va_type_name_cache = array();
+		$va_type_name_cache = [];
 		while($qr_res->nextRow()) {
 			$vn_table_num = $qr_res->get('table_num');
 			if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_display_type = $va_type_name_cache[$vn_table_num])) {
@@ -640,7 +649,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int  Number of forms available
 	 */
 	public function getFormCount($pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 
 		$va_forms = $this->getForms($pa_options);
 
@@ -659,11 +668,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string HTML code defining <select> drop-down
 	 */
 	public function getFormsAsHTMLSelect($ps_select_name, $pa_attributes=null, $pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 
 		$va_available_forms = caExtractValuesByUserLocale($this->getForms($pa_options));
 
-		$va_content = array();
+		$va_content = [];
 
 		if (
 			(isset($pa_options['addDefaultForm']) && $pa_options['addDefaultForm'])
@@ -795,9 +804,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 
-		$t_placement = new ca_search_form_placements(null, array());
+		$t_placement = new ca_search_form_placements(null, []);
 
-		$va_available_bundles = array();
+		$va_available_bundles = [];
 
 		$va_additional_settings = array(
 			'width' => array(
@@ -836,13 +845,13 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			if (!is_array($va_fields['fields'])) { continue; }
 
 			if ($vs_table == $vs_primary_table) {
-				$va_element_codes = (method_exists($t_instance, 'getApplicableElementCodes') ? $t_instance->getApplicableElementCodes(null, false, false) : array());
+				$va_element_codes = (method_exists($t_instance, 'getApplicableElementCodes') ? $t_instance->getApplicableElementCodes(null, false, false) : []);
 
-				$va_field_list = array();
+				$va_field_list = [];
 				foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
 					if ($vs_field === '_metadata') {
 						foreach($va_element_codes as $vs_code) {
-							$va_field_list[$vs_code] = array();
+							$va_field_list[$vs_code] = [];
 						}
 					} else {
 						$va_field_list[$vs_field] = $va_field_indexing_info;
@@ -955,7 +964,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		//
 		// access points
 		//
-		$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : array();
+		$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : [];
 		//unset($va_search_settings['_access_points']);
 
 		foreach($va_access_points as $vs_access_point => $va_access_point_info) {
@@ -1001,7 +1010,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 		ksort($va_available_bundles);
 
-		$va_sorted_bundles = array();
+		$va_sorted_bundles = [];
 		foreach($va_available_bundles as $vs_k => $va_val) {
 			foreach($va_val as $vs_real_key => $va_info) {
 				$va_sorted_bundles[$vs_real_key] = $va_info;
@@ -1021,23 +1030,23 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 *		bundle = The bundle name
 	 */
 	public function getPlacementsInForm($pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 		$pb_no_cache = isset($pa_options['noCache']) ? (bool)$pa_options['noCache'] : false;
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 
 		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __CA_SEARCH_FORM_READ_ACCESS__)) {
-			return array();
+			return [];
 		}
 
 		if (!($pn_table_num = $this->_DATAMODEL->getTableNum($this->get('table_num')))) { return null; }
 
 		$t_instance = $this->_DATAMODEL->getInstanceByTableNum($pn_table_num, true);
 
-		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = array(); }
+		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = []; }
 
 		$va_available_bundles = $this->getAvailableBundles($pn_table_num);
 
-		$va_placements_in_form = array();
+		$va_placements_in_form = [];
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_label =  $va_available_bundles[$va_placement['bundle_name']]['label'];
 			$vs_display = $va_available_bundles[$va_placement['bundle_name']]['display'];
@@ -1093,7 +1102,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getHTMLFormElements($po_request, $pa_form_data=null) {
 		if (!$this->getPrimaryKey()) { return null; }
-		if (!is_array($pa_form_data)) { $pa_form_data = array(); }
+		if (!is_array($pa_form_data)) { $pa_form_data = []; }
 
 		foreach($pa_form_data as $vs_k => $vs_v) {
 			$pa_form_data[$vs_k] = trim((string)$pa_form_data[$vs_k]);
@@ -1102,7 +1111,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_form_contents = $this->getPlacements();
 
 		$o_dm = Datamodel::load();
-		$va_output = array();
+		$va_output = [];
 
 		if (!($vs_form_table_name = $o_dm->getTableName($this->get('table_num')))) { return null; }
 		$t_subject = $o_dm->getInstanceByTableName($vs_form_table_name, true);
@@ -1154,7 +1163,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
 				// is this an access point?
 				$va_search_settings = $this->opo_search_indexing_config->getAssoc($this->_DATAMODEL->getTableName($vs_form_table_name));
-				$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : array();
+				$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : [];
 
 				if (isset($va_access_points[$va_tmp[0]])) {
 
@@ -1208,7 +1217,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	public function getLuceneQueryStringForHTMLFormInput($pa_form_content) {
 		$va_values = $this->extractFormValuesFromArray($pa_form_content);
 
-		$va_query_elements = array();
+		$va_query_elements = [];
 		if (is_array($va_values) && sizeof($va_values)) {
 			foreach($va_values as $vs_element => $va_values) {
 				if (!is_array($va_values)) { $va_values = array($va_values); }
@@ -1242,7 +1251,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }
 
 		$va_form_contents = $this->getElementsForForm();
-		$va_values = array();
+		$va_values = [];
 		foreach($va_form_contents as $vn_i => $vs_element) {
 			$vs_dotless_element = str_replace('.', '_', $vs_element);
 			if (isset($pa_form_content[$vs_dotless_element])) { // && strlen($pa_form_content[$vs_dotless_element])) {
@@ -1266,7 +1275,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_placements = $this->getPlacements();
 
 		$t_element = new ca_metadata_elements();
-		$va_elements = array();
+		$va_elements = [];
 		foreach($va_placements as $vn_i => $va_placement) {
 			$va_tmp = explode('.',  $va_placement['bundle_name']);
 			if ($t_element->load(array('element_code' => $va_tmp[1]))) {
@@ -1344,7 +1353,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				}
 				$vs_bundle_proc = str_replace(".", "_", $vs_bundle);
 
-				$va_settings = array();
+				$va_settings = [];
 
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_(.*)$!", $vs_key, $va_matches)) {
