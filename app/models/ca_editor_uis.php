@@ -731,13 +731,19 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$va_tmp = $qr_res->getRow();
 			$va_tmp['settings'] = $qr_res->getVars('settings');
+			
+			$va_types = [];
+			if (isset($va_tmp['settings']['bundleTypeRestrictions'])) {
+				$va_types = $va_tmp['settings']['bundleTypeRestrictions'];
+				if ($va_types && !is_array($va_types)) { $va_types = [$va_types]; }
+				
+				$va_types = caMakeTypeIDList($this->get('editor_type'), $va_types, ['dontIncludeSubtypesInTypeRestriction' => !(isset($va_tmp['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_tmp['settings']['bundleTypeRestrictionsIncludeSubtypes'])]);
+			}
 
 			// check bundle-placement type restrictions if set
 			if (
-				$pn_type_id &&
-				is_array($va_tmp['settings']['bundleTypeRestrictions']) &&
-				(sizeof($va_tmp['settings']['bundleTypeRestrictions']) > 0) &&
-				!in_array($pn_type_id, $va_tmp['settings']['bundleTypeRestrictions'])
+				$pn_type_id && sizeof($va_types) &&
+				!in_array($pn_type_id, $va_types)
 			) { continue; }
 				
 			$va_placements[] = $va_tmp;
