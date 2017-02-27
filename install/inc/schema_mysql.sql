@@ -1044,7 +1044,9 @@ create table ca_relationship_types
    type_id                        smallint unsigned              not null AUTO_INCREMENT,
    parent_id                      smallint unsigned,
    sub_type_left_id               int unsigned,
+   include_subtypes_left          tinyint unsigned               not null default 0,
    sub_type_right_id              int unsigned,
+   include_subtypes_right         tinyint unsigned               not null default 0,
    hier_left                      decimal(30,20) unsigned        not null,
    hier_right                     decimal(30,20) unsigned        not null,
    hier_type_id                   smallint unsigned,
@@ -6853,5 +6855,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 143 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (143, unix_timestamp());
+/* CURRENT MIGRATION: 144 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (144, unix_timestamp());

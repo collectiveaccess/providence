@@ -436,6 +436,7 @@
           </xs:sequence>
           <xs:attribute name="code" type="codeType" use="required"/>
           <xs:attribute name="typeRestrictions" type="xs:string"/>
+          <xs:attribute name="includeSubtypes" type="xs:string"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -483,6 +484,10 @@
                         maxOccurs="1"/>
             <xs:element name="subTypeLeft" type="xs:string" minOccurs="0" maxOccurs="1"/>
             <xs:element name="subTypeRight" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="typeRestrictionLeft" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="typeRestrictionRight" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="includeSubtypesLeft" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="includeSubtypesRight" type="xs:integer" minOccurs="0" maxOccurs="1"/>
             <xs:element name="types" type="relationshipTypes" minOccurs="0"
                         maxOccurs="1"/>
           </xs:sequence>
@@ -490,6 +495,10 @@
           <xs:attribute name="default" type="booleanType" use="required"/>
           <xs:attribute name="rank" type="xs:integer" use="optional"/>
           <xs:attribute name="deleted" type="booleanType" use="optional"/>
+          <xs:attribute name="typeRestrictionLeft" type="xs:string" use="optional"/>
+          <xs:attribute name="typeRestrictionRight" type="xs:string" use="optional"/>
+          <xs:attribute name="includeSubtypesLeft" type="xs:integer" use="optional"/>
+          <xs:attribute name="includeSubtypesRight" type="xs:integer" use="optional"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>

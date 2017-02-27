@@ -903,6 +903,11 @@ final class ConfigurationExporter {
 						if (isset($va_placement['settings']['bundleTypeRestrictions']) && is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions'])) {
 							$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
 						}
+						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {
+							$vo_placement->setAttribute("includeSubtypes", 1);
+						}
+						
+						
 						$va_used_codes[$vs_code] = true;
 						
 						$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($va_placement["bundle"])));
@@ -937,6 +942,7 @@ final class ConfigurationExporter {
 											}
 											break;
 										case 'bundleTypeRestrictions':
+										case 'bundleTypeRestrictionsIncludeSubtypes':
 											// skip; these are output as an attribute on <placement>, not as <setting> tags
 											continue(2);
 											break;
@@ -1092,7 +1098,8 @@ final class ConfigurationExporter {
 				$vs_type_code = $t_left_instance->getTypeListCode();
 				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_left_id"));
 
-				$vo_type->appendChild($this->opo_dom->createElement("subTypeLeft",$va_item["idno"]));
+				$vo_type->setAttribute("typeRestrictionLeft", $va_item["idno"]);
+				$vo_type->setAttribute("includeSubtypesLeft", (bool)$qr_types->get("include_subtypes_left") ? 1 : 0);
 			}
 
 			// restrictions (right side)
@@ -1105,7 +1112,8 @@ final class ConfigurationExporter {
 				$vs_type_code = $t_right_instance->getTypeListCode();
 				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_right_id"));
 
-				$vo_type->appendChild($this->opo_dom->createElement("subTypeRight",$va_item["idno"]));
+				$vo_type->setAttribute("typeRestrictionRight", $va_item["idno"]);
+				$vo_type->setAttribute("includeSubtypesRight", (bool)$qr_types->get("include_subtypes_right") ? 1 : 0);
 			}
 
 			// subtypes

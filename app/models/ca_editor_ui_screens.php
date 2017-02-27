@@ -1717,6 +1717,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					'label' => _t('Display bundle for types: %1', $this->_DATAMODEL->getTableProperty($vs_table, 'NAME_PLURAL')),
 					'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
 				];
+				$va_additional_settings['bundleTypeRestrictionsIncludeSubtypes'] = [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_CHECKBOXES,
+					'default' => '0',
+					'width' => "10", 'height' => "1",
+					'label' => _t('Include sub-types'),
+					'description' => _t('Automatically include sub-types of selected types in type restriction.')	
+				];
 			}
 			
 			$va_available_bundles[$vs_display][$vs_bundle] = array(

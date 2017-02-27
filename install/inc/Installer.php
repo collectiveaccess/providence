@@ -1091,6 +1091,11 @@ class Installer {
 							$o_setting = $vo_placement->settings->addChild('setting', $vn_id);
 							$o_setting->addAttribute('name', 'bundleTypeRestrictions');
 						}
+						
+						if ($vs_include_subtypes = (bool)self::getAttribute($vo_placement, "includeSubtypes")) {
+							$o_setting = $vo_placement->settings->addChild('setting', 1);
+							$o_setting->addAttribute('name', 'bundleTypeRestrictionsIncludeSubtypes');
+						}
 					}
 					
 					$va_settings = $this->_processSettings(null, $vo_placement->settings, ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($va_available_bundles[$vs_bundle]['settings']) ? $va_available_bundles[$vs_bundle]['settings'] : [])]);
@@ -1314,7 +1319,14 @@ class Installer {
 				$t_rel_type->insert();
 			}
 
-			if (trim($vs_left_subtype_code = (string) $vo_type->subTypeLeft)) {
+			// As of February 2017 "typeRestrictionLeft" is preferred over "subTypeLeft"
+			if(
+				($vs_left_subtype_code = self::getAttribute($vo_type, "typeRestrictionLeft"))
+				||
+				($vs_left_subtype_code = trim((string) $vo_type->typeRestrictionLeft))
+				||
+				($vs_left_subtype_code = trim((string) $vo_type->subTypeLeft))
+			) {
 				$t_obj = $o_dm->getTableInstance($ps_left_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
@@ -1322,10 +1334,29 @@ class Installer {
 
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_left_subtype_code])) {
 					$t_rel_type->set('sub_type_left_id', $pa_list_item_ids[$vs_list_code][$vs_left_subtype_code]);
+					
+					if(
+						($vn_include_subtypes = self::getAttribute($vo_type, "includeSubtypesLeft"))
+						||
+						($vn_include_subtypes = trim((string) $vo_type->includeSubtypesLeft))
+					) {
+						$t_rel_type->set('include_subtypes_left', (bool)$vn_include_subtypes ? 1 : 0);
+					}
 					$t_rel_type->update();
 				}
 			}
-			if (trim($vs_right_subtype_code = (string) $vo_type->subTypeRight)) {
+			
+			// As of February 2017 "typeRestrictionRight" is preferred over "subTypeRight"
+			if(!($vs_right_subtype_code = trim((string) $vo_type->typeRestrictionRight))) {
+				$vs_right_subtype_code = trim((string) $vo_type->subTypeRight);
+			}
+			if(
+				($vs_right_subtype_code = self::getAttribute($vo_type, "typeRestrictionRight"))
+				||
+				($vs_right_subtype_code = trim((string) $vo_type->typeRestrictionRight))
+				||
+				($vs_right_subtype_code = trim((string) $vo_type->subTypeRight))
+			) {
 				$t_obj = $o_dm->getTableInstance($ps_right_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
@@ -1333,6 +1364,14 @@ class Installer {
 
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_right_subtype_code])) {
 					$t_rel_type->set('sub_type_right_id', $pa_list_item_ids[$vs_list_code][$vs_right_subtype_code]);
+					
+					if(
+						($vn_include_subtypes = self::getAttribute($vo_type, "includeSubtypesRight"))
+						||
+						($vn_include_subtypes = trim((string) $vo_type->includeSubtypesRight))
+					) {
+						$t_rel_type->set('include_subtypes_right', (bool)$vn_include_subtypes ? 1 : 0);
+					}
 					$t_rel_type->update();
 				}
 			}
