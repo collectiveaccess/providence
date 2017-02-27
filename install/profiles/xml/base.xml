@@ -3627,6 +3627,9 @@
             <placement code="ca_settings">
               <bundle>settings</bundle>
             </placement>
+            <placement code="ca_search_form_type_restrictions">
+              <bundle>ca_search_form_type_restrictions</bundle>
+            </placement>
             <placement code="ca_users">
               <bundle>ca_users</bundle>
             </placement>
