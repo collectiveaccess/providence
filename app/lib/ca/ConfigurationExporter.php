@@ -892,7 +892,6 @@ final class ConfigurationExporter {
 				$va_placements = $t_screen->getPlacementsInScreen();
 
 				if(is_array($va_placements)) {
-
 					$va_used_codes = [];
 					foreach($va_placements as $va_placement) {
 						$vo_placement = $this->opo_dom->createElement("placement");
@@ -900,7 +899,8 @@ final class ConfigurationExporter {
 
 						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
 						
-						if (isset($va_placement['settings']['bundleTypeRestrictions']) && is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions'])) {
+						if (isset($va_placement['settings']['bundleTypeRestrictions']) && (is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions']) || strlen($va_type_restrictions))) {
+							if(!is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
 							$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
 						}
 						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {
