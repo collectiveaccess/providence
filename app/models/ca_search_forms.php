@@ -537,6 +537,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 *			table = if set, list is restricted to forms that pertain to the specified table. You can pass a table name or number. If omitted forms for all tables will be returned. [Default is null]
 	 *			user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned. [Default is null]
+	 *			restrictToTypes = Restricts returned forms to those bound to the specified type. [Default is null]
 	 *			access = Restricts returned forms to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then forms where the user has at least read access will be returned. [Default is null]
 	 *			restrictToTypes = restrict forms to specific types; only relevant if table option is set. [Default is null]
 	 * @return array Array of forms keyed on form_id and then locale_id. Keys for the per-locale value array include: form_id,  form_code, user_id, table_num,  label_id, name (display name of form), locale_id (locale of form name), search_form_content_type (display name of content this form searches on)
