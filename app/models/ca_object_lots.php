@@ -433,6 +433,7 @@ class ca_object_lots extends RepresentableBaseModel {
  	 * @param int $pn_lot_id Optional lot_id to get object list for; if null then the id of the currently loaded lot will be used
  	 * @param array $pa_options Options include:
  	 *		return = Set to "components" to return the count of component objects only; "objects" to return the count of objects (but not components) or "all" to return a count of any kind of object. [Default = "all"]
+ 	 *		excludeChildObjects = Only return top-level objects, excluding sub-objects. [Default is false]
  	 * @return array List of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
  	 */
  	 public function getObjects($pn_lot_id=null, $pa_options=null) {
@@ -453,7 +454,7 @@ class ca_object_lots extends RepresentableBaseModel {
 				SELECT *
 				FROM ca_objects
 				WHERE
-					lot_id = ? AND deleted = 0
+					lot_id = ? AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
 				ORDER BY
 					idno_sort
 			", (int)$vn_lot_id);
@@ -469,7 +470,7 @@ class ca_object_lots extends RepresentableBaseModel {
 			SELECT *
 			FROM ca_objects
 			WHERE
-				hier_object_id IN (?) AND deleted = 0
+				hier_object_id IN (?) AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
 			ORDER BY
 				idno_sort
 		", array(array_keys($va_rows)));

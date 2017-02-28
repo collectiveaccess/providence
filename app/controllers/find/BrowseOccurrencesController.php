@@ -64,28 +64,6 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 * Returns string representing the name of the item the browse will return
- 		 *
- 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
- 		 */
- 		public function browseName($ps_mode='singular') {
- 			$vb_type_restriction_has_changed = false;
- 			$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type_restriction_has_changed);
- 			
- 			$t_list = new ca_lists();
- 			$t_list->load(array('list_code' => 'occurrence_types'));
- 			
- 			$t_list_item = new ca_list_items();
- 			$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
- 			$va_hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
- 			
- 			if (!($vs_name = ($ps_mode == 'singular') ? $va_hier[$vn_type_id]['name_singular'] : $va_hier[$vn_type_id]['name_plural'])) {
- 				$vs_name = '???';
- 			}
- 			return $vs_name;
- 		}
- 		# -------------------------------------------------------
- 		/**
  		 * Returns string representing the name of this controller (minus the "Controller" part)
  		 */
  		public function controllerName() {
@@ -93,4 +71,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_editor_ui_screen_type_restrictions.php : table access class for table ca_editor_ui_screen_type_restrictions
+ * app/models/ca_search_form_type_restrictions.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,15 +36,15 @@
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 
-global $_ca_editor_ui_screen_type_restriction_settings;
-$_ca_editor_ui_screen_type_restriction_settings = array(
+global $_ca_search_form_type_restriction_settings;
+$_ca_search_form_type_restriction_settings = array(
 
 );		// global
  
 
-BaseModel::$s_ca_models_definitions['ca_editor_ui_screen_type_restrictions'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor ui screen type restriction'),
- 	'NAME_PLURAL' 		=> _t('editor ui screen type restrictions'),
+BaseModel::$s_ca_models_definitions['ca_search_form_type_restrictions'] = array(
+ 	'NAME_SINGULAR' 	=> _t('search form type restriction'),
+ 	'NAME_PLURAL' 		=> _t('search form type restrictions'),
  	'FIELDS' 			=> array(
  		'restriction_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -68,12 +68,12 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_screen_type_restrictions'] = a
 				'DEFAULT' => '',
 				'LABEL' => 'Type id', 'DESCRIPTION' => 'Identifier for Type'
 		),
-		'screen_id' => array(
+		'form_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Screen id', 'DESCRIPTION' => 'Identifier for Screen'
+				'LABEL' => 'Display id', 'DESCRIPTION' => 'Identifier for display'
 		),
 		'include_subtypes' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
@@ -99,7 +99,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_screen_type_restrictions'] = a
  	)
 );
 	
-class ca_editor_ui_screen_type_restrictions extends BaseModel {
+class ca_search_form_type_restrictions extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -111,7 +111,7 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_editor_ui_screen_type_restrictions';
+	protected $TABLE = 'ca_search_form_type_restrictions';
 	      
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'restriction_id';
@@ -174,7 +174,7 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'screen_id'
+			"form_id"
 		),
 		"RELATED_TABLES" => array(
 		
@@ -203,11 +203,11 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		global $_ca_editor_ui_screen_type_restriction_settings;
+		global $_ca_search_form_type_restriction_settings;
 		parent::__construct($pn_id);	# call superclass constructor
 		
 		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_editor_ui_screen_type_restriction_settings);
+		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_search_form_type_restriction_settings);
 	}
 	# ------------------------------------------------------
 	public function __destruct() {
