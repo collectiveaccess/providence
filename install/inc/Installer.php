@@ -1152,7 +1152,7 @@ class Installer {
 							}
 
 							if($vn_type_id) {
-								$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
+								$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_restriction, "includeSubtypes")]);
 							}
 
 							$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $vs_restriction_type, $vs_screen_idno, $vs_ui_code));
