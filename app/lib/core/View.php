@@ -66,6 +66,27 @@ class View extends BaseObject {
 		if (!$pm_path) { $pm_path = array(); }
 		
 		$vs_suffix = null;
+		if (!is_array($pm_path)) { 
+			$pm_path = array($pm_path);
+		}
+		foreach($pm_path as $ps_path) {
+			// Preserve any path suffix after "views"
+			// Eg. if path is /web/myinstall/themes/mytheme/views/bundles then we want to retain "/bundles" on the default path
+			$va_suffix_bits = array();
+			$va_tmp = array_reverse(explode("/", $ps_path));
+			foreach($va_tmp as $vs_path_element) {
+				if ($vs_path_element == 'views') { break; }
+				array_push($va_suffix_bits, $vs_path_element);
+			}
+			if ($vs_suffix = join("/", $va_suffix_bits)) { $vs_suffix = '/'.$vs_suffix; break;}
+		}
+		
+		if (caGetOption('includeDefaultThemePath', $pa_options, true)) {
+			$vs_default_theme_path = $po_request ? $po_request->getDefaultThemeDirectoryPath().'/views'.$vs_suffix : __CA_THEME_DIR__;
+			if (!in_array($vs_default_theme_path, $pm_path) && !in_array($vs_default_theme_path.'/', $pm_path)) {
+				array_unshift($pm_path, $vs_default_theme_path);
+			}
+		}
 		
 		if (((is_array($pm_path) && sizeof($pm_path) > 0)) || $pm_path) {
 			$this->setViewPath($pm_path, $pa_options);
@@ -107,7 +128,7 @@ class View extends BaseObject {
 		}
 		
 			if (caGetOption('includeDefaultThemePath', $pa_options, true)) {
-				$vs_default_theme_path = $this->opo_request->getDefaultThemeDirectoryPath().'/views'.$vs_suffix;
+				$vs_default_theme_path = $this->opo_request ? $this->opo_request->getDefaultThemeDirectoryPath().'/views'.$vs_suffix : __CA_THEME_DIR__."/default/views{$vs_suffix}";
 				if (!in_array($vs_default_theme_path, $pm_path) && !in_array($vs_default_theme_path.'/', $pm_path)) {
 					array_unshift($pm_path, $vs_default_theme_path);
 			}
@@ -170,7 +191,8 @@ class View extends BaseObject {
 	 *
 	 */
 	public function isCompiled($ps_filepath) {
-		$vs_compiled_path = __CA_APP_DIR__."/tmp/caCompiledView".md5($ps_filepath);
+		global $g_ui_locale;
+		$vs_compiled_path = __CA_APP_DIR__."/tmp/caCompiledView".md5($ps_filepath.$g_ui_locale);
 		if (!file_exists($vs_compiled_path)) { return false; }
 		if (filesize($vs_compiled_path) === 0) { return false; }
 		
@@ -185,11 +207,13 @@ class View extends BaseObject {
 	/**
 	 *
 	 */
-	public function compile($ps_filepath, $pb_force_recompile=false) {
+	public function compile($ps_filepath, $pb_force_recompile=false, $pa_options=null) {
 		if (!$pb_force_recompile && ($vs_compiled_path = $this->isCompiled($ps_filepath))) { 
 			$va_tags = json_decode(file_get_contents($vs_compiled_path), true);
 			if (is_array($va_tags)) { return $va_tags; }
 		}
+		
+		$pb_string = caGetOption('string', $pa_options, false);
 		
 		$vs_buf = $this->_render($ps_filepath);
 		
@@ -198,15 +222,20 @@ class View extends BaseObject {
 		
 		$va_tags = $va_matches[1];
 		
-		$vs_raw_buf = file_get_contents($ps_filepath);
+		$vs_raw_buf = $pb_string ? $ps_filepath : file_get_contents($ps_filepath);
 		preg_match_all("!(?<=\{\{\{)(?s)(.*?)(?=\}\}\})!", $vs_raw_buf, $va_matches);
-		$va_tags += $va_matches[1];
+		
+		// Remove any tag that has embedded PHP - we can't cache those
+		foreach($va_matches[1] as $vn_i => $vs_potential_tag) {
+			if (strpos($vs_potential_tag, "<?php") !== false) { unset($va_matches[1][$vn_i]); }
+		}
+		$va_tags = array_merge($va_tags, $va_matches[1]);
 		$va_tags = array_unique($va_tags);
 		
 		if (!is_array($va_tags)) { $va_tags = array(); }
 		
 		if($vs_tags = json_encode($va_tags)) {
-			file_put_contents($vs_compiled_path, $vs_tags);
+			@file_put_contents($vs_compiled_path, $vs_tags);
 		} else {
 			@unlink($vs_compiled_path);
 		}
@@ -216,7 +245,7 @@ class View extends BaseObject {
 	/**
 	 *
 	 */
-	public function getTagList($ps_filename) {
+	public function getTagList($ps_filename, $pa_options=null) {
 		global $g_ui_locale;
 		
 		$vb_output = false;
@@ -225,15 +254,15 @@ class View extends BaseObject {
 		foreach(array_reverse($this->opa_view_paths) as $vs_path) {
 			if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
 				// if a l10ed view is at same path than normal but having the locale as last extension, display it (eg. splash_intro_text_html.php.fr_FR)
-				$va_tags = $this->compile($vs_path.'/'.$ps_filename.".".$g_ui_locale);
+				$va_tags = $this->compile($vs_path.'/'.$ps_filename.".".$g_ui_locale, false, $pa_options);
 				break;
 			}
 			elseif (file_exists($vs_path.'/'.$ps_filename)) {
 				// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
-				$va_tags = $this->compile($vs_path.'/'.$ps_filename);
+				$va_tags = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
 				break;
 			} elseif (file_exists($ps_filename)) {
-				$va_tags = $this->compile($ps_filename);
+				$va_tags = $this->compile($ps_filename, false, $pa_options);
 				break;
 			}
 		}
@@ -261,7 +290,10 @@ class View extends BaseObject {
 		
 		$vb_output = false;
 		$vs_buf = null;
-		if (($ps_filename[0] == '/') || (preg_match("!^[A-Za-z]{1}:!", $ps_filename))) { 	// absolute path
+		if (caGetOption('string', $pa_options, false)) {
+			$vs_buf = $ps_filename;
+			$vb_output = true;
+		} elseif (($ps_filename[0] == '/') || (preg_match("!^[A-Za-z]{1}:!", $ps_filename))) { 	// absolute path
 			$vs_buf = $this->_render($ps_filename);
 			$vb_output = true;
 		} else {
@@ -271,7 +303,8 @@ class View extends BaseObject {
 					$vs_buf = $this->_render($vs_path.'/'.$ps_filename.".".$g_ui_locale);
 					$vb_output = true;
 					break;
-				} elseif (file_exists($vs_path.'/'.$ps_filename)) {
+				}
+				elseif (file_exists($vs_path.'/'.$ps_filename)) {
 					// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
 					$vs_buf = $this->_render($vs_path.'/'.$ps_filename);
 					$vb_output = true;
@@ -283,7 +316,7 @@ class View extends BaseObject {
 			}
 		}
 		if (!$pb_dont_do_var_replacement && $vb_output) {
-			$va_compile = $this->compile($vs_path.'/'.$ps_filename);
+			$va_compile = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
 			
 			$va_vars = $this->getAllVars();
 			
@@ -306,7 +339,7 @@ class View extends BaseObject {
 		ob_start();
 		
 		require($ps_filename);
-		
+			
 		return $this->ops_last_render = ob_get_clean();
 	}
 	# -------------------------------------------------------

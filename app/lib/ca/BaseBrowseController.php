@@ -318,25 +318,7 @@
 				$this->view->setVar('rowHeaders', $va_row_headers);
 			}
 			
-			//
-			// Bottom line
-			//
-			$va_bottom_line = array();
-			$vb_bottom_line_is_set = false;
-			foreach($va_display_list as $vn_placement_id => $va_placement) {
-				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
-					$va_bottom_line[$vn_placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $vo_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page));
-					$vb_bottom_line_is_set = true;
-				} else {
-					$va_bottom_line[$vn_placement_id] = '';
-				}
-			}
-			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
-			
-			//
-			// Bottom line for display
-			//
-			$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $t_display, $vo_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page)));
+			$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 			
  			switch($pa_options['output_format']) {
  				# ------------------------------------
@@ -739,8 +721,8 @@
  		# -------------------------------------------------------
  		public function addCriteria() {
  			$ps_facet_name = $this->request->getParameter('facet', pString);
- 			$this->opo_browse->addCriteria($ps_facet_name, array($pn_id = $this->request->getParameter('id', pString)));
- 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', $pn_id);
+ 			$this->opo_browse->addCriteria($ps_facet_name, $pa_ids = explode('|', $this->request->getParameter('id', pString)));
+ 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', array_shift($pa_ids));
 			$this->opo_result_context->saveContext();
  			$this->Index();
  		}
@@ -748,15 +730,15 @@
  		public function clearAndAddCriteria() {
  			$this->opo_browse->removeAllCriteria();
  			$ps_facet_name = $this->request->getParameter('facet', pString);
- 			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
+ 			$this->opo_browse->addCriteria($ps_facet_name, explode('|', $this->request->getParameter('id', pString)));
  			$this->Index();
  		}
  		# -------------------------------------------------------
  		public function modifyCriteria() {
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			$this->opo_browse->removeCriteria($ps_facet_name, array($this->request->getParameter('mod_id', pString)));
- 			$this->opo_browse->addCriteria($ps_facet_name, array($pn_id = $this->request->getParameter('id', pString)));
- 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', $pn_id);
+ 			$this->opo_browse->addCriteria($ps_facet_name, $pa_ids = explode('|', $this->request->getParameter('id', pString)));
+ 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', array_shift($pa_ids));
 			$this->opo_result_context->saveContext();
  			$this->Index();
  		}
@@ -780,8 +762,7 @@
  		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
  		 */
  		public function browseName($ps_mode='singular') {
- 			// MUST BE OVERRIDDEN 
- 			return "undefined";
+ 			return $this->getResultsDisplayName($ps_mode);
  		}
  		# ------------------------------------------------------------------
  		/**

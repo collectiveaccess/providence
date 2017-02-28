@@ -62,7 +62,7 @@ class File extends Base {
 		}
 
 		// needs to have a file name at the end
-		if(!preg_match("/(.+)\.[A-Za-z0-9]{1,5}$/u", $va_parts['path'])) {
+		if(!preg_match("/(.+)\.[A-Za-z0-9]{1,5}$/u", $va_parts['path']) && !preg_match("/(.+)\.[A-Za-z0-9]{1,5}$/u", $va_parts['query'])) {
 			return false;
 		}
 

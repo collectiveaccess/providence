@@ -114,17 +114,29 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
     /**
      * Dumps a Data object.
      *
-     * @param Data                          $data   A Data object
-     * @param callable|resource|string|null $output A line dumper callable, an opened stream or an output path
+     * @param Data                               $data   A Data object
+     * @param callable|resource|string|true|null $output A line dumper callable, an opened stream, an output path or true to return the dump
+     *
+     * @return string|null The dump as string when $output is true
      */
     public function dump(Data $data, $output = null)
     {
+        if ($returnDump = true === $output) {
+            $output = fopen('php://memory', 'r+b');
+        }
         if ($output) {
             $prevOutput = $this->setOutput($output);
         }
         try {
             $data->dump($this);
             $this->dumpLine(-1);
+
+            if ($returnDump) {
+                $result = stream_get_contents($output, -1, 0);
+                fclose($output);
+
+                return $result;
+            }
         } finally {
             if ($output) {
                 $this->setOutput($prevOutput);
@@ -166,6 +178,9 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
      */
     protected function utf8Encode($s)
     {
+        if (preg_match('//u', $s)) {
+            return $s;
+        }
         if (false !== $c = @iconv($this->charset, 'UTF-8', $s)) {
             return $c;
         }

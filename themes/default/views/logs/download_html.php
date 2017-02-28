@@ -44,7 +44,7 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caDownloadList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Group by').': '.caHTMLSelect('group_by', array("Downloads" => "download", "Record" => "record"), null, array('value' => $vs_group_by)).'&nbsp;&nbsp;'._t('Show from').': '.caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('download_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'downloadLogSearch')
+			_t('Group by').': '.caHTMLSelect('group_by', array(_t('Downloads') => "download", _t('Record') => "record"), null, array('value' => $vs_group_by)).'&nbsp;&nbsp;'._t('Show from').': '.caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('download_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'downloadLogSearch')
 		);
 		print "</form>"; 
 	?>

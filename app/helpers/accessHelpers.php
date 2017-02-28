@@ -292,7 +292,7 @@
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
-	 * Converts the given list of type names or type_ids into an expanded list of numeric type_ids suitable for enforcing type restrictions. Processing
+	 * Converts the given list of type codes or type_ids into an expanded list of numeric type_ids suitable for enforcing type restrictions. Processing
 	 * includes expansion of types to include subtypes and conversion of any type codes to type_ids.
 	 *
 	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
@@ -337,7 +337,7 @@
 				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $vm_type);
 			}
 			
-			if ($vn_type_id && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
+			if ($vn_type_id && (!isset($pa_options['noChildren']) || !$pa_options['noChildren'])) {
 				if ($qr_children = $t_item->getHierarchy($vn_type_id, array())) {
 					while($qr_children->nextRow()) {
 						$va_type_ids[$qr_children->get('item_id')] = true;
@@ -350,6 +350,48 @@
 			}
 		}
 		return array_keys($va_type_ids);
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Converts the given list of type codes or type_ids into an expanded list of numeric type codes suitable for enforcing type restrictions. Processing
+	 * includes expansion of types to include subtypes and conversion of any type codes to type_ids.
+	 *
+	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
+	 * @param array $pa_types List of type codes and/or type_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 *		No options are currently supported
+	 *
+	 * @return array List of type codes
+	 */
+	function caMakeTypeList($pm_table_name_or_num, $pa_type_ids, $pa_options=null) {
+		if (is_array($pa_type_ids) && !sizeof($pa_type_ids)) { return array(); }
+		if (!is_array($pa_type_ids)) { $pa_type_ids = [$pa_type_ids]; }
+		
+		$o_dm = Datamodel::load();
+	
+		if (is_numeric($pm_table_name_or_num)) {
+			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+		} else {
+			$vs_table_name = $pm_table_name_or_num;
+		}
+		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		if (!$t_instance) { return null; }	// bad table
+		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
+		
+		$va_type_codes = [];
+		
+		foreach($pa_type_ids as $vm_type) {
+			if (!$vm_type) { continue; }
+			$vs_type_code = null;
+			if (is_numeric($vm_type)) { 
+				$vs_type_code = caGetListItemIdno($vm_type);
+			} else {
+				$vs_type_code = $vm_type;
+			}
+			
+			$va_type_codes[$vs_type_code] = true;
+		}
+		return array_keys($va_type_codes);
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -460,7 +502,8 @@
 	 * into a single list of type_ids suitable for enforcing type restrictions.
 	 *
 	 * @param BaseModel $t_instance A model instance for the table to which the types apply
-	 * @param array $pa_options An array of options containing, if specified, a list of types for either the "restrict_to_types" or "restrictToTypes" keys
+	 * @param array $pa_options An array of options containing, if specified, a list of types for either the "restrict_to_types" or "restrictToTypes" keys. Other options include:
+	 *		dontIncludeSubtypesInTypeRestriction = Don't expand types to include child types. [Default is true]
 	 * 
 	 * @return array List of numeric type_ids for which the user has access
 	 */
@@ -470,7 +513,7 @@
 			$pa_options['restrictToTypes'] = $pa_options['restrict_to_types'];
 		}
 		if (is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
-			$va_restrict_to_type_ids = caMakeTypeIDList($t_instance->tableName(), $pa_options['restrictToTypes'], array('noChildren' => true));
+			$va_restrict_to_type_ids = caMakeTypeIDList($t_instance->tableName(), $pa_options['restrictToTypes'], array('noChildren' => caGetOption(['dontIncludeSubtypesInTypeRestriction', 'dont_include_subtypes_in_type_restriction'], $pa_options, true)));
 		}
 		
 		$va_types = null;

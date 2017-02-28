@@ -59,7 +59,7 @@ class CliDumper extends AbstractDumper
         parent::__construct($output, $charset, $flags);
 
         if ('\\' === DIRECTORY_SEPARATOR && 'ON' !== @getenv('ConEmuANSI') && 'xterm' !== @getenv('TERM')) {
-            // Use only the base 16 xterm colors when using ANSICON or standard Windows 10 CLI 
+            // Use only the base 16 xterm colors when using ANSICON or standard Windows 10 CLI
             $this->setStyles(array(
                 'default' => '31',
                 'num' => '1;34',
@@ -112,9 +112,13 @@ class CliDumper extends AbstractDumper
         $this->dumpKey($cursor);
 
         $style = 'const';
-        $attr = array();
+        $attr = $cursor->attr;
 
         switch ($type) {
+            case 'default':
+                $style = 'default';
+                break;
+
             case 'integer':
                 $style = 'num';
                 break;
@@ -144,8 +148,8 @@ class CliDumper extends AbstractDumper
                 break;
 
             default:
-                $attr['value'] = isset($value[0]) && !preg_match('//u', $value) ? $this->utf8Encode($value) : $value;
-                $value = isset($type[0]) && !preg_match('//u', $type) ? $this->utf8Encode($type) : $type;
+                $attr += array('value' => $this->utf8Encode($value));
+                $value = $this->utf8Encode($type);
                 break;
         }
 
@@ -160,6 +164,7 @@ class CliDumper extends AbstractDumper
     public function dumpString(Cursor $cursor, $str, $bin, $cut)
     {
         $this->dumpKey($cursor);
+        $attr = $cursor->attr;
 
         if ($bin) {
             $str = $this->utf8Encode($str);
@@ -168,7 +173,7 @@ class CliDumper extends AbstractDumper
             $this->line .= '""';
             $this->dumpLine($cursor->depth, true);
         } else {
-            $attr = array(
+            $attr += array(
                 'length' => 0 <= $cut ? mb_strlen($str, 'UTF-8') + $cut : 0,
                 'binary' => $bin,
             );
@@ -244,9 +249,7 @@ class CliDumper extends AbstractDumper
     {
         $this->dumpKey($cursor);
 
-        if (!preg_match('//u', $class)) {
-            $class = $this->utf8Encode($class);
-        }
+        $class = $this->utf8Encode($class);
         if (Cursor::HASH_OBJECT === $type) {
             $prefix = $class && 'stdClass' !== $class ? $this->style('note', $class).' {' : '{';
         } elseif (Cursor::HASH_RESOURCE === $type) {
@@ -338,13 +341,17 @@ class CliDumper extends AbstractDumper
                     } elseif (0 < strpos($key, "\0", 1)) {
                         $key = explode("\0", substr($key, 1), 2);
 
-                        switch ($key[0]) {
+                        switch ($key[0][0]) {
                             case '+': // User inserted keys
                                 $attr['dynamic'] = true;
                                 $this->line .= '+'.$bin.'"'.$this->style('public', $key[1], $attr).'": ';
                                 break 2;
                             case '~':
                                 $style = 'meta';
+                                if (isset($key[0][1])) {
+                                    parse_str(substr($key[0], 1), $attr);
+                                    $attr += array('binary' => $cursor->hashKeyIsBinary);
+                                }
                                 break;
                             case '*':
                                 $style = 'protected';

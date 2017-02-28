@@ -221,18 +221,32 @@ class Replicator {
 						// harvest guids used for updates
 						$va_guid_list = [];
 						$va_source_log_entries_for_missing_guids = [];
+						
+						$o_guid_already_exists = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
+											->setRequestBody(caExtractArrayValuesFromArrayOfArrays($va_source_log_entries, 'guid'))
+											->request();
+						$va_guid_already_exists = $o_guid_already_exists->getRawData();
+					
 						foreach($va_source_log_entries as $vn_log_id => $va_source_log_entry) {
 							if (is_array($va_source_log_entry['subjects'])) {
 								$vb_have_access = false;
 								foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
-									if ($vb_access = ($pa_filter_on_access_settings && !ca_change_log::rowHasAccess($va_source_log_subject['subject_table_num'], $va_source_log_subject['subject_row_id'], $pa_filter_on_access_settings)) ? 0 : 1) {
+									if (!($vb_have_access = (is_array($va_guid_already_exists[$va_source_log_subject['guid']])))) {									
+										// TODO: this assumes the source is where we're running replication from (eg. PUSH)
+										// should replace with a service call to the source
+										$vb_have_access = (($pa_filter_on_access_settings && !ca_change_log::rowHasAccess($va_source_log_subject['subject_table_num'], $va_source_log_subject['subject_row_id'], $pa_filter_on_access_settings))) ? 0 : 1;
+									}
+									if ($vb_have_access) {
 										$va_guid_list[$va_source_log_subject['guid']] = 1;
-										$vb_have_access = true;
 									}
 								}
 								
 								if (!$vb_have_access) {
 									$va_source_log_entries[$vn_log_id]['SKIP'] = 1;
+								}
+								
+								if (isset($va_source_log_entry['snapshot']['parent_id_guid'])) {
+									$va_guid_list[$va_source_log_entry['snapshot']['parent_id_guid']] = 1;
 								}
 							}
 						}
@@ -275,7 +289,7 @@ class Replicator {
 								if (is_array($va_source_log_entry['subjects'])) {
 									foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
 										if (!($va_guid_list[$va_source_log_subject['guid']] = ($pa_filter_on_access_settings && !ca_change_log::rowHasAccess($va_source_log_subject['subject_table_num'], $va_source_log_subject['subject_row_id'], $pa_filter_on_access_settings)) ? 0 : 1)) {
-											continue;	 // skip entry because no access
+											continue; 	 // skip entry because no access
 										}
 										$va_expanded_guid_list[$va_source_log_subject['guid']]++;
 									}
@@ -315,6 +329,7 @@ class Replicator {
 									while(sizeof($va_source_log_entries_for_missing_guids) > 0) {
 										$va_log_entry = array_shift($va_source_log_entries_for_missing_guids);
 										$vn_log_id = $va_log_entry['log_id'];
+										if (!$vn_log_id) { continue; }
 										if ($vn_log_id >= $pn_start_replicated_id) { continue; }
 										
 										$va_entries[$vn_log_id] = $va_log_entry;

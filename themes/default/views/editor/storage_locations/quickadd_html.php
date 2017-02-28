@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@
 	
 	$vs_field_name_prefix = $this->getVar('field_name_prefix');
 	$vs_n 				= $this->getVar('n');
-	$vs_q				= caUcFirstUTF8Safe($this->getVar('q'), true);
+	$vs_q				= caUcFirstUTF8Safe($this->getVar('q'));
 
 	$vb_can_edit	 	= $t_subject->isSaveable($this->request);
 	
@@ -92,7 +92,7 @@
 						o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser', {
 							levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
 							initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
-							editButtonIcon: '<?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?>',
+							editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 						
 							readOnly: false,
 							selectOnLoad: true,

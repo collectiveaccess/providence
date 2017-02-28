@@ -540,6 +540,8 @@ class Installer {
 			$va_lists = $this->opo_profile->lists->children();
 		}
 
+		$o_trans = new Transaction();
+
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
 		foreach($va_lists as $vo_list) {
@@ -548,7 +550,7 @@ class Installer {
 			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new ca_lists();
 			}
-			$t_list->setTransaction($o_trans = new Transaction($t_list->getDb()));
+			$t_list->setTransaction($o_trans);
 
 			if($t_list->getPrimaryKey()) {
 				$this->logStatus(_t('List %1 already exists', $vs_list_code));
@@ -807,7 +809,7 @@ class Installer {
 			$vn_list_id = null;
 		}
 		$t_md_element->set('list_id', $vn_list_id);
-		$this->_processSettings($t_md_element, $po_element->settings);
+		$this->_processSettings($t_md_element, $po_element->settings, ['settingsInfo' => $t_md_element->getAvailableSettings()]);
 
 		if($t_md_element->getPrimaryKey()) {
 			$t_md_element->update();
@@ -893,12 +895,15 @@ class Installer {
 	public function processUserInterfaces() {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
+		require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
 		$vo_dm = Datamodel::load();
 		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+
+		$t_placement = new ca_editor_ui_bundle_placements();
 
 		$t_list = new ca_lists();
 		$t_rel_types = new ca_relationship_types();
@@ -967,6 +972,7 @@ class Installer {
 			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->opa_locales);
 
 			$va_annotation_types = $o_annotation_type_conf->get('types');
+			
 			// create ui type restrictions
 			if($vo_ui->typeRestrictions) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
@@ -991,13 +997,34 @@ class Installer {
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
 						}
-
-						if($vn_type_id) {
-							$t_ui->addTypeRestriction($vn_type_id);
-						}
-
+						
+						$t_ui->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_restriction, "includeSubtypes")]);
+					
 						$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $vs_restriction_type, $vs_ui_code));
 					}
+				}
+			}
+			
+			if ($vs_type_restrictions = self::getAttribute($vo_ui, "typeRestrictions")) {
+				// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
+				// as settings on the placement record.
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				if ($t_instance instanceof BaseRelationshipModel) {
+					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
+				} elseif($t_instance instanceof ca_representation_annotations) {
+					$va_ids = [];
+					foreach($va_codes as $vs_annotation_type) {
+						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+							$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+						}
+					}
+				} else {
+					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
+				}
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_ui->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_ui, "includeSubtypes")]);
+					$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $va_codes[$vn_i], $vs_ui_code));
 				}
 			}
 
@@ -1047,7 +1074,7 @@ class Installer {
 				$this->logStatus(_t('Successfully updated/inserted screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
-
+			
 				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// nuke previous placements. there shouldn't be any if we're installing from scratch.
@@ -1068,8 +1095,8 @@ class Installer {
 						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
 						// as settings on the placement record.
 						if ($t_instance instanceof BaseRelationshipModel) {
-							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
-						} else if($t_instance instanceof ca_representation_annotations) {
+							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
+						} elseif($t_instance instanceof ca_representation_annotations) {
 							$va_ids = [];
 							foreach(explode(',', $vs_bundle_type_restrictions) as $vs_annotation_type) {
 								if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
@@ -1077,7 +1104,7 @@ class Installer {
 								}
 							}
 						} else {
-							$va_ids = caMakeTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+							$va_ids = caMakeTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions), ['dontIncludeSubtypesInTypeRestriction' => true]);
 						}
 						
 						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }
@@ -1086,9 +1113,14 @@ class Installer {
 							$o_setting = $vo_placement->settings->addChild('setting', $vn_id);
 							$o_setting->addAttribute('name', 'bundleTypeRestrictions');
 						}
+						
+						if ($vs_include_subtypes = (bool)self::getAttribute($vo_placement, "includeSubtypes")) {
+							$o_setting = $vo_placement->settings->addChild('setting', 1);
+							$o_setting->addAttribute('name', 'bundleTypeRestrictionsIncludeSubtypes');
+						}
 					}
 					
-					$va_settings = $this->_processSettings(null, $vo_placement->settings);
+					$va_settings = $this->_processSettings(null, $vo_placement->settings, ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($va_available_bundles[$vs_bundle]['settings']) ? $va_available_bundles[$vs_bundle]['settings'] : [])]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $vs_bundle, $vs_placement_code, $vs_screen_idno, $vs_ui_code));
 
 					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
@@ -1120,12 +1152,32 @@ class Installer {
 							}
 
 							if($vn_type_id) {
-								$t_ui_screens->addTypeRestriction($vn_type_id);
+								$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_restriction, "includeSubtypes")]);
 							}
 
 							$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $vs_restriction_type, $vs_screen_idno, $vs_ui_code));
 						}
 					}
+				}
+			}
+			if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				if ($t_instance instanceof BaseRelationshipModel) {
+					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
+				} elseif($t_instance instanceof ca_representation_annotations) {
+					$va_ids = [];
+					foreach($va_codes as $vs_annotation_type) {
+						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+							$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+						}
+					}
+				} else {
+					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
+				}
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
+					$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
 				}
 			}
 
@@ -1309,7 +1361,14 @@ class Installer {
 				$t_rel_type->insert();
 			}
 
-			if (trim($vs_left_subtype_code = (string) $vo_type->subTypeLeft)) {
+			// As of February 2017 "typeRestrictionLeft" is preferred over "subTypeLeft"
+			if(
+				($vs_left_subtype_code = self::getAttribute($vo_type, "typeRestrictionLeft"))
+				||
+				($vs_left_subtype_code = trim((string) $vo_type->typeRestrictionLeft))
+				||
+				($vs_left_subtype_code = trim((string) $vo_type->subTypeLeft))
+			) {
 				$t_obj = $o_dm->getTableInstance($ps_left_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
@@ -1317,10 +1376,29 @@ class Installer {
 
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_left_subtype_code])) {
 					$t_rel_type->set('sub_type_left_id', $pa_list_item_ids[$vs_list_code][$vs_left_subtype_code]);
+					
+					if(
+						($vn_include_subtypes = self::getAttribute($vo_type, "includeSubtypesLeft"))
+						||
+						($vn_include_subtypes = trim((string) $vo_type->includeSubtypesLeft))
+					) {
+						$t_rel_type->set('include_subtypes_left', (bool)$vn_include_subtypes ? 1 : 0);
+					}
 					$t_rel_type->update();
 				}
 			}
-			if (trim($vs_right_subtype_code = (string) $vo_type->subTypeRight)) {
+			
+			// As of February 2017 "typeRestrictionRight" is preferred over "subTypeRight"
+			if(!($vs_right_subtype_code = trim((string) $vo_type->typeRestrictionRight))) {
+				$vs_right_subtype_code = trim((string) $vo_type->subTypeRight);
+			}
+			if(
+				($vs_right_subtype_code = self::getAttribute($vo_type, "typeRestrictionRight"))
+				||
+				($vs_right_subtype_code = trim((string) $vo_type->typeRestrictionRight))
+				||
+				($vs_right_subtype_code = trim((string) $vo_type->subTypeRight))
+			) {
 				$t_obj = $o_dm->getTableInstance($ps_right_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
@@ -1328,6 +1406,14 @@ class Installer {
 
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_right_subtype_code])) {
 					$t_rel_type->set('sub_type_right_id', $pa_list_item_ids[$vs_list_code][$vs_right_subtype_code]);
+					
+					if(
+						($vn_include_subtypes = self::getAttribute($vo_type, "includeSubtypesRight"))
+						||
+						($vn_include_subtypes = trim((string) $vo_type->includeSubtypesRight))
+					) {
+						$t_rel_type->set('include_subtypes_right', (bool)$vn_include_subtypes ? 1 : 0);
+					}
 					$t_rel_type->update();
 				}
 			}
@@ -1577,33 +1663,25 @@ class Installer {
 				}
 
 				foreach($vo_display->typeRestrictions->children() as $vo_restriction) {
-					$t_list = new ca_lists();
-					$t_list_item = new ca_list_items();
 					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
-
-					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num);
-					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-					if ($vs_type) {
-						$t_list->load(array('list_code' => $vs_type_list_name));
-						$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_type));
-					}
-					$vn_type_id = ($vs_type) ? $t_list_item->getPrimaryKey() : null;
-					$t_restriction = new ca_bundle_display_type_restrictions();
-					$t_restriction->setMode(ACCESS_WRITE);
-					$t_restriction->set('table_num', $vn_table_num);
-					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
-					$t_restriction->set('type_id', $vn_type_id);
-					$t_restriction->set('display_id', $t_display->getPrimaryKey());
-
-					$this->_processSettings($t_restriction, $vo_restriction->settings);
-					$t_restriction->insert();
-
+					
+					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for display with code %3', $vs_restriction_code, $vs_type, $vs_display_code));
+				}
+			}
+			if ($vs_type_restrictions = self::getAttribute($vo_display, "typeRestrictions")) {
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_display->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_display, "includeSubtypes")]);
+					$this->logStatus(_t('Added type restriction with type %1 for display with code %2', $va_codes[$vn_i], $vs_display_code));
 				}
 			}
 
@@ -1758,6 +1836,37 @@ class Installer {
 				}
 				if(!$this->processSearchFormPlacements($t_form, $vo_form->bundlePlacements, null)) {
 					return false;
+				}
+			}
+			
+			if ($vo_form->typeRestrictions) {
+				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of restrictions to include all restrictions!
+				if(sizeof($vo_form->typeRestrictions->children())) {
+					$this->opo_db->query('DELETE FROM ca_search_form_type_restrictions WHERE form_id=?', $t_display->getPrimaryKey());
+					$this->logStatus(_t('Successfully nuked all type restrictions for form with code %1', $vs_form_code));
+				}
+
+				foreach($vo_form->typeRestrictions->children() as $vo_restriction) {
+					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
+					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
+					
+					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					
+					if ($t_restriction->numErrors()) {
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_restriction->getErrors()));
+					}
+
+					$this->logStatus(_t('Added type restriction with code %1 and type %2 for form with code %3', $vs_restriction_code, $vs_type, $vs_form_code));
+				}
+			}
+			if ($vs_type_restrictions = self::getAttribute($vo_form, "typeRestrictions")) {
+				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
+				
+				foreach($va_ids as $vn_i => $vn_type_id) {
+					$t_form->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_form, "includeSubtypes")]);
+					$this->logStatus(_t('Added type restriction with type %1 for form with code %2', $va_codes[$vn_i], $vs_form_code));
 				}
 			}
 
@@ -2032,8 +2141,11 @@ class Installer {
 		return $ps_password;
 	}
 	# --------------------------------------------------
-	private function _processSettings($pt_instance, $po_settings_node) {
+	private function _processSettings($pt_instance, $po_settings_node, $pa_options=null) {
 		$va_settings = array();
+		
+		$pa_settings_info = caGetOption('settingsInfo', $pa_options, []);
+		
 		if($po_settings_node) {
 			foreach($po_settings_node->children() as $vo_setting) {
 				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
@@ -2053,7 +2165,7 @@ class Installer {
 					} else {
 						// some settings allow multiple values under the same key, for instance restrict_to_types.
 						// in those cases $va_settings[$vs_setting_name] becomes an array of values
-						if (isset($va_settings[$vs_setting_name])) {
+						if (isset($va_settings[$vs_setting_name]) && (!isset($pa_settings_info[$vs_setting_name]) || ($pa_settings_info[$vs_setting_name]['multiple']))) {
 							if (!is_array($va_settings[$vs_setting_name])) {
 								$va_settings[$vs_setting_name] = array($va_settings[$vs_setting_name]);
 							}

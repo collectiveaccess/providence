@@ -165,42 +165,54 @@ class ReplicationService {
 					// translate url to absolute media path
 					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
 					$vs_local_path = __CA_BASE_DIR__ . str_replace(__CA_URL_ROOT__, '', $vs_path_from_url);
+					if (!file_exists(realpath($vs_local_path))) { continue; }
 					
-					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize(@filesize($vs_local_path))."]");
-
+					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize($vn_filesize = @filesize($vs_local_path))."]");
+					if ($vn_filesize > (1024 * 1024 * 250)) { continue; } // bail if file > 250megs
 					// send media to remote service endpoint
 					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
 					$o_file = new CURLFile(realpath($vs_local_path));
 
-					curl_setopt($o_curl, CURLOPT_POST, true);
-					curl_setopt(
-						$o_curl,
-						CURLOPT_POSTFIELDS,
-						[
-							'file' => $o_file,
-							'url_checksum' => $vs_md5
-						]
-					);
+					$vn_retries = 5;
+					while($vn_retries > 0) {
+						$vn_retries--;
+						
+						curl_setopt($o_curl, CURLOPT_POST, true);
+						curl_setopt(
+							$o_curl,
+							CURLOPT_POSTFIELDS,
+							[
+								'file' => $o_file,
+								'url_checksum' => $vs_md5
+							]
+						);
 					
-					curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, true);
-					curl_setopt($o_curl, CURLOPT_SSL_VERIFYHOST, 0);
-					curl_setopt($o_curl, CURLOPT_SSL_VERIFYPEER, 0);
-					curl_setopt($o_curl, CURLOPT_FOLLOWLOCATION, true);
-					curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 60);
-					curl_setopt($o_curl, CURLOPT_TIMEOUT, 7200);
+						curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, true);
+						curl_setopt($o_curl, CURLOPT_SSL_VERIFYHOST, 0);
+						curl_setopt($o_curl, CURLOPT_SSL_VERIFYPEER, 0);
+						curl_setopt($o_curl, CURLOPT_FOLLOWLOCATION, true);
+						curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 60);
+						curl_setopt($o_curl, CURLOPT_TIMEOUT, 7200);
 
-					// basic auth
-					curl_setopt($o_curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-					curl_setopt($o_curl, CURLOPT_USERPWD, $va_target_conf['service_user'].':'.$va_target_conf['service_key']);
+						// basic auth
+						curl_setopt($o_curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+						curl_setopt($o_curl, CURLOPT_USERPWD, $va_target_conf['service_user'].':'.$va_target_conf['service_key']);
 
-					curl_exec($o_curl);
+						curl_exec($o_curl);
 
-					$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
-					if($vn_code != 200) {
-						throw new Exception(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code));
+						$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
+						if($vn_code != 200) {
+							if ($vn_retries == 0) {
+								throw new Exception(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code));
+							}
+							ReplicationService::$s_logger->log(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3. Retrying (%4 remaining)", $vs_local_path, $ps_push_media_to, $vn_code, $vn_retries));
+							sleep(2);
+							continue;
+						}
+
+						curl_close($o_curl);
+						break;
 					}
-
-					curl_close($o_curl);
 					
 					$va_push_list[$vs_md5] = true;
 				}
@@ -283,10 +295,12 @@ class ReplicationService {
 				// skip log entry (still counts as "applied")
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id;
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
 				continue;
 			} catch (\Exception $e) {
 				// append log entry to message for easier debugging
 				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
+				ReplicationService::$s_logger->log("[ERROR] Sanity check error: ".$e->getMessage());
 			}
 
 			// if there were sanity check errors, return them here
@@ -304,9 +318,12 @@ class ReplicationService {
 			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
+				
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Apply error: ".$e->getMessage());
 			} catch(\Exception $e) {
 				$vs_error = get_class($e) . ': ' . $e->getMessage() . $e->getTraceAsString() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
 				$o_tx->rollback();
+				ReplicationService::$s_logger->log("[ERROR] Apply error: ".$e->getMessage());
 				break;
 			}
 			$o_tx->commit();

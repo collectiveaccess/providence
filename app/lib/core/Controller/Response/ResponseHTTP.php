@@ -157,7 +157,7 @@ class ResponseHTTP extends Response {
 	}
 	# -------------------------------------------------------
 	public function sendHeaders() {
-		if ($this->opb_content_was_sent) { return; }
+		if ($this->opb_content_was_sent || headers_sent()) { return; }
 		foreach($this->getHeaders() as $vs_name => $va_values) {
 			foreach ($va_values as $vs_value) {
 				header($vs_name.': '.$vs_value);

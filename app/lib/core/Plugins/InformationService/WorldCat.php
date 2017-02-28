@@ -164,6 +164,9 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		$va_config = $this->_getConfiguration($pa_settings, $pa_options);
 
+		$vs_isbn_metadata_element_code = $va_config['config']->get('worlcat_isbn_element_code');
+		$vs_isbn_exists_template = $va_config['config']->get('worlcat_isbn_exists_template');
+
 		$vn_start = caGetOption('start', $pa_options, 0);
 		$vn_count = caGetOption('count', $pa_options, 25);
 		if ($vn_count <= 0) { $vn_count = 25; }
@@ -209,9 +212,27 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 					$vs_oclc_num = $o_node->nodeValue;
 					break;
 				}
+				
+				
+				$vn_isbn_exists_object_id = null;
+				if ($vs_isbn_metadata_element_code) {
+					// Get ISBN
+					$o_node_list = $o_xpath->query("//n:datafield[@tag='020']/n:subfield[@code='a']");
+					$vs_isbn = '';
+					foreach($o_node_list as $o_node) {
+						$vs_isbn = $o_node->nodeValue;
+						break;
+					}
+				
+					// Does entry with ISBN already exist?
+					if ($va_ids = ca_objects::find([$vs_isbn_metadata_element_code => $vs_isbn], ['returnAs' => 'ids'])) {
+						$vn_isbn_exists_object_id = array_shift($va_ids);
+					}
+				}
 
 				$va_data['results'][] = array(
 					'label' => ($vs_author ? "{$vs_author} " : '')."<em>{$vs_title}</em>.",
+					'existingObject' => $vn_isbn_exists_object_id ? caProcessTemplateForIDs($vs_isbn_exists_template, 'ca_objects', [$vn_isbn_exists_object_id]) : '',
 					'url' => $vs_oclc_num,
 					'id' => str_replace("(OCoLC)", "", $vs_oclc_num)
 				);
@@ -247,6 +268,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 
 				$va_data['results'][] = array(
 					'label' => ($vs_author ? "{$vs_author} " : '')."<em>{$vs_title}</em>.",
+					'existingObject' => '',
 					'url' => $vs_url,
 					'id' => $vs_id
 				);
@@ -377,7 +399,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 		$vb_z3950_available = function_exists("yaz_connect");
 
 		return array(
-			'APIKey' => $vs_api_key, 'user' => $vs_z3950_user, 'password' => $vs_z3950_password, 'z39IsAvailable' => $vb_z3950_available, 'curlIsAvailable' => caCurlIsAvailable()
+			'APIKey' => $vs_api_key, 'user' => $vs_z3950_user, 'password' => $vs_z3950_password, 'z39IsAvailable' => $vb_z3950_available, 'curlIsAvailable' => caCurlIsAvailable(), 'config' => $o_config
 		);
 	}
 	# ------------------------------------------------

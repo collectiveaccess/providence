@@ -157,6 +157,8 @@ abstract class Base {
 	 */
 	public function isRelevant() {
 		$vs_t = $this->getModelInstance()->tableName();
+		
+		if (!method_exists($this->getModelInstance(), "loadByGUID")) { return false; }
 		if(preg_match("/^ca_locales/", $vs_t)) {
 			return false;
 		}
@@ -221,10 +223,21 @@ abstract class Base {
 		if(isset($this->opa_log['snapshot']) && is_array($this->opa_log['snapshot'])) {
 		
 			// Init unset value fields to null; this allows blanking of a field value to be replicated
-			foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1'] as $vs_f) {
-				if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
+			if (
+				($this->opt_instance->tableName() == 'ca_attribute_values')
+				&&
+				!isset($this->opa_log['snapshot']['item_id']) &&
+				!isset($this->opa_log['snapshot']['value_longtext1']) &&
+				!isset($this->opa_log['snapshot']['value_longtext2']) &&
+				!isset($this->opa_log['snapshot']['value_blob']) &&
+				!isset($this->opa_log['snapshot']['value_decimal1']) &&
+				!isset($this->opa_log['snapshot']['value_decimal2']) &&
+				!isset($this->opa_log['snapshot']['value_integer1'])
+			) {
+				foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1'] as $vs_f) {
+					if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
+				}
 			}
-		
 			return $this->opa_log['snapshot'];
 		}
 
@@ -469,11 +482,24 @@ abstract class Base {
 					continue;
 				}
 				
+				// handle table_num/row_id based polymorphic relationships
+				if (($vs_field == 'row_id') && isset($va_snapshot['row_guid']) && ($t_rel_item = $this->opo_datamodel->getInstanceByTableNum($va_snapshot['table_num'], true))) {
+					if($t_rel_item->loadByGUID($va_snapshot['row_guid'])) {
+						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
+						continue;
+					}
+				}
+				
 				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
 				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
+					$t_rel_item->setTransaction($this->getTx());
 					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
+					} else {
+						if (!in_array($vs_field, ['type_id', 'locale_id', 'item_id'])) {	// let auto-resolved fields fall through
+							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot[$vs_field.'_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
+						}
 					}
 				}
 
@@ -492,7 +518,6 @@ abstract class Base {
 				// plain old field like idno, extent, source_info etc.
 				// model errors usually don't occur on set(), so the implementations
 				// can still do whatever they want and possibly overwrite this
-				
 				$this->getModelInstance()->set($vs_field, $vm_val);
 			}
 		}

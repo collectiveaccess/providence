@@ -147,6 +147,10 @@ EOTXT
      */
     public function testGenerator()
     {
+        if (extension_loaded('xdebug')) {
+            $this->markTestSkipped('xdebug is active');
+        }
+
         $g = new GeneratorDemo();
         $g = $g->baz();
         $r = new \ReflectionGenerator($g);
@@ -156,11 +160,11 @@ Generator {
   this: Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo { …}
   executing: {
     Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo->baz(): {
-      %sGeneratorDemo.php:14: """
-        {\n
-            yield from bar();\n
-        }\n
-        """
+      %sGeneratorDemo.php:14: {
+        : {
+        :     yield from bar();
+        : }
+      }
     }
   }
 }
@@ -177,43 +181,31 @@ array:2 [
   0 => ReflectionGenerator {
     this: Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo { …}
     trace: {
-      3. Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo::foo() ==> yield(): {
-        src: {
-          %sGeneratorDemo.php:9: """
-            {\n
-                yield 1;\n
-            }\n
-            """
-        }
+      %sGeneratorDemo.php:9: {
+        : {
+        :     yield 1;
+        : }
       }
-      2. Symfony\Component\VarDumper\Tests\Fixtures\bar() ==> Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo::foo(): {
-        src: {
-          %sGeneratorDemo.php:20: """
-            {\n
-                yield from GeneratorDemo::foo();\n
-            }\n
-            """
-        }
+      %sGeneratorDemo.php:20: {
+        : {
+        :     yield from GeneratorDemo::foo();
+        : }
       }
-      1. Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo->baz() ==> Symfony\Component\VarDumper\Tests\Fixtures\bar(): {
-        src: {
-          %sGeneratorDemo.php:14: """
-            {\n
-                yield from bar();\n
-            }\n
-            """
-        }
+      %sGeneratorDemo.php:14: {
+        : {
+        :     yield from bar();
+        : }
       }
     }
   }
   1 => Generator {
     executing: {
       Symfony\Component\VarDumper\Tests\Fixtures\GeneratorDemo::foo(): {
-        %sGeneratorDemo.php:10: """
-              yield 1;\n
-          }\n
-          \n
-          """
+        %sGeneratorDemo.php:10: {
+          :     yield 1;
+          : }
+          : 
+        }
       }
     }
   }
