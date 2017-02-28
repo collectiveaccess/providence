@@ -319,6 +319,7 @@
 				}
 			
 				if ($vn_set_id) {
+					// sort by set ranks
 					$va_sort_key_values[] = ca_sets::getRowIDRanksForSet($vn_set_id);
 					continue;
 				} elseif ($vs_field_table === $ps_table) {

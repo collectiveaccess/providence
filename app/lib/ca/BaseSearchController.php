@@ -150,10 +150,12 @@
 			//
 			if($vs_search){ /* any request? */
 				if(is_array($va_set_ids = caSearchIsForSets($vs_search))) {
+					// When search includes sets we add sort options for the references sets...
 					foreach($va_set_ids as $vn_set_id => $vs_set_name) {
 						$this->opa_sorts["ca_sets.set_id:{$vn_set_id}"] = _t("Set order: %1", $vs_set_name);
 					}
 					
+					// ... and default the sort to the set
 					if ($vb_is_new_search) {
 						$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
 					}

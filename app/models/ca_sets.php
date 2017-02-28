@@ -1417,7 +1417,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns a list of row_ids for a set with ranks for each, in rank order. This is a faster alternative to getRowIDRanks() that
+	 * queries the database directly and does no access checking. It is intended for use with lower level functions that need to sort
+	 * potentially large sets quickly.
 	 *
+	 * @param int $pn_set_id
+	 * @param array $pa_options An optional array of options. Supported options are:
+	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" – a combination of the row_id and the set item_id (row_id + "_" + item_id) – are guaranteed to be unique. [Default=false]
+	 * @return array ray keyed on row_id with values set to ranks for each item. If the set contains duplicate row_ids then the list will only have the largest rank.
 	 */
 	static public function getRowIDRanksForSet($pn_set_id, $pa_options=null) {
 		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
