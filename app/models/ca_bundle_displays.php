@@ -712,7 +712,6 @@ if (!$pb_omit_editing_info) {
 	 *			table = If set, list is restricted to displays that pertain to the specified table. You can pass a table name or number. If omitted displays for all tables will be returned.
 	 *			user_id = Restricts returned displays to those accessible by the current user. If omitted then all displays, regardless of access are returned.
 	 *			restrictToTypes = Restricts returned displays to those bound to the specified type. Default is to not restrict by type.
-	 *			dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, controls whether or not subtypes are automatically included in the restriction. Default is false – subtypes are included.
 	 *			access = Restricts returned displays to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then displays where the user has at least read access will be returned. 
 	 * @return array Array of displays keyed on display_id and then locale_id. Keys for the per-locale value array include: display_id,  display_code, user_id, table_num,  label_id, name (display name of display), locale_id (locale of display name), bundle_display_content_type (display name of content this display pertains to)
 	 */
@@ -722,8 +721,9 @@ if (!$pb_omit_editing_info) {
 		$pn_user_id = 										caGetOption('user_id', $pa_options, null);
 		$pn_user_access = 									caGetOption('access', $pa_options, null); 
 		$pa_access = 										caGetOption('checkAccess', $pa_options, null); 
-		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null);
-		$pb_dont_include_subtypes_in_type_restriction = 	caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
+		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
+		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
+		
 		$pb_system_only = 									caGetOption('systemOnly', $pa_options, false);
 		
 	 	$o_dm = $this->getAppDatamodel();
@@ -738,10 +738,10 @@ if (!$pb_omit_editing_info) {
 			$va_wheres[] = "(bd.table_num = ".intval($vn_table_num).")";
 		}
 		
-		if ($pm_table_name_or_num && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types)) {
+		if ($pm_table_name_or_num && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types) && is_array($va_ancestors = caGetAncestorsForItemID($pa_restrict_to_types, ['includeSelf' => true])) && sizeof($va_ancestors)) {
 			$va_wheres[] = "(cbdtr.type_id IS NULL OR cbdtr.type_id IN (?) OR (cbdtr.include_subtypes = 1 AND cbdtr.type_id IN (?)))";
 			$va_params[] = $pa_restrict_to_types;
-			$va_params[] = caGetAncestorsForItemID($pa_restrict_to_types, ['includeSelf' => true]);
+			$va_params[] = $va_ancestors;
 		}
 		
 		if (is_array($pa_access) && (sizeof($pa_access))) {
