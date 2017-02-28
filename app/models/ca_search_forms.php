@@ -598,10 +598,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 
-		if ($pm_table_name_or_num && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types)) {
+		if ($pm_table_name_or_num && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types) && is_array($va_ancestors = caGetAncestorsForItemID($pa_restrict_to_types, ['includeSelf' => true])) && sizeof($va_ancestors)) {
 			$va_wheres[] = "(sftr.type_id IS NULL OR sftr.type_id IN (?) OR (sftr.include_subtypes = 1 AND sftr.type_id IN (?)))";
 			$va_params[] = $pa_restrict_to_types;
-			$va_params[] = caGetAncestorsForItemID($pa_restrict_to_types, ['includeSelf' => true]);
+			$va_params[] = $va_ancestors;
 		}
 	
 
