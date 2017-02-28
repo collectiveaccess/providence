@@ -92,7 +92,6 @@
 						$this->opn_type_restriction_id = $vn_type_id;
 					}
 					
-					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
 					
 				}

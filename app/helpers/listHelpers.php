@@ -339,7 +339,9 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		
 		$va_acc = [];
 		foreach($pm_item_id as $pn_item_id) {
-			$va_acc = array_merge($va_acc, $t_item->getHierarchyAncestors($pn_item_id, ['idsOnly' => true, 'includeSelf' => caGetOption('includeSelf', $pa_options, false)]));
+			if (is_array($va_ancestors = $t_item->getHierarchyAncestors($pn_item_id, ['idsOnly' => true, 'includeSelf' => caGetOption('includeSelf', $pa_options, false)]))) {
+				$va_acc = array_merge($va_acc, $va_ancestors);
+			}
 		}
 		
 		return $g_list_item_id_ancestors_cache[$pn_item_id] = $va_acc;
