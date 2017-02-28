@@ -148,7 +148,17 @@
 			//
 			// Execute the search
 			//
-			if($vs_search && ($vs_search != "")){ /* any request? */
+			if($vs_search){ /* any request? */
+				if(is_array($va_set_ids = caSearchIsForSets($vs_search))) {
+					foreach($va_set_ids as $vn_set_id => $vs_set_name) {
+						$this->opa_sorts["ca_sets.set_id:{$vn_set_id}"] = _t("Set order: %1", $vs_set_name);
+					}
+					
+					if ($vb_is_new_search) {
+						$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
+					}
+				}
+				
 				$va_search_opts = array(
 					'sort' => $vs_sort, 
 					'sort_direction' => $vs_sort_direction, 
@@ -158,6 +168,7 @@
 					'dontCheckFacetAvailability' => true,
 					'filterNonPrimaryRepresentations' => true
 				);
+				
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);
  					$po_search = new $vs_browse_classname;

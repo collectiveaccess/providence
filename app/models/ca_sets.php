@@ -1417,6 +1417,24 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	static public function getRowIDRanksForSet($pn_set_id, $pa_options=null) {
+		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
+		
+		$o_db = new Db();
+		$qr_res = $o_db->query("SELECT row_id, item_id, rank FROM ca_set_items WHERE set_id = ? AND deleted = 0 ORDER BY rank", [$pn_set_id]);
+	
+		$va_ranks = [];
+		
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			$va_ranks[$vb_treat_row_ids_as_rids ? $va_row['row_id']."_".$va_row['item_id'] : $va_row['row_id']] = $va_row['rank'];
+		}
+		return $va_ranks;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Sets order of items in the currently loaded set to the order of row_ids as set in $pa_row_ids
 	 *
 	 * @param array $pa_row_ids A list of row_ids in the set, in the order in which they should be displayed in the set
