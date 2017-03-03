@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2016 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -762,23 +762,29 @@ final class ConfigurationExporter {
 			// type restrictions
 			$va_ui_type_restrictions = $t_ui->getTypeRestrictions();
 			if(sizeof($va_ui_type_restrictions)>0) {
-				$vo_ui_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
-				$vo_ui->appendChild($vo_ui_type_restrictions);
-
+				//$vo_ui_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
+				//$vo_ui->appendChild($vo_ui_type_restrictions);
+				$va_types = [];
+				$vb_include_subtypes = false;
 				foreach($va_ui_type_restrictions as $va_restriction) {
-					$vo_restriction = $this->opo_dom->createElement("restriction");
-					$vo_ui_type_restrictions->appendChild($vo_restriction);
+					//$vo_restriction = $this->opo_dom->createElement("restriction");
+					//$vo_ui_type_restrictions->appendChild($vo_restriction);
 					/** @var BaseModelWithAttributes $t_instance */
 					$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
 					if($t_instance instanceof BaseRelationshipModel) {
 						$t_rel_type->load($va_restriction["type_id"]);
-						$vo_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+						//$vo_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+						$va_types[] = $t_rel_type->get('type_code');
 					} else {
 						$vs_type_code = $t_instance->getTypeListCode();
 						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
-						$vo_restriction->setAttribute("type", $va_item["idno"]);
+						//$vo_restriction->setAttribute("type", $va_item["idno"]);
+						$va_types[] = $va_item["idno"];
 					}
+					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes)  { $vb_include_subtypes = true; }
 				}
+				$vo_ui->setAttribute("typeRestrictions", join(",", $va_types));
+				$vo_ui->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
 			}
 
 			// User and group access
@@ -865,40 +871,57 @@ final class ConfigurationExporter {
 
 				$vo_screen->appendChild($vo_labels);
 
-				$vo_type_restrictions = null;
+				//$vo_type_restrictions = null;
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0) {
-					$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
+					//$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
+					$va_types = [];
+					$vb_include_subtypes = false;
 					foreach($t_screen->getTypeRestrictions() as $va_restriction) {
-						$vo_type_restriction = $this->opo_dom->createElement("restriction");
+						//$vo_type_restriction = $this->opo_dom->createElement("restriction");
 
 						$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
 						if($t_instance instanceof BaseRelationshipModel) {
 							$t_rel_type->load($va_restriction["type_id"]);
-							$vo_type_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+							//$vo_type_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+							$va_types[] = $t_rel_type->get('type_code');
 						} else {
 							$vs_type_code = $t_instance->getTypeListCode();
 							$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
-							$vo_type_restriction->setAttribute("type", $va_item["idno"]);
+							//$vo_type_restriction->setAttribute("type", $va_item["idno"]);
+							$va_types[] = $va_item["idno"];
 						}
 
-						$vo_type_restrictions->appendChild($vo_type_restriction);
+						if ($va_restriction['include_subtypes'] && !$vb_include_subtypes)  { $vb_include_subtypes = true; }
+						//$vo_type_restrictions->appendChild($vo_type_restriction);
 					}
 
-					$vo_screen->appendChild($vo_type_restrictions);
+					//$vo_screen->appendChild($vo_type_restrictions);
+					$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
+					$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
 				}
+				
 
 				$vo_placements = $this->opo_dom->createElement("bundlePlacements");
 				$va_placements = $t_screen->getPlacementsInScreen();
 
 				if(is_array($va_placements)) {
-
 					$va_used_codes = [];
 					foreach($va_placements as $va_placement) {
 						$vo_placement = $this->opo_dom->createElement("placement");
 						$vo_placements->appendChild($vo_placement);
 
 						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
+						
+						if (isset($va_placement['settings']['bundleTypeRestrictions']) && (is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions']) || strlen($va_type_restrictions))) {
+							if(!is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
+							$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+						}
+						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {
+							$vo_placement->setAttribute("includeSubtypes", 1);
+						}
+						
+						
 						$va_used_codes[$vs_code] = true;
 						
 						$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($va_placement["bundle"])));
@@ -931,6 +954,11 @@ final class ConfigurationExporter {
 											if ($t_rel_type->getPrimaryKey()) {
 												$vs_value = $t_rel_type->get('type_code');
 											}
+											break;
+										case 'bundleTypeRestrictions':
+										case 'bundleTypeRestrictionsIncludeSubtypes':
+											// skip; these are output as an attribute on <placement>, not as <setting> tags
+											continue(2);
 											break;
 									}
 									if(strlen($vs_value)>0) {
@@ -1084,7 +1112,8 @@ final class ConfigurationExporter {
 				$vs_type_code = $t_left_instance->getTypeListCode();
 				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_left_id"));
 
-				$vo_type->appendChild($this->opo_dom->createElement("subTypeLeft",$va_item["idno"]));
+				$vo_type->setAttribute("typeRestrictionLeft", $va_item["idno"]);
+				$vo_type->setAttribute("includeSubtypesLeft", (bool)$qr_types->get("include_subtypes_left") ? 1 : 0);
 			}
 
 			// restrictions (right side)
@@ -1097,7 +1126,8 @@ final class ConfigurationExporter {
 				$vs_type_code = $t_right_instance->getTypeListCode();
 				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_right_id"));
 
-				$vo_type->appendChild($this->opo_dom->createElement("subTypeRight",$va_item["idno"]));
+				$vo_type->setAttribute("typeRestrictionRight", $va_item["idno"]);
+				$vo_type->setAttribute("includeSubtypesRight", (bool)$qr_types->get("include_subtypes_right") ? 1 : 0);
 			}
 
 			// subtypes
@@ -1297,6 +1327,19 @@ final class ConfigurationExporter {
 			$vo_form->setAttribute("code", $this->makeIDNOFromInstance($t_form, "form_code"));
 			$vo_form->setAttribute("type", $this->opo_dm->getTableName($qr_forms->get("table_num")));
 			$vo_form->setAttribute("system", $qr_forms->get("is_system"));
+			
+			if(is_array($va_restrictions = $t_form->getTypeRestrictions()) && sizeof($va_restrictions)) {
+				$vb_include_subtypes = false;
+				$va_type_ids = [];
+				foreach($va_restrictions as $va_restriction) {
+					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
+					$va_type_ids[] = $va_restriction['type_id'];
+				}
+				if (sizeof($va_type_ids)) {
+					$vo_form->setAttribute("typeRestrictions", join(",", caMakeTypeList($t_form->get('table_num'), $va_type_ids)));
+					$vo_form->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+				}
+			}
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_form_labels = $this->opo_db->query("SELECT * FROM ca_search_form_labels WHERE form_id=?",$qr_forms->get("form_id"));
@@ -1442,8 +1485,22 @@ final class ConfigurationExporter {
 
 				$this->printStatus(_t("Exporting changes for display %1", $va_info['display_code']));
 			}
+			
+			
+			$vs_type_restriction_attr = '';
+			if(is_array($va_restrictions = $t_display->getTypeRestrictions()) && sizeof($va_restrictions)) {
+				$vb_include_subtypes = false;
+				$va_type_ids = [];
+				foreach($va_restrictions as $va_restriction) {
+					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
+					$va_type_ids[] = $va_restriction['type_id'];
+				}
+				if (sizeof($va_type_ids)) {
+					$vs_type_restriction_attr = "typeRestrictions=\"".join(",", caMakeTypeList($t_display->get('table_num'), $va_type_ids))."\" includeSubtypes=\"".($vb_include_subtypes ? 1 : 0)."\"";
+				}
+			}
 
-			$vs_buf .= "\t<display code='".($va_info['display_code'] && preg_match('!^[A-Za-z0-9_]+$!', $va_info['display_code']) ? $va_info['display_code'] : 'display_'.$va_info['display_id'])."' type='".$o_dm->getTableName($va_info['table_num'])."' system='".$t_display->get('is_system')."'>\n";
+			$vs_buf .= "\t<display code='".($va_info['display_code'] && preg_match('!^[A-Za-z0-9_]+$!', $va_info['display_code']) ? $va_info['display_code'] : 'display_'.$va_info['display_id'])."' type='".$o_dm->getTableName($va_info['table_num'])."' system='".$t_display->get('is_system')."' {$vs_type_restriction_attr}>\n";
 			$vs_buf .= "\t\t<labels>\n";
 			foreach($va_display_by_locale as $vn_locale_id => $va_display_info) {
 				if(strlen($this->opt_locale->localeIDToCode($vn_locale_id))>0) {
@@ -1465,16 +1522,6 @@ final class ConfigurationExporter {
 					}
 				}
 				$vs_buf .= "\t\t</settings>\n";
-			}
-
-			// type restrictions
-			$va_type_restrictions = $t_display->getTypeRestrictions();
-			if(is_array($va_type_restrictions) && (sizeof($va_type_restrictions) > 0)) {
-				$vs_buf .= "\t\t<typeRestrictions>\n";
-				foreach($va_type_restrictions as $va_restriction) {
-					$vs_buf .= "\t\t\t<restriction type='{$va_restriction['type_code']}' />\n";
-				}
-				$vs_buf .= "\t\t</typeRestrictions>\n";
 			}
 
 			// User and group access

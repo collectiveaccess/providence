@@ -428,6 +428,7 @@ class ca_data_exporter_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the context of the mapping to only records of the designated type. Only valid when context is set.')
@@ -438,6 +439,7 @@ class ca_data_exporter_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to relationship types'),
 			'description' => _t('Restricts the context of the mapping to only records related with the designated relationship type. Only valid when context is set.')
@@ -448,6 +450,7 @@ class ca_data_exporter_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to bundle values'),
 			'description' => _t('Restricts the context of the mapping to only records related with the designated bundle values. Only valid when context is set.')

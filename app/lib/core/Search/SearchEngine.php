@@ -172,7 +172,15 @@ class SearchEngine extends SearchBase {
 				}
 			}
 		}
-			
+		
+		// apply query rewrites
+		if (is_array($va_rewrite_regexs = $this->opo_search_config->get('rewrite_regexes'))) {
+			if (isset($va_rewrite_regexs[$this->ops_tablename]) && is_array($va_rewrite_regexs[$this->ops_tablename])) { $va_rewrite_regexs = $va_rewrite_regexs[$this->ops_tablename]; }
+			foreach($va_rewrite_regexs as $vs_regex_name => $va_rewrite_regex) {
+				$ps_search = preg_replace("!".trim($va_rewrite_regex[0])."!", trim($va_rewrite_regex[1]), $ps_search);
+			}
+		}
+		
 		$vb_no_cache = isset($pa_options['no_cache']) ? $pa_options['no_cache'] : false;
 		unset($pa_options['no_cache']);
 
@@ -314,7 +322,7 @@ class SearchEngine extends SearchBase {
 			
 			if ($vs_sort && ($vs_sort !== '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $vs_sort, $vs_sort_direction);
-			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
+			} elseif ((($vs_sort == '_natural') || !$vs_sort) && ($vs_sort_direction == 'desc')) {
 				$va_hits = array_reverse($va_hits);
 			}
 			
@@ -572,7 +580,8 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it an idno?
-		if (is_array($va_idno_regexs = $this->opo_search_config->getList('idno_regexes'))) {
+		if (is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
+			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) { $va_idno_regexs = $va_idno_regexs[$this->ops_tablename]; }
 			foreach($va_idno_regexs as $vs_idno_regex) {
 				if ((preg_match("!{$vs_idno_regex}!", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 					$vs_table_name = $t_instance->tableName();

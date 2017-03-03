@@ -34,10 +34,9 @@
 	$vn_page = (int)$this->getVar('page');
 	$ps_id = 'mirador_'.preg_replace("/[^A-Za-z0-9]+/", "_", $this->getVar('identifier'));
 	
-	$vs_width = caParseElementDimension($this->getVar('width'), ['returnAsString' => true, 'default' => '100%']);
-	$vs_height = caParseElementDimension($this->getVar('height'), ['returnAsString' => true, 'default' => '100%']);
+	$vs_width = caParseElementDimension($this->getVar('width') ? $this->getVar('width') : $this->getVar('viewer_width'), ['returnAsString' => true, 'default' => '100%']);
+	$vs_height = caParseElementDimension($this->getVar('height') ? $this->getVar('height') : $this->getVar('viewer_height'), ['returnAsString' => true, 'default' => '100%']);
 ?>
-
 <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css">
 <script type="text/javascript" src="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/mirador.js"></script>
 <script type="text/javascript">
@@ -55,7 +54,8 @@
         	"loadedManifest" : "<?php print $vs_data_url; ?>",
         	"viewType" : "ImageView",
         	"displayLayout": false,
-			"bottomPanel" : false,
+			"bottomPanel" : true,
+			"bottomPanelVisible": false,
 			"sidePanel" : false,
 			"metadataView": false,
 			"annotationLayer" : false,
@@ -67,11 +67,11 @@
 				}
 			}
         }],
-        "buildPath" : '<?php print $this->request->getAssetsUrlPath(); ?>/mirador/',
+		"buildPath": '<?php print __CA_URL_ROOT__."/assets/mirador/"; ?>'
       });
       jQuery(".mirador-icon-metadata-view, .mirador-osd-annotation-controls").hide();
     });
   </script>
-  <div id="<?php print $ps_id; ?>" style="width: <?php print $vs_width; ?>; height: calc(<?php print $vs_height; ?> - 24px);">
+  <div id="<?php print $ps_id; ?>" style="width: <?php print $vs_width; ?>; height: <?php print !$this->getVar('hideOverlayControls') ? "calc({$vs_height} - 24px)" : $vs_height; ?>;">
   
   </div>

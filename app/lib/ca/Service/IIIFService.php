@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -187,7 +187,7 @@ class IIIFService {
 			
 			// region
 			$va_region = IIIFService::calculateRegion($vn_width, $vn_height, $ps_region);
-			if (($va_region['w'] != $vn_width) && ($va_region['h'] != $vn_height)) {
+			if (($va_region['width'] != $vn_width) && ($va_region['height'] != $vn_height)) {
 				$va_operations[] = ['CROP' => $va_region];
 			}
 			
@@ -506,7 +506,7 @@ class IIIFService {
 		
 		$va_possible_formats = ['jpg', 'tif', 'tiff', 'png', 'gif'];
 		$o_media  = new Media();
-		if (!$o_media->read($pt_media->getMediaPath($ps_fldname, 'original'))) { 
+		if (!$o_media->read($pt_media->getMediaPath($ps_fldname, 'original')) && !$o_media->read($pt_media->getMediaPath($ps_fldname, 'large'))) { 
 			throw new Exception("Cannot open file");
 		}
 		

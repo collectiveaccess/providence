@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@
 	$t_form = $this->getVar('t_form');
 	
 	if (!$this->request->isAjax()) {
-		$vs_form_list_select = $t_form->getFormsAsHTMLSelect('form_id', array('onchange' => 'caLoadAdvancedSearchForm(this.options[this.selectedIndex].value)', 'class' => 'searchFormSelector'), array('value' => $this->getVar('form_id'), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'table' => $t_form->get('table_num')));
+		$vs_form_list_select = $t_form->getFormsAsHTMLSelect('form_id', array('onchange' => 'caLoadAdvancedSearchForm(this.options[this.selectedIndex].value)', 'class' => 'searchFormSelector'), array('value' => $this->getVar('form_id'), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'table' => $t_form->get('table_num'), 'restrictToTypes' => [$vn_type_id]));
 		if ($vs_form_list_select) {
 ?>
 		<a href='#' class='button' id='advancedSearchFormContainerToggle'><?php print _t('Hide search form'); ?> &rsaquo;</a>
