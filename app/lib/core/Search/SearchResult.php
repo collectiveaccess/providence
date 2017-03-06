@@ -1954,7 +1954,11 @@ class SearchResult extends BaseObject {
 											$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 											$vn_list_id = $t_element->get('list_id');
 										}
-										$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : "")][$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+										if ($pa_options['returnWithStructure']) {
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : "")][$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+										} else {
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : "")] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+										}
 									}
 								}
 							}
