@@ -92,7 +92,6 @@
 						$this->opn_type_restriction_id = $vn_type_id;
 					}
 					
-					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
 					
 				}
@@ -106,7 +105,6 @@
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
  			$t_instance 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
  			if (
@@ -125,10 +123,30 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			
+ 			
+			$t_display 					= $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  	
+ 			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
+ 			
+ 			// Default display is always there
+ 			$va_displays = array('0' => _t('Default'));
+
+			// Set display options
+			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
+			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+				$va_display_options['restrictToTypes'] = array($vn_type_id);
+			}
+
+			// Get current display list
+ 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
+ 				$va_displays[$va_display['display_id']] = $va_display['name'];
+ 			}
+ 			if (!isset($va_displays[$vn_display_id])) { $vn_display_id = 0; }
+ 			
+ 			$this->view->setVar('display_lists', $va_displays);	
 			
 			$va_display_list = $this->_getDisplayList($vn_display_id);
-
-			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  			
+		
  			
  			// figure out which items in the display are sortable
  			if (method_exists($t_instance, 'getApplicableElementCodes')) {
@@ -183,22 +201,6 @@
 			}
 			
  			$this->view->setVar('display_list', $va_display_list);
- 			
- 			// Default display is always there
- 			$va_displays = array('0' => _t('Default'));
-
-			// Set display options
-			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
-			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
-				$va_display_options['restrictToTypes'] = array($vn_type_id);
-			}
-
-			// Get current display list
- 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
- 				$va_displays[$va_display['display_id']] = $va_display['name'];
- 			}
- 			
- 			$this->view->setVar('display_lists', $va_displays);	
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
  			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
@@ -897,7 +899,7 @@
  			AssetLoadManager::register("tableview");
  			
  			$va_ids 				= $this->opo_result_context->getResultList();
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$va_display_list 		= $this->_getDisplayList($vn_display_id);
  			
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
@@ -929,7 +931,7 @@
  			if (($pn_s = (int)$this->request->getParameter('s', pInteger)) < 0) { $pn_s = 0; }
  			if (($pn_c = (int)$this->request->getParameter('c', pInteger)) < 1) { $pn_c = 10; }
  			
- 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$t_display = new ca_bundle_displays($vn_display_id);
  			$va_ids = $this->opo_result_context->getResultList();
  			$qr_res = caMakeSearchResult($this->ops_tablename, $va_ids);
@@ -968,7 +970,7 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
- 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay());
+ 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id));
  			$va_response = $t_display->saveResultsEditorData($this->ops_tablename, ['request' => $this->request, 'user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			
 			$this->view->setVar('response', $va_response);
@@ -982,7 +984,7 @@
  		 */ 
  		public function resultsComplexDataEditor() {
  			$t_instance 			= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
  			$pn_placement_id = (int)$this->request->getParameter('pl', pString);
  			$ps_bundle = $this->request->getParameter('bundle', pString);
@@ -1023,6 +1025,36 @@
 			$this->view->setVar('column_headers', $va_ret['headers']);
 		
  			return $va_ret['displayList'];
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Returns string representing the name of the item the search will return
+ 		 *
+ 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
+ 		 */
+ 		public function getResultsDisplayName($ps_mode='singular') {
+ 			$vb_type_restriction_has_changed = false;
+ 			$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type_restriction_has_changed);
+ 			
+ 			$t_list = new ca_lists();
+ 			if (!($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true))) {
+ 				return '???';
+ 			}
+ 			
+ 			if ($this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_menu')) {
+				$t_list->load(array('list_code' => $t_instance->getTypeListCode()));
+			
+				$t_list_item = new ca_list_items();
+				$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
+				$va_hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
+			
+				if (!($vs_name = ($ps_mode == 'singular') ? $va_hier[$vn_type_id]['name_singular'] : $va_hier[$vn_type_id]['name_plural'])) {
+					$vs_name = '???';
+				}
+				return mb_strtolower($vs_name);
+			} else {
+				return mb_strtolower(($ps_mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+			}
  		}
  		# ------------------------------------------------------------------
 	}

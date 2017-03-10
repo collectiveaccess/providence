@@ -352,7 +352,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 							array(
 								'query_string' => array(
 									'analyze_wildcard' => true,
-									'query' => $vs_query
+									'query' => $vs_query,
+									'default_operator' => 'AND'
 								),
 							)
 						)

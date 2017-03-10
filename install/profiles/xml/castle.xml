@@ -369,6 +369,39 @@
         </item>
       </items>
     </list>
+    <list code="set_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Set types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="user" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>User set</name_singular>
+              <name_plural>User sets</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="public_presentation" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Public presentation</name_singular>
+              <name_plural>Public presentations</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="disaster_recovery" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Disaster recovery</name_singular>
+              <name_plural>Disaster recovery</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!-- Castle Lists -->
     <list code="shape" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -1449,6 +1482,14 @@
             </label>
           </labels>
         </item>
+        <item idno="found" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Found</name_singular>
+              <name_plural>Found</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="contact_types" hierarchical="0" system="0" vocabulary="0">
@@ -2196,11 +2237,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Fur_lamp" enabled="1" default="0">
+        <item idno="Fur_lamb" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Fur, lamp</name_singular>
-              <name_plural>Fur, lamp</name_plural>
+              <name_singular>Fur, lamb</name_singular>
+              <name_plural>Fur, lamb</name_plural>
             </label>
           </labels>
         </item>
@@ -7988,18 +8029,12 @@
         <label locale="en_US">
           <name>Set editor</name>
         </label>
-        <label locale="fr_FR">
-          <name>Editeur d'ensemble</name>
-        </label>
       </labels>
       <screens>
         <screen idno="basic" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic info</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Informations basiques</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -8008,34 +8043,73 @@
               <settings>
                 <setting name="label" locale="en_US">Set title</setting>
                 <setting name="add_label" locale="en_US">Add set title</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
             <placement code="set_code">
               <bundle>set_code</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="usewysiwygeditor"/>
+              </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
             </placement>
             <placement code="status">
               <bundle>status</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="items" default="1">
+        <screen idno="items" default="0">
           <labels>
             <label locale="en_US">
               <name>Items</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Eléments</name>
             </label>
           </labels>
           <bundlePlacements>
             <placement code="ca_set_items">
               <bundle>ca_set_items</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                 <setting name="bundleTypeRestrictions">12</setting>
+                <setting name="bundleTypeRestrictions">13</setting>
+              </settings>
+            </placement>
+            <placement code="ca_set_items2">
+              <bundle>ca_set_items</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="ca_objects_display_template"><![CDATA[<l>^ca_objects.preferred_labels.name</l><br/>Location:^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➔_<br/><span style="font-weight:normal;">^ca_objects.description</span>]]></setting>
+                 <setting name="bundleTypeRestrictions">14</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>

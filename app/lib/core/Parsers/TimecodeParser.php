@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2015 Whirl-i-Gig
+ * Copyright 2004-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -199,11 +199,26 @@ class TimecodeParser {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Return timecode value as text
 	 *
+	 * @param string $ps_format Format for returned value:
+	 *		COLON_DELIMITED = hh:mm:ss (Ex. 3:30:05); "delimited" and "colon" may also be used to select this format.
+	 *		HOURS_MINUTES_SECONDS = h m s (Ex. 3h 30m 5s); "hms" and "time" may also be used to select this format.
+	 *		HOURS_MINUTES = h m (Ex. 3h 30m); "hm" may also be used to select this format.
+	 * @param array $pa_options Options include:
+	 *		blankOnZero = Return blank if timecode value is zero seconds. [Default is false]
+	 *		noFractionalSeconds = Return seconds value as whole number, truncating decimals. [Default is false]
+	 *		omitSeconds = Omit seconds from returned value when format is set to COLON_DELIMITED or HOURS_MINUTES_SECONDS. [Default is false]
+	 *
+	 * @return string
 	 */
 	public function getText($ps_format="RAW", $pa_options=null) {
+		$pb_blank_on_zero = caGetOption(['BLANK_ON_ZERO', 'blankOnZero'], $pa_options, false);
+		$pb_no_fractional_seconds = caGetOption(['NO_FRACTIONAL_SECONDS', 'noFractionalSeconds'], $pa_options, false);
+		$pb_omit_seconds = caGetOption('omitSeconds', $pa_options, false);
+		
 		// Support shorter alternative format specifiers
-		switch($ps_format) {
+		switch(strtolower($ps_format)) {
 			case 'delimited':
 			case 'colon':
 				$ps_format = 'COLON_DELIMITED';
@@ -212,14 +227,21 @@ class TimecodeParser {
 			case 'time':
 				$ps_format = 'HOURS_MINUTES_SECONDS';
 				break;
+			case 'hm':
+				$ps_format = 'HOURS_MINUTES';
+				break;
+			case 'raw':
+				$ps_format = 'RAW';
+				break;
 		}
 	
 		switch($ps_format) {
 			case 'COLON_DELIMITED':
 			case 'HOURS_MINUTES_SECONDS':
+			case 'HOURS_MINUTES':
 				$vn_time_in_seconds = $this->opn_parsed_value_in_seconds;
 				
-				if (!$vn_time_in_seconds && is_array($pa_options) && (isset($pa_options["BLANK_ON_ZERO"])) && ($pa_options["BLANK_ON_ZERO"])) {
+				if (!$vn_time_in_seconds && $pb_blank_on_zero) {
 					return "";
 				} else {
 					$vn_hours = intval($vn_time_in_seconds/3600);
@@ -230,19 +252,26 @@ class TimecodeParser {
 					
 					$vn_seconds = $vn_time_in_seconds;
 					
-					if ($ps_format == "COLON_DELIMITED") {
-						if ((float)$vn_seconds != intval($vn_seconds)) {
-							if ($pa_options["NO_FRACTIONAL_SECONDS"]) {
-								$vs_seconds = sprintf("%02.0f", round($vn_seconds));
+					switch($ps_format) {
+						case 'COLON_DELIMITED':
+							if ((float)$vn_seconds != intval($vn_seconds)) {
+								if ($pb_no_fractional_seconds) {
+									$vs_seconds = sprintf("%02.0f", round($vn_seconds));
+								} else {
+									$vs_seconds = sprintf("%04.1f", $vn_seconds);
+								}
 							} else {
-								$vs_seconds = sprintf("%04.1f", $vn_seconds);
+								$vs_seconds = sprintf("%02.0f", $vn_seconds);
 							}
-						} else {
-							$vs_seconds = sprintf("%02.0f", $vn_seconds);
-						}
-						return $vn_hours.":".sprintf("%02d", $vn_minutes).":".$vs_seconds;
-					} else {
-						return (($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '').sprintf("%02.1f", $vn_seconds)."s";
+							return $vn_hours.":".sprintf("%02d", $vn_minutes).($pb_omit_seconds ? '' : ":".$vs_seconds);
+							break;
+						case 'HOURS_MINUTES':
+							return (($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '');
+							break;
+						case 'HOURS_MINUTES_SECONDS':
+						default:
+							return  trim((($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '').($pb_omit_seconds ? '' : sprintf("%02.1f", $vn_seconds)."s"));
+							break;
 					}
 				}
 				break;

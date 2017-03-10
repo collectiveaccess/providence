@@ -306,14 +306,17 @@
 				return $vn_item_id;
 			}
 
-			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
-			//
-			// Need to create list item
-			//
 			if (!$t_list->load($vn_list_id)) {
 				if ($o_log) { $o_log->logError(_t("Could not find list with list id %1", $vn_list_id)); }
 				return null;
 			}
+			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) {
+				if ($o_log) { $o_log->logNotice(_t("Not adding \"%1\" to list %2 as dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); }
+				return false;
+			}
+			//
+			// Need to create list item
+			//
 			if ($o_event) { $o_event->beginItem($ps_event_source, 'ca_list_items', 'I'); }
 			if ($t_item = $t_list->addItem($ps_item_idno, $pa_values['is_enabled'], $pa_values['is_default'], $vn_parent_id, $pn_type_id, $ps_item_idno, '', (int)$pa_values['status'], (int)$pa_values['access'], $pa_values['rank'])) {
 				$vb_label_errors = false;
@@ -996,6 +999,7 @@
 					// For entities only
 					//
 					case 'surname':
+						if ($ps_table !== 'ca_entities') { break; }
 						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
@@ -1003,6 +1007,7 @@
 						if ($vn_id) { break(2); }
 						break;
 					case 'forename':
+						if ($ps_table !== 'ca_entities') { break; }
 						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
@@ -1010,12 +1015,16 @@
 						if ($vn_id) { break(2); }
 						break;
 					case 'displayname':
+						if ($ps_table !== 'ca_entities') { break; }
 						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						if ($vn_id) { break(2); }
 						break;
+					//
+					//
+					//
 					default:
 						// is it an attribute?
 						$va_tmp = explode('.', $vs_match_on);
@@ -1043,7 +1052,7 @@
 				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 					$t_instance->setTransaction($pa_options['transaction']);
 				}
-
+				
 				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->set('locale_id', $pn_locale_id);
 				$t_instance->set('type_id', $pn_type_id);
@@ -1087,6 +1096,7 @@
 				}
 
 				$t_instance->insert();
+				if ($o_log) { $o_log->logDebug(_t("Could not create %1 record: %2", $ps_table, join("; ", $t_instance->getErrors()))); }
 
 				if ($t_instance->numErrors()) {
 					if($pb_output_errors) {
