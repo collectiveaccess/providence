@@ -323,6 +323,17 @@
 					'value_decimal1' => $vs_first_lat,		// latitude
 					'value_decimal2' => $vs_first_long		// longitude
 				);	
+			} elseif(preg_match("!^([\-]{0,1}[\d]{1,3})[\D]+([\d]{1,2})[\D]+([\d\.]+)[\D]+([\-]{0,1}[\d]{1,3})[\D]+([\d]{1,2})[\D]+([\d\.]+)!", $ps_value, $va_matches)) {
+				// Catch EXIFtool georefs (Ex. 53 deg 25' 56.40" 113 deg 54' 55.20")
+				$vs_first_lat = caGISminutesToSignedDecimal(join(' ', array_slice($va_matches, 0, 3)));
+				$vs_first_long = caGISminutesToSignedDecimal(join(' ', array_slice($va_matches, 4, 3)));
+				
+				return array(
+					'value_longtext1' => $va_matches[1],
+					'value_longtext2' => "{$vs_first_lat},{$vs_first_long}",
+					'value_decimal1' => $vs_first_lat,		// latitude
+					'value_decimal2' => $vs_first_long		// longitude
+				);	
  			} else {
 				$ps_value = preg_replace("!\[[\d,\-\.]+\]!", "", $ps_value);
 				if ($ps_value) {
@@ -352,7 +363,7 @@
 					}
 				}
 			}
-
+			
 			return array(
 				'value_longtext1' => '',
 				'value_longtext2' => '',
