@@ -2236,7 +2236,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], $va_opts);
 					}
 				
-					$t_subject->insert();
+					$t_subject->insert(['queueIndexing' => true]);
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not insert new record for %1: ", $t_subject->getProperty('NAME_SINGULAR')), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 					
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2265,7 +2265,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				
-					$t_subject->update();
+					$t_subject->update(['queueIndexing' => true]);
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not update matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 						if ($vs_import_error_policy == 'stop') {
@@ -2319,7 +2319,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if (!is_array($va_values)) { $va_values = array($va_values); }
 						if (($vs_proc_idno = join($o_idno->getSeparator(), $va_values)) && ($vs_proc_idno != $vs_idno)) {
 							$t_subject->set($vs_idno_fld, $vs_proc_idno);
-							$t_subject->update();
+							$t_subject->update(['queueIndexing' => true]);
 						
 							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could update idno"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2419,7 +2419,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												
 												$vs_content = isset($va_element_content[$vs_element]) ? $va_element_content[$vs_element] : $va_element_content;
 												$t_subject->set($vs_element, $vs_content, $va_opts);
-												$t_subject->update();
+												$t_subject->update(['queueIndexing' => true]);
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 													if ($vs_item_error_policy == 'stop') {
@@ -2479,7 +2479,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												$va_opts['matchOn'] = $va_match_on;
 											}
 											$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
-											$t_subject->update();
+											$t_subject->update(['queueIndexing' => true]);
 											
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2501,7 +2501,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						} 
 					
-						$t_subject->update();
+						$t_subject->update(['queueIndexing' => true]);
 
 						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2797,7 +2797,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 			
 			
-				// $t_subject->update();
+				// $t_subject->update(['queueIndexing' => true]);
 	// 
 	// 			if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, 'attributes', ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 	// 				ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
