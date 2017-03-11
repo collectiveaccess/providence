@@ -1213,9 +1213,9 @@ class SearchResult extends BaseObject {
 										$va_hier_id_list = array_filter($va_hier_id_list, function($v) { return $v > 0 ;});
 										if ($vs_hierarchy_direction === 'asc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
 										
-										if (!is_null($vn_max_levels_from_top)) {
+										if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 											$va_hier_id_list = array_slice($va_hier_id_list, 0, $vn_max_levels_from_top, true);
-										} elseif (!is_null($vn_max_levels_from_bottom)) {
+										} elseif (!is_null($vn_max_levels_from_bottom) && ($vn_max_levels_from_bottom > 0)) {
 											if (($vn_start = sizeof($va_hier_id_list) - $vn_max_levels_from_bottom) < 0) { $vn_start = 0; }
 											$va_hier_id_list = array_slice($va_hier_id_list, $vn_start, $vn_max_levels_from_bottom, true);
 										}
@@ -1238,9 +1238,9 @@ class SearchResult extends BaseObject {
 								}
 								
 								if ($t_instance->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_MULTI_MONO__) { array_pop($va_hier_ids); }
-								if (!is_null($vn_max_levels_from_top)) {
+								if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 									$va_hier_ids = array_slice($va_hier_ids, 0, $vn_max_levels_from_top, true);
-								} elseif (!is_null($vn_max_levels_from_bottom)) {
+								} elseif (!is_null($vn_max_levels_from_bottom) && ($vn_max_levels_from_bottom > 0)) {
 									if (($vn_start = sizeof($va_hier_ids) - $vn_max_levels_from_bottom) < 0) { $vn_start = 0; }
 									$va_hier_ids = array_slice($va_hier_ids, $vn_start, $vn_max_levels_from_bottom, true);
 								}
@@ -1270,9 +1270,9 @@ class SearchResult extends BaseObject {
 									while($qr_hier->nextHit()) {
 										$va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes']));
 									}
-									if (!is_null($vn_max_levels_from_top)) {
+									if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 										$va_hier_item = array_slice($va_hier_item, 0, $vn_max_levels_from_top, true);
-									} elseif (!is_null($vn_max_levels_from_bottom)) {
+									} elseif (!is_null($vn_max_levels_from_bottom) && ($vn_max_levels_from_bottom > 0)) {
 										if (($vn_start = sizeof($va_hier_item) - $vn_max_levels_from_bottom) < 0) { $vn_start = 0; }
 										$va_hier_item = array_slice($va_hier_item, $vn_start, $vn_max_levels_from_bottom, true);
 									}
@@ -1954,7 +1954,11 @@ class SearchResult extends BaseObject {
 											$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 											$vn_list_id = $t_element->get('list_id');
 										}
-										$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()."_{$vn_i}"][$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+										if ($pa_options['returnWithStructure']) {
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : "")][$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+										} else {
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : "")] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+										}
 									}
 								}
 							}

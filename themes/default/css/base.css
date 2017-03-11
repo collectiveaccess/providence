@@ -1596,6 +1596,11 @@ a span.form-button.approve .formtext{
 	margin-bottom: 13px;
 	display: inline-block;
 }
+span.form-button.approveDelete {
+	background-color: #eee;
+	padding: 10px 12px 0px 6px;
+	border-radius: 4px;
+}
 span.form-button button{
     line-height:2.5;/*Opera need this*/
 }
@@ -1811,7 +1816,9 @@ th.list-header-sorted-asc {
     background-image: url('../graphics/icons/asc.gif');
     background-color: #cccccc;
 }
-
+th.list-header-nolink{
+	cursor: default !important;
+}
 /* table fields */
 
 table.listtable tbody td {
@@ -4170,6 +4177,14 @@ div.quickSearchNoResults {
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	font-weight: bold;
 }
+#refineBrowse a.facetLink .caIcon{
+	top:-2px;
+	position: relative;
+}
+.facetHeadingLink .caIcon{
+	top: -2px;
+    position: relative;
+}
 #refineBrowse a.facetLink.active{
 	background-color:#aaa;
 }
@@ -4255,7 +4270,7 @@ div.quickSearchNoResults {
 }
 /* browse pop up panel */
 #splashBrowsePanel {
-	margin-bottom: 5px;
+	margin-bottom: 25px;
 	float: left;
 	width:100%;
 }
@@ -4328,6 +4343,7 @@ h2.browse {
     height: auto;
     overflow: auto;
     padding: 0px;
+    max-height:400px;
 }
 td.browseSelectPanelListCell {
 	padding-bottom: 8px;
@@ -4399,6 +4415,35 @@ div.browseCriterion {
 .browseCriterionLabel {
     padding: 5px;
     height: 40px;
+}
+.browseSelectMultiplePanelContentArea td.facetItem, .browseSelectMultiplePanelContentArea li{ /* li is for hier browser */
+	position:relative;
+	padding-left:20px;
+}
+[facet_item_selected="1"]::before {
+	font-family: FontAwesome;
+	content: "\f067"; 
+	padding-right:6px;
+	position:absolute;
+	left:7px;
+	top:4px;
+	color:#000 !important;
+}
+.browseSelectMultiplePanelContentArea li [facet_item_selected="1"]::before {
+	top:2px; /* hierbrowser */
+}
+.applyFacetContainer{
+	float:right;
+}
+.applyFacetContainer a.facetApply {
+    background-color: #aaa;
+    color: #fff;
+    font-size: 13px;
+    border-radius: 3px;
+    padding:4px;
+    text-transform:uppercase;
+    text-decoration:none;
+	text-align:center;
 }
 
 #resultBox {
@@ -7263,4 +7308,17 @@ div.caResultsComplexDataEditorErrorContainer {
   height: 100%;
   margin-top: 0;
   padding-top: 200px;
+}
+/* set items list in set editor */
+.setItemCounter{
+	float:left;
+	background-color:#bbb;
+	color:#FFF;
+	border-radius: 6px;
+	padding:3px 4px 1px 4px;
+	line-height:1em;
+	font-size:9px;
+	font-weight:normal;
+	margin:5px 0px 0px 5px;
+	text-align:bottom;
 }

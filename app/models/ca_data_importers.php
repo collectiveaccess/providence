@@ -1991,6 +1991,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (isset($va_item['settings']['matchOn'])) {
 								$va_group_buf[$vn_c]['_matchOn'] = $va_item['settings']['matchOn'];
 							}
+							
+							if ($va_item['settings']['skipIfDataPresent']) {
+								$va_group_buf[$vn_c]['_skipIfDataPresent'] = true;
+							}
 						
 					
 							// Is it a constant value?
@@ -2281,30 +2285,43 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$va_ids_updated[] = $t_subject->getPrimaryKey();
 					$t_subject->clearErrors();
 					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0) && (!$vb_was_preferred_label_match)) {
-						$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
-						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove preferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-							if ($vs_import_error_policy == 'stop') {
-								$o_log->logAlert(_t('Import stopped due to import error policy'));
-							
-								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+						$vb_remove_labels = true;
+						foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_fld) {
+							if ($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+						}
 						
-								if ($o_trans) { $o_trans->rollback(); }
-								return false;
+						if ($vb_remove_labels) {
+							$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
+							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove preferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+								if ($vs_import_error_policy == 'stop') {
+									$o_log->logAlert(_t('Import stopped due to import error policy'));
+							
+									$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+						
+									if ($o_trans) { $o_trans->rollback(); }
+									return false;
+								}
 							}
 						}
 					}
 					if (sizeof($va_nonpreferred_label_mapping_ids) && ($t_subject->getNonPreferredLabelCount() > 0)) {
-						$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
-						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-							if ($vs_import_error_policy == 'stop') {
-								$o_log->logAlert(_t('Import stopped due to import error policy'));
+						$vb_remove_labels = true;
+						foreach($va_nonpreferred_label_mapping_ids as $vn_nonpreferred_label_mapping_id => $vs_fld) {
+							if ($va_mapping_items[$vn_nonpreferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+						}
+						if ($vb_remove_labels) {
+							$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+								if ($vs_import_error_policy == 'stop') {
+									$o_log->logAlert(_t('Import stopped due to import error policy'));
 							
-								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+									$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-								if ($o_trans) { $o_trans->rollback(); }
-								return false;
+									if ($o_trans) { $o_trans->rollback(); }
+									return false;
+								}
 							}
 						}
 					}
@@ -2335,7 +2352,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						}
 					}
-			
+		
 				$o_log->logDebug(_t('Started insert of content tree for idno %1 at %2 seconds [id=%3]', $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				$va_elements_set_for_this_record = array();
 				foreach($va_content_tree as $vs_table_name => $va_content) {
@@ -2351,8 +2368,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									
 										$vs_item_error_policy = $va_element_content['_errorPolicy'];
 										unset($va_element_content['_errorPolicy']); 
+										
+										$vb_skip_if_data_present = $va_element_content['_skipIfDataPresent'];
+										unset($va_element_content['_skipIfDataPresent']);
 									} else {
 										$vb_truncate_long_labels = false;
+										$vb_skip_if_data_present = false;
 										$vs_item_error_policy = null;
 									}
 								
@@ -2362,7 +2383,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										case 'preferred_labels':
 											if (!$vb_was_preferred_label_match) {
 												if (!isset($va_element_content[$vs_disp_field = $t_subject->getLabelDisplayField()]) || !strlen($va_element_content[$vs_disp_field])) { $va_element_content[$vs_disp_field] = _t('[BLANK]'); }
-												$t_subject->addLabel(
+												
+												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
+												
+												$t_subject->replaceLabel(
 													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
 												);
 												if ($t_subject->numErrors() == 0) {
@@ -2391,6 +2415,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											}
 											break;
 										case 'nonpreferred_labels':
+											if ($vb_skip_if_data_present && ($t_subject->getLabelCount(false, $vn_locale_id) > 0)) { continue(2); }
 											$t_subject->addLabel(
 												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, array('truncateLongLabels' => $vb_truncate_long_labels)
 											);
@@ -2411,6 +2436,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											break;
 										default:
 											if ($t_subject->hasField($vs_element) && (($vs_element != $t_subject->primaryKey(true)) && ($vs_element != $t_subject->primaryKey()))) {
+												if ($vb_skip_if_data_present && strlen($t_subject->get($vs_element))) { continue(2); } 
 												$va_field_info = $t_subject->getFieldInfo($vs_element);
 												$va_opts = array('assumeIdnoForRepresentationID' => true, 'assumeIdnoStubForLotID' => true, 'tryObjectIdnoForRepresentationID' => true, 'treatParentIDAsIdno' => true);
 												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
@@ -2462,6 +2488,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										
 											if (($vs_subject_table == 'ca_representation_annotations') && ($vs_element == 'properties')) {
 												foreach($va_element_content as $vs_prop => $vs_prop_val) {
+													if ($vb_skip_if_data_present && strlen($t_subject->getPropertyValue($vs_prop))) { continue; } 
 													$t_subject->setPropertyValue($vs_prop, $vs_prop_val);
 												}
 												break;
@@ -2469,6 +2496,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									
 											if (is_array($va_element_content)) { $va_element_content['locale_id'] = $vn_locale_id; }
 										
+											if ($vb_skip_if_data_present && ($t_subject->getAttributeCountByElement($vs_element) > 0)) { continue(2); } 
 											if (!isset($va_elements_set_for_this_record[$vs_element]) && !$va_elements_set_for_this_record[$vs_element] && in_array($vs_existing_record_policy, array('merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 'merge_on_idno_and_preferred_labels_with_replace'))) {
 												$t_subject->removeAttributes($vs_element, array('force' => true));
 											} 

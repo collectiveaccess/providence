@@ -280,6 +280,74 @@
 			}
 			return;
 		}
+		# -------------------------------------------------------
+		# Export set items
+		# -------------------------------------------------------
+		public function exportSetItems() {
+			set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
+			$o_dm = Datamodel::load();
+			$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
+			if (!$t_set->getPrimaryKey()) {
+				$this->notification->addNotification(_t('No set defined'), __NOTIFICATION_TYPE_ERROR__);
+				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
+				return false;
+			}
+
+			$va_record_ids = array_keys($t_set->getItemRowIDs(array('limit' => 100000)));
+			if(!is_array($va_record_ids) || !sizeof($va_record_ids)) {
+				$this->notification->addNotification(_t('No items are available for export'), __NOTIFICATION_TYPE_ERROR__);
+				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
+				return false;
+			}
+
+			$vs_subject_table = $o_dm->getTableName($t_set->get('table_num'));
+			$t_instance = $o_dm->getInstanceByTableName($vs_subject_table);
+
+			$qr_res = $vs_subject_table::createResultSet($va_record_ids);
+			$qr_res->filterNonPrimaryRepresentations(false);
+			$this->view->setVar('result', $qr_res);
+			$this->view->setVar('t_set', $t_set);
+
+			# --- get the export format/template to use
+			$ps_export_format = $this->request->getParameter('export_format', pString);
+			
+			//
+			// PDF output
+			//
+			$va_template_info = caGetPrintTemplateDetails('sets', substr($ps_export_format, 5));
+			if (!is_array($va_template_info)) {
+				$this->postError(3110, _t("Could not find view for PDF"),"SetEditorController->exportSetItems()");
+				return;
+			}
+			
+			try {
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+				
+				$o_pdf = new PDFRenderer();
+				
+				$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+			
+				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
+				$this->view->setVar('pageHeight', "{$vn_page_height}mm");
+				$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+				
+				$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+				$vs_content = $this->render($va_template_info['path']);
+				
+				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
+				exit;
+			} catch (Exception $e) {
+				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
+			}
+			return;
+		}
+		# -------------------------------------------------------
  		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------

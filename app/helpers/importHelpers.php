@@ -247,10 +247,21 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+		$vs_batch_media_directory = Configuration::load()->get('batch_media_import_root_directory');
+		$ps_refinery_name = caGetOption('refineryName', $pa_options, null);
 		
 		if (is_array($pa_attributes)) {
 			$va_attr_vals = array();
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
+			
+				$vs_prefix = '';
+				$va_prefix_file_list = [];
+				if (in_array(ca_metadata_elements::getElementDatatype($vs_element_code), [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__]) && $vs_batch_media_directory && isset($pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) && $pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) {
+					 $vs_prefix = preg_replace("![/]+!", "/", "{$vs_batch_media_directory}/".$pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]."/");
+					 $va_prefix_file_list = caGetDirectoryContentsAsList($vs_prefix, true); 
+				}
+			
+			
 				$vb_is_repeating = false;
 				$vn_num_repeats = null;
 				if(is_array($va_attrs)) {
@@ -267,19 +278,37 @@
 							$vn_c = 0;
 							foreach($va_vals as $vn_x => $va_v) {
 								if (!$va_v || (!is_array($va_v) && !trim($va_v))) { continue; }
+								if ($vs_prefix && is_array($va_v)) {
+									$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; });
+									
+									foreach($va_v as $vn_y => $vm_val_to_import) {
+										if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
+											$va_v[$vn_y] = array_shift($va_candidates);
+										} else {
+											$va_v[$vn_y] = $vs_path;
+										}
+									}
+								}
 								$va_attr_vals[$vs_element_code][$vn_x][$vs_k] = $va_v;
 								$vn_c++;
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
 						} else {
 							if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
-								$va_attr_vals[$vs_element_code][$vs_k] = $vm_val_to_import;
+								if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
+									$vs_path = array_shift($va_candidates);
+								}
+								$va_attr_vals[$vs_element_code][$vs_k] = $vs_path;
 							}
 						}
 					}
 				} else {
 					if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c,'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
-						$va_attr_vals[$vs_element_code][$vs_element_code] = $vm_val_to_import;
+					
+						if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
+							$vs_path = array_shift($va_candidates);
+						}
+						$va_attr_vals[$vs_element_code][$vs_element_code] = $vs_path;
 					}
 				}
 			}
@@ -688,7 +717,7 @@
 						}
 		
 						// Set attributes
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 			
@@ -710,6 +739,14 @@
 									$va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 								}
 								$pa_options['nonPreferredLabels'][] = $va_label;
+							}
+						} elseif($vs_non_preferred_label = trim($pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
+							if ($ps_refinery_name == 'entitySplitter') {
+								$pa_options['nonPreferredLabels'][] = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' ')), $pa_options);
+							} else {
+								$pa_options['nonPreferredLabels'][] = [
+									$vs_label_fld => BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '))
+								];
 							}
 						}
 					}

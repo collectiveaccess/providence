@@ -107,14 +107,17 @@
 		// default to automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
 		$o_sheet->getRowDimension($vn_line)->setRowHeight(-1);
 
+		$va_media_versions = $vo_result->getMediaVersions('ca_object_representations.media');
 		foreach($va_display_list as $vn_placement_id => $va_info) {
-
 			if (
 				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
 				&&
 				(!isset($va_info['settings']['display_mode']) || ($va_info['settings']['display_mode'] !== 'url'))
 			) {
-				$vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
+				$va_bits = explode(".", $va_info['bundle_name']);
+				$vs_version = array_pop($va_bits);
+				if (!in_array($vs_version, $va_media_versions)) { $vs_version = $va_media_versions[sizeof($va_media_versions)-1]; }
+		
 				$va_info = $vo_result->getMediaInfo('ca_object_representations.media',$vs_version);
 				
 				if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file

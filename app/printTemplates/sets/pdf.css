@@ -1,0 +1,29 @@
+@page { margin: 150px 66px; }
+#header { position: fixed; left: 0px; top: -35px; right: 0px; height: 55px;  text-align: left; vertical-align: top; margin: 0px 5px 0px 0px; padding: 0px 5px 12px 0px; }
+#footer { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 20px; text-align: center; vertical-align: bottom; margin: 0px 5px 10px 5px; padding: 3px 5px 2px 10px; }
+#header .pagingText:after { content: counter(page, decimal); }
+#body { z-index: 30000; position: relative; }
+
+img.headerImg {width:135px;}
+.headerText { font-family: "helvetica, sans-serif"; font-size: 10px; margin: 0px 0px 10px 25px; }
+.pagingText { position: absolute; top: 0px; right: 10px; font-family: "helvetica, sans-serif"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px; }
+
+table.footerText { width: 100%; }
+td.footerText { font-family: "helvetica, sans-serif"; font-size: 12px; text-align: center; }  
+span.footerText { font-family: "helvetica, sans-serif"; font-size: 12px; margin-left: 45px; }  
+
+.thumbnail { font-family: "helvetica, sans-serif"; font-size: 11px; border: 1px solid #ccc; width: 200px; height: 210px; position: absolute; text-align: center; margin: 0px 10px 10px 0px; padding: 3px; overflow: hidden; border-radius:4px;}	
+.imgThumb {width:194px; height:170px;}
+.caption {font-size:11px; color:#333; display:block;}
+
+.row { font-family: "helvetica, sans-serif"; font-size: 11px; border-bottom: 1px solid #eee; width: 100%; height: auto; margin: 5px 0 0 0; padding: 3px 0px 5px 0px; overflow: hidden}	
+.imageTiny { width: 120px; margin: 0 5px 0 0; border-radius: 5px; text-align:center;}
+.imageTinyPlaceholder { width: 120px; height: 100px; border: 1px solid #eee; background-color: #eee; margin: 0 5px 0 0; border-radius: 5px;}
+.displayHeader { color:#666; font-weight:bold;}
+.displayValue {}
+.title {font-weight:bold; font-size: 14px; }
+.metadata {line-height:1.1em;}
+.metaBlock {margin-left:0px; height:auto; width:120mm; }
+
+.pageBreak { page-break-before: always; }
+.clear { clear: both; line-height: 5px; }
