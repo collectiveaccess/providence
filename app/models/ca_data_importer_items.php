@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -341,6 +341,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => 0,
 			'label' => _t('Skip row if expression'),
 			'description' => _t('Skip the row if value for the expression is true.')
+		);
+		$va_settings['skipIfDataPresent'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if data already present'),
+			'description' => _t('Skip row if data is already present in CollectiveAccess.')
 		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,

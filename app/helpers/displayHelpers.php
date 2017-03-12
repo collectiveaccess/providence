@@ -854,7 +854,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				
 				$vs_buf .= "<div class='recordTitle {$vs_table_name}' style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? "<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '') : "")."</a></div>";
 				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
-					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
 				if ($po_view->request->config->get("include_custom_inspector")) {
 					if(file_exists($po_view->request->getViewsDirectoryPath()."/bundles/inspector_info.php")) {
@@ -1220,10 +1220,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 				$va_component_types = $po_view->request->config->getList('ca_objects_component_types');
 				if (is_array($va_component_types) && sizeof($va_component_types)) {
-					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects'))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects', 'excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 					$vs_buf .= "<br/><strong>".((($vn_num_components = $t_item->numObjects(null, array('return' => 'components'))) == 1) ? _t('Lot contains %1 component', $vn_num_components) : _t('Lot contains %1 components', $vn_num_components))."</strong>\n";
 				} else {
-					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
 
 				if (((bool)$po_view->request->config->get('allow_automated_renumbering_of_objects_in_a_lot')) && ($va_nonconforming_objects = $t_item->getObjectsWithNonConformingIdnos())) {

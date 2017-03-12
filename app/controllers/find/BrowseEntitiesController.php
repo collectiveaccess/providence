@@ -61,16 +61,7 @@
  			$this->opa_views = array(
 				'list' => _t('list')
 			);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Returns string representing the name of the item the browse will return
- 		 *
- 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
- 		 */
- 		public function browseName($ps_mode='singular') {
- 			return ($ps_mode === 'singular') ? _t('entity') : _t('entities');
- 		}
+ 		}	
  		# -------------------------------------------------------
  		/**
  		 * Returns string representing the name of this controller (minus the "Controller" part)
@@ -80,4 +71,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

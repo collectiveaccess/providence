@@ -457,6 +457,7 @@
 				if (isset($va_context['type_id']) && ($va_context['type_id'] != $pn_type_id)) {
 					$pb_type_restriction_has_changed = true;
 				}
+				$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 				return $pn_type_id;
 			}
 			return null;

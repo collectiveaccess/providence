@@ -112,7 +112,9 @@ var caUI = caUI || {};
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
 			_queuedLoadsForLevel: [],			// parameters for pending loads per-level
 
-			maxItemsPerHierarchyLevelPage: 500	// maximum number of items to load at one time into a level
+			maxItemsPerHierarchyLevelPage: 500,	// maximum number of items to load at one time into a level
+			
+			selectMultiple: ''
 		}, options);
 		
 		
@@ -459,11 +461,11 @@ var caUI = caUI || {};
 									}
 								} else if ((!((level == 0) && that.dontAllowEditForFirstLevel))) {
 									jQuery('#' + newLevelListID).append(
-										"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li class='" + that.className + "' id='testing'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + " facetItem' data-facet_item_id='" + item['item_id'] + "'>"  +  item.name + "</a></li>"
 									);
 								} else {
 									jQuery('#' + newLevelListID).append(
-										"<li class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li class='" + that.className + "' id='testing'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + " facetItem' data-facet_item_id='" + item['item_id'] + "'>"  +  item.name + "</a></li>"
 									);
 								}
 
@@ -501,7 +503,23 @@ var caUI = caUI || {};
 									}
 									if (editUrl) {
 										jQuery('#' + newLevelListID + " li:last a:last").click(function() {
-											jQuery(document).attr('location', editUrl + jQuery(this).data(editData));
+											if(that.selectMultiple){
+												// code to add + infront of items when multiple selections for or browse are permitted
+												// #facet_apply is in ajax_browse_Facet_html.php
+												if (jQuery(this).attr('facet_item_selected') == '1') {
+													jQuery(this).attr('facet_item_selected', '');
+												} else {
+													jQuery(this).attr('facet_item_selected', '1');
+												}
+
+												if (jQuery(".facetItem[facet_item_selected='1']").length > 0) {
+													jQuery("#facet_apply").show();
+												} else {
+													jQuery("#facet_apply").hide();
+												}
+											}else{
+												jQuery(document).attr('location', editUrl + jQuery(this).data(editData));
+											}
 											return false;
 										});
 									} else {

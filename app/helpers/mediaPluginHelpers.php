@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -508,6 +508,10 @@
 				$va_data = json_decode(join("\n", $va_output), true);
 				if(!is_array($va_data)) { return null; }
 				$va_data = array_shift($va_data);
+				
+				// rewrite GPS entries to include ref
+				if (isset($va_data['GPS']['GPSLatitude'])) { $va_data['GPS']['GPSLatitude'] .= " ".substr($va_data['GPS']['GPSLatitudeRef'], 0, 1); }
+				if (isset($va_data['GPS']['GPSLongitude'])) { $va_data['GPS']['GPSLongitude'] .= " ".substr($va_data['GPS']['GPSLongitudeRef'], 0, 1); }
 
 				if(sizeof($va_data)>0) {
 					return $va_data;
