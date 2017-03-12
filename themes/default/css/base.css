@@ -6701,6 +6701,7 @@ table.caUseHistoryUpdateLocationMetadata tr td {
 	z-index:10;
 	line-height:1.2em;
 	text-align:left;
+	display: none;
 }
 
 div.caMetadataDictionaryViolationsList {
