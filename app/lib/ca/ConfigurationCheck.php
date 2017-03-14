@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -145,12 +145,12 @@ final class ConfigurationCheck {
 		if (!is_writeable(__CA_APP_DIR__.'/tmp')) {
 			self::addError(_t('The CollectiveAccess <i>app/tmp</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_APP_DIR__.'/tmp'));
 		}
-
+		
 		//
-		// Check app/lucene
+		// Check app/log
 		//
-		if ((self::$opo_config->get('search_engine_plugin') == 'Lucene') && (!is_writeable(self::$opo_config->get('search_lucene_index_dir')))) {
-			self::addError(_t('The CollectiveAccess <i>Lucene search index</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.',self::$opo_config->get('search_lucene_index_dir')));
+		if (!is_writeable(__CA_APP_DIR__.'/log')) {
+			self::addError(_t('The CollectiveAccess <i>app/log</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_APP_DIR__.'/log'));
 		}
 
 		//
@@ -276,7 +276,7 @@ final class ConfigurationCheck {
 	 */
 	public static function tmpDirQuickCheck() {
 		if(!file_exists(__CA_APP_DIR__."/tmp") || !is_writable(__CA_APP_DIR__."/tmp")){
-			self::addError(_t("It looks like the directory for temporary files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write this directory.",__CA_APP_DIR__."/tmp"));
+			self::addError(_t("It looks like the directory for temporary files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.",__CA_APP_DIR__."/tmp"));
 		}
 
 		if(!defined('__CA_CACHE_BACKEND__')) {
@@ -293,17 +293,25 @@ final class ConfigurationCheck {
 				file_exists(__CA_CACHE_FILEPATH__.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache') && // if it doesn't exist, it can be probably be created or the above check would fail
 				!is_writable(__CA_CACHE_FILEPATH__.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache')
 			) {
-				self::addError(_t("It looks like the cache directory is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write this directory.",__CA_CACHE_FILEPATH__.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache'));
+				self::addError(_t("It looks like the cache directory is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.",__CA_CACHE_FILEPATH__.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache'));
 			}
 		}
 
 		return true;
 	}
 	# -------------------------------------------------------
+	public static function logDirQuickCheck() {
+		$vs_log_path = __CA_APP_DIR__."/log";
+		if(!file_exists($vs_log_path) || !is_writable($vs_log_path)){
+			self::addError(_t("It looks like the log directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$vs_log_path));
+		}
+		return true;
+	}
+	# -------------------------------------------------------
 	public static function mediaDirQuickCheck() {
 		$vs_media_root = self::$opo_config->get("ca_media_root_dir");
 		if(!file_exists($vs_media_root) || !is_writable($vs_media_root)){
-			self::addError(_t("It looks like the media directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write this directory.",$vs_media_root));
+			self::addError(_t("It looks like the media directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$vs_media_root));
 		}
 		return true;
 	}
@@ -315,7 +323,7 @@ final class ConfigurationCheck {
 		$vs_purifier_path = __CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer';
 
 		if(!file_exists($vs_purifier_path) || !is_writable($vs_purifier_path)){
-			self::addError(_t("It looks like the directory for HTML filtering caches is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write this directory.", $vs_purifier_path));
+			self::addError(_t("It looks like the directory for HTML filtering caches is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.", $vs_purifier_path));
 		}
 		return true;
 	}
@@ -422,7 +430,7 @@ final class ConfigurationCheck {
 				if($i++==10){ // we don't want to spam houndreds of directories. I guess the admin will get the pattern after a few.
 					return;
 				}
-				self::addError(_t("It looks like a subdirectory in the media directory is not writable by the webserver. Please change the permissions for %1 and enable the user which runs the webserver to write this directory.",$vs_dir));
+				self::addError(_t("It looks like a subdirectory in the media directory is not writable by the webserver. Please change the permissions for %1 and enable the user which runs the webserver to write to this directory.",$vs_dir));
 			}
 		}
 		return true;
