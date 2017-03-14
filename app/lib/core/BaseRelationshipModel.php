@@ -514,6 +514,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							foreach($va_right_subtype_candidates as $vs_right_subtype) {
 								$va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 							}
+							
+							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']])) {
+								$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
+							}
 						} else {
 							//
 							// If each side of the self-relationship type are different then add both to the list with special type_id values that
@@ -538,12 +542,21 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							foreach($va_right_subtype_candidates as $vs_right_subtype) {
 								$va_types[$vn_parent_id][$vs_right_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 							}
+							
+							
+							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltol_'.$va_row['type_id']][$va_row['locale_id']])) {
+								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
+							}
+							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']])) {
+								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
+							}
 						}
 						
 						break;
 				}
-		
-				if (!isset($va_types[$vn_parent_id][$vs_subtype])) {
+				
+				
+				if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']])) {
 					$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
 				}
 			}
