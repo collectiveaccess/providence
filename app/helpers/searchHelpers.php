@@ -33,6 +33,8 @@
 	/**
 	 *
 	 */
+	require_once(__CA_LIB_DIR__.'/core/Zend/Search/Lucene.php');
+	require_once(__CA_LIB_DIR__.'/core/Search/Common/Parsers/LuceneSyntaxParser.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 
@@ -1142,8 +1144,10 @@
 	 *		includeUserSorts = 
 	 *		distinguishNonUniqueNames = 
 	 *		allowedSorts = 
-	 *		disableSorts = 
-	 *		request = 
+	 *		disableSorts = Don't return any available sorts. [Default is false]
+	 *		request = The current request. [Default is null]
+	 *		includeInterstitialSortsFor = Related table [Default is false]
+	 *		distinguishInterstitials = [Default is false]
 	 * @return array
 	 */
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
@@ -1159,6 +1163,13 @@
 		}
 		if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return []; }
 		
+		$t_rel = null;
+		if ($ps_related_table = caGetOption('includeInterstitialSortsFor', $pa_options, null)) {
+			$o_dm = Datamodel::load();
+			if (is_array($va_path = array_keys($o_dm->getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
+				$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
+			}
+		} 
 		
 		$va_ui_bundle_label_map = [];
 		if (isset($pa_options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $pa_options['request'], $pn_type_id))) {
@@ -1308,6 +1319,18 @@
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
 			}
+			
+			
+		
+			// Add interstitial sorts
+			if ($t_rel) {
+				$va_sortable_elements = ca_metadata_elements::getSortableElements($vs_relation_table = $t_rel->tableName(), null, ['indexByElementCode' => true]);
+				
+				$pb_distinguish_interstitials = caGetOption('distinguishInterstitials', $pa_options, true);
+				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+					$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
+				}
+			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
 				foreach(array_count_values($va_base_fields) as $vn_v => $vn_c) {
@@ -1346,7 +1369,9 @@
 			}
 		}
 		
-		if (($pa_allowed_sorts = caGetOption('allowedSorts', $pa_options, null)) && is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
+		if (($pa_allowed_sorts = caGetOption('allowedSorts', $pa_options, null)) && !is_array($pa_allowed_sorts)) { $pa_allowed_sorts = [$pa_allowed_sorts]; }
+		
+		if(is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
 			foreach($va_base_fields as $vs_k => $vs_v) {
 				if (!in_array($vs_k, $pa_allowed_sorts)) { unset($va_base_fields[$vs_k]); }
 			}
@@ -1388,5 +1413,92 @@
 		}
 
 		return $va_return;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caSearchIsForSets($ps_search, $pa_options=null) {
+		$o_config = Configuration::load();
+		$o_query_parser = new LuceneSyntaxParser();
+		$o_query_parser->setEncoding($o_config->get('character_set'));
+		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
+		
+		$ps_search = preg_replace('![\']+!', '', $ps_search);
+		try {
+			$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+		} catch (Exception $e) {
+			// Retry search with all non-alphanumeric characters removed
+			try {
+				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+			} catch (Exception $e) {
+				$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+			}
+		}
+		
+		switch(get_class($o_parsed_query)) {
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				$va_items = $o_parsed_query->getSubqueries();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$va_items = $o_parsed_query->getTerms();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				$va_items = $o_parsed_query;
+				break;
+			default:
+				return false;
+				break;
+		}
+
+		$va_sets = [];
+		foreach ($va_items as $id => $subquery) {
+			switch(get_class($subquery)) {
+				case 'Zend_Search_Lucene_Search_Query_Phrase':
+				
+					foreach($subquery->getQueryTerms() as $o_term) {
+						$vs_field = $o_term->field;
+						$vs_value = $o_term->text;
+						
+						if ($vs_field == 'ca_sets.set_id') {
+							$va_sets[(int)$vs_value] = 1;
+						} elseif((in_array($vs_field, ['ca_sets.set_code', 'set'])) && ($vn_set_id = ca_sets::find(['set_code' => $vs_value], ['returnAs' => 'firstId'])))  {
+							$va_sets[(int)$vn_set_id] = 1;
+						}
+					}
+					
+					break;
+				case 'Zend_Search_Lucene_Index_Term':
+					$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
+					// intentional fallthrough to next case here
+				case 'Zend_Search_Lucene_Search_Query_Term':
+					$vs_field = $subquery->getTerm()->field;
+					$vs_value = $subquery->getTerm()->text;
+					
+					if ($vs_field == 'ca_sets.set_id') {
+						$va_sets[(int)$vs_value] = 1;
+					} elseif((in_array($vs_field, ['ca_sets.set_code', 'set'])) && ($vn_set_id = ca_sets::find(['set_code' => $vs_value], ['returnAs' => 'firstId'])))  {
+						$va_sets[(int)$vn_set_id] = 1;
+					}
+					
+					break;	
+				case 'Zend_Search_Lucene_Search_Query_Range':
+				case 'Zend_Search_Lucene_Search_Query_Wildcard':
+					// noop
+					break;
+				default:
+					if (is_array($va_sub_sets = caSearchIsForSets($subquery))) {
+						$va_sets = array_merge($va_sets, $va_sub_sets);
+					}
+					break;
+			}
+		}
+		
+		if(sizeof($va_sets) == 0) { return false; }
+		$t_set = new ca_sets();
+		return $t_set->getPreferredDisplayLabelsForIDs(array_keys($va_sets));
 	}
 	# ---------------------------------------

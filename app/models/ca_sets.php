@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -379,7 +379,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vs_set_code = trim($this->get('set_code'));
 		
-		if ((($vs_set_code_proc = preg_replace("![ ]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
+		if ((($vs_set_code_proc = preg_replace("![^A-Za-z0-9]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
 			$this->setMode(ACCESS_WRITE);
 			
 			if (!strlen($vs_set_code)) {
@@ -1417,6 +1417,31 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns a list of row_ids for a set with ranks for each, in rank order. This is a faster alternative to getRowIDRanks() that
+	 * queries the database directly and does no access checking. It is intended for use with lower level functions that need to sort
+	 * potentially large sets quickly.
+	 *
+	 * @param int $pn_set_id
+	 * @param array $pa_options An optional array of options. Supported options are:
+	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" – a combination of the row_id and the set item_id (row_id + "_" + item_id) – are guaranteed to be unique. [Default=false]
+	 * @return array ray keyed on row_id with values set to ranks for each item. If the set contains duplicate row_ids then the list will only have the largest rank.
+	 */
+	static public function getRowIDRanksForSet($pn_set_id, $pa_options=null) {
+		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
+		
+		$o_db = new Db();
+		$qr_res = $o_db->query("SELECT row_id, item_id, rank FROM ca_set_items WHERE set_id = ? AND deleted = 0 ORDER BY rank", [$pn_set_id]);
+	
+		$va_ranks = [];
+		
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			$va_ranks[$vb_treat_row_ids_as_rids ? $va_row['row_id']."_".$va_row['item_id'] : $va_row['row_id']] = $va_row['rank'];
+		}
+		return $va_ranks;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Sets order of items in the currently loaded set to the order of row_ids as set in $pa_row_ids
 	 *
 	 * @param array $pa_row_ids A list of row_ids in the set, in the order in which they should be displayed in the set
@@ -1847,7 +1872,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}
 		
 		$qr_res = $o_db->query("
-			SELECT count(distinct row_id) c
+			SELECT count(distinct ca_set_items.row_id) c
 			FROM ca_set_items
 			INNER JOIN {$vs_rel_table_name} ON {$vs_rel_table_name}.{$vs_rel_table_pk} = ca_set_items.row_id
 			WHERE

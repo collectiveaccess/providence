@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -592,6 +592,8 @@ class SearchIndexer extends SearchBase {
 		$vb_reindex_children = false;
 
 		$vs_subject_pk = $t_subject->primaryKey();
+		$vs_subject_type_code = method_exists($t_subject, 'getTypeCode') ? $t_subject->getTypeCode() : null;
+		
 		if (!is_array($pa_changed_fields)) { $pa_changed_fields = array(); }
 
 		foreach($pa_changed_fields as $vs_k => $vb_bool) {
@@ -642,6 +644,16 @@ class SearchIndexer extends SearchBase {
 			$vb_started_indexing = true;
 
 			foreach($va_fields_to_index as $vs_field => $va_data) {
+				if(is_array($va_data['BOOST'])) {
+					if (isset($va_data['BOOST'][$vs_subject_type_code])) {
+						$va_data['BOOST'] = $va_data['BOOST'][$vs_subject_type_code];
+					} elseif(isset($va_data['BOOST']['*'])) {
+						$va_data['BOOST'] = $va_data['BOOST']['*'];
+					} else {
+						$va_data['BOOST'] = 0;
+					}
+				}
+				
 				if (substr($vs_field, 0, 14) === '_ca_attribute_') {
 					//
 					// Is attribute
@@ -857,6 +869,15 @@ class SearchIndexer extends SearchBase {
 							$vn_private = ((!is_array($va_private_rel_types) || !sizeof($va_private_rel_types) || !in_array($vn_rel_type_id, $va_private_rel_types))) ? 0 : 1;
 							
 							foreach($va_fields_to_index as $vs_rel_field => $va_rel_field_info) {
+								if(is_array($va_rel_field_info['BOOST'])) {
+									if (isset($va_rel_field_info['BOOST'][$vs_subject_type_code])) {
+										$va_rel_field_info['BOOST'] = $va_rel_field_info['BOOST'][$vs_subject_type_code];
+									} elseif(isset($va_rel_field_info['BOOST']['*'])) {
+										$va_rel_field_info['BOOST'] = $va_rel_field_info['BOOST']['*'];
+									} else {
+										$va_rel_field_info['BOOST'] = 0;
+									}
+								}
 //
 // BEGIN: Index attributes in related tables
 //						
@@ -1020,6 +1041,15 @@ class SearchIndexer extends SearchBase {
 						$vs_new_key = $va_row_to_reindex['table_num'].'/'.$va_row_to_reindex['field_table_num'].'/'.$vn_fld_num.'/'.$va_row_to_reindex['field_row_id'];
 
 						if(!isset($va_rows_to_reindex_by_row_id[$vs_new_key])) {
+							if(is_array($va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST'])) {
+								if (isset($va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST'][$vs_subject_type_code])) {
+									$va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST'] = $va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST'][$vs_subject_type_code];
+								} elseif(isset($va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST']['*'])) {
+									$va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST'] = $va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST']['*'];
+								} else {
+									$va_row_to_reindex['indexing_info'][$vs_fld_name]['BOOST'] = 0;
+								}
+							}
 							$va_rows_to_reindex_by_row_id[$vs_new_key] = array(
 								'table_num' => $va_row_to_reindex['table_num'],
 								'row_ids' => array(),

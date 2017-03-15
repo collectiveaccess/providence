@@ -39,8 +39,10 @@
 	
 	$vs_display_version = caGetOption('display_version', $va_display, 'tilepic');
 	
+	$vs_title = ($t_instance && ($vs_rep_title = str_replace("["._t('BLANK')."]", "", $t_instance->get('preferred_labels')))) ? $vs_rep_title : (($vs_subject_title = str_replace("["._t('BLANK')."]", "", $t_subject->get('preferred_labels'))) ? $vs_subject_title : "???");
+	
 	$va_metadata = [
-    	["label" => "Title", "value" => $t_subject ? $t_subject->get('preferred_labels') : "???"]
+    	["label" => "Title", "value" => $vs_title]
   	];
 	
 	if (isset($va_data['resources']) && is_array($va_data['resources']) && sizeof($va_data['resources'])) {
@@ -78,8 +80,8 @@
 			[
 				"@id" => $vs_canvas_id,
 				"@type" => "sc:Canvas",
-				"label" => (string)($vn_page),
-				"thumbnail" => $va_resource['preview_url'],
+				"label" => $va_resource['title'] ? $va_resource['title'] : (string)($vn_page),
+				"thumbnail" => $va_resource['preview_url'] ? $va_resource['preview_url'] : $vs_thumb_url,
 				"seeAlso" => [],
 				"height" => $vn_height,
 				"width" => $vn_width,
