@@ -2978,6 +2978,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([\d]+(?!%|~)|ca_[A-Za-z]
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
 		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		if(!$ps_table) { return '???'; }
