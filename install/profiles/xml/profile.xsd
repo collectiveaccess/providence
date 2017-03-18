@@ -385,6 +385,7 @@
                     <xs:complexType>
                       <xs:attribute name="code" type="codeType" use="optional"/>
                       <xs:attribute name="type" type="xs:string" use="required"/>
+                  	  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
                     </xs:complexType>
                   </xs:element>
                 </xs:sequence>
@@ -395,6 +396,8 @@
           <xs:attribute name="idno" type="codeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
           <xs:attribute name="deleted" type="booleanType" use="optional"/>
+          <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+          <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
         </xs:complexType>
 
         <!-- placement codes must be unique inside a screen -->
@@ -436,6 +439,7 @@
           </xs:sequence>
           <xs:attribute name="code" type="codeType" use="required"/>
           <xs:attribute name="typeRestrictions" type="xs:string"/>
+          <xs:attribute name="includeSubtypes" type="xs:string"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -483,6 +487,10 @@
                         maxOccurs="1"/>
             <xs:element name="subTypeLeft" type="xs:string" minOccurs="0" maxOccurs="1"/>
             <xs:element name="subTypeRight" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="typeRestrictionLeft" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="typeRestrictionRight" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="includeSubtypesLeft" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="includeSubtypesRight" type="xs:integer" minOccurs="0" maxOccurs="1"/>
             <xs:element name="types" type="relationshipTypes" minOccurs="0"
                         maxOccurs="1"/>
           </xs:sequence>
@@ -490,6 +498,10 @@
           <xs:attribute name="default" type="booleanType" use="required"/>
           <xs:attribute name="rank" type="xs:integer" use="optional"/>
           <xs:attribute name="deleted" type="booleanType" use="optional"/>
+          <xs:attribute name="typeRestrictionLeft" type="xs:string" use="optional"/>
+          <xs:attribute name="typeRestrictionRight" type="xs:string" use="optional"/>
+          <xs:attribute name="includeSubtypesLeft" type="xs:integer" use="optional"/>
+          <xs:attribute name="includeSubtypesRight" type="xs:integer" use="optional"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -687,6 +699,7 @@
                             <xs:complexType>
                               <xs:attribute name="code" type="xs:string" use="optional"/>
                               <xs:attribute name="type" type="xs:string" use="required"/>
+                              <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -727,6 +740,8 @@
                   <xs:attribute name="code" type="codeType" use="required"/>
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
+				  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+				  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
                 </xs:complexType>
 
                 <!-- ui screen idnos must be unique inside a UI -->
@@ -949,6 +964,8 @@
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="system" type="booleanType" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
+                  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+                  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
 
                 </xs:complexType>
               </xs:element>
@@ -966,6 +983,19 @@
                   <xs:sequence>
                     <xs:element name="labels" type="searchFormLabels"
                                 minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
+					  <xs:complexType>
+						<xs:sequence>
+						  <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
+							<xs:complexType>
+							  <xs:attribute name="code" type="codeType" use="optional"/>
+							  <xs:attribute name="type" type="xs:string" use="required"/>
+							  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
+							</xs:complexType>
+						  </xs:element>
+						</xs:sequence>
+					  </xs:complexType>
+					</xs:element>
                     <xs:element name="settings" minOccurs="0" maxOccurs="1">
                       <xs:complexType>
                         <xs:sequence>
@@ -1021,6 +1051,8 @@
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="system" type="booleanType" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
+                  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+                  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
 
                 </xs:complexType>
               </xs:element>

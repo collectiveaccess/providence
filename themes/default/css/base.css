@@ -1597,6 +1597,11 @@ a span.form-button.approve .formtext{
 	margin-bottom: 13px;
 	display: inline-block;
 }
+span.form-button.approveDelete {
+	background-color: #eee;
+	padding: 10px 12px 0px 6px;
+	border-radius: 4px;
+}
 span.form-button button{
     line-height:2.5;/*Opera need this*/
 }
@@ -4173,6 +4178,14 @@ div.quickSearchNoResults {
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	font-weight: bold;
 }
+#refineBrowse a.facetLink .caIcon{
+	top:-2px;
+	position: relative;
+}
+.facetHeadingLink .caIcon{
+	top: -2px;
+    position: relative;
+}
 #refineBrowse a.facetLink.active{
 	background-color:#aaa;
 }
@@ -4258,7 +4271,7 @@ div.quickSearchNoResults {
 }
 /* browse pop up panel */
 #splashBrowsePanel {
-	margin-bottom: 5px;
+	margin-bottom: 25px;
 	float: left;
 	width:100%;
 }
@@ -4331,6 +4344,7 @@ h2.browse {
     height: auto;
     overflow: auto;
     padding: 0px;
+    max-height:400px;
 }
 td.browseSelectPanelListCell {
 	padding-bottom: 8px;
@@ -4402,6 +4416,35 @@ div.browseCriterion {
 .browseCriterionLabel {
     padding: 5px;
     height: 40px;
+}
+.browseSelectMultiplePanelContentArea td.facetItem, .browseSelectMultiplePanelContentArea li{ /* li is for hier browser */
+	position:relative;
+	padding-left:20px;
+}
+[facet_item_selected="1"]::before {
+	font-family: FontAwesome;
+	content: "\f067"; 
+	padding-right:6px;
+	position:absolute;
+	left:7px;
+	top:4px;
+	color:#000 !important;
+}
+.browseSelectMultiplePanelContentArea li [facet_item_selected="1"]::before {
+	top:2px; /* hierbrowser */
+}
+.applyFacetContainer{
+	float:right;
+}
+.applyFacetContainer a.facetApply {
+    background-color: #aaa;
+    color: #fff;
+    font-size: 13px;
+    border-radius: 3px;
+    padding:4px;
+    text-transform:uppercase;
+    text-decoration:none;
+	text-align:center;
 }
 
 #resultBox {
@@ -6697,6 +6740,7 @@ table.caUseHistoryUpdateLocationMetadata tr td {
 	z-index:10;
 	line-height:1.2em;
 	text-align:left;
+	display: none;
 }
 
 div.caMetadataDictionaryViolationsList {

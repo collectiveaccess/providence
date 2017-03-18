@@ -1035,10 +1035,10 @@
 				if ($t_instance->getPrimaryKey()) {
 					// Perform import of embedded metadata (if required)
 					if ($vn_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_instance->getPrimaryKey(), 'transaction' => $o_trans)));
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()], 'transaction' => $o_trans]);
 					}
 					if ($vn_object_representation_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_new_rep->getPrimaryKey()), 'transaction' => $o_trans));
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()], 'transaction' => $o_trans]);
 					}
 
 					$va_notices[$t_instance->getPrimaryKey()] = array(
