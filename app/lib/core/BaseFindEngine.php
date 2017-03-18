@@ -284,6 +284,9 @@
 			$vs_table_pk = $t_table->primaryKey();
 			$vn_table_num = $t_table->tableNum();
 			
+			// Are we sorting on a set?
+			$vn_set_id = (is_string($pm_field) && preg_match("!^ca_sets.set_id:([\d]+)$!", $pm_field, $va_matches)) ? $va_matches[1] : null;
+			
 			// TODO: allow override of this with field-specific directions 
 			// Default direction
 			if (!in_array($ps_direction = strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
@@ -296,7 +299,8 @@
 			//$pm_field = $va_sort_tmp[0];
 			//$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;
 			$va_bundles = is_array($pm_field) ? $pm_field : explode(';', $pm_field); // $va_sort_tmp[0]);
-			$va_sorted_hits = array();
+			$va_sorted_hits = [];
+			$qr_sort = null;
 			
 			$vs_sort_tmp_table = null;
 			$va_sort_key_values = array();
@@ -315,7 +319,11 @@
 					$vs_subfield = null;
 				}
 			
-				if ($vs_field_table === $ps_table) {
+				if ($vn_set_id) {
+					// sort by set ranks
+					$va_sort_key_values[] = ca_sets::getRowIDRanksForSet($vn_set_id);
+					continue;
+				} elseif ($vs_field_table === $ps_table) {
 					// sort in primary table
 					if (!$t_table->hasField($vs_field)) {
 						if($va_sort_keys = $this->_getSortKeysForElement($vs_subfield ? $vs_subfield : $vs_field, $vn_table_num, $pa_hits)) {
@@ -342,107 +350,107 @@
 						}
 						$va_sort_key_values[] = $va_sort_keys;
 					}
-				} else {
+				} elseif (($vs_field_table == 'ca_set_items') && ($vs_field == 'rank') && ((int)$vs_rel_type > 0)) {
 					// sort in related table
-					if (($vs_field_table == 'ca_set_items') && ($vs_field == 'rank') && ((int)$vs_rel_type > 0)) {
-						// sort by ranks in specific set
-						$vs_sql = "
-							SELECT {$ps_table}.{$vs_table_pk}, ca_set_items.rank
-							FROM ca_sets
-							INNER JOIN ca_set_items ON ca_set_items.set_id = ca_sets.set_id
-							INNER JOIN {$ps_table} ON {$ps_table}.{$vs_table_pk} = ca_set_items.row_id
-							WHERE
-								(ca_set_items.table_num = ?) AND
-								(ca_set_items.set_id = ?) AND
-								{$ps_table}.{$vs_table_pk} IN (?)
-						";
+					// sort by ranks in specific set
+					$vs_sql = "
+						SELECT {$ps_table}.{$vs_table_pk}, ca_set_items.rank
+						FROM ca_sets
+						INNER JOIN ca_set_items ON ca_set_items.set_id = ca_sets.set_id
+						INNER JOIN {$ps_table} ON {$ps_table}.{$vs_table_pk} = ca_set_items.row_id
+						WHERE
+							(ca_set_items.table_num = ?) AND
+							(ca_set_items.set_id = ?) AND
+							{$ps_table}.{$vs_table_pk} IN (?)
+					";
+				
+					$qr_sort = $this->opo_db->query($vs_sql, array($vn_table_num, (int)$vs_rel_type, $pa_hits));
 					
-						$qr_sort = $this->opo_db->query($vs_sql, array($vn_table_num, (int)$vs_rel_type, $pa_hits));
-						
-					} else {
-						$t_rel = $this->opo_datamodel->getInstanceByTableName($vs_field_table, true);
-						$va_path = $this->opo_datamodel->getPath($ps_table, $vs_field_table);
-				
-						$vs_is_preferred_sql = null;
-						$va_joins = array();
-						
-						if (sizeof($va_path) > 2) {
-							// many-many
-							$vs_last_table = null;
-							// generate related joins
-							foreach($va_path as $vs_table => $va_info) {
-								$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-				
-								$vs_rel_type_sql = null;
-								if($t_instance->isRelationship() && $vs_rel_type) {
-									if(is_array($va_rel_types = caMakeRelationshipTypeIDList($vs_table, array($vs_rel_type))) && sizeof($va_rel_types)) {
-										$vs_rel_type_sql = " AND {$vs_table}.type_id IN (".join(",", $va_rel_types).")";
-									}
+				} else {
+					$t_rel = $this->opo_datamodel->getInstanceByTableName($vs_field_table, true);
+					$va_path = $this->opo_datamodel->getPath($ps_table, $vs_field_table);
+			
+					$vs_is_preferred_sql = null;
+					$va_joins = array();
+					
+					if (sizeof($va_path) > 2) {
+						// many-many
+						$vs_last_table = null;
+						// generate related joins
+						foreach($va_path as $vs_table => $va_info) {
+							$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+			
+							$vs_rel_type_sql = null;
+							if($t_instance->isRelationship() && $vs_rel_type) {
+								if(is_array($va_rel_types = caMakeRelationshipTypeIDList($vs_table, array($vs_rel_type))) && sizeof($va_rel_types)) {
+									$vs_rel_type_sql = " AND {$vs_table}.type_id IN (".join(",", $va_rel_types).")";
 								}
-								if ($vs_last_table) {
-									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
-									if (!sizeof($va_rels)) {
-										$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
-									}
-									if ($vs_table == $va_rels['one_table']) {
-										$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql;
-									} else {
-										$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql;
-									}
-								}
-								$vs_last_table = $vs_table;
 							}
-						} else {
-							$va_rels = $this->opo_datamodel->getRelationships($ps_table, $vs_field_table);
-							if (!$va_rels) { break; }		// field is not valid
-
-							if ($t_rel->hasField($vs_field)) { // intrinsic in related table
-								$va_joins[$vs_field_table] = 'INNER JOIN '.$vs_field_table.' ON '.$ps_table.'.'.$va_rels[$ps_table][$vs_field_table][0][0].' = '.$vs_field_table.'.'.$va_rels[$ps_table][$vs_field_table][0][1]."\n";
-
-								// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
-								if ($t_rel->hasField('is_preferred')) {
-									$vs_is_preferred_sql = " {$vs_field_table}.is_preferred = 1";
+							if ($vs_last_table) {
+								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
+								if (!sizeof($va_rels)) {
+									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
 								}
-							} else { // something else in related table (attribute!?)
-								// so we'll now be getting the values from a different table so we need a different set of primary ids to
-								// build the SQL to do that. For instance, if we're pulling ca_objects_x_occurrences.my_field relative to ca_objects,
-								// we need a list of ca_objects_x_occurrences.relation_id values that are related to the objects in $pa_hits.
-								// that list can obviously get longer, so we need a "reverse" mapping too so that we can make sense of that
-								// sorted ca_objects_x_occurrences.relation_id list and sort our objects accordingly
-								$va_maps = $this->_mapRowIDsForPathLength2($vn_table_num, $t_rel->tableNum(), $pa_hits, $pa_options);
-								if(is_array($va_maps['list']) && sizeof($va_maps['list'])) {
-									if($va_sort_keys = $this->_getSortKeysForElement($vs_subfield ? $vs_subfield : $vs_field, $t_rel->tableNum(), $va_maps['list'])) {
-										// translate those sort keys back to keys in the original table, i.e. ca_objects_x_occurrences.relation_id => ca_objects.object_id
-										$va_rewritten_sort_keys = array();
-										foreach($va_sort_keys as $vn_key_in_rel_table => $vs_sort_key) {
-
-											// there can be multiple related keys for one key in the primary table. for now we just decide the first one "wins"
-											// @todo: is there a better way to deal with this?
-											if(!isset($va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]])) {
-												$va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]] = $vs_sort_key;
-											}
-										}
-
-										$va_sort_key_values[] = $va_rewritten_sort_keys;
-									}
+								if ($vs_table == $va_rels['one_table']) {
+									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql;
+								} else {
+									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql;
 								}
-
-								continue; // skip that related table code below, we already have our values
 							}
+							$vs_last_table = $vs_table;
 						}
-						
-						$vs_join_sql = join("\n", $va_joins);
-						$vs_sql = "
-							SELECT {$ps_table}.{$vs_table_pk}, {$vs_field_table}.{$vs_field}
-							FROM {$ps_table}
-							{$vs_join_sql}
-							WHERE
-								{$vs_is_preferred_sql} ".($vs_is_preferred_sql ? ' AND ' : '')." {$ps_table}.{$vs_table_pk} IN (?)
-						";
-					
-						$qr_sort = $this->opo_db->query($vs_sql, array($pa_hits));
+					} else {
+						$va_rels = $this->opo_datamodel->getRelationships($ps_table, $vs_field_table);
+						if (!$va_rels) { break; }		// field is not valid
+
+						if ($t_rel->hasField($vs_field)) { // intrinsic in related table
+							$va_joins[$vs_field_table] = 'INNER JOIN '.$vs_field_table.' ON '.$ps_table.'.'.$va_rels[$ps_table][$vs_field_table][0][0].' = '.$vs_field_table.'.'.$va_rels[$ps_table][$vs_field_table][0][1]."\n";
+
+							// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
+							if ($t_rel->hasField('is_preferred')) {
+								$vs_is_preferred_sql = " {$vs_field_table}.is_preferred = 1";
+							}
+						} else { // something else in related table (attribute!?)
+							// so we'll now be getting the values from a different table so we need a different set of primary ids to
+							// build the SQL to do that. For instance, if we're pulling ca_objects_x_occurrences.my_field relative to ca_objects,
+							// we need a list of ca_objects_x_occurrences.relation_id values that are related to the objects in $pa_hits.
+							// that list can obviously get longer, so we need a "reverse" mapping too so that we can make sense of that
+							// sorted ca_objects_x_occurrences.relation_id list and sort our objects accordingly
+							$va_maps = $this->_mapRowIDsForPathLength2($vn_table_num, $t_rel->tableNum(), $pa_hits, $pa_options);
+							if(is_array($va_maps['list']) && sizeof($va_maps['list'])) {
+								if($va_sort_keys = $this->_getSortKeysForElement($vs_subfield ? $vs_subfield : $vs_field, $t_rel->tableNum(), $va_maps['list'])) {
+									// translate those sort keys back to keys in the original table, i.e. ca_objects_x_occurrences.relation_id => ca_objects.object_id
+									$va_rewritten_sort_keys = array();
+									foreach($va_sort_keys as $vn_key_in_rel_table => $vs_sort_key) {
+
+										// there can be multiple related keys for one key in the primary table. for now we just decide the first one "wins"
+										// @todo: is there a better way to deal with this?
+										if(!isset($va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]])) {
+											$va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]] = $vs_sort_key;
+										}
+									}
+
+									$va_sort_key_values[] = $va_rewritten_sort_keys;
+								}
+							}
+
+							continue; // skip that related table code below, we already have our values
+						}
 					}
 					
+					$vs_join_sql = join("\n", $va_joins);
+					$vs_sql = "
+						SELECT {$ps_table}.{$vs_table_pk}, {$vs_field_table}.{$vs_field}
+						FROM {$ps_table}
+						{$vs_join_sql}
+						WHERE
+							{$vs_is_preferred_sql} ".($vs_is_preferred_sql ? ' AND ' : '')." {$ps_table}.{$vs_table_pk} IN (?)
+					";
+				
+					$qr_sort = $this->opo_db->query($vs_sql, array($pa_hits));
+				}
+					
+				if($qr_sort) {
 					$va_sort_keys = array();
 					while($qr_sort->nextRow()) {
 						$va_row = $qr_sort->getRow();
