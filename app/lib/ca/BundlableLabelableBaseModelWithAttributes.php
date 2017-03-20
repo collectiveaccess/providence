@@ -566,6 +566,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		// Set rank of duplicated record such that it immediately follows its original
+		if($t_dupe->getProperty('RANK')) {
+			$t_dupe->setRankAfter($this->getPrimaryKey());
+		}
+		
 		if ($vb_we_set_transaction) { $o_t->commit();}
 		return $t_dupe;
 	}	
