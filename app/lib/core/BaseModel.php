@@ -9538,7 +9538,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$vs_relationship_type_limit_sql = '';
 		if (is_array($pa_relationship_type_ids) && (sizeof($pa_relationship_type_ids) > 0)) {
-			$vs_relationship_type_limit_sql = " AND type_id IN (?)";
+			$vs_relationship_type_limit_sql = " AND r.type_id IN (?)";
 			$va_sql_params[] = $pa_relationship_type_ids;
 		}
 		
