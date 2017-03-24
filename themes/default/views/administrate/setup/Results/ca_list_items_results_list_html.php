@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
+	$vn_start				= (int)$this->getVar('start');
 ?>
 <div id="scrollingResults">
 
@@ -74,8 +75,9 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			($i == 2) ? $i = 0 : "";
 ?>
 			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-				<td style="width:10px">
+				<td class="addItemToSetControl">
 					<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_item_id; ?>' class="addItemToSetControl" />
+					<div><?php print $vn_start + $vn_item_count + 1; ?></div>
 				</td>
 <?php
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
