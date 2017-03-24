@@ -264,6 +264,8 @@
 			//
  			// Set up view for display of results
  			// 			
+ 			
+ 			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
 			$this->view->setVar('page', $vn_page_num);
 			$this->view->setVar('result', $vo_result);	
 			
@@ -721,8 +723,8 @@
  		# -------------------------------------------------------
  		public function addCriteria() {
  			$ps_facet_name = $this->request->getParameter('facet', pString);
- 			$this->opo_browse->addCriteria($ps_facet_name, array($pn_id = $this->request->getParameter('id', pString)));
- 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', $pn_id);
+ 			$this->opo_browse->addCriteria($ps_facet_name, $pa_ids = explode('|', $this->request->getParameter('id', pString)));
+ 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', array_shift($pa_ids));
 			$this->opo_result_context->saveContext();
  			$this->Index();
  		}
@@ -730,15 +732,15 @@
  		public function clearAndAddCriteria() {
  			$this->opo_browse->removeAllCriteria();
  			$ps_facet_name = $this->request->getParameter('facet', pString);
- 			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
+ 			$this->opo_browse->addCriteria($ps_facet_name, explode('|', $this->request->getParameter('id', pString)));
  			$this->Index();
  		}
  		# -------------------------------------------------------
  		public function modifyCriteria() {
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			$this->opo_browse->removeCriteria($ps_facet_name, array($this->request->getParameter('mod_id', pString)));
- 			$this->opo_browse->addCriteria($ps_facet_name, array($pn_id = $this->request->getParameter('id', pString)));
- 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', $pn_id);
+ 			$this->opo_browse->addCriteria($ps_facet_name, $pa_ids = explode('|', $this->request->getParameter('id', pString)));
+ 			$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', array_shift($pa_ids));
 			$this->opo_result_context->saveContext();
  			$this->Index();
  		}
@@ -762,8 +764,7 @@
  		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
  		 */
  		public function browseName($ps_mode='singular') {
- 			// MUST BE OVERRIDDEN 
- 			return "undefined";
+ 			return $this->getResultsDisplayName($ps_mode);
  		}
  		# ------------------------------------------------------------------
  		/**

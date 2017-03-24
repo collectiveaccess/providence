@@ -103,6 +103,7 @@
 					if (in_array($vs_template, array(".", ".."))) { continue; }
 					$vs_template_tag = pathinfo($vs_template, PATHINFO_FILENAME);
 					if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
+						if (caGetOption('disabled', $va_template_info, false, ['castTo' => 'bool'])) { continue; }
 						if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
 
 						if ($vs_element_code && (caGetOption('elementCode', $va_template_info, null) !== $vs_element_code)) { continue; }
@@ -171,7 +172,7 @@
 			"@name", "@type", "@pageSize", "@pageOrientation", "@tables",
 			"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 			"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
-			"@elementCode"
+			"@elementCode", "@disabled"
 		) as $vs_tag) {
 			if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 				$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);

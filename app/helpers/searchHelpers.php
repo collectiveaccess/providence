@@ -33,6 +33,8 @@
 	/**
 	 *
 	 */
+	require_once(__CA_LIB_DIR__.'/core/Zend/Search/Lucene.php');
+	require_once(__CA_LIB_DIR__.'/core/Search/Common/Parsers/LuceneSyntaxParser.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 
@@ -1411,5 +1413,92 @@
 		}
 
 		return $va_return;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caSearchIsForSets($ps_search, $pa_options=null) {
+		$o_config = Configuration::load();
+		$o_query_parser = new LuceneSyntaxParser();
+		$o_query_parser->setEncoding($o_config->get('character_set'));
+		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
+		
+		$ps_search = preg_replace('![\']+!', '', $ps_search);
+		try {
+			$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+		} catch (Exception $e) {
+			// Retry search with all non-alphanumeric characters removed
+			try {
+				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+			} catch (Exception $e) {
+				$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+			}
+		}
+		
+		switch(get_class($o_parsed_query)) {
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				$va_items = $o_parsed_query->getSubqueries();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$va_items = $o_parsed_query->getTerms();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				$va_items = $o_parsed_query;
+				break;
+			default:
+				return false;
+				break;
+		}
+
+		$va_sets = [];
+		foreach ($va_items as $id => $subquery) {
+			switch(get_class($subquery)) {
+				case 'Zend_Search_Lucene_Search_Query_Phrase':
+				
+					foreach($subquery->getQueryTerms() as $o_term) {
+						$vs_field = $o_term->field;
+						$vs_value = $o_term->text;
+						
+						if ($vs_field == 'ca_sets.set_id') {
+							$va_sets[(int)$vs_value] = 1;
+						} elseif((in_array($vs_field, ['ca_sets.set_code', 'set'])) && ($vn_set_id = ca_sets::find(['set_code' => $vs_value], ['returnAs' => 'firstId'])))  {
+							$va_sets[(int)$vn_set_id] = 1;
+						}
+					}
+					
+					break;
+				case 'Zend_Search_Lucene_Index_Term':
+					$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
+					// intentional fallthrough to next case here
+				case 'Zend_Search_Lucene_Search_Query_Term':
+					$vs_field = $subquery->getTerm()->field;
+					$vs_value = $subquery->getTerm()->text;
+					
+					if ($vs_field == 'ca_sets.set_id') {
+						$va_sets[(int)$vs_value] = 1;
+					} elseif((in_array($vs_field, ['ca_sets.set_code', 'set'])) && ($vn_set_id = ca_sets::find(['set_code' => $vs_value], ['returnAs' => 'firstId'])))  {
+						$va_sets[(int)$vn_set_id] = 1;
+					}
+					
+					break;	
+				case 'Zend_Search_Lucene_Search_Query_Range':
+				case 'Zend_Search_Lucene_Search_Query_Wildcard':
+					// noop
+					break;
+				default:
+					if (is_array($va_sub_sets = caSearchIsForSets($subquery))) {
+						$va_sets = array_merge($va_sets, $va_sub_sets);
+					}
+					break;
+			}
+		}
+		
+		if(sizeof($va_sets) == 0) { return false; }
+		$t_set = new ca_sets();
+		return $t_set->getPreferredDisplayLabelsForIDs(array_keys($va_sets));
 	}
 	# ---------------------------------------

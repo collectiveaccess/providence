@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  	$t_stop 			= $this->getVar('t_subject');
 	$vn_stop_id 		= $this->getVar('subject_id');
 	$vn_above_id 		= $this->getVar('above_id');
+	$vn_after_id 		= $this->getVar('after_id');
 
 	$vb_can_edit	 	= $t_stop->isSaveable($this->request);
 	$vb_can_delete		= $t_stop->isDeletable($this->request);

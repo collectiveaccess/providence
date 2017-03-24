@@ -582,7 +582,9 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 			case 'ca_movements':
 			default:
 				// Get current movements for location
-				$va_movement_ids = $this->getRelatedItems('ca_movements', array('idsOnly' => true));
+				$va_location_ids = array_merge($this->get($x=$this->tableName().".children.".$this->primaryKey(), ['returnAsArray' => true]), [$this->getPrimaryKey()]);
+			
+				$va_movement_ids = $this->getRelatedItems('ca_movements', array('idsOnly' => true, 'row_ids' => $va_location_ids));
 				if (is_array($va_movement_ids) && sizeof($va_movement_ids)) {
 					// get list of objects on these movements...
 					$t_movement = new ca_movements();
@@ -593,8 +595,8 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 					$va_current_movement_ids = $t_object->getRelatedItems('ca_movements', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
 					
 					$va_movement_rels = array(); 
-					foreach($va_current_movement_ids as $vn_relation_id => $va_movement_info) {
-						if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $vn_relation_id; }
+					foreach($va_current_movement_ids as $vn_i => $va_movement_info) {
+						if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $va_movement_info['relation_id']; }
 					}
 					
 					return sizeof($va_movement_rels) ? caMakeSearchResult('ca_movements_x_objects', $va_movement_rels) : null;

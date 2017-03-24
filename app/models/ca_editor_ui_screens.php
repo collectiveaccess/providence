@@ -514,6 +514,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '',
 							'allowNull' => true,
 							'allowAll' => true,
+							'multiple' => true,
 							'label' => _t('Look up values using list'),
 							'description' => _t('Suggest values using a specific list. Select <em>All lists</em> to suggest any configured list value.')
 						);
@@ -527,6 +528,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "200px", 'height' => "1",
 							'takesLocale' => false,
 							'default' => '1',
+							'multiple' => true,
 							'label' => _t('Sort using'),
 							'showSortableElementsFor' => $va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['element_id'],
 							'description' => _t('Method used to sort repeating values.')
@@ -610,6 +612,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to relationship types'),
 								'description' => _t('Restricts display to items related using the specified relationship type(s). Leave all unselected for no restriction.')
 							),
@@ -620,6 +623,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to types'),
 								'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
 							),
@@ -678,6 +682,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to relationship types'),
 								'description' => _t('Restricts display to items related using the specified relationship type(s). Leave all unselected for no restriction.')
 							),
@@ -688,6 +693,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => "75px",
 								'takesLocale' => false,
 								'default' => '',
+								'multiple' => true,
 								'label' => _t('Restrict to types'),
 								'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
 							),
@@ -857,6 +863,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_SELECT,
 								'options' => array_flip(caGetAvailableSortFields($vs_bundle, null, ['includeInterstitialSortsFor' => $vs_table, 'distinguishInterstitials' => true])),
 								'default' => null,
+								'multiple' => true,
 								'width' => "275px", 'height' => 5,
 								'label' => _t('Sort options'),
 								'description' => _t('Limits sort options on this bundle.')
@@ -877,6 +884,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => "125px",
 							'takesLocale' => false,
 							'default' => '',
+							'multiple' => true,
 							'label' => _t('Restrict to list'),
 							'description' => _t('Restricts display to items from the specified list(s). Leave all unselected for no restriction.')
 						);
@@ -933,6 +941,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => "75px",
 							'takesLocale' => false,
 							'default' => '',
+							'multiple' => true,
 							'label' => _t('Restrict checklist to terms related to collection as'),
 							'description' => _t('Will restrict checklist to terms related to collections with the specified relationship type. Leave all unselected for no restriction.')
 						);
@@ -1288,6 +1297,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useList' => 'occurrence_types',
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show "Add to" occurrence controls for'),
 										'description' => ''
@@ -1307,6 +1317,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useList' => 'object_lot_types',
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show lots'),
 										'description' => ''
@@ -1322,6 +1333,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Lot (%1) date', $va_type['name_singular']),
 										'description' => ''
@@ -1354,6 +1366,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'occurrence_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show occurrences'),
 									'description' => ''
@@ -1367,6 +1380,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1400,6 +1414,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'collection_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show collections'),
 									'description' => ''
@@ -1413,6 +1428,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1445,6 +1461,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'movement_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show movements'),
 									'description' => ''
@@ -1458,6 +1475,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1491,6 +1509,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'useList' => 'loan_types',
 									'takesLocale' => false,
 									'default' => '',
+									'multiple' => true,
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show loans'),
 									'description' => ''
@@ -1505,6 +1524,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'showMetadataElementsWithDataType' => 2,
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => ''
@@ -1539,6 +1559,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useRelationshipTypeList' => 'ca_objects_x_storage_locations',
 										'takesLocale' => false,
 										'default' => '',
+										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show storage locations'),
 										'description' => _t('Show storage locations with selected relationship types.')
@@ -1556,6 +1577,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'default' => '',
+										'multiple' => true,
 										'takesLocale' => false,
 										'table' => 'ca_objects_x_storage_locations',
 										'showMetadataElementsWithDataType' => "*",
@@ -1689,10 +1711,19 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					'formatType' => FT_TEXT,
 					'displayType' => DT_SELECT,
 					'default' => '',
+					'multiple' => true,
 					'showTypesForTable' => $vs_table,
 					'width' => "275px", 'height' => 4,
 					'label' => _t('Display bundle for types: %1', $this->_DATAMODEL->getTableProperty($vs_table, 'NAME_PLURAL')),
 					'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
+				];
+				$va_additional_settings['bundleTypeRestrictionsIncludeSubtypes'] = [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_CHECKBOXES,
+					'default' => '0',
+					'width' => "10", 'height' => "1",
+					'label' => _t('Include sub-types'),
+					'description' => _t('Automatically include sub-types of selected types in type restriction.')	
 				];
 			}
 			
@@ -1740,9 +1771,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * Adds restriction (a binding between the screen and item type)
 	 *
 	 * @param int $pn_type_id the type
-	 * @param array $pa_settings Array of options for the restriction. (No options are currently implemented).
+	 * @param array $pa_settings Options include:
+	 *		includeSubtypes = automatically expand type restriction to include sub-types. [Default is false]
 	 * @return bool True on success, false on error, null if no screen is loaded
-	 * 
 	 */
 	public function addTypeRestriction($pn_type_id, $pa_settings=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
@@ -1772,6 +1803,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$t_restriction->set('table_num', $t_ui->get('editor_type'));
 		$t_restriction->set('type_id', $pn_type_id);
 		$t_restriction->set('screen_id', $this->getPrimaryKey());
+		$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $pa_settings, 0));
+		
+		unset($pa_settings['includeSubtypes']);
 		foreach($pa_settings as $vs_setting => $vs_setting_value) {
 			$t_restriction->setSetting($vs_setting, $vs_setting_value);
 		}
@@ -1785,13 +1819,36 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 	/**
+	 * Edit settings for an existing type restriction on the currently loaded row
+	 *
+	 * @param int $pn_restriction_id
+	 * @param int $pn_type_id New type for relationship
+	 */
+	public function editTypeRestriction($pn_restriction_id, $pa_settings=null) {
+		if (!($vn_ui_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
+		$t_restriction = new ca_editor_ui_screen_type_restrictions($pn_restriction_id);
+		if ($t_restriction->isLoaded()) {
+			$t_restriction->setMode(ACCESS_WRITE);
+			$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $pa_settings, 0));
+			$t_restriction->update();
+			if ($t_restriction->numErrors()) {
+				$this->errors = $t_restriction->errors();
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
 	 * Sets restrictions for currently loaded screen
 	 *
 	 * @param array $pa_type_ids list of types to restrict to
+	 * @param array $pa_options Options include:
+	 *		includeSubtypes = Automatically include subtypes for all set type restrictions. [Default is false]
 	 * @return bool True on success, false on error, null if no screen is loaded
-	 * 
 	 */
-	public function setTypeRestrictions($pa_type_ids) {
+	public function setTypeRestrictions($pa_type_ids, $pa_options=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
 		if (!is_array($pa_type_ids)) {
 			if (is_numeric($pa_type_ids)) { 
@@ -1820,20 +1877,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_current_restrictions = $this->getTypeRestrictions();
 		$va_current_type_ids = array();
 		foreach($va_current_restrictions as $vn_i => $va_restriction) {
-			$va_current_type_ids[$va_restriction['type_id']] = true;
+			$va_current_type_ids[$va_restriction['type_id']] = $va_restriction['restriction_id'];
 		}
 		
 		foreach($va_type_list as $vn_type_id => $va_type_info) {
 			if(in_array($vn_type_id, $pa_type_ids)) {
 				// need to set
 				if(!isset($va_current_type_ids[$vn_type_id])) {
-					$this->addTypeRestriction($vn_type_id);
+					$this->addTypeRestriction($vn_type_id, $pa_options);
+				} else {
+					$this->editTypeRestriction($va_current_type_ids[$vn_type_id], $pa_options);
 				}
-			} else {
+			} elseif(isset($va_current_type_ids[$vn_type_id])) {	
 				// need to unset
-				if(isset($va_current_type_ids[$vn_type_id])) {
-					$this->removeTypeRestriction($vn_type_id);
-				}
+				$this->removeTypeRestriction($vn_type_id);
 			}
 		}
 		return true;
@@ -1845,20 +1902,21 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_type_id The type of the restriction
 	 * @return bool True on success, false on error, null if no screen is loaded
 	 */
-	public function removeTypeRestriction($pn_type_id) {
-		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
+	public function removeTypeRestriction($pn_type_id=null) {
+		if (!($vn_screen_id = (int)$this->getPrimaryKey())) { return null; }
 		
-		$o_db = $this->getDb();
-		
-		$qr_res = $o_db->query("
-			DELETE FROM ca_editor_ui_screen_type_restrictions
-			WHERE
-				screen_id = ? AND type_id = ?
-		", (int)$this->getPrimaryKey(), (int)$pn_type_id);
-		
-		if ($o_db->numErrors()) {
-			$this->errors = $o_db->errors();
-			return false;
+		$va_params = ['screen_id' => $vn_screen_id];
+		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
+
+		if (is_array($va_screens = ca_editor_ui_screen_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
+			foreach($va_screens as $t_screen) {
+				$t_screen->setMode(ACCESS_WRITE);
+				$t_screen->delete(true);
+				if ($t_screen->numErrors()) {
+					$this->errors = $t_screen->errors();
+					return false;
+				}
+			}
 		}
 		return true;
 	}
@@ -1869,21 +1927,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @return bool True on success, false on error, null if no screen is loaded 
 	 */
 	public function removeAllTypeRestrictions() {
-		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
-		
-		$o_db = $this->getDb();
-		
-		$qr_res = $o_db->query("
-			DELETE FROM ca_editor_ui_screen_type_restrictions
-			WHERE
-				screen_id = ?
-		", (int)$this->getPrimaryKey());
-		
-		if ($o_db->numErrors()) {
-			$this->errors = $o_db->errors();
-			return false;
-		}
-		return true;
+		return $this->removeTypeRestriction();
 	}
 	# ----------------------------------------
 	/**
@@ -1895,29 +1939,10 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function getTypeRestrictions($pn_type_id=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
 		
-		$o_db = $this->getDb();
-		
-		$vs_table_type_sql = '';
-		if ($pn_type_id > 0) {
-			$vs_table_type_sql .= ' AND type_id = '.intval($pn_type_id);
-		}
-		$qr_res = $o_db->query("
-			SELECT *
-			FROM ca_editor_ui_screen_type_restrictions
-			WHERE
-				screen_id = ? {$vs_table_type_sql}
-		", (int)$this->getPrimaryKey());
-		
-		if ($o_db->numErrors()) {
-			$this->errors = $o_db->errors();
-			return false;
-		}
-		
-		$va_restrictions = array();
-		while($qr_res->nextRow()) {
-			$va_restrictions[] = $qr_res->getRow();
-		}
-		return $va_restrictions;
+		$va_params = ['screen_id' => $vn_screen_id];
+		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
+
+		return ca_editor_ui_screen_type_restrictions::find($va_params, ['returnAs' => 'arrays']);
 	}
 	# ------------------------------------------------------
 	/**
@@ -2126,14 +2151,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_type_restrictions = $this->getTypeRestrictions();
 		$va_restriction_type_ids = array();
+		
+		$vb_include_subtypes = false;
 		foreach($va_type_restrictions as $vn_i => $va_restriction) {
 			$va_restriction_type_ids[] = $va_restriction['type_id'];
+			if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
 		}
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->getTableNum()))) { return null; }
-
+		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
+			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
+		]);
+		
 		if($t_instance instanceof BaseRelationshipModel) { // interstitial
-			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)).$vs_subtype_element);
 		} elseif($t_instance instanceof ca_representation_annotations) { // config based
 			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
 			$va_annotation_type_select_list = array();
@@ -2142,9 +2173,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
 			}
 
-			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
 		} else { // list-based
-			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
 		}
 	
 		return $o_view->render('ca_editor_ui_screen_type_restrictions.php');
@@ -2153,7 +2184,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));
+		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray), ['includeSubtypes' => $po_request->getParameter('type_restriction_include_subtypes', pInteger)]);
 	}
 	# ----------------------------------------
 }

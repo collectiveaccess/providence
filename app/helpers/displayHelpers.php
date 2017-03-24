@@ -48,15 +48,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 
 // Components of __CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__
 //
+//	[\d]+(?!%)															-- Match numeric tags not followed by options
 //	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|			-- Match ^ca_* tags with options
 //	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}+|						-- Match simple ^ca_* tags
-//	[0-9]+(?=[.,;])|													-- Match numeric tags followed by punctuation
 //	[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|				-- Match tags with options
 //	[A-Za-z0-9_\.\/]+[:]{0,1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|				-- Match XPath
 //	[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{0,1}[A-Za-z0-9_\.\/]*|			-- Match tags with modifiers
 //	[A-Za-z0-9_\.\/]+													-- Match simple tags (letters,number. dots and slashes)
 	
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]+|[0-9]+(?=[.,;])|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{0,1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{0,1}[A-Za-z0-9_\.\/]*|[A-Za-z0-9_\.\/]+)/");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([\d]+(?!%|~)|ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{0,1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{0,1}[A-Za-z0-9_\.\/]*|[A-Za-z0-9_\.\/]+)/");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -854,7 +854,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				
 				$vs_buf .= "<div class='recordTitle {$vs_table_name}' style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? "<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '') : "")."</a></div>";
 				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
-					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
 				if ($po_view->request->config->get("include_custom_inspector")) {
 					if(file_exists($po_view->request->getViewsDirectoryPath()."/bundles/inspector_info.php")) {
@@ -1220,10 +1220,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 				$va_component_types = $po_view->request->config->getList('ca_objects_component_types');
 				if (is_array($va_component_types) && sizeof($va_component_types)) {
-					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects'))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects', 'excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 					$vs_buf .= "<br/><strong>".((($vn_num_components = $t_item->numObjects(null, array('return' => 'components'))) == 1) ? _t('Lot contains %1 component', $vn_num_components) : _t('Lot contains %1 components', $vn_num_components))."</strong>\n";
 				} else {
-					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
 
 				if (((bool)$po_view->request->config->get('allow_automated_renumbering_of_objects_in_a_lot')) && ($va_nonconforming_objects = $t_item->getObjectsWithNonConformingIdnos())) {
@@ -2978,6 +2978,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
 		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		if(!$ps_table) { return '???'; }
@@ -3913,5 +3914,93 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		}
 		
 		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if hierarchy browser drag-and-drop sorting is enabled for the current user in the current table for a given item.
+	 *
+	 * @param RequestHTTP $pt_request The current request
+	 * @param string $ps_table The table being browsed
+	 * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items.
+	 *
+	 * @return bool
+	 */
+	function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id) {
+		$o_dm = Datamodel::load();
+		$o_config = Configuration::load();
+		
+		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+		
+		if(!$pt_request->isLoggedIn() || (!$pt_request->user->canDoAction("can_edit_{$ps_table}") && (($vs_hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$pt_request->user->canDoAction("can_edit_{$vs_hier_table}") : false))) { return false; }
+		if (!$t_instance->isHierarchical()) { return false; }
+		if (!($vs_rank_fld = $t_instance->getProperty('RANK'))) { return false; }
+		if (!$t_instance->load($pn_id)) { return false; }
+		
+		$vs_def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
+		$vs_def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
+		
+		if ($vs_def_table_name && ($t_def = $o_dm->getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
+			return true;
+		} else {
+			$va_sort_values = $o_config->getList("{$ps_table}_hierarchy_browser_sort_values");
+			if ((sizeof($va_sort_values) >= 1) && ($va_sort_values[0] === "{$ps_table}.{$vs_rank_fld}")) { return true; }
+		}
+		return false;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return an array of statuses for drag-and-drop reordering by row_id for a given table. If the table does not support separate
+	 * drag-and-drop statuses per row then a boolean value is returned that applies to the entire table. 
+	 *
+	 * Currently, only ca_list_items supports per-row statuses.
+	 *
+	 * @param RequestHTTP $pt_request The current request
+	 * @param string $ps_table The table being browsed
+	 * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items.
+	 *
+	 * @return mixed An array if the table supports per-row drag-and-drop reordering statuses, boolean values as would be returned by caDragAndDropSortingForHierarchyEnabled() otherwise.
+	 *
+	 * @seealso caDragAndDropSortingForHierarchyEnabled
+	 */
+	function caGetDragAndDropSortingAvailabilityMap($pt_request, $ps_table, $pn_id) {
+		$o_dm = Datamodel::load();
+		$o_config = Configuration::load();
+		
+		if ($ps_table == 'ca_list_items') {
+			$t_list = new ca_lists();
+			$va_list_of_lists = $t_list->getListOfLists();
+			
+			$va_map = [];
+			foreach($va_list_of_lists as $vn_list_id => $va_lists_by_locale) {
+				foreach($va_lists_by_locale as $vn_locale_id => $va_item) {
+					$va_map[$va_item['root_id']] = caDragAndDropSortingForHierarchyEnabled($pt_request, 'ca_list_items', $va_item['root_id']);
+				}
+			}
+			return $va_map;
+		} else {
+			return caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id);
+		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Extract a value from an array of settings using the specified locale. If a value for the locale is 
+	 * not available all other locales with the same language will be tried. For example, if en_US is specified
+	 * and there is no value then en_AU, en_GB, en_CA, etc. will be tried as well.
+	 *
+	 * @param array $ps_settings A settings block
+	 * @param string $ps_key The name of the setting
+	 * @param string $ps_locale A locale code (ex. "en_US") or language code (ex. "en")
+	 */
+	function caExtractSettingValueByLocale($pa_settings, $ps_key, $ps_locale) {
+		if (isset($pa_settings[$ps_key])) {
+			if (isset($pa_settings[$ps_key][$ps_locale]) && ($pa_settings[$ps_key][$ps_locale])) {
+				return $pa_settings[$ps_key][$ps_locale];
+			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
+				foreach($va_locales_for_language as $vs_locale) {
+					if($pa_settings[$ps_key][$vs_locale]) { return $pa_settings[$ps_key][$vs_locale]; }
+				}
+			}
+		}
+		return null;
 	}
 	# ------------------------------------------------------------------

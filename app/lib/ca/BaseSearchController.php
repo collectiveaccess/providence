@@ -148,7 +148,19 @@
 			//
 			// Execute the search
 			//
-			if($vs_search && ($vs_search != "")){ /* any request? */
+			if($vs_search){ /* any request? */
+				if(is_array($va_set_ids = caSearchIsForSets($vs_search))) {
+					// When search includes sets we add sort options for the references sets...
+					foreach($va_set_ids as $vn_set_id => $vs_set_name) {
+						$this->opa_sorts["ca_sets.set_id:{$vn_set_id}"] = _t("Set order: %1", $vs_set_name);
+					}
+					
+					// ... and default the sort to the set
+					if ($vb_is_new_search) {
+						$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
+					}
+				}
+				
 				$va_search_opts = array(
 					'sort' => $vs_sort, 
 					'sort_direction' => $vs_sort_direction, 
@@ -158,6 +170,7 @@
 					'dontCheckFacetAvailability' => true,
 					'filterNonPrimaryRepresentations' => true
 				);
+				
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);
  					$po_search = new $vs_browse_classname;
@@ -231,6 +244,7 @@
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());
  				$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
+ 				$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
  				if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
  				
  				$vo_result->seek(($vn_page_num - 1) * $vn_items_per_page);
@@ -494,8 +508,7 @@
  		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
  		 */
  		public function searchName($ps_mode='singular') {
- 			// MUST BE OVERRIDDEN 
- 			return "undefined";
+ 			return $this->getResultsDisplayName($ps_mode);
  		}
  		# -------------------------------------------------------
  		public function usesHierarchyBrowser() {
