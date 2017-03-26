@@ -11012,7 +11012,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		restrictToTypes = array of type names or type_ids to restrict to. Only items with a type_id in the list will be returned.
 	 *		hasRepresentations = if set when model is for ca_objects views are only returned when the object has at least one representation.
 	 *		checkAccess = an array of access values to filter only. Items will only be returned if the item's access setting is in the array.
-	 * @return bool True on success, false on error
+	 * @return array List on success, false on error
 	 */
 	public function getRecentlyAddedItems($pn_limit=10, $pa_options=null) {
 		$o_db = $this->getDb();
