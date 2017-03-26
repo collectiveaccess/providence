@@ -4268,8 +4268,10 @@ div.quickSearchNoResults {
 .criteriaLink:last-of-type{
     margin-right:15px;
 }
+
 /* browse pop up panel */
 #splashBrowsePanel {
+	display: none;
 	margin-bottom: 25px;
 	float: left;
 	width:100%;
@@ -5276,7 +5278,7 @@ a.roleCheckAllNoneButton {
 }
 
 /* find results add to set controls */
-td.addItemToSetControl {
+td.addItemToSetControl, th.addItemToSetControl {
 	width:15px; 
 	position: relative;
 }
