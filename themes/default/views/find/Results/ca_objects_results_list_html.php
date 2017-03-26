@@ -34,6 +34,7 @@
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
 	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+	$vn_start				= (int)$this->getVar('start');
 	
 ?>
 <div id="scrollingResults">
@@ -90,11 +91,12 @@
 				($i == 2) ? $i = 0 : "";
 ?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-					<td style="width:10px">
+					<td class="addItemToSetControl">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
+						<div><?php print $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_objects', $vn_object_id, array(), array())."</td>";
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
                         print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</span></td>";
