@@ -3982,3 +3982,25 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([\d]+(?!%|~)|ca_[A-Za-z]
 		}
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Extract a value from an array of settings using the specified locale. If a value for the locale is 
+	 * not available all other locales with the same language will be tried. For example, if en_US is specified
+	 * and there is no value then en_AU, en_GB, en_CA, etc. will be tried as well.
+	 *
+	 * @param array $ps_settings A settings block
+	 * @param string $ps_key The name of the setting
+	 * @param string $ps_locale A locale code (ex. "en_US") or language code (ex. "en")
+	 */
+	function caExtractSettingValueByLocale($pa_settings, $ps_key, $ps_locale) {
+		if (isset($pa_settings[$ps_key])) {
+			if (isset($pa_settings[$ps_key][$ps_locale]) && ($pa_settings[$ps_key][$ps_locale])) {
+				return $pa_settings[$ps_key][$ps_locale];
+			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
+				foreach($va_locales_for_language as $vs_locale) {
+					if($pa_settings[$ps_key][$vs_locale]) { return $pa_settings[$ps_key][$vs_locale]; }
+				}
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
