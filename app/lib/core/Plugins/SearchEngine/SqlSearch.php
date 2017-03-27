@@ -784,7 +784,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							if(sizeof($va_ap_tmp) >= 2) {
 								$va_element = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $vs_access_point);
 								
-								if ($va_element) {
+								if (isset($va_element['field_num'],$va_element['table_num'])) {
 									$vs_fld_num = $va_element['field_num'];
 									$vs_fld_table_num = $va_element['table_num'];
 									$vs_fld_limit_sql = " AND (swi.field_table_num = {$vs_fld_table_num} AND swi.field_num = '{$vs_fld_num}')";
