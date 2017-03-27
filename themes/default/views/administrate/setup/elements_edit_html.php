@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,7 +61,33 @@
 							'no_tooltips' 				=> false
 						);
 	foreach($t_element->getFormFields() as $vs_f => $va_user_info) {
-		print $t_element->htmlFormElement($vs_f, null, array_merge($va_options, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f))));
+		$vb_element_editable = true;
+		$vs_warning = null;
+		
+		switch($vs_f) {
+			case 'element_code':
+				if ($t_element->getPrimaryKey()) {
+					if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use')) {
+						$vb_element_editable = false;
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
+					} else {
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+					}
+				}
+				break;
+			case 'datatype':
+				if ($t_element->getPrimaryKey()) {
+					if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_data_types_when_in_use') && ca_metadata_elements::elementIsInUse($vn_element_id)) {
+						$vb_element_editable = false;
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Element type cannot be changed because element is in use').'</span>';	
+					} else {
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may delete existing data in this element').'</span>';	
+					}
+				}
+				break;
+		}
+		
+		print $t_element->htmlFormElement($vs_f, "<div class='formLabel'>^EXTRA^LABEL<br/>^ELEMENT<br/>{$vs_warning}</div>", array_merge($va_options, array('readonly' => !$vb_element_editable, 'field_errors' => $this->request->getActionErrors('field_'.$vs_f))));
 	}
 
 	if($vn_parent_id){ print caHTMLHiddenInput('parent_id', array('value' => $vn_parent_id)); }

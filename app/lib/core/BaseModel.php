@@ -2367,7 +2367,7 @@ class BaseModel extends BaseObject {
 						# -----------------------------
 						case (FT_NUMBER):
 						case (FT_BIT):
-							if (!$vb_is_hierarchical) {
+							//if (!$vb_is_hierarchical) {
 								if ((isset($this->RANK)) && ($vs_field == $this->RANK) && (!$this->get($this->RANK))) {
 									//$qr_fmax = $o_db->query("SELECT MAX(".$this->RANK.") m FROM ".$this->TABLE);
 									//$qr_fmax->nextRow();
@@ -2375,7 +2375,7 @@ class BaseModel extends BaseObject {
 									//$this->set($vs_field, $vs_field_value);
 									$va_need_to_set_rank_for[] = $vs_field;
 								}
-							}
+							//}
 							$vs_fields .= "$vs_field,";
 							$v = $vs_field_value;
 							if (!trim($v)) { $v = 0; }
@@ -2458,6 +2458,7 @@ class BaseModel extends BaseObject {
 							break;
 					}
 				}
+				
 				if ($o_db->numErrors() == 0) {
 					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
 						$this->_FIELD_VALUES[$vs_pk] = $vn_new_id = $o_db->getLastInsertID();
@@ -6399,7 +6400,7 @@ class BaseModel extends BaseObject {
 		
 		if (!in_array($ps_change_type, array('I', 'U', 'D'))) { return false; };		// invalid change type (shouldn't happen)
 
-		if (!($vn_row_id = $this->getPrimaryKey()) && !($vn_row_id = caGetOption('row_id', $pa_options, null))) { return false; }					// no logging without primary key value
+		if (!($vn_row_id = caGetOption('row_id', $pa_options, null)) && !($vn_row_id = $this->getPrimaryKey())) { return false; }					// no logging without primary key value
 
 		// get unit id (if set)
 		global $g_change_log_unit_id;
@@ -9513,7 +9514,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$vs_relationship_type_limit_sql = '';
 		if (is_array($pa_relationship_type_ids) && (sizeof($pa_relationship_type_ids) > 0)) {
-			$vs_relationship_type_limit_sql = " AND type_id IN (?)";
+			$vs_relationship_type_limit_sql = " AND r.type_id IN (?)";
 			$va_sql_params[] = $pa_relationship_type_ids;
 		}
 		
@@ -11012,7 +11013,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		restrictToTypes = array of type names or type_ids to restrict to. Only items with a type_id in the list will be returned.
 	 *		hasRepresentations = if set when model is for ca_objects views are only returned when the object has at least one representation.
 	 *		checkAccess = an array of access values to filter only. Items will only be returned if the item's access setting is in the array.
-	 * @return bool True on success, false on error
+	 * @return array List on success, false on error
 	 */
 	public function getRecentlyAddedItems($pn_limit=10, $pa_options=null) {
 		$o_db = $this->getDb();
@@ -11271,7 +11272,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public static function getIdnoForID($pn_id) {
 		$o_dm = Datamodel::load();
-		if (($t_instance = $o_dm->getTableInstance(static::class, true) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')))) {
+		if (($t_instance = $o_dm->getTableInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = new Db();
 			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
 			if ($qr_res->nextRow()) {
@@ -12027,6 +12028,71 @@ $pa_options["display_form_field_tips"] = true;
 		}
 
 		return $va_rels;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function setRankAfter($pn_after_id, $pa_options=null) {
+		$o_db = $this->getDb();
+		
+		
+		$vs_item_pk = $this->primaryKey();
+		$vs_item_table = $this->tableName();
+		$vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
+		$vn_parent_id = (int)$this->get($vs_parent_id_fld);
+		
+		if (!($vs_rank_fld = $this->getProperty('RANK'))) { return null; }
+		
+		$va_params = [];
+		$vs_parent_sql = "{$vs_parent_id_fld} IS NULL";
+		if ($pn_after_id) { $va_params[] = $pn_after_id; }
+		if ($vn_parent_id) { 
+			$va_params[] = $vn_parent_id; 
+			$vs_parent_sql = "{$vs_parent_id_fld} = ?";
+		}
+		
+		// If "after_id" is null then change ranks such that the "id" row is at the beginning
+		if (!$pn_after_id) {
+			$qr_res = $o_db->query("
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_parent_sql} ORDER BY {$vs_rank_fld} LIMIT 1
+			", $va_params);
+		} else {
+			$qr_res = $o_db->query("
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? AND {$vs_parent_sql} ORDER BY {$vs_rank_fld} LIMIT 1
+			", $va_params);
+		}
+	
+		if ($qr_res->nextRow()) {
+			$vn_after_rank = $qr_res->get($vs_rank_fld);
+			if (!$pn_after_id) { $vn_after_rank--; }
+		} else {
+			throw new ApplicationException(_t('Invalid id'));
+		}
+	
+		$va_params = [];
+		$vs_parent_sql = "{$vs_parent_id_fld} IS NULL";
+		if ($vn_parent_id) { 
+			$va_params[] = $vn_parent_id; 
+			$vs_parent_sql = "{$vs_parent_id_fld} = ?";
+		}
+		$va_params[] = $vn_after_rank;
+		
+		$qr_res = $o_db->query("
+			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE {$vs_parent_sql} AND {$vs_rank_fld} > ?
+		", $va_params);
+		
+		// Log changes to ranks
+		$qr_res = $o_db->query("
+			SELECT * FROM {$vs_item_table} WHERE {$vs_parent_sql} AND {$vs_rank_fld} > ?
+		", $va_params);
+		while($qr_res->nextRow()) {
+			$this->logChange("U", null, ['row_id' => $qr_res->get($vs_item_pk), 'snapshot' => $qr_res->getRow()]);
+		}
+	
+		$this->setMode(ACCESS_WRITE);
+		$this->set($vs_rank_fld, $vn_after_rank + 1);
+		return $this->update();
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

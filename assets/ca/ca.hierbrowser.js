@@ -48,6 +48,7 @@ var caUI = caUI || {};
 			levelDataUrl: '',
 			initDataUrl: '',
 			editUrl: '',
+			sortSaveUrl: '',
 
 			editUrlForFirstLevel: '',
 			editDataForFirstLevel: '',	// name of key in data to use for item_id in first level, if different from other levels
@@ -82,6 +83,10 @@ var caUI = caUI || {};
 			autoShrink: false,
 			autoShrinkMaxHeightPx: 180,
 			autoShrinkAnimateID: '',
+			
+			allowDragAndDropSorting: false,
+			dragAndDropSortInProgress: false,
+			dontAllowDragAndDropSortForFirstLevel: false,
 
 			/* how do we treat disabled items in the browser? can be
 			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link and apply the disabled class ('classNameDisabled' option)
@@ -446,7 +451,7 @@ var caUI = caUI || {};
 									switch (that.disabledItems) {
 										case 'full':
 											jQuery('#' + newLevelListID).append(
-												"<li class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 											);
 											break;
 										case 'hide': // item is hidden -> noop
@@ -455,17 +460,17 @@ var caUI = caUI || {};
 										case 'disabled':
 										default:
 											jQuery('#' + newLevelListID).append(
-												"<li class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
 											);
 											break;
 									}
 								} else if ((!((level == 0) && that.dontAllowEditForFirstLevel))) {
 									jQuery('#' + newLevelListID).append(
-										"<li class='" + that.className + "' id='testing'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + " facetItem' data-facet_item_id='" + item['item_id'] + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 									);
 								} else {
 									jQuery('#' + newLevelListID).append(
-										"<li class='" + that.className + "' id='testing'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + " facetItem' data-facet_item_id='" + item['item_id'] + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 									);
 								}
 
@@ -502,7 +507,8 @@ var caUI = caUI || {};
 										editUrl = that.editUrl;
 									}
 									if (editUrl) {
-										jQuery('#' + newLevelListID + " li:last a:last").click(function() {
+										jQuery('#' + newLevelListID + " li:last a:last").click(function(e) {
+											if (that.dragAndDropSortInProgress) { e.preventDefault(); return false; }
 											if(that.selectMultiple){
 												// code to add + infront of items when multiple selections for or browse are permitted
 												// #facet_apply is in ajax_browse_Facet_html.php
@@ -523,7 +529,8 @@ var caUI = caUI || {};
 											return false;
 										});
 									} else {
-										jQuery('#' + newLevelListID + " li:last a:last").click(function() {
+										jQuery('#' + newLevelListID + " li:last a:last").click(function(e) {
+											if (that.dragAndDropSortInProgress) { e.preventDefault(); return false; }
 											var l = jQuery(this).parent().parent().parent().data('level');
 											var item_id = jQuery(this).data('item_id');
 											var has_children = jQuery(this).data('has_children');
@@ -573,7 +580,35 @@ var caUI = caUI || {};
 						} else {
 							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
 						}
-					}//);
+					}
+
+					if (item_id && that.doDragAndDropSorting(item_id) && that.sortSaveUrl && (((level == 0) && !that.dontAllowDragAndDropSortForFirstLevel) || (level > 0))) {
+						jQuery("#" + newLevelListID).sortable({ opacity: 0.7, 
+							revert: 0.2, 
+							scroll: true , 
+							update: function(e, ui) {
+								var dragged_dom_id = jQuery(ui.item).find("a").attr('id');
+								var dragged_item_id = jQuery("#" + dragged_dom_id).data('item_id');
+								
+								var after_dom_id = jQuery(ui.item).prev().find("a").attr('id');
+								var after_item_id = jQuery("#" + after_dom_id).data('item_id');
+								
+								jQuery.getJSON(that.sortSaveUrl, {'id': dragged_item_id, 'after_id': after_item_id}, function(d) {
+									if (!d) { alert("Could not save reordering"); return false; }
+									if (d.errors.length > 0) { alert("Could not save reordering: " + d.errors.join('; ')); return false; }
+									if (d.timestamp) { jQuery("#" + newLevelListID).closest('form').find('input[name=form_timestamp]').val(d.timestamp); }
+									return false;
+								});
+								
+							},
+							start: function(e, ui) {
+								that.dragAndDropSortInProgress = true;
+							},
+							stop: function(e, ui) {
+								that.dragAndDropSortInProgress = false;
+							}
+						});
+					}
 
 					var dontDoSelectAndScroll = false;
 					if (!foundSelected && that.selectedItemIDs[level]) {
@@ -698,6 +733,20 @@ var caUI = caUI || {};
 					jQuery('#' + that.typeMenuID).show(300);
 				}
 			}
+		}
+		// --------------------------------------------------------------------------------
+		// Determine if drag and drop sorting is permitted. The allowDragAndDropSorting option can be
+		// either a boolean, in which case sorting is supported (or not) across the board, or an object
+		// with properties set to trigger ids from first-level items and boolean values indicating whether
+		// drag and drop sorting is permitted for the list under that first-level item. The object format
+		// is used when displaying lists in the hierarchy browser to provide for per-list sort settings.
+		//
+		// @param int id 
+		// @return mixed boolean and object with sorting map. 
+		//
+		that.doDragAndDropSorting = function(id) {
+			if (typeof that.allowDragAndDropSorting !== 'object') return that.allowDragAndDropSorting;
+			return that.allowDragAndDropSorting[id];
 		}
 		// --------------------------------------------------------------------------------
 		// Records user selection of an item
