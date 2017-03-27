@@ -66,19 +66,23 @@
 		
 		switch($vs_f) {
 			case 'element_code':
-				if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use')) {
-					$vb_element_editable = false;
-					$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
-				} else {
-					$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+				if ($t_element->getPrimaryKey()) {
+					if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use')) {
+						$vb_element_editable = false;
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
+					} else {
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+					}
 				}
 				break;
 			case 'datatype':
-				if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_data_types_when_in_use') && ca_metadata_elements::elementIsInUse($vn_element_id)) {
-					$vb_element_editable = false;
-					$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Element type cannot be changed because element is in use').'</span>';	
-				} else {
-					$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may delete existing data in this element').'</span>';	
+				if ($t_element->getPrimaryKey()) {
+					if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_data_types_when_in_use') && ca_metadata_elements::elementIsInUse($vn_element_id)) {
+						$vb_element_editable = false;
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Element type cannot be changed because element is in use').'</span>';	
+					} else {
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may delete existing data in this element').'</span>';	
+					}
 				}
 				break;
 		}

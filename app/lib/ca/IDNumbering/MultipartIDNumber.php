@@ -1006,10 +1006,12 @@ class MultipartIDNumber extends IDNumber {
 			}
 		}
 		
-		if ($vb_dont_allow_editing) {
-			$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
-		} else {
-			$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+		if (isset($pa_options['row_id']) && ($pa_options['row_id'] > 0)) {
+			if ($vb_dont_allow_editing) {
+				$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
+			} else {
+				$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+			}
 		}
 
 		$vs_js = '';
