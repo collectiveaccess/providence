@@ -123,6 +123,9 @@ class ElementsController extends BaseEditorController {
 		$t_element->setMode(ACCESS_WRITE);
 		$va_request = $_REQUEST; /* we don't want to modify $_REQUEST since this may cause ugly side-effects */
 		foreach($t_element->getFormFields() as $vs_f => $va_field_info) {
+			if ((bool)$t_element->getAppConfig()->get('dont_allow_editing_of_codes_for_in_use_metadata_elements')) { continue; }
+			if ((bool)$t_element->getAppConfig()->get('dont_allow_editing_of_data_types_for_in_use_metadata_elements')) { continue; }
+			
 			$t_element->set($vs_f, $_REQUEST[$vs_f]);
 			unset($va_request[$vs_f]);
 			
