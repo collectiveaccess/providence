@@ -966,7 +966,7 @@ class MultipartIDNumber extends IDNumber {
 		$vs_separator = $this->getSeparator();
 		$va_element_vals = $this->explodeValue($this->getValue());
 		
-		$vb_dont_allow_editing = isset($pa_options['row_id']) && ($pa_options['row_id'] > 0) && (bool)$o_config->get($this->getFormat().'_dont_allow_editing_of_codes_when_in_use');
+		$vb_dont_allow_editing = isset($pa_options['row_id']) && ($pa_options['row_id'] > 0) && $o_config->exists($this->getFormat().'_dont_allow_editing_of_codes_when_in_use') && (bool)$o_config->get($this->getFormat().'_dont_allow_editing_of_codes_when_in_use');
 		if ($vb_dont_allow_editing) { $pa_options['readonly'] = true; }
 
 		if (!is_array($va_elements = $this->getElements())) { $va_elements = array(); }
@@ -1006,11 +1006,13 @@ class MultipartIDNumber extends IDNumber {
 			}
 		}
 		
-		if (isset($pa_options['row_id']) && ($pa_options['row_id'] > 0)) {
-			if ($vb_dont_allow_editing) {
-				$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
-			} else {
-				$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+		if ($o_config->exists($this->getFormat().'_dont_allow_editing_of_codes_when_in_use')) {
+			if (isset($pa_options['row_id']) && ($pa_options['row_id'] > 0)) {
+				if ($vb_dont_allow_editing) {
+					$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
+				} else {
+					$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+				}
 			}
 		}
 
