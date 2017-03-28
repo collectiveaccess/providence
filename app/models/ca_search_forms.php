@@ -854,7 +854,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
 					if ($vs_field === '_metadata') {
 						foreach($va_element_codes as $vs_code) {
-							$va_field_list[$vs_code] = [];
+							$va_field_list[$vs_code] = $va_field_indexing_info;
 						}
 					} else {
 						$va_field_list[$vs_field] = $va_field_indexing_info;
@@ -919,15 +919,26 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
 					if ($this->getAppConfig()->get($vs_subject_table.'_disable')) { continue; }
 				}
-
 				if (caGetBundleAccessLevel($vs_primary_table, $vs_subject_table) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+				
+				$va_element_codes = (method_exists($t_table, 'getApplicableElementCodes') ? $t_table->getApplicableElementCodes(null, false, false) : []);
+				
+				$va_field_list = [];
 				foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
+					if ($vs_field === '_metadata') {
+						foreach($va_element_codes as $vs_code) {
+							$va_field_list[$vs_code] = $va_field_indexing_info;
+						}
+					} else {
+						$va_field_list[$vs_field] = $va_field_indexing_info;
+					}
+				}
+
+				foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 					if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
 
-					if (($va_field_info = $t_table->getFieldInfo($vs_field))) {
+					if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field))) {
 						if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
-
-
 
 						$vs_bundle = $vs_table.'.'.$vs_field;
 
@@ -962,7 +973,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 			}
 		}
-
+//print_R($va_available_bundles);
 
 		//
 		// access points
