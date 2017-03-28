@@ -548,7 +548,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$pn_user_id = caGetOption('user_id', $pa_options, null);
 		$pn_access = caGetOption('access', $pa_options, null);
 		$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
-		
 		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
 
 		$o_dm = $this->getAppDatamodel();
