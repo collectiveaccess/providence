@@ -264,6 +264,8 @@
 			//
  			// Set up view for display of results
  			// 			
+ 			
+ 			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
 			$this->view->setVar('page', $vn_page_num);
 			$this->view->setVar('result', $vo_result);	
 			

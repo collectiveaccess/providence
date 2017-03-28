@@ -6902,6 +6902,19 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="copyright_image" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Copyright</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">3</setting>
+      </settings>
+      <typeRestrictions>
         <restriction>
           <table>ca_object_representations</table>
           <settings>
@@ -10312,6 +10325,9 @@
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
+            <placement code="ca_search_form_type_restrictio">
+              <bundle>ca_search_form_type_restrictions</bundle>
+            </placement>
             <placement code="table_num">
               <bundle>table_num</bundle>
               <settings>
@@ -12004,8 +12020,8 @@
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_copyright">
-              <bundle>ca_attribute_copyright</bundle>
+            <placement code="ca_attribute_copyright_image">
+              <bundle>ca_attribute_copyright_image</bundle>
             </placement> 
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
@@ -14813,7 +14829,7 @@
         </placement>
       </bundlePlacements>
     </searchForm>
-    <searchForm code="ca_occurrences_Exh_search_revised" type="ca_occurrences" system="1">
+    <searchForm code="ca_occurrences_Exh_search_revised" type="ca_occurrences" system="1" typeRestrictions="exhibition" includeSubtypes="0">
       <labels>
         <label locale="en_US">
           <name>Exhibition Search</name>
@@ -14882,7 +14898,7 @@
         </placement>
       </bundlePlacements>
     </searchForm>
-    <searchForm code="ca_occurrences_Ref_search_revised" type="ca_occurrences" system="1">
+    <searchForm code="ca_occurrences_Ref_search_revised" type="ca_occurrences" system="1"  typeRestrictions="reference" includeSubtypes="0">
       <labels>
         <label locale="en_US">
           <name>Reference search</name>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -166,6 +166,7 @@
  					$vs_group = 'cataloguing';
  					
 					$this->request->user->setPreference('cataloguing_locale', $this->request->getParameter('pref_cataloguing_locale', pString));
+					$this->request->user->setPreference('cataloguing_delete_reference_handling_default', $this->request->getParameter('pref_cataloguing_delete_reference_handling_default', pString));
 					
  					$va_ui_prefs = [];
 					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {

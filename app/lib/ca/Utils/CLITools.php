@@ -213,6 +213,11 @@
 				return false;
 			}
 			
+			if (!caExifToolInstalled()) {
+				CLITools::addError(_t("ExifTool external application is required but not installed on this server."));
+				return false;	
+			}
+			
 			$va_file_list = caGetDirectoryContentsAsList($vs_directory_path);
 		
 			$o_reader = new ExifDataReader();

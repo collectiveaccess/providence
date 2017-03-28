@@ -299,7 +299,8 @@
 			//$pm_field = $va_sort_tmp[0];
 			//$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;
 			$va_bundles = is_array($pm_field) ? $pm_field : explode(';', $pm_field); // $va_sort_tmp[0]);
-			$va_sorted_hits = array();
+			$va_sorted_hits = [];
+			$qr_sort = null;
 			
 			$vs_sort_tmp_table = null;
 			$va_sort_key_values = array();
@@ -449,12 +450,14 @@
 					$qr_sort = $this->opo_db->query($vs_sql, array($pa_hits));
 				}
 					
-				$va_sort_keys = array();
-				while($qr_sort->nextRow()) {
-					$va_row = $qr_sort->getRow();
-					$va_sort_keys[$va_row[$vs_table_pk]] = $va_row[$vs_field];
+				if($qr_sort) {
+					$va_sort_keys = array();
+					while($qr_sort->nextRow()) {
+						$va_row = $qr_sort->getRow();
+						$va_sort_keys[$va_row[$vs_table_pk]] = $va_row[$vs_field];
+					}
+					$va_sort_key_values[] = $va_sort_keys;
 				}
-				$va_sort_key_values[] = $va_sort_keys;
 			}
 			
 			return $this->_doSort($pa_hits, $va_sort_key_values, $ps_direction, $pa_options);

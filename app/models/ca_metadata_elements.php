@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -853,6 +853,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		} else {
 			return false;
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if element is used for any recorded values
+	 *
+	 * @param mixed $pm_element_code_or_id 
+	 * @param array $pa_options No options are currently suported.
+	 */
+	public static function elementIsInUse($pm_element_code_or_id, $pa_options=null) {
+		if(!($vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id))) { return null; }
+		$t_element = new ca_metadata_elements();
+		
+		$o_db = new Db();
+		$qr_res = $o_db->query("SELECT count(*) c FROM ca_attribute_values WHERE element_id = ? LIMIT 1", [$vn_element_id]);
+		
+		if ($qr_res->nextRow() && ($qr_res->get('c') > 0)) {
+			return true;
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 	/**
