@@ -771,6 +771,24 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
+	 * Determine if specified key is present in the configuration file.
+	 *
+	 * @param string $ps_key Name of configuration value.
+	 *
+	 * @return bool
+	 */
+	public function exists($ps_key) {
+		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key])) { return true; }
+		$this->ops_error = "";
+
+		if (array_key_exists($ps_key, $this->ops_config_settings["scalars"])) { return true; }
+		if (array_key_exists($ps_key, $this->ops_config_settings["lists"])) { return true; }
+		if (array_key_exists($ps_key, $this->ops_config_settings["assoc"])) { return true; }
+		
+		return false;
+	}
+	/* ---------------------------------------- */
+	/**
 	 * Get boolean configuration value
 	 *
 	 * @param string $ps_key Name of configuration value to get. getBoolean() will look for the
