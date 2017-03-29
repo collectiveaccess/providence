@@ -1941,7 +1941,7 @@ class SearchResult extends BaseObject {
 							$va_path_components['subfield_name'] = null;
 						}
 					}
-					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) {
+					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue) && !($o_value instanceof LCSHAttributeValue)) {
 						$vb_dont_return_value = true;
 						if (!$pa_options['filter']) { continue; }
 					}
@@ -1995,12 +1995,32 @@ class SearchResult extends BaseObject {
 						
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 								break;
+							case __CA_ATTRIBUTE_VALUE_LCSH__:
+								switch($va_path_components['subfield_name']) {
+									case 'text':
+									case 'id':
+									case 'url':
+										$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array($va_path_components['subfield_name'] => true)));
+										break;
+									default:
+										$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
+										break;
+								}
+								break;
 							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
 								//ca_objects.informationservice.ulan_container
 							
 								// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
 								if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
-									$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
+									switch($va_path_components['subfield_name']) {
+										case 'uri':
+										case 'url':
+											$vs_val_proc = $o_value->getUri();
+											break;
+										default:
+											$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
+											break;
+									}
 									$vb_dont_return_value = false;
 									break;
 								}
