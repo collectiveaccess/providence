@@ -626,7 +626,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			".(sizeof($va_wheres) ? 'WHERE ' : '')."
 			".join(' AND ', $va_wheres)."
 		", $va_params);
-		$va_displays = [];
+		$va_forms = [];
 
 		$t_list = new ca_lists();
 		$va_type_name_cache = [];
@@ -635,11 +635,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_display_type = $va_type_name_cache[$vn_table_num])) {
 				$vs_display_type = $va_type_name_cache[$vn_table_num] = $this->getFormTypeName($vn_table_num, array('number' => 'plural'));
 			}
-			$va_displays[$qr_res->get('form_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('search_form_content_type' => $vs_display_type));
+			$va_forms[$qr_res->get('form_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('search_form_content_type' => $vs_display_type));
 		}
-		return $va_displays;
+		return $va_forms;
 	}
-
 	# ------------------------------------------------------
 	/**
 	 * Returns number of forms conforming to specification in options
@@ -665,8 +664,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_attributes Optional array of attributes to embed in HTML <select> tag. Keys are attribute names and values are attribute values.
 	 * @param array $pa_options Optional array of options. Supported options include:
 	 * 		Supports all options supported by caHTMLSelect() and ca_search_forms::getForms() + the following:
-	 *			addDefaultForm - if true, the "default" form is included at the head of the list; this is simply a form called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
-	 *			addDefaultFormIfEmpty - same as 'addDefaultForm' except that the default value is only added if the form list is empty
+	 *			addDefaultForm = if true, the "default" form is included at the head of the list; this is simply a form called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
+	 *			addDefaultFormIfEmpty = same as 'addDefaultForm' except that the default value is only added if the form list is empty
+	 *			restrictToTypes = 
 	 * @return string HTML code defining <select> drop-down
 	 */
 	public function getFormsAsHTMLSelect($ps_select_name, $pa_attributes=null, $pa_options=null) {
