@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,13 +37,14 @@ if (!$this->getVar('no_hierarchies_defined')) {
 	$vs_default_action			= $this->getVar('default_action');
 	$vo_ar						= $this->getVar('access_restrictions');
 	$vs_current_sort_dir    	= $this->getVar('current_sort_direction');
+	$vn_start				= (int)$this->getVar('start');
 ?>	
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
 		<table class="listtable">
 			<thead>
 			<tr>
-			<th style="width:10px; text-align:center;" class='list-header-nosort'>
+			<th class='list-header-nosort addItemToSetControl'>
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 			</th>
 			<th class='list-header-nosort'>
@@ -94,8 +95,9 @@ if (!$this->getVar('no_hierarchies_defined')) {
 				($i == 2) ? $i = 0 : "";
 ?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-					<td style="width:10px">
+					<td class="addItemToSetControl">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_place_id; ?>' class="addItemToSetControl" />
+						<div><?php print $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
 					print "<td>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_places', $vn_place_id, array());

@@ -4268,8 +4268,10 @@ div.quickSearchNoResults {
 .criteriaLink:last-of-type{
     margin-right:15px;
 }
+
 /* browse pop up panel */
 #splashBrowsePanel {
+	display: none;
 	margin-bottom: 25px;
 	float: left;
 	width:100%;
@@ -5276,8 +5278,27 @@ a.roleCheckAllNoneButton {
 }
 
 /* find results add to set controls */
+td.addItemToSetControl, th.addItemToSetControl {
+	width:15px; 
+	position: relative;
+}
+
+td.addItemToSetControl div {
+	position: absolute;
+	bottom: 1px;
+	right: 1px;
+}
+
 input.addItemToSetControl {
     display: none;
+    padding: 0px;
+    margin: 0px;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    top: 2px; 
+    left: 1px;
+    
 }
 
 input.addItemToSetControlInThumbnails {

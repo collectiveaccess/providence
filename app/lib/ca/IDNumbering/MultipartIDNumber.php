@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -956,6 +956,8 @@ class MultipartIDNumber extends IDNumber {
 	 * @return string HTML output
 	 */
 	public function htmlFormElement($ps_name, &$pa_errors=null, $pa_options=null) {
+		$o_config = Configuration::load();
+		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : null;
 		$vb_generate_for_search_form = isset($pa_options['for_search_form']) ? true : false;
@@ -963,6 +965,9 @@ class MultipartIDNumber extends IDNumber {
 		$pa_errors = $this->validateValue($this->getValue());
 		$vs_separator = $this->getSeparator();
 		$va_element_vals = $this->explodeValue($this->getValue());
+		
+		$vb_dont_allow_editing = isset($pa_options['row_id']) && ($pa_options['row_id'] > 0) && $o_config->exists($this->getFormat().'_dont_allow_editing_of_codes_when_in_use') && (bool)$o_config->get($this->getFormat().'_dont_allow_editing_of_codes_when_in_use');
+		if ($vb_dont_allow_editing) { $pa_options['readonly'] = true; }
 
 		if (!is_array($va_elements = $this->getElements())) { $va_elements = array(); }
 
@@ -998,6 +1003,16 @@ class MultipartIDNumber extends IDNumber {
 			foreach($va_extra_vals as $vn_i => $vs_extra_val) {
 				$va_element_controls[] = "<input type='text' name='{$ps_name}_extra_{$vn_i}' id='{$ps_name}_extra_{$vn_i}' value='".htmlspecialchars($vs_extra_val, ENT_QUOTES, 'UTF-8')."' size='{$vn_extra_size}'".($pa_options['readonly'] ? ' disabled="1" ' : '').">";
 				$va_element_control_names[] = $ps_name.'_extra_'.$vn_i;
+			}
+		}
+		
+		if ($o_config->exists($this->getFormat().'_dont_allow_editing_of_codes_when_in_use')) {
+			if (isset($pa_options['row_id']) && ($pa_options['row_id'] > 0)) {
+				if ($vb_dont_allow_editing) {
+					$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
+				} else {
+					$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break referencing configuration').'</span>';	
+				}
 			}
 		}
 

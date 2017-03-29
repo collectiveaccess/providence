@@ -13,10 +13,10 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.5.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: vendor\n"
+"X-Poedit-SearchPath-0: .\n"
 
 #: app/controllers/administrate/access/GroupsController.php:58
 #: app/controllers/administrate/access/UsersController.php:92
@@ -661,7 +661,7 @@ msgstr ""
 #: app/models/ca_collections.php:43 app/conf/browse.conf:143
 #: app/conf/browse.conf:346 app/conf/browse.conf:496 app/conf/browse.conf:593
 msgid "collection"
-msgstr ""
+msgstr "provenance"
 
 #: app/controllers/find/BrowseCollectionsController.php:86
 #: app/controllers/find/SearchCollectionsAdvancedController.php:102
@@ -675,7 +675,7 @@ msgstr ""
 #: app/conf/browse.conf:347 app/conf/browse.conf:497 app/conf/browse.conf:594
 #: app/conf/navigation.conf:494 app/conf/navigation.conf:1762
 msgid "collections"
-msgstr ""
+msgstr "provenance"
 
 #: app/controllers/find/BrowseEntitiesController.php:86
 #: app/controllers/find/SearchEntitiesAdvancedController.php:101
@@ -703,7 +703,8 @@ msgstr ""
 
 #: app/controllers/find/BrowseLoansController.php:86
 #: app/controllers/find/SearchLoansAdvancedController.php:101
-#: app/controllers/find/SearchLoansController.php:97 app/models/ca_loans.php:43
+#: app/controllers/find/SearchLoansController.php:97
+#: app/models/ca_loans.php:43
 msgid "loan"
 msgstr ""
 
@@ -829,9 +830,9 @@ msgstr ""
 #: app/models/ca_bookmarks.php:65 app/models/ca_bundle_displays.php:85
 #: app/models/ca_data_exporters.php:80 app/models/ca_data_importers.php:81
 #: app/models/ca_editor_uis.php:84
-#: app/models/ca_metadata_type_restrictions.php:87 app/models/ca_objects.php:51
-#: app/models/ca_search_forms.php:92 app/conf/browse.conf:758
-#: app/conf/browse.conf:846 app/conf/browse.conf:959
+#: app/models/ca_metadata_type_restrictions.php:87
+#: app/models/ca_objects.php:51 app/models/ca_search_forms.php:92
+#: app/conf/browse.conf:758 app/conf/browse.conf:846 app/conf/browse.conf:959
 #: app/conf/navigation.conf:147 app/conf/navigation.conf:1193
 msgid "objects"
 msgstr ""
@@ -900,7 +901,8 @@ msgstr ""
 
 #: app/controllers/find/BrowseToursController.php:84
 #: app/controllers/find/SearchToursAdvancedController.php:97
-#: app/controllers/find/SearchToursController.php:95 app/models/ca_tours.php:40
+#: app/controllers/find/SearchToursController.php:95
+#: app/models/ca_tours.php:40
 msgid "tour"
 msgstr ""
 
@@ -934,7 +936,7 @@ msgstr ""
 #: app/conf/user_pref_defs.conf:792 app/conf/user_pref_defs.conf:829
 #: app/conf/user_pref_defs.conf:967 app/conf/user_pref_defs.conf:1028
 msgid "Collections"
-msgstr ""
+msgstr "Provenance"
 
 #: app/controllers/find/QuickSearchController.php:86
 #: app/models/ca_set_items.php:65 app/models/ca_sets.php:89
@@ -1165,8 +1167,9 @@ msgstr ""
 msgid "Due on"
 msgstr ""
 
-#: app/controllers/library/CheckOutController.php:164 app/models/ca_acl.php:101
-#: app/models/ca_bookmarks.php:101 app/models/ca_data_importer_log.php:86
+#: app/controllers/library/CheckOutController.php:164
+#: app/models/ca_acl.php:101 app/models/ca_bookmarks.php:101
+#: app/models/ca_data_importer_log.php:86
 #: app/models/ca_data_importer_log_items.php:102 app/models/ca_ips.php:100
 #: app/models/ca_task_queue.php:115
 #: themes/default/views/bundles/ca_objects_deaccession.php:64
@@ -1395,12 +1398,13 @@ msgstr ""
 msgid "Please use the checkboxes to select tags for deletion"
 msgstr ""
 
-#: app/controllers/manage/TagsController.php:217 app/models/ca_item_tags.php:41
+#: app/controllers/manage/TagsController.php:217
+#: app/models/ca_item_tags.php:41
 msgid "tag"
 msgstr ""
 
-#: app/controllers/manage/TagsController.php:217 app/models/ca_item_tags.php:42
-#: app/conf/navigation.conf:3321
+#: app/controllers/manage/TagsController.php:217
+#: app/models/ca_item_tags.php:42 app/conf/navigation.conf:3321
 msgid "tags"
 msgstr ""
 
@@ -5937,17 +5941,18 @@ msgstr ""
 #: themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:38
 #: themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:40
 #: themes/default/views/pageFormat/menuBar.php:7
-#: themes/default/views/pageFormat/menuBar.php:32 app/conf/navigation.conf:1152
-#: app/conf/navigation.conf:1283 app/conf/navigation.conf:1491
-#: app/conf/navigation.conf:1554 app/conf/navigation.conf:1658
-#: app/conf/navigation.conf:1721 app/conf/navigation.conf:1825
-#: app/conf/navigation.conf:1888 app/conf/navigation.conf:1995
-#: app/conf/navigation.conf:2061 app/conf/navigation.conf:2165
-#: app/conf/navigation.conf:2228 app/conf/navigation.conf:2335
-#: app/conf/navigation.conf:2401 app/conf/navigation.conf:2510
-#: app/conf/navigation.conf:2576 app/conf/navigation.conf:2870
-#: app/conf/navigation.conf:2928 app/conf/navigation.conf:3311
-#: app/conf/navigation.conf:3338 app/conf/navigation.conf:3361
+#: themes/default/views/pageFormat/menuBar.php:32
+#: app/conf/navigation.conf:1152 app/conf/navigation.conf:1283
+#: app/conf/navigation.conf:1491 app/conf/navigation.conf:1554
+#: app/conf/navigation.conf:1658 app/conf/navigation.conf:1721
+#: app/conf/navigation.conf:1825 app/conf/navigation.conf:1888
+#: app/conf/navigation.conf:1995 app/conf/navigation.conf:2061
+#: app/conf/navigation.conf:2165 app/conf/navigation.conf:2228
+#: app/conf/navigation.conf:2335 app/conf/navigation.conf:2401
+#: app/conf/navigation.conf:2510 app/conf/navigation.conf:2576
+#: app/conf/navigation.conf:2870 app/conf/navigation.conf:2928
+#: app/conf/navigation.conf:3311 app/conf/navigation.conf:3338
+#: app/conf/navigation.conf:3361
 msgid "Search"
 msgstr ""
 
@@ -8545,7 +8550,8 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: app/lib/ca/Utils/CLIUtils.php:2201 app/models/ca_data_exporter_items.php:534
+#: app/lib/ca/Utils/CLIUtils.php:2201
+#: app/models/ca_data_exporter_items.php:534
 msgid "ID"
 msgstr ""
 
@@ -8931,8 +8937,8 @@ msgstr ""
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:1097
 msgid ""
-"Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::"
-"_getID(): %4"
+"Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::_getID"
+"(): %4"
 msgstr ""
 
 #: app/lib/core/ApplicationChangeLog.php:142
@@ -10408,8 +10414,8 @@ msgstr ""
 
 #: app/lib/core/Plugins/Media/ImageMagick.php:218
 msgid ""
-"Provides image processing and conversion services using ImageMagick via "
-"exec() calls to ImageMagick binaries"
+"Provides image processing and conversion services using ImageMagick via exec"
+"() calls to ImageMagick binaries"
 msgstr ""
 
 #: app/lib/core/Plugins/Media/ImageMagick.php:269
@@ -11168,12 +11174,14 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:92
 #: app/models/ca_loans_x_object_representations.php:99
 #: app/models/ca_loans_x_objects.php:92
-#: app/models/ca_loans_x_occurrences.php:92 app/models/ca_loans_x_places.php:92
+#: app/models/ca_loans_x_occurrences.php:92
+#: app/models/ca_loans_x_places.php:92
 #: app/models/ca_loans_x_storage_locations.php:92
 #: app/models/ca_loans_x_vocabulary_terms.php:92
 #: app/models/ca_metadata_elements.php:116
 #: app/models/ca_metadata_type_restrictions.php:143
-#: app/models/ca_movements.php:136 app/models/ca_movements_x_collections.php:92
+#: app/models/ca_movements.php:136
+#: app/models/ca_movements_x_collections.php:92
 #: app/models/ca_movements_x_entities.php:92
 #: app/models/ca_movements_x_movements.php:93
 #: app/models/ca_movements_x_object_lots.php:92
@@ -11298,8 +11306,9 @@ msgstr ""
 #: app/models/ca_relationship_type_labels.php:63
 #: app/models/ca_representation_annotation_labels.php:64
 #: app/models/ca_representation_annotations.php:66
-#: app/models/ca_search_form_labels.php:63 app/models/ca_set_item_labels.php:63
-#: app/models/ca_set_labels.php:64 app/models/ca_storage_location_labels.php:63
+#: app/models/ca_search_form_labels.php:63
+#: app/models/ca_set_item_labels.php:63 app/models/ca_set_labels.php:64
+#: app/models/ca_storage_location_labels.php:63
 #: app/models/ca_tour_labels.php:63 app/models/ca_tour_stop_labels.php:63
 #: app/models/ca_user_representation_annotation_labels.php:64
 #: app/models/ca_user_representation_annotations.php:66
@@ -11322,23 +11331,26 @@ msgstr ""
 
 #: app/models/ca_bookmark_folders.php:48 app/models/ca_bookmarks.php:47
 #: app/models/ca_bundle_displays.php:59 app/models/ca_collections.php:51
-#: app/models/ca_data_exporter_items.php:49 app/models/ca_data_exporters.php:61
+#: app/models/ca_data_exporter_items.php:49
+#: app/models/ca_data_exporters.php:61
 #: app/models/ca_data_importer_groups.php:50
-#: app/models/ca_data_importer_items.php:56 app/models/ca_data_importers.php:62
-#: app/models/ca_editor_ui_screens.php:52 app/models/ca_editor_uis.php:50
-#: app/models/ca_entities.php:50 app/models/ca_ips.php:46
-#: app/models/ca_item_comments.php:50 app/models/ca_item_tags.php:49
-#: app/models/ca_list_items.php:53 app/models/ca_lists.php:59
-#: app/models/ca_loans.php:51 app/models/ca_locales.php:46
-#: app/models/ca_metadata_elements.php:51 app/models/ca_movements.php:51
-#: app/models/ca_object_lots.php:52 app/models/ca_object_representations.php:57
-#: app/models/ca_objects.php:58 app/models/ca_occurrences.php:51
-#: app/models/ca_places.php:52 app/models/ca_relationship_types.php:49
+#: app/models/ca_data_importer_items.php:56
+#: app/models/ca_data_importers.php:62 app/models/ca_editor_ui_screens.php:52
+#: app/models/ca_editor_uis.php:50 app/models/ca_entities.php:50
+#: app/models/ca_ips.php:46 app/models/ca_item_comments.php:50
+#: app/models/ca_item_tags.php:49 app/models/ca_list_items.php:53
+#: app/models/ca_lists.php:59 app/models/ca_loans.php:51
+#: app/models/ca_locales.php:46 app/models/ca_metadata_elements.php:51
+#: app/models/ca_movements.php:51 app/models/ca_object_lots.php:52
+#: app/models/ca_object_representations.php:57 app/models/ca_objects.php:58
+#: app/models/ca_occurrences.php:51 app/models/ca_places.php:52
+#: app/models/ca_relationship_types.php:49
 #: app/models/ca_representation_annotations.php:51
-#: app/models/ca_search_forms.php:55 app/models/ca_search_indexing_queue.php:50
-#: app/models/ca_set_items.php:49 app/models/ca_sets.php:56
-#: app/models/ca_storage_locations.php:52 app/models/ca_tour_stops.php:53
-#: app/models/ca_tours.php:48 app/models/ca_user_notes.php:49
+#: app/models/ca_search_forms.php:55
+#: app/models/ca_search_indexing_queue.php:50 app/models/ca_set_items.php:49
+#: app/models/ca_sets.php:56 app/models/ca_storage_locations.php:52
+#: app/models/ca_tour_stops.php:53 app/models/ca_tours.php:48
+#: app/models/ca_user_notes.php:49
 #: app/models/ca_user_representation_annotations.php:51
 #: app/models/ca_watch_list.php:48
 msgid "CollectiveAccess id"
@@ -11701,14 +11713,16 @@ msgstr ""
 msgid "Type restrictions"
 msgstr ""
 
-#: app/models/ca_bundle_displays.php:958 app/models/ca_bundle_displays.php:1021
+#: app/models/ca_bundle_displays.php:958
+#: app/models/ca_bundle_displays.php:1021
 #: app/models/ca_bundle_displays.php:1150
 #: app/models/ca_data_exporter_items.php:285
 #: app/models/ca_data_importer_items.php:423
 msgid "Maximum length"
 msgstr ""
 
-#: app/models/ca_bundle_displays.php:959 app/models/ca_bundle_displays.php:1022
+#: app/models/ca_bundle_displays.php:959
+#: app/models/ca_bundle_displays.php:1022
 #: app/models/ca_bundle_displays.php:1151
 msgid "Maximum length, in characters, of displayed information."
 msgstr ""
@@ -12041,11 +12055,11 @@ msgstr ""
 
 #: app/models/ca_collection_labels.php:41
 msgid "collection name"
-msgstr ""
+msgstr "provenance name"
 
 #: app/models/ca_collection_labels.php:42
 msgid "collection names"
-msgstr ""
+msgstr "provenance names"
 
 #: app/models/ca_collection_labels.php:64
 #: app/models/ca_editor_ui_screen_labels.php:80
@@ -12058,8 +12072,9 @@ msgstr ""
 #: app/models/ca_occurrence_labels.php:63 app/models/ca_place_labels.php:63
 #: app/models/ca_relationship_type_labels.php:63
 #: app/models/ca_representation_annotation_labels.php:64
-#: app/models/ca_search_form_labels.php:63 app/models/ca_set_item_labels.php:63
-#: app/models/ca_set_labels.php:64 app/models/ca_storage_location_labels.php:63
+#: app/models/ca_search_form_labels.php:63
+#: app/models/ca_set_item_labels.php:63 app/models/ca_set_labels.php:64
+#: app/models/ca_storage_location_labels.php:63
 #: app/models/ca_tour_labels.php:63 app/models/ca_tour_stop_labels.php:63
 #: app/models/ca_user_representation_annotation_labels.php:64
 msgid "Locale of label"
@@ -12078,7 +12093,7 @@ msgstr ""
 
 #: app/models/ca_collection_labels.php:80
 msgid "Name of collection"
-msgstr ""
+msgstr "Name of provenance"
 
 #: app/models/ca_collections.php:51
 msgid ""
@@ -12099,13 +12114,14 @@ msgstr ""
 
 #: app/models/ca_collections.php:82
 msgid "Collection identifier"
-msgstr ""
+msgstr "Provenance identifier"
 
 #: app/models/ca_collections.php:82
 msgid "A unique alphanumeric identifier for this collection."
 msgstr ""
 
-#: app/models/ca_collections.php:100 app/models/ca_data_import_event_log.php:96
+#: app/models/ca_collections.php:100
+#: app/models/ca_data_import_event_log.php:96
 #: app/models/ca_data_import_events.php:94 app/models/ca_entities.php:74
 #: app/models/ca_list_items.php:209 app/models/ca_loans.php:92
 #: app/models/ca_movements.php:85 app/models/ca_object_lots.php:135
@@ -12309,7 +12325,7 @@ msgstr ""
 #: app/models/ca_occurrences.php:339 app/models/ca_places.php:343
 #: app/models/ca_storage_locations.php:337 app/models/ca_tour_stops.php:326
 msgid "Related collections"
-msgstr ""
+msgstr "Related provenance"
 
 #: app/models/ca_collections.php:359 app/models/ca_entities.php:340
 #: app/models/ca_list_items.php:549 app/models/ca_loans.php:331
@@ -12421,11 +12437,11 @@ msgstr ""
 
 #: app/models/ca_collections_x_collections.php:40
 msgid "collection ⇔ collection relationship"
-msgstr ""
+msgstr "provenance ⇔ provenance relationship"
 
 #: app/models/ca_collections_x_collections.php:41
 msgid "collection ⇔ collection relationships"
-msgstr ""
+msgstr "collection ⇔ collection relationships"
 
 #: app/models/ca_collections_x_collections.php:85
 #: app/models/ca_collections_x_storage_locations.php:85
@@ -12443,7 +12459,8 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:85
 #: app/models/ca_loans_x_object_representations.php:85
 #: app/models/ca_loans_x_objects.php:85
-#: app/models/ca_loans_x_occurrences.php:85 app/models/ca_loans_x_places.php:85
+#: app/models/ca_loans_x_occurrences.php:85
+#: app/models/ca_loans_x_places.php:85
 #: app/models/ca_loans_x_storage_locations.php:85
 #: app/models/ca_loans_x_vocabulary_terms.php:85
 #: app/models/ca_movements_x_collections.php:85
@@ -12527,7 +12544,8 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:85
 #: app/models/ca_loans_x_object_representations.php:85
 #: app/models/ca_loans_x_objects.php:85
-#: app/models/ca_loans_x_occurrences.php:85 app/models/ca_loans_x_places.php:85
+#: app/models/ca_loans_x_occurrences.php:85
+#: app/models/ca_loans_x_places.php:85
 #: app/models/ca_loans_x_storage_locations.php:85
 #: app/models/ca_loans_x_vocabulary_terms.php:85
 #: app/models/ca_movements_x_collections.php:85
@@ -12614,7 +12632,8 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:92
 #: app/models/ca_loans_x_object_representations.php:99
 #: app/models/ca_loans_x_objects.php:92
-#: app/models/ca_loans_x_occurrences.php:92 app/models/ca_loans_x_places.php:92
+#: app/models/ca_loans_x_occurrences.php:92
+#: app/models/ca_loans_x_places.php:92
 #: app/models/ca_loans_x_storage_locations.php:92
 #: app/models/ca_loans_x_vocabulary_terms.php:92
 #: app/models/ca_movements_x_collections.php:92
@@ -12685,19 +12704,19 @@ msgstr ""
 
 #: app/models/ca_collections_x_storage_locations.php:40
 msgid "collection ⇔ storage location relationship"
-msgstr ""
+msgstr "provenance ⇔ storage location relationship"
 
 #: app/models/ca_collections_x_storage_locations.php:41
 msgid "collection ⇔ storage location relationships"
-msgstr ""
+msgstr "provenance ⇔ storage location relationships"
 
 #: app/models/ca_collections_x_vocabulary_terms.php:40
 msgid "collection ⇔ vocabulary term relationship"
-msgstr ""
+msgstr "provenance ⇔ vocabulary term relationship"
 
 #: app/models/ca_collections_x_vocabulary_terms.php:41
 msgid "collection ⇔ vocabulary term relationships"
-msgstr ""
+msgstr "collection ⇔ vocabulary term relationships"
 
 #: app/models/ca_data_exporter_items.php:41
 msgid "data exporter item"
@@ -13630,8 +13649,8 @@ msgstr ""
 
 #: app/models/ca_data_importer_items.php:254
 msgid ""
-"Skip mapping if value for this element is not equal to the specified "
-"value(s)."
+"Skip mapping if value for this element is not equal to the specified value"
+"(s)."
 msgstr ""
 
 #: app/models/ca_data_importer_items.php:263
@@ -15240,7 +15259,7 @@ msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:918
 msgid "Collection display template"
-msgstr ""
+msgstr "Provenance display template"
 
 #: app/models/ca_editor_ui_screens.php:919
 msgid ""
@@ -15823,11 +15842,11 @@ msgstr ""
 
 #: app/models/ca_entities_x_collections.php:40
 msgid "entity ⇔ collection relationship"
-msgstr ""
+msgstr "entity ⇔ provenance relationship"
 
 #: app/models/ca_entities_x_collections.php:41
 msgid "entity ⇔ collection relationships"
-msgstr ""
+msgstr "entity ⇔ provenance relationships"
 
 #: app/models/ca_entities_x_entities.php:40
 msgid "entity ⇔ entity relationship"
@@ -16543,11 +16562,11 @@ msgstr ""
 
 #: app/models/ca_loans_x_collections.php:40
 msgid "loans ⇔ collections relationship"
-msgstr ""
+msgstr "loan ⇔ provenance relationship"
 
 #: app/models/ca_loans_x_collections.php:41
 msgid "loans ⇔ collections relationships"
-msgstr ""
+msgstr "loan ⇔ provenance relationships"
 
 #: app/models/ca_loans_x_entities.php:40
 msgid "loans ⇔ entities relationship"
@@ -16950,8 +16969,8 @@ msgstr ""
 msgid "Type of item to bind element to."
 msgstr ""
 
-#: app/models/ca_metadata_type_restrictions.php:93 app/conf/navigation.conf:671
-#: app/conf/navigation.conf:2102
+#: app/models/ca_metadata_type_restrictions.php:93
+#: app/conf/navigation.conf:671 app/conf/navigation.conf:2102
 msgid "storage_locations"
 msgstr ""
 
@@ -17527,11 +17546,11 @@ msgstr ""
 
 #: app/models/ca_object_representations_x_collections.php:32
 msgid "object representation ⇔ collection relationship"
-msgstr ""
+msgstr "object representation ⇔ provenance relationship"
 
 #: app/models/ca_object_representations_x_collections.php:33
 msgid "object representation ⇔ collection relationships"
-msgstr ""
+msgstr "object representation ⇔ provenance relationships"
 
 #: app/models/ca_object_representations_x_collections.php:84
 msgid ""
@@ -17832,11 +17851,11 @@ msgstr ""
 
 #: app/models/ca_objects_x_collections.php:40
 msgid "object ⇔ collection relationship"
-msgstr ""
+msgstr "object ⇔ provenance relationship"
 
 #: app/models/ca_objects_x_collections.php:41
 msgid "object ⇔ collection relationships"
-msgstr ""
+msgstr "object ⇔ provenance relationships"
 
 #: app/models/ca_objects_x_entities.php:40
 msgid "object ⇔ entity relationship"
@@ -17968,11 +17987,11 @@ msgstr ""
 
 #: app/models/ca_occurrences_x_collections.php:40
 msgid "occurrence ⇔ collection relationship"
-msgstr ""
+msgstr "occurrence ⇔ provenance relationship"
 
 #: app/models/ca_occurrences_x_collections.php:41
 msgid "occurrence ⇔ collection relationships"
-msgstr ""
+msgstr "occurrence ⇔ provenance relationships"
 
 #: app/models/ca_occurrences_x_occurrences.php:40
 msgid "occurrence ⇔ occurrence relationship"
@@ -18071,11 +18090,11 @@ msgstr ""
 
 #: app/models/ca_places_x_collections.php:40
 msgid "place ⇔ collection relationship"
-msgstr ""
+msgstr "place ⇔ provenance relationship"
 
 #: app/models/ca_places_x_collections.php:41
 msgid "place ⇔ collection relationships"
-msgstr ""
+msgstr "place ⇔ provenance relationships"
 
 #: app/models/ca_places_x_occurrences.php:40
 msgid "place ⇔ occurrence relationship"
@@ -20488,7 +20507,7 @@ msgstr ""
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:137
 #: app/refineries/tourMaker/tourMakerRefinery.php:169
 msgid "Collection type"
-msgstr ""
+msgstr "Provenance type"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:138
 msgid ""
@@ -22044,7 +22063,7 @@ msgstr ""
 
 #: app/widgets/count/countWidget.php:187
 msgid "Show count for collections?"
-msgstr ""
+msgstr "Show count for provenance?"
 
 #: app/widgets/count/countWidget.php:188
 msgid ""
@@ -22193,7 +22212,7 @@ msgstr ""
 
 #: app/widgets/randomObject/randomObjectWidget.php:40
 msgid "Displays a random object from the collection"
-msgstr ""
+msgstr "Displays a random object from provenance"
 
 #: app/widgets/recentChanges/recentChangesWidget.php:43
 msgid "Recent changes"
@@ -22339,7 +22358,8 @@ msgstr ""
 msgid "There are no %1 comments"
 msgstr ""
 
-#: app/widgets/recentTags/recentTagsWidget.php:43 app/conf/navigation.conf:3322
+#: app/widgets/recentTags/recentTagsWidget.php:43
+#: app/conf/navigation.conf:3322
 msgid "Tags"
 msgstr ""
 
@@ -22451,7 +22471,7 @@ msgstr ""
 
 #: app/widgets/recentlyCreated/recentlyCreatedWidget.php:232
 msgid "Recently created: collections"
-msgstr ""
+msgstr "Recently created provenance records"
 
 #: app/widgets/recentlyCreated/recentlyCreatedWidget.php:233
 msgid ""
@@ -22718,7 +22738,7 @@ msgstr ""
 
 #: app/widgets/savedSearches/views/main_html.php:68
 msgid "Collection Searches"
-msgstr ""
+msgstr "Provenance Searches"
 
 #: app/widgets/savedSearches/views/main_html.php:73
 msgid "Occurrence Searches"
@@ -22762,7 +22782,7 @@ msgstr ""
 
 #: app/widgets/searchBySet/views/main_html.php:68
 msgid "Collection Sets"
-msgstr ""
+msgstr "Provenance Sets"
 
 #: app/widgets/searchBySet/views/main_html.php:73
 msgid "Occurrence Sets"
@@ -26454,8 +26474,8 @@ msgid ""
 "<div class='error'>An error in your system configuration has been detected</"
 "div>\n"
 "\t    General installation instructions can be found\n"
-"\t    <a href='http://wiki.collectiveaccess.org/index.php?"
-"title=Installation_(Providence)' target='_blank'>here</a>.\n"
+"\t    <a href='http://wiki.collectiveaccess.org/index.php?title=Installation_"
+"(Providence)' target='_blank'>here</a>.\n"
 "\t    For more specific hints on the existing issues please have a look at "
 "the messages below."
 msgstr ""
@@ -31563,7 +31583,7 @@ msgstr ""
 
 #: app/conf/navigation.conf:495
 msgid "Collection"
-msgstr ""
+msgstr "Provenance"
 
 #: app/conf/navigation.conf:570 app/conf/navigation.conf:1862
 msgid "collections_dynamic"
@@ -33317,7 +33337,7 @@ msgstr ""
 
 #: app/conf/user_actions.conf:623
 msgid "Collection authority editing"
-msgstr ""
+msgstr "Provenance authority editing"
 
 #: app/conf/user_actions.conf:624
 msgid "Actions allowing creation, editing and deletion of collections."
@@ -33325,63 +33345,63 @@ msgstr ""
 
 #: app/conf/user_actions.conf:627
 msgid "Create collection"
-msgstr ""
+msgstr "Create provenance"
 
 #: app/conf/user_actions.conf:628
 msgid "Allow user to create new collections"
-msgstr ""
+msgstr "Allow user to create new provenance"
 
 #: app/conf/user_actions.conf:631
 msgid "Edit collection"
-msgstr ""
+msgstr "Edit provenance"
 
 #: app/conf/user_actions.conf:632
 msgid "Allow user to edit existing collections"
-msgstr ""
+msgstr "Allow user to edit existing provenance"
 
 #: app/conf/user_actions.conf:635
 msgid "Delete collection"
-msgstr ""
+msgstr "Delete provenance"
 
 #: app/conf/user_actions.conf:636
 msgid "Allow user to delete collections"
-msgstr ""
+msgstr "Allow user to delete provenance"
 
 #: app/conf/user_actions.conf:639
 msgid "Search collections"
-msgstr ""
+msgstr "Search provenance"
 
 #: app/conf/user_actions.conf:640
 msgid "Allow user to search collections"
-msgstr ""
+msgstr "Allow user to search provenance"
 
 #: app/conf/user_actions.conf:643
 msgid "Browse collections"
-msgstr ""
+msgstr "Browse provenance"
 
 #: app/conf/user_actions.conf:644
 msgid "Allow user to browse collections"
-msgstr ""
+msgstr "Allow user to browse provenance"
 
 #: app/conf/user_actions.conf:647
 msgid "Duplicate collections"
-msgstr ""
+msgstr "Duplicate provenance"
 
 #: app/conf/user_actions.conf:648
 msgid "Allow user to duplicate collections"
-msgstr ""
+msgstr "Allow user to duplicate provenance"
 
 #: app/conf/user_actions.conf:651
 msgid "Export collections"
-msgstr ""
+msgstr "Export provenance"
 
 #: app/conf/user_actions.conf:652
 msgid "Allow user to export collections"
-msgstr ""
+msgstr "Allow user to export provenance"
 
 #: app/conf/user_actions.conf:655
 msgid "Quick add collections"
-msgstr ""
+msgstr "Quick add provenance"
 
 #: app/conf/user_actions.conf:656
 msgid ""
@@ -33399,7 +33419,7 @@ msgstr ""
 
 #: app/conf/user_actions.conf:667
 msgid "Batch edit collections"
-msgstr ""
+msgstr "Batch edit provenance"
 
 #: app/conf/user_actions.conf:668
 msgid "Allow user to edit batches of collections"
@@ -33407,7 +33427,7 @@ msgstr ""
 
 #: app/conf/user_actions.conf:671
 msgid "Batch delete collections"
-msgstr ""
+msgstr "Batch delete provenance"
 
 #: app/conf/user_actions.conf:672
 msgid "Allow user to delete batches of collections"

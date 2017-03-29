@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,6 +48,7 @@
 	$va_prefs = $t_user->getValidPreferences($vs_group);
 	
 	print $t_user->preferenceHtmlFormElement('cataloguing_locale', null, array());
+	print $t_user->preferenceHtmlFormElement('cataloguing_delete_reference_handling_default', null, array());
 	
 	$o_dm = Datamodel::load();
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
