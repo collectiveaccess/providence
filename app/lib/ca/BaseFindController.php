@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -128,8 +128,8 @@
 			$t_display 					= $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  	
  			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
- 			// Default display is always there
- 			$va_displays = array('0' => _t('Default'));
+ 			
+ 			$va_displays = []; 
 
 			// Set display options
 			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
@@ -141,7 +141,8 @@
  			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
  				$va_displays[$va_display['display_id']] = $va_display['name'];
  			}
- 			if (!isset($va_displays[$vn_display_id])) { $vn_display_id = 0; }
+ 			if(!sizeof($va_displays)) { $va_displays = ['0' => _t('Default')]; } // force default display if none are configured
+ 			if(!isset($va_displays[$vn_display_id])) { $vn_display_id = array_shift(array_keys($va_displays)); }
  			
  			$this->view->setVar('display_lists', $va_displays);	
 			
