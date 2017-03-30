@@ -1781,6 +1781,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($t_exporter_item->getSetting('end_as_iso8601')) {
 			$va_get_options['end_as_iso8601'] = true;
 		}
+		
+		if($t_exporter_item->getSetting('timeOmit')) {
+			$va_get_options['timeOmit'] = true;
+		}
 
 		if($t_exporter_item->getSetting('dontReturnValueIfOnSameDayAsStart')) {
 			$va_get_options['dontReturnValueIfOnSameDayAsStart'] = true;
@@ -1903,7 +1907,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				} else { // user wants current element repeated in case of multiple returned values
 					$va_get_options['delimiter'] = ';#;';
 					$vs_values = $t_instance->get($vs_source,$va_get_options);
-
+					
 					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
