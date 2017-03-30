@@ -3034,7 +3034,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([\d]+(?!%|~)|ca_[A-Za-z]
 	 */
 	function caProcessBottomLineTemplateForDisplay($po_request, $pt_display, $pr_res, $pa_options=null) {
 		if (!$pr_res) { return null; }
-		
+		if (!$pt_display) { return null; }
 		$vs_template = $pt_display->getSetting('bottom_line');
 		
 		$va_bundles_by_code = [];
