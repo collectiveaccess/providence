@@ -804,19 +804,36 @@
 		public function removeRepresentation($pn_representation_id, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
 		
+			$vb_update_is_primary = false;
+			
 			$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), 'ca_object_representations'));
 			if (is_array($va_path) && sizeof($va_path) == 3) {
 				$vs_rel_table = $va_path[1];
 				if ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_rel_table)) {
 					if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 					if ($t_rel->load(array($this->primaryKey() => $this->getPrimaryKey(), 'representation_id' => $pn_representation_id))) {
+						if ($t_rel->hasField('is_primary') && $t_rel->get('is_primary')) {
+							$vb_update_is_primary = true;
+						}
 						$t_rel->setMode(ACCESS_WRITE);
 						$t_rel->delete();
 						if ($t_rel->numErrors()) {
 							$this->errors = array_merge($this->errors, $t_rel->errors());
 							return false;
 						}
-						
+					
+						if (($vb_update_is_primary) && (is_array($va_rels = call_user_func("{$vs_rel_table}::find", [$this->primaryKey() => $this->getPrimaryKey()], ['returnAs' => 'arrays']))) && sizeof($va_rels)) {
+							if(!sizeof($va_primary_rels = array_filter($va_rels, function($v) { return (bool)$v['is_primary']; }))) {	// no primary rels
+								$t_rel->load($va_rels[0]['relation_id']);
+								$t_rel->setMode(ACCESS_WRITE);
+								$t_rel->set('is_primary', 1);
+								$t_rel->update();
+								if ($t_rel->numErrors()) {
+									$this->errors = array_merge($this->errors, $t_rel->errors());
+									return false;
+								}
+							}
+						}	
 					}
 				}
 			}
