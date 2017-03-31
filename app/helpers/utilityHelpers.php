@@ -3337,17 +3337,12 @@ function caFileIsIncludable($ps_file) {
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
 		
 		// Move articles to end of string
-		$va_definite_articles = $o_locale_settings ? $o_locale_settings->get('definiteArticles') : array();
-		$va_indefinite_articles = $o_locale_settings ? $o_locale_settings->get('indefiniteArticles') : array();
+		$va_articles = caGetArticlesForLocale($ps_locale);
 		
-		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
-			if (is_array($va_articles)) {
-				foreach($va_articles as $vs_article) {
-					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
-						break(2);
-					}
-				}
+		foreach($va_articles as $vs_article) {
+			if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+				$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
+				break;
 			}
 		}
 		
