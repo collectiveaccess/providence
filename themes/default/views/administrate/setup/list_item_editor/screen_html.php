@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  	$t_item 			= $this->getVar('t_subject');
 	$vn_item_id 		= $this->getVar('subject_id');
 	$vn_above_id 		= $this->getVar('above_id');
+	$vn_after_id 		= $this->getVar('after_id');
 
 	$vb_can_edit	 	= $t_item->isSaveable($this->request);
 	$vb_can_delete		= $t_item->isDeletable($this->request);
@@ -75,6 +76,7 @@
 					<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
 					<input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
 					<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
+					<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
 
 				</form>
 <?php
