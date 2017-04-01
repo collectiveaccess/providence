@@ -1516,6 +1516,11 @@ a.form-button, span.form-button, del.form-button{
     _overflow-y:hidden;
 }
 
+/* Form save/cancel/delete buttons; record list new buttons */
+.form-button i.caIcon, .form-header-button i.caIcon {
+	margin-right: 5px;
+}
+
 a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
    /* background-image:url('../graphics/backgrounds/form_buttons.png'); */
@@ -1750,6 +1755,7 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 	width: 16px;
 	text-align: center;
 	padding: 3px !important;
+	white-space: nowrap;
 }
 
 .listtableEditDelete {
@@ -1758,16 +1764,6 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 	padding: 3px !important;	
 	white-space: nowrap;
 }
-
-#caWatchedItemsList.listtable {
-	font-size:12px;
-}
-
-#watchedItemsSetControls {
-    padding: 5px 5px 0 10px;
-    background-color: #eeeeee;
-}
-
 
 /* table headers */
 
@@ -1779,21 +1775,8 @@ table.listtable thead tr th {
     cursor: pointer;
     background-color:#eee;
 }
-#caSetList.listtable thead tr th, 
-#caGroupList.listtable thead tr th, 
-#caWatchedItemsList.listtable thead tr th, 
-#caBundleList.listtable thead tr th, 
-#caCommentsList.listtable thead tr th, 
-#caExporterListContainer .listtable thead tr th, 
-#caUserList.listtable thead tr th, 
-#caEventList.listtable thead tr th, 
-#caSearchList.listtable thead tr th,
-#caLocaleList.listtable thead tr th,
-#caSearchConfigSettingList.listtable thead tr th,
-#caMediaConfigPluginList.listtable thead tr th,
-#caElementList.listtable thead tr th,
-#caUIList.listtable thead tr th,
-#caSavedSearchesList.listtable thead tr th {
+#caItemList.listtable thead tr th,
+#caExporterList.listtable thead tr th {
 	white-space: nowrap;
 	padding-top:8px;
 	font-family: 'DIN-Regular', helvetica, sans-serif;
@@ -1830,7 +1813,12 @@ table.listtable tbody td {
 table.listtable tbody td.listtableEditDelete {
 	width:55px;
 }
-table.listtable tbody td.listtableEditDelete a {
+
+table.listtable tbody td.listtableEdit {
+	width:25px;
+}
+
+table.listtable tbody td.listtableEditDelete a, table.listtable tbody td.listtableEdit a {
 	display:inline-block;
 	margin-top:5px;
 }
@@ -1838,25 +1826,23 @@ table.listtable tbody td .fa {
 	padding-left:5px;
 	display:inline-block;
 }
-table#caCommentsList tbody td {
+table#caItemList tbody td {
 	max-width:140px;
 }
-table#caEventList tbody td{
-	padding:10px;
-}
+
 table.listtable tbody tr.odd td {
     background-color:#f8f8f8;
 }
 
-#caCommentsList tbody tr td div.caUserCommentsListName, #caCommentsList tbody tr td div.caUserCommentsListComment {
+#caItemList tbody tr td div.caUserCommentsListName, #caItemList tbody tr td div.caUserCommentsListComment {
 	overflow: auto;
 }
 
-#caCommentsList tbody tr td div.caUserCommentsListName {
+#caItemList tbody tr td div.caUserCommentsListName {
 	width: 100px;
 }
 
-#caCommentsList tbody tr td div.caUserCommentsListComment {
+#caItemList tbody tr td div.caUserCommentsListComment {
 	width: 150px;
 }
 
@@ -1902,15 +1888,6 @@ td.listtableAggregateTotals {
 	width: 90px;
 }
 
-.saveDelete {
-	width:60px;
-	white-space:nowrap;
-}
-.saveDelete a{
-	float:left;
-	padding:0px;
-	margin:0px;
-}
 div.control-box {
     background-color: #f7f7f7;
     padding: 4px;
@@ -1951,6 +1928,10 @@ div.settingsKey {
 a.list-button {
     margin-left: 3px;
     margin-right: 3px;
+}
+
+.listtableEditDelete a.list-button, .listtableEdit a.list-button {
+	margin-right: 0px
 }
 
 a.list-link {
