@@ -5603,67 +5603,68 @@ if (!$vb_batch) {
 			$vn_c = 0;
 			if ($pn_start > 0) { $qr_res->seek($pn_start); }
 			$va_seen_row_ids = array();
-			$va_relation_ids = [];
+			$va_relation_ids = $va_rels_for_id_by_date = [];
 			while($qr_res->nextRow()) {
+				$va_rels_for_id = [];
 				if ($vn_c >= $pn_limit) { break; }
 				
 				if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 					if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 				}
 				
-				if ($ps_return_as !== 'data') {
-					$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
-					continue;
-				}
+				//if ($ps_return_as !== 'data') {
+				//	$va_rels_for_id[] = $qr_res->get($t_rel_item->primaryKey());
+				//	continue;
+				//}
 
 				$va_row = $qr_res->getRow();
 				$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
 
 				$vs_display_label = $va_row[$vs_label_display_field];
 
-				if (!isset($va_rels[$vs_v]) || !$va_rels[$vs_v]) {
-					$va_rels[$vs_v] = $va_row;
+				if (!isset($va_rels_for_id[$vs_v]) || !$va_rels_for_id[$vs_v]) {
+					$va_rels_for_id[$vs_v] = $va_row;
 				}
 
 				if ($vb_uses_effective_dates) {	// return effective dates as display/parse-able text
-					if ($va_rels[$vs_v]['sdatetime'] || $va_rels[$vs_v]['edatetime']) {
-						$o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);
-						$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
+					if ($va_rels_for_id[$vs_v]['sdatetime'] || $va_rels_for_id[$vs_v]['edatetime']) {
+						$o_tep->setHistoricTimestamps($va_rels_for_id[$vs_v]['sdatetime'], $va_rels_for_id[$vs_v]['edatetime']);
+						$va_rels_for_id[$vs_v]['effective_date'] = $o_tep->getText();
 					}
 				}
 
 				$vn_locale_id = $qr_res->get('locale_id');
 				if ($pb_use_locale_codes) {
-					$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
+					$va_rels_for_id[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
 				}
 
-				$va_rels[$vs_v]['labels'][$vn_locale_id] =  ($pb_return_labels_as_array) ? $va_row : $vs_display_label;
+				$va_rels_for_id[$vs_v]['labels'][$vn_locale_id] =  ($pb_return_labels_as_array) ? $va_row : $vs_display_label;
 
-				$va_rels[$vs_v]['_key'] = $vs_key;
-				$va_rels[$vs_v]['direction'] = $vs_direction;
+				$va_rels_for_id[$vs_v]['_key'] = $vs_key;
+				$va_rels_for_id[$vs_v]['direction'] = $vs_direction;
 
 				$vn_c++;
 				if ($vb_uses_relationship_types) {
-					$va_rels[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
-					$va_rels[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
+					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
+					$va_rels_for_id[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
 				}
 
 				if ($pb_group_fields) {
 					$vs_rel_pk = $t_rel_item->primaryKey();
 					if ($t_rel_item_label) {
 						foreach($t_rel_item_label->getFormFields() as $vs_field => $va_field_info) {
-							if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
-							$va_rels[$vs_v]['preferred_labels'][$vs_field] = $va_rels[$vs_v][$vs_field];
-							unset($va_rels[$vs_v][$vs_field]);
+							if (!isset($va_rels_for_id[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+							$va_rels_for_id[$vs_v]['preferred_labels'][$vs_field] = $va_rels_for_id[$vs_v][$vs_field];
+							unset($va_rels_for_id[$vs_v][$vs_field]);
 						}
 					}
 					foreach($t_rel_item->getFormFields() as $vs_field => $va_field_info) {
-						if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
-						$va_rels[$vs_v]['intrinsic'][$vs_field] = $va_rels[$vs_v][$vs_field];
-						unset($va_rels[$vs_v][$vs_field]);
+						if (!isset($va_rels_for_id[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+						$va_rels_for_id[$vs_v]['intrinsic'][$vs_field] = $va_rels_for_id[$vs_v][$vs_field];
+						unset($va_rels_for_id[$vs_v][$vs_field]);
 					}
-					unset($va_rels[$vs_v]['_key']);
-					unset($va_rels[$vs_v]['row_id']);
+					unset($va_rels_for_id[$vs_v]['_key']);
+					unset($va_rels_for_id[$vs_v]['row_id']);
 				}
 							
 				// filter for current?
@@ -5673,18 +5674,35 @@ if (!$vb_batch) {
 						foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
 							$va_tmp = explode("/", $vs_date);
 							if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
-							$va_rels_by_date[$vs_date][] = $va_rels[$vs_v];
+							$va_rels_for_id_by_date[$qr_rels->get($this->primaryKey(true))][$vs_date][$vs_v] = $va_rels_for_id[$vs_v];
 						}
 					}
 				}
+				
+				$va_rels = array_merge($va_rels, $va_rels_for_id);
 				
 				$va_seen_row_ids[$va_row['row_id']] = true;
 			}
 			
 			if($pb_show_current_only && $t_item_rel) {
-				ksort($va_rels_by_date);
-				if (sizeof($va_rels_by_date)) { $va_rels = array_pop($va_rels_by_date); }
+				$va_rels_for_id = [];
+				foreach($va_rels_for_id_by_date as $vn_id => $va_by_date) {
+					ksort($va_by_date);
+					if (sizeof($va_by_date)) { 
+						foreach(array_pop($va_by_date) as $vs_v => $va_rel) {
+							$va_rels_for_id[$vs_v] = $va_rel;
+						}
+						
+						//break;
+					}
+				}
+				$va_rels = $va_rels_for_id;
 			}
+							
+			if ($ps_return_as !== 'data') {
+				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, $t_rel_item->primaryKey());
+			}
+			
 
 			if ($ps_return_as === 'data') {
 				// Set 'label' entry - display label in current user's locale
@@ -5693,7 +5711,8 @@ if (!$vb_batch) {
 					$va_tmp2 = caExtractValuesByUserLocale($va_tmp);
 					$va_rels[$vs_v]['label'] = array_shift($va_tmp2);
 				}
-			}
+			} 
+			
 			//
 			// END - non-self relation
 			//
