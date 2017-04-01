@@ -5678,8 +5678,7 @@ if (!$vb_batch) {
 						}
 					}
 				}
-				
-				$va_rels = array_merge($va_rels, $va_rels_for_id);
+				$va_rels = array_replace($va_rels, $va_rels_for_id);
 				
 				$va_seen_row_ids[$va_row['row_id']] = true;
 			}
