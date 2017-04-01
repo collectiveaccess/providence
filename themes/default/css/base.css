@@ -1810,7 +1810,7 @@ table.listtable tbody td {
     background-color: #FFF;
     vertical-align: middle;
 }
-table.listtable tbody td.listtableEditDelete {
+table.listtable tbody td.listtableEditDelete, table.uiScreenItem tbody td.listtableEditDelete {
 	width:55px;
 }
 
@@ -4986,7 +4986,7 @@ table.uiScreenItem {
 }
 table.uiScreenItem .fa{
 	font-size:18px;
-	padding-left:10px;
+	padding-left:5px;
 } 
 
 .uiScreenInfo {
