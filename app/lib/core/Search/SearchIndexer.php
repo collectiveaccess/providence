@@ -237,9 +237,7 @@ class SearchIndexer extends SearchBase {
 
 			$va_intrinsic_list = $this->getFieldsToIndex($vs_table, $vs_table, array('intrinsicOnly' => true));
 			$va_intrinsic_list[$vs_table_pk] = array();
-//if ($t_instance->tableName() == 'ca_objects') { 
-//$va_ids = [9];
-// }
+
 			foreach($va_ids as $vn_i => $vn_id) {
 				if (!($vn_i % 500)) {	// Pre-load attribute values for next 500 items to index; improves index performance
 					$va_id_slice = array_slice($va_ids, $vn_i, 500);

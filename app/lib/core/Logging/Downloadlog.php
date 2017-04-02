@@ -35,7 +35,6 @@
   */
  
 include_once(__CA_LIB_DIR__."/core/Logging/BaseLogger.php");
-require_once(__CA_MODELS_DIR__."/ca_users.php");
 
 class Downloadlog extends BaseLogger {
 	# ----------------------------------------
@@ -68,7 +67,7 @@ class Downloadlog extends BaseLogger {
 	 */
 	public function search($ps_datetime_expression, $ps_code=null) {
 		$o_tep = new TimeExpressionParser();
-		$t_user = new ca_users();
+		
 		if ($o_tep->parse($ps_datetime_expression)) {
 			list($vn_period_start, $vn_period_end) = $o_tep->getUnixTimestamps();
 		
@@ -90,10 +89,9 @@ class Downloadlog extends BaseLogger {
 				while($qr_log->nextRow()) {
 					$va_row = $qr_log->getRow();
 					
-					#$t_table = $o_dm->getInstanceByTableNum($va_row['table_num'], true);
-					#$va_row['table_name'] = $t_table->getProperty('NAME_PLURAL');
-					$va_row['user_name'] = $va_row['email']."<br/>".$va_row['fname'].' '.$va_row['lname'];
-					$va_row['userclass'] = $t_user->getChoiceListValue("userclass", $va_row['userclass']);
+					$t_table = $o_dm->getInstanceByTableNum($va_row['table_num'], true);
+					$va_row['table_name'] = $t_table->getProperty('NAME_PLURAL');
+					$va_row['user_name'] = $va_row['fname'].' '.$va_row['lname'];
 					$va_rows[$va_row['log_id']] = $va_row;
 				}
 				

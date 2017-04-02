@@ -294,7 +294,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	 */
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
-		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
+		$ps_class = caGetOption('class', $pa_options, 'lookupBg');
+		$pb_for_search = caGetOption('forSearch', $pa_options, false);
 
 		$vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
 			caHTMLTextInput(
@@ -305,7 +306,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
 					'maxlength' => 512,
 					'id' => "infoservice_".$pa_element_info['element_id']."_autocomplete{n}",
-					'class' => $vs_class
+					'class' => $ps_class
 				)
 			).
 			caHTMLHiddenInput(
@@ -325,8 +326,10 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			$vs_detail_url = '/index.php/lookup/InformationService/GetDetail';
 		}
 
-		$vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
-		$vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
+		if (!$pb_for_search) {
+			$vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
+			$vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
+		}
 		$vs_element .= "
 				<script type='text/javascript'>
 					jQuery(document).ready(function() {
@@ -341,8 +344,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 								}
 							}
 						).click(function() { this.select(); });
-						
-						if ('{{".$pa_element_info['element_id']."}}') {
+				";
+		if (!$pb_for_search) {
+			$vs_element .= "					if ('{{".$pa_element_info['element_id']."}}') {
 							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').on('click', function(e) {
 								if (jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').css('display') == 'none') {
 									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250, function() {
@@ -356,9 +360,11 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 								return false;
 							});
 						}
-					});
-				</script>
 			";
+		}
+		$vs_element .= "
+					});
+					</script>";
 
 		return $vs_element;
 	}

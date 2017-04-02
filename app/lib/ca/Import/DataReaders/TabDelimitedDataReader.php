@@ -59,4 +59,3 @@ class TabDelimitedDataReader extends BaseDelimitedDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>
