@@ -105,7 +105,7 @@ class EntityReferencesForSetsTemplateTest extends BaseTestWithData {
 		// establish everything went ok
 		$this->assertEquals('TEST', $this->opt_set->get('set_code'));
 		// should return primary label
-		$this->assertEquals('Homer J. Simpson', $this->opt_set->get('ca_sets.entity_reference'));
+		$this->assertEquals('Homer J. Simpson', $this->opt_set->get('ca_sets.entity_reference', ['output' => 'text']));
 		$this->assertEquals('Homer J. Simpson', $this->opt_set->getWithTemplate('^ca_sets.entity_reference'));
 	}
 	# -------------------------------------------------------
