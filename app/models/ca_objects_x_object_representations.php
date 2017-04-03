@@ -192,4 +192,3 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	}
 	# ------------------------------------------------------
 }
-?>

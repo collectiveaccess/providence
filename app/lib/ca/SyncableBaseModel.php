@@ -149,4 +149,23 @@ trait SyncableBaseModel {
 		return ca_guids::getForRow(Datamodel::load()->getTableNum(get_called_class()), $pn_primary_key);
 	}
 	# -----------------------------------------------------
+	/**
+	 * Get loaded BaseModel instance by GUID
+	 * @param string $ps_guid
+	 * @return null|BaseModel
+	 */
+	public static function GUIDToInstance($ps_guid) {
+
+		$o_db = new Db();
+		$o_dm = Datamodel::load();
+		$qr_res = $o_db->query("SELECT * FROM ca_guids WHERE guid = ?", [$ps_guid]);
+		
+		if($qr_res->nextRow()) {
+			if (($t_instance = $o_dm->getInstanceByTableNum($qr_res->get('table_num'))) && ($t_instance->load($qr_res->get('row_id')))) {
+				return $t_instance;
+			}
+		}
+		return null;
+	}
+	# -----------------------------------------------------
 }

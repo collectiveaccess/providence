@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,26 +35,24 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 						'</div>';
 ?>
 <script language="JavaScript" type="text/javascript">
-/* <![CDATA[ */
-	$(document).ready(function(){
-		$('#caUIList').caFormatListTable();
+	jQuery(document).ready(function(){
+		jQuery('#caItemList').caFormatListTable();
 	});
 	
 	function _navigateToNewForm(editor_type) {
 		document.location = '<?php print caNavUrl($this->request, 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => 0)); ?>' + '/editor_type/' + editor_type;
 	}
-/* ]]> */
 </script>
 <div class="sectionBox">
 	<?php
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caUIList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
 			$vs_type_menu
 		);
 	?>
 
-	<table id="caUIList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 		<tr>
 			<th>

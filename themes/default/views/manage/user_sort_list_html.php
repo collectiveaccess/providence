@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,16 +39,14 @@
 	if(sizeof($va_user_sorts) > 0) {
 ?>
 		<script language="JavaScript" type="text/javascript">
-		/* <![CDATA[ */
 			jQuery(document).ready(function(){
-				jQuery('#caUserSortsList').caFormatListTable();
+				jQuery('#caItemList').caFormatListTable();
 			});
-		/* ]]> */
 		</script>
 		<div class="sectionBox">
 			<form id="UserSortsListForm">
 
-			<table id="caUserSortsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+			<table id="caItemList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
@@ -57,7 +55,7 @@
 						<th class="list-header-unsorted">
 							<?php print _t('Record type'); ?>
 						</th>
-						<th class="{sorter: false} list-header-nosort"><?php print _t('Edit'); ?></th>
+						<th class="{sorter: false} list-header-nosort listtableEdit"><?php print _t('Edit'); ?></th>
 						<th class="{sorter: false} list-header-nosort"><input type='checkbox' name='record' value='' id='userSortSelectAllControl' class='userSortControl' onchange="jQuery('.userSortControl').attr('checked', jQuery('#userSortSelectAllControl').attr('checked'));"/></th>
 					</tr>
 				</thead>
@@ -76,7 +74,7 @@
 						print Datamodel::load()->getInstance($va_sort['table_num'])->getProperty('NAME_PLURAL');
 ?>
 					</td>
-					<td style="width:15px;">
+					<td class="listtableEdit">
 						<a href="#" onclick="caTypeChangePanel.showPanel('<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Edit', array('sort_id' => $va_sort['sort_id'])); ?>'); return false;"><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2, array('style' => 'padding-right:5px;')); ?></a>
 					</td>
 					<td style="width:15px;">

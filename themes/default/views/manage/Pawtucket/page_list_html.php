@@ -37,26 +37,24 @@
 					'</div>';
 ?>
 <script type="text/javascript">
-/* <![CDATA[ */
 	jQuery(document).ready(function(){
-		jQuery('#caPageList').caFormatListTable();
+		jQuery('#caItemList').caFormatListTable();
 	});
 	
 	function _navigateToNewForm(template_id) {
 		document.location = '<?php print caNavUrl($this->request, 'manage/site_pages', 'SitePageEditor', 'Edit', array('page_id' => 0, 'template_id' => '')); ?>' + template_id;
 	}
-/* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caPageList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
 			$vs_site_page_template_menu
 		); 
 	?>
 	
-	<table id="caPageList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -105,8 +103,8 @@
 					<div><?php print $va_page['view_count']; ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/site_pages', 'SitePageEditor', 'Edit', array('page_id' => $va_page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/site_pages', 'SitePageEditor', 'Delete', array('page_id' => $va_page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/site_pages', 'SitePageEditor', 'Edit', array('page_id' => $va_page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/site_pages', 'SitePageEditor', 'Delete', array('page_id' => $va_page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

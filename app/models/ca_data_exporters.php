@@ -1675,6 +1675,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,
 									array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
 								);
+								
 								$va_info = array_merge($va_info, $va_attribute_export);
 								$vn_i++;
 							}
@@ -1781,6 +1782,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($t_exporter_item->getSetting('end_as_iso8601')) {
 			$va_get_options['end_as_iso8601'] = true;
 		}
+		
+		if($t_exporter_item->getSetting('timeOmit')) {
+			$va_get_options['timeOmit'] = true;
+		}
 
 		if($t_exporter_item->getSetting('dontReturnValueIfOnSameDayAsStart')) {
 			$va_get_options['dontReturnValueIfOnSameDayAsStart'] = true;
@@ -1792,7 +1797,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// context was switched to attribute
 		if($vn_attribute_id) {
-
 			$t_attr = new ca_attributes($vn_attribute_id);
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
 			$vs_relative_to = "{$t_instance->tableName()}.{$t_attr->getElementCode()}";
@@ -1837,28 +1841,59 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					foreach ($va_values as $vo_val) {
 						$va_display_val_options = array();
-						if ($vo_val instanceof ListAttributeValue) {
-							// figure out list_id -- without it we can't pull display values
-							$t_element = new ca_metadata_elements($vo_val->getElementID());
-							$va_display_val_options = array('list_id' => $t_element->get('list_id'));
+						switch($vo_val->getDatatype()) {
+							case __CA_ATTRIBUTE_VALUE_LIST__: //if ($vo_val instanceof ListAttributeValue) {
+								// figure out list_id -- without it we can't pull display values
+								$t_element = new ca_metadata_elements($vo_val->getElementID());
+								$va_display_val_options = array('list_id' => $t_element->get('list_id'));
 
-							if ($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
-								$va_display_val_options['output'] = 'idno';
-							} elseif ($t_exporter_item->getSetting('convertCodesToDisplayText')) {
-								$va_display_val_options['output'] = 'text';
-							}
+								if ($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
+									$va_display_val_options['output'] = 'idno';
+								} elseif ($t_exporter_item->getSetting('convertCodesToDisplayText')) {
+									$va_display_val_options['output'] = 'text';
+								}
+								$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+								$o_log->logDebug(_t("Found value %1.", $vs_display_value));
+
+								break;
+							case __CA_ATTRIBUTE_VALUE_LCSH__:
+								switch($va_src_tmp[0]) {
+									case 'text':
+									default:
+										$vs_display_value = $vo_val->getDisplayValue(['text' => true]);
+										break;
+									case 'id':
+									case 'url':
+										$vs_display_value = $vo_val->getDisplayValue(['idno' => true]);
+										break;
+								}
+								break;
+							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+								switch($va_src_tmp[0]) {
+									case 'text':
+									default:
+										$vs_display_value = $vo_val->getDisplayValue();
+										break;
+									case 'uri':
+									case 'url':
+										$vs_display_value = $vo_val->getUri();
+										break;
+								}
+								break;
+							default:
+								$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
+								if ($vo_val->getElementCode() == $vs_source) {
+									$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+									$o_log->logDebug(_t("Found value %1.", $vs_display_value));
+
+								}
+								break;
 						}
-
-						$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
-						if ($vo_val->getElementCode() == $vs_source) {
-							$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
-							$o_log->logDebug(_t("Found value %1.", $vs_display_value));
-
-							$va_item_info[] = array(
-								'text' => $vs_display_value,
-								'element' => $vs_element,
-							);
-						}
+			
+						$va_item_info[] = array(
+							'text' => $vs_display_value,
+							'element' => $vs_element,
+						);
 					}
 				}
 			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
@@ -1903,7 +1938,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				} else { // user wants current element repeated in case of multiple returned values
 					$va_get_options['delimiter'] = ';#;';
 					$vs_values = $t_instance->get($vs_source,$va_get_options);
-
+					
 					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
@@ -1976,14 +2011,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					continue;
 				}
 			}
-
-			// filter by regex (deprecated since you can do the same thing and more with skipIfExpression) -- remove?
-			//if((strlen($va_item['text'])>0) && $vs_regexp) {
-			//	if(!preg_match("!".$vs_regexp."!i", $va_item['text'])) {
-			//		unset($va_item_info[$vn_key]);
-			//		continue;
-			//	}
-			//}
 
 			// do replacements
 			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);

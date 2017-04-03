@@ -280,11 +280,12 @@ class SearchEngine extends SearchBase {
 					$this->opo_engine->setOption('excludeFieldsFromSearch', $va_exclude_fields_from_search);
 				}
 				
+				$vb_do_acl = $this->opo_app_config->get('perform_item_level_access_checking') && method_exists($t_table, "supportsACL") && $t_table->supportsACL();
 
 				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 			
 				// cache the results
-				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
+				$va_hits = $o_res->getPrimaryKeyValues($vb_do_acl ? null : $vn_limit);
 				
 										
 				if ($pa_options['expandToIncludeParents'] && sizeof($va_hits)) {
@@ -316,8 +317,9 @@ class SearchEngine extends SearchBase {
 			}
 						
 			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
-			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_app_config->get('perform_item_level_access_checking') && method_exists($t_table, "supportsACL") && $t_table->supportsACL()) {
+			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $vb_do_acl) {
 				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
+				if ($vn_limit > 0) { $va_hits = array_slice($va_hits, 0, $vn_limit); }
 			}
 			
 			if ($vs_sort && ($vs_sort !== '_natural')) {

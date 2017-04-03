@@ -31,7 +31,7 @@
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	$(document).ready(function(){
-		$('#caUserList').caFormatListTable();
+		$('#caItemList').caFormatListTable();
 	});
 /* ]]> */
 </script>
@@ -39,7 +39,7 @@
 <?php 
 		print caFormTag($this->request, 'ListUsers', 'caUserListForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caUserList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			''._t('Show %1 users', caHTMLSelect('userclass', $this->request->user->getFieldInfo('userclass', 'BOUNDS_CHOICE_LIST'), array('onchange' => 'jQuery("#caUserListForm").submit();'), array('value' => $this->getVar('userclass')))), 
 			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New user"), 'administrate/access', 'Users', 'Edit', array('user_id' => 0), [], ['size' => '30px'])
 		); 
@@ -53,7 +53,7 @@
 		print $this->render('user_tools_html.php');
 	}
 ?>
-		<table id="caUserList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table id="caItemList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 			<thead>
 				<tr>
 					<th class="list-header-unsorted">
@@ -99,8 +99,8 @@
 					<?php print ($va_user['last_login'] > 0) ? $o_tep->getText() : '-'; ?>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/access', 'Users', 'Edit', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => '0px')); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => '0px')); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/access', 'Users', 'Edit', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

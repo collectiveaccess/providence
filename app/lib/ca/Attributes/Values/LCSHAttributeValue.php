@@ -178,6 +178,9 @@
  		 * @param array $pa_options Supported options are
  		 *		asHTML = if set URL is returned as an HTML link to the LOC definition of the term
  		 *		asText = if set only text portion, without LCSH identifier, is returned
+ 		 *		text = synonym for asText
+ 		 *		id = return LCSH identifer
+ 		 *		idno = synonym for id
  		 * @return string The term
  		 */
 		public function getDisplayValue($pa_options=null) {
@@ -187,8 +190,11 @@
 					return "<a href='http://id.loc.gov/authorities/sh".$va_matches[1]."' target='_lcsh_details'>".$vs_value.'</a>';
 				}
 			} 
-			if (isset($pa_options['asText']) && $pa_options['asText']) {
+			if (caGetOption(['asText', 'text'], $pa_options, false)) {
 				return preg_replace('![ ]*\[[^\]]*\]!', '', $this->ops_text_value);
+			}
+			if (caGetOption(['id', 'idno'], $pa_options, false) && preg_match('!\[([^\]]*)!',$this->ops_text_value, $va_matches)) {
+				return $va_matches[1];
 			}
 			return $this->ops_text_value;
 		}

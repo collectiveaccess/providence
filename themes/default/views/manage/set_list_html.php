@@ -48,10 +48,8 @@ if (!$this->request->isAjax()) {
 
 ?>
 <script language="JavaScript" type="text/javascript">
-/* <![CDATA[ */
 	jQuery(document).ready(function(){
-		//jQuery('#caSetList').caFormatListTable();
-		
+		jQuery('#caItemList').caFormatListTable();
 		jQuery('#setSearch').autocomplete(
 			{
 				minLength: 3, delay: 800, html: true,
@@ -64,23 +62,14 @@ if (!$this->request->isAjax()) {
 				}
 			}
 		).click(function() { this.select(); });
-
 	});
 	
 	function _navigateToNewForm(type_id, table_num) {
 		document.location = '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'Edit', array('set_id' => 0)); ?>/type_id/' + type_id + '/table_num/' + table_num;
 	}
-/* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
-		if($show_old_filter){
-			print caFormControlBox(
-				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caSetList\').caFilterTable(this.value); return false;" size="20"/></div>', 
-				'', 
-				$vs_set_type_menu
-			);
-		} 
 		$vs_type_id_form_element = '';
 		if ($vn_type_id = intval($this->getVar('list_set_type_id'))) {
 			$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
@@ -101,7 +90,7 @@ if (!$this->request->isAjax()) {
 	print $this->render('sets/paging_controls_html.php');
 ?>
 	
-	<table id="caSetList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
 				<th class="<?php print (($vs_current_sort == "name") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
@@ -131,7 +120,7 @@ if (!$this->request->isAjax()) {
 				<th class="<?php print (($vs_current_sort == "status") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
 					<?php print caNavLink($this->request, _t('Status'), '', 'manage', 'Set', 'ListSets', array('sort' => 'status', 'direction' => ((($vs_current_sort == "status") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="list-header-nolink listtableEditDelete"> </th>
+				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
 		</thead>
 		<tbody>
@@ -141,7 +130,7 @@ if (!$this->request->isAjax()) {
 ?>
 			<tr>
 				<td>
-					<div class="caSetListName"><?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
+					<div class="caItemListName"><?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
 				</td>
 				<td>
 					<div><?php print $va_set['set_content_type']; ?></div>
@@ -168,7 +157,7 @@ if (!$this->request->isAjax()) {
 					</div>
 				</td>
 				<td>
-					<div class="caSetListOwner"><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
+					<div class="caItemListOwner"><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
 				</td>
 				<td>
 					<div><?php print $t_set->getChoiceListValue('access', $va_set['access']); ?></div>
@@ -177,8 +166,8 @@ if (!$this->request->isAjax()) {
 					<div><?php print $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
-					<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php ($va_set['can_delete'] == true) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
 				</td>
 			</tr>
 <?php
