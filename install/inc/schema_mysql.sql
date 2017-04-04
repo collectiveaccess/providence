@@ -2466,7 +2466,7 @@ create unique index u_all on ca_entity_labels
    forename,
    other_forenames,
    middlename,
-   surname,
+   surname(100),
    type_id,
    locale_id
 );
