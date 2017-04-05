@@ -31,15 +31,17 @@
 	$va_criteria 			= $o_browse->getCriteriaWithLabels();
 	$va_facet_info 			= $o_browse->getInfoForFacets();
 	
-	print "<div class='startBrowsingBy'>"._t('Filter results by')."</div>";
-	$c = 0;
-	foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
-		$c++;
+	
+	if (sizeof($va_available_facets)) {
+		print "<div class='startBrowsingBy'>"._t('Filter results by')."</div>";
+		$c = 0;
+		foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
+			$c++;
 ?>		
-		<a href='#' onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?php print $vs_facet_code;?>")'><?php print $va_facet_info['label_plural'];?></a>
+			<a href='#' onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?php print $vs_facet_code;?>")'><?php print $va_facet_info['label_plural'];?></a>
 <?php		
-		#if($c < sizeof($va_available_facets)){
-		#	print ", ";
-		#}
+		}
+	} else {
+		print "<div class='startBrowsingBy'>"._t('No applicable filters')."</div>";
 	}
-?>
+	

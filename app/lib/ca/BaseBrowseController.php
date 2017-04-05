@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -195,6 +195,12 @@
  			$this->opo_result_context->validateCache();
  			
 			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
+			
+	
+			if (!is_array($va_facets_with_info = $this->opo_browse->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
+				$this->view->setVar('open_refine_controls', false);
+				$this->view->setVar('noRefineControls', true);
+			}
  			
  			//
  			// Pass browse info (context + facets + criteria) to view
