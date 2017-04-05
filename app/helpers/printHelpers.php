@@ -65,6 +65,10 @@
 				if(is_dir(__CA_THEME_DIR__.'/printTemplates/bundles')) { $va_paths[] = __CA_THEME_DIR__.'/printTemplates/bundles'; }
 				$va_paths[] = __CA_APP_DIR__.'/printTemplates/bundles';
 				break;
+			case 'sets':
+				if(is_dir(__CA_THEME_DIR__.'/printTemplates/sets')) { $va_paths[] = __CA_THEME_DIR__.'/printTemplates/sets'; }
+				$va_paths[] = __CA_APP_DIR__.'/printTemplates/sets';
+				break;
 		}
 		return (sizeof($va_paths) > 0) ? $va_paths : null;
 	}
@@ -80,7 +84,7 @@
 	 * @return array
 	 */
 	function caGetAvailablePrintTemplates($ps_type, $pa_options=null) {
-		$va_template_paths = caGetPrintTemplateDirectoryPath($ps_type);
+		if (!is_array($va_template_paths = caGetPrintTemplateDirectoryPath($ps_type))) { $va_template_paths = []; }
 		
 		$vs_tablename = caGetOption('table', $pa_options, null);
 		$vs_type = caGetOption('type', $pa_options, 'page');
