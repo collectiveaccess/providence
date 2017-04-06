@@ -8,7 +8,6 @@ html, body {
     background-color: #fff;
     margin:0px;
     padding:0px;
-    /*background-image:url('../graphics/backgrounds/bg.png');*/
     height: 100%;
 }
 
@@ -1093,7 +1092,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1105,7 +1104,7 @@ div.notification-error-box {
 }
 
 div.notification-warning-box {
-    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 10px;
+    background:	url('../graphics/buttons/warning_sign.png') no-repeat 10px 10px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1523,7 +1522,7 @@ a.form-button, span.form-button, del.form-button{
 
 a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-   /* background-image:url('../graphics/backgrounds/form_buttons.png'); */
+
 }
 #caChangeTypeFormCancelButton .fa {
 	font-size:30px;
@@ -1980,7 +1979,6 @@ div.delete-control-box {
     margin-top: 32px;
 }
 div.delete_warning_box {
-    background:	url('../graphics/buttons/warning.png') no-repeat 10px 5px;
     text-indent: 42px;
     font-size: 14px;
 	color: red;
@@ -2744,7 +2742,6 @@ div.caMediaOverlayControls .close {
     float:right;
     width:15px;
     height:16px;
-    background-image:url("../graphics/buttons/x_white.png");
     margin: 0px 10px 0px 20px;
 }
 
@@ -2803,7 +2800,6 @@ div.caMediaOverlayControls .caRepTools {
     height:16px;
     top: 5px;
     right: 5px;
-    background-image:url("../graphics/buttons/x_white.png");
 }
 
 #caRepToolsRotateAngleControl {
@@ -2995,7 +2991,6 @@ a.editorFieldListLink {
     width:15px;
     height:16px;
     margin:5px;
-    background-image:url("../graphics/buttons/x.png");
 }
 
 /* container for HTML code that files #editorFieldList */
@@ -3068,7 +3063,6 @@ a.caHierarchyOverviewLink {
     width:15px;
     height:16px;
     margin:5px;
-    background-image:url("../graphics/buttons/x.png");
 }
 
 /* container for HTML code that files #caHierarchyOverviewPanel */
@@ -4869,7 +4863,6 @@ div.bundleDisplayEditorPlacement {
     margin: 5px 5px 10px 0px;
     font-weight: normal;
     border: 1px solid #e3e3e3;
-    background-image:url('../graphics/buttons/glyphicons_186_move.png');
     background-position: 98% 50%;
     background-repeat:no-repeat;
     border-radius: 3px;
@@ -5070,7 +5063,6 @@ table.uiScreenItem .fa{
     width:16px;
     height:16px;
     margin:0px;
-    background-image:url("../graphics/buttons/glyphicons_192_circle_remove_gray.png");
 }
 .dashboardWidgetPanelHide a {
     text-decoration: none;
@@ -6001,7 +5993,7 @@ div.searchlight-results div.searchlight-selected {
 
 .olControlDelete {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete.png);
+    background-image: url(../graphics/icons/map_delete.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -6009,7 +6001,7 @@ div.searchlight-results div.searchlight-selected {
 }
 .olControlDelete:hover {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete_selected.png);
+    background-image: url(../graphics/icons/map_delete_selected.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -6018,7 +6010,7 @@ div.searchlight-results div.searchlight-selected {
 
 .olControlDeleteItemActive {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete.png);
+    background-image: url(../graphics/icons/map_delete.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -6026,7 +6018,7 @@ div.searchlight-results div.searchlight-selected {
 }
 .olControlDeleteItemActive:hover {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete_selected.png);
+    background-image: url(../graphics/icons/map_delete_selected.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -6110,7 +6102,6 @@ div.searchlight-results div.searchlight-selected {
     width:15px  !important;
     height:16px  !important;
     margin:0px !important;
-    background-image:url("../graphics/buttons/x.png") !important;
 }
 
 .olPopupContent {
