@@ -602,8 +602,7 @@
 				$vn_return = 0;
 			}
 			
-			// TODO: report results and errors here
-			$this->view->setVar("result", ['ok' => $vn_return, 'errors' => $va_errors]);
+			$this->view->setVar("result", ['ok' => $vn_return, 'errors' => $va_errors, 'timestamp' => (sizeof($va_errors) == 0) ? time(): null]);
 			
 			return $this->render('set_sort_order_json.php');
 		}

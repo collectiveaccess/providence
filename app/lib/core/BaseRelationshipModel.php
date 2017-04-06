@@ -440,43 +440,31 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				$vs_subtype_orientation = null;
 				$vs_subtype = null;
 				if ($pn_type_id) {
-					if(
-						$va_row['sub_type_left_id'] 
-						&& 
-						!(in_array($va_row['sub_type_left_id'], $va_left_subtype_candidates))
-					) { // not left
-						if(
-							$va_row['sub_type_right_id'] 
-							&& 
-							!(in_array($va_row['sub_type_right_id'], $va_right_subtype_candidates))
-						) {
-							// not left and not right
-							continue;
-						} else {
-							// is right
-							$vs_subtype = $va_row['sub_type_left_id'];	
-							$vs_subtype_orientation = "left";
-						}
-					} elseif (
-						$va_row['sub_type_right_id'] 
-						&& 
-						in_array($va_row['sub_type_right_id'], $va_right_subtype_candidates)
-					) {
-						// left and right
-						$vs_subtype = $va_row['sub_type_right_id'];
-						$vs_subtype_orientation = "";
-					} else {
+					if ($va_row['sub_type_left_id'] && in_array($va_row['sub_type_left_id'], $va_left_subtype_candidates)) {
 						// is left
 						$vs_subtype_orientation = "right";
 						$vs_subtype = $va_row['sub_type_right_id'];	
 					}
+					if ($va_row['sub_type_right_id'] && in_array($va_row['sub_type_right_id'], $va_right_subtype_candidates)) {
+						// is right
+						if ($vs_subtype_orientation == 'right') {
+							// left and right
+							$vs_subtype = $va_row['sub_type_right_id'];
+							$vs_subtype_orientation = '';
+						} else {
+							$vs_subtype_orientation = "left";
+							$vs_subtype = $va_row['sub_type_left_id'];	
+						}
+					}
+					if (($va_row['sub_type_left_id'] || $va_row['sub_type_right_id']) && !$vs_subtype_orientation) {
+						continue;
+					}
 				}
 				if (!$vs_subtype) { $vs_subtype = 'NULL'; }
-				
 				switch($vs_subtype_orientation) {
 					case 'left':
 						$va_tmp = $va_row;
-						$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']);
+						$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']);
 						$va_tmp['typename'] = $va_tmp['typename_reverse'];
 						unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
@@ -487,7 +475,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					case 'right':
 						$va_tmp = $va_row;
 						
-						$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
+						$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 					
 						unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
@@ -506,7 +494,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 
 							$va_tmp['direction'] = null;
 							
-							$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
+							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							
 							foreach($va_left_subtype_candidates as $vs_left_subtype) {
 								$va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
@@ -526,27 +514,28 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							$va_tmp = $va_row;
 							unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
-							$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
+							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							$va_tmp['direction'] = 'ltor';
 							
 							foreach($va_left_subtype_candidates as $vs_left_subtype) {
 								$va_types[$vn_parent_id][$vs_left_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 							}
+							
+							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']])) {
+								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
+							}
+							
 							$va_tmp = $va_row;
 							$va_tmp['typename'] =  $va_tmp['typename_reverse'];
 							unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 	
-							$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']);
+							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							$va_tmp['direction'] = 'rtol';
 							
 							foreach($va_right_subtype_candidates as $vs_right_subtype) {
 								$va_types[$vn_parent_id][$vs_right_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 							}
 							
-							
-							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltol_'.$va_row['type_id']][$va_row['locale_id']])) {
-								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
-							}
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
 							}
@@ -554,15 +543,9 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						
 						break;
 				}
-				
-				
-				if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']])) {
-					$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
-				}
 			}
 			
 			$va_types = $this->_processRelationshipHierarchy($vn_root_id, $va_hier, $va_types, 1);
-			
 			$va_processed_types = array('_type_map' => []);
 			$va_subtype_lookups = [];
 
@@ -588,6 +571,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				}
 				$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
 			}
+		
 			
 		} else {
 			// ----------------------------------------------------------------------------------------
@@ -610,7 +594,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					if ($pn_type_id && ($va_subtypes_to_check && !sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids)))) { continue; }
 					$vs_subtype = $va_row['sub_type_right_id'];
 					
-					$vs_key = (strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']);
+					$vs_key = ((strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']);
 					
 				} else {
 					// left-to-right
@@ -624,7 +608,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					
 					$va_row['typename'] = $va_row['typename_reverse'];
 					
-					$vs_key = (strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename_reverse']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename_reverse']);
+					$vs_key = ((strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename_reverse']);
 				
 				}
 				unset($va_row['typename_reverse']);		// we pass the typename adjusted for direction in '_display', so there's no need to include typename_reverse in the returned values
