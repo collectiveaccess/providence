@@ -165,7 +165,10 @@ if (!defined("__CA_APP_NAME__")) {
 	define("__CA_APP_NAME__", "collectiveaccess");
 }
 
-
+#
+# __CA_GOOGLE_MAPS_KEY__ = GoogleMaps key to use for mapping (optional)
+#
+define("__CA_GOOGLE_MAPS_KEY__", "");
 
 # *** 
 # __   __          _                _                  

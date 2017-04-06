@@ -119,10 +119,11 @@
 			$va_reps = array();
 			$t_rep = new ca_object_representations();
 			
-			$va_can_read = null;
 			if($AUTH_CURRENT_USER_ID) {
 				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'), null, array('returnAsArray' => true));
-			} 
+			} else {
+				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
+			}
 			
 			// reexecute query as pdo doesn't support seek()
 			$qr_reps = $o_db->query($vs_sql, $va_type_restriction_filters['params']);

@@ -299,7 +299,7 @@
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
  			
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------
@@ -308,7 +308,7 @@
  			$this->opo_browse->removeCriteria($ps_facet_name, array($this->request->getParameter('mod_id', pString)));
  			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
  			
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------
@@ -316,7 +316,7 @@
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			$this->opo_browse->removeCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
  			
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------
@@ -334,7 +334,7 @@
  			if (method_exists($this, "hookAfterClearCriteria")) {
 				$this->hookAfterClearCriteria($this->opo_browse);
 			}
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------

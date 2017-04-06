@@ -207,6 +207,12 @@
  					}
  					
 					$vo_result = $po_search->getResults($va_search_opts);
+					
+					if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
+						$this->view->setVar('open_refine_controls', false);
+						$this->view->setVar('noRefineControls', true); 
+					}
+					
 				} elseif($po_search) {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
 				}
