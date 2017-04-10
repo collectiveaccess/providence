@@ -400,7 +400,6 @@
 					var warnSpan = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning');
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').keyup(function() {
 						jQuery.getJSON('{$vs_unique_lookup_url}', {n: jQuery(this).val()}).done(function(data) {
-							console.log('data', data);
 							if(data.exists >= 1) {
 								warnSpan.show();
 							} else {

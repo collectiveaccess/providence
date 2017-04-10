@@ -446,9 +446,9 @@
 		}
 		
 		# --- make sure the primary rep shows up first
-		$va_primary_link = array($vn_primary_id => $va_links[$vn_primary_id]);
-		unset($va_links[$vn_primary_id]);
-		$va_links = $va_primary_link + $va_links;
+		//$va_primary_link = array($vn_primary_id => $va_links[$vn_primary_id]);
+		//unset($va_links[$vn_primary_id]);
+		//$va_links = $va_primary_link + $va_links;
 		
 		# --- formatting
 		$vs_formatted_thumbs = "";
@@ -1022,9 +1022,21 @@
 					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormSubmit'>".((isset($va_opts['label']) && $va_opts['label']) ? $va_opts['label'] : _t('Submit'))."</a>");
 					$vb_submit_or_reset_set = true;
 					break;
+				case 'submittag':
+					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormSubmit'>");
+					$vb_submit_or_reset_set = true;
+					break;
 				case 'reset':
 					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormReset'>".((isset($va_opts['label']) && $va_opts['label']) ? $va_opts['label'] : _t('Reset'))."</a>");
 					$vb_submit_or_reset_set = true;
+					break;
+				case 'resettag':
+					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormReset'>");
+					$vb_submit_or_reset_set = true;
+					break;
+				case '/resettag':
+				case '/submittag':
+					$po_view->setVar($vs_tag, "</a>");
 					break;
 				default:
 					if (preg_match("!^(.*):label$!", $vs_tag_proc, $va_matches)) {
@@ -1158,5 +1170,26 @@
 		$o_config = Configuration::load();
 		$va_template_values = $o_config->getAssoc('global_template_values');
 		return is_array($va_template_values) ? sizeof($va_template_values) : 0;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * 
+	 */
+	function caGetComparisonList($po_request, $ps_table, $pa_options=null) {
+		if (!is_array($va_comparison_list = $po_request->session->getVar("{$ps_table}_comparison_list"))) { $va_comparison_list = []; }
+		
+		// Get title template from config
+		$va_compare_config = $po_request->config->get('compare_images');
+		if (!is_array($va_compare_config = $va_compare_config[$ps_table])) { $va_compare_config = []; }
+		$va_display_list = caProcessTemplateForIDs(caGetOption('title_template', $va_compare_config, "^{$ps_table}.preferred_labels"), $ps_table, $va_comparison_list, ['returnAsArray' => true]);
+		
+		$va_list = [];
+		foreach($va_comparison_list as $vn_i => $vn_id) {
+			$va_list[$vn_id] = $va_display_list[$vn_i];
+		}
+		
+		return $va_list;
 	}
 	# ---------------------------------------

@@ -88,7 +88,7 @@
 				}
 				
 					
-				return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options=null);
+				return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options);
 			}
 			
 			return _t("Could not load viewer");

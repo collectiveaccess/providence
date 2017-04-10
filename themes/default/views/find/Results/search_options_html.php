@@ -53,7 +53,7 @@ if($vo_result->numHits() > 0) {
 
 <?php
 	if($vo_result->numHits() > 0) {
-		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
+		if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && (!$this->getVar('noRefine') && !$this->getVar('noRefineControls'))) {
 ?>
 			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon(__CA_NAV_ICON_FILTER__, "24px"); ?></a>
 <?php
