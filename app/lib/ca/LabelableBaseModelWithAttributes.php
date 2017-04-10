@@ -535,7 +535,7 @@
 			$va_type_restriction_params = [];
 			if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
 				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
-					$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+					$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 					$va_type_restriction_params[] = $va_restrict_to_types;
 				}
 			}
@@ -862,7 +862,7 @@
 			$va_sql = [];
 			if (sizeof($vs_wheres = join(" {$ps_boolean} ", $va_label_sql))) { $va_sql[] = $vs_wheres; }
 			if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
-			if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}			
+			if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql; }			
 
 			
 			$vs_sql = "SELECT * FROM {$vs_table}";
