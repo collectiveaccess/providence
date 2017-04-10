@@ -532,10 +532,11 @@
 			$va_sql_params = [];
 			
 			$vs_type_restriction_sql = '';
+			$va_type_restriction_params = [];
 			if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
 				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
 					$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
-					$va_sql_params[] = $va_restrict_to_types;
+					$va_type_restriction_params[] = $va_restrict_to_types;
 				}
 			}
 			
@@ -599,7 +600,7 @@
 			//
 			// Begin query building
 			//
-			$va_joins = $va_sql_wheres = $va_label_sql = [];
+			$va_joins = $va_label_sql = [];
 			
 			if ($vb_has_simple_fields) {				
 				//
@@ -855,11 +856,18 @@
 				$va_label_sql[] = "({$vs_table}.access IN (?))";
 				$va_sql_params[] = $pa_check_access;
 			}
+						
+			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0)" : '';
 			
-			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
+			$va_sql = [];
+			if (sizeof($vs_wheres = join(" {$ps_boolean} ", $va_label_sql))) { $va_sql[] = $vs_wheres; }
+			if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
+			if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}			
+
+			
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
-			$vs_sql .=" WHERE {$vs_deleted_sql} {$vs_type_restriction_sql} (".join(" {$ps_boolean} ", $va_label_sql).")";
+			$vs_sql .= ((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 			
 			$vs_orderby = '';
 			if ($vs_sort_proc) {
@@ -890,7 +898,7 @@
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 	
-			$qr_res = $o_db->query($vs_sql, $va_sql_params);
+			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
