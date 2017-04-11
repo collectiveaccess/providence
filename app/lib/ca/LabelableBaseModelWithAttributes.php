@@ -607,9 +607,9 @@
 				// Convert type id
 				//
 				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
-					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
+					if (isset($pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()]) && !is_numeric($pa_values[$vs_type_field_name])) {
 						
-						$va_field_values = $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD];
+						$va_field_values = $pa_values[$vs_type_field_name];
 						foreach($va_field_values as $vn_i => $va_field_value) {
 							$vs_op = strtolower($va_field_value[0]);
 							$vm_value = $va_field_value[1];
@@ -630,7 +630,7 @@
 						}
 					}
 				}
-			
+				
 				//
 				// Convert other intrinsic list references
 				//
