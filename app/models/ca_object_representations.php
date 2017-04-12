@@ -421,7 +421,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
-			$vn_rc = parent::update();
+			$vn_rc = parent::update($pa_options);
 
 			// Trigger automatic replication
 			$va_auto_targets = $this->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $this->get('access')));
