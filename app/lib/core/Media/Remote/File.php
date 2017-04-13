@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,10 +61,11 @@ class File extends Base {
 			return false;
 		}
 
+	// REMOVED BECAUSE NOT ALL FILE URLS END WITH WHAT LOOKS LIKE A FILE
 		// needs to have a file name at the end
-		if(!preg_match("/(.+)\.[A-Za-z0-9]{1,5}$/u", $va_parts['path']) && !preg_match("/(.+)\.[A-Za-z0-9]{1,5}$/u", $va_parts['query'])) {
-			return false;
-		}
+		//if(!preg_match("/(.+)\.[A-Za-z0-9]{1,5}$/u", $va_parts['path']) && !preg_match("/(.+)\.[A-Za-z0-9]{1,5}$/u", $va_parts['query'])) {
+		//	return false;
+		//}
 
 		return true;
 	}
