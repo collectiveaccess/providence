@@ -1744,6 +1744,33 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		return $va_lists;
 	}
+	
+	# ------------------------------------------------------
+	/**
+	 * Returns list codes and list_ids of all available lists. 
+	 *
+	 * @param array $pa_options Options include:
+	 *		transaction = Transaction to execute list query within. [Default=null]
+	 * @return array
+	 */
+	static public function getListCodes($pa_options=null) {
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		$o_db = $t_list->getDb();
+		
+		$qr_lists = $o_db->query("
+			SELECT cl.list_id, cl.list_code
+			FROM ca_lists cl
+			WHERE
+				deleted = 0
+		");
+		$va_lists = [];
+		while($qr_lists->nextRow()) {
+			$va_lists[$qr_lists->get('list_id')] = $qr_lists->get('list_code');
+		}
+		ksort($va_lists);
+		return $va_lists;
+	}
 	# ---------------------------------------------------------------------------------------------
 	/**
 	 * Overrides BundlableLabelableBaseModelWithAttributes:isSaveable to implement system list access restrictions
