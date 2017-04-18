@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,9 +33,7 @@
 		/**
 		 * Return array with information about quick-search supported searches
 		 *
-		 * @param array $pa_options Options include:
-		 *		expandByType = expand ca_occurrences with entries for each occurrence type. [Default is false]
-		 *
+		 * @param array $pa_options No options are supported
 		 * @return array
 		 */ 
 		public static function availableSearches($pa_options=nulls) {
@@ -43,6 +41,9 @@
 			
 			# default order is 
 			$va_default_order = $o_config->getList("quicksearch_default_results");
+			
+			# list of tables to display by table
+			$va_breakout_by_type = $o_config->getList("quicksearch_breakout_by_type");
 			
 			$va_searches = [
  				'ca_collections' 				=> ['relevance' => '_natural', 'name' => 'ca_collection_labels.name', 'displayidno' => 'ca_collections.idno', 'idno' => 'ca_collections.idno_sort', 'displayname' => _t('Collections'), 'primary_key' => 'collection_id', 'module' => 'editor/collections', 'controller' => 'CollectionEditor', 'action' => $vs_default_actions["ca_collections"], 'searchModule' => 'find', 'searchController' => 'SearchCollections', 'searchAction' => "Index"],
@@ -57,24 +58,27 @@
  				'ca_tours'	 					=> ['relevance' => '_natural', 'name' => 'ca_tour_labels.name', 'displayidno' => 'ca_tours.tour_code', 'idno' => 'ca_tours.tour_code', 'displayname' => _t('Tours'), 'primary_key' => 'tour_id', 'module' => 'editor/tours', 'controller' => 'TourEditor', 'action' => $vs_default_actions["ca_tours"], 'searchModule' => 'find', 'searchController' => 'SearchTours', 'searchAction' => "Index"],
  				'ca_tour_stops' 				=> ['relevance' => '_natural', 'name' => 'ca_tour_stop_labels.name', 'displayidno' => 'ca_tour_stops.idno', 'idno' => 'ca_tour_stops.idno_sort', 'displayname' => _t('Tour stops'), 'primary_key' => 'stop_id', 'module' => 'editor/tour_stops', 'controller' => 'TourStopEditor', 'action' => $vs_default_actions["ca_tour_stops"], 'searchModule' => 'find', 'searchController' => 'SearchTourStops', 'searchAction' => "Index"]
  			];
- 			
+ 				
+			$t_list = new ca_lists();
+			$o_dm = Datamodel::load();
+			
  			$va_searches_sorted = [];
  			foreach($va_default_order as $vs_table) {
  				if((bool)$o_config->get("{$vs_table}_disable")) { continue; }
  				$va_searches_sorted[$vs_table] = $va_searches[$vs_table];
- 			}
- 			
- 			if (caGetOption('expandByType', $pa_options, false)) { 				
-				$t_list = new ca_lists();
-				if (isset($va_searches_sorted['ca_occurrences']) && is_array($va_occurrence_types = caExtractValuesByUserLocale($t_list->getItemsForList('occurrence_types')))) {
-					$va_proto_type = $va_searches_sorted['ca_occurrences'];
-					unset($va_searches_sorted['ca_occurrences']);
-					foreach($va_occurrence_types as $vn_i => $va_occurrence_type) {
-						$va_searches_sorted['ca_occurrences/'.$va_occurrence_type['idno']] = $va_proto_type;
-						$va_searches_sorted['ca_occurrences/'.$va_occurrence_type['idno']]['displayname'] = caUcFirstUTF8Safe($va_occurrence_type['name_plural']);
+ 				
+ 				if (in_array($vs_table, $va_breakout_by_type)) {
+ 					if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { continue; }
+ 					
+ 					if (is_array($va_types = caExtractValuesByUserLocale($t_list->getItemsForList($t_instance->getTypeListCode())))) {
+						$va_proto_type = $va_searches_sorted[$vs_table];
+						unset($va_searches_sorted[$vs_table]);
+						foreach($va_types as $vn_i => $va_type) {
+							$va_searches_sorted["{$vs_table}/".$va_type['idno']] = $va_proto_type;
+							$va_searches_sorted["{$vs_table}/".$va_type['idno']]['displayname'] = caUcFirstUTF8Safe($va_type['name_plural']);
+						}
 					}
-				}
-				
+ 				}
  			}
  			
  			return $va_searches_sorted;
@@ -91,7 +95,7 @@
  			$va_selected_searches = array_filter($va_search_list, "strlen");
  			if (!is_array($va_selected_searches) || !sizeof($va_selected_searches)) { $va_selected_searches = array_keys(QuickSearch::availableSearches(['expandByType' => true])); }
  		
- 			$va_available_searches = QuickSearch::availableSearches(['expandByType' => true]);
+ 			$va_available_searches = QuickSearch::availableSearches();
  			$va_searches = [];
  			foreach($va_selected_searches as $vs_table) {
  				$va_searches[$vs_table] = $va_available_searches[$vs_table];

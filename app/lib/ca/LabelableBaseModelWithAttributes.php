@@ -607,22 +607,30 @@
 				// Convert type id
 				//
 				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
-					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
+					if (isset($pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()]) && !is_numeric($pa_values[$vs_type_field_name])) {
 						
-						$va_field_values = $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD];
+						$va_field_values = $pa_values[$vs_type_field_name];
 						foreach($va_field_values as $vn_i => $va_field_value) {
 							$vs_op = strtolower($va_field_value[0]);
 							$vm_value = $va_field_value[1];
 				
 							if (!is_numeric($vm_value)) {
-								if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $vm_value)) {
-									$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD][$vn_i] = ['=', $vn_id];
+								if (is_array($vm_value)) {
+									$va_trans_vals = [];
+									foreach($vm_value as $vn_j => $vs_value) {
+										if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
+											$va_trans_vals[] = $vn_id;
+										}
+										$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];
+									}
+								} elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+									$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
 								}
 							}
 						}
 					}
 				}
-			
+				
 				//
 				// Convert other intrinsic list references
 				//

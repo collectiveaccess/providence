@@ -76,7 +76,7 @@ BaseModel::$s_ca_models_definitions['ca_data_import_events'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Code indicating type of import (eg. OAI)'),
-				'BOUNDS_LENGTH' => array(0,10)
+				'BOUNDS_LENGTH' => array(0,50)
 		),
 		'description' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

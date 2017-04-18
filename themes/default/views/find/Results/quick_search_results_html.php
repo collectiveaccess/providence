@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,8 +41,6 @@
 		'',
 		$vs_sort_form
 	);
-	
-	$vn_num_occurrence_types = sizeof($va_occurrence_types = $this->getVar('occurrence_types'));
 	
 	$vn_num_result_lists_to_display = 0;
 	
