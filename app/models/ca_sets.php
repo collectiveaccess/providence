@@ -1196,7 +1196,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 
 			$t_item->addLabel(array(
-				'caption' => _t('[BLANK]'),
+				'caption' => '['._t('BLANK').']',
 			), $g_ui_locale_id);
 			
 			if ($t_item->numErrors()) {
@@ -1263,7 +1263,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 
 			// Add empty labels to newly created items
 			foreach($va_item_ids as $vn_item_id) {
-				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'"._t("[BLANK]")."')";
+				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'["._t("BLANK")."]')";
 			}
 			$this->getDb()->query("INSERT INTO ca_set_item_labels (item_id, locale_id, caption) VALUES ".join(",", $va_label_values));
 			if ($this->getDb()->numErrors()) {
