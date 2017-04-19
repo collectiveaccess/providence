@@ -1542,6 +1542,16 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns list of names of fields that may be used to generate the display field. For most labels this will be empty. For ca_entities this will be a list on constituent name fields.
+		 *
+		 * @return array
+		 */
+		public function getSecondaryLabelDisplayFields() {
+			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			return $t_label->getSecondaryDisplayFields();
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns the name of the field that is used to sort label content
 		 *
 		 * @return string Name of sort field

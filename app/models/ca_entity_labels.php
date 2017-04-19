@@ -246,6 +246,9 @@ class ca_entity_labels extends BaseLabel {
 	);
 	protected $LABEL_DISPLAY_FIELD = 'displayname';
 	
+	# --- List of label fields that may be used to generate the display field
+	protected $LABEL_SECONDARY_DISPLAY_FIELDS = ['forename', 'surname'];
+	
 	# --- Name of field used for sorting purposes
 	protected $LABEL_SORT_FIELD = 'name_sort';
 	

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,6 +95,13 @@
 		 */
 		public function getDisplayField() {
 			return $this->LABEL_DISPLAY_FIELD;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Returns list of secondary display fields. If not defined for the label (most don't have these) an empty array is returned.
+		 */
+		public function getSecondaryDisplayFields() {
+			return property_exists($this, "LABEL_SECONDARY_DISPLAY_FIELDS") ? $this->LABEL_SECONDARY_DISPLAY_FIELDS : [];
 		}
 		# -------------------------------------------------------
 		/**
