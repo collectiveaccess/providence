@@ -94,6 +94,7 @@
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
 		
 		$va_templates = array();
+		$vb_needs_caching = false;
 			
 		foreach($va_template_paths as $vs_template_path) {
 			foreach(array("{$vs_template_path}", "{$vs_template_path}/local") as $vs_path) {
@@ -106,7 +107,8 @@
 						(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= filemtime($vs_template_path)) &&
 						(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= filemtime("{$vs_template_path}/local"))
 					){
-						return $va_list;
+						$va_templates = array_merge($va_templates, $va_list);
+						continue;
 					}
 				}
 
@@ -133,17 +135,21 @@
 										'type' => 'pdf'
 									);
 								}
+								
+								$vb_needs_caching = true;
 							}
 						}
 					}
 				}
 
 				asort($va_templates);
-			
-				ExternalCache::save($vs_cache_key, $va_templates, 'PrintTemplates');
-				ExternalCache::save("{$vs_cache_key}_mtime", filemtime($vs_template_path), 'PrintTemplates');
-				ExternalCache::save("{$vs_cache_key}_local_mtime", @filemtime("{$vs_template_path}/local"), 'PrintTemplates');
 			}
+		}
+		
+		if ($vb_needs_caching) {	
+			ExternalCache::save($vs_cache_key, $va_templates, 'PrintTemplates');
+			ExternalCache::save("{$vs_cache_key}_mtime", filemtime($vs_template_path), 'PrintTemplates');
+			ExternalCache::save("{$vs_cache_key}_local_mtime", @filemtime("{$vs_template_path}/local"), 'PrintTemplates');
 		}
 		return $va_templates;
 	}
