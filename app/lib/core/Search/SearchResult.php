@@ -2113,10 +2113,9 @@ class SearchResult extends BaseObject {
 		//
 		// Flatten array for return as string or simple array value
 		// 
-		$va_flattened_values = $this->_flattenArray($va_return_values, $pa_options);
+		$va_flattened_values = array_map(function($v) { return is_array($v) ? join("; ", $v) : $v; }, $this->_flattenArray($va_return_values, $pa_options));
 		
 		if ($pa_options['returnAsArray']) {
-			$va_flattened_values = array_map(function($v) { return is_array($v) ? join("; ", $v) : $v; }, $va_flattened_values);
 			return $va_flattened_values;
 		} else {
 			return (sizeof($va_flattened_values) > 0) ? join($pa_options['delimiter'], $va_flattened_values) : null;
