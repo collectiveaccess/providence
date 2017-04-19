@@ -102,6 +102,7 @@
 				if (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) {
 					$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplates');
 					if(
+						$va_list && is_array($va_list) &&
 						(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= filemtime($vs_template_path)) &&
 						(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= filemtime("{$vs_template_path}/local"))
 					){
