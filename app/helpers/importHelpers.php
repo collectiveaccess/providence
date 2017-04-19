@@ -61,6 +61,7 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+		$o_refinery_instance = caGetOption('refinery', $pa_options, null);
 
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
@@ -224,6 +225,28 @@
 			}
 			$va_attributes['locale_id'] = $g_ui_locale_id;
 			if ($o_log) { $o_log->logDebug(_t('[%6] Got parent %1 (%2) with id %3 and type %4 for %5', $vs_name, $vs_idno, $vn_id, $vs_type, $vs_name, $ps_refinery_name)); }
+		
+			// Set relationships on the related table
+			$va_val = [];
+			$va_attr_vals = [];
+			$va_item = $pa_item;
+			$va_item['settings']["{$ps_refinery_name}_relationships"] = $pa_item['settings']["{$ps_refinery_name}_parents"][$vn_i]['relationships'];
+			unset($va_item['settings']["{$ps_refinery_name}_parents"]);
+		
+			caProcessRefineryRelatedMultiple($o_refinery_instance, $va_item, $pa_source_data, 0, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
+			if (is_array($va_val['_related_related'])) {
+				$o_dm = Datamodel::load();
+				$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+				if ($t_subject->load($vn_id)) {
+					foreach($va_val['_related_related'] as $vs_table => $va_rels) { 
+						foreach($va_rels as $va_rel) {
+							if (!$t_subject->addRelationship($vs_table, $va_rel['id'], $va_rel['_relationship_type'])) {
+								if ($o_log) { $o_log->logDebug(_t('[%6] Could not create relationship between parent %1 and %2 for ids %3 and %4 with type %5', $ps_table, $vs_table, $vn_id, $va_rel['id'], $va_rel['_relationship_type'], $ps_refinery_name)); }
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		if ($vb_hierarchy_mode) {
@@ -727,8 +750,6 @@
 						}
 
 						// Set relationships on the related table
-						
-					
 						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $vn_i, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
 
 						// Set nonpreferred labels
