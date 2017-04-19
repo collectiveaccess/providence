@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,7 +112,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Surname/organization'), 'DESCRIPTION' => _t('A surname is a name added to a given name and is part of a personal name. In many cases a surname is a family name. For organizations this should be set to the full name.'),
-				'BOUNDS_LENGTH' => array(0,100)
+				'BOUNDS_LENGTH' => array(0,512)
 		),
 		'prefix' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

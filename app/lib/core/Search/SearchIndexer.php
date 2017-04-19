@@ -174,7 +174,7 @@ class SearchIndexer extends SearchBase {
 				if ($this->opo_datamodel->tableExists($vs_table)) {
 					$vn_num = $this->opo_datamodel->getTableNum($vs_table);
 					if($pb_display_progress) {
-						print "\nTRUNCATING {$vs_table}\n\n";
+						print _t("\nTRUNCATING %1\n\n", $vs_table);
 					}
 					$this->opo_engine->truncateIndex($vn_num);
 					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
@@ -197,7 +197,7 @@ class SearchIndexer extends SearchBase {
 				$va_names[] = $va_table_info['displayName'];
 			}
 			if ($pb_display_progress) {
-				print "\nWILL INDEX [".join(", ", $va_names)."]\n\n";
+				print _t("\nWILL INDEX [%1]\n\n", join(", ", $va_names));
 			}
 		}
 
@@ -237,9 +237,7 @@ class SearchIndexer extends SearchBase {
 
 			$va_intrinsic_list = $this->getFieldsToIndex($vs_table, $vs_table, array('intrinsicOnly' => true));
 			$va_intrinsic_list[$vs_table_pk] = array();
-//if ($t_instance->tableName() == 'ca_objects') { 
-//$va_ids = [9];
-// }
+
 			foreach($va_ids as $vn_i => $vn_id) {
 				if (!($vn_i % 500)) {	// Pre-load attribute values for next 500 items to index; improves index performance
 					$va_id_slice = array_slice($va_ids, $vn_i, 500);
@@ -262,7 +260,7 @@ class SearchIndexer extends SearchBase {
 
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
 				if ($pb_display_progress && $pb_interactive_display) {
-					CLIProgressBar::setMessage("Memory: ".caGetMemoryUsage());
+					CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
 					print CLIProgressBar::next();
 				}
 
@@ -296,8 +294,8 @@ class SearchIndexer extends SearchBase {
 		}
 
 		if ($pb_display_progress) {
-			print "\n\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
-			print "Note that if you're using an external search service like ElasticSearch, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
+			print _t("\n\n\nDone! [Indexing for %1 took %2]\n", join(", ", $va_names), caFormatInterval((float)$t_timer->getTime(4)));
+			print _t("Note that if you're using an external search service like ElasticSearch, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n");
 		}
 		if ($ps_callback) {
 			$ps_callback(

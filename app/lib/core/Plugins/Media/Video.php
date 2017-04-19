@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2015 Whirl-i-Gig
+ * Copyright 2004-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1112,7 +1112,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				</video>
 			<script type="text/javascript">
 				_V_.players["<?php print $vs_id; ?>"] = undefined;	// make sure VideoJS doesn't think it has already loaded the viewer
-				jQuery("#<?php print $vs_id; ?>").attr('width', jQuery('#<?php print $vs_id; ?>:parent').width()).attr('height', jQuery('#<?php print $vs_id; ?>:parent').height());
+				jQuery("#<?php print $vs_id; ?>").attr('width', jQuery('#<?php print $vs_id; ?>:parent').width()).attr('height', Math.ceil((jQuery('#<?php print $vs_id; ?>:parent').width()) * .7));
 				_V_("<?php print $vs_id; ?>", {}, function() {});
 				
 				if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?php print $vs_id; ?>", _V_.players["<?php print $vs_id; ?>"], 'VideoJS'); }

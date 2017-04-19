@@ -89,7 +89,7 @@ monthComesFirstInDelimitedDate = 0
 daySuffix = 
 
 # Definite articles
-definiteArticles = [el, la]
+definiteArticles = [el, la, los, las]
 
 # Indefinite articles
 indefiniteArticles = [un, una]

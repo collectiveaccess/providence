@@ -3800,7 +3800,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([\d]+(?!%|~)|ca_[A-Za-z]
 	 *
 	 * @param RequestHTTP $po_request The current request
 	 * @param SearchResult $po_data A ca_object_represention or RepresentableBaseModel search result to render slides for. A slide will be rendered for each representation.
-	 * @param RepresentableBaseModel $pt_subject = A model instance loaded with the subject (the record the media is shown in the context of. Eg. if a representation is shown for an object this is an instance for that object record)
+	 * @param RepresentableBaseModel $pt_subject A model instance loaded with the subject (the record the media is shown in the context of. Eg. if a representation is shown for an object this is an instance for that object record)
 	 * @param array $pa_options Options include:
 	 *			display = media_display.conf display version to use. [Default is 'detail']
 	 *		
@@ -3963,11 +3963,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([\d]+(?!%|~)|ca_[A-Za-z]
 	 *
 	 * @param RequestHTTP $pt_request The current request
 	 * @param string $ps_table The table being browsed
-	 * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items.
+	 * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items. If null then status is determined at the table level. [Default is null]
 	 *
 	 * @return bool
 	 */
-	function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id) {
+	function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id=null) {
 		$o_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		
@@ -3976,7 +3976,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([\d]+(?!%|~)|ca_[A-Za-z]
 		if(!$pt_request->isLoggedIn() || (!$pt_request->user->canDoAction("can_edit_{$ps_table}") && (($vs_hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$pt_request->user->canDoAction("can_edit_{$vs_hier_table}") : false))) { return false; }
 		if (!$t_instance->isHierarchical()) { return false; }
 		if (!($vs_rank_fld = $t_instance->getProperty('RANK'))) { return false; }
-		if (!$t_instance->load($pn_id)) { return false; }
+		if (!is_null($pn_id) && !$t_instance->load($pn_id)) { return false; }
 		
 		$vs_def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
 		$vs_def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');

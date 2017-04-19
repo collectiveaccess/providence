@@ -288,6 +288,39 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns the letter bar page to display. This is either the value set for the current context,
+		 * a letter set in the current request via the 'l' parameter or null if neither is set. The value of the
+		 * request parameter 'l' take precedence over any existing context value and will be set as the current
+		 * context value when present.
+		 *
+		 * @return string - First letter of results to display on results page, or null if no value is set
+		 */
+		public function getLetterBarPage() {
+			if (!($ps_letter_bar_page = $this->opo_request->getParameter('l', pString))) {
+ 				if ($va_context = $this->getContext()) {
+					return $va_context['letter_bar_page'] ? $va_context['letter_bar_page'] : null;
+				}
+			} else {
+				$this->setContextValue('letter_bar_page', $ps_letter_bar_page);
+				return $ps_letter_bar_page;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Sets the letter bar page to display for this context. While you can
+		 * call this directly, usually the letter bar page is set by setLetterBarPage()
+		 * using a value passed in the request.
+		 *
+		 * @param $ps_letter_bar_page - letter bar page
+		 * 
+		 * @return string - letter bar page as set
+		 */
+		public function setLetterBarPage($ps_letter_bar_page) {
+			return $this->setContextValue('letter_bar_page', $ps_letter_bar_page);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns the current view mode for the context. This is a bit of text that indicates
 		 * which view to use when displaying the result set. The returned value will be either 
 		 * the value set for the current context, the value set via the 'view' parameter in the
