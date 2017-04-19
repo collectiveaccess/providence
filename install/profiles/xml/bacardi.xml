@@ -10762,6 +10762,34 @@
       </bundlePlacements>
     </display>
   </displays>
+  <searchForms>
+    <searchForm code="collection_search" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Collection Search</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="form_width">1</setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="p31">
+          <bundle>ca_collection_labels.name</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Archive/Collection Title</setting>
+            <setting name="width">400px</setting>
+          </settings>
+        </placement>
+        <placement code="p32">
+          <bundle>_fulltext</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Full Text Search</setting>
+            <setting name="width">400px</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </searchForm>
+  </searchForms>
   <logins>
     <login user_name="admin" password="cocktail" fname="CollectiveAccess" lname="Administrator"
       email="info@collectiveaccess.org">
