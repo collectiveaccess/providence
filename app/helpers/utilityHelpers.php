@@ -3492,3 +3492,65 @@ function caFileIsIncludable($ps_file) {
 		return false;
 	}
 	# ----------------------------------------
+	/**
+	 * Find and return tag-like strings in a template. All tags are assumed to begin with
+	 * a caret ("^") and end with a space or EOL. Tags may contain spaces within quoted areas. 
+	 *
+	 * @param string $ps_template The template to parse
+	 * @param array $pa_options No options are supported.
+	 * @return array A list of identified tags
+	 */
+	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
+		$va_tags = [];
+		
+		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+		$vs_tag = '';
+		for($i=0; $i < mb_strlen($ps_template); $i++) {
+			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+				case '^':
+					if ($vb_in_tag) {
+						if ($vs_tag = trim($vs_tag)){ $va_tags[] = $vs_tag; }
+						$vs_tag = '';
+						$vb_in_single_quote = $vb_in_double_quote = false;
+					} else {
+						$vb_in_tag = true;
+					}
+					break;
+				case ' ':
+				case '<':
+					if (!$vb_in_single_quote && !$vb_in_double_quote) {
+						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+						$vs_tag = '';
+						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+					} else {
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case '"':
+					$vb_in_double_quote = !$vb_in_double_quote;
+					$vs_tag .= $vs_char;
+					break;
+				case "'":
+					$vb_in_single_quote = !$vb_in_single_quote;
+					$vs_tag .= $vs_char;
+					break;
+				default:
+					if ($vb_in_tag) {
+						$vs_tag .= $vs_char;
+					}
+					break;
+			}
+		}
+		
+		if ($vb_in_tag) {
+			if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+		}
+		
+		foreach($va_tags as $vn_i => $vs_tag) {
+			if (strpos($vs_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
+			$va_tags[$vn_i] = rtrim($vs_tag, ")]/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
+		}
+		
+		return $va_tags;
+	}
+	# ----------------------------------------
