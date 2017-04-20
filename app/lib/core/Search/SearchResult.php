@@ -1222,7 +1222,7 @@ class SearchResult extends BaseObject {
 										}
 										
 							
-										if (in_array($t_instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]) ) {
+										if ($t_instance->getHierarchyType() == __CA_HIER_TYPE_MULTI_MONO__) {
 											array_shift($va_hier_id_list);
 										}
 										$va_hier_ids[] = $va_hier_id_list;

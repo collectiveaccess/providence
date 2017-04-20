@@ -3503,22 +3503,29 @@ function caFileIsIncludable($ps_file) {
 	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
 		$va_tags = [];
 		
-		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = false;
 		$vs_tag = '';
+		$vs_last_char = null;
 		for($i=0; $i < mb_strlen($ps_template); $i++) {
 			switch($vs_char = mb_substr($ps_template, $i, 1)) {
 				case '^':
 					if ($vb_in_tag) {
 						if ($vs_tag = trim($vs_tag)){ $va_tags[] = $vs_tag; }
-						$vs_tag = '';
-						$vb_in_single_quote = $vb_in_double_quote = false;
-					} else {
-						$vb_in_tag = true;
+					}
+					$vb_in_tag = true;
+					$vs_tag = '';
+					$vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = false;
+					break;
+				case '%':
+					if($vb_in_tag) {
+						$vb_have_seen_param_delimiter = true;
+						$vs_tag .= $vs_char;
 					}
 					break;
 				case ' ':
+				case ',':
 				case '<':
-					if (!$vb_in_single_quote && !$vb_in_double_quote) {
+					if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
 						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 						$vs_tag = '';
 						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
@@ -3527,8 +3534,17 @@ function caFileIsIncludable($ps_file) {
 					}
 					break;
 				case '"':
-					$vb_in_double_quote = !$vb_in_double_quote;
-					$vs_tag .= $vs_char;
+					if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
+						$vb_in_double_quote = true;
+						$vs_tag .= $vs_char;
+					} elseif($vb_in_tag && $vb_in_double_quote) {
+						$vs_tag .= $vs_char;
+						$vb_in_double_quote = false;
+					} elseif($vb_in_tag) {
+						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+						$vs_tag = '';
+						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+					}
 					break;
 				case "'":
 					$vb_in_single_quote = !$vb_in_single_quote;
@@ -3540,6 +3556,7 @@ function caFileIsIncludable($ps_file) {
 					}
 					break;
 			}
+			$vs_last_char = $vs_char;
 		}
 		
 		if ($vb_in_tag) {
@@ -3547,10 +3564,20 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		foreach($va_tags as $vn_i => $vs_tag) {
-			if (strpos($vs_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
-			$va_tags[$vn_i] = rtrim($vs_tag, ")]/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
+			if ((($p = strpos($vs_tag, "~")) !== false) && ($p < (mb_strlen($vs_tag) - 1))) { continue; }	// don't clip trailing characters when there's a tag directive specified (eg. a tilde that is not at the end of the tag)
+			
+			$vb_is_ca_tag = (substr($vs_tag, 0, 3) == 'ca_');
+			
+			if ($vb_is_ca_tag && (strpos($vs_tag, '%') === false)) {
+				// ca_* tags that don't have modifiers always end whenever a non-alphanumeric character is encountered
+				$vs_tag = preg_replace("![^0-9\p{L}_]+$!u", "", $vs_tag);
+			} elseif(preg_match("!^([\d]+)[^0-9\p{L}_]+!", $vs_tag, $va_matches)) {
+				// tags beginning with numbers followed by non-alphanumeric characters are truncated to number-only tags
+				$vs_tag = $va_matches[1];
+			}
+			
+			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
-		
 		return $va_tags;
 	}
 	# ----------------------------------------
