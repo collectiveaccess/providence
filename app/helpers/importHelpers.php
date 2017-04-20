@@ -414,6 +414,9 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		
+		$o_dm = Datamodel::load();
+		$t_rel_instance = $o_dm->getInstanceByTableName($ps_related_table, true);
+		
 		global $g_ui_locale_id;
 		$va_attr_vals = array();
 		
@@ -482,6 +485,25 @@
 			} else {
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));	
 			}	
+			
+			// Set nonpreferred labels
+			if (is_array($va_non_preferred_labels = $pa_related_options["nonPreferredLabels"])) {
+				$pa_options['nonPreferredLabels'] = array();
+				foreach($va_non_preferred_labels as $va_label) {
+					foreach($va_label as $vs_k => $vs_v) {
+						$va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+					}
+					$pa_options['nonPreferredLabels'][] = $va_label;
+				}
+			} elseif($vs_non_preferred_label = trim($pa_related_options["nonPreferredLabels"])) {
+				if ($ps_refinery_name == 'entitySplitter') {
+					$pa_options['nonPreferredLabels'][] = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' ')), $pa_options);
+				} else {
+					$pa_options['nonPreferredLabels'][] = [
+						$t_rel_instance->getLabelDisplayField() => BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '))
+					];
+				}
+			}
 			
 			$pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label')), $pa_options);
 			
