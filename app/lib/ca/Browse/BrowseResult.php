@@ -70,7 +70,7 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 	# -------------------------------------------------------
 	public function seek($pn_index) {
 		if (($pn_index >= 0) && ($pn_index < sizeof($this->opa_hits))) {
-			$this->opn_current_row = $pn_index - 1;
+			$this->opn_current_row = (int)$pn_index - 1;
 			return true;
 		} 
 		return false;

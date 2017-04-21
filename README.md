@@ -25,7 +25,7 @@ CollectiveAccess is freely available under the open source GNU Public License, m
 
    Forum: http://www.collectiveaccess.org/support/forum
 
-   Bug Tracker: http://clangers.collectiveaccess.org/jira
+   Bug Tracker: http://clangers.collectiveaccess.org
 
 
 ----Other modules:----

@@ -1326,7 +1326,7 @@
 			if ($ps_render = caGetOption('render', $pa_options, null)) {
 				switch($ps_render) {
 					case 'is_set':
-						return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '[SET]'));
+						return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '['._t('SET').']'));
 						break;
 					case 'is':
 						return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => caGetOption('value', $pa_options, null)));

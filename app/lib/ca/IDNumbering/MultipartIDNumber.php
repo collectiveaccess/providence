@@ -1299,6 +1299,7 @@ class MultipartIDNumber extends IDNumber {
 		switch($va_element_info['type']) {
 			# ----------------------------------------------------
 			case 'LIST':
+				if (!is_array($va_element_info['values'])) { $va_element_info['values'] = []; }
 				if (!$vs_element_value || $va_element_info['editable'] || $pb_generate_for_search_form) {
 					if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $va_element_info['default']; }
 					$vs_element = '<select name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'">';
@@ -1318,7 +1319,8 @@ class MultipartIDNumber extends IDNumber {
 
 					$vs_element .= '</select>';
 				} else {
-					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
+					$vs_element_val_proc = (in_array($vs_element_value, $va_element_info['values']) ? $vs_element_value : $va_element_info['values'][0]);
+					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_val_proc, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_val_proc;
 				}
 
 				break;

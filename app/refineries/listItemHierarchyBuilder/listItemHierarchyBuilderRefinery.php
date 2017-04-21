@@ -81,6 +81,7 @@
 			
 			// Set list item parents
 			if ($va_parents = $pa_item['settings']['listItemHierarchyBuilder_parents']) {
+				$pa_options['refinery'] = $this;
 				$vn_parent_id = caProcessRefineryParents('listItemHierarchyBuilder', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, null, array_merge($pa_options, array('list_id' => $pa_item['settings']['listItemHierarchyBuilder_list'])));
 			}
 			
