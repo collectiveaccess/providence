@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3298,6 +3298,9 @@
 				CLIUtils::addError(_t("You must specify a list"));
 				return false;
 			}
+			
+			$pb_update = (bool)$po_opts->getOption('update'); 	// "update" parameter; we only allow updating of a list if this is explicitly set
+			$vb_is_update = false; // flag indicated if we're actually updating an existing list
 
 			try {
 				$o_file = PHPExcel_IOFactory::load($ps_source);
@@ -3361,11 +3364,18 @@
 					return false;
 				}
 				
-			} elseif ($t_list->numItemsInList($ps_list_code) > 0) {
-				CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $ps_list_code));
-				return false;
+			} elseif (($t_list->numItemsInList($ps_list_code) > 0)) {
+				if ($pb_update) {
+					$vb_is_update = true;
+				} else {
+					CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $ps_list_code));
+					return false;
+				}
 			}
 			CLIProgressBar::finish();
+			
+			
+			$vn_list_id = $t_list->getPrimaryKey();
 
 			// Get preferred terms
 			
@@ -3425,15 +3435,45 @@
 					$vn_parent_id = $t_list->getRootListItemID();
 				}
 				
-				if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
-					CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
-					continue;
+				$t_item = null;
+				$vb_is_existing_item = false;
+				if ($vb_is_update) {
+					// look for existing list item
+					if ($t_item = ca_list_items::find(['list_id' => $vn_list_id, 'idno' => mb_substr($vs_term, 0, 255)], ['returnAs' => 'firstModelInstance'])) {
+						if (($t_item->get('ca_list_items.preferred_labels.name_plural') !== $vs_term) || ($t_item->get('ca_list_items.preferred_labels.description') !== $va_data[6])) {
+							if(!$t_item->replaceLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
+								CLIUtils::addError(_t("Could not update term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+							}
+						}
+						$vb_is_existing_item = true;
+						
+						if (!$t_item->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__)) {
+							CLIUtils::addError(_t("Could not remove nonpreferred labels for update for term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+						}
+						
+						if ($vn_parent_id != $t_item->get('ca_list_items.parent_id')) {
+							$t_item->setMode(ACCESS_WRITE);
+							$t_item->set('parent_id', $vn_parent_id);
+							if (!$t_item->update()) {
+								CLIUtils::addError(_t("Could not update parent for term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+							}
+						}
+					}
 				}
-				if (!$t_item->addLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
-					CLIUtils::addError(_t("Could not add term label %1: %2", $vs_term, join("; ", $t_list->getErrors())));
-					continue;
+				
+				if (!$t_item) {
+					if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
+						CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+						continue;
+					}
 				}
-				print CLIProgressBar::next(1, _t('Added preferred term %1', $vs_term));
+				if (!$vb_is_existing_item) {
+					if (!$t_item->addLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
+						CLIUtils::addError(_t("Could not add term label %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+						continue;
+					}
+				}
+				print CLIProgressBar::next(1, _t($vb_is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1', $vs_term));
 				$va_parents[md5(join("|", array_merge($va_acc, [$vs_term])))] = $t_item->getPrimaryKey();
 				
 				if(is_array($va_non_preferred_terms[$vs_term])) {
@@ -3458,7 +3498,8 @@
 		public static function load_chenhall_nomenclatureParamList() {
 			return array(
 				"file|f=s" => _t('Excel XLSX-format AASLH Chenhall Nomenclature file to load.'),
-				"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.')
+				"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.'),
+				"update|u=s" => _t('Update an existing Chenhall installation.')
 			);
 		}
 		# -------------------------------------------------------
