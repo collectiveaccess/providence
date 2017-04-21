@@ -163,25 +163,17 @@
 			} elseif(strpos($ps_placeholder, '^') !== false) {
 				// Placeholder is a full template – requires extra processing
 				if ($o_reader) {
-					$va_tags = array();
+					$va_tags = caExtractTagsFromTemplate($ps_placeholder);
 					
-					// get a list of all tags in placeholder
-					if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_placeholder, $va_matches)) {
-						foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-							$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
-						}
-						$va_tags = $va_matches[1];
-					}
 					// Make sure all tags are in source data array, otherwise try to pull them from the reader.
 					// Some formats, mainly XML, can take expressions (XPath for XML) that are not precalculated in the array
-					//print "p=$ps_placeholder\n";
-					//print_R($va_tags);
 					foreach($va_tags as $vs_tag) {
 						$va_tag = explode('~', $vs_tag);
 						if (isset($pa_source_data[$va_tag[0]])) { continue; }
 						$va_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
-						$pa_source_data[$va_tag[0]] = $va_val[$pn_index];
+						$pa_source_data[$va_tag[0]] = (strlen($pn_index)) ? $va_val[$pn_index] : join(";", $va_val);
 					}
+					
 					$vm_val = caProcessTemplate($ps_placeholder, $pa_source_data);
 				} else {
 					// Is plain text

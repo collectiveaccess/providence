@@ -67,7 +67,7 @@
  				if((bool)$o_config->get("{$vs_table}_disable")) { continue; }
  				$va_searches_sorted[$vs_table] = $va_searches[$vs_table];
  				
- 				if (in_array($vs_table, $va_breakout_by_type)) {
+ 				if (is_array($va_breakout_by_type) && in_array($vs_table, $va_breakout_by_type)) {
  					if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { continue; }
  					
  					if (is_array($va_types = caExtractValuesByUserLocale($t_list->getItemsForList($t_instance->getTypeListCode())))) {
