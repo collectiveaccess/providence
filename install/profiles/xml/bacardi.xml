@@ -40,6 +40,14 @@
         </label>
       </labels>
       <items>
+        <item idno="museum_lot" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Museum Lot</name_singular>
+              <name_plural>Museum Lot</name_plural>
+            </label>
+          </labels>
+          <items>
         <item idno="museum" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -47,6 +55,8 @@
               <name_plural>Museum Objects</name_plural>
             </label>
           </labels>
+        </item>
+          </items>
         </item>
         <item idno="archival_item" enabled="1" default="0">
           <labels>
@@ -206,11 +216,39 @@
         </label>
       </labels>
       <items>
+        <item idno="collection" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="category" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Category</name_singular>
+                  <name_plural>Category</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="sub_category" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Sub-category</name_singular>
+                      <name_plural>Sub-category</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
         <item idno="archives" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Archives</name_singular>
-              <name_plural>Archives</name_plural>
+              <name_singular>Archive Collection</name_singular>
+              <name_plural>Archive Collection</name_plural>
             </label>
           </labels>
           <items>
@@ -724,14 +762,14 @@
         </item>
       </items>
     </list>
-    <list code="condition" hierarchical="0" system="0" vocabulary="0">
+    <list code="condition" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
       <labels>
         <label locale="en_US">
           <name>Condition</name>
         </label>
       </labels>
       <items>
-        <item idno="option0" enabled="1" default="1">
+        <item idno="option0" rank="1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>-</name_singular>
@@ -739,7 +777,7 @@
             </label>
           </labels>
         </item>
-        <item idno="good" enabled="1" default="0">
+        <item idno="good" rank="3" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Good</name_singular>
@@ -747,7 +785,7 @@
             </label>
           </labels>
         </item>
-        <item idno="fair" enabled="1" default="0">
+        <item idno="fair" rank="4" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Fair</name_singular>
@@ -755,7 +793,7 @@
             </label>
           </labels>
         </item>
-        <item idno="poor" enabled="1" default="0">
+        <item idno="poor" rank="5" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Poor</name_singular>
@@ -763,7 +801,7 @@
             </label>
           </labels>
         </item>
-        <item idno="excellent" enabled="1" default="0">
+        <item idno="excellent" rank="2" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Excellent</name_singular>
@@ -3615,6 +3653,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="collection">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
         <restriction code="object_lots">
           <table>ca_object_lots</table>
           <settings>
@@ -4048,7 +4094,94 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+    <metadataElement code="condition" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Condition</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="condition_remarks" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Remarks</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">6</setting>
+            <setting name="usewysiwygeditor">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="condition_list" datatype="List" list="condition">
+          <labels>
+            <label locale="en_US">
+              <name>Condition</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+        <metadataElement code="condition_date" datatype="DateRange">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Date</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="useDatePicker">1</setting>
+            <setting name="fieldWidth">50</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="treatment" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Treatment</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">3</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="treatment_date" datatype="DateRange">
+          <labels>
+            <label locale="en_US">
+              <name>Treatment Date</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="useDatePicker">1</setting>
+            <setting name="fieldWidth">50</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="conservator_name" datatype="Entities">
+          <labels>
+            <label locale="en_US">
+              <name>Conservator Name</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">70</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- ISAD-G ATTRIBUTES -->
     <metadataElement code="isadg_date" datatype="DateRange">
       <labels>
@@ -5037,7 +5170,7 @@
     <metadataElement code="accession_price" datatype="Currency">
       <labels>
         <label locale="en_US">
-          <name>Accession Price</name>
+          <name>Accession Cost</name>
         </label>
       </labels>
       <settings>
@@ -5199,94 +5332,6 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="condition" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Condition</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="lineBreakAfterNumberOfElements">1</setting>
-      </settings>
-      <elements>
-        <metadataElement code="condition_remarks" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Condition Remarks</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">100</setting>
-            <setting name="fieldHeight">6</setting>
-            <setting name="usewysiwygeditor">1</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="condition_list" datatype="List" list="condition">
-          <labels>
-            <label locale="en_US">
-              <name>Condition</name>
-            </label>
-          </labels>
-          <settings/>
-        </metadataElement>
-        <metadataElement code="condition_date" datatype="DateRange">
-          <labels>
-            <label locale="en_US">
-              <name>Condition Date</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="useDatePicker">1</setting>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="treatment" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Treatment</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">100</setting>
-            <setting name="fieldHeight">3</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="treatment_date" datatype="DateRange">
-          <labels>
-            <label locale="en_US">
-              <name>Treatment Date</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="useDatePicker">1</setting>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="conservator_name" datatype="Entities">
-          <labels>
-            <label locale="en_US">
-              <name>Conservator Name</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">70</setting>
-            <setting name="fieldHeight">1</setting>
-          </settings>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -5468,6 +5513,134 @@
       </typeRestrictions>
     </metadataElement>  
     
+    <metadataElement code="former_item" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Former Item No.</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="former_value" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Former Value</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="iconography" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Iconography</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">6</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="museum_condition" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Condition</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="musem_condition_list" datatype="List" list="condition">
+          <labels>
+            <label locale="en_US">
+              <name>Condition</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+        <metadataElement code="museum_condition_remarks" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Remarks</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">6</setting>
+            <setting name="usewysiwygeditor">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="museum_condition_date" datatype="DateRange">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Date</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="useDatePicker">1</setting>
+            <setting name="fieldWidth">50</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="museum_condition_upload" datatype="Media">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Report</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- Video -->
     <metadataElement code="genre_moving" datatype="List" list="genre_moving">
       <labels>
@@ -7807,6 +7980,7 @@
         </label>
       </labels>
       <screens>
+<!-- Bottle -->  
         <screen idno="bottle_basic" default="1">
           <labels>
             <label locale="en_US">
@@ -8036,6 +8210,7 @@
             </placement>
           </bundlePlacements>
         </screen>
+<!-- Video -->       
         <screen idno="video_basic" default="1">
           <labels>
             <label locale="en_US">
@@ -8170,6 +8345,7 @@
             </placement>
           </bundlePlacements>
         </screen>
+<!-- Museum -->      
         <screen idno="museum_identity" default="1">
           <labels>
             <label locale="en_US">
@@ -8178,13 +8354,20 @@
           </labels>
           <typeRestrictions>
             <restriction code="museum" type="museum"/>
+            <restriction code="museum_lot" type="museum_lot"/>
           </typeRestrictions>
           <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
                 <setting name="label" locale="en_US">Item No.</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_former_item">
+              <bundle>ca_attribute_former_item</bundle>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
@@ -8194,9 +8377,9 @@
             </placement>
             <placement code="ca_attribute_object_date">
               <bundle>ca_attribute_object_date</bundle>
-            </placement>
-            <placement code="ca_attribute_dimensions">
-              <bundle>ca_attribute_dimensions</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Date of Item</setting>
+              </settings>
             </placement>
             <placement code="ca_ownership">
               <bundle>ca_entities</bundle>
@@ -8204,6 +8387,12 @@
                 <setting name="label" locale="en_US">Ownership</setting>
                 <setting name="restrict_to_relationship_types">owner</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_value">
+              <bundle>ca_attribute_value</bundle>
+            </placement>
+            <placement code="ca_attribute_former_value">
+              <bundle>ca_attribute_former_value</bundle>
             </placement>
             <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
@@ -8221,29 +8410,26 @@
           </labels>
           <typeRestrictions>
             <restriction code="museum" type="museum"/>
+            <restriction code="museum_lot" type="museum_lot"/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
             </placement>
+            <placement code="ca_attribute_iconography">
+              <bundle>ca_attribute_iconography</bundle>
+            </placement>
             <placement code="ca_attribute_inscriptions">
               <bundle>ca_attribute_inscriptions</bundle>
+            </placement>
+            <placement code="ca_attribute_dimensions">
+              <bundle>ca_attribute_dimensions</bundle>
             </placement>
             <placement code="ca_attribute_materials">
               <bundle>ca_attribute_materials</bundle>
             </placement>
             <placement code="ca_attribute_technique">
               <bundle>ca_attribute_technique</bundle>
-            </placement>
-            <placement code="ca_attribute_condition">
-              <bundle>ca_attribute_condition</bundle>
-            </placement>
-            <placement code="ca_movements">
-              <bundle>ca_movements</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Related Conservation</setting>                <setting name="label" locale="en_US">Related Conservation</setting>
-                <setting name="restrict_to_types">conservation</setting>
-              </settings>
             </placement>
             <placement code="ca_author">
               <bundle>ca_entities</bundle>
@@ -8266,14 +8452,34 @@
             <placement code="ca_attribute_geographical_origin">
               <bundle>ca_attribute_geographical_origin</bundle>
             </placement>
-            <placement code="ca_attribute_value">
-              <bundle>ca_attribute_value</bundle>
-            </placement>
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
               <settings>
                 <setting name="label" locale="en_US">Digital Image</setting>
                 <setting name="description" locale="en_US">If digital image available and any relevant information</setting>
+              </settings>
+            </placement>
+            </bundlePlacements>
+        </screen>
+        <screen idno="museum_condition" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Condition</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="museum" type="museum"/>
+            <restriction code="museum_lot" type="museum_lot"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="ca_attribute_museum_condition">
+              <bundle>ca_attribute_museum_condition</bundle>
+            </placement>
+            <placement code="ca_movements">
+              <bundle>ca_movements</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Conservation</setting>                <setting name="label" locale="en_US">Related Conservation</setting>
+                <setting name="restrict_to_types">conservation</setting>
               </settings>
             </placement>
             </bundlePlacements>
@@ -8286,6 +8492,7 @@
           </labels>
           <typeRestrictions>
             <restriction code="museum" type="museum"/>
+            <restriction code="museum_lot" type="museum_lot"/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_attribute_accession_reference">
@@ -8312,6 +8519,7 @@
             </placement>
             </bundlePlacements>
         </screen>
+<!-- Archival -->       
         <screen idno="archival_identity" default="1">
           <labels>
             <label locale="en_US">
@@ -8579,6 +8787,7 @@
             </placement>
           </bundlePlacements>
         </screen>
+<!-- Other/Common -->        
         <screen idno="media" default="0">
           <labels>
             <label locale="en_US">
@@ -9099,6 +9308,40 @@
         </label>
       </labels>
       <screens>
+        <screen idno="museum_collection" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Identity</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="collection" type="collection"/>
+            <restriction code="category" type="category"/>
+            <restriction code="sub_category" type="sub_category"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Reference Number</setting>
+                <setting name="description" locale="en_US">Unique identifying number</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="description" locale="en_US">Title of the unit of description, abridged if necessary</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
         <screen idno="identity_archiveFondSeries" default="1">
           <labels>
             <label locale="en_US">
@@ -9212,6 +9455,13 @@
               <name>Context</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="archives" type="archives"/>
+            <restriction code="fonds" type="fonds"/>
+            <restriction code="series" type="series"/>
+            <restriction code="subseries" type="subseries"/>
+            <restriction code="file" type="file"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -9268,6 +9518,13 @@
               <name>Access and Use</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="archives" type="archives"/>
+            <restriction code="fonds" type="fonds"/>
+            <restriction code="series" type="series"/>
+            <restriction code="subseries" type="subseries"/>
+            <restriction code="file" type="file"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_attribute_accessrestrict">
               <bundle>ca_attribute_accessrestrict</bundle>
@@ -9292,6 +9549,13 @@
               <name>Allied Materials</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="archives" type="archives"/>
+            <restriction code="fonds" type="fonds"/>
+            <restriction code="series" type="series"/>
+            <restriction code="subseries" type="subseries"/>
+            <restriction code="file" type="file"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_attribute_originalsloc">
               <bundle>ca_attribute_originalsloc</bundle>
@@ -9313,6 +9577,13 @@
               <name>Notes, etc.</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="archives" type="archives"/>
+            <restriction code="fonds" type="fonds"/>
+            <restriction code="series" type="series"/>
+            <restriction code="subseries" type="subseries"/>
+            <restriction code="file" type="file"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_attribute_note">
               <bundle>ca_attribute_note</bundle>
@@ -9325,6 +9596,13 @@
               <name>Description Control</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="archives" type="archives"/>
+            <restriction code="fonds" type="fonds"/>
+            <restriction code="series" type="series"/>
+            <restriction code="subseries" type="subseries"/>
+            <restriction code="file" type="file"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_attribute_archivistnote">
               <bundle>ca_attribute_archivistnote</bundle>
@@ -10846,7 +11124,8 @@
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
-        </type><type code="author" default="0">
+        </type>
+        <type code="author" default="0">
           <labels>
             <label locale="en_US">
               <typename>author</typename>
