@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,6 +70,32 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 			return $g_list_id_cache[$ps_list] = $t_label->get('list_id');
 		}
 		return $g_list_id_cache[$ps_list] = null;
+	}
+	# ---------------------------------------
+	/**
+	 * Convert array of list codes into array of list ids
+	 *
+	 * @param array $pa_lists Array of list codes or list_ids
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 * @return array A list of list_ids
+	 */
+	function caMakeListIDList($pa_lists, $pa_options=null) {
+		global $g_list_id_cache;
+		
+		$va_list_codes = array_flip($va_list_ids = ca_lists::getListCodes($pa_options));
+		
+		$va_ids = [];
+		foreach($pa_lists as $pm_list) {
+			if (is_numeric($pm_list) && isset($va_list_ids[$pm_list])) {
+				$va_ids[] = (int)$pm_list;
+			} elseif (isset($va_list_codes[$pm_list])) { 
+				$va_ids[] = (int)$va_list_codes[$pm_list];
+			}
+			$g_list_id_cache[$pm_list] = $va_list_codes[$pm_list] ? (int)$va_list_codes[$pm_list] : null;
+		}
+		
+		return $va_ids;
 	}
 	# ---------------------------------------
 	/**

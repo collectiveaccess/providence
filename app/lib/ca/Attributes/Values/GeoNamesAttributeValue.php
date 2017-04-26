@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -324,7 +324,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			</script>
 		";
 
-		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false)){
+		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false) && strlen($o_config->get('google_maps_key'))){
 
 			AssetLoadManager::register('maps');
 

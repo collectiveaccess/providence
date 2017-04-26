@@ -31,21 +31,21 @@
 		<script language="JavaScript" type="text/javascript">
 		/* <![CDATA[ */
 			jQuery(document).ready(function(){
-				jQuery('#caSavedSearchesList').caFormatListTable();
+				jQuery('#caItemList').caFormatListTable();
 			});
 		/* ]]> */
 		</script>
 		<div class="sectionBox">
 <?php
 	print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#SavedSearchesListForm\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
 			"<a href='#' onclick='jQuery(\"#SavedSearchesListForm\").attr(\"action\", \"".caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete')."\").submit();' class='form-button'><span class='delete'>".caNavIcon(__CA_NAV_ICON_DELETE__, 2)." "._t('Delete selected')."</span></a>"
 		); 
 ?>
 			<form id="SavedSearchesListForm">
 			
-			<table id="caSavedSearchesList" class="listtable">
+			<table id="caItemList" class="listtable">
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">

@@ -532,10 +532,11 @@
 			$va_sql_params = [];
 			
 			$vs_type_restriction_sql = '';
+			$va_type_restriction_params = [];
 			if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
 				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
-					$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
-					$va_sql_params[] = $va_restrict_to_types;
+					$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
+					$va_type_restriction_params[] = $va_restrict_to_types;
 				}
 			}
 			
@@ -599,29 +600,37 @@
 			//
 			// Begin query building
 			//
-			$va_joins = $va_sql_wheres = $va_label_sql = [];
+			$va_joins = $va_label_sql = [];
 			
 			if ($vb_has_simple_fields) {				
 				//
 				// Convert type id
 				//
 				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
-					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
+					if (isset($pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()]) && !is_numeric($pa_values[$vs_type_field_name])) {
 						
-						$va_field_values = $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD];
+						$va_field_values = $pa_values[$vs_type_field_name];
 						foreach($va_field_values as $vn_i => $va_field_value) {
 							$vs_op = strtolower($va_field_value[0]);
 							$vm_value = $va_field_value[1];
 				
 							if (!is_numeric($vm_value)) {
-								if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $vm_value)) {
-									$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD][$vn_i] = ['=', $vn_id];
+								if (is_array($vm_value)) {
+									$va_trans_vals = [];
+									foreach($vm_value as $vn_j => $vs_value) {
+										if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
+											$va_trans_vals[] = $vn_id;
+										}
+										$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];
+									}
+								} elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+									$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
 								}
 							}
 						}
 					}
 				}
-			
+				
 				//
 				// Convert other intrinsic list references
 				//
@@ -855,11 +864,18 @@
 				$va_label_sql[] = "({$vs_table}.access IN (?))";
 				$va_sql_params[] = $pa_check_access;
 			}
+						
+			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0)" : '';
 			
-			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
+			$va_sql = [];
+			if (sizeof($vs_wheres = join(" {$ps_boolean} ", $va_label_sql))) { $va_sql[] = $vs_wheres; }
+			if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
+			if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql; }			
+
+			
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
-			$vs_sql .=" WHERE {$vs_deleted_sql} {$vs_type_restriction_sql} (".join(" {$ps_boolean} ", $va_label_sql).")";
+			$vs_sql .= ((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 			
 			$vs_orderby = '';
 			if ($vs_sort_proc) {
@@ -890,7 +906,7 @@
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 	
-			$qr_res = $o_db->query($vs_sql, $va_sql_params);
+			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
@@ -1523,6 +1539,16 @@
 		public function getLabelDisplayField() {
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			return $t_label->getDisplayField();
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of names of fields that may be used to generate the display field. For most labels this will be empty. For ca_entities this will be a list on constituent name fields.
+		 *
+		 * @return array
+		 */
+		public function getSecondaryLabelDisplayFields() {
+			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			return $t_label->getSecondaryDisplayFields();
 		}
 		# ------------------------------------------------------------------
 		/**

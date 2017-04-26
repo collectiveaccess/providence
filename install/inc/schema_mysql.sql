@@ -1924,7 +1924,7 @@ create table ca_data_import_events
    occurred_on                    int unsigned                   not null,
    user_id                        int unsigned,
    description                    text                           not null,
-   type_code                      char(10)                       not null,
+   type_code                      char(50)                       not null,
    source                         text                           not null,
    primary key (event_id),
    constraint fk_ca_data_import_events_user_id foreign key (user_id)
@@ -2442,7 +2442,7 @@ create table ca_entity_labels
    forename                       varchar(100)                   not null,
    other_forenames                varchar(100)                   not null,
    middlename                     varchar(100)                   not null,
-   surname                        varchar(100)                   not null,
+   surname                        varchar(512)                   not null,
    prefix                         varchar(100)                   not null,
    suffix                         varchar(100)                   not null,
    name_sort                      varchar(512)                   not null,
@@ -2466,7 +2466,7 @@ create unique index u_all on ca_entity_labels
    forename,
    other_forenames,
    middlename,
-   surname,
+   surname(100),
    type_id,
    locale_id
 );
@@ -6873,5 +6873,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 145 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (145, unix_timestamp());
+/* CURRENT MIGRATION: 147 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (147, unix_timestamp());

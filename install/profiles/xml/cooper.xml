@@ -23,6 +23,72 @@
             </label>
           </labels>
         </item>
+        <item idno="student_work" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Student Work</name_singular>
+              <name_plural>Student Works</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Model" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Model</name_singular>
+                  <name_plural>Model</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Supplemental" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Supplemental</name_singular>
+                  <name_plural>Supplemental</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Drawing" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Drawing</name_singular>
+                  <name_plural>Drawing</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Photo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Photo</name_singular>
+                  <name_plural>Photo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Sketch" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Sketch</name_singular>
+                  <name_plural>Sketch</name_plural>
+                </label>
+              </labels>
+            </item> 
+            <item idno="Text" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Text</name_singular>
+                  <name_plural>Text</name_plural>
+                </label>
+              </labels>
+            </item> 
+            <item idno="Transcript" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Transcript</name_singular>
+                  <name_plural>Transcript</name_plural>
+                </label>
+              </labels>
+            </item>             
+          </items>
+        </item>        
       </items>
     </list>
     <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
@@ -57,6 +123,30 @@
         </label>
       </labels>
       <items>
+        <item idno="Country" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Country</name_singular>
+              <name_plural>Country</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="State" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>State</name_singular>
+              <name_plural>State</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="City" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>City</name_singular>
+              <name_plural>City</name_plural>
+            </label>
+          </labels>
+        </item>        
         <item idno="Borough" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
@@ -115,11 +205,11 @@
         </label>
       </labels>
       <items>
-        <item idno="event" enabled="1" default="1">
+        <item idno="coure" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>event</name_singular>
-              <name_plural>events</name_plural>
+              <name_singular>Course</name_singular>
+              <name_plural>Courses</name_plural>
             </label>
           </labels>
         </item>
@@ -770,14 +860,6 @@
         </item>
       </items>
     </list>
-    <list code="keywords" hierarchical="1" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_US">
-          <name>Keywords</name>
-        </label>
-      </labels>
-      <items> </items>
-    </list>
     <list code="view" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -809,6 +891,14 @@
             </label>
           </labels>
         </item>
+        <item idno="Streetscape" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Streetscape</name_singular>
+              <name_plural>Streetscape</name_plural>
+            </label>
+          </labels>
+        </item>        
       </items>
     </list>
     <list code="yes_no" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
@@ -843,20 +933,20 @@
         </label>
       </labels>
       <items>
-        <item idno="nyc" enabled="1" default="1">
+        <item idno="autority" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>New York City</name_singular>
-              <name_plural>New York City</name_plural>
+              <name_singular>Cooper Place Authority</name_singular>
+              <name_plural>Cooper Place Authority</name_plural>
             </label>
           </labels>
         </item>
       </items>
     </list>
-    <list code="legacy_index" hierarchical="0" system="0" vocabulary="01">
+    <list code="postcard_keywords" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
-          <name>Legacy Index</name>
+          <name>Postcard Keywords</name>
         </label>
       </labels>
       <items>
@@ -3778,9 +3868,2105 @@
         </item>
       </items>
     </list>
+    <list code="student_work_subjects" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Student Work Subjects</name>
+        </label>
+      </labels>
+      <items>
+      </items>
+    </list>
+
+    <list code="program_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Program Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="House" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>House</name_singular>
+              <name_plural>House</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Library" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Library</name_singular>
+              <name_plural>Library</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Museum" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Museum</name_singular>
+              <name_plural>Museum</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Theater" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Theater</name_singular>
+              <name_plural>Theater</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="MixedUse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mixed-Use</name_singular>
+              <name_plural>Mixed-Use</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="Church" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Church</name_singular>
+              <name_plural>Church</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="TownPlan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Town Plan</name_singular>
+              <name_plural>Town Plan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="CityPlan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>City Plan</name_singular>
+              <name_plural>City Plan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Seminary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Seminary</name_singular>
+              <name_plural>Seminary</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Temple" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Temple</name_singular>
+              <name_plural>Temple</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="TrainStation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Train Station</name_singular>
+              <name_plural>Train Station</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Offices" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Offices</name_singular>
+              <name_plural>Offices</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="Well" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Well</name_singular>
+              <name_plural>Well</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="CityWall" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>City Wall</name_singular>
+              <name_plural>City Wall</name_plural>
+            </label>
+          </labels>
+        </item>  
+        <item idno="Bathhouse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bathhouse</name_singular>
+              <name_plural>Bathhouse</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="Tower" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tower</name_singular>
+              <name_plural>Tower</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="EducationalInstitution" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Educational Institution</name_singular>
+              <name_plural>Educational Institution</name_plural>
+            </label>
+          </labels>
+        </item>          
+      </items>
+    </list>
+    <list code="problem_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Problem Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="NineSquareGrid" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Nine Square Grid</name_singular>
+              <name_plural>Nine Square Grid</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Cube" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cube</name_singular>
+              <name_plural>Cube</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="UtilitarianObject" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Utilitarian Object</name_singular>
+              <name_plural>Utilitarian Object</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="DomesticObject" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Domestic Object</name_singular>
+              <name_plural>Domestic Object</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="MusicalInstrument" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Musical Instrument</name_singular>
+              <name_plural>Musical Instrument</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="Analysis" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Analysis</name_singular>
+              <name_plural>Analysis</name_plural>
+            </label>
+          </labels>
+        </item>  
+        <item idno="City" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>City</name_singular>
+              <name_plural>City</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="Box" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Box</name_singular>
+              <name_plural>Box</name_plural>
+            </label>
+          </labels>
+        </item> 
+        <item idno="Film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Film</name_singular>
+              <name_plural>Film</name_plural>
+            </label>
+          </labels>
+        </item>        
+      </items>
+    </list>  
+    <list code="architectural_elements" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Architectural Elements</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="window" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>window</name_singular>
+              <name_plural>window</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="door" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>door</name_singular>
+              <name_plural>door</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="buttress" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>buttress</name_singular>
+              <name_plural>buttress</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bridge" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bridge</name_singular>
+              <name_plural>bridge</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stair" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stair</name_singular>
+              <name_plural>stair</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="column" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>column</name_singular>
+              <name_plural>column</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="arch" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>arch</name_singular>
+              <name_plural>arch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="capital" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>capital</name_singular>
+              <name_plural>capital</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="retaining_wall" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>retaining wall</name_singular>
+              <name_plural>retaining wall</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wall" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>wall</name_singular>
+              <name_plural>wall</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="foundation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>foundation</name_singular>
+              <name_plural>foundation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="footing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>footing</name_singular>
+              <name_plural>footing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pier" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pier</name_singular>
+              <name_plural>pier</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ribbed_vault" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>ribbed vault</name_singular>
+              <name_plural>ribbed vault</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>gate</name_singular>
+              <name_plural>gate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="well" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>well</name_singular>
+              <name_plural>well</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ramp" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>ramp</name_singular>
+              <name_plural>ramp</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="intakes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>intakes</name_singular>
+              <name_plural>intakes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exhausts" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>exhausts</name_singular>
+              <name_plural>exhausts</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cooling_pool" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cooling pool</name_singular>
+              <name_plural>cooling pool</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="truss" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>truss</name_singular>
+              <name_plural>truss</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="frame" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>frame</name_singular>
+              <name_plural>frame</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="joint" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>joint</name_singular>
+              <name_plural>joint</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="beam" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>beam</name_singular>
+              <name_plural>beam</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="grid" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>grid</name_singular>
+              <name_plural>grid</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="semesters" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Semester</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="fall" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fall</name_singular>
+              <name_plural>Fall</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spring" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spring</name_singular>
+              <name_plural>Spring</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="FallSpring" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fall/Spring</name_singular>
+              <name_plural>Fall/Spring</name_plural>
+            </label>
+          </labels>
+        </item>        
+      </items>
+    </list>    
+    <list code="languages" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Languages</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="Abkhaz_abk_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Abkhaz (abk)</name_singular>
+              <name_plural>Abkhaz (abk)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Afar_aar_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Afar (aar)</name_singular>
+              <name_plural>Afar (aar)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Afrikaans_afr_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Afrikaans (afr)</name_singular>
+              <name_plural>Afrikaans (afr)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Akan_aka_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Akan (aka)</name_singular>
+              <name_plural>Akan (aka)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Albanian_alb_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Albanian (alb)</name_singular>
+              <name_plural>Albanian (alb)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Amharic_amh_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Amharic (amh)</name_singular>
+              <name_plural>Amharic (amh)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Arabic_ara_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Arabic (ara)</name_singular>
+              <name_plural>Arabic (ara)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Aragonese_arg_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aragonese (arg)</name_singular>
+              <name_plural>Aragonese (arg)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Armenian_arm_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Armenian (arm)</name_singular>
+              <name_plural>Armenian (arm)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Assamese_asm_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Assamese (asm)</name_singular>
+              <name_plural>Assamese (asm)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Avaric_ava_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Avaric (ava)</name_singular>
+              <name_plural>Avaric (ava)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Avestan_ave_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Avestan (ave)</name_singular>
+              <name_plural>Avestan (ave)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Aymara_aym_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aymara (aym)</name_singular>
+              <name_plural>Aymara (aym)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Azerbaijani_aze_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Azerbaijani (aze)</name_singular>
+              <name_plural>Azerbaijani (aze)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Bambara_bam_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bambara (bam)</name_singular>
+              <name_plural>Bambara (bam)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Bashkir_bak_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bashkir (bak)</name_singular>
+              <name_plural>Bashkir (bak)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Basque_baq_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Basque (baq)</name_singular>
+              <name_plural>Basque (baq)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Belarusian_bel_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Belarusian (bel)</name_singular>
+              <name_plural>Belarusian (bel)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Bengali_Bangla_ben_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bengali, Bangla (ben)</name_singular>
+              <name_plural>Bengali, Bangla (ben)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Bihari_bih_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bihari (bih)</name_singular>
+              <name_plural>Bihari (bih)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Bislama_bis_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bislama (bis)</name_singular>
+              <name_plural>Bislama (bis)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Bosnian_bos_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bosnian (bos)</name_singular>
+              <name_plural>Bosnian (bos)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Breton_bre_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Breton (bre)</name_singular>
+              <name_plural>Breton (bre)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Bulgarian_bul_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bulgarian (bul)</name_singular>
+              <name_plural>Bulgarian (bul)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Burmese_bur_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Burmese (bur)</name_singular>
+              <name_plural>Burmese (bur)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Catalan_cat_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Catalan (cat)</name_singular>
+              <name_plural>Catalan (cat)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Chamorro_cha_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chamorro (cha)</name_singular>
+              <name_plural>Chamorro (cha)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Chechen_che_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chechen (che)</name_singular>
+              <name_plural>Chechen (che)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Chichewa_Chewa_Nyanja_nya_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chichewa, Chewa, Nyanja (nya)</name_singular>
+              <name_plural>Chichewa, Chewa, Nyanja (nya)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Chinese_chi_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chinese (chi)</name_singular>
+              <name_plural>Chinese (chi)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Chuvash_chv_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chuvash (chv)</name_singular>
+              <name_plural>Chuvash (chv)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Cornish_cor_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cornish (cor)</name_singular>
+              <name_plural>Cornish (cor)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Corsican_cos_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Corsican (cos)</name_singular>
+              <name_plural>Corsican (cos)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Cree_cre_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cree (cre)</name_singular>
+              <name_plural>Cree (cre)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Croatian_hrv_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Croatian (hrv)</name_singular>
+              <name_plural>Croatian (hrv)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Czech_cze_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Czech (cze)</name_singular>
+              <name_plural>Czech (cze)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Danish_dan_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Danish (dan)</name_singular>
+              <name_plural>Danish (dan)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Divehi_Dhivehi_Maldivian_div_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Divehi, Dhivehi, Maldivian (div)</name_singular>
+              <name_plural>Divehi, Dhivehi, Maldivian (div)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Dutch_dut_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dutch (dut)</name_singular>
+              <name_plural>Dutch (dut)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Dzongkha_dzo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dzongkha (dzo)</name_singular>
+              <name_plural>Dzongkha (dzo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="English_eng_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>English (eng)</name_singular>
+              <name_plural>English (eng)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Esperanto_epo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Esperanto (epo)</name_singular>
+              <name_plural>Esperanto (epo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Estonian_est_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Estonian (est)</name_singular>
+              <name_plural>Estonian (est)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Ewe_ewe_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ewe (ewe)</name_singular>
+              <name_plural>Ewe (ewe)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Faroese_fao_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Faroese (fao)</name_singular>
+              <name_plural>Faroese (fao)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Fijian_fij_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fijian (fij)</name_singular>
+              <name_plural>Fijian (fij)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Finnish_fin_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Finnish (fin)</name_singular>
+              <name_plural>Finnish (fin)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="French_fre_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>French (fre)</name_singular>
+              <name_plural>French (fre)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Fula_Fulah_Pulaar_Pular_ful_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fula, Fulah, Pulaar, Pular (ful)</name_singular>
+              <name_plural>Fula, Fulah, Pulaar, Pular (ful)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Galician_glg_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Galician (glg)</name_singular>
+              <name_plural>Galician (glg)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Georgian_geo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Georgian (geo)</name_singular>
+              <name_plural>Georgian (geo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="German_ger_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>German (ger)</name_singular>
+              <name_plural>German (ger)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Greek_modern_gre_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Greek (modern) (gre)</name_singular>
+              <name_plural>Greek (modern) (gre)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Guaran_grn_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Guaraní (grn)</name_singular>
+              <name_plural>Guaraní (grn)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Gujarati_guj_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gujarati (guj)</name_singular>
+              <name_plural>Gujarati (guj)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Haitian_Haitian_Creole_hat_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Haitian, Haitian Creole (hat)</name_singular>
+              <name_plural>Haitian, Haitian Creole (hat)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Hausa_hau_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hausa (hau)</name_singular>
+              <name_plural>Hausa (hau)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Hebrew_modern_heb_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hebrew (modern) (heb)</name_singular>
+              <name_plural>Hebrew (modern) (heb)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Herero_her_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Herero (her)</name_singular>
+              <name_plural>Herero (her)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Hindi_hin_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hindi (hin)</name_singular>
+              <name_plural>Hindi (hin)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Hiri_Motu_hmo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hiri Motu (hmo)</name_singular>
+              <name_plural>Hiri Motu (hmo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Hungarian_hun_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hungarian (hun)</name_singular>
+              <name_plural>Hungarian (hun)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Interlingua_ina_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Interlingua (ina)</name_singular>
+              <name_plural>Interlingua (ina)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Indonesian_ind_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Indonesian (ind)</name_singular>
+              <name_plural>Indonesian (ind)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Interlingue_ile_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Interlingue (ile)</name_singular>
+              <name_plural>Interlingue (ile)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Irish_gle_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Irish (gle)</name_singular>
+              <name_plural>Irish (gle)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Igbo_ibo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Igbo (ibo)</name_singular>
+              <name_plural>Igbo (ibo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Inupiaq_ipk_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Inupiaq (ipk)</name_singular>
+              <name_plural>Inupiaq (ipk)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Ido_ido_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ido (ido)</name_singular>
+              <name_plural>Ido (ido)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Icelandic_ice_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Icelandic (ice)</name_singular>
+              <name_plural>Icelandic (ice)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Italian_ita_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Italian (ita)</name_singular>
+              <name_plural>Italian (ita)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Inuktitut_iku_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Inuktitut (iku)</name_singular>
+              <name_plural>Inuktitut (iku)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Japanese_jpn_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Japanese (jpn)</name_singular>
+              <name_plural>Japanese (jpn)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Javanese_jav_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Javanese (jav)</name_singular>
+              <name_plural>Javanese (jav)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kalaallisut_Greenlandic_kal_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kalaallisut, Greenlandic (kal)</name_singular>
+              <name_plural>Kalaallisut, Greenlandic (kal)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kannada_kan_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kannada (kan)</name_singular>
+              <name_plural>Kannada (kan)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kanuri_kau_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kanuri (kau)</name_singular>
+              <name_plural>Kanuri (kau)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kashmiri_kas_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kashmiri (kas)</name_singular>
+              <name_plural>Kashmiri (kas)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kazakh_kaz_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kazakh (kaz)</name_singular>
+              <name_plural>Kazakh (kaz)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Khmer_khm_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Khmer (khm)</name_singular>
+              <name_plural>Khmer (khm)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kikuyu_Gikuyu_kik_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kikuyu, Gikuyu (kik)</name_singular>
+              <name_plural>Kikuyu, Gikuyu (kik)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kinyarwanda_kin_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kinyarwanda (kin)</name_singular>
+              <name_plural>Kinyarwanda (kin)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kyrgyz_kir_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kyrgyz (kir)</name_singular>
+              <name_plural>Kyrgyz (kir)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Komi_kom_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Komi (kom)</name_singular>
+              <name_plural>Komi (kom)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kongo_kon_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kongo (kon)</name_singular>
+              <name_plural>Kongo (kon)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Korean_kor_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Korean (kor)</name_singular>
+              <name_plural>Korean (kor)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kurdish_kur_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kurdish (kur)</name_singular>
+              <name_plural>Kurdish (kur)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kwanyama_Kuanyama_kua_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kwanyama, Kuanyama (kua)</name_singular>
+              <name_plural>Kwanyama, Kuanyama (kua)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Latin_lat_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Latin (lat)</name_singular>
+              <name_plural>Latin (lat)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Luxembourgish_Letzeburgesch_ltz_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Luxembourgish, Letzeburgesch (ltz)</name_singular>
+              <name_plural>Luxembourgish, Letzeburgesch (ltz)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Ganda_lug_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ganda (lug)</name_singular>
+              <name_plural>Ganda (lug)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Limburgish_Limburgan_Limburger_lim_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Limburgish, Limburgan, Limburger (lim)</name_singular>
+              <name_plural>Limburgish, Limburgan, Limburger (lim)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Lingala_lin_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lingala (lin)</name_singular>
+              <name_plural>Lingala (lin)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Lao_lao_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lao (lao)</name_singular>
+              <name_plural>Lao (lao)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Lithuanian_lit_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lithuanian (lit)</name_singular>
+              <name_plural>Lithuanian (lit)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Luba_Katanga_lub_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Luba-Katanga (lub)</name_singular>
+              <name_plural>Luba-Katanga (lub)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Latvian_lav_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Latvian (lav)</name_singular>
+              <name_plural>Latvian (lav)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Manx_glv_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Manx (glv)</name_singular>
+              <name_plural>Manx (glv)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Macedonian_mac_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Macedonian (mac)</name_singular>
+              <name_plural>Macedonian (mac)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Malagasy_mlg_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Malagasy (mlg)</name_singular>
+              <name_plural>Malagasy (mlg)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Malay_may_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Malay (may)</name_singular>
+              <name_plural>Malay (may)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Malayalam_mal_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Malayalam (mal)</name_singular>
+              <name_plural>Malayalam (mal)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Maltese_mlt_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Maltese (mlt)</name_singular>
+              <name_plural>Maltese (mlt)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="M_ori_mao_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Māori (mao)</name_singular>
+              <name_plural>Māori (mao)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Marathi_Mar_h_mar_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Marathi (Marāṭhī) (mar)</name_singular>
+              <name_plural>Marathi (Marāṭhī) (mar)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Marshallese_mah_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Marshallese (mah)</name_singular>
+              <name_plural>Marshallese (mah)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Mongolian_mon_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mongolian (mon)</name_singular>
+              <name_plural>Mongolian (mon)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Nauruan_nau_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Nauruan (nau)</name_singular>
+              <name_plural>Nauruan (nau)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Navajo_Navaho_nav_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Navajo, Navaho (nav)</name_singular>
+              <name_plural>Navajo, Navaho (nav)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Northern_Ndebele_nde_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Northern Ndebele (nde)</name_singular>
+              <name_plural>Northern Ndebele (nde)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Nepali_nep_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Nepali (nep)</name_singular>
+              <name_plural>Nepali (nep)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Ndonga_ndo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ndonga (ndo)</name_singular>
+              <name_plural>Ndonga (ndo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Norwegian_Bokm_l_nob_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Norwegian Bokmål (nob)</name_singular>
+              <name_plural>Norwegian Bokmål (nob)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Norwegian_Nynorsk_nno_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Norwegian Nynorsk (nno)</name_singular>
+              <name_plural>Norwegian Nynorsk (nno)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Norwegian_nor_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Norwegian (nor)</name_singular>
+              <name_plural>Norwegian (nor)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Nuosu_iii_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Nuosu (iii)</name_singular>
+              <name_plural>Nuosu (iii)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Southern_Ndebele_nbl_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Southern Ndebele (nbl)</name_singular>
+              <name_plural>Southern Ndebele (nbl)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Occitan_oci_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Occitan (oci)</name_singular>
+              <name_plural>Occitan (oci)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Ojibwe_Ojibwa_oji_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ojibwe, Ojibwa (oji)</name_singular>
+              <name_plural>Ojibwe, Ojibwa (oji)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Old_Church_Slavonic_Church_Slavonic_Old_Bulgarian_chu_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Old Church Slavonic, Church Slavonic, Old Bulgarian (chu)</name_singular>
+              <name_plural>Old Church Slavonic, Church Slavonic, Old Bulgarian (chu)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Oromo_orm_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Oromo (orm)</name_singular>
+              <name_plural>Oromo (orm)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Oriya_ori_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Oriya (ori)</name_singular>
+              <name_plural>Oriya (ori)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Ossetian_Ossetic_oss_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ossetian, Ossetic (oss)</name_singular>
+              <name_plural>Ossetian, Ossetic (oss)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Eastern_Punjabi_Eastern_Panjabi_pan_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Eastern Punjabi, Eastern Panjabi (pan)</name_singular>
+              <name_plural>Eastern Punjabi, Eastern Panjabi (pan)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="P_li_pli_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pāli (pli)</name_singular>
+              <name_plural>Pāli (pli)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Persian_Farsi_per_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Persian (Farsi) (per)</name_singular>
+              <name_plural>Persian (Farsi) (per)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Polish_pol_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Polish (pol)</name_singular>
+              <name_plural>Polish (pol)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Pashto_Pushto_pus_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pashto, Pushto (pus)</name_singular>
+              <name_plural>Pashto, Pushto (pus)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Portuguese_por_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Portuguese (por)</name_singular>
+              <name_plural>Portuguese (por)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Quechua_que_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Quechua (que)</name_singular>
+              <name_plural>Quechua (que)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Romansh_roh_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Romansh (roh)</name_singular>
+              <name_plural>Romansh (roh)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kirundi_run_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kirundi (run)</name_singular>
+              <name_plural>Kirundi (run)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Romanian_rum_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Romanian (rum)</name_singular>
+              <name_plural>Romanian (rum)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Russian_rus_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Russian (rus)</name_singular>
+              <name_plural>Russian (rus)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sanskrit_Sa_sk_ta_san_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sanskrit (Saṁskṛta) (san)</name_singular>
+              <name_plural>Sanskrit (Saṁskṛta) (san)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sardinian_srd_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sardinian (srd)</name_singular>
+              <name_plural>Sardinian (srd)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sindhi_snd_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sindhi (snd)</name_singular>
+              <name_plural>Sindhi (snd)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Northern_Sami_sme_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Northern Sami (sme)</name_singular>
+              <name_plural>Northern Sami (sme)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Samoan_smo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Samoan (smo)</name_singular>
+              <name_plural>Samoan (smo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sango_sag_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sango (sag)</name_singular>
+              <name_plural>Sango (sag)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Serbian_srp_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Serbian (srp)</name_singular>
+              <name_plural>Serbian (srp)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Scottish_Gaelic_Gaelic_gla_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Scottish Gaelic, Gaelic (gla)</name_singular>
+              <name_plural>Scottish Gaelic, Gaelic (gla)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Shona_sna_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shona (sna)</name_singular>
+              <name_plural>Shona (sna)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sinhalese_Sinhala_sin_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sinhalese, Sinhala (sin)</name_singular>
+              <name_plural>Sinhalese, Sinhala (sin)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Slovak_slo_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Slovak (slo)</name_singular>
+              <name_plural>Slovak (slo)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Slovene_slv_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Slovene (slv)</name_singular>
+              <name_plural>Slovene (slv)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Somali_som_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Somali (som)</name_singular>
+              <name_plural>Somali (som)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Southern_Sotho_sot_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Southern Sotho (sot)</name_singular>
+              <name_plural>Southern Sotho (sot)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Spanish_spa_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spanish (spa)</name_singular>
+              <name_plural>Spanish (spa)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sundanese_sun_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sundanese (sun)</name_singular>
+              <name_plural>Sundanese (sun)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Swahili_swa_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Swahili (swa)</name_singular>
+              <name_plural>Swahili (swa)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Swati_ssw_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Swati (ssw)</name_singular>
+              <name_plural>Swati (ssw)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Swedish_swe_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Swedish (swe)</name_singular>
+              <name_plural>Swedish (swe)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tamil_tam_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tamil (tam)</name_singular>
+              <name_plural>Tamil (tam)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Telugu_tel_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Telugu (tel)</name_singular>
+              <name_plural>Telugu (tel)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tajik_tgk_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tajik (tgk)</name_singular>
+              <name_plural>Tajik (tgk)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Thai_tha_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Thai (tha)</name_singular>
+              <name_plural>Thai (tha)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tigrinya_tir_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tigrinya (tir)</name_singular>
+              <name_plural>Tigrinya (tir)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tibetan_Standard_Tibetan_Central_tib_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tibetan Standard, Tibetan, Central (tib)</name_singular>
+              <name_plural>Tibetan Standard, Tibetan, Central (tib)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Turkmen_tuk_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Turkmen (tuk)</name_singular>
+              <name_plural>Turkmen (tuk)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tagalog_tgl_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tagalog (tgl)</name_singular>
+              <name_plural>Tagalog (tgl)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tswana_tsn_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tswana (tsn)</name_singular>
+              <name_plural>Tswana (tsn)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tonga_Tonga_Islands_ton_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tonga (Tonga Islands) (ton)</name_singular>
+              <name_plural>Tonga (Tonga Islands) (ton)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Turkish_tur_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Turkish (tur)</name_singular>
+              <name_plural>Turkish (tur)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tsonga_tso_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tsonga (tso)</name_singular>
+              <name_plural>Tsonga (tso)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tatar_tat_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tatar (tat)</name_singular>
+              <name_plural>Tatar (tat)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Twi_twi_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Twi (twi)</name_singular>
+              <name_plural>Twi (twi)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tahitian_tah_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tahitian (tah)</name_singular>
+              <name_plural>Tahitian (tah)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Uyghur_uig_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Uyghur (uig)</name_singular>
+              <name_plural>Uyghur (uig)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Ukrainian_ukr_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ukrainian (ukr)</name_singular>
+              <name_plural>Ukrainian (ukr)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Urdu_urd_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Urdu (urd)</name_singular>
+              <name_plural>Urdu (urd)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Uzbek_uzb_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Uzbek (uzb)</name_singular>
+              <name_plural>Uzbek (uzb)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Venda_ven_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Venda (ven)</name_singular>
+              <name_plural>Venda (ven)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Vietnamese_vie_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Vietnamese (vie)</name_singular>
+              <name_plural>Vietnamese (vie)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Volap_k_vol_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Volapük (vol)</name_singular>
+              <name_plural>Volapük (vol)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Walloon_wln_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Walloon (wln)</name_singular>
+              <name_plural>Walloon (wln)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Welsh_wel_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Welsh (wel)</name_singular>
+              <name_plural>Welsh (wel)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wolof_wol_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wolof (wol)</name_singular>
+              <name_plural>Wolof (wol)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Western_Frisian_fry_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Western Frisian (fry)</name_singular>
+              <name_plural>Western Frisian (fry)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Xhosa_xho_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Xhosa (xho)</name_singular>
+              <name_plural>Xhosa (xho)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Yiddish_yid_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Yiddish (yid)</name_singular>
+              <name_plural>Yiddish (yid)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Yoruba_yor_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Yoruba (yor)</name_singular>
+              <name_plural>Yoruba (yor)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Zhuang_Chuang_zha_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Zhuang, Chuang (zha)</name_singular>
+              <name_plural>Zhuang, Chuang (zha)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Zulu_zul_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Zulu (zul)</name_singular>
+              <name_plural>Zulu (zul)</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="format" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Format</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="120_mm_negative" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>120 mm negative</name_singular>
+              <name_plural>120 mm negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="120_mm_color_transparency" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>120 mm color transparency</name_singular>
+              <name_plural>120 mm color transparency</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="4x5_inch_color_transparency" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>4x5 inch color transparency</name_singular>
+              <name_plural>4x5 inch color transparency</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="35_mm_slide" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>35 mm slide</name_singular>
+              <name_plural>35 mm slide</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="35_mm_negative" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>35 mm negative</name_singular>
+              <name_plural>35 mm negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photographic_print" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photographic print</name_singular>
+              <name_plural>photographic print</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="charcoal_drawing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>charcoal drawing</name_singular>
+              <name_plural>charcoal drawing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="xerox_reproduction" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>xerox reproduction</name_singular>
+              <name_plural>xerox reproduction</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="etching" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>etching</name_singular>
+              <name_plural>etching</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="watercolor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>watercolor</name_singular>
+              <name_plural>watercolor</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="laser_copy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>laser copy</name_singular>
+              <name_plural>laser copy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="polaroid" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>polaroid</name_singular>
+              <name_plural>polaroid</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="digital_print" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>digital print</name_singular>
+              <name_plural>digital print</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="4x5_inch_negative" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>4x5 inch negative</name_singular>
+              <name_plural>4x5 inch negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="PDF" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PDF</name_singular>
+              <name_plural>PDF</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="line_negative" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>line negative</name_singular>
+              <name_plural>line negative</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>      
   </lists>
   <elementSets>
-    <!--Basic Elements-->
+    <!--Postcard Elements-->
     <metadataElement code="type" datatype="List" list="postcard_types">
       <labels>
         <label locale="en_US">
@@ -3793,6 +5979,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -3814,6 +6001,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
+          <type>postcard</type>          
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -3834,6 +6022,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
+          <type>postcard</type>          
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -3857,29 +6046,7 @@
       <typeRestrictions>
         <restriction code="objects">
           <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="copyright" datatype="DateRange">
-      <labels>
-        <label locale="en_US">
-          <name>Copyright</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="objects">
-          <table>ca_objects</table>
+          <type>postcard</type>          
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -3905,8 +6072,113 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
+          <type>postcard</type>          
           <settings>
             <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="extant" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Extant</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="render">yes_no_checkboxes</setting>
+        <setting name="maxColumns">3</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>postcard</type>          
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="public_domain" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Public Domain</name>
+          <description>Is the image in the public domain?</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="render">yes_no_checkboxes</setting>
+        <setting name="maxColumns">3</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>postcard</type>          
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="BWRID" datatype="Url">
+      <labels>
+        <label locale="en_US">
+          <name>BWR ID</name>
+          <description>Built Works Registry ID number</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>postcard</type>          
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
+    <!--Basic Elements-->
+    <metadataElement code="copyright" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Copyright</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -3962,83 +6234,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="extant" datatype="List" list="yes_no">
-      <labels>
-        <label locale="en_US">
-          <name>Extant</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-        <setting name="render">yes_no_checkboxes</setting>
-        <setting name="maxColumns">3</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="public_domain" datatype="List" list="yes_no">
-      <labels>
-        <label locale="en_US">
-          <name>Public Domain</name>
-          <description>Is the image in the public domain?</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-        <setting name="render">yes_no_checkboxes</setting>
-        <setting name="maxColumns">3</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="BWRID" datatype="Url">
-      <labels>
-        <label locale="en_US">
-          <name>BWR ID</name>
-          <description>Built Works Registry ID number</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-
-
     <metadataElement code="georeference" datatype="Geocode">
       <labels>
         <label locale="en_US">
@@ -4094,6 +6289,286 @@
       </typeRestrictions>
     </metadataElement>
 
+    <!--Student Work Elements-->
+    <metadataElement code="program_type" datatype="List" list="program_types">
+      <labels>
+        <label locale="en_US">
+          <name>Program Type</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">checklist</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_work</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="problem_type" datatype="List" list="problem_types">
+      <labels>
+        <label locale="en_US">
+          <name>Problem Type</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">checklist</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_work</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="architectural_element" datatype="List" list="architectural_elements">
+      <labels>
+        <label locale="en_US">
+          <name>Architectural Element</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">checklist</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_work</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="academic_year" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Academic Year</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <type>student_work</type>          
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="semester" datatype="List" list="semesters">
+      <labels>
+        <label locale="en_US">
+          <name>Semester</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">checklist</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_work</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="abstract" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Abstract</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">640px</setting>
+        <setting name="fieldHeight">6</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <type>student_work</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
+    <metadataElement code="format" datatype="List" list="format">
+      <labels>
+        <label locale="en_US">
+          <name>Format</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="nullOptionText"/>
+        <setting name="render">select</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
+    <metadataElement code="dimensions" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Dimensions</name>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="dimensions_length" datatype="Length">
+          <labels>
+            <label locale="en_US">
+              <name>Length</name>
+              <description>Length of object; enter in your preferred units (eg. 10cm)</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dimensions_width" datatype="Length">
+          <labels>
+            <label locale="en_US">
+              <name>Width</name>
+              <description>Width of object; enter in your preferred units (eg. 10cm)</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dimensions_height" datatype="Length">
+          <labels>
+            <label locale="en_US">
+              <name>Height</name>
+              <description>Height of object; enter in your preferred units (eg. 10cm)</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dimensions_thickness" datatype="Length">
+          <labels>
+            <label locale="en_US">
+              <name>Thickness</name>
+              <description>Thickness of object; enter in your preferred units (eg. 10cm)</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dimensions_weight" datatype="Weight">
+          <labels>
+            <label locale="en_US">
+              <name>Weight</name>
+              <description>Weight of object; enter in your preferred units</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="meas_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Line 1</name>
+            </label>
+          </labels>
+          <elements>
+            <metadataElement code="measurement_notes" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Measurement Notes</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">2</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="language" datatype="List" list="languages">
+      <labels>
+        <label locale="en_US">
+          <name>Languages</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="nullOptionText"/>
+        <setting name="render">select</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        
+      </typeRestrictions>
+    </metadataElement>
+    
     <!--Entity Elements-->
     <metadataElement code="address" datatype="Container">
       <labels>
@@ -4331,12 +6806,15 @@
         </label>
       </labels>
       <screens>
-        <screen idno="basic" default="1">
+        <screen idno="basic_postcard" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic information</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="postcard" type="postcard"/>
+          </typeRestrictions>          
           <bundlePlacements>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -4370,8 +6848,7 @@
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
                 <settings>
-                 <setting name="restrict_to_lists">keywords</setting> 
-                 <setting name="restrict_to_lists">legacy_index</setting>
+                 <setting name="restrict_to_lists">postcard_keywords</setting> 
                  <setting name="label" locale="en_US">Keywords</setting>
                 <setting name="add_label" locale="en_US">Add keywords</setting>               
               </settings>
@@ -4400,12 +6877,146 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="secondary" default="0">
+        <screen idno="basic_student_work" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic information</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="student_work" type="student_work"/>
+          </typeRestrictions>          
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Project Identifier</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Project Title</setting>
+              </settings>
+            </placement>
+              
+            <placement code="author">
+              <bundle>ca_entities</bundle>
+               <settings>
+                <setting name="restrict_to_relationship_types">author</setting>
+                <setting name="label" locale="en_US">Author</setting>
+              </settings>
+            </placement> 
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Course</setting>
+              </settings>
+            </placement>
+            <placement code="faculty">
+              <bundle>ca_entities</bundle>
+               <settings>
+                <setting name="restrict_to_relationship_types">faculty</setting>
+                <setting name="label" locale="en_US">Faculty</setting>
+              </settings>
+            </placement>   
+            <placement code="ca_attribute_academic_year">
+              <bundle>ca_attribute_academic_year</bundle>
+            </placement>
+            <placement code="ca_attribute_semester">
+              <bundle>ca_attribute_semester</bundle>
+            </placement>  
+            <placement code="ca_attribute_program_type">
+              <bundle>ca_attribute_program_type</bundle>
+            </placement>  
+            <placement code="ca_attribute_problem_type">
+              <bundle>ca_attribute_problem_type</bundle>
+            </placement>              
+            <placement code="ca_attribute_architectural_element">
+              <bundle>ca_attribute_architectural_element</bundle>
+            </placement> 
+            <placement code="ca_attribute_abstract">
+              <bundle>ca_attribute_abstract</bundle>
+            </placement>             
+            <placement code="architect">
+              <bundle>ca_entities</bundle>
+               <settings>
+                <setting name="restrict_to_relationship_types">architect</setting>
+                <setting name="label" locale="en_US">Architect</setting>
+              </settings>
+            </placement> 
+            <placement code="photographer">
+              <bundle>ca_entities</bundle>
+               <settings>
+                <setting name="restrict_to_relationship_types">photographer</setting>
+                <setting name="label" locale="en_US">Project photographer</setting>
+              </settings>
+            </placement>             
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_item" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic information</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="Model" type="Model"/>
+            <restriction code="Supplemental" type="Supplemental"/>
+            <restriction code="Drawing" type="Drawing"/>
+            <restriction code="Photo" type="Photo"/>
+            <restriction code="Sketch" type="Sketch"/>
+          </typeRestrictions>          
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Item Identifier</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Caption</setting>
+              </settings>
+            </placement>
+            <placement code="photographer">
+              <bundle>ca_entities</bundle>
+               <settings>
+                <setting name="restrict_to_relationship_types">photographer</setting>
+                <setting name="label" locale="en_US">Photographer</setting>
+              </settings>
+            </placement> 
+            <placement code="ca_attribute_format">
+              <bundle>ca_attribute_format</bundle>
+            </placement> 
+            <placement code="ca_attribute_dimensions">
+              <bundle>ca_attribute_dimensions</bundle>
+            </placement> 
+            <placement code="ca_attribute_language">
+              <bundle>ca_attribute_language</bundle>
+            </placement>             
+            <placement code="ca_attribute_notes">
+              <bundle>ca_attribute_notes</bundle>
+            </placement>  
+          </bundlePlacements>
+        </screen>
+        
+        <screen idno="secondary_postcard" default="0">
           <labels>
             <label locale="en_US">
               <name>Secondary information</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="postcard" type="postcard"/>
+          </typeRestrictions>            
           <bundlePlacements>
             <placement code="ca_attribute_extant">
               <bundle>ca_attribute_extant</bundle>
@@ -4416,15 +7027,54 @@
             <placement code="ca_attribute_public_domain">
               <bundle>ca_attribute_public_domain</bundle>
             </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+            </placement>             
           </bundlePlacements>
         </screen>
-
+        <screen idno="secondary_student_work" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Secondary information</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="student_work" type="student_work"/>
+          </typeRestrictions>            
+          <bundlePlacements>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+              <settings>
+                 <setting name="display_template">^ca_places.hierarchy.preferred_labels</setting>
+              </settings>
+            </placement>  
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+                <settings>
+                 <setting name="restrict_to_lists">student_work_subjects</setting> 
+                 <setting name="label" locale="en_US">Subjects</setting>
+                <setting name="add_label" locale="en_US">Add subjects</setting>               
+              </settings>
+            </placement>
+            <placement code="ca_attribute_notes">
+              <bundle>ca_attribute_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_rights">
+              <bundle>ca_attribute_rights</bundle>
+            </placement> 
+          </bundlePlacements>
+        </screen>
+        
         <screen idno="location" default="0">
           <labels>
             <label locale="en_US">
               <name>Location</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="student_work" type="student_work"/>
+            <restriction code="postcard" type="postcard"/>            
+          </typeRestrictions>           
           <bundlePlacements>
              <placement code="ca_attribute_georeference">
               <bundle>ca_attribute_georeference</bundle>
@@ -4456,6 +7106,9 @@
             <placement code="access">
               <bundle>access</bundle>
             </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>            
           </bundlePlacements>
         </screen>
       </screens>
@@ -4967,7 +7620,74 @@
         </screen>
       </screens>
     </userInterface>
-
+    <userInterface code="occurrences_ui" type="ca_occurrences">
+      <labels>
+        <label locale="en_US">
+          <name>Course editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Course ID</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Course name</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="usewysiwygeditor"/>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="admin" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Admin info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    
     <userInterface code="standard_representation_annotation_ui" type="ca_representation_annotations">
       <labels>
         <label locale="en_US">
@@ -5065,39 +7785,59 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-      </types>
-    </relationshipTable>
-    <relationshipTable name="ca_objects_x_occurrences">
-      <types>
-        <type code="depicts" default="1">
+        <type code="author" default="0">
           <labels>
             <label locale="en_US">
-              <typename>depicts</typename>
-              <typename_reverse>is depicted by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="used" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>was used in</typename>
-              <typename_reverse>used</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="describes" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>describes</typename>
-              <typename_reverse>is described by</typename_reverse>
+              <typename>authored by</typename>
+              <typename_reverse>author of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
+        </type>    
+        <type code="faculty" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>related faculty</typename>
+              <typename_reverse>faculty for</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>            
+        <type code="architect" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>architect</typename>
+              <typename_reverse>architect</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>  
+        <type code="photographer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>photographed by</typename>
+              <typename_reverse>photographer of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>                    
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_occurrences">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -5694,7 +8434,6 @@
             <setting name="delimiter"><![CDATA[]]></setting>
             <setting name="sort"><![CDATA[]]></setting>
             <setting name="restrict_to_lists">keywords</setting> 
-            <setting name="restrict_to_lists">legacy_index</setting>
             <setting name="show_hierarchy"><![CDATA[0]]></setting>
             <setting name="remove_first_items"><![CDATA[0]]></setting>
             <setting name="hierarchy_order"><![CDATA[ASC]]></setting>

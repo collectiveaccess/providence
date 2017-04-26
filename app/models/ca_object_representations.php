@@ -421,7 +421,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
-			$vn_rc = parent::update();
+			$vn_rc = parent::update($pa_options);
 
 			// Trigger automatic replication
 			$va_auto_targets = $this->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $this->get('access')));
@@ -855,7 +855,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
-		if (!$ps_title) { $ps_title = "[BLANK]"; }
+		if (!$ps_title) { $ps_title = '['._t('BLANK').']'; }
 		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
 		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;

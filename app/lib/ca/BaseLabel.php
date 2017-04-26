@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,6 +98,13 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Returns list of secondary display fields. If not defined for the label (most don't have these) an empty array is returned.
+		 */
+		public function getSecondaryDisplayFields() {
+			return property_exists($this, "LABEL_SECONDARY_DISPLAY_FIELDS") ? $this->LABEL_SECONDARY_DISPLAY_FIELDS : [];
+		}
+		# -------------------------------------------------------
+		/**
 		 * Returns name of table this table contains label for
 		 */
 		public function getSubjectTableName() {
@@ -158,9 +165,12 @@
 			if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
-				$t_locale = new ca_locales();
-				$vs_display_value = caSortableValue($this->get($vs_display_field), array('locale' => $t_locale->localeIDToCode($this->get('locale_id'))));
-			
+				if (!($vs_locale = $this->getAppConfig()->get('use_locale_for_sortable_titles'))) {
+					$t_locale = new ca_locales();
+					$vs_locale = $t_locale->localeIDToCode($this->get('locale_id'));
+				}
+				$vs_display_value = caSortableValue($this->get($vs_display_field), array('locale' => $vs_locale));
+				
 				$this->set($vs_sort_field, $vs_display_value);
 			}
 		}

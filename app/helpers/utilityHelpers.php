@@ -3337,17 +3337,12 @@ function caFileIsIncludable($ps_file) {
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
 		
 		// Move articles to end of string
-		$va_definite_articles = $o_locale_settings ? $o_locale_settings->get('definiteArticles') : array();
-		$va_indefinite_articles = $o_locale_settings ? $o_locale_settings->get('indefiniteArticles') : array();
+		$va_articles = caGetArticlesForLocale($ps_locale);
 		
-		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
-			if (is_array($va_articles)) {
-				foreach($va_articles as $vs_article) {
-					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
-						break(2);
-					}
-				}
+		foreach($va_articles as $vs_article) {
+			if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+				$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
+				break;
 			}
 		}
 		
@@ -3495,5 +3490,94 @@ function caFileIsIncludable($ps_file) {
 				break;
 		}
 		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Find and return tag-like strings in a template. All tags are assumed to begin with
+	 * a caret ("^") and end with a space or EOL. Tags may contain spaces within quoted areas. 
+	 *
+	 * @param string $ps_template The template to parse
+	 * @param array $pa_options No options are supported.
+	 * @return array A list of identified tags
+	 */
+	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
+		$va_tags = [];
+		
+		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = false;
+		$vs_tag = '';
+		$vs_last_char = null;
+		for($i=0; $i < mb_strlen($ps_template); $i++) {
+			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+				case '^':
+					if ($vb_in_tag) {
+						if ($vs_tag = trim($vs_tag)){ $va_tags[] = $vs_tag; }
+					}
+					$vb_in_tag = true;
+					$vs_tag = '';
+					$vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = false;
+					break;
+				case '%':
+					if($vb_in_tag) {
+						$vb_have_seen_param_delimiter = true;
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case ' ':
+				case ',':
+				case '<':
+					if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
+						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+						$vs_tag = '';
+						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+					} else {
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case '"':
+					if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
+						$vb_in_double_quote = true;
+						$vs_tag .= $vs_char;
+					} elseif($vb_in_tag && $vb_in_double_quote) {
+						$vs_tag .= $vs_char;
+						$vb_in_double_quote = false;
+					} elseif($vb_in_tag) {
+						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+						$vs_tag = '';
+						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+					}
+					break;
+				case "'":
+					$vb_in_single_quote = !$vb_in_single_quote;
+					$vs_tag .= $vs_char;
+					break;
+				default:
+					if ($vb_in_tag) {
+						$vs_tag .= $vs_char;
+					}
+					break;
+			}
+			$vs_last_char = $vs_char;
+		}
+		
+		if ($vb_in_tag) {
+			if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+		}
+		
+		foreach($va_tags as $vn_i => $vs_tag) {
+			if ((($p = strpos($vs_tag, "~")) !== false) && ($p < (mb_strlen($vs_tag) - 1))) { continue; }	// don't clip trailing characters when there's a tag directive specified (eg. a tilde that is not at the end of the tag)
+			
+			$vb_is_ca_tag = (substr($vs_tag, 0, 3) == 'ca_');
+			
+			if ($vb_is_ca_tag && (strpos($vs_tag, '%') === false)) {
+				// ca_* tags that don't have modifiers always end whenever a non-alphanumeric character is encountered
+				$vs_tag = preg_replace("![^0-9\p{L}_]+$!u", "", $vs_tag);
+			} elseif(preg_match("!^([\d]+)[^0-9\p{L}_]+!", $vs_tag, $va_matches)) {
+				// tags beginning with numbers followed by non-alphanumeric characters are truncated to number-only tags
+				$vs_tag = $va_matches[1];
+			}
+			
+			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
+		}
+		return $va_tags;
 	}
 	# ----------------------------------------

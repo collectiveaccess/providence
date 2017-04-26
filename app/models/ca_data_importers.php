@@ -1588,7 +1588,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				} catch(Exception $e) {
-					$o_log->logError(_t("Expression trigger could not be parsed. Please double-check the syntax! Expression was: %1", $va_rule['trigger']));
+					$o_log->logError(_t("Expression trigger could not be parsed. Please double-check the syntax! Expression was: %1 [%2]", $va_rule['trigger'], $e->getMessage()));
 				}
 			}
 			
@@ -2382,7 +2382,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									switch($vs_element) {
 										case 'preferred_labels':
 											if (!$vb_was_preferred_label_match) {
-												if (!isset($va_element_content[$vs_disp_field = $t_subject->getLabelDisplayField()]) || !strlen($va_element_content[$vs_disp_field])) { $va_element_content[$vs_disp_field] = _t('[BLANK]'); }
+												if (
+													(!isset($va_element_content[$vs_disp_field = $t_subject->getLabelDisplayField()]) || !strlen($va_element_content[$vs_disp_field]))
+													&&
+													(sizeof(array_filter($t_subject->getSecondaryLabelDisplayFields(), function($v) use ($va_element_content) { return isset($va_element_content[$v]) && strlen($va_element_content[$v]); })) == 0)
+												) { 
+													$va_element_content[$vs_disp_field] = '['._t('BLANK').']'; 
+												}
 												
 												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
 												

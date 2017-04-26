@@ -1196,7 +1196,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 
 			$t_item->addLabel(array(
-				'caption' => _t('[BLANK]'),
+				'caption' => '['._t('BLANK').']',
 			), $g_ui_locale_id);
 			
 			if ($t_item->numErrors()) {
@@ -1263,7 +1263,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 
 			// Add empty labels to newly created items
 			foreach($va_item_ids as $vn_item_id) {
-				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'"._t("[BLANK]")."')";
+				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'["._t("BLANK")."]')";
 			}
 			$this->getDb()->query("INSERT INTO ca_set_item_labels (item_id, locale_id, caption) VALUES ".join(",", $va_label_values));
 			if ($this->getDb()->numErrors()) {
@@ -1279,8 +1279,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array($va_item_ids));
 			
 				$t_set_item = new ca_set_items();
+				
+				$va_set_ids = [];
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
+					$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
 					$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
 				}
 			
@@ -1288,8 +1291,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($va_item_ids));
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-				
 					$t_set_item_label->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_item_labels.label_id'), 'snapshot' => $va_snapshot]);
+				}
+				
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_sets WHERE set_id IN (?)", array(array_keys($va_set_ids)));
+			
+				$t_set = new ca_sets();
+				while($qr_res->nextRow()) {
+					$va_snapshot = $qr_res->getRow();
+					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
 				}
 			}
 			
@@ -1456,12 +1466,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return null;
 		}
 		
-		$vn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
+		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
 		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false); 
 		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $pa_options, false);
 		
 		// does user have edit access to set?
-		if ($vn_user_id && !$this->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__)) {
+		if ($pn_user_id && !$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) {
 			return false;
 		}
 	
@@ -1515,6 +1525,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_existing_ranks = array_values($va_row_ranks);
 		$vn_rank_acc = end(array_values($va_row_ranks));
 		
+		$va_rank_updates = array();
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
 			if (isset($va_existing_ranks[$vn_rank])) {
 				$vn_rank_inc = $va_existing_ranks[$vn_rank];
@@ -1535,9 +1546,44 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			} else {
 				// add item to set
-				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $vn_user_id, $vn_rank_inc);
+				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
 			}
 		}
+		
+		$va_updated_item_ids = [];
+		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
+			if($vb_treat_row_ids_as_rids) {
+				$va_tmp = explode("_", $vn_row_id);
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+				$va_updated_item_ids[$va_tmp[1]] = 1;
+			} else {
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
+			}
+		}
+		
+		if(sizeof($va_updated_item_ids) > 0) {
+			$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array(array_keys($va_updated_item_ids)));
+			
+			$t_set_item = new ca_set_items();
+			
+			$va_set_ids = [];
+			while($qr_res->nextRow()) {
+				$va_snapshot = $qr_res->getRow();
+				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
+				$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+			}
+			
+			if (sizeof($va_set_ids)) {
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_sets WHERE set_id IN (?)", array(array_keys($va_set_ids)));
+			
+				$t_set = new ca_sets();
+				while($qr_res->nextRow()) {
+					$va_snapshot = $qr_res->getRow();
+					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
+				}
+			}
+		}
+		
 		
 		if(sizeof($va_errors)) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }

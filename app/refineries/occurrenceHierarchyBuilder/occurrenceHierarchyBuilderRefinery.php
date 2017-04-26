@@ -81,6 +81,7 @@
 			
 			// Set occurrence parents
 			if ($va_parents = $pa_item['settings']['occurrenceHierarchyBuilder_parents']) {
+				$pa_options['refinery'] = $this;
 				$vn_parent_id = caProcessRefineryParents('occurrenceHierarchyBuilder', 'ca_occurrences', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			

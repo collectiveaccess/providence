@@ -54,13 +54,13 @@
 	 * @return int
 	 */
 	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $pn_c, $pa_options=null) {
-
 		global $g_ui_locale_id;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+		$o_refinery_instance = caGetOption('refinery', $pa_options, null);
 
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
@@ -224,6 +224,29 @@
 			}
 			$va_attributes['locale_id'] = $g_ui_locale_id;
 			if ($o_log) { $o_log->logDebug(_t('[%6] Got parent %1 (%2) with id %3 and type %4 for %5', $vs_name, $vs_idno, $vn_id, $vs_type, $vs_name, $ps_refinery_name)); }
+		
+			// Set relationships on the related table
+			$va_val = [];
+			$va_attr_vals = [];
+			$va_item = $pa_item;
+			$va_item['settings']["{$ps_refinery_name}_relationships"] = $pa_item['settings']["{$ps_refinery_name}_parents"][$vn_i]['relationships'];
+			unset($va_item['settings']["{$ps_refinery_name}_parents"]);
+		
+			caProcessRefineryRelatedMultiple($o_refinery_instance, $va_item, $pa_source_data, 0, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
+		
+			if (is_array($va_val['_related_related'])) {
+				$o_dm = Datamodel::load();
+				$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+				if ($t_subject->load($vn_id)) {
+					foreach($va_val['_related_related'] as $vs_table => $va_rels) { 
+						foreach($va_rels as $va_rel) {
+							if (!$t_subject->addRelationship($vs_table, $va_rel['id'], $va_rel['_relationship_type'])) {
+								if ($o_log) { $o_log->logDebug(_t('[%6] Could not create relationship between parent %1 and %2 for ids %3 and %4 with type %5', $ps_table, $vs_table, $vn_id, $va_rel['id'], $va_rel['_relationship_type'], $ps_refinery_name)); }
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		if ($vb_hierarchy_mode) {
@@ -391,6 +414,9 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		
+		$o_dm = Datamodel::load();
+		$t_rel_instance = $o_dm->getInstanceByTableName($ps_related_table, true);
+		
 		global $g_ui_locale_id;
 		$va_attr_vals = array();
 		
@@ -460,7 +486,26 @@
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));	
 			}	
 			
-			$pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label'), $pa_options));
+			// Set nonpreferred labels
+			if (is_array($va_non_preferred_labels = $pa_related_options["nonPreferredLabels"])) {
+				$pa_options['nonPreferredLabels'] = array();
+				foreach($va_non_preferred_labels as $va_label) {
+					foreach($va_label as $vs_k => $vs_v) {
+						$va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+					}
+					$pa_options['nonPreferredLabels'][] = $va_label;
+				}
+			} elseif($vs_non_preferred_label = trim($pa_related_options["nonPreferredLabels"])) {
+				if ($ps_refinery_name == 'entitySplitter') {
+					$pa_options['nonPreferredLabels'][] = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' ')), $pa_options);
+				} else {
+					$pa_options['nonPreferredLabels'][] = [
+						$t_rel_instance->getLabelDisplayField() => BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '))
+					];
+				}
+			}
+			
+			$pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label')), $pa_options);
 			
 			switch($ps_related_table) {
 				case 'ca_objects':
@@ -488,7 +533,7 @@
 					$vn_id = DataMigrationUtils::getMovementID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_list_items':
-					if (!($vn_list_id = caGetOption('list_id', $pa_options, null))) {
+					if (!($vn_list_id = caGetOption(['list_id', 'list'], $pa_options, null))) {
 						if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryRelated] List was not specified')); }
 						return null;
 					}
@@ -727,8 +772,6 @@
 						}
 
 						// Set relationships on the related table
-						
-					
 						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $vn_i, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
 
 						// Set nonpreferred labels
@@ -969,7 +1012,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
-				if (is_array($va_rels = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, $pa_options))) {
+				if (is_array($va_rels = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, ['list_id' => caGetOption('list', $va_relationship_settings, null)])))) {
 					$va_rel_rels = $va_rels['_related_related'];
 					unset($va_rels['_related_related']);
 					
