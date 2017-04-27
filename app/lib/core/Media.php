@@ -511,6 +511,25 @@ class Media extends BaseObject {
 		return $va_formats[strtolower($ps_mimetype)];
 	}
 	# ------------------------------------------------
+	/**
+	 * Return file type name for given mimetype. Only formats supported by an installed plugin for import or export are recognized.
+	 *
+	 * @return string Type name or null if mimetype is not recognized.
+	 */
+	public static function getTypenameForMimetype($ps_mimetype) {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			if ($vs_typename = $o_plugin->mimetype2typename($ps_mimetype)) {
+				return $vs_typename;
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------
 	# --- 
 	# ------------------------------------------------
 	public function htmlTag($ps_mimetype, $ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
