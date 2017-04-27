@@ -1524,6 +1524,17 @@ class SearchResult extends BaseObject {
 					}
 					
 					$vm_val = $t_instance->renderBundleForDisplay($va_path_components['field_name'], $vn_row_id, self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $va_val_opts);
+					
+					if ($pa_options['returnWithStructure']) { 
+						if ($pa_options['returnAllLocales']) { 
+							$vm_val = [$vn_row_id => [$t_instance->get('locale_id') => [$va_path_components['field_name'] => $vm_val]]];
+						} else {
+							$vm_val = [$vn_row_id => [$va_path_components['field_name'] => $vm_val]];
+						}
+					} elseif($pa_options['returnAsArray']) {
+						$vm_val = [$vm_val];
+					} 
+					
 					goto filter;
 				} else {
 //
