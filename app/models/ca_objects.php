@@ -848,6 +848,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 */
  	public function getObjectHistory($pa_bundle_settings=null, $pa_options=null) {
  		global $g_ui_locale;
+ 		$o_dm = Datamodel::load();
+ 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 
