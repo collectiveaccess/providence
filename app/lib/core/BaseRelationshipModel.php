@@ -450,7 +450,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						if ($vs_subtype_orientation == 'right') {
 							// left and right
 							$vs_subtype = $va_row['sub_type_right_id'];
-							$vs_subtype_orientation = '';
+							$vs_subtype_orientation = 'none';
 						} else {
 							$vs_subtype_orientation = "left";
 							$vs_subtype = $va_row['sub_type_left_id'];	
