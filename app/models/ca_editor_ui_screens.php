@@ -1584,7 +1584,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'includeIntrinsics' => ['effective_date'],
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Interstitial storage location elements to set'),
-										'description' => _t('')
+										'description' => _t('Interstitial storage location elements to set')
 									),
 									'ca_storage_locations_displayTemplate' => array(
 										'formatType' => FT_TEXT,
