@@ -33,6 +33,7 @@
 	$vs_subject_label	= $t_subject->getLabelForDisplay();
 	if (($vs_priv_table = $t_subject->tableName()) == 'ca_list_items') { $vs_priv_table = 'ca_lists'; }		// actions happen to be on names for ca_lists for ca_list_items
 	
+	$pb_batch 			= $this->getVar('batch');
 	$pn_parent_id 		= $this->getVar('parent_id');
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
@@ -226,26 +227,32 @@
 		<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserContainer" class="editorHierarchyBrowserContainer">		
 			<div  id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs">
 				<ul>
-					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();'><span><?php print _t('Explore'); ?></span></a></li>
 <?php
+	if (!$pb_batch) {
+?>
+					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();'><span><?php print _t('Explore'); ?></span></a></li>
+<?php	
+	}
 	if (!$vb_strict_type_hierarchy && !$vb_read_only) {
 ?>
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-move" onclick='_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();'><span><?php print _t('Move'); ?></span></a></li>
 <?php
 	}
-	if ((!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if ((!$vb_read_only && $vb_has_privs && !$pb_batch) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
 ?>
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-add" onclick='_init<?php print $vs_id_prefix; ?>AddHierarchyBrowser();'><span><?php print ($vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) ? _t('Add level') : _t('Add'); ?></span></a></li>
 <?php
 	}
-	if ((!$vb_read_only && $vb_has_privs) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+	if ((!$vb_read_only && $vb_has_privs&& !$pb_batch) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
 ?>
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-addObject" onclick='_init<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser();'><span><?php print _t('Add object'); ?></span></a></li>
 <?php
 	}
 ?>
 				</ul>
-
+<?php
+	if (!$pb_batch) {
+?>
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" class="hierarchyBrowseTab">	
 					<div class="hierarchyBrowserFind">
 						<?php print _t('Find'); ?>: <input type="text" id="<?php print $vs_id_prefix; ?>ExploreHierarchyBrowserSearch" name="search" value="" size="25"/>
@@ -259,6 +266,7 @@
 					</div><!-- end hierbrowser -->
 				</div>
 <?php
+	}
 	if (!$vb_strict_type_hierarchy && !$vb_read_only) {
 ?>
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-move" class="hierarchyBrowseTab">
@@ -311,7 +319,7 @@
 <?php
 	}
 	
-	if ((!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if ((!$vb_read_only && $vb_has_privs && !$pb_batch) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
 ?>
 			<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-add"  class="hierarchyBrowseTab">
 				<div class="hierarchyBrowserMessageContainer">
@@ -347,7 +355,7 @@
 		</div>
 <?php
 	}
-		if ((!$vb_read_only && $vb_has_privs) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+		if ((!$vb_read_only && $vb_has_privs && !$pb_batch) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
 ?>
 			<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-addObject"  class="hierarchyBrowseTab">
 				<div class="hierarchyBrowserMessageContainer">
@@ -402,14 +410,27 @@
 ?>
 
 		jQuery("#<?php print $vs_id_prefix; ?>browseToggle").click(function(e, opts) {
+<?php
+	if ($pb_batch) {
+?>
+		_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();
+<?php 
+	} else { 
+?>
 			_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();
+<?php 
+	} 
+?>
 			var delay = (opts && opts.delay && (parseInt(opts.delay) >= 0)) ? opts.delay :  250;
 			jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer").slideToggle(delay, function() { 
 				jQuery("#<?php print $vs_id_prefix; ?>browseToggle").html((this.style.display == 'block') ? '<?php print '<span class="form-button">'._t('Close browser').'</span>';?>' : '<?php print '<span class="form-button">'._t('Show Hierarchy').'</span>';?>');
 			}); 
 			return false;
 		});
-		
+
+<?php
+	if (!$pb_batch) {
+?>
 		// Set up "explore" hierarchy browse search
 		jQuery('#<?php print $vs_id_prefix; ?>ExploreHierarchyBrowserSearch').autocomplete(
 			{
@@ -428,11 +449,16 @@
 		// Disable form change warnings to add type drop-downs
 		jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowseAddUnder select').unbind('change');
 		jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowseAddNextTo select').unbind('change');		
-		
+<?php
+	}
+?>		
 		jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs").tabs({ selected: 0 });			// Activate tabs
 		jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer').hide(0);					// Hide extended options
 	});
-	
+
+<?php
+	if (!$pb_batch) {
+?>	
 	if (typeof  _navigateToNewForm != 'function') {
 		function _navigateToNewForm(type_id, action, id, after_id) {
 			switch(action) {
@@ -489,6 +515,7 @@
 	}
 
 <?php
+	}
 	if (!$vb_strict_type_hierarchy && !$vb_read_only) {
 ?>
 	// Set up "move" hierarchy browser
@@ -546,7 +573,7 @@
 <?php
 	}
 	
-	if ((!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if (!$pb_batch && (!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
 ?>
 	// Set up "add" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>AddHierarchyBrowser = null;
@@ -572,7 +599,7 @@
 <?php
 	}
 	
-	if ((!$vb_read_only && $vb_has_privs) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+	if ((!$pb_batch && !$vb_read_only && $vb_has_privs) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
 ?>
 	// Set up "add object" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser = null;
