@@ -1731,6 +1731,8 @@
 											$t_loc = new ca_storage_locations();
 											
 											if (!is_array($va_loc_ids = $t_loc->getHierarchy($va_row_tmp[2], ['returnAsArray' => true, 'includeSelf' => true, 'idsOnly' => true])) || !sizeof($va_loc_ids)) { continue; }
+											
+											array_pop($va_row_tmp);
 											$va_row_tmp[] = array_values($va_loc_ids);
 											
 											$vs_sql = "
