@@ -3531,6 +3531,8 @@ if (!$vb_batch) {
 		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
 			if ($vs_bundle !== 'hierarchy_location') { continue; }
 			
+			if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_') { continue; }
+			
 			$va_parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
 		
 			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
