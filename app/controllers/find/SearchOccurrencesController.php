@@ -78,28 +78,6 @@
  			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
- 		/**
- 		 * Returns string representing the name of the item the search will return
- 		 *
- 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
- 		 */
- 		public function searchName($ps_mode='singular') {
- 			$vb_type_restriction_has_changed = false;
- 			$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type_restriction_has_changed);
- 			
- 			$t_list = new ca_lists();
- 			$t_list->load(array('list_code' => 'occurrence_types'));
- 			
- 			$t_list_item = new ca_list_items();
- 			$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
- 			$va_hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
- 			
- 			if (!($vs_name = ($ps_mode == 'singular') ? $va_hier[$vn_type_id]['name_singular'] : $va_hier[$vn_type_id]['name_plural'])) {
- 				$vs_name = '???';
- 			}
- 			return $vs_name;
- 		}
- 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		/**
@@ -108,6 +86,41 @@
  		public function Tools($pa_parameters) {
  			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of OccurrenceSearch()
  			return parent::Tools($pa_parameters);
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function _getSubTypeActionNav($pa_item) {
+ 			return [
+				[
+					'displayName' => _t('Search'),
+					"default" => ['module' => 'find', 'controller' => 'SearchOccurrences', 'action' => 'Index'],
+					'parameters' => array(
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					),
+					'is_enabled' => true,
+				],
+				[
+					'displayName' => _t('Advanced search'),
+					"default" => ['module' => 'find', 'controller' => 'SearchOccurrencesAdvanced', 'action' => 'Index'],
+					'useActionInPath' => 1,
+					'parameters' => array(
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					),
+					'is_enabled' => true,
+				],
+				[
+					'displayName' => _t('Browse'),
+					"default" => ['module' => 'find', 'controller' => 'BrowseOccurrences', 'action' => 'Index'],
+					'parameters' => array(
+						'type_id' => $pa_item['item_id']
+					),
+					'is_enabled' => true,
+				]
+			];
  		}
  		# -------------------------------------------------------
  	}

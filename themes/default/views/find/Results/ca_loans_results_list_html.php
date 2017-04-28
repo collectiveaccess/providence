@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,14 +26,15 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_display						= $this->getVar('t_display');
+	$t_display					= $this->getVar('t_display');
 	$va_display_list 			= $this->getVar('display_list');
 	$vo_result 					= $this->getVar('result');
-	$vn_items_per_page 	= $this->getVar('current_items_per_page');
+	$vn_items_per_page 			= $this->getVar('current_items_per_page');
 	$vs_current_sort 			= $this->getVar('current_sort');
-	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar				= $this->getVar('access_restrictions');
-	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+	$vs_default_action			= $this->getVar('default_action');
+	$vo_ar						= $this->getVar('access_restrictions');
+	$vs_current_sort_dir	    = $this->getVar('current_sort_direction');
+	$vn_start					= (int)$this->getVar('start');
 
 ?>
 <div id="scrollingResults">
@@ -41,7 +42,7 @@
 		<table class="listtable">
 			<thead>
 			<tr>
-			<th style="width:10px; text-align:center;" class='list-header-nosort'>
+			<th class='list-header-nosort addItemToSetControl'>
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 			</th>
 			<th class='list-header-nosort'>
@@ -91,8 +92,9 @@
 				($i == 2) ? $i = 0 : "";
 ?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-					<td style="width:10px">
+					<td class="addItemToSetControl">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_loan_id; ?>' class="addItemToSetControl" />
+						<div><?php print $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_loans', $vn_loan_id, array())."</td>";
@@ -107,10 +109,10 @@
 			}
 ?>
 			</tbody>
+			<tfoot>
 <?php
 			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
 ?>
-				<tfoot>
 					<tr>
 						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
 <?php
@@ -119,10 +121,17 @@
 						}
 ?>
 					</tr>
-				</tfoot>
 <?php
 			}
+			if ($vs_bottom_line_totals = $this->getVar('bottom_line_totals')) {
+?>				
+					<tr>
+						<td colspan="<?php print sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?php print $vs_bottom_line_totals; ?></td>
+					</tr>
+<?php		
+			}
 ?>
+			</tfoot>
 		</table>
 	</form>
 </div><!--end scrollingResults -->

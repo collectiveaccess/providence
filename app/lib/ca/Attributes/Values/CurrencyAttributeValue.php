@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -177,7 +177,8 @@
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (caGetOption('returnAsDecimalWithCurrencySpecifier', $pa_options, false)) {
-				return $this->ops_currency_specifier.' '.$this->opn_value;
+				if (!$this->ops_currency_specifier) { return null; }
+				return caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value;
 			}
 			if(Zend_Registry::isRegistered("Zend_Locale")) {
 				$o_locale = Zend_Registry::get('Zend_Locale');
@@ -185,6 +186,7 @@
 				$o_locale = new Zend_Locale('en_US');
 			}
 			
+			if (!$this->ops_currency_specifier) { return null; }
 			$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
 
 			// this returns a string like '50,00 ¤' for locale de_DE
@@ -201,9 +203,9 @@
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			$vs_val = str_replace('%', $this->ops_currency_specifier, $vs_decimal_with_placeholder);
+ 			$vs_val = str_replace('%', caGetCurrencySymbol($this->ops_currency_specifier), $vs_decimal_with_placeholder);
  			if (($vs_to_currency = caGetOption('displayCurrencyConversion', $pa_options, false)) && ($this->ops_currency_specifier != $vs_to_currency)) {
- 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue($this->ops_currency_specifier.' '.$this->opn_value, $vs_to_currency)).")";
+ 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue(caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value, $vs_to_currency)).")";
  			}
  			return $vs_val;
 		}
@@ -220,24 +222,15 @@
  					$this->postError(1970, _t('%1 must not be empty', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
 					return false;
 				}
-				return null;
+				return [
+					'value_longtext1' => '',
+					'value_decimal1' => null
+				];
  			}
-
- 			// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
- 			
- 			// either
- 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
- 				$vs_decimal_value = $va_matches[2];
- 				$vs_currency_specifier = trim($va_matches[1]);
- 			// or 1
- 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
- 				$vs_decimal_value = $va_matches[1];
- 				$vs_currency_specifier = trim($va_matches[2]);
- 			// or 2
- 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
- 				$vs_decimal_value = $va_matches[1];
- 				$vs_currency_specifier = null;
- 			// derp
+			
+ 			if (is_array($va_parsed_value = caParseCurrencyValue($ps_value))) {
+ 				$vs_currency_specifier = $va_parsed_value['currency'];
+ 				$vs_decimal_value = $va_parsed_value['value'];
  			} else {
  				$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
  				return false;

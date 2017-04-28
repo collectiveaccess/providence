@@ -71,7 +71,7 @@ class Label extends Base {
 			throw new InvalidLogEntryException('operation is delete but model instance does not have a primary key.');
 		}
 
-		$this->getModelInstance()->delete();
+		$this->getModelInstance()->delete(false);
 		$this->checkModelInstanceForErrors();
 	}
 

@@ -421,7 +421,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
-			$vn_rc = parent::update();
+			$vn_rc = parent::update($pa_options);
 
 			// Trigger automatic replication
 			$va_auto_targets = $this->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $this->get('access')));
@@ -536,6 +536,17 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		return true;
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Check if representation media is a binary stream accepted by the BinaryFile plugin. No format-specific
+	 * metadata is available for binary files limiting display choices. Use this method to determine if such metadata can be expected to 
+	 * be available.
+	 *
+	 * @return bool
+	 */
+	public function mediaIsBinary() {
+		return ($this->getMediaInfo('media', 'INPUT', 'MIMETYPE') == 'application/octet-stream') ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
@@ -844,7 +855,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
-		if (!$ps_title) { $ps_title = "[BLANK]"; }
+		if (!$ps_title) { $ps_title = '['._t('BLANK').']'; }
 		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
 		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
@@ -1861,7 +1872,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	}
 	# ------------------------------------------------------
 	/** 
-	 * Check it a file already exists in the database as a representation
+	 * Check if a file already exists in the database as a representation
 	 *
 	 * @param string $ps_filepath The full path to the file
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist

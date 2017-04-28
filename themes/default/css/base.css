@@ -8,7 +8,6 @@ html, body {
     background-color: #fff;
     margin:0px;
     padding:0px;
-    /*background-image:url('../graphics/backgrounds/bg.png');*/
     height: 100%;
 }
 
@@ -543,6 +542,7 @@ div.inspectorCheckedOut {
 }
 #leftNav #widgets .searchType, 
 #leftNav #widgets .setStats, 
+#leftNav #widgets .pawtucketStats, 
 #leftNav #widgets .groupList, 
 #leftNav #widgets .watchedItems, 
 #leftNav #widgets .yourDisplays, 
@@ -572,7 +572,7 @@ div.inspectorCheckedOut {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
-.setStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
+.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
 	font-size:12px;
 	line-height:1.7em;
 }
@@ -1092,7 +1092,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1104,7 +1104,7 @@ div.notification-error-box {
 }
 
 div.notification-warning-box {
-    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 10px;
+    background:	url('../graphics/buttons/warning_sign.png') no-repeat 10px 10px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1214,6 +1214,53 @@ div.hint {
     -webkit-border-top-right-radius: 4px;
     border-top-right-radius: 4px;
     border-top-left-radius: 4px;
+}
+.bundleSubLabel{
+	clear:both;
+	background-color:#fbfbfb;
+	padding:8px 8px 0px 10px;
+	position:relative;
+	font-weight:normal;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select{
+	position:relative;
+	padding-top:0px;
+	padding-bottom:0px;
+	top:-4px;
+	font-size: 9px;
+	font-weight: normal;
+	height: 17px;
+	vertical-align: top;
+}
+.bundleSubLabel .editorBundlePrintControl{
+	float:right;
+	text-align:right;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel .editorBundlePrintControl a.form-button{
+	height:auto;
+	vertical-align:top;
+	padding:0px;
+	margin:-6px 0px 0px 0px;
+}
+.bundleLabel .iconButton{
+	float:right;
+	text-align:right;
+	margin-right:6px;
+	margin-left:6px;
+	font-size:15px;
+	position:relative;
+	font-size:16px;
+	top:-3px;
+}
+.bundleLabel .iconButton select{
+	padding-top:0px;
+	padding-bottom:0px;
+	font-size: 9px;
+	font-weight: normal;
 }
 
 .bundleLabel a.bundleDocumentationLink {
@@ -1468,9 +1515,14 @@ a.form-button, span.form-button, del.form-button{
     _overflow-y:hidden;
 }
 
+/* Form save/cancel/delete buttons; record list new buttons */
+.form-button i.caIcon, .form-header-button i.caIcon {
+	margin-right: 5px;
+}
+
 a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-   /* background-image:url('../graphics/backgrounds/form_buttons.png'); */
+
 }
 #caChangeTypeFormCancelButton .fa {
 	font-size:30px;
@@ -1547,6 +1599,11 @@ a span.form-button.approve .formtext{
 	margin-top: -2px;
 	margin-bottom: 13px;
 	display: inline-block;
+}
+span.form-button.approveDelete {
+	background-color: #eee;
+	padding: 10px 12px 0px 6px;
+	border-radius: 4px;
 }
 span.form-button button{
     line-height:2.5;/*Opera need this*/
@@ -1697,23 +1754,15 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 	width: 16px;
 	text-align: center;
 	padding: 3px !important;
+	white-space: nowrap;
 }
 
 .listtableEditDelete {
 	width: 36px;
 	text-align: center;
-	padding: 3px !important;
+	padding: 3px !important;	
+	white-space: nowrap;
 }
-
-#caWatchedItemsList.listtable {
-	font-size:12px;
-}
-
-#watchedItemsSetControls {
-    padding: 5px 5px 0 10px;
-    background-color: #eeeeee;
-}
-
 
 /* table headers */
 
@@ -1725,21 +1774,8 @@ table.listtable thead tr th {
     cursor: pointer;
     background-color:#eee;
 }
-#caSetList.listtable thead tr th, 
-#caGroupList.listtable thead tr th, 
-#caWatchedItemsList.listtable thead tr th, 
-#caBundleList.listtable thead tr th, 
-#caCommentsList.listtable thead tr th, 
-#caExporterListContainer .listtable thead tr th, 
-#caUserList.listtable thead tr th, 
-#caEventList.listtable thead tr th, 
-#caSearchList.listtable thead tr th,
-#caLocaleList.listtable thead tr th,
-#caSearchConfigSettingList.listtable thead tr th,
-#caMediaConfigPluginList.listtable thead tr th,
-#caElementList.listtable thead tr th,
-#caUIList.listtable thead tr th,
-#caSavedSearchesList.listtable thead tr th {
+#caItemList.listtable thead tr th,
+#caExporterList.listtable thead tr th {
 	white-space: nowrap;
 	padding-top:8px;
 	font-family: 'DIN-Regular', helvetica, sans-serif;
@@ -1762,7 +1798,9 @@ th.list-header-sorted-asc {
     background-image: url('../graphics/icons/asc.gif');
     background-color: #cccccc;
 }
-
+th.list-header-nolink{
+	cursor: default !important;
+}
 /* table fields */
 
 table.listtable tbody td {
@@ -1770,12 +1808,16 @@ table.listtable tbody td {
     padding: 4px;
     background-color: #FFF;
     vertical-align: middle;
-    width:42px;
 }
-table.listtable tbody td.listtableEditDelete {
+table.listtable tbody td.listtableEditDelete, table.uiScreenItem tbody td.listtableEditDelete {
 	width:55px;
 }
-table.listtable tbody td.listtableEditDelete a {
+
+table.listtable tbody td.listtableEdit {
+	width:25px;
+}
+
+table.listtable tbody td.listtableEditDelete a, table.listtable tbody td.listtableEdit a {
 	display:inline-block;
 	margin-top:5px;
 }
@@ -1783,25 +1825,23 @@ table.listtable tbody td .fa {
 	padding-left:5px;
 	display:inline-block;
 }
-table#caCommentsList tbody td {
+table#caItemList tbody td {
 	max-width:140px;
 }
-table#caEventList tbody td{
-	padding:10px;
-}
+
 table.listtable tbody tr.odd td {
     background-color:#f8f8f8;
 }
 
-#caCommentsList tbody tr td div.caUserCommentsListName, #caCommentsList tbody tr td div.caUserCommentsListComment {
+#caItemList tbody tr td div.caUserCommentsListName, #caItemList tbody tr td div.caUserCommentsListComment {
 	overflow: auto;
 }
 
-#caCommentsList tbody tr td div.caUserCommentsListName {
+#caItemList tbody tr td div.caUserCommentsListName {
 	width: 100px;
 }
 
-#caCommentsList tbody tr td div.caUserCommentsListComment {
+#caItemList tbody tr td div.caUserCommentsListComment {
 	width: 150px;
 }
 
@@ -1817,6 +1857,12 @@ td.listtableTotals {
     vertical-align: top;
 	font-weight: bold;
 	text-align: right;
+}
+
+td.listtableAggregateTotals {
+    vertical-align: top;
+	font-weight: normal;
+	text-align: left;
 }
 
 /* misc */
@@ -1841,15 +1887,6 @@ td.listtableTotals {
 	width: 90px;
 }
 
-.saveDelete {
-	width:60px;
-	white-space:nowrap;
-}
-.saveDelete a{
-	float:left;
-	padding:0px;
-	margin:0px;
-}
 div.control-box {
     background-color: #f7f7f7;
     padding: 4px;
@@ -1890,6 +1927,10 @@ div.settingsKey {
 a.list-button {
     margin-left: 3px;
     margin-right: 3px;
+}
+
+.listtableEditDelete a.list-button, .listtableEdit a.list-button {
+	margin-right: 0px
 }
 
 a.list-link {
@@ -1938,7 +1979,6 @@ div.delete-control-box {
     margin-top: 32px;
 }
 div.delete_warning_box {
-    background:	url('../graphics/buttons/warning.png') no-repeat 10px 5px;
     text-indent: 42px;
     font-size: 14px;
 	color: red;
@@ -1973,6 +2013,7 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     border: 0px solid #e6e6e6;
     padding-left:0px;
+    clear:both;
 }
 .bundleContainer .caDeleteLabelButton .fa, .bundleContainer .caDeleteItemButton .fa{
 	font-size:18px;
@@ -2701,7 +2742,6 @@ div.caMediaOverlayControls .close {
     float:right;
     width:15px;
     height:16px;
-    background-image:url("../graphics/buttons/x_white.png");
     margin: 0px 10px 0px 20px;
 }
 
@@ -2714,8 +2754,10 @@ div.caMediaOverlayControls .download {
     margin-left:20px;
 }
 
-div.caMediaOverlayControls .download form a {
-	font-size: 12px;	
+div.caMediaOverlayControls .download form a, div.caMediaOverlayControls .download a {
+	font-size: 11px;	
+    font-weight: normal;
+    color:#FFF;
 }
 
 div.caMediaOverlayControls .objectInfo{
@@ -2758,7 +2800,6 @@ div.caMediaOverlayControls .caRepTools {
     height:16px;
     top: 5px;
     right: 5px;
-    background-image:url("../graphics/buttons/x_white.png");
 }
 
 #caRepToolsRotateAngleControl {
@@ -2950,7 +2991,6 @@ a.editorFieldListLink {
     width:15px;
     height:16px;
     margin:5px;
-    background-image:url("../graphics/buttons/x.png");
 }
 
 /* container for HTML code that files #editorFieldList */
@@ -2958,7 +2998,7 @@ a.editorFieldListLink {
     display: none;
 }
 
-div.editorBundlePrintControl {
+/*div.editorBundlePrintControl {
     position: absolute; 
     top: 2px; 
     right: 27px;
@@ -2969,20 +3009,7 @@ div.editorBundlePrintControl select {
     font-weight: normal;
     height: 17px;
     vertical-align: top;
-}
-
-div.editorBundleValuePrintControl {
-    position: absolute; 
-    bottom: 2px; 
-    right: 5px;
-}
-
-div.editorBundleValuePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}
+}*/
 
 #caHierarchyOverviewHeader {
     font-size: 13px;
@@ -3036,7 +3063,6 @@ a.caHierarchyOverviewLink {
     width:15px;
     height:16px;
     margin:5px;
-    background-image:url("../graphics/buttons/x.png");
 }
 
 /* container for HTML code that files #caHierarchyOverviewPanel */
@@ -4126,6 +4152,14 @@ div.quickSearchNoResults {
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	font-weight: bold;
 }
+#refineBrowse a.facetLink .caIcon{
+	top:-2px;
+	position: relative;
+}
+.facetHeadingLink .caIcon{
+	top: -2px;
+    position: relative;
+}
 #refineBrowse a.facetLink.active{
 	background-color:#aaa;
 }
@@ -4209,9 +4243,11 @@ div.quickSearchNoResults {
 .criteriaLink:last-of-type{
     margin-right:15px;
 }
+
 /* browse pop up panel */
 #splashBrowsePanel {
-	margin-bottom: 5px;
+	display: none;
+	margin-bottom: 25px;
 	float: left;
 	width:100%;
 }
@@ -4284,6 +4320,7 @@ h2.browse {
     height: auto;
     overflow: auto;
     padding: 0px;
+    max-height:400px;
 }
 td.browseSelectPanelListCell {
 	padding-bottom: 8px;
@@ -4355,6 +4392,35 @@ div.browseCriterion {
 .browseCriterionLabel {
     padding: 5px;
     height: 40px;
+}
+.browseSelectMultiplePanelContentArea td.facetItem, .browseSelectMultiplePanelContentArea li{ /* li is for hier browser */
+	position:relative;
+	padding-left:20px;
+}
+[facet_item_selected="1"]::before {
+	font-family: FontAwesome;
+	content: "\f067"; 
+	padding-right:6px;
+	position:absolute;
+	left:7px;
+	top:4px;
+	color:#000 !important;
+}
+.browseSelectMultiplePanelContentArea li [facet_item_selected="1"]::before {
+	top:2px; /* hierbrowser */
+}
+.applyFacetContainer{
+	float:right;
+}
+.applyFacetContainer a.facetApply {
+    background-color: #aaa;
+    color: #fff;
+    font-size: 13px;
+    border-radius: 3px;
+    padding:4px;
+    text-transform:uppercase;
+    text-decoration:none;
+	text-align:center;
 }
 
 #resultBox {
@@ -4609,6 +4675,7 @@ ul#displayItemList {
     background: url(../graphics/colorpicker/colorpicker_background.png);
     font-family: Arial, Helvetica, sans-serif;
     display: none;
+    z-index: 200000;
 }
 .colorpicker_color {
     width: 150px;
@@ -4796,7 +4863,6 @@ div.bundleDisplayEditorPlacement {
     margin: 5px 5px 10px 0px;
     font-weight: normal;
     border: 1px solid #e3e3e3;
-    background-image:url('../graphics/buttons/glyphicons_186_move.png');
     background-position: 98% 50%;
     background-repeat:no-repeat;
     border-radius: 3px;
@@ -4913,7 +4979,7 @@ table.uiScreenItem {
 }
 table.uiScreenItem .fa{
 	font-size:18px;
-	padding-left:10px;
+	padding-left:5px;
 } 
 
 .uiScreenInfo {
@@ -4997,7 +5063,6 @@ table.uiScreenItem .fa{
     width:16px;
     height:16px;
     margin:0px;
-    background-image:url("../graphics/buttons/glyphicons_192_circle_remove_gray.png");
 }
 .dashboardWidgetPanelHide a {
     text-decoration: none;
@@ -5186,8 +5251,27 @@ a.roleCheckAllNoneButton {
 }
 
 /* find results add to set controls */
+td.addItemToSetControl, th.addItemToSetControl {
+	width:15px; 
+	position: relative;
+}
+
+td.addItemToSetControl div {
+	position: absolute;
+	bottom: 1px;
+	right: 1px;
+}
+
 input.addItemToSetControl {
     display: none;
+    padding: 0px;
+    margin: 0px;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    top: 2px; 
+    left: 1px;
+    
 }
 
 input.addItemToSetControlInThumbnails {
@@ -5520,17 +5604,25 @@ div.listRel:first-of-type {
     overflow-y: auto;
 }
 
-.caItemListSortControlTrigger {
+div.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
+    text-align:right;
+    padding-top:6px;
+}
+
+select.caItemListSortControlTrigger {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
 }
 
 .caItemListSortControlContainer {
     position: absolute;
-    right: 40px;
+    right: 230px;
     top: 0px;
     min-width: 50px;
-    
     z-index: 14000;
 }
 
@@ -5612,6 +5704,22 @@ table.preferenceColumnSelector tbody tr td.preferenceColumnSelectorLabel {
 	width: 300px;
 }
 
+div.preferenceColumnHeader {
+    font-family: "DIN-Regular", sans-serif;
+    font-size:13px;
+    color: #333;
+    margin-bottom: 10px;
+    padding-top: 5px;
+    font-weight: bold;
+    text-align: left;
+}
+
+div.preferencePlacementList {
+    width: 350px;
+    height: 350px;
+    overflow: auto;
+    margin-right:10px;
+}
 
 .searchReindexHelpText{
     padding:20px;
@@ -5885,7 +5993,7 @@ div.searchlight-results div.searchlight-selected {
 
 .olControlDelete {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete.png);
+    background-image: url(../graphics/icons/map_delete.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -5893,7 +6001,7 @@ div.searchlight-results div.searchlight-selected {
 }
 .olControlDelete:hover {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete_selected.png);
+    background-image: url(../graphics/icons/map_delete_selected.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -5902,7 +6010,7 @@ div.searchlight-results div.searchlight-selected {
 
 .olControlDeleteItemActive {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete.png);
+    background-image: url(../graphics/icons/map_delete.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -5910,7 +6018,7 @@ div.searchlight-results div.searchlight-selected {
 }
 .olControlDeleteItemActive:hover {
     position: absolute;
-    background-image: url(../graphics/buttons/map_delete_selected.png);
+    background-image: url(../graphics/icons/map_delete_selected.png);
     top: 0;
     right: 0;
     width: 24px;
@@ -5994,7 +6102,6 @@ div.searchlight-results div.searchlight-selected {
     width:15px  !important;
     height:16px  !important;
     margin:0px !important;
-    background-image:url("../graphics/buttons/x.png") !important;
 }
 
 .olPopupContent {
@@ -6618,6 +6725,14 @@ table.caUseHistoryUpdateLocationMetadata tr td {
     
 	font-weight: normal;
 	font-size: 12px;
+	position:absolute;
+	top:20px;
+	right:-30px;
+	width:400px;
+	z-index:10;
+	line-height:1.2em;
+	text-align:left;
+	display: none;
 }
 
 div.caMetadataDictionaryViolationsList {
@@ -7187,4 +7302,17 @@ div.caResultsComplexDataEditorErrorContainer {
   height: 100%;
   margin-top: 0;
   padding-top: 200px;
+}
+/* set items list in set editor */
+.setItemCounter{
+	float:left;
+	background-color:#bbb;
+	color:#FFF;
+	border-radius: 6px;
+	padding:3px 4px 1px 4px;
+	line-height:1em;
+	font-size:9px;
+	font-weight:normal;
+	margin:5px 0px 0px 5px;
+	text-align:bottom;
 }

@@ -78,11 +78,13 @@
 	$vs_bundle_preview = '';
 	
 	$va_template_tags = $va_element_ids;
-	$vs_display_template = caGetOption('displayTemplate', $va_element_settings);
+	if(!($vs_display_template = trim(caGetOption('displayTemplate', $va_settings)))) {
+		$vs_display_template = caGetOption('displayTemplate', $va_element_settings, null);
+	}
 
 	$va_element_settings = $t_element->getSettings();
 	if($t_instance->getAppConfig()->get('always_show_bundle_preview_for_attributes') || $vs_display_template) {
-		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
+		$vs_bundle_preview = $vs_display_template ? $t_instance->getWithTemplate($vs_display_template) : $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
 	}
 
 	if (sizeof($va_attribute_list)) {
@@ -157,14 +159,13 @@
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-?>
-<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
-<?php
+	
+	
 if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
 	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 	if (sizeof($va_template_list) > 0) {
 ?>
-	<div class='editorBundlePrintControl'>
+	<div class='iconButton'>
 <?php
 		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate"));
 		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
@@ -173,12 +174,17 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 <?php
 	}
 }
+	
+	
+?>
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">	
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo repeatingItem">	
 			<span class="formLabelError">{error}</span>
 <?php
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {		// static (non-repeating) checkbox list for list attributes
@@ -188,11 +194,25 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			</div>				
 <?php
 	}
-		
+
 	if (!$vb_batch && ($vs_presets = $t_element->getPresetsAsHTMLFormElement(array('width' => '100px')))) {
-		print "<div style='float: right; margin-right: 10px;'>{$vs_presets}</div>\n";
+		print "<div class='iconButton'>{$vs_presets}</div>\n";
 	}
 	
+	if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
+		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+		if (sizeof($va_template_list) > 0) {
+?>
+		<div class='editorBundleValuePrintControl iconButton' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
+<?php
+			print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
+			print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
+?>
+		</div>
+<?php
+		}
+	}
+		
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
 ?>
@@ -207,21 +227,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 					</tr>
 				</table>
 <?php
-			}
-
-if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
-	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
-	if (sizeof($va_template_list) > 0) {
-?>
-	<div class='editorBundleValuePrintControl' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
-<?php
-		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
-		print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
-?>
-	</div>
-<?php
-	}
-}	
+			}	
 
 			if (isset($va_elements['_locale_id'])) {
 				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale').' '.$va_elements['_locale_id']['element'].'</div>';
@@ -339,7 +345,11 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 			bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
-			onInitializeItem: caHideBundlesForReadOnlyContainers /* todo: look for better callback (or make one up?) */
+			onInitializeItem: caHideBundlesForReadOnlyContainers, /* todo: look for better callback (or make one up?) */
+			
+			listItemClassName: 'repeatingItem',
+			oddColor: '<?php print caGetOption('colorOddItem', $va_settings, 'FFFFFF'); ?>',
+			evenColor: '<?php print caGetOption('colorEvenItem', $va_settings, 'FFFFFF'); ?>'
 		});
 <?php
 	}

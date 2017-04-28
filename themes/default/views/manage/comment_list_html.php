@@ -32,14 +32,14 @@
 		<script language="JavaScript" type="text/javascript">
 		/* <![CDATA[ */
 			jQuery(document).ready(function(){
-				jQuery('#caCommentsList').caFormatListTable();
+				jQuery('#caItemList').caFormatListTable();
 			});
 		/* ]]> */
 		</script>
 		<div class="sectionBox">
 <?php 
 				print caFormControlBox(
-					'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caCommentsList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+					'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 					'', 
 					''
 				); 
@@ -47,10 +47,10 @@
 			<form id="commentListForm"><input type="hidden" name="mode" value="list">
 			
 			<div style="text-align:right;">
-				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'>Approve</span></span></a>
-				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'>Delete</span></span></a>
+				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'>Approve</span></span></a>
+				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'>Delete</span></span></a>
 			</div>
-			<table id="caCommentsList" class="listtable">
+			<table id="caItemList" class="listtable">
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">

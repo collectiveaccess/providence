@@ -3405,8 +3405,14 @@
             <placement code="sub_type_left_id">
               <bundle>sub_type_left_id</bundle>
             </placement>
+            <placement code="include_subtypes_left">
+              <bundle>include_subtypes_left</bundle>
+            </placement>
             <placement code="sub_type_right_id">
               <bundle>sub_type_right_id</bundle>
+            </placement>
+            <placement code="include_subtypes_right">
+              <bundle>include_subtypes_right</bundle>
             </placement>
             <placement code="rank">
               <bundle>rank</bundle>
@@ -3620,6 +3626,9 @@
             </placement>
             <placement code="ca_settings">
               <bundle>settings</bundle>
+            </placement>
+            <placement code="ca_search_form_type_restrictions">
+              <bundle>ca_search_form_type_restrictions</bundle>
             </placement>
             <placement code="ca_users">
               <bundle>ca_users</bundle>
@@ -3938,6 +3947,45 @@
           <bundlePlacements>
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="site_page_editor_ui" type="ca_site_pages">
+      <labels>
+        <label locale="en_US">
+          <name>Site page editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="title">
+              <bundle>title</bundle>
+            </placement>
+            <placement code="path">
+              <bundle>path</bundle>
+            </placement>
+            <placement code="template_id">
+              <bundle>template_id</bundle>
+            </placement>
+            <placement code="description">
+              <bundle>description</bundle>
+            </placement>
+            <placement code="ca_site_pages_content">
+              <bundle>ca_site_pages_content</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="keywords">
+              <bundle>keywords</bundle>
             </placement>
           </bundlePlacements>
         </screen>

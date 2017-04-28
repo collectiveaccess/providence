@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,6 +70,32 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 			return $g_list_id_cache[$ps_list] = $t_label->get('list_id');
 		}
 		return $g_list_id_cache[$ps_list] = null;
+	}
+	# ---------------------------------------
+	/**
+	 * Convert array of list codes into array of list ids
+	 *
+	 * @param array $pa_lists Array of list codes or list_ids
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 * @return array A list of list_ids
+	 */
+	function caMakeListIDList($pa_lists, $pa_options=null) {
+		global $g_list_id_cache;
+		
+		$va_list_codes = array_flip($va_list_ids = ca_lists::getListCodes($pa_options));
+		
+		$va_ids = [];
+		foreach($pa_lists as $pm_list) {
+			if (is_numeric($pm_list) && isset($va_list_ids[$pm_list])) {
+				$va_ids[] = (int)$pm_list;
+			} elseif (isset($va_list_codes[$pm_list])) { 
+				$va_ids[] = (int)$va_list_codes[$pm_list];
+			}
+			$g_list_id_cache[$pm_list] = $va_list_codes[$pm_list] ? (int)$va_list_codes[$pm_list] : null;
+		}
+		
+		return $va_ids;
 	}
 	# ---------------------------------------
 	/**
@@ -284,7 +310,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		return $g_default_list_item_id_cache[$ps_list_code] = $t_list->getDefaultItemID($ps_list_code);
+		return $g_default_list_item_id_cache[$ps_list_code] = $t_list->getDefaultItemID($ps_list_code, ['useFirstElementAsDefaultDefault' => true]);
 	}
 	# ---------------------------------------
 	/**
@@ -315,6 +341,36 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		}
 		
 		return array_keys($va_ids);
+	}
+	# ---------------------------------------
+	/**
+	 * Return item_ids for ancestors of an item
+	 *
+	 * @param mixed $pm_item_id 
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default is null]
+	 *		includeSelf = include $pn_item_id in returned list. [Default is false]
+	 *		noCache = don't use cached results. [Default is false]
+	 * @return array An array of item_ids for items that are ancestors of the specified item. The specified item_id is only included in the returned list if the includeSelf option is set.
+	 */
+	$g_list_item_id_ancestors_cache = array();
+	function caGetAncestorsForItemID($pm_item_id, $pa_options=null) {
+		if(!$pm_item_id) { return null; }
+		global $g_list_item_id_ancestors_cache;
+		if(isset($g_list_item_id_ancestors_cache[$pn_item_id]) && !caGetOption('noCache', $pa_options, false)) { return $g_list_item_id_ancestors_cache[$pn_item_id]; }
+		$t_item = new ca_list_items();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
+		
+		if (!is_array($pm_item_id)) { $pm_item_id = [$pm_item_id]; }
+		
+		$va_acc = [];
+		foreach($pm_item_id as $pn_item_id) {
+			if (is_array($va_ancestors = $t_item->getHierarchyAncestors($pn_item_id, ['idsOnly' => true, 'includeSelf' => caGetOption('includeSelf', $pa_options, false)]))) {
+				$va_acc = array_merge($va_acc, $va_ancestors);
+			}
+		}
+		
+		return $g_list_item_id_ancestors_cache[$pn_item_id] = $va_acc;
 	}
 	# ---------------------------------------
 	/**
@@ -390,15 +446,15 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @return int|bool
 	 */
 	function caGetRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id) {
-		if(CompositeCache::contains($pm_type_code_or_id, 'RelationshipTypeCodesToIDs')) {
-			return CompositeCache::fetch($pm_type_code_or_id, 'RelationshipTypeCodesToIDs');
+		if(CompositeCache::contains($pm_table_name_or_num.'/'.$pm_type_code_or_id, 'RelationshipTypeCodesToIDs')) {
+			return CompositeCache::fetch($pm_table_name_or_num.'/'.$pm_type_code_or_id, 'RelationshipTypeCodesToIDs');
 		}
 
 		$t_rel_types = new ca_relationship_types();
 		$vn_id = $t_rel_types->getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id);
 		if(!$vn_id) { return false; }
 
-		CompositeCache::save($pm_type_code_or_id, $vn_id, 'RelationshipTypeCodesToIDs');
+		CompositeCache::save($pm_table_name_or_num.'/'.$pm_type_code_or_id, $vn_id, 'RelationshipTypeCodesToIDs');
 		return $vn_id;
 	}
 	# ---------------------------------------

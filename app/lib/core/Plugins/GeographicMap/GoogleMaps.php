@@ -183,16 +183,17 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 <script type='text/javascript'>
 	var caMap_{$vs_id};
 	var GeoMarker_{$vs_id};
+	var caMap_{$vs_id}_markers = [];
+	
 jQuery(document).ready(function() {
 	caMap_{$vs_id} = caUI.initGoogleMap({id: '{$vs_id}', mapType: '{$vs_type}', zoomControl: true, navigationControl: {$vb_show_navigation_control} , mapTypeControl: {$vb_show_map_type_control}, scaleControl: {$vb_show_scale_control}});
-	var caMap_{$vs_id}_markers = [];
 	var caMap_{$vs_id}_current_marker = -1;
 
 		var styles = [
 		  {
 			stylers: [
 
-			  { saturation: -100 },
+			 // { saturation: -100 },
 
 			]
 		  },{

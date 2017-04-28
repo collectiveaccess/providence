@@ -163,25 +163,17 @@
 			} elseif(strpos($ps_placeholder, '^') !== false) {
 				// Placeholder is a full template – requires extra processing
 				if ($o_reader) {
-					$va_tags = array();
+					$va_tags = caExtractTagsFromTemplate($ps_placeholder);
 					
-					// get a list of all tags in placeholder
-					if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_placeholder, $va_matches)) {
-						foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-							$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
-						}
-						$va_tags = $va_matches[1];
-					}
 					// Make sure all tags are in source data array, otherwise try to pull them from the reader.
 					// Some formats, mainly XML, can take expressions (XPath for XML) that are not precalculated in the array
-					//print "p=$ps_placeholder\n";
-					//print_R($va_tags);
 					foreach($va_tags as $vs_tag) {
 						$va_tag = explode('~', $vs_tag);
 						if (isset($pa_source_data[$va_tag[0]])) { continue; }
 						$va_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
-						$pa_source_data[$va_tag[0]] = $va_val[$pn_index];
+						$pa_source_data[$va_tag[0]] = (strlen($pn_index)) ? $va_val[$pn_index] : join(";", $va_val);
 					}
+					
 					$vm_val = caProcessTemplate($ps_placeholder, $pa_source_data);
 				} else {
 					// Is plain text
@@ -217,13 +209,16 @@
 			}
 			
 			if (!is_null($pn_index) && !is_null($vs_get_at_index = caGetOption('returnDelimitedValueAt', $pa_options, null)) && ($va_delimiter = caGetOption("delimiter", $pa_options, ';'))) {
+				
 				if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
 				foreach($va_delimiter as $vn_index => $vs_delim) {
 					if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
 					$va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
 				}
 				$va_val = preg_split("!(".join("|", $va_delimiter).")!", $vm_val);
-				$vm_val = (isset($va_val[$vs_get_at_index])) ? $va_val[$vs_get_at_index] : null;
+				
+				// If only one delimited value in value string then return that regardless of the index (it's not a delimited string)
+				$vm_val = (sizeof($va_val) == 1) ? $va_val[0] : ((isset($va_val[$vs_get_at_index])) ? $va_val[$vs_get_at_index] : null);
 			}
 			
 			$vm_val = trim($vm_val);

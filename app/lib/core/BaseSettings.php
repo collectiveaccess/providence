@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -358,6 +358,23 @@
 						$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideDown(250);';
 						
 					}
+					if (isset($va_properties['showOnSelect'])) {
+						if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = array($va_properties['showOnSelect']); }
+						
+						$va_ids = array();
+						foreach($va_properties['showOnSelect'] as $vs_n) {
+							$va_ids[] = "#".$pa_options['id_prefix']."_{$vs_n}_container";
+						}
+						$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideUp(250);';
+						
+						if (!$va_attributes['checked']) {
+							$vs_return .= "<script type='text/javascript'>
+	jQuery(document).ready(function() {
+		jQuery('".join(",", $va_ids)."').hide();
+	});
+</script>\n";
+						}
+					}
 					$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes, array());
 					break;
 				
@@ -468,6 +485,12 @@
 									$va_lists = caExtractValuesByUserLocale($t_list->getListOfLists());
 									
 									$va_rel_opts = array();
+									if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
+										$va_rel_opts['-'] = null;
+									}
+									if (isset($va_properties['allowAll']) && $va_properties['allowAll']) {
+										$va_rel_opts[_t('All lists')] = '*';
+									}
 									foreach($va_lists as $vn_list_id => $va_list_info) {
 										if ($va_properties['showVocabularies'] && !$va_list_info['use_as_vocabulary']) { continue; }
 										$va_rel_opts[$va_list_info['name'].' ('.$va_list_info['list_code'].')'] = $vn_list_id;
@@ -555,26 +578,30 @@
 						} elseif ($va_properties['showMetadataElementsWithDataType']) {
 							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 							
-							$va_rep_elements = ca_metadata_elements::getElementsAsList(true, $va_properties['table'], null, true, false, true, is_numeric($va_properties['showMetadataElementsWithDataType']) ? array($va_properties['showMetadataElementsWithDataType']) : null);
+							if (!is_array($va_properties['table'])) { $va_properties['table'] = [$va_properties['table']]; }
 							
-							$va_select_opts = array();
-							if (is_array($va_rep_elements)) {
-								foreach($va_rep_elements as $vs_element_code => $va_element_info) {
-									$va_select_opts[$va_element_info['display_label']] = $vs_element_code;
+							$va_select_opts = [];
+							foreach($va_properties['table'] as $vs_table) {
+								$va_rep_elements = ca_metadata_elements::getElementsAsList(true, $vs_table, null, true, false, true, is_numeric($va_properties['showMetadataElementsWithDataType']) ? array($va_properties['showMetadataElementsWithDataType']) : null);
+							
+								if (is_array($va_rep_elements)) {
+									foreach($va_rep_elements as $vs_element_code => $va_element_info) {
+										$va_select_opts[$va_element_info['display_label']] = "{$vs_table}.{$vs_element_code}";
+									}
 								}
-							}
 							
-							if($va_properties['includeIntrinsics']) {
-								$o_dm = Datamodel::load();
-								if (!($t_rep = $o_dm->getInstanceByTableName($va_properties['table'], true))) { continue; }
+								if($va_properties['includeIntrinsics']) {
+									$o_dm = Datamodel::load();
+									if (!($t_rep = $o_dm->getInstanceByTableName($vs_table, true))) { continue; }
 							
-								foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
-									if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }
-									if(in_array($va_field_info['DT_DISPLAY'], array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
-									if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
+									foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
+										if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }
+										if(in_array($va_field_info['DT_DISPLAY'], array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
+										if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
 									
-									$va_select_opts[$va_field_info['LABEL']] = $vs_f;
-								}	
+										$va_select_opts[$va_field_info['LABEL']] = $vs_f;
+									}	
+								}
 							}
 							
 							if (sizeof($va_select_opts)) {	

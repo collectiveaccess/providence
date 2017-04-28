@@ -736,14 +736,6 @@
           </label>
         </labels>
           <items>
-            <item idno="year" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Year</name_singular>
-                  <name_plural>Year</name_plural>
-                </label>
-              </labels>
-              <items>
             <item idno="season" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
@@ -782,8 +774,6 @@
             </item>
           </items>
         </item>
-      </items>
-     </item>
         <item idno="work" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -3593,14 +3583,6 @@
         </label>
       </labels>
       <items>
-        <item idno="na" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Not defined</name_singular>
-              <name_plural>Not defined</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="male" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -3609,7 +3591,7 @@
             </label>
           </labels>
         </item>
-        <item idno="female" enabled="1" default="0">
+        <item idno="female" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Female</name_singular>
@@ -6291,7 +6273,7 @@
       <typeRestrictions>
         <restriction>
           <table>ca_occurrences</table>
-          <type>production</type>
+          <type>work</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">5</setting>
@@ -7443,15 +7425,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <type>folder</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="workDescription" datatype="Text">
@@ -7774,15 +7747,6 @@
         <restriction>
           <table>ca_occurrences</table>
           <type>work</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>production</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -8231,14 +8195,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r2">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">50</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="lcshTopical" datatype="LCSH">
@@ -8262,39 +8218,23 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r2">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">50</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="lcshGeo" datatype="LCSH">
+    <metadataElement code="lcshGraphic" datatype="LCSH">
       <labels>
         <label locale="en_US">
-          <name>Library of Congress Geographic Areas Authority</name>
+          <name>LC Thesaurus of Graphic Materials</name>
           <description>Library of Congress Subject headings describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
         </label>
       </labels>
       <settings>
-        <setting name="vocabulary">cs:http://id.loc.gov/vocabulary/geographicAreas</setting>
+        <setting name="vocabulary">cs:http://id.loc.gov/vocabulary/graphicMaterials</setting>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">50</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">50</setting>
@@ -8937,15 +8877,8 @@
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
               <placement code="ca_occurrences">
               <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_types">production</setting>
-                <setting name="label" locale="en_US">Related productions</setting>
-              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -9243,7 +9176,7 @@
         <screen idno="production_credits" default="0">
           <labels>
             <label locale="en_US">
-              <name>Related entities</name>
+              <name>Production Credits</name>
             </label>
           </labels>
          <typeRestrictions>
@@ -9251,13 +9184,6 @@
            <restriction code="special_event" type="special_event"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_principal">
-                <bundle>ca_entities</bundle>
-                  <settings>
-                   <setting name="restrict_to_relationship_types">principal_artist</setting>
-                   <setting name="label" locale="en_US">Principal Artists</setting>
-                  </settings>
-             </placement>
             <placement code="ca_company">
                 <bundle>ca_entities</bundle>
                   <settings>
@@ -9321,7 +9247,7 @@
         <screen idno="work_credits" default="0">
           <labels>
             <label locale="en_US">
-              <name>Related entities</name>
+              <name>Work Credits</name>
             </label>
           </labels>
          <typeRestrictions>
@@ -9342,7 +9268,7 @@
         <screen idno="production_relationships" default="0">
           <labels>
             <label locale="en_US">
-              <name>Relationships &amp; Subjects</name>
+              <name>Relationships</name>
             </label>
           </labels>
            <typeRestrictions>
@@ -9363,25 +9289,6 @@
             <placement code="ca_collections">
               <bundle>ca_collections</bundle>
             </placement>
-            <placement code="ca_attribute_lcshNames">
-              <bundle>ca_attribute_lcshNames</bundle>
-            </placement>
-            <placement code="ca_attribute_lcshTopical">
-              <bundle>ca_attribute_lcshTopical</bundle>
-            </placement>
-             <placement code="ca_attribute_lcshGeo">
-              <bundle>ca_attribute_lcshGeo</bundle>
-             </placement>   
-            <placement code="ca_list_items">
-              <bundle>ca_list_items</bundle>
-              <settings>
-                <setting name="label" locale="en_US">BAM terms</setting>
-                <setting name="add_label" locale="en_US">BAM terms</setting>
-              </settings>
-            </placement>
-             <placement code="ca_attribute_artsvisionGenre">
-              <bundle>ca_attribute_artsvisionGenre</bundle>
-            </placement> 
           </bundlePlacements>
         </screen>
         <screen idno="work_relationships" default="0">
@@ -9401,15 +9308,15 @@
                 <setting name="label" locale="en_US">Related productions</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_lcshNames">
-              <bundle>ca_attribute_lcshNames</bundle>
-            </placement>
             <placement code="ca_attribute_lcshTopical">
               <bundle>ca_attribute_lcshTopical</bundle>
             </placement>
              <placement code="ca_attribute_lcshGeo">
               <bundle>ca_attribute_lcshGeo</bundle>
-             </placement>   
+             </placement>
+             <placement code="ca_attribute_artsvisionGenre">
+              <bundle>ca_attribute_artsvisionGenre</bundle>
+            </placement>    
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
@@ -9417,9 +9324,6 @@
                 <setting name="add_label" locale="en_US">BAM terms</setting>
               </settings>
             </placement>
-             <placement code="ca_attribute_artsvisionGenre">
-              <bundle>ca_attribute_artsvisionGenre</bundle>
-            </placement> 
           </bundlePlacements>
         </screen>
       </screens>
@@ -9657,9 +9561,6 @@
             <placement code="ca_attribute_scopeContent">
               <bundle>ca_attribute_scopeContent</bundle>
             </placement>
-            <placement code="ca_attribute_boxDate">
-              <bundle>ca_attribute_boxDate</bundle>
-            </placement>
             <placement code="ca_attribute_accessRestrict">
               <bundle>ca_attribute_accessRestrict</bundle>
             </placement>
@@ -9669,16 +9570,6 @@
                 <setting name="label" locale="en_US">Principle Artist(s) or Organization</setting>
                 <setting name="restrict_to_relationship_types">principle</setting>
               </settings>
-            </placement>
-            <placement code="ca_occurrences">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_types">production</setting>
-                <setting name="label" locale="en_US">Related productions</setting>
-              </settings>
-            </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -10504,16 +10395,6 @@
           <subTypeLeft/>
           <subTypeRight>production</subTypeRight>
         </type>
-        <type code="principal_artist" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>principal artist</typename>
-              <typename_reverse>principal artist</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft/>
-          <subTypeRight>production</subTypeRight>
-        </type>
  <!-- Work relationships -->
         <type code="composer" default="0">
           <labels>
@@ -10570,6 +10451,16 @@
             <label locale="en_US">
               <typename>playwright</typename>
               <typename_reverse>playwright</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft/>
+          <subTypeRight>work</subTypeRight>
+        </type>
+        <type code="principal_artist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>principal artist</typename>
+              <typename_reverse>principal artist</typename_reverse>
             </label>
           </labels>
           <subTypeLeft/>
@@ -10879,11 +10770,11 @@
     </relationshipTable>
     <relationshipTable name="ca_occurrences_x_collections">
       <types>
-        <type code="related" default="1">
+        <type code="default" default="1">
           <labels>
             <label locale="en_US">
-              <typename>is related to</typename>
-              <typename_reverse>is related to</typename_reverse>
+              <typename>is part of</typename>
+              <typename_reverse>has as part</typename_reverse>
             </label>
           </labels>
         </type>
@@ -11028,13 +10919,8 @@
     </role>
   </roles>
   <logins>
-    <login user_name="admin" password="merce" fname="CollectiveAccess" lname="Administrator"
-      email="julia@whirl-i-gig.com">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="guest" password="levy" fname="CollectiveAccess" lname="Administrator"
-      email="julia@whirl-i-gig.com">
+    <login user_name="administrator" password="changeme" fname="CollectiveAccess" lname="Administrator"
+      email="admin@whirl-i-gig.com">
       <role code="admin"/>
       <group code="admin"/>
     </login>

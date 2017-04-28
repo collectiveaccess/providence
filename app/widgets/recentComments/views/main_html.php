@@ -48,7 +48,7 @@ if(sizeof($va_comments) > 0){
 			print "<span style='font-size:12px; font-weight:bold;'>".$va_comment_info["fname"]." ".$va_comment_info["lname"]." "._t("commented on")." <a href='".caEditorUrl($po_request, $va_comment_info['table_num'], $va_comment_info['row_id'])."'>".$va_comment_info["commented_on"]."</a></span><br/>\n";
 			print ($va_comment_info["created_on"] ? _t("Created on").": ".$va_comment_info["created_on"] : "");
 			print ($va_comment_info["moderated_on"] ? ",&nbsp;&nbsp;&nbsp;&nbsp;"._t("Approved on").": ".date("n/d/y", $va_comment_info["moderated_on"]) : "")."<br/>";
-			print "<a href='#' id='more".$va_comment_info["comment_id"]."' onclick='jQuery(\"#more".$va_comment_info["comment_id"]."\").hide(); jQuery(\"#comment".$va_comment_info["comment_id"]."\").slideDown(250); return false;'>More Info &rsaquo;</a>";
+			print "<a href='#' id='more".$va_comment_info["comment_id"]."' onclick='jQuery(\"#more".$va_comment_info["comment_id"]."\").hide(); jQuery(\"#comment".$va_comment_info["comment_id"]."\").slideDown(250); return false;'>"._t("More Info")." &rsaquo;</a>";
 			print "<div style='display:none;' id='comment".$va_comment_info["comment_id"]."'><ul>";
 			// Print out comment info
 			if(isset($va_comment_info["rating"])){
@@ -59,7 +59,7 @@ if(sizeof($va_comments) > 0){
 			}
 			
 			print "</ul>";
-			print "<a href='#' id='hide".$va_comment_info["comment_id"]."' style='padding-left:10px;' onclick='jQuery(\"#comment".$va_comment_info["comment_id"]."\").slideUp(250); jQuery(\"#more".$va_comment_info["comment_id"]."\").show(); return false;'>Hide &rsaquo;</a>";		
+			print "<a href='#' id='hide".$va_comment_info["comment_id"]."' style='padding-left:10px;' onclick='jQuery(\"#comment".$va_comment_info["comment_id"]."\").slideUp(250); jQuery(\"#more".$va_comment_info["comment_id"]."\").show(); return false;'>"._t("Hide")." &rsaquo;</a>";
 			print "</div></li>";
 		}
 	?>
@@ -68,8 +68,8 @@ if(sizeof($va_comments) > 0){
 	if($vb_unmoderated):
 	?>
 			<div style="padding-top:10px; text-align:center; padding-right:20px;">
-				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button'>Approve</span></a>
-				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'>Delete</span></a>
+    <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button'><?php print(_t("Approve")); ?></span></a>
+    <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'><?php print(_t("Delete")); ?></span></a>
 			</div>
 			<input type="hidden" name="mode" value="dashboard">
 	<?php

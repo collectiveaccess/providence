@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -342,6 +342,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip row if expression'),
 			'description' => _t('Skip the row if value for the expression is true.')
 		);
+		$va_settings['skipIfDataPresent'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if data already present'),
+			'description' => _t('Skip row if data is already present in CollectiveAccess.')
+		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -365,18 +374,28 @@ class ca_data_importer_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the the mapping to only records of the designated type.  For example the Duration field is only applicable to objects of the type moving_image and not photograph.')
 		);
-		$va_settings['restrictToRelationshipTypes'] = array(
+		$va_settings['filterToTypes'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
 			'default' => '',
-			'label' => _t('Restrict to relationship types'),
-			'description' => _t('Restricts the mapping to pull only records related with the designated relatonship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
+			'label' => _t('Filter to types'),
+			'description' => _t('Restricts the mapping to pull only records related with the designated types from the source. This option is only supported by sources that have a notion of related data and types, most notably (and for now only) the CollectiveAccessDataReader.')
+		);
+		$va_settings['filterToRelationshipTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Filter to relationship types'),
+			'description' => _t('Restricts the mapping to pull only records related with the designated relationship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
 		);
 		$va_settings['prefix'] = array(
 			'formatType' => FT_TEXT,

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,14 +48,14 @@
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_occurrences') == __CA_BUNDLE_ACCESS_READONLY__));
 	
+	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
 	
 	// params to pass during occurrence lookup
 	$va_lookup_params = array(
-		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
+		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
-
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
@@ -63,9 +63,14 @@
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
 	
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName());
+	print "<div class='bundleSubLabel'>";	
+	if(sizeof($this->getVar('initialValues'))) {
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
 	}
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($va_settings, ['ui' => $this->getVar('ui')]));
+	}
+	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
@@ -179,12 +184,14 @@
 	</div>
 </div>
 
+<?php if($vb_quick_add_enabled) { ?>
 <div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
 	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
 	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
 </div>	
+<?php } ?>
 <div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
 	<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea">
 	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
@@ -197,13 +204,16 @@
 </div>	
 
 <script type="text/javascript">
+<?php if($vb_quick_add_enabled) { ?>
 	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
+<?php } ?>
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
 		
 		if (caUI.initPanel) {
+<?php if($vb_quick_add_enabled) { ?>
 			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
 				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
 				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
@@ -219,6 +229,7 @@
 					jQuery("#topNavContainer").show(250);
 				}
 			});
+<?php } ?>
 					
 			caRelationEditorPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
 				panelID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
@@ -262,9 +273,11 @@
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel,div.listRel',
 			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+<?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
-			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item->tableName())); ?>',
+<?php } ?>
+			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,

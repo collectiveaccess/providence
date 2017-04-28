@@ -1,3 +1,32 @@
+### 1.22.0 (2016-11-26)
+
+  * Added SlackbotHandler and SlackWebhookHandler to set up Slack integration more easily
+  * Added MercurialProcessor to add mercurial revision and branch names to log records
+  * Added support for AWS SDK v3 in DynamoDbHandler
+  * Fixed fatal errors occuring when normalizing generators that have been fully consumed
+  * Fixed RollbarHandler to include a level (rollbar level), monolog_level (original name), channel and datetime (unix)
+  * Fixed RollbarHandler not flushing records automatically, calling close() explicitly is not necessary anymore
+  * Fixed SyslogUdpHandler to avoid sending empty frames
+  * Fixed a few PHP 7.0 and 7.1 compatibility issues
+
+### 1.21.0 (2016-07-29)
+
+  * Break: Reverted the addition of $context when the ErrorHandler handles regular php errors from 1.20.0 as it was causing issues
+  * Added support for more formats in RotatingFileHandler::setFilenameFormat as long as they have Y, m and d in order
+  * Added ability to format the main line of text the SlackHandler sends by explictly setting a formatter on the handler
+  * Added information about SoapFault instances in NormalizerFormatter
+  * Added $handleOnlyReportedErrors option on ErrorHandler::registerErrorHandler (default true) to allow logging of all errors no matter the error_reporting level
+
+### 1.20.0 (2016-07-02)
+
+  * Added FingersCrossedHandler::activate() to manually trigger the handler regardless of the activation policy
+  * Added StreamHandler::getUrl to retrieve the stream's URL
+  * Added ability to override addRow/addTitle in HtmlFormatter
+  * Added the $context to context information when the ErrorHandler handles a regular php error
+  * Deprecated RotatingFileHandler::setFilenameFormat to only support 3 formats: Y, Y-m and Y-m-d
+  * Fixed WhatFailureGroupHandler to work with PHP7 throwables
+  * Fixed a few minor bugs
+
 ### 1.19.0 (2016-04-12)
 
   * Break: StreamHandler will not close streams automatically that it does not own. If you pass in a stream (not a path/url), then it will not close it for you. You can retrieve those using getStream() if needed

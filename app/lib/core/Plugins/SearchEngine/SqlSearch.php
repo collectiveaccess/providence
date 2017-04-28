@@ -51,6 +51,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	private $opn_indexing_subject_tablenum=null;
 	private $opn_indexing_subject_row_id=null;
 	
+	private $opa_doc_content_buffer = array();			// content buffer used when indexing
+	
 	private $ops_delete_sql;	// sql DELETE statement (for unindexing)
 	private $opqr_delete;		// prepared statement for delete (subject_tablenum and subject_row_id only specified)
 	
@@ -62,13 +64,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	static $s_word_cache = array();						// cached word-to-word_id values used when indexing
 	static $s_metadata_elements; 						// cached metadata element info
 	static $s_fieldnum_cache = array();				// cached field name-to-number values used when indexing
-	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	
-	//
-	// TODO: Obviously these are specific to English. We need to add stop words for other languages.
-	//
-	static $s_stop_words = array("a", "about", "above", "above", "across", "after", "afterwards", "again", "against", "all", "almost", "alone", "along", "already", "also","although","always","am","among", "amongst", "amoungst", "amount",  "an", "and", "another", "any","anyhow","anyone","anything","anyway", "anywhere", "are", "around", "as",  "at", "back","be","became", "because","become","becomes", "becoming", "been", "before", "beforehand", "behind", "being", "below", "beside", "besides", "between", "beyond", "bill", "both", "bottom","but", "by", "call", "can", "cannot", "cant", "co", "con", "could", "couldnt", "cry", "de", "describe", "detail", "do", "done", "down", "due", "during", "each", "eg", "eight", "either", "eleven","else", "elsewhere", "empty", "enough", "etc", "even", "ever", "every", "everyone", "everything", "everywhere", "except", "few", "fifteen", "fify", "fill", "find", "fire", "first", "five", "for", "former", "formerly", "forty", "found", "four", "from", "front", "full", "further", "get", "give", "go", "had", "has", "hasnt", "have", "he", "hence", "her", "here", "hereafter", "hereby", "herein", "hereupon", "hers", "herself", "him", "himself", "his", "how", "however", "hundred", "ie", "if", "in", "inc", "indeed", "interest", "into", "is", "it", "its", "itself", "keep", "last", "latter", "latterly", "least", "less", "ltd", "made", "many", "may", "me", "meanwhile", "might", "mill", "mine", "more", "moreover", "most", "mostly", "move", "much", "must", "my", "myself", "name", "namely", "neither", "never", "nevertheless", "next", "nine", "no", "nobody", "none", "noone", "nor", "not", "nothing", "now", "nowhere", "of", "off", "often", "on", "once", "one", "only", "onto", "or", "other", "others", "otherwise", "our", "ours", "ourselves", "out", "over", "own","part", "per", "perhaps", "please", "put", "rather", "re", "same", "see", "seem", "seemed", "seeming", "seems", "serious", "several", "she", "should", "show", "side", "since", "sincere", "six", "sixty", "so", "some", "somehow", "someone", "something", "sometime", "sometimes", "somewhere", "still", "such", "system", "take", "ten", "than", "that", "the", "their", "them", "themselves", "then", "thence", "there", "thereafter", "thereby", "therefore", "therein", "thereupon", "these", "they", "thickv", "thin", "third", "this", "those", "though", "three", "through", "throughout", "thru", "thus", "to", "together", "too", "top", "toward", "towards", "twelve", "twenty", "two", "un", "under", "until", "up", "upon", "us", "very", "via", "was", "we", "well", "were", "what", "whatever", "when", "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein", "whereupon", "wherever", "whether", "which", "while", "whither", "who", "whoever", "whole", "whom", "whose", "why", "will", "with", "within", "without", "would", "yet", "you", "your", "yours", "yourself", "yourselves", "the");
-
 	private $ops_insert_word_index_sql = '';
 	private $opqr_lookup_word = null;
 	private $ops_insert_word_sql = '';
@@ -250,7 +246,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	 *
 	 */
 	public function __destruct() {	
-		if (is_array(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
+		if (is_array($this->opa_doc_content_buffer) && sizeof($this->opa_doc_content_buffer)) {
 			if($this->opo_db && !$this->opo_db->connected()) {
 				$this->opo_db->connect();
 			}
@@ -631,7 +627,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						case 'NOT':
 							$qr_res = $this->opo_db->query("SELECT row_id FROM ca_sql_search_temp_{$pn_level}");
 							
-							if (is_array($va_ids = $qr_res->getAllFieldValues()) && sizeof($va_ids)) {
+							if (is_array($va_ids = $qr_res->getAllFieldValues('row_id')) && sizeof($va_ids)) {
 								$vs_sql = "
 									DELETE FROM {$ps_dest_table} WHERE row_id IN (?)
 								";
@@ -842,7 +838,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							if(sizeof($va_ap_tmp) >= 2) {
 								$va_element = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $vs_access_point);
 								
-								if ($va_element) {
+								if (isset($va_element['field_num'],$va_element['table_num'])) {
 									$vs_fld_num = $va_element['field_num'];
 									$vs_fld_table_num = $va_element['table_num'];
 									$vs_fld_limit_sql = " AND (swi.field_table_num = {$vs_fld_table_num} AND swi.field_num = '{$vs_fld_num}')";
@@ -872,12 +868,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
 								
 								$qr_count = $this->opo_db->query("SELECT count(*) c FROM {$vs_temp_table}");
-								if (!$qr_count->nextRow() || !(int)$qr_count->get('c')) { 
-									foreach($va_temp_tables as $vs_temp_table) {
-										$this->_dropTempTable($vs_temp_table);
-									}
-									break(2); 
-								}
 								
 								$va_temp_tables[] = $vs_temp_table;	
 							}
@@ -920,9 +910,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
 								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
 								
-								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == _t('[BLANK]'))) {
+								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['._t('BLANK').']')) {
 									$t_ap = $this->opo_datamodel->getInstanceByTableNum($va_access_point_info['table_num'], true);
-									if (is_a($t_ap, 'BaseLabel')) {	// labels have the literal text "[Blank]" indexed to "blank" to indicate blank-ness 
+									if (is_a($t_ap, 'BaseLabel')) {	// labels have the literal text "[blank]" indexed to "blank" to indicate blank-ness 
 										$vb_is_blank_search = false;
 										$vs_term = _t('blank');
 									} else {
@@ -931,7 +921,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$vs_fld_num = $va_access_point_info['field_num'];
 										break;
 									} 
-								} elseif ($vs_access_point && (mb_strtoupper($vs_raw_term) == _t('[SET]'))) {
+								} elseif ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['._t('SET').']')) {
 									$vb_is_not_blank_search = true;
 									$vs_table_num = $va_access_point_info['table_num'];
 									$vs_fld_num = $va_access_point_info['field_num'];
@@ -947,7 +937,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								foreach($va_terms as $vs_term) {
 									if ($vb_has_wildcard) { $vs_term .= '*'; }
 									
-									if (!in_array($va_access_point_info['access_point'], array('modified', 'created')) && in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
 									$vs_stripped_term = preg_replace('!\*+$!u', '', $vs_term);
 									
 									if ($vb_has_wildcard) {
@@ -982,6 +971,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 								if ($vb_output_term) { $va_raw_terms[] = $vs_raw_term; $va_raw_terms_escaped[] = '"'.$this->opo_db->escape($vs_raw_term).'"'; }
 							}
+							$va_raw_terms = array_unique($va_raw_terms);
+							$va_raw_terms_escaped = array_unique($va_raw_terms_escaped);
+							$va_ft_terms = array_unique($va_ft_terms);
+							$va_ft_stem_terms = array_unique($va_ft_stem_terms);
 							
 							break;
 					}
@@ -1812,19 +1805,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, array($ps_content_fieldname), $pn_content_row_id, $vn_rel_type_id);
 		}
 		if (!$va_words) {
-			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.','.$vn_rel_type_id.')';
+			$this->opa_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.','.$vn_rel_type_id.')';
 		} else {
 			foreach($va_words as $vs_word) {
 				if(!strlen($vs_word)) { continue; }
 				if (!($vn_word_id = (int)$this->getWordID($vs_word))) { continue; }
 			
-				WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.','.$vn_rel_type_id.')';
+				$this->opa_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.','.$vn_rel_type_id.')';
 			}
 		}
 	}
 	# ------------------------------------------------
 	public function commitRowIndexing() {
-		if (sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
+		if (sizeof($this->opa_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}
@@ -1834,21 +1827,43 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
-		if (is_array(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
-			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > 0) {
-				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
+		if (is_array($this->opa_doc_content_buffer) && sizeof($this->opa_doc_content_buffer)) {
+			while(sizeof($this->opa_doc_content_buffer) > 0) {
+				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
+					$this->opo_db->query("SET unique_checks=0");
+					$this->opo_db->query("SET foreign_key_checks=0");
+				}
+				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice($this->opa_doc_content_buffer, 0, $vn_max_word_segment_size)));
+				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
+					$this->opo_db->query("SET unique_checks=1");
+					$this->opo_db->query("SET foreign_key_checks=1");
+				}
 			}
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}
 	
 		// clean up
-		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer = null;
-		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer = array();
+		$this->opa_doc_content_buffer = null;
+		$this->opa_doc_content_buffer = array();
 		$this->_checkWordCacheSize();
 	}
 	# ------------------------------------------------
 	public function getWordID($ps_word) {
 		$ps_word = (string)$ps_word;
+		//$ps_word =  preg_replace('/[[:^print:]]/', '', $ps_word);
+		
+		//reject overly long 2 byte sequences, as well as characters above U+10000 and replace with ?
+		$ps_word = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]'.
+		 '|[\x00-\x7F][\x80-\xBF]+'.
+		 '|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*'.
+		 '|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})'.
+		 '|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
+		 '?', $ps_word);
+
+		//reject overly long 3 byte sequences and UTF-16 surrogates and replace with ?
+		$ps_word = preg_replace('/\xE0[\x80-\x9F][\x80-\xBF]'.
+		 '|\xED[\xA0-\xBF][\x80-\xBF]/S','?', $ps_word);
+		 
 		if (!strlen($ps_word = trim(mb_strtolower($ps_word, "UTF-8")))) { return null; }
 		if (mb_strlen($ps_word) > 255) { $ps_word = mb_substr($ps_word, 0, 255); }
 		if (isset(WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word])) { return (int)WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word]; } 

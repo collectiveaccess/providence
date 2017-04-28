@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,13 +32,13 @@ if (!$this->request->isAjax()) {
 ?>
 <script language="JavaScript" type="text/javascript">
 	jQuery(document).ready(function(){
-		jQuery('#caImporterList').caFormatListTable();
+		jQuery('#caItemList').caFormatListTable();
 	});
 </script>
 <div class="sectionBox">
 	<?php
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caImporterList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'caOpenImporterUploadArea(true, true); return false;', 'id' => 'caAddImportersButton')).
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Close"), 'caCloseImportersButton', array('onclick' => 'caOpenImporterUploadArea(false, true); return false;', 'id' => 'caCloseImportersButton'))
@@ -58,7 +58,7 @@ if (!$this->request->isAjax()) {
 }
 ?>
 	<div id="caImporterListContainer">
-		<table id="caImporterList" class="listtable">
+		<table id="caItemList" class="listtable">
 			<thead>
 			<tr>
 				<th>
@@ -76,7 +76,7 @@ if (!$this->request->isAjax()) {
 				<th>
 					<?php _p('Last modified'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort" style="width: 75px">&nbsp;</th>
+				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -108,7 +108,7 @@ if (!$this->request->isAjax()) {
 				<td>
 					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('dateFormat' => 'delimited')); ?>
 				</td>
-				<td>
+				<td class="listtableEditDelete">
 					<?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -823,11 +823,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getItemFromList($pm_list_name_or_id, $ps_item_idno) {
-		
-		if (isset(ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno])) {
-			return ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno];
+	public function getItemFromList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
+		$vs_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_item_idno}");
+		if (isset(ca_lists::$s_list_item_get_cache[$vs_key])) {
+			return ca_lists::$s_list_item_get_cache[$vs_key];
 		}
+	
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		
@@ -839,13 +841,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_list_items cli
 			WHERE
-				(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.idno = ?)
+				{$vs_deleted_sql} (cli.list_id = ?) AND (cli.idno = ?)
 		", (int)$vn_list_id, (string)$ps_item_idno);
 		
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_item_idno}");
 		if ($qr_res->nextRow()) {
-			return  ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_item_idno] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno] = $qr_res->getRow();
+			return  ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_key] = $qr_res->getRow();
 		}
-		return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_item_idno] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_item_idno]  = null;
+		return ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_key]  = null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1039,7 +1042,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getItemIDFromList($pm_list_name_or_id, $ps_item_idno) {
+	public function getItemIDFromList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
 		if ($va_list_item = $this->getItemFromList($pm_list_name_or_id, $ps_item_idno)) {
 			return $va_list_item['item_id'];
 		}
@@ -1076,15 +1079,17 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id) {
+	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
+		
 		$o_db = $this->getDb();
-		$qr_res = $o_db->query($x="
+		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_list_items cli
 			WHERE
-				(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.item_id = ?)
+				{$vs_deleted_sql} (cli.list_id = ?) AND (cli.item_id = ?)
 		", (int)$vn_list_id, (int)$pn_item_id);
 		$va_items = array();
 		while($qr_res->nextRow()) {
@@ -1097,15 +1102,15 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function itemIsInList($pm_list_name_or_id, $ps_item_idno) {
-		return $this->getItemFromList($pm_list_name_or_id, $ps_item_idno) ? true : false;
+	public function itemIsInList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
+		return $this->getItemFromList($pm_list_name_or_id, $ps_item_idno, $pa_options) ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function itemIDIsInList($pm_list_name_or_id, $pn_item_id) {
-		return $this->getItemFromListByItemID($pm_list_name_or_id, $pn_item_id) ? true : false;
+	public function itemIDIsInList($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
+		return $this->getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options) ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1124,9 +1129,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * If no list is specified the currently loaded list is used.
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id of list to return default item_id for. If omitted the currently loaded list will be used.
-	 * @param array $pa_options Options include options for @see ca_list_items::getItemsForList()
+	 * @param array $pa_options Options include options for @see ca_list_items::getItemsForList() as well as:
+	 *		useFirstElementAsDefaultDefault = return first item in list if not explicit default is set for the list. [Default is false]
 	 *
-	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
+	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question null is returned
 	 */
 	public function getDefaultItemID($pm_list_name_or_id=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -1144,7 +1150,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true))));
+		return caGetOption('useFirstElementAsDefaultDefault', $pa_options, false) ? array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true)))) : null; 
 	}
 	# ------------------------------------------------------
 	/**
@@ -1719,9 +1725,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_lists = $o_db->query("
-			SELECT cl.*, cll.name, cll.locale_id
+			SELECT cl.*, cll.name, cll.locale_id, cli.item_id root_id
 			FROM ca_lists cl
-			LEFT JOIN ca_list_labels cll ON cl.list_id = cll.list_id
+			LEFT JOIN ca_list_labels AS cll ON cl.list_id = cll.list_id
+			INNER JOIN ca_list_items AS cli ON cli.list_id = cl.list_id
+			WHERE
+				cli.parent_id IS NULL
 			ORDER BY
 				cll.list_id
 		");
@@ -1729,10 +1738,37 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		while($qr_lists->nextRow()) {
 			$va_tmp =  $qr_lists->getRow();
 			
-			if (!$va_tmp['name']) { $va_tmp['name'] = $va_tmp['list_code']; }				// if there's no label then use the list_code as its' name
+			if (!$va_tmp['name']) { $va_tmp['name'] = $va_tmp['list_code']; }				// if there's no label then use the list_code as its name
 			$va_lists[$qr_lists->get('list_id')][$qr_lists->get('locale_id')] = $va_tmp;
 		}
 		
+		return $va_lists;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * Returns list codes and list_ids of all available lists. 
+	 *
+	 * @param array $pa_options Options include:
+	 *		transaction = Transaction to execute list query within. [Default=null]
+	 * @return array
+	 */
+	static public function getListCodes($pa_options=null) {
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		$o_db = $t_list->getDb();
+		
+		$qr_lists = $o_db->query("
+			SELECT cl.list_id, cl.list_code
+			FROM ca_lists cl
+			WHERE
+				deleted = 0
+		");
+		$va_lists = [];
+		while($qr_lists->nextRow()) {
+			$va_lists[$qr_lists->get('list_id')] = $qr_lists->get('list_code');
+		}
+		ksort($va_lists);
 		return $va_lists;
 	}
 	# ---------------------------------------------------------------------------------------------

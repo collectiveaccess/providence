@@ -29,16 +29,14 @@
 
 ?>
 <script language="JavaScript" type="text/javascript">
-/* <![CDATA[ */
 	$(document).ready(function(){
-		$('#caGroupList').caFormatListTable();
+		$('#caItemList').caFormatListTable();
 	});
-/* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caGroupList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
 			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New team"), 'manage', 'groups', 'Edit', array('group_id' => 0))
 		); 
@@ -46,7 +44,7 @@
 	
 	<h1><?php print _t('Your project teams'); ?></h1>
 	
-	<table id="caGroupList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -58,7 +56,7 @@
 				<th class="list-header-unsorted">
 					<?php print _t('Members'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort" width="45">&nbsp;</th>
+				<th class="{sorter: false} list-header-nosort listtableEdit">&nbsp;</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -76,7 +74,7 @@
 				<td>
 					<?php print $va_group['member_list']; ?>
 				</td>
-				<td>
+				<td class="listtableEdit">
 					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					
 					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>

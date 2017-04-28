@@ -7,7 +7,7 @@
 #  \____\___/|_|_|\___|\___|\__|_| \_/ \___/_/   \_\___\___\___||___/___/
 #
 #               Open-source collections management software
-#               Version 1.6
+#               Version 1.7
 #				
 # -------------------------------------------------------------------------------------------
 # Need help setting up? Visit http://www.collectiveaccess.org/forum
@@ -165,7 +165,10 @@ if (!defined("__CA_APP_NAME__")) {
 	define("__CA_APP_NAME__", "collectiveaccess");
 }
 
-
+#
+# __CA_GOOGLE_MAPS_KEY__ = GoogleMaps key to use for mapping (optional)
+#
+define("__CA_GOOGLE_MAPS_KEY__", "");
 
 # *** 
 # __   __          _                _                  
@@ -409,13 +412,23 @@ if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__')) {
 	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__', true);
 }
 
-# If you set this to true the application may print debugging information. This is
+# If you set this to true the application may print debugging information in the application debug 
+# console, as application warnnings and whenever an application exception occurs. This is
 # primarily intended for developers working on custom code. If this is enabled, any
 # variables passed to the the caDebug() function (see app/helpers/utilityHelpers.php)
 # will trigger a detailed output of the variable content. Note that utilityHelpers.php
 # has to be included to use the function, but it usually is.
 if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
 	define('__CA_ENABLE_DEBUG_OUTPUT__', false);
+}
+
+# Set to true to display detailed error information on-screen whenever an application 
+# exception occurs. This can be helpful for developers in situtations where detailed exception messages 
+# are useful but full debugging output is not required. For production use you should set this to false. 
+#
+# Note that setting __CA_ENABLE_DEBUG_OUTPUT__ implies __CA_STACKTRACE_ON_EXCEPTION__
+if (!defined('__CA_STACKTRACE_ON_EXCEPTION__')) {
+	define('__CA_STACKTRACE_ON_EXCEPTION__', false);
 }
 
 /* ----------------------------------------------------------------------

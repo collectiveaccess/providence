@@ -77,7 +77,8 @@
 			}
 			$va_force_new_label['locale_id'] = $g_ui_locale_id;							// use default locale
 			$va_force_new_label[$t_subject->getLabelDisplayField()] = $vs_q;				// query text is used for display field
-			$va_force_new_label = array_merge($va_force_new_label, DataMigrationUtils::splitEntityName($vs_q));		// query text split as entity name used for other entity label fields
+			
+			$va_force_new_label = array_merge($va_force_new_label, DataMigrationUtils::splitEntityName($vs_q, ['doNotParse' => ($t_subject->getTypeSetting('entity_class') === 'ORG') ? true : false]));		// query text split as entity name used for other entity label fields
 			
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 

@@ -330,7 +330,10 @@ class RequestHTTP extends Request {
 	}
 	# -------------------------------------------------------
 	/**
-	 * 
+	 * Return file path on server to views path in current theme.
+	 *
+	 * @param bool $pb_use_default Return path in default theme no matter what theme user has selected. [Default is false]
+	 * @return string Path to file on server
 	 */
 	public function getViewsDirectoryPath($pb_use_default=false) {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
@@ -343,6 +346,42 @@ class RequestHTTP extends Request {
 				return $this->getThemeDirectoryPath($pb_use_default).'/views';
 				break;
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Search for and return file path on server for a theme file. The selected theme will be searched followed
+	 * by the default theme, ceasing when the file is found. 
+	 *
+	 * @param string $ps_relative_file_path Path to theme file relative to the theme root directory. To find the file path of the base.css file "css/base.css" would be passed.
+	 * @return Path to file on server
+	 */
+	public function getDirectoryPathForThemeFile($ps_relative_file_path) {
+		if(
+			file_exists($vs_path = $this->getThemeDirectoryPath()."/{$ps_relative_file_path}")
+			||
+			file_exists($vs_path = $this->getDefaultThemeDirectoryPath()."/{$ps_relative_file_path}")
+		) {
+			return $vs_path;
+		} 
+		return null;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Search for and return URL path for a theme file. The selected theme will be searched followed
+	 * by the default theme, ceasing when the file is found. 
+	 *
+	 * @param string $ps_relative_file_path Path to theme file relative to the theme root directory. To find the URL path of the base.css file "css/base.css" would be passed.
+	 * @return URL to file
+	 */
+	public function getUrlPathForThemeFile($ps_relative_file_path) {
+		if(
+			file_exists($this->getThemeDirectoryPath()."/{$ps_relative_file_path}")
+		) {
+			return $this->getThemeUrlPath()."/{$ps_relative_file_path}";
+		} elseif(file_exists($this->getDefaultThemeDirectoryPath()."/{$ps_relative_file_path}")) {
+			return $this->getDefaultThemeUrlPath()."/{$ps_relative_file_path}";
+		} 
+		return null;
 	}
 	# -------------------------------------------------------
 	/**
@@ -529,6 +568,7 @@ class RequestHTTP extends Request {
 		if (!$pa_http_methods) { $pa_http_methods = array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'); }
 		if($pa_http_methods && !is_array($pa_http_methods)) { $pa_http_methods = array($pa_http_methods); }
 		$va_params = array();
+		if (!is_array($pa_http_methods)) { $pa_http_methods = array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'); }
 		foreach($pa_http_methods as $vs_http_method) {
 			if (isset($this->opa_params[$vs_http_method]) && is_array($this->opa_params[$vs_http_method])) {
 				$va_params = array_merge($va_params, $this->opa_params[$vs_http_method]);

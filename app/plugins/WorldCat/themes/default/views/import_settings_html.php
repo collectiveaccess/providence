@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,10 +64,15 @@
  	
  	<br style="clear"/>
  	
-	<div id="caWorldCatResults" class="bundleContainer">
-		<div class="caWorldCatResultsMessage">
-			<?php print _t('Enter a WorldCat search above to begin'); ?>
+ 	<div class="caWorldCatResultsContainer">
+		<div id="caWorldCatResults" class="bundleContainer">
+			<div class="caWorldCatResultsMessage">
+				<?php print _t('Enter a WorldCat search above to begin'); ?>
+			</div>
 		</div>
+<?php
+	print $this->request->config->get('worlcat_isbn_exists_key');
+?>
 	</div>
 	
 	<div class='formLabel'>
@@ -150,7 +155,8 @@
 			if (jQuery.isArray(data['results']) && (data['results'].length > 0)) {
 				for(var i=0; i < data['results'].length; i++) {
 					if (data['results'][i].id > 0) {
-						html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>";
+						var existing_object_display_text = data['results'][i].existingObject;
+						html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> " + existing_object_display_text + " <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>";
 					} else {
 						html += "<li class='caWorldCatResultItem'>" + data['results'][i].label + "</li>";
 					}

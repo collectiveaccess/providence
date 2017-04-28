@@ -31,7 +31,7 @@
         </item>
       </items>
     </list>
-    <list code="object_types" hierarchical="1" system="0" vocabulary="1">
+    <list code="object_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object Types</name>
@@ -329,7 +329,7 @@
         </item>
       </items>
     </list>
-    <list code="languages" hierarchical="0" system="0" vocabulary="1">
+    <list code="languages" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Languages</name>
@@ -734,7 +734,7 @@
       </item>
       </items>
     </list>
-    <list code="date_types" hierarchical="0" system="0" vocabulary="1">
+    <list code="date_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Date Types</name>
@@ -4022,7 +4022,7 @@
   </searchForms>
   
   <logins>
-    <login user_name="administrator" password="dublincore" fname="CollectiveAccess"
+    <login user_name="administrator" password="changeme" fname="CollectiveAccess"
       lname="Administrator" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>

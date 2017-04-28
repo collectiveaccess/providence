@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,7 @@ var caUI = caUI || {};
 			// setup autocompleter
 			jQuery('#' + that.setItemAutocompleteID).autocomplete(
 				{
-					source: that.lookupURL,
+					source: that.lookupURL + "?quickadd=0&noInline=1",
 					minLength: 3, max: 50, html: true,
 					select: function(event, ui) {
 						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id, 'displayTemplate': that.displayTemplate} , 
@@ -107,6 +107,9 @@ var caUI = caUI || {};
 			var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
 			console.log("item=" + itemID, rowID, rID, repHTML);
 			
+			var counterHTML = '';
+			counterHTML = '<div class="setItemCounter"></div> ';
+			
 			var editLinkHTML = '';
 			if ((that.editSetItemButton) && (itemID > 0)) {
 				editLinkHTML = '<div style="float: left;"><a href="' + that.editSetItemsURL + '/item_id/' + valueArray['item_id'] + '" title="' + that.editSetItemToolTip +'" class="setItemEditButton">' + that.editSetItemButton + '</a></div> ';
@@ -120,7 +123,7 @@ var caUI = caUI || {};
 			} else {
 				displayLabel = valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]";
 			}
-			itemHTML += "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
+			itemHTML += counterHTML + "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
 			
 			if (prepend) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).prepend(itemHTML);
@@ -171,6 +174,11 @@ var caUI = caUI || {};
 					that.refresh();
 					caUI.utils.showUnsavedChangesWarning(true);
 				}
+			});
+			
+			// set the number of each item in list
+			$('.setItemCounter').each(function(i, obj) {
+				$(this).html(i + 1);
 			});
 			
 			// set warning if no items on load

@@ -77,7 +77,7 @@ class Relationship extends Base {
 		} elseif($this->isUpdate()) {
 			$this->getModelInstance()->update();
 		} elseif($this->isDelete()) {
-			$this->getModelInstance()->delete();
+			$this->getModelInstance()->delete(false);
 		}
 
 		$this->checkModelInstanceForErrors();
@@ -151,11 +151,13 @@ class Relationship extends Base {
 
 			$t_instance->setTransaction($this->getTx());
 			if (!method_exists($t_instance, "loadByGUID") || !$t_instance->loadByGUID($vs_reference_guid)) {
-				throw new InvalidLogEntryException("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
+				// TODO: confirm irrelevant is the way to go here
+				throw new IrrelevantLogEntry("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
 			}
 		} else {
 			if($this->isInsert()) {
-				throw new InvalidLogEntryException("No guid for {$vs_property} field found");
+				// TODO: confirm irrelevant is the way to go here
+				throw new IrrelevantLogEntry("No guid for {$vs_property} field found");
 			}
 		}
 	}

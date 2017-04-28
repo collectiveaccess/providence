@@ -87,16 +87,19 @@ class Configuration {
 
 	/* ---------------------------------------- */
 	/**
+	 * Load a configuration file
+	 *
 	 * @param string $ps_file_path
-	 * @param bool $pb_dont_cache
-	 * @param bool $pb_dont_cache_instance
+	 * @param bool $pb_dont_cache Don't use config file cached. [Default is false]
+	 * @param bool $pb_dont_cache_instance Don't attempt to cache config file Configuration instance. [Default is false]
+	 * @param bool $pb_dont_load_from_default_path Don't attempt to load additional configuration files from default paths (defined by __CA_LOCAL_CONFIG_DIRECTORY__ and __CA_LOCAL_CONFIG_DIRECTORY__). [Default is false]
 	 * @return Configuration
 	 */
-	static function load($ps_file_path=__CA_APP_CONFIG__, $pb_dont_cache=false, $pb_dont_cache_instance=false) {
+	static function load($ps_file_path=__CA_APP_CONFIG__, $pb_dont_cache=false, $pb_dont_cache_instance=false, $pb_dont_load_from_default_path=false) {
 		if(!$ps_file_path) { $ps_file_path = __CA_APP_CONFIG__; }
 
 		if(!MemoryCache::contains($ps_file_path, 'ConfigurationInstances') || $pb_dont_cache || $pb_dont_cache_instance) {
-			MemoryCache::save($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstances');
+			MemoryCache::save($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache, $pb_dont_load_from_default_path), 'ConfigurationInstances');
 		}
 
 		return MemoryCache::fetch($ps_file_path, 'ConfigurationInstances');
@@ -109,12 +112,13 @@ class Configuration {
 	 *		$g_configuration_cache_suffix - any text it contains is used along with the configuration path and $g_ui_locale to compute the MD5 signature of the current configuration for caching purposes. By setting this to some value you can support simultaneous caching of configurations for several different modes. This is mainly used to support caching of theme-specific configurations. Since the theme can change based upon user agent, we need to potentially keep several computed configurations cached at the same time, one for each theme used.
 	 *
 	 * @param string $ps_file_path Absolute path to configuration file to parse
-	 * @param bool $pb_die_on_error If true, request processing will halt with call to die() on error in parsing config file
-	 * @param bool $pb_dont_cache If true, file will be parsed even if it's already cached
+	 * @param bool $pb_die_on_error If true, request processing will halt with call to die() on error in parsing config file. [Default is false]
+	 * @param bool $pb_dont_cache If true, file will be parsed even if it's already cached. [Default is false]
+	 * @param bool $pb_dont_load_from_default_path Don't attempt to load additional configuration files from default paths (defined by __CA_LOCAL_CONFIG_DIRECTORY__ and __CA_LOCAL_CONFIG_DIRECTORY__). [Default is false]
 	 *
 	 *
 	 */
-	public function __construct($ps_file_path=__CA_APP_CONFIG__, $pb_die_on_error=false, $pb_dont_cache=false) {
+	public function __construct($ps_file_path=__CA_APP_CONFIG__, $pb_die_on_error=false, $pb_dont_cache=false, $pb_dont_load_from_default_path=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix;
 
 		$this->ops_config_file_path = $ps_file_path ? $ps_file_path : __CA_APP_CONFIG__;	# path to configuration file
@@ -129,10 +133,12 @@ class Configuration {
 
 
 		$vs_local_conf_file_path = null;
-		if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
-			$vs_local_conf_file_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
-		} elseif (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
-			$vs_local_conf_file_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+		if (!$pb_dont_load_from_default_path) {
+			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
+				$vs_local_conf_file_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+			} elseif (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
+				$vs_local_conf_file_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+			}
 		}
 
 		// try to figure out if we can get it from cache
@@ -771,6 +777,24 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
+	 * Determine if specified key is present in the configuration file.
+	 *
+	 * @param string $ps_key Name of configuration value.
+	 *
+	 * @return bool
+	 */
+	public function exists($ps_key) {
+		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key])) { return true; }
+		$this->ops_error = "";
+
+		if (array_key_exists($ps_key, $this->ops_config_settings["scalars"])) { return true; }
+		if (array_key_exists($ps_key, $this->ops_config_settings["lists"])) { return true; }
+		if (array_key_exists($ps_key, $this->ops_config_settings["assoc"])) { return true; }
+		
+		return false;
+	}
+	/* ---------------------------------------- */
+	/**
 	 * Get boolean configuration value
 	 *
 	 * @param string $ps_key Name of configuration value to get. getBoolean() will look for the
@@ -933,7 +957,12 @@ class Configuration {
 		// assumes translation function _t() is present; if not loaded will not attempt translation
 		if (preg_match("/_\(([^\"\)]+)\)/", $ps_text, $va_matches)) {
 			if(function_exists('_t')) {
-				return _t($va_matches[1]);
+				$vs_trans_text = $ps_text;
+				array_shift($va_matches);
+				foreach($va_matches as $vs_match) {
+					$vs_trans_text = str_replace("_({$vs_match})", _t($vs_match), $vs_trans_text);
+				}
+				return $vs_trans_text;
 			}
 		}
 		return $ps_text;
@@ -962,7 +991,7 @@ class Configuration {
 	 * Destructor: Save config cache to disk/external provider
 	 */
 	public function __destruct() {
-		if(self::$s_have_to_write_config_cache) {
+		if(isset(Configuration::$s_have_to_write_config_cache) && Configuration::$s_have_to_write_config_cache) {
 			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 0);
 			self::$s_have_to_write_config_cache = false;
 		}

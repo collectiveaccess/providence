@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -762,7 +762,6 @@
 					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
 					print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
-
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(sizeof($pa_mimetypes)) {
 						$vb_mimetype_match = false;
@@ -1149,8 +1148,8 @@
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
 				return false;
 			} else {
-				if(is_array($va_errors) && (sizeof($va_errors)>0)) {
-					CLIUtils::textWithColor(_t("There were warnings when adding mapping from file '%1': %2", $vs_file_path, join("; ", $va_errors)), 'yellow');
+				if (is_array($va_errors) && (sizeof($va_errors)>0)) {
+					CLIUtils::addMessage(CLIUtils::textWithColor(_t("There were warnings when adding mapping from file '%1': %2", $vs_file_path, join("; ", $va_errors)), 'yellow'));
 				}
 
 				CLIUtils::addMessage(_t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path), array('color' => 'none'));
@@ -1208,14 +1207,23 @@
 				CLIUtils::addError(_t('You must specify a mapping'));
 				return false;
 			}
-			if (!(ca_data_importers::mappingExists($vs_mapping))) {
+			if (!($t_mapping = ca_data_importers::mappingExists($vs_mapping))) {
 				CLIUtils::addError(_t('Mapping %1 does not exist', $vs_mapping));
 				return false;
 			}
+			
+			if (($vs_add_to_set = $po_opts->getOption('add-to-set')) && (!($t_set = ca_sets::find(['set_code' => $vs_add_to_set], ['returnAs' => 'firstModelInstance'])))) {
+				CLIUtils::addError(_t('Set %1 does not exist', $vs_add_to_set));
+				return false;
+			}
+			if ($t_set && ((int)$t_set->get('table_num') !== (int)$t_mapping->get('table_num'))) {
+				CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
+				return false;
+			}
 
-			$vb_no_ncurses = (bool)$po_opts->getOption('disable-ncurses');
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
+			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback'); 
 
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
@@ -1225,7 +1233,7 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set))) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
@@ -1275,10 +1283,11 @@
 				"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
-				"disable-ncurses" => _t('If set the ncurses terminal library will not be used to display import progress.'),
+				"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
 				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.'),
-				"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.')
+				"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.'),
+				"log-to-tmp-directory-as-fallback" => _t('Use the system temporary directory for the import log if the application logging directory is not writable. Default report an error if the application log directory is not writeable.')
 			);
 		}
 		# -------------------------------------------------------
@@ -1863,6 +1872,7 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
+				"username" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
@@ -1955,7 +1965,7 @@
 					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
 					$vn_c++;
 
-					if ($vn_c > 5) { break; }
+					if ($vn_c > 6) { break; }
 				}
 				$o_rows->next();
 
@@ -1969,14 +1979,22 @@
 				$t_entry->setSetting('definition', $va_data[2]);
 				$t_entry->setSetting('mandatory', (bool)$va_data[1] ? 1 : 0);
 
-				$va_types = preg_split("![;,\|]{1}!", $va_data[3]);
+				$va_tables = preg_split("![;,\|\r\n]{1}!", $va_data[3]);
+				if(!is_array($va_tables)) { $va_tables = array(); }
+				$va_tables = array_map('strip_tags', $va_tables);
+				$va_tables = array_filter($va_tables,'strlen');
+				
+				$va_types = preg_split("![;,\|\r\n]{1}!", $va_data[4]);
 				if(!is_array($va_types)) { $va_types = array(); }
+				$va_types = array_map('strip_tags', $va_types);
 				$va_types = array_filter($va_types,'strlen');
 
-				$va_relationship_types = preg_split("![;,\|]{1}!", $va_data[4]);
+				$va_relationship_types = preg_split("![;,\|\r\n]{1}!", $va_data[5]);
 				if (!is_array($va_relationship_types)) { $va_relationship_types = array(); }
+				$va_relationship_types = array_map('strip_tags', $va_relationship_types);
 				$va_relationship_types = array_filter($va_relationship_types,'strlen');
 
+				$t_entry->setSetting('restrict_to', $va_tables);
 				$t_entry->setSetting('restrict_to_types', $va_types);
 				$t_entry->setSetting('restrict_to_relationship_types', $va_relationship_types);
 
@@ -1987,9 +2005,9 @@
 				}
 
 				// Add rules
-				if ($va_data[5]) {
-					if (!is_array($va_rules = json_decode($va_data[5], true))) {
-						CLIUtils::addError(_t('Could not decode rules for %1', $va_data[5]));
+				if ($va_data[6]) {
+					if (!is_array($va_rules = json_decode($va_data[6], true))) {
+						CLIUtils::addError(_t('Could not decode rules for %1', $va_data[6]));
 						continue;
 					}
 					foreach($va_rules as $va_rule) {
@@ -3280,6 +3298,9 @@
 				CLIUtils::addError(_t("You must specify a list"));
 				return false;
 			}
+			
+			$pb_update = (bool)$po_opts->getOption('update'); 	// "update" parameter; we only allow updating of a list if this is explicitly set
+			$vb_is_update = false; // flag indicated if we're actually updating an existing list
 
 			try {
 				$o_file = PHPExcel_IOFactory::load($ps_source);
@@ -3343,11 +3364,18 @@
 					return false;
 				}
 				
-			} elseif ($t_list->numItemsInList($ps_list_code) > 0) {
-				CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $ps_list_code));
-				return false;
+			} elseif (($t_list->numItemsInList($ps_list_code) > 0)) {
+				if ($pb_update) {
+					$vb_is_update = true;
+				} else {
+					CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $ps_list_code));
+					return false;
+				}
 			}
 			CLIProgressBar::finish();
+			
+			
+			$vn_list_id = $t_list->getPrimaryKey();
 
 			// Get preferred terms
 			
@@ -3407,15 +3435,45 @@
 					$vn_parent_id = $t_list->getRootListItemID();
 				}
 				
-				if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
-					CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
-					continue;
+				$t_item = null;
+				$vb_is_existing_item = false;
+				if ($vb_is_update) {
+					// look for existing list item
+					if ($t_item = ca_list_items::find(['list_id' => $vn_list_id, 'idno' => mb_substr($vs_term, 0, 255)], ['returnAs' => 'firstModelInstance'])) {
+						if (($t_item->get('ca_list_items.preferred_labels.name_plural') !== $vs_term) || ($t_item->get('ca_list_items.preferred_labels.description') !== $va_data[6])) {
+							if(!$t_item->replaceLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
+								CLIUtils::addError(_t("Could not update term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+							}
+						}
+						$vb_is_existing_item = true;
+						
+						if (!$t_item->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__)) {
+							CLIUtils::addError(_t("Could not remove nonpreferred labels for update for term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+						}
+						
+						if ($vn_parent_id != $t_item->get('ca_list_items.parent_id')) {
+							$t_item->setMode(ACCESS_WRITE);
+							$t_item->set('parent_id', $vn_parent_id);
+							if (!$t_item->update()) {
+								CLIUtils::addError(_t("Could not update parent for term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+							}
+						}
+					}
 				}
-				if (!$t_item->addLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
-					CLIUtils::addError(_t("Could not add term label %1: %2", $vs_term, join("; ", $t_list->getErrors())));
-					continue;
+				
+				if (!$t_item) {
+					if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
+						CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+						continue;
+					}
 				}
-				print CLIProgressBar::next(1, _t('Added preferred term %1', $vs_term));
+				if (!$vb_is_existing_item) {
+					if (!$t_item->addLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
+						CLIUtils::addError(_t("Could not add term label %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+						continue;
+					}
+				}
+				print CLIProgressBar::next(1, _t($vb_is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1', $vs_term));
 				$va_parents[md5(join("|", array_merge($va_acc, [$vs_term])))] = $t_item->getPrimaryKey();
 				
 				if(is_array($va_non_preferred_terms[$vs_term])) {
@@ -3440,7 +3498,8 @@
 		public static function load_chenhall_nomenclatureParamList() {
 			return array(
 				"file|f=s" => _t('Excel XLSX-format AASLH Chenhall Nomenclature file to load.'),
-				"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.')
+				"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.'),
+				"update|u=s" => _t('Update an existing Chenhall installation.')
 			);
 		}
 		# -------------------------------------------------------
@@ -3478,7 +3537,9 @@
 					($t_instance instanceof BundlableLabelableBaseModelWithAttributes) ||
 					($t_instance instanceof BaseLabel) ||
 					($t_instance instanceof ca_attribute_values) ||
-					($t_instance instanceof ca_attributes)
+					($t_instance instanceof ca_users) ||
+					($t_instance instanceof ca_attributes) ||
+					($t_instance->getProperty('LOG_CHANGES_TO_SELF') && method_exists($t_instance, 'getGUIDByPrimaryKey'))
 				) {
 					$qr_results = $o_db->query("SELECT ". $t_instance->primaryKey() . " FROM ". $t_instance->tableName());
 					if($qr_results && ($qr_results->numRows() > 0)) {
@@ -3846,6 +3907,51 @@
 		 */
 		public static function check_url_reference_integrityHelp() {
 			return _t('This utility checks the integrity for all URL attribute references in the database. It does so by trying to hit each URL and reading a few bytes. It does not download the whole file.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function scan_site_page_templates($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/ca/SitePageTemplateManager.php");
+			
+			CLIUtils::addMessage(_t("Scanning templates for tags"));
+			$va_results = SitePageTemplateManager::scan();
+			
+			CLIUtils::addMessage(_t("Added %1 templates; updated %2 templates", $va_results['insert'],$va_results['update']));
+			
+			if (is_array($va_results['errors']) && sizeof($va_results['errors'])) {
+				CLIUtils::addError(_t("Templates with errors: %1", join(", ", array_keys($va_results['errors']))));
+			}
+		}
+		# -------------------------------------------------------
+		public static function scan_site_page_templatesParamList() {
+			return [
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function scan_site_page_templatesUtilityClass() {
+			return _t('Content management');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function scan_site_page_templatesShortHelp() {
+			return _t('Scan site page templates for tags.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function scan_site_page_templatesHelp() {
+			return _t('Scan site page template for tags to build the content management editing user interface.');
 		}
 		# -------------------------------------------------------
 	}

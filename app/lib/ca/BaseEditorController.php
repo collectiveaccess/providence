@@ -83,7 +83,7 @@ class BaseEditorController extends ActionController {
 	public function Edit($pa_values=null, $pa_options=null) {
 		AssetLoadManager::register('panel');
 
-		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
@@ -222,7 +222,7 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($pa_options=null) {
-		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
+		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
@@ -333,6 +333,14 @@ class BaseEditorController extends ActionController {
 						$this->notification->addNotification($t_instance->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
 					}
 				}
+				
+				// If "after_id" is set then reset ranks such that saved record follows immediately after
+				if ($vn_after_id) {
+					$t_subject->setRankAfter($vn_after_id);
+					if ($t_subject->numErrors()) {
+						$this->notification->addNotification($t_subject->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+					}
+				}
 			}
 
 		} else {
@@ -388,7 +396,7 @@ class BaseEditorController extends ActionController {
 				do {
 					$va_pop = array_pop($va_save_and_return);
 				} while (
-					sizeof($va_save_and_return)>0 && // only keep going if there are more saved locations
+					(sizeof($va_save_and_return)>0) && // only keep going if there are more saved locations
 					(
 						!$va_pop['key'] || // keep going if key is empty (i.e. it was a "create new record" screen)
 						(($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id)) // keep going if the record is the current one
@@ -416,9 +424,8 @@ class BaseEditorController extends ActionController {
 				'table' => $t_subject->tableName(),
 				'key' => $vn_subject_id,
 				// dont't direct back to Save action
-				'url_path' => str_replace('/Save/', '/Edit/', $this->getRequest()->getFullUrlPath()).$vn_subject_id
+				'url_path' => str_replace('/Save/', '/Edit/', $this->getRequest()->getFullUrlPath())
 			);
-
 			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
 		}
 
@@ -605,7 +612,7 @@ class BaseEditorController extends ActionController {
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-			$this->render('../template_test_html.php');
+			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
 		}
 
 		$t_display = new ca_bundle_displays();
@@ -637,7 +644,7 @@ class BaseEditorController extends ActionController {
 		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$this->view->setVar('display_id', $vn_display_id);
 
-			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true));
+			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
 
 			$va_display_list = array();
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
@@ -698,7 +705,7 @@ class BaseEditorController extends ActionController {
 		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$this->view->setVar('display_id', $vn_display_id);
 
-			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true));
+			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
 			$va_display_list = array();
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
 				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
@@ -767,6 +774,7 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = true;
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+			exit;
 		} catch (Exception $e) {
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 			$vb_printed_properly = false;
@@ -817,12 +825,14 @@ class BaseEditorController extends ActionController {
 		} else {
 			$this->view->setVar('valuesAsAttributeInstances', $va_values = $t_subject->getAttributesByElement($vs_element));
 		}
+		
+		$this->view->setVar('t_subject', $t_subject);
 
 		// Extract values into array for easier view processing
 
 		$va_extracted_values = array();
 		foreach($va_values as $o_value) {
-			$va_extracted_values[] = $o_value->getDisplayValues();
+			$va_extracted_values[] = $o_value->getDisplayValues(null, ['output' => 'text']);
 		}
 		$this->view->setVar('valuesAsElementCodeArrays', $va_extracted_values);
 
@@ -855,6 +865,7 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = true;
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
+			exit;
 		} catch (Exception $e) {
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 			$vb_printed_properly = false;
@@ -1100,7 +1111,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('rel_id', $vn_rel_id);
 			}
 
-			return array($vn_subject_id, $t_subject, $t_ui, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
+			return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
 		if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
@@ -1111,6 +1122,7 @@ class BaseEditorController extends ActionController {
 			// an existing record since it is only relevant for newly created records.
 			if (!$vn_subject_id) {
 				$this->view->setVar('above_id', $vn_above_id = $this->request->getParameter('above_id', pInteger));
+				$this->view->setVar('after_id', $vn_after_id = $this->request->getParameter('after_id', pInteger));
 				$t_subject->set($vs_parent_id_fld, $vn_parent_id);
 
 				$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
@@ -1124,7 +1136,7 @@ class BaseEditorController extends ActionController {
 					$t_subject->set('idno', $t_parent->get('idno'));
 				}
 			}
-			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id);
+			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id);
 		}
 
 		return array($vn_subject_id, $t_subject, $t_ui);
@@ -1487,10 +1499,11 @@ class BaseEditorController extends ActionController {
 		$o_dm 				= Datamodel::load();
 		$t_item 			= $o_dm->getInstanceByTableName($this->ops_table_name, true);
 		$vs_pk 				= $t_item->primaryKey();
-		$vs_label_table 	= $t_item->getLabelTableName();
-		$t_label 			= $t_item->getLabelTableInstance();
-		$vs_display_field	= $t_label->getDisplayField();
-
+		if ($vs_label_table 	= $t_item->getLabelTableName()) {
+			$t_label 			= $t_item->getLabelTableInstance();
+			$vs_display_field	= $t_label->getDisplayField();
+		}
+		
 		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
 		$vn_type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 
@@ -1657,19 +1670,18 @@ class BaseEditorController extends ActionController {
 		$va_restrict_to_sources = null;
 		if ($pt_subject->getAppConfig()->get('perform_source_access_checking') && $pt_subject->hasField('source_id')) {
 			if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__)))) {
+				if (is_array($va_restrict_to_sources) && $pt_subject->get('source_id') && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
 				if (
 					(!$pt_subject->get('source_id'))
 					||
-					($pt_subject->get('source_id') && in_array($pt_subject->get('source_id'), $va_restrict_to_sources))
+					($pt_subject->get('source_id') && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources))
 					||
 					((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
 				) {
 					$pt_subject->set('source_id', $pt_subject->getDefaultSourceID(array('request' => $this->request)));
-				}
-
-				if (is_array($va_restrict_to_sources) && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources)) {
-					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
-					return;
 				}
 			}
 		}
@@ -1702,10 +1714,6 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-	
-		if (!$t_subject->isReadable($this->request)) { 
-			throw new ApplicationException(_t('Cannot view media'));
-		}
 			
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
@@ -1716,6 +1724,10 @@ class BaseEditorController extends ActionController {
 			$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
 			$t_subject->load($t_attr->get('row_id'));
+						
+			if (!$t_subject->isReadable($this->request)) { 
+				throw new ApplicationException(_t('Cannot view media'));
+			}
 
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
@@ -1726,7 +1738,10 @@ class BaseEditorController extends ActionController {
 				"attribute:{$pn_value_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
 			);
-		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {			
+			if (!$t_subject->isReadable($this->request)) { 
+				throw new ApplicationException(_t('Cannot view media'));
+			}
 			//
 			// View object representation
 			//
@@ -2341,8 +2356,7 @@ class BaseEditorController extends ActionController {
 			$va_stored_files[$vn_i] = "userMedia{$vn_user_id}/{$vs_dest_filename}"; // only return the user directory and file name, not the entire path
 		}
 
-
-		print json_encode($va_stored_files);
+		$this->response->addContent(json_encode($va_stored_files));
 	}
 	# -------------------------------------------------------
 	/**
@@ -2372,7 +2386,7 @@ class BaseEditorController extends ActionController {
 		$o_res = caMakeSearchResult($t_instance->tableName(), $va_ids, array('sort' => $va_sort_keys, 'sortDirection' => $vs_sort_direction));
 		$va_sorted_ids = $o_res->getAllFieldValues($t_instance->primaryKey());
 
-		print json_encode($va_sorted_ids);
+		$this->response->addContent(json_encode($va_sorted_ids));
 	}
 	# -------------------------------------------------------
 }

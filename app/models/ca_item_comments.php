@@ -354,37 +354,45 @@ class ca_item_comments extends BaseModel {
 	 *
 	 */
 	public function getUnmoderatedCommentCount() {
-		return $this->getCommentCount('unmoderated');
+		return $this->getCommentCount('unmoderated', true);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getUnmoderatedComments() {
-		return $this->getCommentsList('unmoderated');
+		return $this->getCommentsList('unmoderated', null, true);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getModeratedCommentCount() {
-		return $this->getCommentCount('moderated');
+		return $this->getCommentCount('moderated', true);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getCommentCount($ps_mode='') {
+	public function getCommentCount($ps_mode='', $vb_has_comment = true) {
 		$vs_where = '';
+		$va_wheres = array();
 		switch($ps_mode) {
 			case 'unmoderated':
-				$vs_where = 'WHERE cic.moderated_on IS NULL';
+				$va_wheres[] = 'cic.moderated_on IS NULL';
 				break;
 			case 'moderated':
-				$vs_where = 'WHERE cic.moderated_on IS NOT NULL';
+				$va_wheres[] = 'cic.moderated_on IS NOT NULL';
 				break;
 		}
 	
+		if($vb_has_comment){
+			$va_wheres[] = "cic.comment IS NOT NULL";
+		}
+		if(sizeof($va_wheres)){
+			$vs_where = "WHERE ".join(" AND ", $va_wheres);
+		}
+		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
 			SELECT count(*) c
@@ -405,22 +413,28 @@ class ca_item_comments extends BaseModel {
 	/**
 	 *
 	 */
-	public function getCommentsList($ps_mode='', $pn_limit=0) {
+	public function getCommentsList($ps_mode='', $pn_limit=0, $vb_has_comment = true) {
 		$o_db = $this->getDb();
 		
 		$vs_where = '';
+		$va_wheres = array();
 		switch($ps_mode){ 
 			case 'moderated':
-				$vs_where = "WHERE cic.moderated_on IS NOT NULL";
+				$va_wheres[] = "cic.moderated_on IS NOT NULL";
 				break;
 			case 'unmoderated':
-				$vs_where = "WHERE cic.moderated_on IS NULL";
+				$va_wheres[] = "cic.moderated_on IS NULL";
 				break;
 		}
 		if(intval($pn_limit) > 0){
 			$vs_limit = " LIMIT ".intval($pn_limit);
 		}
-		
+		if($vb_has_comment){
+			$va_wheres[] = "cic.comment IS NOT NULL";
+		}
+		if(sizeof($va_wheres)){
+			$vs_where = "WHERE ".join(" AND ", $va_wheres);
+		}	
 		
 		$o_tep = new TimeExpressionParser();
 		$qr_res = $o_db->query("

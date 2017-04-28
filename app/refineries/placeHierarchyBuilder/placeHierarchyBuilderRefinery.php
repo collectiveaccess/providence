@@ -100,6 +100,7 @@
 			
 			// Set place parents
 			if ($va_parents = $pa_item['settings']['placeHierarchyBuilder_parents']) {
+				$pa_options['refinery'] = $this;
 				$vn_parent_id = caProcessRefineryParents('placeHierarchyBuilder', 'ca_places', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			

@@ -101,7 +101,7 @@
 			
 			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
-			$qr_reps = $o_db->query("
+			$qr_reps = $o_db->query($vs_sql = "
 				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank, caoor.relation_id
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
@@ -125,11 +125,12 @@
 				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
 			}
 			
-			$qr_reps->seek(0);
+			// reexecute query as pdo doesn't support seek()
+			$qr_reps = $o_db->query($vs_sql, $va_type_restriction_filters['params']);
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
 				
-				if (!in_array($vn_rep_id, $va_can_read)) { continue; }
+				if ($va_can_read && !in_array($vn_rep_id, $va_can_read)) { continue; }
 			
 				$va_tmp = $qr_reps->getRow();
 				$va_tmp['tags'] = array();
@@ -804,19 +805,36 @@
 		public function removeRepresentation($pn_representation_id, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
 		
+			$vb_update_is_primary = false;
+			
 			$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), 'ca_object_representations'));
 			if (is_array($va_path) && sizeof($va_path) == 3) {
 				$vs_rel_table = $va_path[1];
 				if ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_rel_table)) {
 					if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 					if ($t_rel->load(array($this->primaryKey() => $this->getPrimaryKey(), 'representation_id' => $pn_representation_id))) {
+						if ($t_rel->hasField('is_primary') && $t_rel->get('is_primary')) {
+							$vb_update_is_primary = true;
+						}
 						$t_rel->setMode(ACCESS_WRITE);
 						$t_rel->delete();
 						if ($t_rel->numErrors()) {
 							$this->errors = array_merge($this->errors, $t_rel->errors());
 							return false;
 						}
-						
+					
+						if (($vb_update_is_primary) && (is_array($va_rels = call_user_func("{$vs_rel_table}::find", [$this->primaryKey() => $this->getPrimaryKey()], ['returnAs' => 'arrays']))) && sizeof($va_rels)) {
+							if(!sizeof($va_primary_rels = array_filter($va_rels, function($v) { return (bool)$v['is_primary']; }))) {	// no primary rels
+								$t_rel->load($va_rels[0]['relation_id']);
+								$t_rel->setMode(ACCESS_WRITE);
+								$t_rel->set('is_primary', 1);
+								$t_rel->update();
+								if ($t_rel->numErrors()) {
+									$this->errors = array_merge($this->errors, $t_rel->errors());
+									return false;
+								}
+							}
+						}	
 					}
 				}
 			}

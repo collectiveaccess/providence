@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  
  require_once(__CA_MODELS_DIR__."/ca_users.php");
  require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
+ require_once(__CA_LIB_DIR__."/ca/Search/QuickSearch.php");
  
  	class PreferencesController extends ActionController {
  		# -------------------------------------------------------
@@ -71,6 +72,33 @@
  			$this->render('preferences_quickadd_html.php');
  		}
  		# -------------------------------------------------------
+ 		public function EditQuickSearchPrefs() {
+ 			AssetLoadManager::register("ca", "bundleListEditor");
+ 			
+ 			$va_available_display_items = [];
+ 			foreach(QuickSearch::availableSearches(['expandByType' => true]) as $vs_bundle => $va_bundle_info) {
+				$va_available_display_items[$vs_bundle] = ['placement_id' => null, 'display' => $va_bundle_info['displayname'], 'bundle' => $vs_bundle];
+			}
+ 			
+ 			if (!is_array($va_search_list = $this->request->user->getPreference("quicksearch_search_list"))) { $va_search_list = []; }
+ 			$va_selected_searches = array_filter($va_search_list, "strlen");
+ 			if (!is_array($va_selected_searches) || !sizeof($va_selected_searches)) { $va_selected_searches = array_keys(QuickSearch::availableSearches(['expandByType' => true])); }
+ 	
+ 			$va_selected_display_items = [];
+ 			foreach($va_selected_searches as $vs_selected_search) {
+ 				if(isset($va_available_display_items[$vs_selected_search])) { 
+ 					$va_selected_display_items[$vs_selected_search] = $va_available_display_items[$vs_selected_search];
+ 					unset($va_available_display_items[$vs_selected_search]);
+ 				}
+ 			}
+ 			$this->view->setVar('available_searches', $va_available_display_items);
+ 			$this->view->setVar('selected_searches', $va_selected_display_items);
+ 			
+ 			$this->view->setVar('t_user', $this->request->user);
+ 			$this->view->setVar('group', 'quicksearch');
+ 			$this->render('preferences_quicksearch_html.php');
+ 		}
+ 		# -------------------------------------------------------
  		public function EditUnitsPrefs() {
  			$this->view->setVar('t_user', $this->request->user);
  			$this->view->setVar('group', 'units');
@@ -101,7 +129,7 @@
 			
  			$o_dm = Datamodel::load();
 			if (!$t_instance = $o_dm->getInstanceByTableName($vs_current_table, true)) {
-				throw new ApplicationException(_t('Invaid table: %1', $this->request->getActionExtra()));
+				throw new ApplicationException(_t('Invalid table: %1', $this->request->getActionExtra()));
 			}
 			
 			$this->view->setVar('current_table', $vs_current_table);
@@ -109,9 +137,9 @@
  			$t_screen = new ca_editor_ui_screens();
  			
  			// get bundles for this table
- 			$va_bundle_list = array(); 
+ 			$va_bundle_list = []; 
 			
-			if (!is_array($va_duplication_element_settings = $this->request->user->getPreference($vs_current_table.'_duplicate_element_settings'))) { $va_duplication_element_settings = array(); }
+			if (!is_array($va_duplication_element_settings = $this->request->user->getPreference($vs_current_table.'_duplicate_element_settings'))) { $va_duplication_element_settings = []; }
 			
 			$va_available_bundles = $t_screen->getAvailableBundles($vs_current_table);
 			foreach($va_available_bundles as $vs_bundle_name => $va_bundle_info) {
@@ -138,8 +166,9 @@
  					$vs_group = 'cataloguing';
  					
 					$this->request->user->setPreference('cataloguing_locale', $this->request->getParameter('pref_cataloguing_locale', pString));
+					$this->request->user->setPreference('cataloguing_delete_reference_handling_default', $this->request->getParameter('pref_cataloguing_delete_reference_handling_default', pString));
 					
- 					$va_ui_prefs = array();
+ 					$va_ui_prefs = [];
 					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
 					
 						foreach($_REQUEST AS $vs_k => $vs_v) {
@@ -159,7 +188,7 @@
  				case 'EditBatchPrefs':
  					$vs_group = 'batch';
  					
- 					$va_ui_prefs = array();
+ 					$va_ui_prefs = [];
 					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
 					
 						foreach($_REQUEST AS $vs_k => $vs_v) {
@@ -173,7 +202,7 @@
  				case 'EditQuickAddPrefs':
  					$vs_group = 'quickadd';
  				
- 					$va_ui_prefs = array();
+ 					$va_ui_prefs = [];
 					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
 					
 						foreach($_REQUEST AS $vs_k => $vs_v) {
@@ -238,6 +267,16 @@
  					$this->view->setVar('group', 'duplication');
  					$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
 					return $this->EditDuplicationPrefs();
+ 					break;
+ 				case 'EditQuickSearchPrefs':
+ 					$vs_group = 'quicksearch';
+ 					
+ 					$va_bundle_list = array_unique(array_map(function($v) { return preg_replace("!_[\d]+$!", "", $v); }, explode(';', $this->request->getParameter('displayBundleList', pString))));
+ 				
+ 					$this->request->user->setPreference("quicksearch_search_list", $va_bundle_list);
+ 					
+ 					$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
+					return $this->EditQuickSearchPrefs();
  					break;
  				case 'EditUIPrefs':
  				default:

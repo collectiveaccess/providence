@@ -46,7 +46,9 @@ var caUI = caUI || {};
 		
 		
 		that.checkValue = function() { 
-			jQuery('#' + that.statusID).html((that.processIndicator ? '<img src=\'' + that.processIndicator + '\' border=\'0\'/>' : ''));
+			var t = (that.processIndicator.search("<") === -1) ? '<img src="' + that.processIndicator + '" border=\'0\'/>' : that.processIndicator;
+			jQuery('#' + that.statusID).html(t);
+			console.log("t", t);
 			
 			var val = jQuery('#' + that.formElementID).val();
 			jQuery.getJSON(that.lookupUrl, { n: val, table_num: that.table_num, id: that.row_id, field: that.field, withinFields: that.withinFields}, 
@@ -62,7 +64,7 @@ var caUI = caUI || {};
 						)
 					) {
 						var msg = that.alreadyInUseMessage;
-						jQuery('#' + that.statusID).html((that.errorIcon ? '<img src=\'' + that.errorIcon + '\' border=\'0\'/> ' : '') + msg).show(0);
+						jQuery('#' + that.statusID).html((that.errorIcon ? that.errorIcon : '') + msg).show(0);
 					} else{
 						jQuery('#' + that.statusID).html('').hide(0);
 					}

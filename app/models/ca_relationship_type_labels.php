@@ -212,4 +212,3 @@ class ca_relationship_type_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

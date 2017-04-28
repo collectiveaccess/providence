@@ -97,7 +97,7 @@
 		
 		foreach($va_download_versions as $vs_version) {
 			foreach(array(
-				'selected' => _t('Selected results: %1', $vs_version),
+				//'selected' => _t('Selected results: %1', $vs_version),
 				'all' => _t('All results: %1', $vs_version)
 			) as $vs_mode => $vs_label) {
 				$va_options[$vs_label] = "{$vs_mode}_{$vs_version}";
@@ -122,10 +122,10 @@
 <script type="text/javascript">
 	function caDownloadRepresentations(mode) {
 		var tmp = mode.split('_');
-		if(tmp[0] == 'all') {	// download all search results
-			jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadRepresentations'); ?>' + '/<?php print $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1');
-		} else {
-			jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadRepresentations'); ?>' + '/<?php print $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
-		}
+		//if(tmp[0] == 'all') {	// download all search results
+			jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?php print $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1<?php print $vs_url_string; ?>');
+		//} else {
+		//	jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?php print $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
+		//}
 	}
 </script>

@@ -250,7 +250,7 @@
 			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 
 			$vs_date_format = $o_date_config->get('dateFormat');
-			$vs_cache_key = md5($vs_date_format . $this->opn_start_date . $this->opn_end_date);
+			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $vs_date_format.$this->opn_start_date.$this->opn_end_date);
 
 			// pull from cache
 			if(isset(DateRangeAttributeValue::$s_date_cache[$vs_cache_key])) {
@@ -261,6 +261,7 @@
 			// fail and the TEP will return the text for whatever happened to be parsed previously 
 			// so we have to init() before trying
 			DateRangeAttributeValue::$o_tep->init();
+			
 			if ($vs_date_format == 'original') {
 				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
 			} else {

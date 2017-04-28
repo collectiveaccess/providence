@@ -2137,14 +2137,14 @@
             </label>
           </labels>
           <items>
-            <!--<item idno="coastal" enabled="1" default="0">
+            <item idno="coastal2" enabled="1" default="0">
               <labels>
                 <label locale="en_CA" preferred="1">
                   <name_singular>coastal</name_singular>
                   <name_plural>coastal</name_plural>
                 </label>
               </labels>
-            </item>-->
+            </item>
             <item idno="deep_sea" enabled="1" default="0">
               <labels>
                 <label locale="en_CA" preferred="1">
@@ -10543,8 +10543,8 @@ Canadian Pacific Railway Company</name_plural>
     </display>
   </displays>
   <logins>
-    <login user_name="guest" password="ocean" fname="CollectiveAccess" lname="Administrator"
-      email="allison@whirl-i-gig.com">
+    <login user_name="administrator" password="changeme" fname="CollectiveAccess" lname="Administrator"
+      email="admin@whirl-i-gig.com">
       <role code="admin"/>
       <group code="admin"/>
     </login>

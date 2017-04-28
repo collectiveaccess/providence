@@ -3,7 +3,7 @@
 #header .pagingText:after { content: counter(page, decimal); }
 #body { z-index: 30000; position: relative; }
 
-img.headerImg {width:135px;height:32px;}
+img.headerImg {width:135px;}
 .headerText { font-family: "helvetica, sans-serif"; font-size: 10px; margin: 0px 0px 10px 25px; }
 .pagingText { position: absolute; top: 0px; right: 10px; font-family: "helvetica, sans-serif"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px; }
 
@@ -14,6 +14,7 @@ span.footerText { font-family: "helvetica, sans-serif"; font-size: 12px; margin-
 span.label { width:30%; display:inline-block; font-size: 12px; font-weight: bold; text-transform:uppercase; color:#444;}
 span.meta { width: 350px; display:inline-block; font-weight:regular; color:#000;}
 div.data {  font: "helvetica, sans-serif";  font-size: 12px; border-bottom: 1px solid #eeeeee; margin-top: 10px; }
+div.findingAid.data { border-bottom: 0px; }
 .title { font: "helvetica, sans-serif"; font-size: 18px; height: 25px; text-align: center; font-weight: bold;}
 .representationList { margin-top:10px; text-align: center; }
 

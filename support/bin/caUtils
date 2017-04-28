@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,7 +98,7 @@
 	
 	$va_args = $o_opts->getRemainingArgs();
 	
-	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2016 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2017 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 	
 	print $vs_app_heading;
 			
@@ -232,11 +232,11 @@
 		// also detect the --setup flag, which accepts a path to an alternate setup.php
 		if (isset($_SERVER['argv']) && is_array($_SERVER['argv'])) {
 			foreach($_SERVER['argv'] as $vs_opt) {
-				if (preg_match("!^\-\-hostname\=([A-Za-z0-9_\-\.]+)!", $vs_opt, $va_matches) || preg_match("!^\-h\=([A-Za-z0-9_\-\.]+)!", $vs_opt, $va_matches)) {
+				if (preg_match("!^\-\-hostname\=([A-Za-z0-9_\-\.:]+)!", $vs_opt, $va_matches) || preg_match("!^\-h\=([A-Za-z0-9_\-\.:]+)!", $vs_opt, $va_matches)) {
 					$_SERVER['HTTP_HOST'] = $va_matches[1];
 					break;
 				}
-				if (preg_match('!^\-\-setup\=([A-Za-z0-9_\-\/\.]+)$!', $vs_opt, $va_matches)) {
+				if (preg_match('!^\-\-setup\=([A-Za-z0-9_\-\/\.:]+)$!', $vs_opt, $va_matches)) {
 					$vs_setup_path = $va_matches[1];
 					break;
 				}

@@ -110,6 +110,10 @@
 
 						disabledItems: 'full',
 						
+						allowDragAndDropSorting: <?php print caDragAndDropSortingForHierarchyEnabled($this->request, $t_subject->tableName(), null) ? "true" : "false"; ?>,
+						sortSaveUrl: '<?php print $va_lookup_urls['sortSave']; ?>',
+						dontAllowDragAndDropSortForFirstLevel: true,
+						
 						initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						typeMenuID: 'browseTypeMenu',

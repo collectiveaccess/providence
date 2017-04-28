@@ -29,7 +29,7 @@
 	$vo_result = $this->getVar('result');
 	$vn_items_per_page = $this->getVar('current_items_per_page');
 	$vs_controller_name = $this->getVar('controller');
-	
+	$vs_controller_name = $this->request->getController();	
 	$va_previous_link_params = array('page' => $this->getVar('page') - 1);
 	$va_next_link_params = array('page' => $this->getVar('page') + 1);
 	$va_jump_to_params = array();
@@ -51,9 +51,9 @@
 			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'manage', 'Comments', 'Index', $va_next_link_params)."\"); return false;' class='button'>"._t("Next")." &rsaquo;</a>";
 		}
 		$vs_searchNav .= "</div>";
-		$vs_searchNav .= '<form action="#">'._t("Jump to page").': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $vs_controller_name, 'Index', $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'._t("GO").'</a></form>';
+		$vs_searchNav .= '<form action="#">'._t("Jump to page").': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, 'manage', 'Comments', 'Index', $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'._t("GO").'</a></form>';
 	}
-	$vs_searchNav .= _t('Your %1 found', $this->getVar('mode')).' '.$vo_result->numHits().' '.$this->getVar(($vo_result->numHits() == 1) ? 'mode_type_singular' : 'mode_type_plural');
+	$vs_searchNav .= _t('Your %1 found', _t($this->getVar('mode'))).' '.$vo_result->numHits().' '.$this->getVar(($vo_result->numHits() == 1) ? 'mode_type_singular' : 'mode_type_plural');
 	$vs_searchNav .= "</div>";
 	print $vs_searchNav;
 ?>
