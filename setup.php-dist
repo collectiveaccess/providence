@@ -150,7 +150,7 @@ if (!defined("__CA_DEFAULT_LOCALE__")) {
 # Only set this if your web server includes mod_rewrite and it is enabled using
 # the provided .htaccess file
 # 
-define("__CA_USE_CLEAN_URLS__", 1);
+define("__CA_USE_CLEAN_URLS__", 0);
 
 
 #
