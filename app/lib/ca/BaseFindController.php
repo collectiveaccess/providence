@@ -1045,7 +1045,7 @@
  			$t_display = new ca_bundle_displays($pn_display_id);
  			
  			$vs_view = $this->opo_result_context->getCurrentView();
- 			$va_ret = $t_display->getDisplayListForResultsEditor($this->ops_tablename, ['user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
+ 			$va_ret = $t_display->getDisplayListForResultsEditor($this->ops_tablename, ['user_id' => $this->request->getUserID(), 'request' => $this->request, 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			if (!is_array($va_ret)) { return null; }
  			
 			$this->view->setVar('t_display', $t_display);	
