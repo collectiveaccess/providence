@@ -27,7 +27,7 @@ monthTable = {
 dayListDisplay = [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
 
 rangePreConjunctions = [from, between]
-rangeConjunctions = [-, to, and, .., through, or]
+rangeConjunctions = [–, -, to, and, .., through, or]
 
 dateTimeConjunctions = [at,@]
 
@@ -80,7 +80,7 @@ bornQualifier = [b., b, born]
 # Text to indicate century (as in "20th century")
 centuryIndicator = [century, cent]
 
-# Text to indicate decdae (as in "1920s")
+# Text to indicate decade (as in "1920s")
 decadeIndicator = [s]
 
 # list of numeric suffixes, starting with the one for zero

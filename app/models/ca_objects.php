@@ -848,6 +848,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 */
  	public function getObjectHistory($pa_bundle_settings=null, $pa_options=null) {
  		global $g_ui_locale;
+ 		$o_dm = Datamodel::load();
+ 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 
@@ -894,7 +896,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			
 				if (is_array($va_date_elements) && sizeof($va_date_elements)) {
 					foreach($va_date_elements as $vs_date_element) {
-						$vs_date_spec = (sizeof(explode('.', $vs_date_element)) > 1) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
+						$va_date_bits = explode('.', $vs_date_element);
+						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $t_lot->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $t_lot->get($vs_date_spec, array('sortable' => true))),
@@ -960,7 +963,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
-						$vs_date_spec = (sizeof(explode('.', $vs_date_element)) > 1) ? $vs_date_element : "ca_loans.{$vs_date_element}";
+						$va_date_bits = explode('.', $vs_date_element);
+						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_loans.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_loans->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_loans->get($vs_date_spec, array('sortable' => true))),
@@ -1031,7 +1035,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
-						$vs_date_spec = (sizeof(explode('.', $vs_date_element)) > 1) ? $vs_date_element : "ca_movements.{$vs_date_element}";
+						$va_date_bits = explode('.', $vs_date_element);
+						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_movements.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_movements->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_movements->get($vs_date_spec, array('sortable' => true))),
@@ -1104,7 +1109,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
-						$vs_date_spec = (sizeof(explode('.', $vs_date_element)) > 1) ? $vs_date_element : "ca_occurrences.{$vs_date_element}";
+						$va_date_bits = explode('.', $vs_date_element);	
+						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_occurrences.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_occurrences->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_occurrences->get($vs_date_spec, array('sortable' => true))),
@@ -1175,7 +1181,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
-						$vs_date_spec = (sizeof(explode('.', $vs_date_element)) > 1) ? $vs_date_element : "ca_collections.{$vs_date_element}";
+						$va_date_bits = explode('.', $vs_date_element);
+						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_collections.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_collections->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_collections->get($vs_date_spec, array('sortable' => true))),
@@ -2274,30 +2281,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					return $this->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_", ['object_id' => $pn_row_id]);
 				}
 				return '';
-				
-				// if(!is_array($pa_values) || !sizeof($pa_values)) { return null; }
-// 				$va_values = array_shift($pa_values);
-// 				if(!is_array($va_values) || !sizeof($va_values)) { return null; }
-// 				$va_values = array_shift($va_values);
-// 				$vn_loc_class =  $va_values['current_loc_class'];
-// 				$vn_loc_subclass =  $va_values['current_loc_subclass'];
-// 				$vn_loc_id =  $va_values['current_loc_id'];
-// 				$vs_loc_table_name = $this->getAppDatamodel()->getTableName($vn_loc_class);
-// 				
-// 				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($vs_loc_table_name, true);
-// 				
-// 				if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
-// 					$vs_table_name = 'ca_storage_locations';
-// 				}
-// 				
-// 				if(($qr_res = caMakeSearchResult($vs_table_name, array($vn_loc_id))) && $qr_res->nextHit()) {
-// 					// Return label for id
-// 					
-// 					$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vn_loc_subclass);
-// 					$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
-// 					
-// 					return $qr_res->getWithTemplate($vs_template);
-// 				} 
 				break;
 		}
 		

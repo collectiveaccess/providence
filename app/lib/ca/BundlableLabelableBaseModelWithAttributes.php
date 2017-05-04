@@ -1712,15 +1712,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'hierarchy_navigation':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if ($this->isHierarchical()) {
-							$vs_element .= $this->getHierarchyNavigationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, array(), $pa_bundle_settings, $pa_options);
+							$vs_element .= $this->getHierarchyNavigationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						}
 						break;
 					# -------------------------------
 					// Hierarchical item location control
 					case 'hierarchy_location':
-						if ($vb_batch) { return null; } // not supported in batch mode
 						if ($this->isHierarchical()) {
-							$vs_element .= $this->getHierarchyLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, array(), $pa_bundle_settings, $pa_options);
+							$vs_element .= $this->getHierarchyLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						}
 						break;
 					# -------------------------------
@@ -2611,6 +2610,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
+		$pb_batch = caGetOption('batch', $pa_options, false);
+		
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 		
 		if (!($vs_label_table_name = $this->getLabelTableName())) { return ''; }
@@ -2747,10 +2748,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		$vn_first_id = null;
+		if ($pb_batch && ($pn_set_id = caGetOption('set_id', $pa_options, null))) { 
+			$t_set = new ca_sets($pn_set_id); 
+			if (is_array($va_ids = $t_set->getItemRowIDs()) && sizeof($va_ids)) {
+				$vn_first_id = array_shift($va_ids);
+			}
+		}
 		
+		$o_view->setVar('batch', $pb_batch);
 		$o_view->setVar('parent_id', $vn_parent_id);
 		$o_view->setVar('ancestors', $va_ancestor_list);
-		$o_view->setVar('id', $this->getPrimaryKey());
+		$o_view->setVar('id', $pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		return $o_view;
@@ -2917,6 +2926,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (!$pa_bundle_settings['readonly']) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
 		
 		// pass bundle settings
+		
+		if(!is_array($pa_bundle_settings['prepopulateQuickaddFields'])) { $pa_bundle_settings['prepopulateQuickaddFields'] = []; }
 		$o_view->setVar('settings', $pa_bundle_settings);
 		$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
 		
@@ -3006,6 +3017,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_read_only = ($po_request->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__) ? true : false;
 		if (!$pa_bundle_settings['readonly']) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
 
+		if(!is_array($pa_bundle_settings['prepopulateQuickaddFields'])) { $pa_bundle_settings['prepopulateQuickaddFields'] = []; }
 		$o_view->setVar('settings', $pa_bundle_settings);
 		$o_view->setVar('placement_code', $ps_placement_code);
 		$o_view->setVar('add_label', caExtractSettingValueByLocale($pa_bundle_settings, 'add_label', $g_ui_locale));
@@ -3518,10 +3530,11 @@ if (!$vb_batch) {
 		}
 }
 		
-if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 	if (is_array($va_fields_by_type['special'])) {
 		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
 			if ($vs_bundle !== 'hierarchy_location') { continue; }
+			
+			if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_') { continue; }
 			
 			$va_parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
 		
@@ -3558,7 +3571,6 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 			break;
 		}
 	}
-}
 		
 		//
 		// Call processBundlesBeforeBaseModelSave() method in sub-class, if it is defined. The method is passed

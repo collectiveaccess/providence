@@ -521,8 +521,8 @@ class IIIFService {
 			'@context' => 'http://iiif.io/api/image/2/context.json',
 			'@id' => $vs_base_url,
 			'protocol' => 'http://iiif.io/api/image',
-			'width' => $vn_width = $pt_media->getMediaInfo($ps_fldname, 'original', 'WIDTH'),
-			'height' => $pt_media->getMediaInfo($ps_fldname, 'original', 'HEIGHT'),
+			'width' => $vn_width = (int)$pt_media->getMediaInfo($ps_fldname, 'original', 'WIDTH'),
+			'height' => (int)$pt_media->getMediaInfo($ps_fldname, 'original', 'HEIGHT'),
 			'sizes' => $va_sizes,
 			'tiles' => [$va_tiles],
 			'profile' => [
@@ -537,7 +537,7 @@ class IIIFService {
 					]
 				]
 			],
-			"maxWidth" => $vn_width
+			"maxWidth" => (int)$vn_width
 		];
 		
 		return $va_resp;
@@ -550,7 +550,7 @@ class IIIFService {
 		$va_sizes = [];
 		foreach($pt_media->getMediaVersions($ps_fldname) as $vs_version) {
 			if ($vs_version == 'tilepic') { continue; }
-			$va_sizes[$vs_version] = ['width' => $pt_media->getMediaInfo($ps_fldname, $vs_version, 'WIDTH'), 'height' => $pt_media->getMediaInfo($ps_fldname, $vs_version, 'HEIGHT')];
+			$va_sizes[$vs_version] = ['width' => (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'WIDTH'), 'height' => (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'HEIGHT')];
 		}
 		return caGetOption('indexByVersion', $pa_options, false) ? $va_sizes : array_values($va_sizes);
 	}
