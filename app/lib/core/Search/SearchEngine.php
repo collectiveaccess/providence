@@ -227,7 +227,9 @@ class SearchEngine extends SearchBase {
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
 				try {
-					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+					$vs_search_proc = preg_replace("!^(AND|OR)!i", "", $ps_search);
+					$vs_search_proc = preg_replace("![^A-Za-z0-9 ]+!", " ", $vs_search_proc);
+					$o_parsed_query = $o_query_parser->parse($vs_search_proc, $vs_char_set);
 				} catch (Exception $e) {
 					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
 				}
