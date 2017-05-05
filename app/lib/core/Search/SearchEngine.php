@@ -221,7 +221,8 @@ class SearchEngine extends SearchBase {
 			$o_query_parser->setEncoding($vs_char_set);
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 			
-			$ps_search = preg_replace('![\']+!', '', $ps_search);
+			$ps_search = preg_replace('![\']+!', '', $ps_search);												// strip slashes
+			$ps_search = preg_replace('/\[([A-Za-z0-9\- ]+)(?!to [A-Za-z0-9\- ]+)\]+/', "$1", $ps_search);		// remove search strings (but not range expressions) from square brackets so they may be searched
 			try {
 				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
 			} catch (Exception $e) {
@@ -234,7 +235,6 @@ class SearchEngine extends SearchBase {
 					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
 				}
 			}
-			
 			$va_rewrite_results = $this->_rewriteQuery($o_parsed_query);
 			$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_rewrite_results['terms'], $va_rewrite_results['signs']);
 
