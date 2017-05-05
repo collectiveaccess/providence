@@ -78,6 +78,7 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 	 * 			raw => return raw, unprocessed results from getty service
 	 * 			start =>
 	 * 			limit =>
+	 *			short = return short label (term only) [Default is false]
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
@@ -126,7 +127,7 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 				$vs_id = str_replace('/', '', $va_matches[0]);
 			}
 
-			$vs_label = '['. str_replace('ulan:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].") - " . $va_values['Bio']['value'];
+			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) == 'short') ? '['. str_replace('ulan:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].") - " . $va_values['Bio']['value'] : $va_values['TermPrefLabel']['value'];
 
 			$va_return['results'][] = array(
 				'label' => htmlentities($vs_label),

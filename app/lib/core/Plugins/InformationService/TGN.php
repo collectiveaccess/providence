@@ -76,6 +76,7 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	 * @param array $pa_options Lookup options
 	 * 			phrase => send a lucene phrase search instead of keywords
 	 * 			raw => return raw, unprocessed results from getty service
+	 *			short = return short label (term only) [Default is false]
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
@@ -129,7 +130,7 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = '['. str_replace('tgn:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . "; " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")";
+			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) == 'short') ? '['. str_replace('tgn:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . "; " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")" : $va_values['TermPrefLabel']['value'];
 
 			$va_return['results'][] = array(
 				'label' => htmlentities(str_replace(', ... World', '', $vs_label)),
