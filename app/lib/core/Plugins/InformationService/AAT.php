@@ -125,7 +125,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) == 'short') ? $va_values['TermPrefLabel']['value'] : '['. str_replace('aat:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " [" . $va_values['Parents']['value'] . "]";
+			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) !== 'short') ? $va_values['TermPrefLabel']['value'] : '['. str_replace('aat:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " [" . $va_values['Parents']['value'] . "]";
 			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
 			$vs_label = preg_replace('/[\<\>]/', '', $vs_label);
 

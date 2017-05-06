@@ -130,7 +130,7 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) == 'short') ? '['. str_replace('tgn:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . "; " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")" : $va_values['TermPrefLabel']['value'];
+			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) !== 'short') ? '['. str_replace('tgn:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . "; " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")" : $va_values['TermPrefLabel']['value'];
 
 			$va_return['results'][] = array(
 				'label' => htmlentities(str_replace(', ... World', '', $vs_label)),
