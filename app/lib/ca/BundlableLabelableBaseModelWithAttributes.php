@@ -1003,7 +1003,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 */
  	public function isSaveable($po_request, $ps_bundle_name=null) {
  		$t_user = is_a($po_request, 'ca_users') ? $po_request : $po_request->user;
- 	
+ 		if (!$t_user) { return false; }
+ 		
  		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
