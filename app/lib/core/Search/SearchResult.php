@@ -1069,7 +1069,11 @@ class SearchResult extends BaseObject {
 		
 		
 		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
-		if ($va_path_components['is_count']) { $vb_return_as_count = true; }
+		if ($va_path_components['is_count']) { 
+			$vb_return_as_count = true; 
+		} elseif($vb_return_as_count) {
+			$va_path_components['is_count'] = true;
+		}
 		
 		$va_val_opts = array_merge($pa_options, array(
 			'returnAsArray' => $vb_return_as_array,
@@ -1303,7 +1307,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 				
-					$va_acc = array();
+					$va_acc = [];
 					foreach($va_hier_list as $vn_h => $va_hier_item) {
 						if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item); }
 					
@@ -1317,7 +1321,10 @@ class SearchResult extends BaseObject {
 							$va_acc[] = join($vs_hierarchical_delimiter, $this->_flattenArray($va_hier_item, $pa_options));
 						}
 					}
-					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_delimiter, $va_acc);
+					if (!$vb_return_as_array) { 
+						return $vb_return_as_count ? sizeof($va_acc) : join($vs_delimiter, $va_acc);
+					}
+					$vm_val = $va_acc;
 					goto filter;
 					break;
 				case 'children':
@@ -1416,8 +1423,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if (!$vb_return_as_array) { 
-						$vm_val = join($vs_hierarchical_delimiter, $va_hier_list);
-						goto filter;
+						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
 					$vm_val = $va_hier_list;
 					goto filter;
@@ -1447,6 +1453,7 @@ class SearchResult extends BaseObject {
 			if (!is_array($va_related_items)) { return ($vb_return_with_structure || $vb_return_as_array) ? array() : null; }
 		
 			$vm_val = $this->_getRelatedValue($va_related_items, $va_val_opts);
+			if ($vb_return_as_count) { return $vm_val; }
 			goto filter;
 		} else {
 			if (!$va_path_components['hierarchical_modifier']) {
@@ -1516,6 +1523,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5], $t_instance, $va_val_opts);
+					if ($vb_return_as_count) { return $vm_val; }
 					goto filter;
 				}
 					
@@ -1571,6 +1579,7 @@ class SearchResult extends BaseObject {
 					$va_attributes = ca_attributes::getAttributes($this->opo_subject_instance->getDb(), $this->opn_table_num, $vn_row_id, array($vn_element_id), array());
 
 					$vm_val = $this->_getAttributeValue($va_attributes[$vn_element_id], $t_instance, $va_val_opts);
+					if ($vb_return_as_count) { return $vm_val; }
 					goto filter;
 				}
 			}
@@ -1815,6 +1824,9 @@ class SearchResult extends BaseObject {
 				$va_return_values[] = $vm_val;
 			}
 		}
+		if ($va_path_components['is_count']) {
+			return $pa_options['returnAsArray'] ? [sizeof($va_return_values)] : sizeof($va_return_values); 
+		}
 		
 		if ($pa_options['unserialize'] && !$pa_options['returnAsArray']) { return array_shift($va_return_values); }	
 		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? $va_return_values : array(); } 
@@ -1922,6 +1934,11 @@ class SearchResult extends BaseObject {
 		// Flatten array for return as string or simple array value
 		// 
 		$va_flattened_values = $this->_flattenArray($va_return_values, $pa_options);
+		
+		if ($va_path_components['is_count']) {
+			return $pa_options['returnAsArray'] ? [sizeof($va_flattened_values)] : sizeof($va_flattened_values); 
+		}
+		
 		if ($pa_options['returnAsArray']) {
 			return $va_flattened_values;
 		} else {
@@ -2172,6 +2189,9 @@ class SearchResult extends BaseObject {
 		// 
 		$va_flattened_values = array_map(function($v) { return is_array($v) ? join("; ", $v) : $v; }, $this->_flattenArray($va_return_values, $pa_options));
 		
+		if ($va_path_components['is_count']) {
+			return $pa_options['returnAsArray'] ? [sizeof($va_flattened_values)] : sizeof($va_flattened_values); 
+		}
 		if ($pa_options['returnAsArray']) {
 			return $va_flattened_values;
 		} else {
