@@ -931,7 +931,8 @@ class SearchResult extends BaseObject {
 	 *		[Options controlling type of return value]
 	 *			returnAsArray = return values in a one-dimensional, numerically indexed array. If not not a string is always returned. [Default is false]
 	 *			returnWithStructure = return values in a multi-dimensional array mirroring the internal storage structure of CollectiveAccess. [Default is false]
-	 *			returnAsSearchResult = 
+	 *			returnAsSearchResult = return values as search result instance. [Default is false]
+	 *			returnAsCount = return the number of values that would be returned. If returnAsArray or returnWithStructure is set then the count will be returned as a one-element array, otherwise an integer value will be returned. [Default is false]
 	 *
 	 *		[Options controlling scope of data in return value]
 	 *			returnAllLocales = Return values from all available locales, rather than just the most appropriate locale for the current user. For string and array return values, returnAllLocales will result in inclusion of additional values. For returnWithStructure, additional entries keys on locale_id or code will be added.  [Default is false]
@@ -990,6 +991,7 @@ class SearchResult extends BaseObject {
 	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
+		$vb_return_as_count = isset($pa_options['returnAsCount']) ? (bool)$pa_options['returnAsCount'] : false;
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$vb_return_with_structure = isset($pa_options['returnWithStructure']) ? (bool)$pa_options['returnWithStructure'] : false;
 		if ($vb_return_as_search_result = isset($pa_options['returnAsSearchResult']) ? (bool)$pa_options['returnAsSearchResult'] : false) {
@@ -1003,7 +1005,16 @@ class SearchResult extends BaseObject {
 		// Return primary key of primary table as quickly as possible
 		if (($ps_field == $this->ops_table_pk) || ($ps_field == $this->ops_table_name.'.'.$this->ops_table_pk)) {
 			$vn_id = $this->opo_engine_result->get($this->ops_table_pk);
-			return ($vb_return_as_array || $vb_return_with_structure) ? array($vn_id) : ($vb_return_as_search_result ? caMakeSearchResult($this->ops_table_name, [$vn_id], $pa_options) : $vn_id);
+			
+			if ($vb_return_as_count) {
+				return $vb_return_as_array ? [1] : 1;
+			} elseif($vb_return_as_search_result) {
+				return caMakeSearchResult($this->ops_table_name, [$vn_id], $pa_options);
+			} elseif($vb_return_as_array || $vb_return_with_structure) {
+				return [$vn_id];
+			} else {
+				return $vn_id;
+			}
 		}
 		
 		if (isset($pa_options['template']) && $pa_options['template']) {
@@ -1058,6 +1069,7 @@ class SearchResult extends BaseObject {
 		
 		
 		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
+		if ($va_path_components['is_count']) { $vb_return_as_count = true; }
 		
 		$va_val_opts = array_merge($pa_options, array(
 			'returnAsArray' => $vb_return_as_array,
@@ -1099,6 +1111,8 @@ class SearchResult extends BaseObject {
 				}
 			} elseif($vb_return_as_search_result) {
 				return caMakeSearchResult($va_path_components['table_name'], [$vs_value], $pa_options);
+			} elseif($vb_return_as_count) {
+				return $vb_return_as_array ? [1] : 1;
 			} else {
 				return $vs_value;
 			}
@@ -1351,7 +1365,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if (!$vb_return_as_array) { 
-						return join($vs_hierarchical_delimiter, $va_hier_list);
+						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
 					$vm_val = $va_hier_list;
 					goto filter;
@@ -1648,7 +1662,11 @@ class SearchResult extends BaseObject {
 					if (!$vb_include) { continue; }
 					$va_filtered_vals[$vn_id] = $vm_val[$vn_id];
 				}
-				return array_values($va_filtered_vals);
+				if ($vb_return_as_count) {
+					return [sizeof($va_filtered_vals)];
+				} else {
+					return array_values($va_filtered_vals);
+				}
 			}
 		}
 		
@@ -1657,6 +1675,10 @@ class SearchResult extends BaseObject {
 			return caMakeSearchResult($va_path_components['table_name'], $vm_val, $pa_options);
 		}
 		
+		if ($vb_return_as_count) {
+			$vn_count = is_array($vm_val) ? sizeof($vm_val) : 1;
+			return $vb_return_as_array ? [$vn_count] : $vn_count;
+		}
 		return $vm_val;
 	}
 	# ------------------------------------------------------------------
@@ -3031,6 +3053,12 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
+		$vb_is_count = false;
+		if ($va_tmp[sizeof($va_tmp)-1] == '_count') {
+			array_pop($va_tmp);
+			$vb_is_count = true;
+		}
+		
 		$vs_hierarchical_modifier = null;
 		if ($va_tmp[1] == 'hierarchy') {
 			array_splice($va_tmp, 1, 1);
@@ -3091,6 +3119,7 @@ class SearchResult extends BaseObject {
 			'num_components'	=> sizeof($va_tmp),
 			'components'		=> $va_tmp,
 			'related'			=> $vb_is_related,
+			'is_count'			=> $vb_is_count,
 			'hierarchical_modifier' => $vs_hierarchical_modifier
 		);
 	}
