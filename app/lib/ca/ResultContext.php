@@ -552,7 +552,7 @@
 			if (!($ps_children_display_mode = $this->opo_request->getParameter('children', pString))) {
  				if ($va_context = $this->getContext()) {
 					$o_config = Configuration::load();
-					return in_array(strtolower($va_context['children_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $va_context['children_display_mode'] : ($vs_children_display_mode_default = $o_config->get($this->ops_table_name."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow";
+					return (in_array(strtolower($va_context['children_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $va_context['children_display_mode'] : (($vs_children_display_mode_default = $o_config->get($this->ops_table_name."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow"));
 				}
 			} else {
 				$this->setContextValue('children_display_mode', $ps_children_display_mode);
