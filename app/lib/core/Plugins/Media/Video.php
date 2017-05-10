@@ -1118,6 +1118,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					h = Math.ceil(w * .7);
 				}
 				jQuery("#<?php print $vs_id; ?>").attr('width', w).attr('height', h);
+				jQuery("#<?php print $vs_id; ?>").attr('style', 'width:' + w + 'px; height: ' + h + 'px;');
 				_V_("<?php print $vs_id; ?>", {}, function() {});
 				
 				if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?php print $vs_id; ?>", _V_.players["<?php print $vs_id; ?>"], 'VideoJS'); }
