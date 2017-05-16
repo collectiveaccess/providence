@@ -1003,7 +1003,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 */
  	public function isSaveable($po_request, $ps_bundle_name=null) {
  		$t_user = is_a($po_request, 'ca_users') ? $po_request : $po_request->user;
- 	
+ 		if (!$t_user) { return false; }
+ 		
  		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
@@ -3534,7 +3535,7 @@ if (!$vb_batch) {
 		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
 			if ($vs_bundle !== 'hierarchy_location') { continue; }
 			
-			if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_') { continue; }
+			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
 			
 			$va_parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
 		

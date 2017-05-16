@@ -2370,7 +2370,7 @@ class SearchIndexer extends SearchBase {
 			$va_proc_field_list = array();
 			
 			$va_self_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_subject_tablename);
-			$va_fields_to_index = $va_self_info['related']['fields'];
+			if (!is_array($va_fields_to_index = $va_self_info['related']['fields'])) { $va_fields_to_index = []; }
 			$va_field_list = array_keys($va_fields_to_index);
 
 			$vn_field_list_count = sizeof($va_field_list);

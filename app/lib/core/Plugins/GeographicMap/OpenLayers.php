@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -473,7 +473,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				features.push(pl.join(';'));
 			}
 			
-			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(map_{$vs_id}_loc_label + ' [' + features.join(':') + ']');
+			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(map_{$vs_id}_loc_label + ' [' + features.join(';') + ']');
 		}
 		
 		// Set up layer for added points/paths
