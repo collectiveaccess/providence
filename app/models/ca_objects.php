@@ -1030,7 +1030,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			while($qr_movements->nextHit()) {
 				$vn_movement_id = $qr_movements->get('ca_movements.movement_id');
 				if ((string)$qr_movements->get('ca_movements.deleted') !== '0') { continue; }	// filter out deleted
-				$vn_type_id = $qr_movements->get('type_id');
+				$vn_type_id = $qr_movements->get('ca_movements.type_id');
 				
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
