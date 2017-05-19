@@ -100,7 +100,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Ignore parent when trying to match row'),
-				'description' => _t('gnore parent when trying to match row.')
+				'description' => _t('Ignore parent when trying to match row.')
 			),
 			'storageLocationSplitter_dontCreate' => array(
 				'formatType' => FT_TEXT,

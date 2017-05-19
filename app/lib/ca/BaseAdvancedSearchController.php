@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,7 +137,8 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 				'appendToSearch' => $vs_append_to_search,
 				'getCountsByField' => 'type_id',
 				'checkAccess' => $va_access_values,
-				'no_cache' => $vb_is_new_search
+				'no_cache' => $vb_is_new_search,
+				'rootRecordsOnly' => $this->view->getVar('hide_children')
 			);
 
 			if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {

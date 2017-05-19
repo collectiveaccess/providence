@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -168,8 +168,10 @@
 					'checkAccess' => $va_access_values,
 					'no_cache' => $vb_is_new_search,
 					'dontCheckFacetAvailability' => true,
-					'filterNonPrimaryRepresentations' => true
+					'filterNonPrimaryRepresentations' => true,
+					'rootRecordsOnly' => $this->view->getVar('hide_children')
 				);
+				
 				
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);

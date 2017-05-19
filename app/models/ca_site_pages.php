@@ -117,7 +117,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this page.'
+				'LABEL' => _t('View count'), 'DESCRIPTION' => _t('Number of views for this page.')
 		)
  	)
 );

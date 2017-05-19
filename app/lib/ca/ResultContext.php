@@ -544,6 +544,43 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Gets the currently selected child display mode.
+		 *
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function getCurrentChildrenDisplayMode() {
+			if (!($ps_children_display_mode = $this->opo_request->getParameter('children', pString))) {
+ 				if ($va_context = $this->getContext()) {
+					$o_config = Configuration::load();
+					return (in_array(strtolower($va_context['children_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $va_context['children_display_mode'] : (($vs_children_display_mode_default = $o_config->get($this->ops_table_name."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow"));
+				}
+			} else {
+				$this->setContextValue('children_display_mode', $ps_children_display_mode);
+				return $ps_children_display_mode;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Sets the currently selected child display mode. The value can be one of the following:
+		 * 		"show", "hide", "alwaysShow", "alwaysHide"
+		 *
+		 * The child display mode determines whether all records in a result set are displayed 
+		 * or just root (top of their hierarchy) records.
+		 *
+		 * @param string $ps_children_display_mode 
+		 * 
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function setCurrentChildrenDisplayMode($ps_children_display_mode) {
+			if (!in_array($ps_children_display_mode, ['show', 'hide', 'alwaysShow', 'alwaysHide'])) { 
+				$o_config = Configuration::load();
+				$ps_children_display_mode = $o_config->get($this->ops_table_name."_children_display_mode_in_results"); 
+			}
+			return $this->setContextValue('children_display_mode', $ps_children_display_mode);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns the named parameter, either from the current request, or if it is not present in the
 		 * request, then from the current context. Returns null if the parameter is not set in either.
 		 * The value passed in the request will be used in preference to the context value, and if the 

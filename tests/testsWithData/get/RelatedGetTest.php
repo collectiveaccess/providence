@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -261,6 +261,19 @@ class RelatedGetTest extends BaseTestWithData {
 		// there are no related list items
 		$vm_ret = $this->opt_object->get('ca_list_items', array('returnAsArray' => true));
 		$this->assertEmpty($vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testGetCounts() {
+		$vm_ret = $this->opt_object->get('ca_entities._count');
+		$this->assertEquals(3, $vm_ret);
+		
+		$vm_ret = $this->opt_object->get('ca_entities._count', ['returnAsArray' => true]);
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals(3, $vm_ret[0]);
+		
+		$vm_ret = $this->opt_object->get('ca_entities.idno', ['returnAsCount' => true]);
+		$this->assertEquals(3, $vm_ret);
 	}
 	# -------------------------------------------------------
 }

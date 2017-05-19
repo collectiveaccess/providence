@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,6 +61,10 @@ class AttributeGetTest extends BaseTestWithData {
 					array(
 						'locale' => 'en_US',
 						'internal_notes' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.'
+					),
+					array(
+						'locale' => 'en_US',
+						'internal_notes' => 'More meat.'
 					),
 					array(
 						'locale' => 'de_DE',
@@ -157,10 +161,10 @@ class AttributeGetTest extends BaseTestWithData {
 
 		// there are two internal notes but we assume that only the current UI locale is returned, unless we explicitly say otherwise
 		$vm_ret = $this->opt_object->get('ca_objects.internal_notes');
-		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.", $vm_ret);
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.;More meat.", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('internal_notes');
-		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.", $vm_ret);
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.;More meat.", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.external_link.url_source');
 		$this->assertEquals("My URL source;Another URL source", $vm_ret);
@@ -204,6 +208,19 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
 		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
 		$this->assertContains('Burr killed his political rival Alexander Hamilton', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
+	}
+	# -------------------------------------------------------
+	public function testGetCounts() {
+		$vm_ret = $this->opt_object->get('ca_objects.internal_notes._count');
+		$this->assertEquals(2, $vm_ret);
+		
+		$vm_ret = $this->opt_object->get('ca_objects.internal_notes._count', ['returnAsArray' => true]);
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals(2, $vm_ret[0]);
+		
+		$vm_ret = $this->opt_object->get('ca_objects.internal_notes', ['returnAsCount' => true]);
+		$this->assertEquals(2, $vm_ret);
 	}
 	# -------------------------------------------------------
 }

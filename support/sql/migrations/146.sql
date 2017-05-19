@@ -5,13 +5,16 @@
 */
 
 DROP INDEX u_all on ca_entity_labels;
+DROP INDEX i_surname on ca_entity_labels;
 ALTER TABLE ca_entity_labels MODIFY COLUMN surname varchar(512) not null default '';
+
+CREATE INDEX i_surname on ca_entity_labels(surname(100));
 create unique index u_all on ca_entity_labels
 (
    entity_id,
-   forename,
-   other_forenames,
-   middlename,
+   forename(50),
+   other_forenames(50),
+   middlename(50),
    surname(100),
    type_id,
    locale_id
