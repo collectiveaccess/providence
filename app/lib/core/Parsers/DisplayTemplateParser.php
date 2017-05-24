@@ -1493,7 +1493,7 @@ class DisplayTemplateParser {
 				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
 			}
 			
-			if ($t_instance) {
+			if ($t_instance && !isset($pa_values[$vs_proc_tag])) {
 				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($vs_proc_tag, $pa_options), $va_tmp);
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
