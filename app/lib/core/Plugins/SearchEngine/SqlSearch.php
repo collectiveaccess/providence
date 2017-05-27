@@ -1587,7 +1587,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 
 						
 						if ((($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) && (!$vs_direct_sql_query)){
-							$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
+							$vs_sql .= " HAVING count(distinct sw.stem) >= {$vn_num_terms}";
 						}
 						
 						$t = new Timer();
@@ -1626,9 +1626,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								";
 								
 								if (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) {
-									$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
+									$vs_sql .= " HAVING count(distinct sw.stem) >= {$vn_num_terms}";
 								}
-							
+								
 								$t = new Timer();
 								
 								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
