@@ -281,6 +281,9 @@
 					}
 
 					$va_items = array();
+					
+					$vs_rank_fld = $t_item->getProperty('RANK');
+					
 					if (is_array($va_item_ids = $t_item->getHierarchyChildren($t_item->getPrimaryKey(), array('idsOnly' => true))) && sizeof($va_item_ids)) {
 						$qr_children = $t_item->makeSearchResult($t_item->tableName(), $va_item_ids);
 						$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_item_ids);
@@ -319,7 +322,8 @@
 							if (is_array($va_sorts)) {
 								$vs_sort_acc = array();
 								foreach($va_sorts as $vs_sort) {
-									$vs_sort_acc[] = $qr_children->get($vs_sort, array('sortable' => true));
+									$vs_sort_val = $qr_children->get($vs_sort, array('sortable' => true));
+									$vs_sort_acc[] = (is_numeric($vs_sort_val)) ? sprintf("%08d", $vs_sort_val) : $vs_sort_val;
 								}
 								$va_tmp['sort'] = join(";", $vs_sort_acc);
 							}
@@ -330,8 +334,6 @@
 						$va_items_for_locale = caExtractValuesByUserLocale($va_items);
 					}
 
-					$vs_rank_fld = $t_item->getProperty('RANK');
-
 					$va_sorted_items = array();
 					foreach($va_items_for_locale as $vn_id => $va_node) {
 						$vs_key = caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name']))))."_".$vn_id;
@@ -339,7 +341,7 @@
 						if (isset($va_node['sort']) && $va_node['sort']) {
 							$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
 						} else {
-							if ($vs_rank_fld && ($vs_rank = (int)sprintf("%08d", $va_node[$vs_rank_fld]))) {
+							if ($vs_rank_fld && ($vs_rank = sprintf("%08d", $va_node[$vs_rank_fld]))) {
 								$va_sorted_items[$vs_rank][$vs_key] = $va_node;
 							} else {
 								$va_sorted_items[$vs_key][$vs_key] = $va_node;
@@ -517,6 +519,92 @@
 			$this->getView()->setVar('value_list', $va_value_list);
 
 			return $this->render('attribute_json.php');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function SetSortOrder() {
+			$pn_after_id 	=  $this->getRequest()->getParameter('after_id', pInteger);
+			$pn_id 			=  $this->getRequest()->getParameter('id', pInteger);
+			
+			$vn_return = 0;
+			$va_errors = [];
+			
+			try {	
+				// Is user allowed to sort?
+				$t_item = new $this->ops_table_name($pn_id);
+				if (!$t_item->isLoaded()) { throw new ApplicationException(_t('Could not load %1', $t_item->getProperty('NAME_PLURAL'))); }
+			
+				$vs_rank_fld = $t_item->getProperty('RANK');
+			
+				switch($t_item->getProperty('HIERARCHY_TYPE')) {
+					case __CA_HIER_TYPE_SIMPLE_MONO__:
+						$vs_def_table_name = $t_item->tableName();
+						$t_def = $t_item;
+						$vs_def_id_fld = $t_item->primaryKey();
+						$vs_def_pk = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD');
+						$vn_def_id = $t_item->get($vs_def_pk);
+						
+						if (!$this->request->user->canDoAction("can_edit_{$this->ops_table_name}")) { throw new ApplicationException(_t('Access denied')); }
+						break;
+					case __CA_HIER_TYPE_ADHOC_MONO__:
+						$vs_def_table_name = $t_item->tableName();
+						$t_def = $t_item;
+						$vs_def_id_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD');
+						$vs_def_pk = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD');
+						$vn_def_id = $t_item->get($vs_def_pk);
+						
+						if (!$this->request->user->canDoAction("can_edit_{$this->ops_table_name}")) { throw new ApplicationException(_t('Access denied')); }
+						break;
+					case __CA_HIER_TYPE_MULTI_MONO__:
+						$vs_def_table_name = $t_item->getProperty('HIERARCHY_DEFINITION_TABLE');
+						$vs_def_id_fld = $t_item->getProperty('HIERARCHY_ID_FLD');
+					
+						$t_def = new $vs_def_table_name($vn_def_id = $t_item->get($vs_def_id_fld));
+						if (!$t_def->isLoaded()) { throw new ApplicationException(_t('Could not load %1', $t_def->getProperty('NAME_PLURAL'))); }
+						$vs_def_pk = $t_def->primaryKey();
+						
+						if (!$this->request->user->canDoAction("can_edit_{$this->ops_table_name}") && !$this->request->user->canDoAction("can_edit_{$vs_def_table_name}")) { throw new ApplicationException(_t('Access denied')); }
+						break;
+					default:
+						throw new ApplicationException(_t('Invalid hierarchy type'));	
+				}
+			
+				if (!$vs_rank_fld) { 
+					throw new ApplicationException(_t('Sorting is not supported for %1', $t_item->getProperty('NAME_PLURAL')));
+				}
+			
+				
+				
+			// Sort order must be "rank"
+				// first look in default sort field (if it exists)
+				$vb_has_sort_by_rank = false;
+				if ($vs_def_table_name && $t_def->hasField('default_sort')) {
+					if ((int)$t_def->get('default_sort') !== __CA_LISTS_SORT_BY_RANK__) { throw new ApplicationException(_t('%1 must have default sort set to rank', $t_def->getProperty('NAME_SINGULAR'))); }
+					$vb_has_sort_by_rank = true;
+				}
+			
+				// then fallback to app.conf defaults
+				if (!$vb_has_sort_by_rank) {
+					$va_sort_values = $this->getRequest()->config->getList("{$this->ops_table_name}_hierarchy_browser_sort_values");
+					if ((sizeof($va_sort_values) < 1) || ($va_sort_values[0] != "{$this->ops_table_name}.{$vs_rank_fld}")) {
+						throw new ApplicationException(_t('%1 must have sort configured to use rank', $t_item->getProperty('NAME_SINGULAR')));
+					}
+				}
+			
+			// manipulate ranks to place "id" row after "after_id"
+				$t_item->setRankAfter($pn_after_id);
+				if ($t_item->numErrors()) { throw new ApplicationException(_t('Could not update rank: %1', join('; ', $t_item->getErrors()))); }
+				$vn_return = 1;
+			} catch (Exception $e) {
+				$va_errors[] = $e->getMessage();
+				$vn_return = 0;
+			}
+			
+			$this->view->setVar("result", ['ok' => $vn_return, 'errors' => $va_errors, 'timestamp' => (sizeof($va_errors) == 0) ? time(): null]);
+			
+			return $this->render('set_sort_order_json.php');
 		}
 		# -------------------------------------------------------
  	}

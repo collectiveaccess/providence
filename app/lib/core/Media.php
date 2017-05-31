@@ -42,6 +42,7 @@ define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
 define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
 define("__CA_MEDIA_3D_DEFAULT_ICON__", '3d');
 define("__CA_MEDIA_SPIN_DEFAULT_ICON__", '3d');
+define("__CA_MEDIA_BINARY_FILE_DEFAULT_ICON__", 'document');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------
@@ -83,14 +84,18 @@ class Media extends BaseObject {
 		$dir = opendir(Media::$plugin_path);
 		if (!$dir) { throw new ApplicationException(_t('Cannot open media plugin directory %1', Media::$plugin_path)); }
 	
+		$vb_binary_file_plugin_installed = false;
 		while (($plugin = readdir($dir)) !== false) {
 			if ($plugin == "BaseMediaPlugin.php") { continue; }
+			if ($plugin == "BinaryFile.php") { $vb_binary_file_plugin_installed = true; continue; }
 			if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $plugin, $m)) {
 				Media::$WLMedia_plugin_names[] = $m[1];
 			}
 		}
 		
 		sort(Media::$WLMedia_plugin_names);
+		
+		if ($vb_binary_file_plugin_installed) { Media::$WLMedia_plugin_names[] = "BinaryFile"; }
 		
 		return Media::$WLMedia_plugin_names;
 	}
@@ -504,6 +509,25 @@ class Media extends BaseObject {
 			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
 		}
 		return $va_formats[strtolower($ps_mimetype)];
+	}
+	# ------------------------------------------------
+	/**
+	 * Return file type name for given mimetype. Only formats supported by an installed plugin for import or export are recognized.
+	 *
+	 * @return string Type name or null if mimetype is not recognized.
+	 */
+	public static function getTypenameForMimetype($ps_mimetype) {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			if ($vs_typename = $o_plugin->mimetype2typename($ps_mimetype)) {
+				return $vs_typename;
+			}
+		}
+		return null;
 	}
 	# ------------------------------------------------
 	# --- 

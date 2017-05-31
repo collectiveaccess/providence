@@ -428,6 +428,7 @@ class ca_data_exporter_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the context of the mapping to only records of the designated type. Only valid when context is set.')
@@ -438,6 +439,7 @@ class ca_data_exporter_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to relationship types'),
 			'description' => _t('Restricts the context of the mapping to only records related with the designated relationship type. Only valid when context is set.')
@@ -448,6 +450,7 @@ class ca_data_exporter_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to bundle values'),
 			'description' => _t('Restricts the context of the mapping to only records related with the designated bundle values. Only valid when context is set.')
@@ -499,6 +502,20 @@ class ca_data_exporter_items extends BaseModel {
 			),
 			'label' => _t('End as ISO8601'),
 			'description' => _t('If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
+		);
+		
+		$va_settings['timeOmit'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Omit time portion of date/time values'),
+			'description' => _t('If set, only the date portion of a date/time value is exported.')
 		);
 
 		$va_settings['dontReturnValueIfOnSameDayAsStart'] = array(

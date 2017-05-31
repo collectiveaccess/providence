@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  	$t_collection 		= $this->getVar('t_subject');
 	$vn_collection_id 	= $this->getVar('subject_id');
 	$vn_above_id 		= $this->getVar('above_id');
+	$vn_after_id 		= $this->getVar('after_id');
 
 	$vb_can_edit	 	= $t_collection->isSaveable($this->request);
 	$vb_can_delete		= $t_collection->isDeletable($this->request);
@@ -65,6 +66,7 @@
 			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
 			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
 			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>

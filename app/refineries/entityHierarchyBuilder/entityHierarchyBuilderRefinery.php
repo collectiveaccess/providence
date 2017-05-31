@@ -80,6 +80,7 @@
 			
 			// Set entity parents
 			if ($va_parents = $pa_item['settings']['entityHierarchyBuilder_parents']) {
+				$pa_options['refinery'] = $this;
 				$vn_parent_id = caProcessRefineryParents('entityHierarchyBuilder', 'ca_entities', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			
@@ -115,5 +116,14 @@
 			'default' => '',
 			'label' => _t('Parents'),
 			'description' => _t('entity parents to create')
+		),
+		'entityHierarchyBuilder_doNotParse' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Do not parse name'),
+			'description' => _t('Take the entity name as is from the data source and insert it without intervention in the surname and display name fields. This is often useful for organization names, especially when using the entity class "org" setting.')
 		)
 	);

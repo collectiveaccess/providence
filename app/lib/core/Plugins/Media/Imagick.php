@@ -1143,9 +1143,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case imagick::COLORSPACE_OHTA:
 				$vs_colorspace = 'OHTA';
 				break;
-			case imagick::COLORSPACE_LAB:
-				$vs_colorspace = 'LAB';
-				break;
 			case imagick::COLORSPACE_XYZ:
 				$vs_colorspace = 'XYZ';
 				break;

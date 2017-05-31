@@ -67,19 +67,40 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Get string value of attribute for display.
 	 *
+	 * @param array Optional array of options. Supported options include:
+	 * 			returnIdno = If true list item idno is returned rather than preferred label [Default is false]
+	 *			idsOnly = Return numeric item_id only [Default is false]
+	 *			alwaysReturnItemID = Synonym for idsOnly [Default is false]
+	 *			output = Authority value to return. Valid values are text [display text], idno [identifier; same as returnIdno option], value [numeric id; same as idsOnly option]. [Default is value]
+	 *			forDuplication = Forces value suitable duplication of the record. This is almost always the numeric primary key ID for the related authority reocrd. [Default is false]
+	 *			includeID = Include numeric primary key ID at end of display text, surrounded by brackets (Eg. [353]) [Default is false]
+	 *			template =  Display template for format returned value with. Template is evaluated related to the related authority record. [Default is null]
 	 *
-	 * @param array Optional array of options. Support options are:
-	 *			template =
-	 *			includeID =
-	 *			idsOnly =
-	 *			forDuplication =
 	 * @return string The value
 	 */
 	public function getDisplayValue($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (caGetOption('forDuplication', $pa_options, false)) {
 			return $this->opn_id;
+		}
+		if (isset($pa_options['output'])) {
+			switch(strtolower($pa_options['output'])) {
+				case 'idno':
+					$pa_options['returnIdno'] = true;
+					break;
+				case 'text':
+					$pa_options['returnIdno'] = false;
+					$pa_options['idsOnly'] = false;
+					break;
+				default:
+					$pa_options['idsOnly'] = true;
+					break;
+			}
+		}
+		if (caGetOption('returnIdno', $pa_options, false)) {
+			return $this->elementTypeToInstance($this->getType())->getIdnoForID($this->opn_id);
 		}
 
 		$o_config = Configuration::load();
@@ -153,6 +174,11 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 					}
 					break;
 			}
+		}
+		
+		
+		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null))) {
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not refer to an existing %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), $t_item->getProperty('name_singular')));
 		}
 
 		if (!$vb_require_value && !$vn_id) {

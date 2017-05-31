@@ -1035,10 +1035,10 @@
 				if ($t_instance->getPrimaryKey()) {
 					// Perform import of embedded metadata (if required)
 					if ($vn_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_instance->getPrimaryKey(), 'transaction' => $o_trans)));
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()], 'transaction' => $o_trans]);
 					}
 					if ($vn_object_representation_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_new_rep->getPrimaryKey()), 'transaction' => $o_trans));
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()], 'transaction' => $o_trans]);
 					}
 
 					$va_notices[$t_instance->getPrimaryKey()] = array(
@@ -1151,7 +1151,7 @@
 			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
 				SMS::send($po_request->getUserID(), _t("[%1] Media import processing for directory %2 with %3 %4 begun at %5 is complete", $po_request->config->get('app_display_name'), $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files')), $vs_started_on));
 			}
-			$o_log->logInfo(_t("Media import processing for directory %1 with %2 %3 begun at %4 is complete", $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files'))));
+			$o_log->logInfo(_t("Media import processing for directory %1 with %2 %3 begun at %4 is complete", $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files')), $vs_started_on));
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
 		# ----------------------------------------

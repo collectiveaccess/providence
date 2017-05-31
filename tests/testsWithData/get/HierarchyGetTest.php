@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -234,6 +234,28 @@ class HierarchyGetTest extends BaseTestWithData {
  		$this->assertTrue(is_array($vm_item = array_shift($vm_items)));
  		$this->assertTrue(is_array($vm_item = array_shift($vm_item)));
  		$this->assertEquals('Another test still', $vm_item['name']);
+	}
+	# -------------------------------------------------------
+	public function testGetCounts() {
+		$vm_ret = $this->opt_parent_object->get('ca_objects.children._count');
+		$this->assertEquals(3, $vm_ret);
+		
+		$vm_ret = $this->opt_parent_object->get('ca_objects.children._count', ['returnAsArray' => true]);
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals(3, $vm_ret[0]);
+		
+		$vm_ret = $this->opt_parent_object->get('ca_objects.children', ['returnAsCount' => true]);
+		$this->assertEquals(3, $vm_ret);
+		
+		$vm_ret = $this->opt_parent_object->get('ca_objects.siblings._count');
+		$this->assertEquals(0, $vm_ret);
+		
+		$vm_ret = $this->opt_another_child_object->get('ca_objects.siblings._count');
+		$this->assertEquals(3, $vm_ret);
+		
+		$vm_ret = $this->opt_another_child_object->get('ca_objects.parent._count');
+		$this->assertEquals(1, $vm_ret);
 	}
 	# -------------------------------------------------------
 	public function testChildrenRestrictToTypesDisplayTemplates() {

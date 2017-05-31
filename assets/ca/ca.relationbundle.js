@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -183,10 +183,11 @@ var caUI = caUI || {};
 			if (jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id') == type_id) {
 				// noop - don't change relationship types unless you have to
 			} else {
+				var types_output = {};
 				if (options.relationshipTypes && (typeList = options.relationshipTypes[type_id])) {
 					for(i=0; i < typeList.length; i++) {
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
-						
+						types_output[typeList[i].type_id] = 1;
 						if (parseInt(typeList[i].is_default) === 1) {
 							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
@@ -195,6 +196,7 @@ var caUI = caUI || {};
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
+						if(types_output[typeList[i].type_id]) continue;
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
 						
 						if (parseInt(typeList[i].is_default) === 1) {
@@ -241,12 +243,15 @@ var caUI = caUI || {};
 
 			var sortUrl = that.sortUrl + '/sortKeys/' + key;
 			var sortedValues = {};
+			
+			var sortDirection = jQuery('#' + that.fieldNamePrefix + 'RelationBundleSortDirectionControl').val();
+			if (sortDirection.toLowerCase() !== 'desc') { sortDirection = 'asc'; }
 
 			// we actually have to wait for the result here ... hence, ajax() with async=false instead of getJSON()
 			jQuery.ajax({
 				url: sortUrl,
 				type: 'POST',
-				data: { 'ids': Object.keys(indexedValues).join(',') },
+				data: { 'ids': Object.keys(indexedValues).join(','), 'sortDirection': sortDirection },
 				dataType: 'json',
 				async: false,
 				success: function(data) {
@@ -268,7 +273,6 @@ var caUI = caUI || {};
 			
 			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).append(whatsLeft);
 			
-			caUI.utils.showUnsavedChangesWarning(true);
 			that._updateSortOrderListIDFormElement();
 		};
 	

@@ -22,6 +22,8 @@ use Symfony\Component\VarDumper\Exception\ThrowingCasterException;
 abstract class AbstractCloner implements ClonerInterface
 {
     public static $defaultCasters = array(
+        '__PHP_Incomplete_Class' => 'Symfony\Component\VarDumper\Caster\Caster::castPhpIncompleteClass',
+
         'Symfony\Component\VarDumper\Caster\CutStub' => 'Symfony\Component\VarDumper\Caster\StubCaster::castStub',
         'Symfony\Component\VarDumper\Caster\CutArrayStub' => 'Symfony\Component\VarDumper\Caster\StubCaster::castCutArray',
         'Symfony\Component\VarDumper\Caster\ConstStub' => 'Symfony\Component\VarDumper\Caster\StubCaster::castStub',
@@ -67,6 +69,8 @@ abstract class AbstractCloner implements ClonerInterface
         'DOMProcessingInstruction' => 'Symfony\Component\VarDumper\Caster\DOMCaster::castProcessingInstruction',
         'DOMXPath' => 'Symfony\Component\VarDumper\Caster\DOMCaster::castXPath',
 
+        'XmlReader' => 'Symfony\Component\VarDumper\Caster\XmlReaderCaster::castXmlReader',
+
         'ErrorException' => 'Symfony\Component\VarDumper\Caster\ExceptionCaster::castErrorException',
         'Exception' => 'Symfony\Component\VarDumper\Caster\ExceptionCaster::castException',
         'Error' => 'Symfony\Component\VarDumper\Caster\ExceptionCaster::castError',
@@ -99,6 +103,9 @@ abstract class AbstractCloner implements ClonerInterface
         'OuterIterator' => 'Symfony\Component\VarDumper\Caster\SplCaster::castOuterIterator',
 
         'MongoCursorInterface' => 'Symfony\Component\VarDumper\Caster\MongoCaster::castCursor',
+
+        'Redis' => 'Symfony\Component\VarDumper\Caster\RedisCaster::castRedis',
+        'RedisArray' => 'Symfony\Component\VarDumper\Caster\RedisCaster::castRedisArray',
 
         ':curl' => 'Symfony\Component\VarDumper\Caster\ResourceCaster::castCurl',
         ':dba' => 'Symfony\Component\VarDumper\Caster\ResourceCaster::castDba',
@@ -245,14 +252,15 @@ abstract class AbstractCloner implements ClonerInterface
                 new \ReflectionClass($class),
                 array_reverse(array($class => $class) + class_parents($class) + class_implements($class) + array('*' => '*')),
             );
+            $classInfo[1] = array_map('strtolower', $classInfo[1]);
 
             $this->classInfo[$class] = $classInfo;
         }
 
-        $a = $this->callCaster('Symfony\Component\VarDumper\Caster\Caster::castObject', $obj, $classInfo[0], null, $isNested);
+        $a = Caster::castObject($obj, $classInfo[0]);
 
         foreach ($classInfo[1] as $p) {
-            if (!empty($this->casters[$p = strtolower($p)])) {
+            if (!empty($this->casters[$p])) {
                 foreach ($this->casters[$p] as $p) {
                     $a = $this->callCaster($p, $obj, $a, $stub, $isNested);
                 }
@@ -305,7 +313,7 @@ abstract class AbstractCloner implements ClonerInterface
                 $a = $cast;
             }
         } catch (\Exception $e) {
-            $a[(Stub::TYPE_OBJECT === $stub->type ? Caster::PREFIX_VIRTUAL : '').'⚠'] = new ThrowingCasterException($e);
+            $a = array((Stub::TYPE_OBJECT === $stub->type ? Caster::PREFIX_VIRTUAL : '').'⚠' => new ThrowingCasterException($e)) + $a;
         }
 
         return $a;

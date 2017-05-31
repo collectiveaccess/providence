@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,15 +28,21 @@
  	$vo_result = $this->getVar('result');
 	$vn_items_per_page = $this->getVar('current_items_per_page');
 	
+	
+	$o_dm = Datamodel::load();
+	$i = 0;
+	$vn_item_count = 0;
+	
+	
 ?>
 	<div id="commentsResults">
 		<form id="commentListForm"><input type="hidden" name="mode" value="search">
 		
 		<div style="text-align:right;">
-			<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
-			<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
+			<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
+			<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
 		</div>
-		<table id="caCommentsList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
+		<table id="caItemList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
 			<thead>
 				<tr>
 					<th class="list-header-nosort">
@@ -65,14 +71,9 @@
 			</thead>
 			<tbody>
 
-<?php
-		$i = 0;
-		$vn_item_count = 0;
-		$o_tep = new TimeExpressionParser();
-		$o_datamodel = Datamodel::load();
-		
+<?php	
 		while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-			if (!($t_table = $o_datamodel->getInstanceByTableNum($vo_result->get('ca_item_comments.table_num'), true))) {
+			if (!($t_table = $o_dm->getInstanceByTableNum($vo_result->get('ca_item_comments.table_num'), true))) {
 				continue;
 			}
 ?>
@@ -107,8 +108,7 @@
 					</td>
 					<td>
 <?php 
-						$o_tep->setUnixTimestamps($vn_tmp = $vo_result->get('ca_item_comments.created_on'), $vn_tmp);
-						print $o_tep->getText();
+						print $vo_result->get('ca_item_comments.created_on');
 ?>
 					</td>
 					<td>

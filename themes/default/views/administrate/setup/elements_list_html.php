@@ -32,20 +32,20 @@ $va_attribute_types = $this->getVar('attribute_types');
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	$(document).ready(function(){
-		$('#caElementList').caFormatListTable();
+		$('#caItemList').caFormatListTable();
 	});
 /* ]]> */
 </script>
 <div class="sectionBox">
 	<?php
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caElementList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
 			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New"), 'administrate/setup', 'Elements', 'Edit', array('element_id' => 0))
 		);
 	?>
 
-	<table id="caElementList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 		<tr>
 			<th>
@@ -112,7 +112,7 @@ $va_attribute_types = $this->getVar('attribute_types');
 	}
 ?>
 			</td>
-			<td class="listtableEdit">
+			<td class="listtableEditDelete">
 				<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			

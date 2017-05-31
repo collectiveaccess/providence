@@ -28,6 +28,7 @@
  	$t_object 			= $this->getVar('t_subject');
 	$vn_object_id 		= $this->getVar('subject_id');
 	$vn_above_id 		= $this->getVar('above_id');
+	$vn_after_id 		= $this->getVar('after_id');
 
 	$vb_can_edit	 	= $t_object->isSaveable($this->request);
 	$vb_can_delete		= $t_object->isDeletable($this->request);
@@ -72,6 +73,7 @@
 			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
 			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
 			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>

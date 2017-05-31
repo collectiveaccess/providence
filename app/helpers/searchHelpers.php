@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,8 @@
 	/**
 	 *
 	 */
+	require_once(__CA_LIB_DIR__.'/core/Zend/Search/Lucene.php');
+	require_once(__CA_LIB_DIR__.'/core/Search/Common/Parsers/LuceneSyntaxParser.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 
@@ -304,12 +306,14 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Extract access points from search expression
 	 * 
+	 * @param string $ps_search_expression 
 	 *
-	 * @return array 
+	 * @return array A List of access points
 	 */
 	function caSearchGetAccessPoints($ps_search_expression) {
-		if(preg_match("!\b([A-Za-z0-9\-\_]+):!", $ps_search_expression, $va_matches)) {
+		if(preg_match("!\b([A-Za-z0-9\-\_]+):[^ ]+!", $ps_search_expression, $va_matches)) {
 			array_shift($va_matches);
 			return $va_matches;
 		}
@@ -317,9 +321,11 @@
 	}
 	# ---------------------------------------
 	/**
-	 * 
+	 * Returns list of tables references by one or more provided access points
 	 *
-	 * @return array 
+	 * @param array $pa_access_points An array of access point strings
+	 * 
+	 * @return array A list of table names associated with the provided access points
 	 */
 	function caSearchGetTablesForAccessPoints($pa_access_points) {
 		$o_config = Configuration::load();
@@ -520,6 +526,7 @@
 			$vs_html = $o_view->render($va_block_info['view']);
 			
 			$va_ret[$vs_block] = array(
+				'table' => $va_block_info['table'],
 				'count' => $vn_count,
 				'html' => $vs_html,
 				'displayName' => $va_block_info['displayName'],
@@ -798,6 +805,185 @@
 		$po_result_context->saveContext();
 	
 		return join("; ", $va_display_string);
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
+		$o_config = Configuration::load();
+		$o_query_parser = new LuceneSyntaxParser();
+		$o_query_parser->setEncoding($o_config->get('character_set'));
+		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
+		
+		$ps_search = preg_replace('![\']+!', '', $ps_search);
+		try {
+			$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+		} catch (Exception $e) {
+			// Retry search with all non-alphanumeric characters removed
+			try {
+				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+			} catch (Exception $e) {
+				$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+			}
+		}
+		
+		switch(get_class($o_parsed_query)) {
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				$va_items = $o_parsed_query->getSubqueries();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$va_items = $o_parsed_query->getTerms();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+				$va_items = $o_parsed_query;
+				$va_signs = null;
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				$va_items = $o_parsed_query;
+				$va_signs = null;
+				break;
+			default:
+				$va_items = array();
+				$va_signs = null;
+				break;
+		}
+		
+		$va_query = [];
+		foreach ($va_items as $id => $subquery) {
+		
+			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
+				$va_query[] = 'AND';
+			} else if (($va_signs[$id] === false) && $id) {
+				$va_query[] = 'NOT';
+			} else {
+				if ($id) { $va_query[] = 'OR'; }
+			}
+			switch(get_class($subquery)) {
+				case 'Zend_Search_Lucene_Search_Query_Phrase':
+					$vs_field = null;
+					$va_terms = [];
+					foreach($subquery->getQueryTerms() as $o_term) {
+						$vs_field = $o_term->field;
+						$va_terms[] = $o_term->text;
+					}
+					
+					$vs_field_disp = caGetLabelForBundle($vs_field);
+					$va_query[] = ($vs_field_disp ? "{$vs_field_disp}: \"" : "").caGetDisplayValueForBundle($vs_field, join(" ", $va_terms))."\"";
+					break;
+				case 'Zend_Search_Lucene_Index_Term':
+					$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
+					// intentional fallthrough to next case here
+				case 'Zend_Search_Lucene_Search_Query_Term':
+					$vs_field = caGetLabelForBundle($subquery->getTerm()->field);
+					$va_query[] = ($vs_field ? "{$vs_field}: " : "").$subquery->getTerm()->text;
+					break;	
+				case 'Zend_Search_Lucene_Search_Query_Range':
+					$vs_field = caGetLabelForBundle($subquery->getLowerTerm()->field);
+					$va_query[] = ($vs_field ? "{$v_field}: " : "")._t("%1 to %2", $subquery->getLowerTerm()->text, $subquery->getUpperTerm()->text);
+					break;
+				case 'Zend_Search_Lucene_Search_Query_Wildcard':
+					$va_query[] = "*";
+					break;
+				default:
+					$va_query[] = caGetDisplayStringForSearch($subquery);
+					break;
+			}
+		}
+		return join(" ", $va_query);
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetNamedSearchConfig($ps_name) {
+		if(file_exists(__CA_THEME_DIR__."/helpers/namedSearchHelpers.php")) { require_once(__CA_THEME_DIR__."/helpers/namedSearchHelpers.php"); }
+		$o_search = caGetSearchConfig();
+		$va_named_searches = $o_search->get('namedSearches');
+		if(isset($va_named_searches[$ps_name])) { 
+			return $va_named_searches[$ps_name];
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetNamedSearch($ps_name, $pa_values, $pa_options=null) {
+		if (!is_array($pa_values) && ($va_tmp = json_decode($pa_values))) { $pa_values = $va_tmp; }
+		if(!is_array($pa_values)) { $pa_values = [$pa_values]; }
+		
+		$pa_values = array_map("urldecode", $pa_values);
+		
+		$va_values = [];
+		$i = 1;
+		foreach(array_values($pa_values) as $vs_val) {
+			$va_values[$i] = $vs_val;
+			$i++;
+		}
+		if($va_named_search_config = caGetNamedSearchConfig($ps_name)) {
+			if (caGetOption('display', $pa_options, false)) {
+				if(isset($va_named_search_config['displayCallback']) && function_exists($va_named_search_config['displayCallback'])) {
+		 			return $va_named_search_config['displayCallback']($ps_name, $pa_values, $pa_options);
+				} else {
+					$vs_display = $va_named_search_config['display'];
+				}
+				return caProcessTemplate($vs_display, $va_values);
+			} else {
+				$vs_search = stripslashes($va_named_search_config['search']);
+				return caProcessTemplate($vs_search, $va_values);
+			}
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetNamedSearchForDisplay($ps_name, $pa_values) {
+		return caGetNamedSearch($ps_name, $pa_values, ['display' => 1]);
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetLabelForBundle($ps_bundle) {
+		$o_dm = Datamodel::load();
+		$va_tmp = explode(".", $ps_bundle);
+		
+		if ($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+			return $t_instance->getDisplayLabel($ps_bundle);
+		}
+		return $ps_bundle;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetDisplayValueForBundle($ps_bundle, $ps_value) {
+		$o_dm = Datamodel::load();
+		$va_tmp = explode(".", $ps_bundle);
+		
+		if ($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+			if ($t_instance->hasField($va_tmp[1])) {		// intrinsic
+				return $ps_value;
+			} elseif($t_instance->hasElement($va_tmp[1])) {	// metadata element
+				if($t_element = ca_metadata_elements::getInstance($va_tmp[1])) {
+					switch(ca_metadata_elements::getElementDatatype($va_tmp[1])) {
+					//	case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+					//		$o_tep = new TimeExpressionParser();
+					//		return $o_tep->parse($ps_value) ? $o_tep->getText() : $ps_value;
+					//		break;
+						default:
+							return $ps_value;
+							break;
+					}
+				}
+			}
+		}
+		return "???";
 	}
 	# ---------------------------------------
 	/**
@@ -1134,16 +1320,59 @@
 	 *
 	 * @param string $ps_table
 	 * @param null|int $pn_type_id
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		includeUserSorts = 
+	 *		distinguishNonUniqueNames = 
+	 *		allowedSorts = 
+	 *		disableSorts = Don't return any available sorts. [Default is false]
+	 *		request = The current request. [Default is null]
+	 *		includeInterstitialSortsFor = Related table [Default is false]
+	 *		distinguishInterstitials = [Default is false]
 	 * @return array
 	 */
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
+		if (caGetOption('disableSorts', $pa_options, false)) { return []; }
+	
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
+		require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
+		global $g_ui_locale_id;
 
 		if(is_numeric($ps_table)) {
-			$ps_table = Datamodel::load()->getTableName($ps_table);
+			$ps_table = $o_dm->getTableName($ps_table);
 		}
-
+		$o_dm = Datamodel::load();
+		if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return []; }
+		
+		$t_rel = null;
+		if ($ps_related_table = caGetOption('includeInterstitialSortsFor', $pa_options, null)) {
+			$o_dm = Datamodel::load();
+			if (is_array($va_path = array_keys($o_dm->getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
+				$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
+			}
+		} 
+		
+		$va_ui_bundle_label_map = [];
+		if (isset($pa_options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $pa_options['request'], $pn_type_id))) {
+			$va_screens = $t_ui->getScreens();
+			foreach($va_screens as $va_screen) {
+				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
+					foreach($va_placements as $va_placement) {
+						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
+						$va_bundle_bits = explode('.', $vs_bundle_name);
+						if (!$o_dm->tableExists($va_bundle_bits[0])) {
+							array_unshift($va_bundle_bits, $ps_table);
+							$vs_bundle_name = join('.', $va_bundle_bits);	
+						}
+						
+						if (isset($va_placement['settings']['label'])) {
+							$va_ui_bundle_label_map[$vs_bundle_name] = isset($va_placement['settings']['label'][$g_ui_locale_id]) ? $va_placement['settings']['label'][$g_ui_locale_id] : array_shift($va_placement['settings']['label']);
+						}
+						
+					}
+				}
+				
+			}
+		}
 		switch($ps_table) {
 			case 'ca_list_items':
 				$va_base_fields = array(
@@ -1279,9 +1508,21 @@
 
 			// add sortable elements
 			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
-			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id, ['indexByElementCode' => true]);
+			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			}
+			
+			
+		
+			// Add interstitial sorts
+			if ($t_rel) {
+				$va_sortable_elements = ca_metadata_elements::getSortableElements($vs_relation_table = $t_rel->tableName(), null, ['indexByElementCode' => true]);
+				
+				$pb_distinguish_interstitials = caGetOption('distinguishInterstitials', $pa_options, true);
+				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+					$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
+				}
 			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
@@ -1320,9 +1561,29 @@
 				}
 			}
 		}
+		
+		if (($pa_allowed_sorts = caGetOption('allowedSorts', $pa_options, null)) && !is_array($pa_allowed_sorts)) { $pa_allowed_sorts = [$pa_allowed_sorts]; }
+		
+		if(is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
+			foreach($va_base_fields as $vs_k => $vs_v) {
+				if (!in_array($vs_k, $pa_allowed_sorts)) { unset($va_base_fields[$vs_k]); }
+			}
+		}
+		
+		foreach($va_base_fields as $vs_k => $vs_v) {
+			if (isset($va_ui_bundle_label_map[$vs_k])) {
+				 $va_base_fields[$vs_k] = $va_ui_bundle_label_map[$vs_k];
+			} elseif(sizeof($va_tmp = explode('.', $vs_k)) > 2) {
+				array_pop($va_tmp);
+				if (isset($va_ui_bundle_label_map[join('.', $va_tmp)])) { $va_base_fields[$vs_k] = $va_ui_bundle_label_map[join('.', $va_tmp)]; }
+			}
+		}
+		
+		$va_base_fields = array_map(function($v) { return caUcFirstUTF8Safe($v); }, $va_base_fields);
+		
 		natcasesort($va_base_fields);
 		
-		return $va_base_fields;
+		return array_merge(['_natural' => _t('Relevance')], $va_base_fields);
 	}
 	# ---------------------------------------
 	/**
@@ -1345,5 +1606,99 @@
 		}
 
 		return $va_return;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caSearchIsForSets($ps_search, $pa_options=null) {
+		$o_config = Configuration::load();
+		$o_query_parser = new LuceneSyntaxParser();
+		$o_query_parser->setEncoding($o_config->get('character_set'));
+		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
+		
+		$ps_search = preg_replace('![\']+!', '', $ps_search);
+		try {
+			$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+		} catch (Exception $e) {
+			// Retry search with all non-alphanumeric characters removed
+			try {
+				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+			} catch (Exception $e) {
+				$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+			}
+		}
+		
+		switch(get_class($o_parsed_query)) {
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				$va_items = $o_parsed_query->getSubqueries();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$va_items = $o_parsed_query->getTerms();
+				$va_signs = $o_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				$va_items = $o_parsed_query;
+				break;
+			default:
+				return false;
+				break;
+		}
+
+		$va_sets = [];
+		foreach ($va_items as $id => $subquery) {
+			switch(get_class($subquery)) {
+				case 'Zend_Search_Lucene_Search_Query_Phrase':
+				
+					foreach($subquery->getQueryTerms() as $o_term) {
+						$vs_field = $o_term->field;
+						$vs_value = $o_term->text;
+						
+						if ($vs_field == 'ca_sets.set_id') {
+							$va_sets[(int)$vs_value] = 1;
+						} elseif((in_array($vs_field, ['ca_sets.set_code', 'set'])) && ($vn_set_id = ca_sets::find(['set_code' => $vs_value], ['returnAs' => 'firstId'])))  {
+							$va_sets[(int)$vn_set_id] = 1;
+						}
+					}
+					
+					break;
+				case 'Zend_Search_Lucene_Index_Term':
+					$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
+					// intentional fallthrough to next case here
+				case 'Zend_Search_Lucene_Search_Query_Term':
+					$vs_field = $subquery->getTerm()->field;
+					$vs_value = $subquery->getTerm()->text;
+					
+					if ($vs_field == 'ca_sets.set_id') {
+						$va_sets[(int)$vs_value] = 1;
+					} elseif((in_array($vs_field, ['ca_sets.set_code', 'set'])) && ($vn_set_id = ca_sets::find(['set_code' => $vs_value], ['returnAs' => 'firstId'])))  {
+						$va_sets[(int)$vn_set_id] = 1;
+					}
+					
+					break;	
+				case 'Zend_Search_Lucene_Search_Query_Range':
+				case 'Zend_Search_Lucene_Search_Query_Wildcard':
+					// noop
+					break;
+				case 'Zend_Search_Lucene_Search_Query_Boolean':
+					foreach($subquery->getSubqueries() as $o_term) {
+						if (is_array($va_sub_sets = caSearchIsForSets($o_term))) {
+							$va_sets = array_merge($va_sets, $va_sub_sets);
+						}
+					}
+					break;
+				default:
+					if (is_array($va_sub_sets = caSearchIsForSets($subquery))) {
+						$va_sets = array_merge($va_sets, $va_sub_sets);
+					}
+					break;
+			}
+		}
+		
+		if(sizeof($va_sets) == 0) { return false; }
+		$t_set = new ca_sets();
+		return $t_set->getPreferredDisplayLabelsForIDs(array_keys($va_sets));
 	}
 	# ---------------------------------------

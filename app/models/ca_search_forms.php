@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@ require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_form_placements.php');
+require_once(__CA_MODELS_DIR__.'/ca_search_form_type_restrictions.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_forms_x_user_groups.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
@@ -70,7 +71,7 @@ BaseModel::$s_ca_models_definitions['ca_search_forms'] = array(
 			'LABEL' => _t('Form code'), 'DESCRIPTION' => _t('Unique code for form, used to identify the form for configuration purposes. You will need to specify this if you are using this form in a special context (on a web front-end, for example) in which the form must be unambiguously identified.'),
 			'BOUNDS_LENGTH' => array(0,100),
 			'REQUIRES' => array('is_administrator'),
-			'UNIQUE_WITHIN' => array()
+			'UNIQUE_WITHIN' => []
 		),
 		'is_system' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
@@ -247,7 +248,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	protected $FIELDS;
 
 	# cache for haveAccessToForm()
-	static $s_have_access_to_form_cache = array();
+	static $s_have_access_to_form_cache = [];
 
 	/**
 	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
@@ -351,6 +352,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['ca_search_form_placements'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Search form contents'));
 		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Search form settings'));
+		
+		$this->BUNDLES['ca_search_form_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
 	}
 	# ------------------------------------------------------
 	# Form settings
@@ -480,14 +483,14 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 
 		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __ca_search_form_READ_ACCESS__)) {
-			return array();
+			return [];
 		}
 
 		if (!($vn_form_id = $this->getPrimaryKey())) {
 			if ($pb_return_all_available_if_empty && $ps_table) {
 				return ca_search_forms::$s_placement_list_cache[$vn_form_id] = $this->getAvailableBundles($ps_table);
 			}
-			return array();
+			return [];
 		}
 
 		if (!$pb_no_cache && isset(ca_search_forms::$s_placement_list_cache[$vn_form_id]) && ca_search_forms::$s_placement_list_cache[$vn_form_id]) {
@@ -504,8 +507,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			ORDER BY rank
 		", (int)$vn_form_id);
 
-		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles();
-		$va_placements = array();
+		$va_available_bundles = ($pb_settings_only) ? [] : $this->getAvailableBundles();
+		$va_placements = [];
 
 		if ($qr_res->numRows() > 0) {
 			$t_placement = new ca_search_form_placements();
@@ -532,29 +535,33 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * Returns list of search forms subject to options
 	 *
 	 * @param array $pa_options Optional array of options. Supported options are:
-	 *			table - if set, list is restricted to forms that pertain to the specified table. You can pass a table name or number. If omitted forms for all tables will be returned.
-	 *			user_id - Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned.
-	 *			access - Restricts returned forms to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then forms where the user has at least read access will be returned.
+	 *			table = if set, list is restricted to forms that pertain to the specified table. You can pass a table name or number. If omitted forms for all tables will be returned. [Default is null]
+	 *			user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned. [Default is null]
+	 *			restrictToTypes = Restricts returned forms to those bound to the specified type. [Default is null]
+	 *			access = Restricts returned forms to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then forms where the user has at least read access will be returned. [Default is null]
+	 *			restrictToTypes = restrict forms to specific types; only relevant if table option is set. [Default is null]
 	 * @return array Array of forms keyed on form_id and then locale_id. Keys for the per-locale value array include: form_id,  form_code, user_id, table_num,  label_id, name (display name of form), locale_id (locale of form name), search_form_content_type (display name of content this form searches on)
 	 */
 	public function getForms($pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		$pm_table_name_or_num = isset($pa_options['table']) ? $pa_options['table'] : null;
-		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
-		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
-
+		if (!is_array($pa_options)) { $pa_options = []; }
+		$pm_table_name_or_num = caGetOption('table', $pa_options, null);
+		$pn_user_id = caGetOption('user_id', $pa_options, null);
+		$pn_access = caGetOption('access', $pa_options, null);
+		$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
+		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
 
 		$o_dm = $this->getAppDatamodel();
-		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return array(); }
+		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return []; }
 
 		$o_db = $this->getDb();
 
-		$va_sql_wheres = array('((sfl.is_preferred = 1) or (sfl.is_preferred is null))');
+		$va_wheres = array('((sfl.is_preferred = 1) or (sfl.is_preferred is null))');
 		if ($vn_table_num > 0) {
-			$va_sql_wheres[] = "(sf.table_num = ".intval($vn_table_num).")";
+			$va_wheres[] = "(sf.table_num = ".intval($vn_table_num).")";
 		}
 
-		$va_sql_access_wheres = array();
+		$va_params = [];
+		$va_access_wheres = [];
 		if ($pn_user_id) {
 			$o_dm = $this->getAppDatamodel();
 			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
@@ -586,17 +593,23 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								)";
 
 
-				$va_sql_access_wheres[] = "({$vs_sql})";
+				$va_access_wheres[] = "({$vs_sql})";
 			}
 		}
 
+		if ($pm_table_name_or_num && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types) && is_array($va_ancestors = caGetAncestorsForItemID($pa_restrict_to_types, ['includeSelf' => true])) && sizeof($va_ancestors)) {
+			$va_wheres[] = "(sftr.type_id IS NULL OR sftr.type_id IN (?) OR (sftr.include_subtypes = 1 AND sftr.type_id IN (?)))";
+			$va_params[] = $pa_restrict_to_types;
+			$va_params[] = $va_ancestors;
+		}
+	
 
 		if ($pn_access == __CA_SEARCH_FORM_READ_ACCESS__) {
-			$va_sql_access_wheres[] = "(sf.is_system = 1)";
+			$va_access_wheres[] = "(sf.is_system = 1)";
 		}
 
-		if (sizeof($va_sql_access_wheres)) {
-			$va_sql_wheres[] = "(".join(" OR ", $va_sql_access_wheres).")";
+		if (sizeof($va_access_wheres)) {
+			$va_wheres[] = "(".join(" OR ", $va_access_wheres).")";
 		}
 
 		// get forms
@@ -608,24 +621,26 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_search_forms sf
 			LEFT JOIN ca_search_form_labels AS sfl ON sf.form_id = sfl.form_id
 			LEFT JOIN ca_locales AS l ON sfl.locale_id = l.locale_id
+			LEFT JOIN ca_search_form_type_restrictions AS sftr ON sf.form_id = sftr.form_id
 			INNER JOIN ca_users AS u ON sf.user_id = u.user_id
-			".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-			".join(' AND ', $va_sql_wheres)."
-		");
-		$va_displays = array();
+			".(sizeof($va_wheres) ? 'WHERE ' : '')."
+			".join(' AND ', $va_wheres)."
+		", $va_params);
+		$va_forms = [];
 
+		$va_form_type = ca_search_forms::getFormTypeNames($qr_res->getAllFieldValues('form_id'));
+		$qr_res->seek(0);
+		
 		$t_list = new ca_lists();
-		$va_type_name_cache = array();
+		$va_type_name_cache = [];
 		while($qr_res->nextRow()) {
 			$vn_table_num = $qr_res->get('table_num');
-			if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_display_type = $va_type_name_cache[$vn_table_num])) {
-				$vs_display_type = $va_type_name_cache[$vn_table_num] = $this->getFormTypeName($vn_table_num, array('number' => 'plural'));
-			}
-			$va_displays[$qr_res->get('form_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('search_form_content_type' => $vs_display_type));
+			$vs_display_type = $va_form_type[$qr_res->get('form_id')];
+		
+			$va_forms[$qr_res->get('form_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('search_form_content_type' => $vs_display_type));
 		}
-		return $va_displays;
+		return $va_forms;
 	}
-
 	# ------------------------------------------------------
 	/**
 	 * Returns number of forms conforming to specification in options
@@ -637,7 +652,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int  Number of forms available
 	 */
 	public function getFormCount($pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 
 		$va_forms = $this->getForms($pa_options);
 
@@ -651,16 +666,17 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_attributes Optional array of attributes to embed in HTML <select> tag. Keys are attribute names and values are attribute values.
 	 * @param array $pa_options Optional array of options. Supported options include:
 	 * 		Supports all options supported by caHTMLSelect() and ca_search_forms::getForms() + the following:
-	 *			addDefaultForm - if true, the "default" form is included at the head of the list; this is simply a form called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
-	 *			addDefaultFormIfEmpty - same as 'addDefaultForm' except that the default value is only added if the form list is empty
+	 *			addDefaultForm = if true, the "default" form is included at the head of the list; this is simply a form called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
+	 *			addDefaultFormIfEmpty = same as 'addDefaultForm' except that the default value is only added if the form list is empty
+	 *			restrictToTypes = 
 	 * @return string HTML code defining <select> drop-down
 	 */
 	public function getFormsAsHTMLSelect($ps_select_name, $pa_attributes=null, $pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 
 		$va_available_forms = caExtractValuesByUserLocale($this->getForms($pa_options));
 
-		$va_content = array();
+		$va_content = [];
 
 		if (
 			(isset($pa_options['addDefaultForm']) && $pa_options['addDefaultForm'])
@@ -679,22 +695,47 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns name of type of content (synonymous with the table name for the content) currently loaded form searches on. Will return name in singular number unless the 'number' option is set to 'plural'
+	 * Returns names of types of content (synonymous with the table name for the content) for a list of form_ids. Will return name in singular number unless the 'number' option is set to 'plural'
 	 *
-	 * @param int $pn_table_num Table number to return name for. If omitted then the name for the content type search on by the current form will be returned. Use this parameter if you want to force a content type without having to load a form.
+	 * @param array $pa_form_ids
 	 * @param array $pa_options Optional array of options. Supported options are:
-	 *		number = Set to 'plural' to return plural version of name; set to 'singular' [default] to return the singular version
+	 *		useSingular = Return singular forms of type names. [Default is false]
 	 * @return string The name of the type of content or null if $pn_table_num is not set to a valid table and no form is loaded.
 	 */
-	public function getFormTypeName($pm_table_name_or_num=null, $pa_options=null) {
-		$o_dm = $this->getAppDatamodel();
-		if (!$pm_table_name_or_num && !($pm_table_name_or_num = $this->get('table_num'))) { return null; }
-		if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
-
-		$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
-
-		return (isset($pa_options['number']) && ($pa_options['number'] == 'plural')) ? $t_instance->getProperty('NAME_PLURAL') : $t_instance->getProperty('NAME_SINGULAR');
-
+	static public function getFormTypeNames($pa_form_ids, $pa_options=null) {
+		if(!is_array($pa_form_ids) && $pa_form_ids) { $pa_form_ids = [$pa_form_ids]; }
+		if (!$pa_form_ids) { return null; }
+		if (!sizeof($pa_form_ids = array_filter($pa_form_ids, "intval"))) { return null; }
+		$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
+		
+		$o_dm = Datamodel::load();
+		$t_form = new ca_search_forms();
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_search_forms
+			WHERE
+				form_id IN (?)
+		", [$pa_form_ids]);
+		
+		$vb_use_singular = caGetOption('useSingular', $pa_options, false);
+		
+		$va_names = [];
+		while($qr_res->nextRow()) {
+			$t_instance = $o_dm->getInstanceByTableNum($qr_res->get('table_num'), true);
+			$va_restriction_names = array_map(function($v) { return caUcFirstUTF8Safe(caGetListItemForDisplayByItemID($v['type_id'], !$vb_use_singular)); }, $t_form->getTypeRestrictions(null, ['form_id' => $qr_res->get('form_id')]));
+			
+			switch($t_instance->tableName()) {
+				case 'ca_occurrences':
+					$va_names[$qr_res->get('form_id')] = join(", ", $va_restriction_names);
+					break;
+				default:
+					$va_names[$qr_res->get('form_id')] = caUcFirstUTF8Safe($t_instance->getProperty(($vb_use_singular ? 'NAME_SINGULAR' : 'NAME_PLURAL'))).((sizeof($va_restriction_names) > 0) ? " (".join(", ", $va_restriction_names).")" : '');
+					break;
+			}		
+		}
+		
+		return $va_names;
 	}
 	# ------------------------------------------------------
 	/**
@@ -792,9 +833,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 
-		$t_placement = new ca_search_form_placements(null, array());
+		$t_placement = new ca_search_form_placements(null, []);
 
-		$va_available_bundles = array();
+		$va_available_bundles = [];
 
 		$va_additional_settings = array(
 			'width' => array(
@@ -833,13 +874,13 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			if (!is_array($va_fields['fields'])) { continue; }
 
 			if ($vs_table == $vs_primary_table) {
-				$va_element_codes = (method_exists($t_instance, 'getApplicableElementCodes') ? $t_instance->getApplicableElementCodes(null, false, false) : array());
+				$va_element_codes = (method_exists($t_instance, 'getApplicableElementCodes') ? $t_instance->getApplicableElementCodes(null, false, false) : []);
 
-				$va_field_list = array();
+				$va_field_list = [];
 				foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
 					if ($vs_field === '_metadata') {
 						foreach($va_element_codes as $vs_code) {
-							$va_field_list[$vs_code] = array();
+							$va_field_list[$vs_code] = $va_field_indexing_info;
 						}
 					} else {
 						$va_field_list[$vs_field] = $va_field_indexing_info;
@@ -904,15 +945,26 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
 					if ($this->getAppConfig()->get($vs_subject_table.'_disable')) { continue; }
 				}
-
 				if (caGetBundleAccessLevel($vs_primary_table, $vs_subject_table) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+				
+				$va_element_codes = (method_exists($t_table, 'getApplicableElementCodes') ? $t_table->getApplicableElementCodes(null, false, false) : []);
+				
+				$va_field_list = [];
 				foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
+					if ($vs_field === '_metadata') {
+						foreach($va_element_codes as $vs_code) {
+							$va_field_list[$vs_code] = $va_field_indexing_info;
+						}
+					} else {
+						$va_field_list[$vs_field] = $va_field_indexing_info;
+					}
+				}
+
+				foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 					if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
 
-					if (($va_field_info = $t_table->getFieldInfo($vs_field))) {
+					if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field))) {
 						if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
-
-
 
 						$vs_bundle = $vs_table.'.'.$vs_field;
 
@@ -947,12 +999,12 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 			}
 		}
-
+//print_R($va_available_bundles);
 
 		//
 		// access points
 		//
-		$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : array();
+		$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : [];
 		//unset($va_search_settings['_access_points']);
 
 		foreach($va_access_points as $vs_access_point => $va_access_point_info) {
@@ -998,7 +1050,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 		ksort($va_available_bundles);
 
-		$va_sorted_bundles = array();
+		$va_sorted_bundles = [];
 		foreach($va_available_bundles as $vs_k => $va_val) {
 			foreach($va_val as $vs_real_key => $va_info) {
 				$va_sorted_bundles[$vs_real_key] = $va_info;
@@ -1018,23 +1070,23 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 *		bundle = The bundle name
 	 */
 	public function getPlacementsInForm($pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 		$pb_no_cache = isset($pa_options['noCache']) ? (bool)$pa_options['noCache'] : false;
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 
 		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __CA_SEARCH_FORM_READ_ACCESS__)) {
-			return array();
+			return [];
 		}
 
 		if (!($pn_table_num = $this->_DATAMODEL->getTableNum($this->get('table_num')))) { return null; }
 
 		$t_instance = $this->_DATAMODEL->getInstanceByTableNum($pn_table_num, true);
 
-		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = array(); }
+		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = []; }
 
 		$va_available_bundles = $this->getAvailableBundles($pn_table_num);
 
-		$va_placements_in_form = array();
+		$va_placements_in_form = [];
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_label =  $va_available_bundles[$va_placement['bundle_name']]['label'];
 			$vs_display = $va_available_bundles[$va_placement['bundle_name']]['display'];
@@ -1090,7 +1142,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getHTMLFormElements($po_request, $pa_form_data=null) {
 		if (!$this->getPrimaryKey()) { return null; }
-		if (!is_array($pa_form_data)) { $pa_form_data = array(); }
+		if (!is_array($pa_form_data)) { $pa_form_data = []; }
 
 		foreach($pa_form_data as $vs_k => $vs_v) {
 			$pa_form_data[$vs_k] = trim((string)$pa_form_data[$vs_k]);
@@ -1099,7 +1151,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_form_contents = $this->getPlacements();
 
 		$o_dm = Datamodel::load();
-		$va_output = array();
+		$va_output = [];
 
 		if (!($vs_form_table_name = $o_dm->getTableName($this->get('table_num')))) { return null; }
 		$t_subject = $o_dm->getInstanceByTableName($vs_form_table_name, true);
@@ -1151,7 +1203,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
 				// is this an access point?
 				$va_search_settings = $this->opo_search_indexing_config->getAssoc($this->_DATAMODEL->getTableName($vs_form_table_name));
-				$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : array();
+				$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : [];
 
 				if (isset($va_access_points[$va_tmp[0]])) {
 
@@ -1205,7 +1257,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	public function getLuceneQueryStringForHTMLFormInput($pa_form_content) {
 		$va_values = $this->extractFormValuesFromArray($pa_form_content);
 
-		$va_query_elements = array();
+		$va_query_elements = [];
 		if (is_array($va_values) && sizeof($va_values)) {
 			foreach($va_values as $vs_element => $va_values) {
 				if (!is_array($va_values)) { $va_values = array($va_values); }
@@ -1222,13 +1274,23 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							$va_query_elements[] = $vs_query_element;
 							break;
 						default:
+							$va_tmp = explode(".", $vs_element);
+							$t_element = ca_metadata_elements::getInstance($vs_element_code = array_pop($va_tmp));
+							switch(ca_metadata_elements::getDataTypeForElementCode($vs_element_code)) {
+								case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+									$o_value = new InformationServiceAttributeValue();
+									$va_data = $o_value->parseValue($vs_query_element, ['settings' => $t_element->getSettings()]);
+								
+									$vs_query_element = $va_data['value_longtext1'];
+									break;
+							}
 							$va_query_elements[] = "({$vs_element}:{$vs_query_element})";
 							break;
 					}
 				}
 			}
 		}
-
+		
 		return join(' AND ', $va_query_elements);
 	}
 	# ------------------------------------------------------
@@ -1239,7 +1301,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }
 
 		$va_form_contents = $this->getElementsForForm();
-		$va_values = array();
+		$va_values = [];
 		foreach($va_form_contents as $vn_i => $vs_element) {
 			$vs_dotless_element = str_replace('.', '_', $vs_element);
 			if (isset($pa_form_content[$vs_dotless_element])) { // && strlen($pa_form_content[$vs_dotless_element])) {
@@ -1263,7 +1325,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_placements = $this->getPlacements();
 
 		$t_element = new ca_metadata_elements();
-		$va_elements = array();
+		$va_elements = [];
 		foreach($va_placements as $vn_i => $va_placement) {
 			$va_tmp = explode('.',  $va_placement['bundle_name']);
 			if ($t_element->load(array('element_code' => $va_tmp[1]))) {
@@ -1341,7 +1403,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				}
 				$vs_bundle_proc = str_replace(".", "_", $vs_bundle);
 
-				$va_settings = array();
+				$va_settings = [];
 
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_(.*)$!", $vs_key, $va_matches)) {
@@ -1385,6 +1447,241 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 	}
-	# ------------------------------------------------------
+	# ----------------------------------------
+	# Type restrictions
+	# ----------------------------------------
+	/**
+	 * Adds restriction (a binding between the ui and item type)
+	 *
+	 * @param int $pn_type_id the type
+	 * @param array $pa_settings Options include:
+	 *		includeSubtypes = automatically expand type restriction to include sub-types. [Default is false]
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function addTypeRestriction($pn_type_id, $pa_settings=null) {
+		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
+		if (!is_array($pa_settings)) { $pa_settings = []; }
+		
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+
+		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
+			$va_rel_type_list = $t_instance->getRelationshipTypes();
+			if(!isset($va_rel_type_list[$pn_type_id])) { return false; }
+		} elseif($t_instance instanceof ca_representation_annotations) { // annotation type restriction
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$vb_ok = false;
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(isset($va_type_info['typeID']) && ($va_type_info['typeID'] == $pn_type_id)) {
+					$vb_ok = true;
+					break;
+				}
+			}
+
+			if(!$vb_ok) { return false; } // couldn't find type id
+		} else { // "normal" (list-based) type restriction
+			$va_type_list = $t_instance->getTypeList();
+			if (!isset($va_type_list[$pn_type_id])) { return false; }
+		}
+		
+		$t_restriction = new ca_search_form_type_restrictions();
+		$t_restriction->setMode(ACCESS_WRITE);
+		$t_restriction->set('table_num', $this->get('table_num'));
+		$t_restriction->set('type_id', $pn_type_id);
+		$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $pa_settings, 0));
+		$t_restriction->set('form_id', $this->getPrimaryKey());
+		
+		unset($pa_settings['includeSubtypes']);
+		foreach($pa_settings as $vs_setting => $vs_setting_value) {
+			$t_restriction->setSetting($vs_setting, $vs_setting_value);
+		}
+		$t_restriction->insert();
+		
+		if ($t_restriction->numErrors()) {
+			$this->errors = $t_restriction->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Edit settings for an existing type restriction on the currently loaded row
+	 *
+	 * @param int $pn_restriction_id
+	 * @param int $pn_type_id New type for relationship
+	 */
+	public function editTypeRestriction($pn_restriction_id, $pa_settings=null) {
+		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
+		$t_restriction = new ca_search_form_type_restrictions($pn_restriction_id);
+		if ($t_restriction->isLoaded()) {
+			$t_restriction->setMode(ACCESS_WRITE);
+			$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $pa_settings, 0));
+			$t_restriction->update();
+			if ($t_restriction->numErrors()) {
+				$this->errors = $t_restriction->errors();
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Sets restrictions for currently loaded ui
+	 *
+	 * @param array $pa_type_ids list of types to restrict to
+	 * @param array $pa_options Options include:
+	 *		includeSubtypes = Automatically include subtypes for all set type restrictions. [Default is false]
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function setTypeRestrictions($pa_type_ids, $pa_options=null) {
+		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
+		if (!is_array($pa_type_ids)) {
+			if (is_numeric($pa_type_ids)) { 
+				$pa_type_ids = array($pa_type_ids); 
+			} else {
+				$pa_type_ids = [];
+			}
+		}
+		
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+
+		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
+			$va_type_list = $t_instance->getRelationshipTypes();
+		} else { // "normal" (list-based) type restrictions
+			$va_type_list = $t_instance->getTypeList();
+		}
+		
+		$va_current_restrictions = $this->getTypeRestrictions();
+		$va_current_type_ids = [];
+		foreach($va_current_restrictions as $vn_i => $va_restriction) {
+			$va_current_type_ids[$va_restriction['type_id']] = $va_restriction['restriction_id'];
+		}
+		
+		foreach($va_type_list as $vn_type_id => $va_type_info) {
+			if(in_array($vn_type_id, $pa_type_ids)) {
+				// need to set
+				if(!isset($va_current_type_ids[$vn_type_id])) {
+					$this->addTypeRestriction($vn_type_id, $pa_options);
+				} else {
+					$this->editTypeRestriction($va_current_type_ids[$vn_type_id], $pa_options);
+				}
+			} elseif(isset($va_current_type_ids[$vn_type_id])) {	
+				// need to unset
+				$this->removeTypeRestriction($vn_type_id);
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove restriction from currently loaded ui for specified type
+	 *
+	 * @param int $pn_type_id The type of the restriction
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 */
+	public function removeTypeRestriction($pn_type_id=null) {
+		if (!($vn_form_id = (int)$this->getPrimaryKey())) { return null; }		// ui must be loaded
+
+		$va_params = ['form_id' => $vn_form_id];
+		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
+
+		if (is_array($va_uis = ca_search_form_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
+			foreach($va_uis as $t_ui) {
+				$t_ui->setMode(ACCESS_WRITE);
+				$t_ui->delete(true);
+				if ($t_ui->numErrors()) {
+					$this->errors = $t_ui->errors();
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove all type restrictions from loaded ui
+	 *
+	 * @return bool True on success, false on error, null if no screen is loaded 
+	 */
+	public function removeAllTypeRestrictions() {
+		return $this->removeTypeRestriction();
+	}
+	# ----------------------------------------
+	/**
+	 * Return restrictions for currently loaded ui
+	 *
+	 * @param int $pn_type_id Type to limit returned restrictions to; if omitted or null then all restrictions are returned
+	 * @param array $pa_options Support options include:
+	 *		form_id = form to get types for instead of currently loaded form. [Default is null]
+	 * @return array A list of restrictions, false on error or null if no ui is loaded
+	 */
+	public function getTypeRestrictions($pn_type_id=null, $pa_options=null) {
+		if (!($pn_form_id = caGetOption('form_id', $pa_options, null))) {
+			if (!($pn_form_id = (int)$this->getPrimaryKey())) { return null; }
+		}
+		
+		$va_params = ['form_id' => $pn_form_id];
+		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
+
+		return ca_search_form_type_restrictions::find($va_params, ['returnAs' => 'arrays']);
+	}
+	# ----------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of type restriction in the currently loaded form
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_form', $this);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
+		$o_view->setVar('request', $po_request);
+		
+		$va_type_restrictions = $this->getTypeRestrictions();
+		$va_restriction_type_ids = [];
+		$vb_include_subtypes = false;
+		if (is_array($va_type_restrictions)) {
+			foreach($va_type_restrictions as $vn_i => $va_restriction) {
+				$va_restriction_type_ids[] = $va_restriction['type_id'];
+				if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
+			}
+		}
+		
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
+
+		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
+			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
+		]);
+		
+		if($t_instance instanceof BaseRelationshipModel) { // interstitial
+			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)).$vs_subtype_element);
+		} elseif($t_instance instanceof ca_representation_annotations) { // config based
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$va_annotation_type_select_list = [];
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(!isset($va_type_info['typeID'])) { continue; }
+				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
+			}
+
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
+		} else { // list-based
+			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
+		}
+	
+		return $o_view->render('ca_search_form_type_restrictions.php');
+	}
+	# ----------------------------------------
+	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray), ['includeSubtypes' => $po_request->getParameter('type_restriction_include_subtypes', pInteger)]);
+	}
+	# ----------------------------------------
 }
-?>

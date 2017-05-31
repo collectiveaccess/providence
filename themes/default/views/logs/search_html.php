@@ -31,20 +31,20 @@
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	$(document).ready(function(){
-		$('#caSearchList').caFormatListTable();
+		$('#caItemList').caFormatListTable();
 	});
 /* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caSearchList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
 			_t('Show from').': '.caFormTag($this->request, 'Index', 'searchLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('search_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'searchLogSearch')."</form>"
 		); 
 	?>
 	
-	<table id="caSearchList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">

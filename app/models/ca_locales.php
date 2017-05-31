@@ -473,4 +473,22 @@ class ca_locales extends BaseModel {
 		return MemoryCache::fetch($pn_id, 'LocaleIdToName');
 	}
 	# ------------------------------------------------------
+	/**
+	 * Return list of locales for the specified language. 
+	 *
+	 * @param string $ps_language A locale (ex. "en_US") or langage (ex. "en") code.
+	 * @param array $pa_options Options include:
+	 *		codesOnly = Return a list of locale codes for the given language. If not set then a list of arrays with details about each relevant locale is returned. [Default is false]
+	 *
+	 * @return array An array of arrays, each containing information about a locale. If the "codesOnly" option is set then a simple list of locale codes is returned.
+	 */
+	static function localesForLanguage($ps_language, $pa_options=null) {
+		$va_language = explode('_', $ps_language);
+		$ps_language = array_shift($va_language);
+		$pb_codes_only = caGetOption('codesOnly', $pa_options, false);
+		$va_locales =  array_filter(ca_locales::getLocaleList(['index_by_code' => true]), function($v, $k) use ($ps_language) { return ($ps_language == array_shift(explode('_', $k))); }, ARRAY_FILTER_USE_BOTH);
+	
+		return $pb_codes_only ? array_keys($va_locales) : $va_locales;
+	}
+	# ------------------------------------------------------
 }

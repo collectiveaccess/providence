@@ -99,7 +99,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Ignore parent when trying to match row'),
-				'description' => _t('gnore parent when trying to match row.')
+				'description' => _t('Ignore parent when trying to match row.')
 			),
 			'entitySplitter_displaynameFormat' => array(
 				'formatType' => FT_TEXT,

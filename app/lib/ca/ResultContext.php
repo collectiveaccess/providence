@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -288,6 +288,39 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns the letter bar page to display. This is either the value set for the current context,
+		 * a letter set in the current request via the 'l' parameter or null if neither is set. The value of the
+		 * request parameter 'l' take precedence over any existing context value and will be set as the current
+		 * context value when present.
+		 *
+		 * @return string - First letter of results to display on results page, or null if no value is set
+		 */
+		public function getLetterBarPage() {
+			if (!($ps_letter_bar_page = $this->opo_request->getParameter('l', pString))) {
+ 				if ($va_context = $this->getContext()) {
+					return $va_context['letter_bar_page'] ? $va_context['letter_bar_page'] : null;
+				}
+			} else {
+				$this->setContextValue('letter_bar_page', $ps_letter_bar_page);
+				return $ps_letter_bar_page;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Sets the letter bar page to display for this context. While you can
+		 * call this directly, usually the letter bar page is set by setLetterBarPage()
+		 * using a value passed in the request.
+		 *
+		 * @param $ps_letter_bar_page - letter bar page
+		 * 
+		 * @return string - letter bar page as set
+		 */
+		public function setLetterBarPage($ps_letter_bar_page) {
+			return $this->setContextValue('letter_bar_page', $ps_letter_bar_page);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns the current view mode for the context. This is a bit of text that indicates
 		 * which view to use when displaying the result set. The returned value will be either 
 		 * the value set for the current context, the value set via the 'view' parameter in the
@@ -448,12 +481,16 @@
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
 			} else {
+				if (!is_numeric($pn_type_id)) { 
+					$pn_type_id = array_shift(caMakeTypeIDList($this->ops_table_name, [$pn_type_id]));
+				}
 				$va_context = $this->getContext();
 				$this->setTypeRestriction($pn_type_id);
 				
 				if (isset($va_context['type_id']) && ($va_context['type_id'] != $pn_type_id)) {
 					$pb_type_restriction_has_changed = true;
 				}
+				$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 				return $pn_type_id;
 			}
 			return null;
@@ -475,18 +512,20 @@
 		/**
 		 * Returns the display_id for the currently set results bundle display (ca_bundle_displays), or null if none is set
 		 * 
-		 * @return integer - display_id of ca_bundle_displays row to use
+		 * @param int $pn_type_id Optional type_id to limit bundle display to
+		 *
+		 * @return int Display_id of ca_bundle_displays row to use
 		 */
-		public function getCurrentBundleDisplay() {
+		public function getCurrentBundleDisplay($pn_type_id=null) {
 			if (!strlen($pn_display_id = $this->opo_request->getParameter('display_id', pString))) { 
  				if ($va_context = $this->getContext()) {
-					$pn_display_id = $va_context['display_id'];
+					$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
 				}
  				if (!$pn_display_id) { $pn_display_id = null; }
  				return $pn_display_id;
  			} else {
  				// page set by request param so set context
- 				$this->setCurrentBundleDisplay((int)$pn_display_id);
+ 				$this->setCurrentBundleDisplay((int)$pn_display_id, $pn_type_id);
  				return $pn_display_id;
  			}
  			
@@ -496,11 +535,49 @@
 		/**
 		 * Sets the currently selected bundle display
 		 *
-		 * @param $pn_display_id - display_id of ca_bundle_displays row to use
-		 * @return integer - display_id as set
+		 * @param int $pn_display_id Display_id of ca_bundle_displays row to use
+		 * @param int $pn_type_id Optional type_id to limit bundle display to
+		 * @return int Display_id as set
 		 */
-		public function setCurrentBundleDisplay($pn_display_id) {
-			return $this->setContextValue('display_id', $pn_display_id);
+		public function setCurrentBundleDisplay($pn_display_id, $pn_type_id=null) {
+			return $this->setContextValue($pn_type_id ? "display_id_{$pn_type_id}" : "display_id", $pn_display_id);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Gets the currently selected child display mode.
+		 *
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function getCurrentChildrenDisplayMode() {
+			if (!($ps_children_display_mode = $this->opo_request->getParameter('children', pString))) {
+ 				if ($va_context = $this->getContext()) {
+					$o_config = Configuration::load();
+					return (in_array(strtolower($va_context['children_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $va_context['children_display_mode'] : (($vs_children_display_mode_default = $o_config->get($this->ops_table_name."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow"));
+				}
+			} else {
+				$this->setContextValue('children_display_mode', $ps_children_display_mode);
+				return $ps_children_display_mode;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Sets the currently selected child display mode. The value can be one of the following:
+		 * 		"show", "hide", "alwaysShow", "alwaysHide"
+		 *
+		 * The child display mode determines whether all records in a result set are displayed 
+		 * or just root (top of their hierarchy) records.
+		 *
+		 * @param string $ps_children_display_mode 
+		 * 
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function setCurrentChildrenDisplayMode($ps_children_display_mode) {
+			if (!in_array($ps_children_display_mode, ['show', 'hide', 'alwaysShow', 'alwaysHide'])) { 
+				$o_config = Configuration::load();
+				$ps_children_display_mode = $o_config->get($this->ops_table_name."_children_display_mode_in_results"); 
+			}
+			return $this->setContextValue('children_display_mode', $ps_children_display_mode);
 		}
 		# ------------------------------------------------------------------
 		/**

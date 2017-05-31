@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -148,7 +148,19 @@
 			//
 			// Execute the search
 			//
-			if($vs_search && ($vs_search != "")){ /* any request? */
+			if($vs_search){ /* any request? */
+				if(is_array($va_set_ids = caSearchIsForSets($vs_search))) {
+					// When search includes sets we add sort options for the references sets...
+					foreach($va_set_ids as $vn_set_id => $vs_set_name) {
+						$this->opa_sorts["ca_sets.set_id:{$vn_set_id}"] = _t("Set order: %1", $vs_set_name);
+					}
+					
+					// ... and default the sort to the set
+					if ($vb_is_new_search) {
+						$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
+					}
+				}
+				
 				$va_search_opts = array(
 					'sort' => $vs_sort, 
 					'sort_direction' => $vs_sort_direction, 
@@ -156,8 +168,11 @@
 					'checkAccess' => $va_access_values,
 					'no_cache' => $vb_is_new_search,
 					'dontCheckFacetAvailability' => true,
-					'filterNonPrimaryRepresentations' => true
+					'filterNonPrimaryRepresentations' => true,
+					'rootRecordsOnly' => $this->view->getVar('hide_children')
 				);
+				
+				
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);
  					$po_search = new $vs_browse_classname;
@@ -194,6 +209,12 @@
  					}
  					
 					$vo_result = $po_search->getResults($va_search_opts);
+					
+					if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
+						$this->view->setVar('open_refine_controls', false);
+						$this->view->setVar('noRefineControls', true); 
+					}
+					
 				} elseif($po_search) {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
 				}
@@ -226,10 +247,12 @@
  				if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
-					if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
+					//if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
+					$vn_page_num = 1; 
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());
  				$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
+ 				$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
  				if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
  				
  				$vo_result->seek(($vn_page_num - 1) * $vn_items_per_page);
@@ -386,14 +409,16 @@
 				foreach($va_hier as $vn_item_id => $va_item) {
 					if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 					if ($va_item['parent_id'] != $vn_root_id) { continue; }
+					//if (!$va_item['is_enabled']) { continue; }
+					
 					// does this item have sub-items?
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
 						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $va_restrict_to_types);
 					} else {
-						$va_subtypes = array();
+						$va_subtypes = method_exists($this, "_getSubTypeActionNav") ? $this->_getSubTypeActionNav($va_item) : [];
 					}
 					$va_types[] = array(
-						'displayName' =>$va_item['name_plural'],
+						'displayName' => $va_item['name_plural'],
 						'parameters' => array(
 							'type_id' => $va_item['item_id']
 						),
@@ -404,6 +429,8 @@
 			}
  			return $va_types;
  		}
+ 		
+ 	
  		# ------------------------------------------------------------------
 		private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pa_restrict_to_types=null) {
 			$va_subtypes = array();
@@ -489,8 +516,7 @@
  		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
  		 */
  		public function searchName($ps_mode='singular') {
- 			// MUST BE OVERRIDDEN 
- 			return "undefined";
+ 			return $this->getResultsDisplayName($ps_mode);
  		}
  		# -------------------------------------------------------
  		public function usesHierarchyBrowser() {

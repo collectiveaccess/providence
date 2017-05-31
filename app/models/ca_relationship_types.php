@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,14 +53,28 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Type restriction for "left" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "left" side of relationship (eg. if relationship is object ��� entity, then the restriction controls for which types of objects this relationship type is valid.')
+				'LABEL' => _t('Type restriction for "left" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "left" side of relationship (eg. if relationship is object-entity, then the restriction controls for which types of objects this relationship type is valid.')
+		),
+		'include_subtypes_left' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '0',
+				'LABEL' => _t('Include subtypes in "left" side restriction?'), 'DESCRIPTION' => _t('Automatically nclude subtypes of selected left-side restriction.')
 		),
 		'sub_type_right_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Type restriction for "right" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "right" side of relationship (eg. if relationship is object ��� entity, then the restriction controls for which types of entities this relationship type is valid.')
+				'LABEL' => _t('Type restriction for "right" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "right" side of relationship (eg. if relationship is object-entity, then the restriction controls for which types of entities this relationship type is valid.')
+		),
+		'include_subtypes_right' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '0',
+				'LABEL' => _t('Include subtypes in "right" side restriction?'), 'DESCRIPTION' => _t('Automatically nclude subtypes of selected left-side restriction.')
 		),
 		'parent_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -411,7 +425,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$t_rel->set('type_code', $pm_type_code_or_id);
 			$t_rel->set('table_num', $vn_table_num);
 			$t_rel->set('sub_type_left_id', isset($pa_values['sub_type_left_id']) ? (int)$pa_values['sub_type_left_id'] : null);
+			$t_rel->set('include_subtypes_left', (isset($pa_values['include_subtypes_left']) && (bool)$pa_values['include_subtypes_left']) ? 1 : 0);
 			$t_rel->set('sub_type_right_id', isset($pa_values['sub_type_right_id']) ? (int)$pa_values['sub_type_right_id'] : null);
+			$t_rel->set('include_subtypes_right', (isset($pa_values['include_subtypes_right']) && (bool)$pa_values['include_subtypes_right']) ? 1 : 0);
 			$t_rel->set('parent_id', isset($pa_values['parent_id']) ? (int)$pa_values['parent_id'] : null);
 			$t_rel->set('rank', isset($pa_values['rank']) ? (int)$pa_values['rank'] : 0);
 			$t_rel->set('is_default', isset($pa_values['is_default']) ? (int)$pa_values['is_default'] : 0);

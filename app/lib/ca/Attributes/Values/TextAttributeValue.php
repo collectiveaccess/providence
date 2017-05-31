@@ -351,7 +351,7 @@
 				";
 			}
  			
- 			if ($va_settings['isDependentValue'] || $pa_options['isDependentValue']) {
+ 			if (!caGetOption('forSearch', $pa_options, false) && ($va_settings['isDependentValue'] || $pa_options['isDependentValue'])) {
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
  				$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
  				$va_element_dom_ids = array();
@@ -400,7 +400,6 @@
 					var warnSpan = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning');
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').keyup(function() {
 						jQuery.getJSON('{$vs_unique_lookup_url}', {n: jQuery(this).val()}).done(function(data) {
-							console.log('data', data);
 							if(data.exists >= 1) {
 								warnSpan.show();
 							} else {

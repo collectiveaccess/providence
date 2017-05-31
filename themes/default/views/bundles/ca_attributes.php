@@ -159,14 +159,13 @@
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-?>
-<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
-<?php
+	
+	
 if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
 	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 	if (sizeof($va_template_list) > 0) {
 ?>
-	<div class='editorBundlePrintControl'>
+	<div class='iconButton'>
 <?php
 		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate"));
 		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
@@ -175,6 +174,11 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 <?php
 	}
 }
+	
+	
+?>
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
@@ -190,11 +194,25 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			</div>				
 <?php
 	}
-		
+
 	if (!$vb_batch && ($vs_presets = $t_element->getPresetsAsHTMLFormElement(array('width' => '100px')))) {
-		print "<div style='float: right; margin-right: 10px;'>{$vs_presets}</div>\n";
+		print "<div class='iconButton'>{$vs_presets}</div>\n";
 	}
 	
+	if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
+		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+		if (sizeof($va_template_list) > 0) {
+?>
+		<div class='editorBundleValuePrintControl iconButton' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
+<?php
+			print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
+			print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
+?>
+		</div>
+<?php
+		}
+	}
+		
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
 ?>
@@ -209,21 +227,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 					</tr>
 				</table>
 <?php
-			}
-
-if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
-	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
-	if (sizeof($va_template_list) > 0) {
-?>
-	<div class='editorBundleValuePrintControl' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
-<?php
-		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
-		print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
-?>
-	</div>
-<?php
-	}
-}	
+			}	
 
 			if (isset($va_elements['_locale_id'])) {
 				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale').' '.$va_elements['_locale_id']['element'].'</div>';

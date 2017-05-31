@@ -83,7 +83,7 @@ class BaseEditorController extends ActionController {
 	public function Edit($pa_values=null, $pa_options=null) {
 		AssetLoadManager::register('panel');
 
-		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
@@ -222,7 +222,7 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($pa_options=null) {
-		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
+		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
@@ -331,6 +331,14 @@ class BaseEditorController extends ActionController {
 
 					if ($t_instance->numErrors()) {
 						$this->notification->addNotification($t_instance->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+					}
+				}
+				
+				// If "after_id" is set then reset ranks such that saved record follows immediately after
+				if ($vn_after_id) {
+					$t_subject->setRankAfter($vn_after_id);
+					if ($t_subject->numErrors()) {
+						$this->notification->addNotification($t_subject->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
 					}
 				}
 			}
@@ -1103,7 +1111,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('rel_id', $vn_rel_id);
 			}
 
-			return array($vn_subject_id, $t_subject, $t_ui, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
+			return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
 		if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
@@ -1114,6 +1122,7 @@ class BaseEditorController extends ActionController {
 			// an existing record since it is only relevant for newly created records.
 			if (!$vn_subject_id) {
 				$this->view->setVar('above_id', $vn_above_id = $this->request->getParameter('above_id', pInteger));
+				$this->view->setVar('after_id', $vn_after_id = $this->request->getParameter('after_id', pInteger));
 				$t_subject->set($vs_parent_id_fld, $vn_parent_id);
 
 				$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
@@ -1127,7 +1136,7 @@ class BaseEditorController extends ActionController {
 					$t_subject->set('idno', $t_parent->get('idno'));
 				}
 			}
-			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id);
+			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id);
 		}
 
 		return array($vn_subject_id, $t_subject, $t_ui);
@@ -1490,10 +1499,11 @@ class BaseEditorController extends ActionController {
 		$o_dm 				= Datamodel::load();
 		$t_item 			= $o_dm->getInstanceByTableName($this->ops_table_name, true);
 		$vs_pk 				= $t_item->primaryKey();
-		$vs_label_table 	= $t_item->getLabelTableName();
-		$t_label 			= $t_item->getLabelTableInstance();
-		$vs_display_field	= $t_label->getDisplayField();
-
+		if ($vs_label_table 	= $t_item->getLabelTableName()) {
+			$t_label 			= $t_item->getLabelTableInstance();
+			$vs_display_field	= $t_label->getDisplayField();
+		}
+		
 		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
 		$vn_type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 
@@ -1660,19 +1670,18 @@ class BaseEditorController extends ActionController {
 		$va_restrict_to_sources = null;
 		if ($pt_subject->getAppConfig()->get('perform_source_access_checking') && $pt_subject->hasField('source_id')) {
 			if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__)))) {
+				if (is_array($va_restrict_to_sources) && $pt_subject->get('source_id') && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
 				if (
 					(!$pt_subject->get('source_id'))
 					||
-					($pt_subject->get('source_id') && in_array($pt_subject->get('source_id'), $va_restrict_to_sources))
+					($pt_subject->get('source_id') && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources))
 					||
 					((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
 				) {
 					$pt_subject->set('source_id', $pt_subject->getDefaultSourceID(array('request' => $this->request)));
-				}
-
-				if (is_array($va_restrict_to_sources) && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources)) {
-					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
-					return;
 				}
 			}
 		}

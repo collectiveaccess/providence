@@ -80,15 +80,6 @@
  			$this->Index();
  		}
  		# -------------------------------------------------------
- 		/**
- 		 * Returns string representing the name of the item the search will return
- 		 *
- 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
- 		 */
- 		public function searchName($ps_mode='singular') {
- 			return ($ps_mode == 'singular') ? _t("storage location") : _t("storage locations");
- 		}
- 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		/**
@@ -97,6 +88,41 @@
  		public function Tools($pa_parameters) {
  			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of StorageLocationSearch()
  			return parent::Tools($pa_parameters);
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function _getSubTypeActionNav($pa_item) {
+ 			return [
+				[
+					'displayName' => _t('Search'),
+					"default" => ['module' => 'find', 'controller' => 'SearchStorageLocations', 'action' => 'Index'],
+					'parameters' => array(
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					),
+					'is_enabled' => true,
+				],
+				[
+					'displayName' => _t('Advanced search'),
+					"default" => ['module' => 'find', 'controller' => 'SearchStorageLocationsAdvanced', 'action' => 'Index'],
+					'useActionInPath' => 1,
+					'parameters' => array(
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					),
+					'is_enabled' => true,
+				],
+				[
+					'displayName' => _t('Browse'),
+					"default" => ['module' => 'find', 'controller' => 'BrowseStorageLocations', 'action' => 'Index'],
+					'parameters' => array(
+						'type_id' => $pa_item['item_id']
+					),
+					'is_enabled' => true,
+				]
+			];
  		}
  		# -------------------------------------------------------
  	}

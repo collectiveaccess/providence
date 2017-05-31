@@ -943,10 +943,10 @@ function caFileIsIncludable($ps_file) {
 		} else {
 			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
-			foreach(array(
-				'½' => $sep.'5', '⅓' => $sep.'333',
-				'⅔' => $sep.'667', '¼' => $sep.'25',
-				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
+			foreach([
+				'½' => $sep.'5', '⅓' => $sep.'333', '¼' => $sep.'25', '⅛' => $sep.'125',
+				'⅔' => $sep.'667', 
+				'¾'	=> $sep.'75', '⅜' => $sep.'375', '⅝' => $sep.'625', '⅞' => $sep.'875', '⅒' => $sep.'1'] as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -2483,6 +2483,35 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Parse currency value and return array with value and currency type.
+	 *
+	 * @param string $ps_value
+	 * @return array 
+	 */
+	function caParseCurrencyValue($ps_value) {
+		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
+		
+		// either
+		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
+			$vs_decimal_value = $va_matches[2];
+			$vs_currency_specifier = trim($va_matches[1]);
+		// or 1
+		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
+			$vs_decimal_value = $va_matches[1];
+			$vs_currency_specifier = trim($va_matches[2]);
+		// or 2
+		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
+			$vs_decimal_value = $va_matches[1];
+			$vs_currency_specifier = null;
+		}
+		
+		if ($vs_currency_specifier || ($vs_decimal_value > 0)) {
+			return ['currency' => $vs_currency_specifier, 'value' => $vs_decimal_value];
+		}
+		return null;
+ 	}
+	# ----------------------------------------
+	/**
 	 * 
 	 *
 	 * @return array 
@@ -3219,13 +3248,15 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$o_config = Configuration::load();
+		
 		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
 		$num = round($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
 
 		if (!$num) {
-			return "$int in";
+			return "{$int} in";
 		}
 
 		if ($pb_reduce) {
@@ -3247,7 +3278,38 @@ function caFileIsIncludable($ps_file) {
 			if ($num < 0) {
 				$num *= -1;
 			}
-			return "$int $num/$pn_denom in";
+			
+			if ($o_config->get('use_unicode_fractions_for_measurements')) {
+				if (($num === 1) && ($pn_denom == 4)) {
+					$frac = "¼";
+				} elseif (($num === 1) && ($pn_denom == 2)) {
+					$frac = "½";
+				} elseif (($num === 1) && ($pn_denom == 3)) {
+					$frac = "⅓";
+				} elseif (($num === 1) && ($pn_denom == 4)) {
+					$frac = "¼";
+				} elseif (($num === 1) && ($pn_denom == 8)) {
+					$frac = "⅛";
+				} elseif (($num === 2) && ($pn_denom == 3)) {
+					$frac = "⅔";
+				} elseif (($num === 3) && ($pn_denom == 4)) {
+					$frac = "¾";
+				} elseif (($num === 3) && ($pn_denom == 8)) {
+					$frac = "⅜";
+				} elseif (($num === 5) && ($pn_denom == 8)) {
+					$frac = "⅝";
+				} elseif (($num === 7) && ($pn_denom == 8)) {
+					$frac = "⅞";
+				} elseif (($num === 1) && ($pn_denom == 10)) {
+					$frac = "⅒";
+				} else {
+					$frac = "{$num}/{$pn_denom}";
+				}
+			} else {
+				$frac = "{$num}/{$pn_denom}";
+			}
+			
+			return "$int $frac in";
 		}
 
 		return "$num/$pn_denom in";
@@ -3275,17 +3337,12 @@ function caFileIsIncludable($ps_file) {
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
 		
 		// Move articles to end of string
-		$va_definite_articles = $o_locale_settings ? $o_locale_settings->get('definiteArticles') : array();
-		$va_indefinite_articles = $o_locale_settings ? $o_locale_settings->get('indefiniteArticles') : array();
+		$va_articles = caGetArticlesForLocale($ps_locale);
 		
-		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
-			if (is_array($va_articles)) {
-				foreach($va_articles as $vs_article) {
-					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
-						break(2);
-					}
-				}
+		foreach($va_articles as $vs_article) {
+			if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+				$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
+				break;
 			}
 		}
 		
@@ -3340,5 +3397,187 @@ function caFileIsIncludable($ps_file) {
 			$va_ret[$o_dm->getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
 		}
 		return $va_ret;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 * @return array
+	 */
+	function caNormalizeValueArray($pa_values, $pa_options=null) {
+		$va_values_proc = [];
+		
+		$o_purifier = null;
+		if($pb_purify = caGetOption('purify', $pa_options, false)) {
+			if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
+				$o_purifier = new HTMLPurifier();	
+			}	
+		}
+		
+		foreach($pa_values as $vs_key => $vm_val) {
+			if (is_array($vm_val)) {
+				if(isset($vm_val[0]) && !is_array($vm_val[0]) && caIsValidSqlOperator($vm_val[0], ['nullable' => true, 'isList' => true])) {
+					$vm_val = [$vm_val];
+				}
+				foreach($vm_val as $vs_key2 => $vm_list_vals) {
+					if (is_array($vm_list_vals) && !is_array($vm_list_vals[0]) && caIsValidSqlOperator($vm_list_vals[0], ['nullable' => true, 'isList' => true])) {
+						$vm_list_vals = [$vm_list_vals];
+					}
+					if (!is_array($vm_list_vals)) { $vm_list_vals = [$vm_list_vals]; }
+					
+					foreach($vm_list_vals as $vm_list_val) {
+						
+						if(!is_array($vm_list_val)) { $vm_list_val = ['=', $vm_list_val]; }
+						if (caIsValidSqlOperator($vm_list_val[0], ['nullable' => true, 'isList' => true])) {
+							if (is_array($vm_list_val[1]) && $o_purifier) { 
+								$va_vals_proc = [];
+								foreach($vm_list_val[1] as $vm_sublist_val) {
+									$va_vals_proc[] = !is_null($vm_sublist_val) ? $o_purifier->purify($vm_sublist_val) : $vm_sublist_val;
+								}
+							
+								if (!is_numeric($vs_key2)) { 
+									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $va_vals_proc];
+								} else {
+									$va_values_proc[$vs_key][] = [$vm_list_val[0], $va_vals_proc];
+								}
+							} else {
+								if (!is_numeric($vs_key2)) { 
+									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+								} else {
+									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+								}
+							}
+						} else {
+							$va_values_proc[$vs_key][$vs_key2][] = caNormalizeValueArray($vm_list_val, $pa_options);
+						}
+					}
+				}
+			} else {
+				$va_values_proc[$vs_key][] = ['=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
+			}
+		}
+		return $va_values_proc;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 * @return bool
+	 */
+	function caIsValidSqlOperator($ps_op, $pa_options=null) {
+		$ps_type = caGetOption('type', $pa_options, null, ['forceLowercase' => true]);
+		$pb_nullable = caGetOption('nullable', $pa_options, false);
+		$pb_is_list = caGetOption('isList', $pa_options, false);
+		
+		switch(strtolower($ps_op)) {
+			case '>':
+			case '<':
+			case '>=':
+			case '<=':
+				return (!$ps_type || ($ps_type == 'numeric')) ? true : false;
+				break;
+			case '=':
+			case '<>':
+			case '!=':
+				return true;
+				break;
+			case 'like':
+				return (!$ps_type || ($ps_type == 'string')) ? true : false;
+				break;
+			case 'is':
+				return ($pb_nullable) ? true : false;
+				break;
+			case 'in':
+				return ($pb_is_list) ? true : false;
+				break;
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Find and return tag-like strings in a template. All tags are assumed to begin with
+	 * a caret ("^") and end with a space or EOL. Tags may contain spaces within quoted areas. 
+	 *
+	 * @param string $ps_template The template to parse
+	 * @param array $pa_options No options are supported.
+	 * @return array A list of identified tags
+	 */
+	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
+		$va_tags = [];
+		
+		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = false;
+		$vs_tag = '';
+		$vs_last_char = null;
+		for($i=0; $i < mb_strlen($ps_template); $i++) {
+			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+				case '^':
+					if ($vb_in_tag) {
+						if ($vs_tag = trim($vs_tag)){ $va_tags[] = $vs_tag; }
+					}
+					$vb_in_tag = true;
+					$vs_tag = '';
+					$vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = false;
+					break;
+				case '%':
+					if($vb_in_tag) {
+						$vb_have_seen_param_delimiter = true;
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case ' ':
+				case ',':
+				case '<':
+					if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
+						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+						$vs_tag = '';
+						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+					} else {
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case '"':
+					if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
+						$vb_in_double_quote = true;
+						$vs_tag .= $vs_char;
+					} elseif($vb_in_tag && $vb_in_double_quote) {
+						$vs_tag .= $vs_char;
+						$vb_in_double_quote = false;
+					} elseif($vb_in_tag) {
+						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+						$vs_tag = '';
+						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = false;
+					}
+					break;
+				case "'":
+					$vb_in_single_quote = !$vb_in_single_quote;
+					$vs_tag .= $vs_char;
+					break;
+				default:
+					if ($vb_in_tag) {
+						$vs_tag .= $vs_char;
+					}
+					break;
+			}
+			$vs_last_char = $vs_char;
+		}
+		
+		if ($vb_in_tag) {
+			if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+		}
+		
+		foreach($va_tags as $vn_i => $vs_tag) {
+			if ((($p = strpos($vs_tag, "~")) !== false) && ($p < (mb_strlen($vs_tag) - 1))) { continue; }	// don't clip trailing characters when there's a tag directive specified (eg. a tilde that is not at the end of the tag)
+			
+			$vb_is_ca_tag = (substr($vs_tag, 0, 3) == 'ca_');
+			
+			if ($vb_is_ca_tag && (strpos($vs_tag, '%') === false)) {
+				// ca_* tags that don't have modifiers always end whenever a non-alphanumeric character is encountered
+				$vs_tag = preg_replace("![^0-9\p{L}_]+$!u", "", $vs_tag);
+			} elseif(preg_match("!^([\d]+)[^0-9\p{L}_]+!", $vs_tag, $va_matches)) {
+				// tags beginning with numbers followed by non-alphanumeric characters are truncated to number-only tags
+				$vs_tag = $va_matches[1];
+			}
+			
+			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
+		}
+		return $va_tags;
 	}
 	# ----------------------------------------

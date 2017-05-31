@@ -40,7 +40,7 @@
 	<div class="dashboardWidgetScrollMedium"><ul>
 <?php
 	foreach($va_item_list as $vn_id => $va_record) {
-		print "<li><a href=\"".caEditorUrl($po_request, $vs_table_num, $vn_id)."\">".(strlen($va_record["display"])>0 ? $va_record["display"] : _t("[BLANK]"))."</a></li>\n";
+		print "<li><a href=\"".caEditorUrl($po_request, $vs_table_num, $vn_id)."\">".(strlen($va_record["display"])>0 ? $va_record["display"] : '['._t("BLANK").']')."</a></li>\n";
 	}
 ?>
 	</ul></div>

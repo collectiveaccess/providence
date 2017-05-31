@@ -1044,7 +1044,9 @@ create table ca_relationship_types
    type_id                        smallint unsigned              not null AUTO_INCREMENT,
    parent_id                      smallint unsigned,
    sub_type_left_id               int unsigned,
+   include_subtypes_left          tinyint unsigned               not null default 0,
    sub_type_right_id              int unsigned,
+   include_subtypes_right         tinyint unsigned               not null default 0,
    hier_left                      decimal(30,20) unsigned        not null,
    hier_right                     decimal(30,20) unsigned        not null,
    hier_type_id                   smallint unsigned,
@@ -1922,7 +1924,7 @@ create table ca_data_import_events
    occurred_on                    int unsigned                   not null,
    user_id                        int unsigned,
    description                    text                           not null,
-   type_code                      char(10)                       not null,
+   type_code                      char(50)                       not null,
    source                         text                           not null,
    primary key (event_id),
    constraint fk_ca_data_import_events_user_id foreign key (user_id)
@@ -2440,7 +2442,7 @@ create table ca_entity_labels
    forename                       varchar(100)                   not null,
    other_forenames                varchar(100)                   not null,
    middlename                     varchar(100)                   not null,
-   surname                        varchar(100)                   not null,
+   surname                        varchar(512)                   not null,
    prefix                         varchar(100)                   not null,
    suffix                         varchar(100)                   not null,
    name_sort                      varchar(512)                   not null,
@@ -2464,7 +2466,7 @@ create unique index u_all on ca_entity_labels
    forename,
    other_forenames,
    middlename,
-   surname,
+   surname(100),
    type_id,
    locale_id
 );
@@ -4436,9 +4438,10 @@ create table ca_set_items (
     type_id     int unsigned not null,
 	rank		int unsigned not null default 0,
 	vars        longtext not null,
+	deleted     tinyint unsigned not null default 0,
 	
 	primary key (item_id),
-	key i_set_id (set_id),
+	key i_set_id (set_id, deleted),
 	key i_type_id (type_id),
 	key i_row_id (row_id),
 	key i_table_num (table_num)
@@ -4613,6 +4616,24 @@ create table ca_search_form_placements (
 	KEY i_bundle_name (bundle_name),
 	KEY i_rank (rank),
 	KEY i_form_id (form_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_search_form_type_restrictions (
+   restriction_id                 int unsigned                   not null AUTO_INCREMENT,
+   table_num                      tinyint unsigned               not null,
+   type_id                        int unsigned,
+   form_id                        int unsigned                   not null,
+   include_subtypes               tinyint unsigned               not null default 0,
+   settings                       longtext                       not null,
+   rank                           smallint unsigned              not null default 0,
+   primary key (restriction_id),
+   
+   index i_form_id				(form_id),
+   index i_type_id				(type_id),
+   constraint fk_ca_search_form_type_restrictions_form_id foreign key (form_id)
+      references ca_search_forms (form_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -6783,7 +6804,8 @@ create table ca_site_templates (
   template_id		    int unsigned        not null AUTO_INCREMENT,
   title					varchar(255)		not null,
   description			text				not null,
-  template				longtext			not null,
+  template				longtext			not null, 
+  template_code 		varchar(100)		not null,
   tags                  longtext            not null,
   deleted               tinyint unsigned    not null default 0,
 
@@ -6851,5 +6873,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 142 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (142, unix_timestamp());
+/* CURRENT MIGRATION: 147 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (147, unix_timestamp());
