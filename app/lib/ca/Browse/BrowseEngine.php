@@ -2004,6 +2004,22 @@
 						if (is_null($vn_smallest_list_index)) { $vn_smallest_list_index = $vn_i; continue; }
 						if (sizeof($va_hits) < sizeof($va_acc[$vn_smallest_list_index])) { $vn_smallest_list_index = $vn_i; }
 					}
+					
+					if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = $this->opo_datamodel->getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
+
+                       foreach($va_acc as $vn_i => $va_acc_content) {
+                            $qr_expand =  $this->opo_db->query("
+                                SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
+                                FROM ".$this->ops_browse_table_name."
+                                WHERE
+                                    {$vs_hier_id_fld} IN (?)
+                            ",[array_keys($va_acc_content)]);
+
+                            if(is_array($va_expanded_res = $qr_expand->getAllFieldValues($t_item->primaryKey())) && sizeof($va_expanded_res)) {
+                                $va_acc[$vn_i] = array_flip($va_expanded_res);
+                            }
+                        }
+                    }
 
 					$va_res = array();
 					$va_acc_indices = array_keys($va_acc);
@@ -2026,20 +2042,6 @@
 					}
 					
 					if (sizeof($va_res)) {
-						if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = $this->opo_datamodel->getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
-							$qr_expand =  $this->opo_db->query("
-								SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
-								FROM ".$this->ops_browse_table_name."
-								WHERE
-									{$vs_hier_id_fld} IN (?)
-							",[array_keys($va_res)]);
-							
-							if(is_array($va_expanded_res = $qr_expand->getAllFieldValues($t_item->primaryKey())) && sizeof($va_expanded_res)) {
-								$va_res = array_flip($va_expanded_res);
-							}
-						}
-						
-						
 						$vs_filter_join_sql = $vs_filter_where_sql = '';
 						$va_wheres = array();
 						$va_joins = array();

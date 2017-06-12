@@ -814,6 +814,11 @@ class SearchIndexer extends SearchBase {
 				if (is_array($va_self_info['related']['fields']) && sizeof($va_self_info['related']['fields']) && !in_array($vs_subject_tablename, $va_related_tables)) {
 					$va_related_tables[] = $vs_subject_tablename;
 				}
+				
+                $va_restrict_self_indexing_to_types = null;
+                if (is_array($va_self_info['related']['types']) && sizeof($va_self_info['related']['types'])) {
+                    $va_restrict_self_indexing_to_types = caMakeTypeIDList($vs_subject_tablename, $va_self_info['related']['types']);
+                }
 
 				foreach($va_related_tables as $vs_related_table) {
 					$vn_private = 0;
@@ -871,6 +876,7 @@ class SearchIndexer extends SearchBase {
 						}
 						
 						while($qr_res->nextRow()) {
+                            
 							$vn_count++;
 							
 							$va_field_data = $qr_res->getRow();
@@ -879,6 +885,11 @@ class SearchIndexer extends SearchBase {
 							
 							$vn_rel_type_id = (int)$qr_res->get('rel_type_id');
 							$vn_row_type_id = (int)$qr_res->get('type_id');
+							
+                            if(($vs_related_table == $vs_subject_tablename) && is_array($va_restrict_self_indexing_to_types) && !in_array($vn_row_type_id, $va_restrict_self_indexing_to_types)) {
+                                continue;
+                            }
+                            
 							
 							$vn_private = ((!is_array($va_private_rel_types) || !sizeof($va_private_rel_types) || !in_array($vn_rel_type_id, $va_private_rel_types))) ? 0 : 1;
 							
@@ -997,8 +1008,12 @@ class SearchIndexer extends SearchBase {
 									if (is_array($va_label_info['related']['fields']) && sizeof($va_label_info['related']['fields'])) {
 										$vn_label_table_num = $t_label->tableNum();
 
-										if (is_array($va_labels = $t_rel->getPreferredLabels(null, false, array('row_id' => $vn_row_id)))) {
+                                        $vb_skip = false;
+                                        if(is_array($va_restrict_self_indexing_to_types) && $t_rel->load($vn_row_id) && !in_array($t_rel->getTypeID(), $va_restrict_self_indexing_to_types)) {
+                                            $vb_skip = true;
+                                        }
 
+										if (!$vb_skip && is_array($va_labels = $t_rel->getPreferredLabels(null, false, array('row_id' => $vn_row_id)))) {
 											foreach($va_labels as $vn_label_id => $va_labels_by_locale) {
 												foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 													foreach($va_label_list as $va_label) {
@@ -2382,6 +2397,7 @@ class SearchIndexer extends SearchBase {
 			}
 			$va_proc_field_list[] = $vs_related_table.'.'.$vs_related_pk;
 			if ($vs_self_rel_table_name) { $va_proc_field_list[] = $vs_self_rel_table_name.'.type_id rel_type_id'; }
+			if ($pt_rel->hasField('type_id')) { $va_proc_field_list[] = $vs_related_table.'.type_id'; }
 
 			$vs_delete_sql = $pt_rel->hasField('deleted') ? " AND {$vs_related_table}.deleted = 0" : '';
 			$vs_sql = "
