@@ -79,6 +79,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		MetaTagManager::setWindowTitle(_t('%1 advanced search', $this->searchName('plural')));
 
 		$t_form = new ca_search_forms();
+		$va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'restrictToTypes' => [$this->opn_type_restriction_id]));
 		if (!(
 			(($vn_form_id = (isset($pa_options['form_id'])) ? $pa_options['form_id'] : null) || ($vn_form_id = $this->getRequest()->getParameter('form_id', pInteger)) || ($vn_form_id = $this->opo_result_context->getParameter('form_id')))
 			 && 
@@ -86,13 +87,18 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			 && 
 			 ($t_form->get('table_num') == $this->opo_datamodel->getTableNum($this->ops_tablename))
 		)) {
-			if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'restrictToTypes' => [$this->opn_type_restriction_id])))) {
+			if (sizeof($va_forms)) {
 				$va_tmp = array_keys($va_forms);
 				$vn_form_id = array_shift($va_tmp);
 				if (!$t_form->load($vn_form_id)) {
 					$vn_form_id = null;
 				}
 			}
+		}
+		
+		if (!isset($va_forms[$vn_form_id])) { 
+		    $vn_form_id = array_shift(array_keys($va_forms));
+		    $this->opo_result_context->setParameter('form_id', $vn_form_id);
 		}
 
 		$vs_append_to_search = '';
