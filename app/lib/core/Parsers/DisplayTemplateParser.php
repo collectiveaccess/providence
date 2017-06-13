@@ -892,6 +892,8 @@ class DisplayTemplateParser {
 				$va_tag_vals = DisplayTemplateParser::$value_cache[$vs_cache_key];
 				$vn_count = DisplayTemplateParser::$value_count_cache[$vs_cache_key];
 			} else {
+			    $vs_sort_direction = caGetOption('sortDirection', $pa_options, null, ['forceLowercase' => true]);
+				    
 				$va_tag_vals = [];
 				foreach(array_keys($pa_tags) as $vs_tag) {					
 					$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
@@ -900,10 +902,6 @@ class DisplayTemplateParser {
 					$va_vals = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
 					
 					if (is_array($va_vals)) {
-						if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_vals)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_vals)))) {
-							$va_vals = array_slice($va_vals, $vn_start, ($vn_length > 0) ? $vn_length : null);
-						}
-						
 						foreach($va_vals as $vn_index => $vs_val) {
 							$va_tag_vals[$vn_index][$vs_tag] = $vs_val;
 						}
@@ -916,9 +914,6 @@ class DisplayTemplateParser {
 					foreach($pa_options['sort'] as $vs_sort_spec) {
 						$va_sortables[] = $pr_res->get($vs_sort_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
 					}
-					if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_sortables)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_sortables)))) {
-						$va_sortables = array_slice($va_sortables, $vn_start, ($vn_length > 0) ? $vn_length : null);
-					}
 					
 					if(is_array($va_sortables)) {
 						foreach($va_sortables as $i => $va_sort_values) {
@@ -930,6 +925,11 @@ class DisplayTemplateParser {
 					}
 				}
 			
+			    $va_tag_vals = caSortArrayByKeyInValue($va_tag_vals, ['__sort__'], $vs_sort_direction);
+                if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_tag_vals)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_tag_vals)))) {
+                     $va_tag_vals = array_slice($va_tag_vals, $vn_start, ($vn_length > 0) ? $vn_length : null);
+                }
+			   
 				DisplayTemplateParser::$value_cache[$vs_cache_key] = $va_tag_vals;
 				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($va_tag_vals);
 			
