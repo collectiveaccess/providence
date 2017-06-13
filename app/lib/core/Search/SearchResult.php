@@ -2015,7 +2015,8 @@ class SearchResult extends BaseObject {
 							$va_auth_spec = [];
 						}
 					}
-					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !SearchResult::_isHierarchyModifier($va_path_components['subfield_name']) && !($o_value instanceof InformationServiceAttributeValue) && !($o_value instanceof LCSHAttributeValue)) {
+					
+					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !SearchResult::_isHierarchyModifier($va_path_components['subfield_name']) && !($o_value instanceof InformationServiceAttributeValue) && !($o_value instanceof LCSHAttributeValue) && !($o_value instanceof MediaAttributeValue) && !($o_value instanceof FileAttributeValue)) {
 						$vb_dont_return_value = true;
 						if (!$pa_options['filter']) { continue; }
 					}
@@ -2061,6 +2062,32 @@ class SearchResult extends BaseObject {
 					
 					if (is_null($vs_val_proc)) {
 						switch($o_value->getType()) {
+						    case __CA_ATTRIBUTE_VALUE_MEDIA__:
+						    case __CA_ATTRIBUTE_VALUE_FILE__:
+						        $vs_return_type = 'tag';
+                                $va_versions = $o_value->getVersions();
+                                $vs_version = $va_versions[0];
+                                
+                                $va_e = array_slice($va_path_components['components'], 2);
+                                foreach($va_e as $vs_e) {
+                                    switch($vs_e) {
+                                        case 'tag':
+                                        case 'url':
+                                        case 'path':
+                                        case 'width':
+                                        case 'height':
+                                        case 'mimetype':
+                                            $vs_return_type = $vs_e;
+                                            break;
+                                        default:
+                                            if(in_array($vs_e, $va_versions)) {
+                                                $vs_version = $vs_e;
+                                            }
+                                            break;
+                                    }
+                                }
+                                $vs_val_proc = $o_value->getDisplayValue(['return' => $vs_return_type, 'version' => $vs_version]);
+						        break;
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 								$vn_list_id = $t_element->get('list_id');
