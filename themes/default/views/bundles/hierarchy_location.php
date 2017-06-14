@@ -643,7 +643,7 @@
 ?>
 		jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer").show();
 		jQuery("#<?php print $vs_id_prefix; ?>").hide();
-		_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();
+		//_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();
 <?php
 	} elseif (isset($pa_bundle_settings['open_hierarchy']) && (bool)$pa_bundle_settings['open_hierarchy']) {
 ?>
