@@ -243,7 +243,7 @@
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();'><span><?php print _t('Explore'); ?></span></a></li>
 <?php	
 	}
-	if (!$vb_strict_type_hierarchy && !$vb_read_only) {
+	if ((!$vb_strict_type_hierarchy || $vb_batch) && !$vb_read_only) {
 ?>
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-move" onclick='_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();'><span><?php print _t('Move'); ?></span></a></li>
 <?php
@@ -277,7 +277,7 @@
 				</div>
 <?php
 	}
-	if (!$vb_strict_type_hierarchy && !$vb_read_only) {
+	if ((!$vb_strict_type_hierarchy || $vb_batch) && !$vb_read_only) {
 ?>
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-move" class="hierarchyBrowseTab">
 					<div class="hierarchyBrowserFind">
@@ -399,7 +399,7 @@
 <script type="text/javascript">
 	jQuery(document).ready(function() {	
 <?php
-	if (!$vb_strict_type_hierarchy) {
+	if (!$vb_strict_type_hierarchy || $vb_batch) {
 ?>
 		// Set up "move" hierarchy browse search
 		jQuery('#<?php print $vs_id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
@@ -516,7 +516,7 @@
 
 <?php
 	}
-	if (!$vb_strict_type_hierarchy && !$vb_read_only) {
+	if ((!$vb_strict_type_hierarchy || $vb_batch) && !$vb_read_only) {
 ?>
 	// Set up "move" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>MoveHierarchyBrowser = null;
@@ -643,7 +643,7 @@
 ?>
 		jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer").show();
 		jQuery("#<?php print $vs_id_prefix; ?>").hide();
-		//_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();
+		_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();
 <?php
 	} elseif (isset($pa_bundle_settings['open_hierarchy']) && (bool)$pa_bundle_settings['open_hierarchy']) {
 ?>
