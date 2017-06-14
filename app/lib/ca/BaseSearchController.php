@@ -212,7 +212,7 @@
 					
 					if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
 						$this->view->setVar('open_refine_controls', false);
-						$this->view->setVar('noRefineControls', true); 
+						$this->view->setVar('noRefineControls', false); 
 					}
 					
 				} elseif($po_search) {
