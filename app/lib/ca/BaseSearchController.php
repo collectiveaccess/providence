@@ -46,31 +46,6 @@
  		protected $ops_find_type;
  		
  		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 			
- 			if ($this->ops_tablename) {
-				if ($va_items_per_page_config = $po_request->config->getList('items_per_page_options_for_'.$this->ops_tablename.'_search')) {
-					$this->opa_items_per_page = $va_items_per_page_config;
-				}
-				if (($vn_items_per_page_default = (int)$po_request->config->get('items_per_page_default_for_'.$this->ops_tablename.'_search')) > 0) {
-					$this->opn_items_per_page_default = $vn_items_per_page_default;
-				} else {
-					$this->opn_items_per_page_default = $this->opa_items_per_page[0];
-				}
-				
-				$this->ops_view_default = null;
-				if ($vs_view_default = $po_request->config->get('view_default_for_'.$this->ops_tablename.'_search')) {
-					$this->ops_view_default = $vs_view_default;
-				}
-
-				if(!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
-				$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request)));
-			}
- 		}
- 		# -------------------------------------------------------
  		/**
  		 * Options:
  		 *		appendToSearch = optional text to be AND'ed wuth current search expression

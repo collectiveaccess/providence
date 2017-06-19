@@ -43,14 +43,6 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 	protected $opo_datamodel;
 	protected $ops_find_type;
 	# -------------------------------------------------------
-	#
-	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
-
-		$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
-	}
-	# -------------------------------------------------------
 	public function Index($pa_options=null) {
 		$po_search = (isset($pa_options['search']) && $pa_options['search']) ? $pa_options['search'] : null;
 		parent::Index($pa_options);
