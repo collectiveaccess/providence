@@ -998,6 +998,7 @@ class SearchResult extends BaseObject {
 			$vb_return_as_array = true; 
 			$vb_return_with_structure = $vb_return_all_locales = false;
 			$pa_options['template'] = null;
+			$pa_options['returnAsSearchResult'] = false;
 		}
 		
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
