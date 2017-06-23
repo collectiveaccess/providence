@@ -203,7 +203,7 @@
 		
 		if ($ps_classname) { $pa_attributes['class'] = $ps_classname; }
 		if (is_array($pa_attributes)) {
-			$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
+			$vs_tag .= " "._caHTMLMakeAttributeString($pa_attributes);
 		}
 		
 		$vs_tag .= ">{$ps_content}</a>";

@@ -44,9 +44,6 @@
 			case 'no_results':
 				print $this->render('Results/no_results_html.php');
 				break;
-			case 'editable':
-				print $this->render('Results/ca_tours_results_editable_html.php');
-				break;
 			case 'list':
 			default:
 				print $this->render('Results/ca_tours_results_list_html.php');
