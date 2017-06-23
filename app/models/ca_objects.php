@@ -622,6 +622,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if ($t_lot->load(array('idno_stub' => $vs_val))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
 					$pm_fields[$vs_fld] = $vn_lot_id;
+				} else {
+					return false;
 				}
 			}
 		}
