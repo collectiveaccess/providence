@@ -117,7 +117,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this page.'
+				'LABEL' => _t('View count'), 'DESCRIPTION' => _t('Number of views for this page.')
 		)
  	)
 );
@@ -267,6 +267,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array An array of arrays, each of which contains fields values for a content tag present in the page template.
 	 */
 	public function getHTMLFormElements($pa_options=null) {
+	    if(!is_array($pa_options)) { $pa_options = []; }
 		if (!($vn_template_id = $this->get('template_id'))) { return null; }
 		
 		if(!is_array($va_page_content = $this->get('content'))) { $va_page_content = []; }

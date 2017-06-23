@@ -549,7 +549,7 @@
 		
 		uksort($va_options, 'strnatcasecmp');
 		
-		$vs_buf = "<div class='editorBundlePrintControl'>Export as ";
+		$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
 		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList"), array('value' => null, 'width' => '150px'))."\n";
 		
 		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);

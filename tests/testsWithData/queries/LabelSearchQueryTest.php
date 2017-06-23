@@ -56,7 +56,7 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test image",
+					"name" => "[My test image]",
 				),
 			),
 		)));
@@ -77,6 +77,7 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_object_labels.name:[BLANK]' => 1,
 			'ca_object_labels.name:"[SET]"' => 2, // the "BLANK" value counts as set I guess
 			'ca_object_labels.name:[SET]' => 2,
+			'ca_object_labels.name:"[My test image]"' => 1,
 		));
 	}
 	# -------------------------------------------------------

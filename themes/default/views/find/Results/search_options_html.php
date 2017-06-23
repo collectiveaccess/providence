@@ -123,6 +123,12 @@ if($vo_result->numHits() > 0) {
 		}
 		print "</select>\n";
 		print "</div>";		
+		
+		if($this->getVar('show_children_display_mode_control')) {
+			print "<div class='col'>";
+			print _t('Child records').': '.caHTMLSelect('children', [_t('show') => 'show', _t('hide') => 'hide'], [], ['value' => $this->getVar('children_display_mode')]);
+			print "</div>";	
+		}
 ?>		
 			<div class="clear"> </div>
 		

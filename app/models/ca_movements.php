@@ -81,7 +81,7 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LIST_CODE' => 'movemenet_sources',
+				'LIST_CODE' => 'movement_sources',
 				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of movement. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'source_info' => array(
