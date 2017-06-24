@@ -9143,6 +9143,8 @@ $pa_options["display_form_field_tips"] = true;
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
+				} elseif(!is_numeric($pn_rel_id)) {
+					return false;
 				}
 			}
 		}
