@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1848,12 +1848,94 @@ class BaseEditorController extends ActionController {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
+				$t_instance = new ca_attribute_values($va_identifier['id']);
+				$t_instance->useBlobAsMediaField(true);
+				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
+				$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$t_subject->load($t_attr->get('row_id'));
+				
 				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)]));
 				return;
 				break;
 		}
 		
 		throw new ApplicationException(_t('Invalid type'));
+	}
+	# -------------------------------------------------------
+	/**
+	 * Provide in-viewer search for those that support it (Eg. UniversalViewer)
+	 */
+	public function SearchMediaData() {
+	    list($vn_subject_id, $t_subject) = $this->_initView();
+		
+		if (!$t_subject->isReadable($this->request)) { 
+			throw new ApplicationException(_t('Cannot view media'));
+		}
+		
+		$ps_identifier = $this->request->getParameter('identifier', pString);
+		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
+		}
+		
+		$app = AppController::getInstance();
+		$app->removeAllPlugins();
+		
+		switch($va_identifier['type']) {
+			case 'representation':
+                $t_instance = new ca_object_representations($va_identifier['id']);
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                    throw new ApplicationException(_t('Invalid viewer'));
+                }
+                $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                return;
+                break;
+			case 'attribute':
+                $t_instance = new ca_object_representations($va_identifier['id']);
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                    throw new ApplicationException(_t('Invalid viewer'));
+                }
+                $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                return;
+                break;
+        }
+	}
+	# -------------------------------------------------------
+	/**
+	 * Provide in-viewer search for those that support it (Eg. UniversalViewer)
+	 */
+	public function MediaDataAutocomplete() {
+	    list($vn_subject_id, $t_subject) = $this->_initView();
+		
+		if (!$t_subject->isReadable($this->request)) { 
+			throw new ApplicationException(_t('Cannot view media'));
+		}
+		
+		$ps_identifier = $this->request->getParameter('identifier', pString);
+		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
+		}
+		
+		$app = AppController::getInstance();
+		$app->removeAllPlugins();
+		
+		switch($va_identifier['type']) {
+			case 'representation':
+                $t_instance = new ca_object_representations($va_identifier['id']);
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                    throw new ApplicationException(_t('Invalid viewer'));
+                }
+                $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                return;
+                break;
+			case 'attribute':
+                $t_instance = new ca_object_representations($va_identifier['id']);
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                    throw new ApplicationException(_t('Invalid viewer'));
+                }
+                $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                return;
+                break;
+        }
 	}
 	# -------------------------------------------------------
 	/**
@@ -2020,19 +2102,6 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar('response', $va_response);
 		$this->render('object_representation_process_media_json.php');
-	}
-	# -------------------------------------------------------
-	/**
-	 * Perform search within PDF media (when indexed) and return results (object representation only; not media attributes)
-	 */
-	public function SearchWithinMedia() {
-		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-		$ps_q = $this->request->getParameter('q', pString);
-
-		$va_results = MediaContentLocationIndexer::SearchWithinMedia($ps_q, 'ca_object_representations', $pn_representation_id, 'media');
-		$this->view->setVar('results', $va_results);
-
-		$this->render('object_representation_within_media_search_results_json.php');
 	}
 	# -------------------------------------------------------
 	/**
