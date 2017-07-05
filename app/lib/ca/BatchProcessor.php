@@ -512,19 +512,19 @@
 
  			$va_notices = $va_errors = array();
 
- 			$vb_we_set_transaction = false;
- 			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
- 			if (!$o_trans) {
- 				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction($t_set->getDb());
- 			}
+ 			//$vb_we_set_transaction = false;
+ 			//$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
+ 			//if (!$o_trans) {
+ 			//	$vb_we_set_transaction = true;
+ 			//	$o_trans = new Transaction($t_set->getDb());
+ 			//}
 
  			$o_batch_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
  				'batch_type' => 'MI',
  				'table_num' => (int)$t_instance->tableNum(),
  				'notes' => '',
- 				'transaction' => $o_trans
+ 				//'transaction' => $o_trans
  			));
 
  			if (!is_dir($pa_options['importFromDirectory'])) {
@@ -719,7 +719,7 @@
  				}
 
 				$t_instance = $po_request->getAppDatamodel()->getInstance($vs_import_target, false);
-				$t_instance->setTransaction($o_trans);
+				//$t_instance->setTransaction($o_trans);
 
 				$vs_modified_filename = $f;
 				$va_extracted_idnos_from_filename = array();
@@ -904,7 +904,7 @@
 							'status' => 'ERROR',
 						);
 						$o_log->logError($vs_msg);
-						$o_trans->rollback();
+						//$o_trans->rollback();
 						continue;
 					} else {
 						if ($vb_delete_media_on_import) {
@@ -967,7 +967,7 @@
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
-							$o_trans->rollback();
+							//$o_trans->rollback();
 							continue;
 						}
 
@@ -996,7 +996,7 @@
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
-							$o_trans->rollback();
+							//$o_trans->rollback();
 							continue;
 						}
 
@@ -1022,7 +1022,7 @@
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
-							$o_trans->rollback();
+							//$o_trans->rollback();
 							continue;
 						} else {
 							if ($vb_delete_media_on_import) {
@@ -1035,10 +1035,10 @@
 				if ($t_instance->getPrimaryKey()) {
 					// Perform import of embedded metadata (if required)
 					if ($vn_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()], 'transaction' => $o_trans]);
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()]]);//, 'transaction' => $o_trans]);
 					}
 					if ($vn_object_representation_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()], 'transaction' => $o_trans]);
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()]]); //, 'transaction' => $o_trans]);
 					}
 
 					$va_notices[$t_instance->getPrimaryKey()] = array(
@@ -1120,13 +1120,13 @@
 			}
 			$o_batch_log->close();
 
-			if ($vb_we_set_transaction) {
-				if (sizeof($va_errors) > 0) {
-					$o_trans->rollback();
-				} else {
-					$o_trans->commit();
-				}
-			}
+			//if ($vb_we_set_transaction) {
+			//	if (sizeof($va_errors) > 0) {
+					//$o_trans->rollback();
+			//	} else {
+					//$o_trans->commit();
+			//	}
+			//}
 
 			$vs_set_name = $t_set->getLabelForDisplay();
 			$vs_started_on = caGetLocalizedDate($vn_start_time);
