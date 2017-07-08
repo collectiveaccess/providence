@@ -1183,7 +1183,7 @@ function caFileIsIncludable($ps_file) {
 			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
-				$va_key[] = $va_data[$vs_sort_key];
+				$va_key[] = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
 			}
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
