@@ -35,6 +35,9 @@ require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");
 
 class SimpleService {
 	# -------------------------------------------------------
+	static $s_key_cache = [];
+	static $s_simple_template_cache = [];
+	# -------------------------------------------------------
 	/**
 	 * Dispatch service call
 	 * @param string $ps_endpoint
@@ -221,6 +224,9 @@ class SimpleService {
 		if(!$vn_limit) { $vn_limit = 0; }
 
 		$va_return = [];
+		if (isset($pa_config['includeCount']) && $pa_config['includeCount']) {
+		    $va_return['count'] = $o_res->numHits();
+		}
 		$va_get_options = [];
 		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
 			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
@@ -403,7 +409,14 @@ class SimpleService {
 	}
 	# -------------------------------------------------------
 	private static function sanitizeKey($ps_key) {
-		return preg_replace('[^A-Za-z0-9\-\_\.\:]', '', $ps_key);
+	    if(isset(SimpleService::$s_key_cache[$ps_key])) { return SimpleService::$s_key_cache[$ps_key]; }
+		return SimpleService::$s_key_cache[$ps_key] = preg_replace('[^A-Za-z0-9\-\_\.\:]', '', $ps_key);
+	}
+	# -------------------------------------------------------
+	private static function isSimpleTemplate($ps_template) {
+	    if(isset(SimpleService::$s_simple_template_cache[$ps_template])) { return SimpleService::$s_simple_template_cache[$ps_template]; }
+	    
+	    return SimpleService::$s_simple_template_cache[$ps_template] = preg_match("!^\^ca_[A-Za-z0-9_\-\.]+$!", $ps_template);
 	}
 	# -------------------------------------------------------
 	/**
@@ -413,9 +426,14 @@ class SimpleService {
 		if(is_array($pm_template)) {
 			$vs_return_as = caGetOption('returnAs', $pm_template, 'text', ['forceLowercase' => true]);
 			$vs_delimiter = caGetOption('delimiter', $pm_template, ";");
+			$vs_template = caGetOption('valueTemplate', $pm_template, 'No template');
 			
 			// Get values and break on delimiter
-			$vs_v = $pt_instance->getWithTemplate(caGetOption('valueTemplate', $pm_template, 'No template'), array_merge($pa_options, ['includeBlankValuesInArray' => true]));
+			if (SimpleService::isSimpleTemplate($vs_template)) {
+		        $vs_v = $pt_instance->get(str_replace("^", "", $vs_template), $pa_options);
+			} else {
+			    $vs_v = $pt_instance->getWithTemplate($vs_template, array_merge($pa_options, ['includeBlankValuesInArray' => true]));
+			}
 			$va_v = explode($vs_delimiter, $vs_v);
 			
 			$va_key = null;
@@ -443,6 +461,9 @@ class SimpleService {
 			}
 			return $va_v_decode;
 		} else {
+		    if (SimpleService::isSimpleTemplate($pm_template)) {
+		        return $pt_instance->get(str_replace("^", "", $pm_template), $pa_options);
+		    } 
 			return $pt_instance->getWithTemplate($pm_template, $pa_options);
 		}
 	}
