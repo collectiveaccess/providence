@@ -225,7 +225,7 @@ class SimpleService {
 
 		$va_return = [];
 		if (isset($pa_config['includeCount']) && $pa_config['includeCount']) {
-		    $va_return['count'] = $o_res->numHits();
+		    $va_return['resultCount'] = $o_res->numHits();
 		}
 		$va_get_options = [];
 		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
