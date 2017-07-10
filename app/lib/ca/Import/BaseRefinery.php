@@ -138,17 +138,25 @@
 		 *
 		 * @return mixed An array or string
 		 */
-		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $pn_index=0, $pa_options=null) {
+		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $pn_index=null, $pa_options=null) {
 			$o_reader = caGetOption('reader', $pa_options, null);
 			
 			$ps_placeholder = trim($ps_placeholder);
 			$vs_key = substr($ps_placeholder, 1);
 			
+			$va_delimiter = caGetOption("delimiter", $pa_options, ';');
+			if (is_array($va_delimiter)) { $vs_delimiter = array_shift($va_delimiter); } else { $vs_delimiter = $va_delimiter; }
+			
 			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false)) {
 				// Placeholder is a single caret-value
 				$va_tag = explode('~', $vs_key);
 				if ($o_reader) {
-					$vm_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
+					$vm_val = $o_reader->get($va_tag[0], array('returnAsArray' => true, 'delimiter' => $vs_delimiter));
+					if(!is_array($vm_val) && $vs_delimiter) {
+					    $vm_val = explode($vs_delimiter, $vm_val);
+					} elseif(!is_array($vm_val)) {
+					    $vm_val = [$vm_val];
+					}
 				} else {
 					if (!isset($pa_source_data[$va_tag[0]])) { return null; }
 					$vm_val = $pa_source_data[$va_tag[0]];
