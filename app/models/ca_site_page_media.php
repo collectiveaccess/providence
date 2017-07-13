@@ -101,9 +101,9 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		'media_metadata' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => true, 
+				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
+				#'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				
@@ -112,9 +112,9 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		'media_content' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => true, 
+				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
+				#'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				

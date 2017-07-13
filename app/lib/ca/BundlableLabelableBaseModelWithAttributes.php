@@ -4651,7 +4651,133 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_page_media':
-						print "save media";
+					    if ($vb_batch) { break; }   // no batch mode
+						// check for existing representations to update (or delete)
+						
+						$vs_prefix_stub = $vs_placement_code.$vs_form_prefix.'_';
+						$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
+						$va_media_ids_sorted = $va_mediasort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'MediaBundleList', pString));
+						sort($va_media_ids_sorted, SORT_NUMERIC);
+						
+						$va_media_list = $this->getPageMedia();
+						
+						if (is_array($va_media)) {
+							foreach($va_media_list as $vn_i => $va_media) {
+								$this->clearErrors();
+								
+								if (strlen($po_request->getParameter($vs_prefix_stub.'access_'.$va_media['media_id'], pInteger)) > 0) {
+									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_media['media_id']])) {
+										$va_tmp = explode('/', $vs_path);
+										$vs_original_name = array_pop($va_tmp);
+									} else {
+										$vs_path = $_FILES[$vs_prefix_stub.'media_'.$va_media['media_id']]['tmp_name'];
+										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_media['media_id']]['name'];
+									}
+									
+									$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_'.$va_media['media_id'], pString);
+									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_media['media_id'], pInteger);
+									$vs_title = trim($po_request->getParameter($vs_prefix_stub.'title_'.$va_media['media_id'], pString));
+									$vs_caption = trim($po_request->getParameter($vs_prefix_stub.'caption_'.$va_media['media_id'], pString));
+									
+									$vn_rank = null;
+									if (($vn_rank_index = array_search($va_media['media_id'], $va_mediasort_order)) !== false) {
+										$vn_rank = $va_media_ids_sorted[$vn_rank_index];
+									}
+									
+									$this->editRepresentation($va_media['media_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('idno' => $vs_idno), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
+									if ($this->numErrors()) {
+										//$po_request->addActionErrors($this->errors(), $vs_f, $va_media['media_id']);
+										foreach($this->errors() as $o_e) {
+											switch($o_e->getErrorNumber()) {
+												case 795:
+													// field conflicts
+													$po_request->addActionError($o_e, $vs_f, $va_media['media_id']);
+													break;
+												default:
+													$po_request->addActionError($o_e, $vs_f, $va_media['media_id']);
+													break;
+											}
+										}
+									}
+									
+									if ($vs_title) {
+										//
+										// Set media title
+										//
+										$t_rep = new ca_object_representations();
+										if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
+										global $g_ui_locale_id;
+										if ($t_rep->load($va_media['media_id'])) {
+											$t_rep->setMode(ACCESS_WRITE);
+											$t_rep->replaceLabel(array('name' => $vs_title), $g_ui_locale_id, null, true, array('queueIndexing' => true));
+											if ($t_rep->numErrors()) {
+												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_media['media_id']);
+											}
+										}
+									}
+								} else {
+									// is it a delete key?
+									$this->clearErrors();
+									if (($po_request->getParameter($vs_prefix_stub.$va_media['media_id'].'_delete', pInteger)) > 0) {
+										// delete!
+										$this->removeRepresentation($va_media['media_id']);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, $va_media['media_id']);
+										}
+									}
+								}
+							}
+						}
+
+					
+						// check for new media to add 
+						$va_file_list = $_FILES;
+						foreach($_REQUEST as $vs_key => $vs_value) {
+							if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'url' => $vs_value
+								);
+							} elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'tmp_name' => $vs_value,
+									'name' => $vs_value
+								);
+							}
+						}
+						
+						foreach($va_file_list as $vs_key => $va_values) {
+							$this->clearErrors();
+							
+							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
+							
+							if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
+								$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
+							}
+							
+							if ($vn_existing_media_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
+								//$this->addRelationship('ca_object_representations', $vn_existing_media_id, $vn_type_id);
+							} else {
+								if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
+									$va_tmp = explode('/', $vs_path);
+									$vs_original_name = array_pop($va_tmp);
+								} else {
+									$vs_path = $va_values['tmp_name'];
+									$vs_original_name = $va_values['name'];
+								}
+								if (!$vs_path) { continue; }
+								
+								$vs_title = trim($po_request->getParameter($vs_prefix_stub.'title_new_'.$va_matches[1], pString));	
+								$vs_caption = $po_request->getParameter($vs_prefix_stub.'caption_new_'.$va_matches[1], pString);
+								$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
+								$vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
+								
+								//$t_rep = $this->addRepresentation($vs_path, $vn_mediatype_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_title, 'idno' => $vs_idno), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+								$this->addMedia($vs_path, $vs_title, $vs_caption, $vs_idno, $vn_access, []);
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
+								} 
+							}
+						}
 						break;
 					# -------------------------------
 				}

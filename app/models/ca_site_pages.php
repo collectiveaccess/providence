@@ -431,16 +431,62 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	    if (!($vn_page_id = $this->getPrimaryKey())) { return null; }
 		return ca_site_page_media::find(['page_id' => $vn_page_id], ['returnAs' => 'count']);
 	}
-	
 	# ------------------------------------------------------
 	/**
-	 * Return the total number of media for current page. Return null if no page is loaded 
+	 * 
 	 *
-	 * @return int
+	 * @return array
 	 */
 	public function getPageMedia($pa_options=null) {
 	    if (!($vn_page_id = $this->getPrimaryKey())) { return null; }
-		return ca_site_page_media::find(['page_id' => $vn_page_id], ['returnAs' => 'array']);
+		$va_media =  ca_site_page_media::find(['page_id' => $vn_page_id], ['returnAs' => 'arrays']);
+		
+		$o_coder = new MediaInfoCoder();
+		foreach($va_media as $i => $va_media_info) {
+		    $va_media[$i]['_display'] = $va_media_info['caption'];
+		    $va_media[$i]['access_display'] = $this->getChoiceListValue('access', $va_media_info['access']);
+		    $va_media[$i]['media'] = caUnserializeForDatabase($va_media_info['media']);
+		    
+		    $va_media[$i]['icon'] = $o_coder->getMediaTag($va_media[$i]['media'], 'thumbnail');
+		    $va_media[$i]['mimetype'] = $o_coder->getMediaInfo($va_media[$i]['media'], 'original', 'MIMETYPE');
+		    $va_media[$i]['dimensions'] = '?';
+		    $va_media[$i]['metadata'] = '?';
+		    $va_media[$i]['md5'] = '?';
+		    $va_media[$i]['fetched_from'] = '?';
+		    $va_media[$i]['fetched_on'] = '?';
+		    $va_media[$i]['fetched'] = '?';
+		}
+		//print_r($va_media);
+		return $va_media;
+	}
+	
+								
+									//'fetched_from' => $va_rep['fetched_from'],
+								//	'fetched_on' => date('c', $va_rep['fetched_on']),
+								//	'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on'])) : ""
+								
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	public function addMedia($ps_path, $ps_title, $ps_caption, $ps_idno, $pn_access, $pa_options=null) {
+	    $t_media = new ca_site_page_media();
+	    $t_media->setMode(ACCESS_WRITE);
+	    $t_media->set([
+	        'page_id' => $this->getPrimaryKey(),
+	        'media' => $ps_path,
+	        'title' => $ps_title,
+	        'caption' => $ps_caption,
+	        'idno' => $ps_idno,
+	        'access' => $pn_access
+	    ]);
+	    if (!($vn_rc = $t_media->insert($pa_options))) {
+	        $this->errors = $t_media->errors;
+	        return $vn_rc;
+	    }
+	    return $t_media;
 	}
 	# ------------------------------------------------------
 }
