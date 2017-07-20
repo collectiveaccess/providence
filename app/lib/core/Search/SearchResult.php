@@ -1231,7 +1231,8 @@ class SearchResult extends BaseObject {
 									if(is_array(SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])) {
 										$va_hier_id_list = array_merge(array($vn_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5]);
 										$va_hier_id_list = array_filter($va_hier_id_list, function($v) { return $v > 0 ;});
-										if ($vs_hierarchy_direction === 'asc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
+										
+										$va_hier_id_list = array_reverse($va_hier_id_list);
 										
 										if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 											$va_hier_id_list = array_slice($va_hier_id_list, 0, $vn_max_levels_from_top, true);
@@ -1244,6 +1245,7 @@ class SearchResult extends BaseObject {
 										if ($t_instance->getHierarchyType() == __CA_HIER_TYPE_MULTI_MONO__) {
 											array_shift($va_hier_id_list);
 										}
+										if ($vs_hierarchy_direction === 'desc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
 										$va_hier_ids[] = $va_hier_id_list;
 									}
 								}
