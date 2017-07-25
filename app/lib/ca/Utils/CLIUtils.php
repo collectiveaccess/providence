@@ -3954,4 +3954,111 @@
 			return _t('Scan site page template for tags to build the content management editing user interface.');
 		}
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function precache_simple_services($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/ca/SitePageTemplateManager.php");
+			
+		
+		    $o_app_conf = Configuration::load();
+            $o_service_conf = Configuration::load(__CA_APP_DIR__.'/conf/services.conf');
+            $o_dm = Datamodel::load();
+
+            $va_endpoints = $o_service_conf->get('simple_api_endpoints');
+            
+            $ps_password = $vs_auth = null;
+            if ($ps_username = $po_opts->getOption('username')) {
+                $ps_password = $po_opts->getOption('password');
+                
+                $vs_auth = "{$ps_username}:{$ps_password}@";
+                
+            }
+
+            foreach($va_endpoints as $vs_endpoint => $va_endpoint_info) {
+                if ($va_precache_config = caGetOption('precache', $va_endpoint_info, null)) {
+                    if (!($t_instance = $o_dm->getInstanceByTableName($vs_table = $va_endpoint_info['table'],true))) {
+                        continue;
+                    }
+                    $vs_pk = $t_instance->primaryKey(true);
+                            
+                    switch($va_endpoint_info['type']) {
+                        case 'search':
+                        case 'refineablesearch':
+                            if(isset($va_precache_config['searches']) && is_array($va_precache_config['searches'])) {
+                                foreach($va_precache_config['searches'] as $vs_search) {
+                                    if (sizeof($va_tags = caGetTemplateTags($vs_search, ['stripOptions' => true])) > 0) {
+                                        $va_vals = [];
+                                        foreach($va_tags as $vs_tag) {
+                                            $va_tmp = explode('.', $vs_tag);
+                                            if (!($t_tag = $o_dm->getInstanceByTableName($va_tmp[0],true))) {
+                                                continue;
+                                            }
+                                            
+                                            $qr_tag_vals = $va_tmp[0]::find('*', ['returnAs' => 'searchResult']);
+                                            $va_tag_vals = $qr_tag_vals->getAllFieldValues($vs_tag);
+                                          
+                                            foreach($va_tag_vals as $vs_val) {
+                                                $vs_search_proc = caProcessTemplate($vs_search, [$vs_tag => $vs_val]);
+                                                file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}?noCache=1&q=".urlencode($vs_search_proc));
+                                                CLIUtils::addMessage(_t("[".$t_instance->getProperty('NAME_PLURAL')."] Cached endpoint %1 for search %2", $vs_endpoint, $vs_search_proc));
+                                            }
+                                        }
+                                    } else {
+                                        file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}?noCache=1&q=".urlencode($vs_search));
+                                        CLIUtils::addMessage(_t("[".$t_instance->getProperty('NAME_PLURAL')."] Cached endpoint %1 for search %2", $vs_endpoint, $vs_search));
+                                    }
+                                }
+                            }
+                            break;
+                         case 'detail':
+                           
+                            if ($qr_res = $vs_table::find('*', ['returnAs' => 'searchResult'])) {
+                                while($qr_res->nextHit()) {
+                                    file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}/id/".$qr_res->get($vs_pk));
+                                    CLIUtils::addMessage(_t("[".$t_instance->getProperty('NAME_PLURAL')."] Cached endpoint %1: %2", $vs_endpoint, $qr_res->get("{$vs_table}.preferred_labels")));
+                                }
+                            }
+                            break;
+                        // other service types are no cacheable
+                    }
+                }
+            }
+			
+			CLIUtils::addMessage(_t("Added %1 templates; updated %2 templates"));
+			
+			//if (is_array($va_results['errors']) && sizeof($va_results['errors'])) {
+			//	CLIUtils::addError(_t("Templates with errors: %1", join(", ", array_keys($va_results['errors']))));
+			//}
+		}
+		# -------------------------------------------------------
+		public static function precache_simple_servicesParamList() {
+			return [
+				"username|u-s" => _t('Optional username to authenticate with.'),
+				"password|p-s" => _t('Optional password to authenticate with.'),
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_simple_servicesUtilityClass() {
+			return _t('Performance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_simple_servicesShortHelp() {
+			return _t('Pre-cache simple service responses.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_simple_servicesHelp() {
+			return _t('Pre-cache responses for appropriately configurated simple services. Caching can dramatically improve performance for services providing infrequently changing data.');
+		}
+		# -------------------------------------------------------
 	}

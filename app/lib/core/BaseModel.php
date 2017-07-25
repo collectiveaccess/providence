@@ -3152,7 +3152,7 @@ class BaseModel extends BaseObject {
 	 * @return bool true on success, false on failure of indexing
 	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
-		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
+		if (defined("__CA_DONT_DO_SEARCH_INDEXING__") || defined('__CA_IS_SIMPLE_SERVICE_CALL__')) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}

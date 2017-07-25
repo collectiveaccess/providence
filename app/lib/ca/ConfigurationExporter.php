@@ -215,6 +215,7 @@ final class ConfigurationExporter {
 		}
 
 		$va_exclude_lists = $this->opo_config->get('configuration_export_exclude_lists');
+		$vn_exclude_lists_larger_than = $this->opo_config->get('configuration_export_exclude_lists_larger_than');
 
 		while($qr_lists->nextRow()) {
 			// skip excluded lists (in diff exports only)
@@ -223,6 +224,8 @@ final class ConfigurationExporter {
 					continue;
 				}
 			}
+			
+			if (($vn_exclude_lists_larger_than > 0) && ($t_list->numItemsInList($qr_lists->get('list_id')) > $vn_exclude_lists_larger_than)) { continue; }
 
 			$vo_list = $this->opo_dom->createElement("list");
 			$vo_list->setAttribute("code", $this->makeIDNOFromInstance($qr_lists, 'list_code'));
