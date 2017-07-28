@@ -202,6 +202,26 @@ class CLIProgressBar
 
         return self::display();
     }
+    
+    /**
+     * Force counter to value
+     * 
+     * @param int    $index    Index to jump to
+     * @param string $message If passed, overrides the existing message
+     *
+     * @static
+     * @return string - the progress bar
+     */
+    public static function seek($index = 1, $message = '')
+    {
+        self::$done = $index;
+
+        if ($message) {
+            self::$message = $message;
+        }
+
+        return self::display();
+    }
 
     /**
      * Called by start and finish
