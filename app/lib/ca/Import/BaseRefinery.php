@@ -140,27 +140,57 @@
 		 */
 		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $pn_index=null, $pa_options=null) {
 			$o_reader = caGetOption('reader', $pa_options, null);
+			$pb_return_as_string = caGetOption("returnAsString", $pa_options, false);
+			$pn_get_at_index = caGetOption('returnDelimitedValueAt', $pa_options, null);
 			
 			$ps_placeholder = trim($ps_placeholder);
 			$vs_key = substr($ps_placeholder, 1);
 			
-			$va_delimiter = caGetOption("delimiter", $pa_options, ';');
-			if (is_array($va_delimiter)) { $vs_delimiter = array_shift($va_delimiter); } else { $vs_delimiter = $va_delimiter; }
+			$va_delimiter = caGetOption("delimiter", $pa_options, null);
+			if (is_array($va_delimiter)) { $vs_delimiter = $va_delimiter[0]; } else { $vs_delimiter = $va_delimiter; $va_delimiter = [$va_delimiter]; }
 			
+			if ($o_reader && !$o_reader->valuesCanRepeat() && $vs_delimiter) {
+			    // Expand delimited values in non-repeating sources to simulate repeats
+			    foreach($pa_source_data as $vs_k => $vm_v) {
+			        if (!is_array($pa_source_data[$vs_k])) {
+			            $pa_source_data[$vs_k] = array_filter(explode($vs_delimiter, $pa_source_data[$vs_k]), "strlen");
+			        }
+			    }
+			}
+			if($vs_delimiter && !is_null($pn_index) && !is_null($pn_get_at_index)) {
+			    // 
+			    foreach($va_delimiter as $vn_index => $vs_delim) {
+                    if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
+                    $va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
+                }
+			    foreach($pa_source_data as $vs_k => $vm_v) {
+			        if(!is_array($vm_v)) { $pa_source_data[$vs_k] = [$vm_v]; }
+			        if(isset($pa_source_data[$vs_k][$pn_index])) {
+			            $va_tmp = preg_split("!(".join("|", $va_delimiter).")!", $pa_source_data[$vs_k][$pn_index]);
+			            
+			            // If only one delimited value in value string then return that regardless of the index (it's not a delimited string)
+			            $pa_source_data[$vs_k][$pn_index] = (sizeof($va_tmp) == 1) ? $va_tmp[0] : (isset($va_tmp[$pn_get_at_index]) ? $va_tmp[$pn_get_at_index] : null);
+			        
+			        }
+                }
+			}
 			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false)) {
 				// Placeholder is a single caret-value
 				$va_tag = explode('~', $vs_key);
-				if ($o_reader) {
+				
+				if (isset($pa_source_data[$va_tag[0]])) {
+				    $vm_val = $pa_source_data[$va_tag[0]];
+				} elseif ($o_reader) {
 					$vm_val = $o_reader->get($va_tag[0], array('returnAsArray' => true, 'delimiter' => $vs_delimiter));
-					if(!is_array($vm_val) && $vs_delimiter) {
-					    $vm_val = explode($vs_delimiter, $vm_val);
-					} elseif(!is_array($vm_val)) {
-					    $vm_val = [$vm_val];
-					}
+					
 				} else {
-					if (!isset($pa_source_data[$va_tag[0]])) { return null; }
-					$vm_val = $pa_source_data[$va_tag[0]];
+					$vm_val = null;
 				}
+				if(!is_array($vm_val) && $vs_delimiter) {
+                    $vm_val = explode($vs_delimiter, $vm_val);
+                } elseif(!is_array($vm_val)) {
+                    $vm_val = [$vm_val];
+                }
 				
 				if ($va_tag[1]) { 
 					foreach($vm_val as $vn_i => $vs_val) {
@@ -175,18 +205,28 @@
 					
 					// Make sure all tags are in source data array, otherwise try to pull them from the reader.
 					// Some formats, mainly XML, can take expressions (XPath for XML) that are not precalculated in the array
+					$va_extracted_data = [];
 					foreach($va_tags as $vs_tag) {
 						$va_tag = explode('~', $vs_tag);
-						if (isset($pa_source_data[$va_tag[0]])) { continue; }
-						$va_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
-						$pa_source_data[$va_tag[0]] = (strlen($pn_index)) ? $va_val[$pn_index] : join(";", $va_val);
+						if (!isset($pa_source_data[$va_tag[0]])) { 
+						    $va_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
+						} else {
+						    $va_val = $pa_source_data[$va_tag[0]];
+						}
+						
+						if(!is_array($va_val)) { $va_val = [$va_val]; }
+                        foreach($va_val as $i => $v) {
+                            $va_extracted_data[$i][$vs_tag] = $v;
+                        }
 					}
 					
-					$vm_val = caProcessTemplate($ps_placeholder, $pa_source_data);
+					foreach($va_extracted_data as $i => $va_iteration) {
+					    $vm_val[] = caProcessTemplate($ps_placeholder, $va_iteration);
+					}
 				} else {
 					// Is plain text
 					if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
-					$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+					$vm_val = caProcessTemplate($ps_placeholder, $pa_source_data);
 				}
 			} else {
 				$vm_val = $ps_placeholder;
@@ -194,9 +234,9 @@
 			
 			// Get specific index for repeating value
 			if (is_array($vm_val) && !is_null($pn_index)) {
-				$vm_val = isset($vm_val[$pn_index]) ? $vm_val[$pn_index] : null;
+				$vm_val = isset($vm_val[$pn_index]) ? [$vm_val[$pn_index]] : null;
 			}
-			
+	
 			// If we're returning the entire array, do processing on members and return
 			if(is_array($vm_val)) {
 				foreach($vm_val as $vn_i => $vs_val) {
@@ -208,36 +248,23 @@
 				
 				$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
 				
-				if (caGetOption("returnAsString", $pa_options, false)) {
-					$va_delimiter = caGetOption("delimiter", $pa_options, ';');
-					if (is_array($va_delimiter)) { $vs_delimiter = array_shift($va_delimiter); } else { $vs_delimiter = $va_delimiter; }
-					return join($vs_delimiter, $vm_val);
+				if (is_null($pn_get_at_index)) {
+                    if ($pb_return_as_string) {
+                        return join($vs_delimiter, $vm_val);
+                    }
+				    return $vm_val;
 				}
-				return $vm_val;
 			}
+			if (!is_array($vm_val)) { $vm_val = [$vm_val]; }
+			foreach($vm_val as $i => $v) {
+                if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($v), $pa_item['settings']['original_values'])) !== false)) {
+                    $v = $pa_item['settings']['replacement_values'][$vn_i];
+                }
+                $v = caProcessImportItemSettingsForValue($v, $pa_item['settings']);
+                $vm_val[$i] = $v;
+            }
 			
-			if (!is_null($pn_index) && !is_null($vs_get_at_index = caGetOption('returnDelimitedValueAt', $pa_options, null)) && ($va_delimiter = caGetOption("delimiter", $pa_options, ';'))) {
-				
-				if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
-				foreach($va_delimiter as $vn_index => $vs_delim) {
-					if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
-					$va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
-				}
-				$va_val = preg_split("!(".join("|", $va_delimiter).")!", $vm_val);
-				
-				// If only one delimited value in value string then return that regardless of the index (it's not a delimited string)
-				$vm_val = (sizeof($va_val) == 1) ? $va_val[0] : ((isset($va_val[$vs_get_at_index])) ? $va_val[$vs_get_at_index] : null);
-			}
-			
-			$vm_val = trim($vm_val);
-			
-			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vm_val), $pa_item['settings']['original_values'])) !== false)) {
-				$vm_val = $pa_item['settings']['replacement_values'][$vn_i];
-			}
-			
-			$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
-			
-			return trim($vm_val);
+			return $pb_return_as_string ? trim(join($vs_delimiter, $vm_val)) : $vm_val;
 		}
 		# -------------------------------------------------------
 		/**
