@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -301,7 +301,7 @@
  			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
  				$vs_width = ((int)$vs_width * 6)."px";
  			}
- 			if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
+ 			if (!preg_match("!^[\d\.]+px$!i", $vs_height) && ((int)$vs_height > 1)) {
  				$vs_height = ((int)$vs_height * 16)."px";
  			}
  			
