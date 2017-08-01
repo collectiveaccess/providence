@@ -1435,10 +1435,10 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	# ------------------------------------------------------
 	private function _processObjectHistoryBundleSettings($pa_bundle_settings) {
 
-		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_critiera = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_critiera)) {
+		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_criteria = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_criteria)) {
 			// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
 			$va_bundle_settings = array();
-			foreach($va_current_location_critiera as $vs_table => $va_info) {
+			foreach($va_current_location_criteria as $vs_table => $va_info) {
 				switch($vs_table) {
 					case 'ca_storage_locations':
 						if(is_array($va_info)) {
@@ -1496,9 +1496,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
 						'hide_add_to_occurrence_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection'
 					) as $vs_key) {
-				if (isset($va_current_location_critiera[$vs_key]) && $vb_use_app_defaults) {
-					$va_bundle_settings[$vs_key] = $va_current_location_critiera[$vs_key];
-				} else {
+				if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
+					$va_bundle_settings[$vs_key] = $va_current_location_criteria[$vs_key];
+				} elseif(!$vb_use_app_defaults) {
 					$va_bundle_settings[$vs_key] = $pa_bundle_settings[$vs_key];
 				}
 			}
