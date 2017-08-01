@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -338,9 +338,10 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 								minLength: 3,delay: 800,
 								source: '{$vs_url}',
 								html: true,
-								select: function(event, ui) {
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);
-									
+								select: function(event, ui) {".((!$pb_for_search) ? "
+									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);" : 
+									"jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label);"
+								)."
 								}
 							}
 						).click(function() { this.select(); });

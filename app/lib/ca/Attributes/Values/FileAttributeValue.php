@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,14 +126,17 @@
 			if(isset($pa_options['forDuplication']) && $pa_options['forDuplication']) { $pa_options['return'] = 'path'; }
 			if(!isset($pa_options['return'])) { $pa_options['return'] = null; } else { $pa_options['return'] = strtolower($pa_options['return']); }
 			
-			switch($pa_options['return']) {
-				case 'url':
-					return $this->opo_file_info_coder->getFileUrl($this->opa_file_data);
-					break;
-				case 'path':
-					return $this->opo_file_info_coder->getFilePath($this->opa_file_data);
-					break;
-			}
+			if(isset($pa_options['return'])) {
+                switch($pa_options['return']) {
+                    case 'path':
+                        return $this->opo_file_info_coder->getFilePath($this->opa_file_data);
+                        break;
+                    case 'url':
+                    default:
+                        return $this->opo_file_info_coder->getFileUrl($this->opa_file_data);
+                        break;
+                }
+            }
 			
 			$vs_val = '';
 			
@@ -272,4 +275,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

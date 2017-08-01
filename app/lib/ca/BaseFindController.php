@@ -257,6 +257,23 @@
 			
 			$this->view->setVar('result_context', $this->opo_result_context);
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
+			
+			#
+			#
+			#				
+			$this->view->setVar('children_display_mode_default', ($vs_children_display_mode_default = $this->request->config->get($this->ops_tablename."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow");
+
+			$ps_children_display_mode = $this->opo_result_context->getCurrentChildrenDisplayMode();
+			
+			// force mode when "always" is set
+			if (strtolower($vs_children_display_mode_default) == 'alwaysshow') {
+				$ps_children_display_mode = 'show';
+			} elseif(strtolower($vs_children_display_mode_default) == 'alwayshide') {
+				$ps_children_display_mode = 'hide';
+			}
+			$this->view->setVar('children_display_mode', $ps_children_display_mode);				
+			$this->view->setVar('hide_children', $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide']));			
+			$this->view->setVar('show_children_display_mode_control', !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide']));
  		}
  		# -------------------------------------------------------
 		/**
@@ -1028,7 +1045,7 @@
  			$t_display = new ca_bundle_displays($pn_display_id);
  			
  			$vs_view = $this->opo_result_context->getCurrentView();
- 			$va_ret = $t_display->getDisplayListForResultsEditor($this->ops_tablename, ['user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
+ 			$va_ret = $t_display->getDisplayListForResultsEditor($this->ops_tablename, ['user_id' => $this->request->getUserID(), 'request' => $this->request, 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			if (!is_array($va_ret)) { return null; }
  			
 			$this->view->setVar('t_display', $t_display);	

@@ -865,7 +865,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  	 */
  	public function isSaveable($po_request, $ps_bundle_name=null) {
  		// Is row loaded?
- 		if (!($vn_list_id = $this->get('list_id'))) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+ 		if (!($vn_list_id = $this->get('list_id')) && $po_request) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
  			$vn_list_id = $this->_getListIDFromRequest($po_request);
  		}
 

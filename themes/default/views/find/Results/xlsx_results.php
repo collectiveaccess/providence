@@ -107,7 +107,7 @@
 		// default to automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
 		$o_sheet->getRowDimension($vn_line)->setRowHeight(-1);
 
-		$va_media_versions = $vo_result->getMediaVersions('ca_object_representations.media');
+		if(!is_array($va_media_versions = $vo_result->getMediaVersions('ca_object_representations.media'))) { $va_media_versions = []; }
 		foreach($va_display_list as $vn_placement_id => $va_info) {
 			if (
 				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)

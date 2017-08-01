@@ -3152,7 +3152,7 @@ class BaseModel extends BaseObject {
 	 * @return bool true on success, false on failure of indexing
 	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
-		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
+		if (defined("__CA_DONT_DO_SEARCH_INDEXING__") || defined('__CA_IS_SIMPLE_SERVICE_CALL__')) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
@@ -9143,6 +9143,8 @@ $pa_options["display_form_field_tips"] = true;
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
+				} elseif(!is_numeric($pn_rel_id)) {
+					return false;
 				}
 			}
 		}
@@ -12054,9 +12056,9 @@ $pa_options["display_form_field_tips"] = true;
 		if (!($vs_rank_fld = $this->getProperty('RANK'))) { return null; }
 		
 		$va_params = [];
-		$vs_parent_sql = "{$vs_parent_id_fld} IS NULL";
+		$vs_parent_sql = $vs_parent_id_fld ? "{$vs_parent_id_fld} IS NULL" : '';
 		if ($pn_after_id) { $va_params[] = $pn_after_id; }
-		if ($vn_parent_id) { 
+		if ($vs_parent_id_fld && $vn_parent_id) { 
 			$va_params[] = $vn_parent_id; 
 			$vs_parent_sql = "{$vs_parent_id_fld} = ?";
 		}
@@ -12064,11 +12066,11 @@ $pa_options["display_form_field_tips"] = true;
 		// If "after_id" is null then change ranks such that the "id" row is at the beginning
 		if (!$pn_after_id) {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_parent_sql} ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} ".($vs_parent_sql ? "WHERE {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
 			", $va_params);
 		} else {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? AND {$vs_parent_sql} ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? ".($vs_parent_sql ? "AND {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
 			", $va_params);
 		}
 	
@@ -12080,20 +12082,20 @@ $pa_options["display_form_field_tips"] = true;
 		}
 	
 		$va_params = [];
-		$vs_parent_sql = "{$vs_parent_id_fld} IS NULL";
-		if ($vn_parent_id) { 
+		$vs_parent_sql = $vs_parent_id_fld ? "{$vs_parent_id_fld} IS NULL" : "";
+		if ($vs_parent_id_fld && $vn_parent_id) { 
 			$va_params[] = $vn_parent_id; 
 			$vs_parent_sql = "{$vs_parent_id_fld} = ?";
 		}
 		$va_params[] = $vn_after_rank;
 		
 		$qr_res = $o_db->query("
-			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE {$vs_parent_sql} AND {$vs_rank_fld} > ?
+			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
 		", $va_params);
 		
 		// Log changes to ranks
 		$qr_res = $o_db->query("
-			SELECT * FROM {$vs_item_table} WHERE {$vs_parent_sql} AND {$vs_rank_fld} > ?
+			SELECT * FROM {$vs_item_table} WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
 		", $va_params);
 		while($qr_res->nextRow()) {
 			$this->logChange("U", null, ['row_id' => $qr_res->get($vs_item_pk), 'snapshot' => $qr_res->getRow()]);
