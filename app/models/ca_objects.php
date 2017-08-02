@@ -1498,7 +1498,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					) as $vs_key) {
 				if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
 					$va_bundle_settings[$vs_key] = $va_current_location_criteria[$vs_key];
-				} elseif(!$vb_use_app_defaults) {
+				} elseif(!$vb_use_app_defaults || !in_array($vs_key, ['sortDirection'])) {
 					$va_bundle_settings[$vs_key] = $pa_bundle_settings[$vs_key];
 				}
 			}
