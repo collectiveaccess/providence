@@ -1617,7 +1617,7 @@
 		$o_query_parser->setEncoding($o_config->get('character_set'));
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 		
-		$ps_search = preg_replace('![\']+!', '', $ps_search);
+		$ps_search = preg_replace('![\'()]+!', '', $ps_search);
 		try {
 			$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
 		} catch (Exception $e) {
