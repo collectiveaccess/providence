@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,52 +34,61 @@
    *
    */
 	require_once(__CA_LIB_DIR__.'/core/Zend/Locale.php');
-	
+	# ----------------------------------------
+	/**
+	 * Verify the locale is valid and supported by current installation
+	 *
+	 * @param string $ps_locale Locale code
+	 * @return mixed An array of paths containing translations for the locale, or false is the locale is invalid
+	 */
+	function validateLocale($ps_locale) {
+   		$va_locale_paths = [];
+   		if (file_exists($vs_locale_path = __CA_THEME_DIR__.'/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = __CA_THEMES_DIR__.'/default/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }	
+   		
+   		return (sizeof($va_locale_paths) > 0) ? $va_locale_paths : false;
+	}	
 	# ----------------------------------------
 	/**
 	 *
 	 */
-   	function initializeLocale($g_ui_locale) {
+   	function initializeLocale($ps_locale) {
    		global $_, $_locale;
    		
 		MemoryCache::flush('translation');
 
-   		$va_locale_paths = [];
-   		if (file_exists($vs_locale_path = __CA_THEME_DIR__.'/locale/'.$g_ui_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_THEMES_DIR__.'/default/locale/'.$g_ui_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }	
-		
-		if(sizeof($va_locale_paths) > 0) {
-			// If the locale is valid, locale is set
-			$_locale = new Zend_Locale($g_ui_locale);
-			Zend_Registry::set('Zend_Locale', $_locale);
-				
-			if(!caIsRunFromCLI() && ($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
-				Zend_Translate::setCache($o_cache);
-			}
-			$_ = new Zend_Translate(array(
-				'adapter' => 'gettext',
-				'content' => array_shift($va_locale_paths),
-				'locale'  => $_locale,
-				'tag'     => 'CA',
-				'disableNotices' => true
-			));
-			foreach($va_locale_paths as $vs_locale_path) {
-				$_->addTranslation([
-					'content' => $vs_locale_path,
-					'locale'  => $_locale
-				]);
-			}
-			
-			$cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
-			if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $g_ui_locale, time()+36000, $cookiepath); }
-			return true;
-		} else {
-			// cookie invalid, deleting
+   		if (!($va_locale_paths = validateLocale($ps_locale))) {
+   		    // cookie invalid, deleting
 			if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, -1); }
 			return false;
-		}
+   		}
+		
+        // If the locale is valid, locale is set
+        $_locale = new Zend_Locale($ps_locale);
+        Zend_Registry::set('Zend_Locale', $_locale);
+            
+        if(!caIsRunFromCLI() && ($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
+            Zend_Translate::setCache($o_cache);
+        }
+        $_ = new Zend_Translate(array(
+            'adapter' => 'gettext',
+            'content' => array_shift($va_locale_paths),
+            'locale'  => $_locale,
+            'tag'     => 'CA',
+            'disableNotices' => true
+        ));
+        foreach($va_locale_paths as $vs_locale_path) {
+            $_->addTranslation([
+                'content' => $vs_locale_path,
+                'locale'  => $_locale
+            ]);
+        }
+        
+        $cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
+        if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $ps_locale, time()+36000, $cookiepath); }
+        return true;
    	}
    	# ----------------------------------------
 	/**
