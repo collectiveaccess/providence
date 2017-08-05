@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -120,6 +120,20 @@
 			$o_view->setVar('controls', $vs_controls);
 		
 			return $o_view->render(caGetOption('viewerWrapper', $pa_options, 'viewerWrapper').'.php');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function searchViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
+		    throw new ApplicationException(_t('Media search is not available'));
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function autocomplete($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
+		    throw new ApplicationException(_t('Media search autocomplete is not available'));
 		}
 		# -------------------------------------------------------
 	}

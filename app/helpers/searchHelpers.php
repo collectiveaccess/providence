@@ -1682,6 +1682,13 @@
 				case 'Zend_Search_Lucene_Search_Query_Wildcard':
 					// noop
 					break;
+				case 'Zend_Search_Lucene_Search_Query_Boolean':
+					foreach($subquery->getSubqueries() as $o_term) {
+						if (is_array($va_sub_sets = caSearchIsForSets($o_term))) {
+							$va_sets = array_merge($va_sets, $va_sub_sets);
+						}
+					}
+					break;
 				default:
 					if (is_array($va_sub_sets = caSearchIsForSets($subquery))) {
 						$va_sets = array_merge($va_sets, $va_sub_sets);

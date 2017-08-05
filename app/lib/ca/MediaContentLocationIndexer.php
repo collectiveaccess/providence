@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,6 +48,7 @@ class MediaContentLocationIndexer  {
 	static $s_index_delete;
 	static $s_index_find;
 	static $s_index_check;
+	static $s_autocomplete;
 	static $s_data = array();
 	# ------------------------------------------------
 	/**
@@ -141,7 +142,8 @@ class MediaContentLocationIndexer  {
 			MediaContentLocationIndexer::$s_index_insert = MediaContentLocationIndexer::$s_db->prepare("INSERT INTO ca_media_content_locations (table_num, row_id, content, loc) VALUES (?, ?, ?, ?)");
 			MediaContentLocationIndexer::$s_index_delete = MediaContentLocationIndexer::$s_db->prepare("DELETE FROM ca_media_content_locations WHERE table_num = ? AND row_id = ?");
 			
-			MediaContentLocationIndexer::$s_index_find = MediaContentLocationIndexer::$s_db->prepare("SELECT * FROM ca_media_content_locations WHERE table_num = ? AND row_id = ? AND content like ?");
+			MediaContentLocationIndexer::$s_index_find = MediaContentLocationIndexer::$s_db->prepare("SELECT * FROM ca_media_content_locations WHERE table_num = ? AND row_id = ? AND content LIKE ?");
+			MediaContentLocationIndexer::$s_autocomplete = MediaContentLocationIndexer::$s_db->prepare("SELECT content FROM ca_media_content_locations WHERE table_num = ? AND row_id = ? AND content LIKE ?");
 			MediaContentLocationIndexer::$s_index_check = MediaContentLocationIndexer::$s_db->prepare("SELECT row_id FROM ca_media_content_locations WHERE table_num = ? AND row_id = ? LIMIT 1");
 		}
 	}
@@ -149,7 +151,7 @@ class MediaContentLocationIndexer  {
 	/**
 	 *
 	 */
-	static function SearchWithinMedia($ps_query, $pm_table, $pn_row_id, $ps_field) {
+	static function searchWithinMedia($ps_query, $pm_table, $pn_row_id, $ps_field) {
 		$o_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		$o_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
@@ -264,12 +266,30 @@ class MediaContentLocationIndexer  {
 				$y1r = $va_hit['y1'] * $vn_page_image_height;
 				$y2r = $va_hit['y2'] * $vn_page_image_height;
 				
-				$va_results['locations'][$vn_p][] = array('c' => $va_hit['c'], 'word' => $va_hit['word'], 'x1' => $x1r, 'y1' => $y1r, 'x2' => $x2r, 'y2' => $y2r);
+				$va_results['locations'][$vn_p][] = array('c' => $va_hit['c'], 'word' => $va_hit['word'], 'x1' => $x1r, 'y1' => $y1r, 'x2' => $x2r, 'y2' => $y2r, 'x1p' => $va_hit['x1'], 'y1p' => $va_hit['y1'], 'x2p' => $va_hit['x2'], 'y2p' => $va_hit['y2']);
 			}
 		}
 		$va_results['matches'] = sizeof($va_results['results']);
 		
 		return $va_results;
+	}
+	# ------------------------------------------------
+	/**
+	 * Fetch autocomplete suggestions for query. Suggestions are limited to words occurring in the specified media item.
+	 *
+	 * @param string $ps_q Search query
+	 * @param mixed $pm_table The table name or number to query on
+	 * @param int $pn_row_id The row_id of the item to query one
+	 *
+	 * @return array A list of matching words
+	 */
+	static public function autocomplete($ps_q, $pm_table, $pn_row_id) {
+		MediaContentLocationIndexer::_init();
+		if (!($pn_table = MediaContentLocationIndexer::_getTableNum($pm_table))) { return null; }
+		if(strlen($ps_q) < 3) { return []; }
+		$qr_res = MediaContentLocationIndexer::$s_autocomplete->execute($pn_table, $pn_row_id, trim($ps_q).'%');
+		
+		return $qr_res->getAllFieldValues('content');
 	}
 	# ------------------------------------------------
 }

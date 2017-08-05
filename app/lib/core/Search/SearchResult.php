@@ -998,6 +998,7 @@ class SearchResult extends BaseObject {
 			$vb_return_as_array = true; 
 			$vb_return_with_structure = $vb_return_all_locales = false;
 			$pa_options['template'] = null;
+			$pa_options['returnAsSearchResult'] = false;
 		}
 		
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
@@ -1230,7 +1231,8 @@ class SearchResult extends BaseObject {
 									if(is_array(SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])) {
 										$va_hier_id_list = array_merge(array($vn_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5]);
 										$va_hier_id_list = array_filter($va_hier_id_list, function($v) { return $v > 0 ;});
-										if ($vs_hierarchy_direction === 'asc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
+										
+										$va_hier_id_list = array_reverse($va_hier_id_list);
 										
 										if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 											$va_hier_id_list = array_slice($va_hier_id_list, 0, $vn_max_levels_from_top, true);
@@ -1243,6 +1245,7 @@ class SearchResult extends BaseObject {
 										if ($t_instance->getHierarchyType() == __CA_HIER_TYPE_MULTI_MONO__) {
 											array_shift($va_hier_id_list);
 										}
+										if ($vs_hierarchy_direction === 'desc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
 										$va_hier_ids[] = $va_hier_id_list;
 									}
 								}
@@ -2015,7 +2018,8 @@ class SearchResult extends BaseObject {
 							$va_auth_spec = [];
 						}
 					}
-					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !SearchResult::_isHierarchyModifier($va_path_components['subfield_name']) && !($o_value instanceof InformationServiceAttributeValue) && !($o_value instanceof LCSHAttributeValue)) {
+					
+					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !SearchResult::_isHierarchyModifier($va_path_components['subfield_name']) && !($o_value instanceof InformationServiceAttributeValue) && !($o_value instanceof LCSHAttributeValue) && !($o_value instanceof MediaAttributeValue) && !($o_value instanceof FileAttributeValue)) {
 						$vb_dont_return_value = true;
 						if (!$pa_options['filter']) { continue; }
 					}
@@ -2061,6 +2065,32 @@ class SearchResult extends BaseObject {
 					
 					if (is_null($vs_val_proc)) {
 						switch($o_value->getType()) {
+						    case __CA_ATTRIBUTE_VALUE_MEDIA__:
+						    case __CA_ATTRIBUTE_VALUE_FILE__:
+						        $vs_return_type = 'tag';
+                                $va_versions = $o_value->getVersions();
+                                $vs_version = $va_versions[0];
+                                
+                                $va_e = array_slice($va_path_components['components'], 2);
+                                foreach($va_e as $vs_e) {
+                                    switch($vs_e) {
+                                        case 'tag':
+                                        case 'url':
+                                        case 'path':
+                                        case 'width':
+                                        case 'height':
+                                        case 'mimetype':
+                                            $vs_return_type = $vs_e;
+                                            break;
+                                        default:
+                                            if(in_array($vs_e, $va_versions)) {
+                                                $vs_version = $vs_e;
+                                            }
+                                            break;
+                                    }
+                                }
+                                $vs_val_proc = $o_value->getDisplayValue(['return' => $vs_return_type, 'version' => $vs_version]);
+						        break;
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 								$vn_list_id = $t_element->get('list_id');
@@ -2139,6 +2169,9 @@ class SearchResult extends BaseObject {
 					
 						if ($pa_options['returnWithStructure']) {
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
+							if ($o_value->getType() == __CA_ATTRIBUTE_VALUE_DATERANGE__) {  // add sortable alternate value for dates
+							    $va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code.'_sort_'] = $o_value->getDisplayValue(['sortable' => true]); // add sortable alternate representation for dates; this will be used by the SearchResult::get() "sort" option to properly sort date values
+							}
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vs_val_proc;	
 						}

@@ -1045,7 +1045,8 @@
 						$vb_is_relative_to_parent = ($va_facet_info['relative_to'] && $this->_isParentRelative($va_facet_info['relative_to']));
 						
 						$va_row_ids = array_keys($va_row_ids);
-
+                            
+                        $va_sql_params = [];
 							$vs_relative_to_join = '';
 							switch($va_facet_info['type']) {
 								# -----------------------------------------------------
@@ -1157,6 +1158,25 @@
 										if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 											$va_wheres[] = "(".$t_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
 										}
+										
+											
+                                        if ($t_item_rel && isset($va_facet_info['filter_on_interstitial']) && is_array($va_facet_info['filter_on_interstitial']) && sizeof($va_facet_info['filter_on_interstitial'])) {
+                                            foreach($va_facet_info['filter_on_interstitial'] as $vs_field_name => $va_values) {
+                                                if (!$va_values) { continue; }
+                                                if (!is_array($va_values)) { $va_values = [$va_values]; }
+                    
+                                                if (!($vn_element_id = (int)ca_metadata_elements::getElementID($vs_field_name))) { continue; }
+                                                if (!($o_value = Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($vs_field_name)))) { continue; }
+                    
+                                                $va_element_value = $o_value->parseValue($va_values[0], array_merge(ca_metadata_elements::getElementSettingsForId($vs_field_name), ['list_id' => ca_metadata_elements::getElementListID($vs_field_name)], ['matchOn' => ['idno']]));
+            
+                                                $va_joins[] = "INNER JOIN ca_attributes c_a ON c_a.row_id = ".$t_item_rel->primaryKey(true)." AND c_a.table_num = ".$t_item_rel->tableNum();
+                                                $va_joins[] = "INNER JOIN ca_attribute_values c_av ON c_a.attribute_id = c_av.attribute_id";
+                                                $va_wheres[] = "c_av.element_id = {$vn_element_id} AND ".(isset($va_element_value['item_id']) ? "c_av.item_id = ?" : "c_av.value_longtext1 = ?");
+                
+                                                $va_sql_params[] = (isset($va_element_value['item_id'])) ? (int)$va_element_value['item_id'] : $va_element_value['value_longtext1'];
+                                            }
+                                        }
 
 										$vs_join_sql = join("\n", $va_joins);
 										$vs_where_sql = '';
@@ -1172,7 +1192,7 @@
 												{$vs_join_sql}
 												{$vs_where_sql}";
 
-											$qr_res = $this->opo_db->query($vs_sql);
+											$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
 										} else {
 											$this->_createTempTable("_browseTmp");
 											$vs_sql = "
@@ -1183,7 +1203,7 @@
 												{$vs_join_sql}
 												{$vs_where_sql}";
 
-											$this->opo_db->query($vs_sql);
+											$this->opo_db->query($vs_sql, $va_sql_params);
 											
 											$qr_res = $this->opo_db->query("SELECT t.".$t_item->primaryKey()." FROM ".$this->ops_browse_table_name." t LEFT JOIN _browseTmp AS b ON ".$t_item->primaryKey()." = b.row_id WHERE b.row_id IS NULL");
 											
@@ -2004,6 +2024,22 @@
 						if (is_null($vn_smallest_list_index)) { $vn_smallest_list_index = $vn_i; continue; }
 						if (sizeof($va_hits) < sizeof($va_acc[$vn_smallest_list_index])) { $vn_smallest_list_index = $vn_i; }
 					}
+					
+					if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = $this->opo_datamodel->getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
+
+                       foreach($va_acc as $vn_i => $va_acc_content) {
+                            $qr_expand =  $this->opo_db->query("
+                                SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
+                                FROM ".$this->ops_browse_table_name."
+                                WHERE
+                                    {$vs_hier_id_fld} IN (?)
+                            ",[array_keys($va_acc_content)]);
+
+                            if(is_array($va_expanded_res = $qr_expand->getAllFieldValues($t_item->primaryKey())) && sizeof($va_expanded_res)) {
+                                $va_acc[$vn_i] = array_flip($va_expanded_res);
+                            }
+                        }
+                    }
 
 					$va_res = array();
 					$va_acc_indices = array_keys($va_acc);
@@ -2026,20 +2062,6 @@
 					}
 					
 					if (sizeof($va_res)) {
-						if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = $this->opo_datamodel->getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
-							$qr_expand =  $this->opo_db->query("
-								SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
-								FROM ".$this->ops_browse_table_name."
-								WHERE
-									{$vs_hier_id_fld} IN (?)
-							",[array_keys($va_res)]);
-							
-							if(is_array($va_expanded_res = $qr_expand->getAllFieldValues($t_item->primaryKey())) && sizeof($va_expanded_res)) {
-								$va_res = array_flip($va_expanded_res);
-							}
-						}
-						
-						
 						$vs_filter_join_sql = $vs_filter_where_sql = '';
 						$va_wheres = array();
 						$va_joins = array();

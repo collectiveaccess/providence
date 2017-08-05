@@ -250,6 +250,9 @@
 							break(2);
 						}
 						break;
+					case 'none':
+					    // Don't do matching
+					    $vn_item_id = null;
 					default:
 						// is it an attribute?
 						$va_tmp = explode('.', $vs_match_on);
@@ -820,7 +823,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *                outputErrors - if true, errors will be printed to console [default=false]
 		 *                dontCreate - if true then new entities will not be created [default=false]
-		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively.
+		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
 		 *                matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 *                transaction - if Transaction instance is passed, use it for all Db-related tasks [default=null]
 		 *                returnInstance = return ca_entities instance rather than entity_id. Default is false.
@@ -832,6 +835,7 @@
 		 *				  matchMediaFilesWithoutExtension = For ca_object_representations, if media path is invalid, attempt to find media in referenced directory and sub-directories that has a matching name, regardless of file extension. [default=false] 
 		 *                log = if KLogger instance is passed then actions will be logged
 		 *				  ignoreParent = Don't take into account parent_id value when looking for matching rows [Default is false]
+		 *				  ignoreType = Don't take into account type_id value when looking for matching rows [Default is false]
 		 *				  separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
 		 * @return bool|BaseModel|mixed|null
 		 */
@@ -897,7 +901,7 @@
 				$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(array('log' => $o_log));
 			}
 
-			$va_restrict_to_types = $pn_type_id ? [$pn_type_id] : null;
+			$va_restrict_to_types = ($pn_type_id && !caGetOption('ignoreType', $pa_options, false)) ? [$pn_type_id] : null;
 
 			$vn_id = null;
 			foreach($pa_match_on as $vs_match_on) {
@@ -1022,9 +1026,10 @@
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						if ($vn_id) { break(2); }
 						break;
-					//
-					//
-					//
+					case 'none':
+					    // Don't do matching
+					    $vn_id = null;
+					    break;
 					default:
 						// is it an attribute?
 						$va_tmp = explode('.', $vs_match_on);

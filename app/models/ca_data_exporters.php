@@ -1794,6 +1794,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($vs_date_format = $t_exporter_item->getSetting('dateFormat')) {
 			$va_get_options['dateFormat'] = $vs_date_format;
 		}
+		if($t_exporter_item->getSetting('coordinatesOnly')) {
+			$va_get_options['path'] = true;
+		}
+		
+		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');
+		$va_expr_tags = caGetTemplateTags($vs_skip_if_expr);
 
 		// context was switched to attribute
 		if($vn_attribute_id) {
@@ -1936,14 +1942,31 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'element' => $vs_element,
 					);
 				} else { // user wants current element repeated in case of multiple returned values
+					
 					$va_get_options['delimiter'] = ';#;';
 					$vs_values = $t_instance->get($vs_source,$va_get_options);
-					
 					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
 					$va_tmp = explode(";#;",$vs_values);
-					foreach($va_tmp as $vs_text) {
+					
+					foreach($va_tmp as $vn_i => $vs_text) {
+						// handle skipIfExpression setting
+						if($vs_skip_if_expr) {
+							// Add current value as variable "value", accessible in expressions as ^value
+							$va_vars = array_merge(array('value' => $vs_text), ca_data_exporters::$s_variables);
+				
+							if(is_array($va_expr_tags)) {
+								foreach($va_expr_tags as $vs_expr_tag) {
+									$va_v = $t_instance->get($vs_expr_tag, ['convertCodesToIdno' => true, 'returnAsArray' => true]);
+									$va_vars[$vs_expr_tag] = $va_v[$vn_i];
+								}
+							}
+							if(ExpressionParser::evaluate($vs_skip_if_expr, $va_vars)) {
+								unset($va_item_info[$vn_key]);
+								continue;
+							}
+						}
 						$va_item_info[] = array(
 							'element' => $vs_element,
 							'text' => $vs_text,
@@ -1985,7 +2008,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
 		//$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');		// Deprecated -- remove?
 		$vn_max_length = $t_exporter_item->getSetting('maxLength');
-		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');
 
 		$vs_original_values = $t_exporter_item->getSetting('original_values');
 		$vs_replacement_values = $t_exporter_item->getSetting('replacement_values');
@@ -2006,6 +2028,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			if($vs_skip_if_expr) {
 				// Add current value as variable "value", accessible in expressions as ^value
 				$va_vars = array_merge(array('value' => $va_item['text']), ca_data_exporters::$s_variables);
+				
+				if(is_array($va_expr_tags)) {
+					foreach($va_expr_tags as $vs_expr_tag) {
+						$va_vars[$vs_expr_tag] = $t_instance->get($vs_expr_tag, ['convertCodesToIdno' => true]);
+					}
+				}
+				
 				if(ExpressionParser::evaluate($vs_skip_if_expr, $va_vars)) {
 					unset($va_item_info[$vn_key]);
 					continue;

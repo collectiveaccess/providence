@@ -188,6 +188,15 @@
 				'label' => _t('Match on'),
 				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
 			),
+			'tourStopSplitter_ignoreType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore type when trying to match row'),
+				'description' => _t('Ignore type when trying to match row.')
+			),
 			'tourStopSplitter_ignoreParent' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,

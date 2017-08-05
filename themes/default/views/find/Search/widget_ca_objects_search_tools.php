@@ -82,7 +82,7 @@
 			print "<option value='' {$SELECTED}>-</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSavedSearchesForm');
 		print "</form>\n";
 ?>
 	</div>

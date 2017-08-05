@@ -101,6 +101,15 @@
 				'label' => _t('Ignore parent when trying to match row'),
 				'description' => _t('Ignore parent when trying to match row.')
 			),
+			'entitySplitter_ignoreType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore type when trying to match row'),
+				'description' => _t('Ignore type when trying to match row.')
+			),
 			'entitySplitter_displaynameFormat' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,

@@ -1872,6 +1872,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getPageContentHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
+					// This bundle is only available items for ca_site_pages
+					case 'ca_site_page_media':
+						$vs_element .= $this->getPageMediaHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
 					default:
 						$vs_element = "'{$ps_bundle_name}' is not a valid bundle name";
 						break;
@@ -2244,7 +2249,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 											break;
 									}
 								}
-								if (caGetOption('select', $pa_options, false)) {
+								
+								// Autocompletion for fields from related tables
+								if (caGetOption('autocomplete', $pa_options, false)) {
+									$pa_options['asArrayElement'] = false;
+									
+									return caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $t_instance, $pa_options);
+								} elseif (caGetOption('select', $pa_options, false)) {
 									$va_access = caGetOption('checkAccess', $pa_options, null);
 									if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
 								
@@ -4638,6 +4649,11 @@ if (!$vb_batch) {
 						}
 						break;
 					# -------------------------------
+					// This bundle is only available items for ca_site_pages
+					case 'ca_site_page_media':
+						print "save media";
+						break;
+					# -------------------------------
 				}
 			}
 		}
@@ -5370,7 +5386,7 @@ if (!$vb_batch) {
 							foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
 								$va_tmp = explode("/", $vs_date);
 								if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
-								$va_rels_by_date[$vs_date][$vs_sort_key][$vn_id] = $va_rels[$vs_sort_key][$vn_id];
+								$va_rels_by_date[$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_sort_key][$vn_id] = $va_rels[$vs_sort_key][$vn_id];
 							}
 						}
 					}
@@ -5571,6 +5587,40 @@ if (!$vb_batch) {
 					$va_joins[] = $vs_join.join(' OR ', $va_tmp);
 					$vs_cur_table = $vs_join_table;
 				}
+				
+				
+			
+                if (method_exists($t_rel_item, 'isRelationship') && $t_rel_item->isRelationship()) {
+                    if(is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
+                        $va_rels = $this->getAppDataModel()->getManyToOneRelations($t_rel_item->tableName());
+
+                        foreach($va_rels as $vs_rel_pk => $va_rel_info) {
+                            if ($va_rel_info['one_table'] != $this->tableName()) {
+                                $va_type_ids = caMakeTypeIDList($va_rel_info['one_table'], $pa_options['restrictToTypes']);
+                    
+                                if (is_array($va_type_ids) && sizeof($va_type_ids)) { 
+                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = ".$t_rel_item->tableName().".{$vs_rel_pk}";
+                                    $va_wheres[] = "(r.type_id IN (".join(",", $va_type_ids)."))";
+                                }
+                                break;
+                            }
+                        }
+                    }elseif(is_array($pa_options['excludeTypes']) && sizeof($pa_options['excludeTypes'])) {
+                        $va_rels = $this->getAppDataModel()->getManyToOneRelations($t_rel_item->tableName());
+
+                        foreach($va_rels as $vs_rel_pk => $va_rel_info) {
+                            if ($va_rel_info['one_table'] != $this->tableName()) {
+                                $va_type_ids = caMakeTypeIDList($va_rel_info['one_table'], $pa_options['excludeTypes']);
+                                
+                                if (is_array($va_type_ids) && sizeof($va_type_ids)) { 
+                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = ".$t_rel_item->tableName().".{$vs_rel_pk}";
+                                    $va_wheres[] = "(r.type_id NOT IN (".join(",", $va_type_ids)."))";
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
 			}
 
 			// If we're getting ca_set_items, we have to rename the intrinsic row_id field because the pk is named row_id below. Hence, this hack.
@@ -5689,7 +5739,7 @@ if (!$vb_batch) {
 						foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
 							$va_tmp = explode("/", $vs_date);
 							if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
-							$va_rels_for_id_by_date[$qr_rels->get($this->primaryKey(true))][$vs_date][$vs_v] = $va_rels_for_id[$vs_v];
+							$va_rels_for_id_by_date[$qr_rels->get($this->primaryKey(true))][$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_v] = $va_rels_for_id[$vs_v];
 						}
 					}
 				}

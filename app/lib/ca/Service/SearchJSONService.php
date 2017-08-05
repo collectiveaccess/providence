@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,16 +101,27 @@ class SearchJSONService extends BaseJSONService {
 		}
 		$t_instance = $this->_getTableInstance($vs_table_name = $this->getTableName());
 
-		$va_return = array();
 		$vo_result = $vo_search->search($this->ops_query, array(
 			'deletedOnly' => $this->opb_deleted_only,
 			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
 			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
-			'start' => $this->opo_request->getParameter('start', pInteger),
-			'limit' => $this->opo_request->getParameter('limit', pInteger)
+			//'start' => $this->opo_request->getParameter('start', pInteger),
+			//'limit' => $this->opo_request->getParameter('limit', pInteger)
 		));
+		
+		$va_return = ['total' => $vo_result->numHits()];
+		
+		if ($vn_start = $this->opo_request->getParameter('start', pInteger)) {
+		    $vo_result->seek($vn_start);
+		    $va_return['start'] = $vn_start;
+		}
+		
+		if (($vn_limit = $this->opo_request->getParameter('limit', pInteger)) > 0) {
+		    $va_return['limit'] = $vn_limit;
+		}
 
 		$vs_template = $this->opo_request->getParameter('template', pString);		// allow user-defined template to be passed; allows flexible formatting of returned label
+
 		while($vo_result->nextHit()) {
 			$va_item = array();
 
@@ -160,6 +171,8 @@ class SearchJSONService extends BaseJSONService {
 			}
 
 			$va_return["results"][] = $va_item;
+			
+			if ($vn_limit && (sizeof($va_return['results']) >= $vn_limit)) { break; }
 		}
 
 		return $va_return;
