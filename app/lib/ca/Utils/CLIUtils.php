@@ -4023,10 +4023,6 @@
             }
 			
 			CLIUtils::addMessage(_t("Added %1 templates; updated %2 templates"));
-			
-			//if (is_array($va_results['errors']) && sizeof($va_results['errors'])) {
-			//	CLIUtils::addError(_t("Templates with errors: %1", join(", ", array_keys($va_results['errors']))));
-			//}
 		}
 		# -------------------------------------------------------
 		public static function precache_simple_servicesParamList() {
@@ -4096,6 +4092,9 @@
 				    CLIUtils::addError(_t('User name %1 is not valid', $vs_user_name));
 				    return false;
 				}
+			} else {
+			    CLIUtils::addError(_t('A user name to attribute the import to must be specified'));
+				return false;
 			}
 			
 			$vs_import_mode = $po_opts->getOption('import-mode');
