@@ -2463,10 +2463,10 @@ create index i_surname on ca_entity_labels(surname);
 create unique index u_all on ca_entity_labels
 (
    entity_id,
-   forename,
-   other_forenames,
-   middlename,
-   surname(100),
+   forename(50),
+   other_forenames(50),
+   middlename(50),
+   surname(50),
    type_id,
    locale_id
 );
