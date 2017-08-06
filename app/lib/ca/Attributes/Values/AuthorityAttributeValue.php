@@ -137,7 +137,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 			);
 		}
 		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
-
+        $vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
