@@ -38,7 +38,6 @@
 # --- Import classes
 # ----------------------------------------------------------------------
 include_once(__CA_LIB_DIR__."/core/BaseObject.php");
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaInfoCoder.php");
 include_once(__CA_LIB_DIR__."/core/File/FileInfoCoder.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");

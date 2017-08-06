@@ -39,7 +39,6 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
  	require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");

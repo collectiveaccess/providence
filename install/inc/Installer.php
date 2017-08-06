@@ -28,7 +28,6 @@
 
 require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Db.php');
 require_once(__CA_LIB_DIR__.'/core/Media/MediaVolumes.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');

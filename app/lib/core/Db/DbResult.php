@@ -35,8 +35,6 @@
   */
 
 include_once(__CA_LIB_DIR__."/core/Db/DbBase.php");
-
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaInfoCoder.php");
 include_once(__CA_LIB_DIR__."/core/File/FileInfoCoder.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");

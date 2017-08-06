@@ -34,7 +34,6 @@
   *
   */
  
- include_once(__CA_LIB_DIR__.'/core/Datamodel.php');
  include_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
  include_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngineResult.php');
 

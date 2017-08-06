@@ -28,7 +28,6 @@
  	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
  	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
  	require_once(__CA_LIB_DIR__.'/core/Db.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
 	require_once(__CA_MODELS_DIR__.'/ca_search_forms.php');
  

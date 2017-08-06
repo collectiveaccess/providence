@@ -36,7 +36,6 @@
  
 require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 
 class MediaProcessingSettings {
 	# ---------------------------------------------------

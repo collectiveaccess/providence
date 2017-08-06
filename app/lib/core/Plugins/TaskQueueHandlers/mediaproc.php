@@ -43,7 +43,6 @@ include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
 include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 	

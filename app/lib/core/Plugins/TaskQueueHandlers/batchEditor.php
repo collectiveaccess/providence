@@ -39,7 +39,6 @@ require_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugTaskQueueHandler.php");
 require_once(__CA_LIB_DIR__.'/core/Db.php');
 require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__.'/core/Zend/Mail.php');
 require_once(__CA_LIB_DIR__.'/ca/BatchProcessor.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');

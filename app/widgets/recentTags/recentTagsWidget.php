@@ -29,7 +29,6 @@
  	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
  	require_once(__CA_LIB_DIR__.'/core/Db.php');
 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 	require_once(__CA_MODELS_DIR__."/ca_item_tags.php");
  
 	class recentTagsWidget extends BaseWidget implements IWidget {

@@ -34,7 +34,6 @@
   *
   */
  	require_once(__CA_LIB_DIR__.'/core/BaseFindEngine.php');
- 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
  	require_once(__CA_LIB_DIR__.'/core/Db.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CollectionsAttributeValue.php');

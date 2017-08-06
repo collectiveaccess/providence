@@ -35,7 +35,6 @@
   */
   
 	require_once(__CA_LIB_DIR__."/core/Configuration.php");
-	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 	require_once(__CA_LIB_DIR__."/ca/IDNumbering/IIDNumbering.php");
 	
 	abstract class IDNumber implements IIDNumbering {

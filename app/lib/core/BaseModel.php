@@ -100,7 +100,6 @@ define("__CA_MEDIA_QUEUED_ICON__", 'queued');
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
 require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/ApplicationChangeLog.php");
 require_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
 require_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");

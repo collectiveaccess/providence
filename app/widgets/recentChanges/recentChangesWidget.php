@@ -28,7 +28,6 @@
  	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
  	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
  	require_once(__CA_LIB_DIR__.'/core/ApplicationChangeLog.php');
- 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
  
 	class recentChangesWidget extends BaseWidget implements IWidget {

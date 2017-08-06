@@ -37,7 +37,6 @@
 require_once(__CA_LIB_DIR__."/core/Db/DbBase.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbStatement.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 
 /**
  * Database abstraction statement class (supercedes ancient Db_Sql class)

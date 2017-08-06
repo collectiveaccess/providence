@@ -39,7 +39,6 @@ require_once(__CA_LIB_DIR__."/core/Db/DbStatement.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
 
 require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 
 /**
