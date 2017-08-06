@@ -2459,7 +2459,7 @@ create table ca_entity_labels
 
 create index i_entity_id on ca_entity_labels(entity_id);
 create index i_forename on ca_entity_labels(forename);
-create index i_surname on ca_entity_labels(surname);
+create index i_surname on ca_entity_labels(surname(128));
 create unique index u_all on ca_entity_labels
 (
    entity_id,
