@@ -770,7 +770,7 @@
 			$t_instance = $this;
 			if ((sizeof($va_tmp) >= 2) && (!$this->hasField($va_tmp[2]))) {
 				if (($va_tmp[1] == 'parent') && ($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-					$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+					$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 					if (!$t_instance->load($vn_parent_id)) {
 						$t_instance = $this;
 					} else {
@@ -786,7 +786,7 @@
 						$va_data = array();
 						$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 						
-						$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+						$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 						
 						foreach($va_children_ids as $vn_child_id) {
 							if ($t_instance->load($vn_child_id)) {
@@ -2203,7 +2203,7 @@
 			$va_exclude_attributes_by_codes = caGetOption('excludeAttributesByCodes', $pa_options, array());
 			if(!is_array($va_exclude_attributes_by_codes)) { $va_exclude_attributes_by_codes = []; }
 
-			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
+			if (!($t_dupe = Datamodel::getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
 			if (!$this->getPrimaryKey()) { return null; }
 			if (!$t_dupe->load($pn_row_id)) { return null; }
@@ -2270,7 +2270,7 @@
 		 *	restrictToAttributesByIds = array of attributes ids to restrict the duplication
 		 */
 		public function copyAttributesFrom($pn_row_id, $pa_options=null) {
-			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
+			if (!($t_dupe = Datamodel::getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
 			if (!$this->getPrimaryKey()) { return null; }
 			if (!$t_dupe->load($pn_row_id)) { return null; }
@@ -2456,10 +2456,10 @@
 			
 			$va_elements = array();
 			
-			$o_dm = Datamodel::load();
+			
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
-				$va_elements[$o_dm->getTableName($va_row['table_num'])][$va_row['element_id']] = array(
+				$va_elements[Datamodel::getTableName($va_row['table_num'])][$va_row['element_id']] = array(
 					'element_id' => $va_row['element_id'],
 					'element_code' => $va_row['element_code'],
 					'parent_id' => $va_row['parent_id'],
@@ -2515,7 +2515,7 @@
 			
 			$va_references = array();
 			
-			$o_dm = Datamodel::load();
+			
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
 				$va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id'];
@@ -2523,7 +2523,7 @@
 			
 			foreach($va_references as $vn_table_num => $va_rows) {
 				$va_row_ids = array_keys($va_rows);
-				if ((sizeof($va_row_ids) > 0) && $t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true)) {
+				if ((sizeof($va_row_ids) > 0) && $t_instance = Datamodel::getInstanceByTableNum($vn_table_num, true)) {
 					if (!$t_instance->hasField('deleted')) { continue; }
 					$vs_pk = $t_instance->primaryKey();
 					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?)".($t_instance->hasField('deleted') ? "AND deleted = 1" : ''), array($va_row_ids));
@@ -2732,7 +2732,7 @@
 			if (is_array($pa_element_codes_or_ids) && sizeof($pa_element_codes_or_ids)) {
 				$o_db = $this->getDb();
 				
-				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName(), false);
+				$t_instance = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if (!$t_instance->load($pn_to_id) || (bool)$t_instance->get('deleted')) { throw new ApplicationException(_t('Invalid target ID')); }
 				
 				$va_element_ids = [];
@@ -2786,7 +2786,7 @@
 			} elseif ($vn_num_bits > 1) {
 				if ($va_bundle_bits[0] == $this->tableName()) {
 					return ($this->hasElement($va_bundle_bits[1])) ? true : parent::hasBundle($ps_bundle, $pn_type_id);
-				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
 					return $t_rel->hasBundle($ps_bundle, $pn_type_id);
 				} else {
 					return false;
@@ -2845,14 +2845,14 @@
 				$va_ids_by_table[$qr_values->get('table_num')][] = $qr_values->get('row_id');
 			}
 			
-			$o_dm = Datamodel::load();
+			
 			foreach($va_ids_by_table as $vn_table_num => $va_row_ids) {
-				if (!($t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true))) {
+				if (!($t_instance = Datamodel::getInstanceByTableNum($vn_table_num, true))) {
 					continue;
 				}
 				if (!$t_instance->hasField('deleted')) { continue; }
-				$vs_table_name = $o_dm->getTableName($vn_table_num);
-				$vs_table_pk = $o_dm->primaryKey($vn_table_num);
+				$vs_table_name = Datamodel::getTableName($vn_table_num);
+				$vs_table_pk = Datamodel::primaryKey($vn_table_num);
 				
 				$qr_existant = $o_db->query("
 					SELECT {$vs_table_pk}

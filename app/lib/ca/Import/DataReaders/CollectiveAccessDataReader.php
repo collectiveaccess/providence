@@ -67,7 +67,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		$this->opa_formats = array('collectiveaccess');	// must be all lowercase to allow for case-insensitive matching
 		
 		
-		$this->opo_datamodel = Datamodel::load();
+		
 	}
 	# -------------------------------------------------------
 	/**
@@ -189,7 +189,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				case 2:
 					if ($va_col[1] == 'preferred_labels') {
 						// figure out what the display field is
-						if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_col[0], true)) {
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							
 							if ($pb_return_as_array) {
@@ -323,7 +323,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				case 2:
 					if ($va_col[1] == 'preferred_labels') {
 						// figure out what the display field is
-						if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_col[0], true)) {
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							$va_rels = [];
 							foreach($va_rel_data as $vn_i => $va_rel) {
@@ -372,7 +372,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				case 3:
 					if ($va_col[1] == 'preferred_labels') {
 						// figure out what the display field is
-						if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_col[0], true)) {
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
 							$va_rels = [];
 							foreach($va_rel_data as $vn_i => $va_rel) {
 								$va_labels = $va_rel['preferred_labels'];

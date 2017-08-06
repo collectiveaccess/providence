@@ -46,7 +46,6 @@
 	 */
 	public function getAppConfig();
 	public function getToolConfig();
-	public function getAppDatamodel();
 	 
 	 /**
 	  * Logging

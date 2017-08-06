@@ -39,14 +39,6 @@ require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 
 class CataloguingService extends BaseService {
 	# -------------------------------------------------------
-	protected $opo_dm;
-	# -------------------------------------------------------
-	public function  __construct($po_request) {
-		parent::__construct($po_request);
-
-		$this->opo_dm = Datamodel::load();
-	}
-	# -------------------------------------------------------
 	/**
 	 * Adds item of type “type” to the database using the data in the
 	 * associative array $fieldInfo to populate fields.
@@ -57,7 +49,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function add($type, $fieldInfo){
-		$t_subject_instance = $this->getTableInstance($type);
+		$t_subject_instance = $this->getInstance($type);
 		if(is_array($fieldInfo)){
 			foreach($fieldInfo as $vs_key => $vs_val){
 				if(!$t_subject_instance->hasField($vs_key)){
@@ -87,7 +79,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function update($type, $item_id, $fieldInfo){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if(is_array($fieldInfo)){
@@ -118,7 +110,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function remove($type, $item_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		$vb_success = $t_subject_instance->delete(true);
@@ -140,7 +132,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addAttribute($type, $item_id, $attribute_code_or_id, $attribute_data_array){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -166,7 +158,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addAttributes($type, $item_id, $attribute_list_array){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -196,7 +188,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function editAttribute($type, $item_id, $attribute_id, $attribute_code_or_id, $attribute_data_array){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -224,7 +216,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function replaceAttribute($type, $item_id, $attribute_code_or_id, $attribute_data_array){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -256,7 +248,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function updateAttributes($type, $item_id, $attribute_list_array){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -289,7 +281,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function removeAttribute($type, $item_id, $attribute_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -315,7 +307,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function removeAttributes($type, $item_id, $attribute_code_or_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -339,7 +331,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function removeAllAttributes($type, $item_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof BaseModelWithAttributes){
@@ -365,7 +357,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addLabel($type, $item_id, $label_data_array, $localeID, $is_preferred){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof LabelableBaseModelWithAttributes){
@@ -390,7 +382,7 @@ class CataloguingService extends BaseService {
 	 * @return boolean
 	 */
 	public function removeLabel($type, $item_id, $label_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof LabelableBaseModelWithAttributes){
@@ -414,7 +406,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function removeAllLabels($type, $item_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof LabelableBaseModelWithAttributes){
@@ -441,7 +433,7 @@ class CataloguingService extends BaseService {
 	 * @return int primary key of the label 
 	 */
 	public function editLabel($type, $item_id, $label_id, $label_data_array, $localeID, $is_preferred){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		if($t_subject_instance instanceof LabelableBaseModelWithAttributes){
@@ -470,7 +462,7 @@ class CataloguingService extends BaseService {
 	 * @return bool success state
 	 */
 	public function addObjectRepresentation($object_id, $media_url, $type_id, $locale_id, $status, $access, $is_primary){
-		if(!($t_subject_instance = $this->getTableInstance("ca_objects",$object_id))){
+		if(!($t_subject_instance = $this->getInstance("ca_objects",$object_id))){
 			throw new SoapFault("Server", "Invalid object_id");
 		}
 
@@ -528,7 +520,7 @@ class CataloguingService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addRelationship($type, $item_id, $related_type, $related_item_id, $relationship_type_id, $source_info){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid object_id");
 		}
 		$vn_return = $t_subject_instance->addRelationship($related_type, $related_item_id, $relationship_type_id, null, $source_info);
@@ -583,7 +575,7 @@ class CataloguingService extends BaseService {
 	# -------------------------------------------------------
 	# Utilities
 	# -------------------------------------------------------
-	private function getTableInstance($ps_type,$pn_type_id_to_load=null){
+	private function getInstance($ps_type,$pn_type_id_to_load=null){
 		if(!in_array($ps_type, array("ca_objects", "ca_entities", "ca_places", "ca_occurrences", "ca_collections", "ca_list_items", "ca_object_representations", "ca_storage_locations", "ca_movements", "ca_loans", "ca_tours", "ca_tour_stops", "ca_sets", "ca_set_items"))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		} else {
@@ -604,14 +596,14 @@ class CataloguingService extends BaseService {
 	}
 	# -------------------------------------------------------
 	private function getRelTableInstance($ps_left_table,$ps_right_table,$pn_relation_id){
-		$va_relationships = $this->opo_dm->getPath($ps_left_table, $ps_right_table);
+		$va_relationships = Datamodel::getPath($ps_left_table, $ps_right_table);
 		unset($va_relationships[$ps_left_table]);
 		unset($va_relationships[$ps_right_table]);
 		if(sizeof($va_relationships)==1){
 			foreach($va_relationships as $vs_table_name => $vs_table_num){
 				$vs_table = $vs_table_name;
 			}
-			$t_rel_instance = $this->opo_dm->getTableInstance($vs_table);
+			$t_rel_instance = Datamodel::getInstance($vs_table);
 			if(!$t_rel_instance->load($pn_relation_id)){
 				throw new SoapFault("Server", "Invalid relation ID");
 			} else {

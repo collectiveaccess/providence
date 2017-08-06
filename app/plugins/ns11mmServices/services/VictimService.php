@@ -45,12 +45,10 @@ require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
 
 class VictimService extends NS11mmService {
 	# -------------------------------------------------------
-	protected $opo_dm;
 	protected $opn_victim_type_id;
 	# -------------------------------------------------------
 	public function  __construct($po_request) {
 		parent::__construct($po_request);
-		$this->opo_dm = Datamodel::load();
 		
 		$t_list = new ca_lists();
 		$this->opn_victim_type_id = $t_list->getItemIDFromList('entity_types', 'victim');

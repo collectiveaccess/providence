@@ -79,7 +79,7 @@
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
- 			$this->opo_datamodel = Datamodel::load();
+ 			
  			
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
@@ -104,7 +104,7 @@
  		public function Index($pa_options=null) {
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
- 			$t_instance 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_instance 				= Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			
  			// Make sure user has access to at least one type
  			if (
@@ -125,7 +125,7 @@
  			}
  			
  			
-			$t_display 					= $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  	
+			$t_display 					= Datamodel::getInstanceByTableName('ca_bundle_displays', true);  	
  			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
  			
@@ -207,7 +207,7 @@
  			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
  			
  			# --- export options used to export search results - in tools show hide under page bar
- 			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
+ 			$vn_table_num = Datamodel::getTableNum($this->ops_tablename);
 
 			//default export formats, not configurable
 			$va_export_options = array(
@@ -566,7 +566,7 @@
 				if (!$ps_rows || !sizeof($pa_row_ids)) { 
 					$this->view->setVar('error', _t('Nothing was selected'));
 				} else {
-					$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+					$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 				
 					$pn_set_id = $this->request->getParameter('set_id', pInteger);
 					$t_set = new ca_sets($pn_set_id);
@@ -622,7 +622,7 @@
 				}
 			
 				if (is_array($va_row_ids) && sizeof($va_row_ids)) {
-					$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+					$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 					$vs_set_name = $this->request->getParameter('set_name', pString);
 					if (!$vs_set_name) { $vs_set_name = $this->opo_result_context->getSearchExpression(); }
 			
@@ -722,7 +722,7 @@
  		 * 
  		 */ 
  		public function DownloadMedia() {
- 			if ($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
+ 			if ($t_subject = Datamodel::getInstanceByTableName($this->ops_tablename, true)) {
 				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
 
  				$pa_ids = null;
@@ -885,7 +885,7 @@
  			$this->view->setVar('result', (is_array($va_results_id_list) && sizeof($va_results_id_list) > 0) ? caMakeSearchResult($this->ops_tablename, $va_results_id_list) : null);
  			
  			
- 			$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			$this->view->setVar('t_subject', $t_instance);
  		}
  		# ------------------------------------------------------------------
@@ -907,8 +907,8 @@
  			}
  			$this->view->setVar("viz_html", $o_viz->render($ps_viz, "HTML", array('classname' => 'vizFullScreen', 'request' => $this->request)));
  			
- 			$o_dm = Datamodel::load();
- 			$this->view->setVar('t_item', $o_dm->getInstanceByTableName($this->ops_tablename, true));
+ 			
+ 			$this->view->setVar('t_item', Datamodel::getInstanceByTableName($this->ops_tablename, true));
  			$this->view->setVar('num_items_rendered', (int)$o_viz->numItemsRendered());
  			
  			if ($pb_render_data) {
@@ -1011,7 +1011,7 @@
  		 * results editor for data that is too complex to be edited in-cell.
  		 */ 
  		public function resultsComplexDataEditor() {
- 			$t_instance 			= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_instance 			= Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
  			$pn_placement_id = (int)$this->request->getParameter('pl', pString);
@@ -1065,7 +1065,7 @@
  			$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type_restriction_has_changed);
  			
  			$t_list = new ca_lists();
- 			if (!($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true))) {
+ 			if (!($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true))) {
  				return '???';
  			}
  			

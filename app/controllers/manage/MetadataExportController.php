@@ -57,7 +57,7 @@ class MetadataExportController extends ActionController {
 
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 
-		$this->opo_datamodel = Datamodel::load();
+		
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
 		$this->cleanOldExportFilesFromTmpDir();
@@ -111,7 +111,7 @@ class MetadataExportController extends ActionController {
 		}
 
 		$t_exporter = $this->getExporterInstance();
-		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$t_subject = Datamodel::getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// Can user export records of this type?
 		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
@@ -139,7 +139,7 @@ class MetadataExportController extends ActionController {
 			return;
 		}
 
-		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$t_subject = Datamodel::getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// Can user export records of this type?
 		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
@@ -305,7 +305,7 @@ class MetadataExportController extends ActionController {
 			return;
 		}
 
-		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$t_subject = Datamodel::getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// alternate destinations
 		$va_alt_dest = $o_conf->getAssoc('exporter_alternate_destinations');

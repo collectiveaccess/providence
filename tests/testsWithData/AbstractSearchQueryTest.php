@@ -47,9 +47,9 @@ abstract class AbstractSearchQueryTest extends BaseTestWithData {
 
 	# -------------------------------------------------------
 	protected function setPrimaryTable($ps_table) {
-		$o_dm = Datamodel::load();
+		
 
-		if(!$o_dm->tableExists($ps_table)) {
+		if(!Datamodel::tableExists($ps_table)) {
 			$this->assertTrue(false, 'Invalid table '.$ps_table);
 		}
 

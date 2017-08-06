@@ -507,8 +507,8 @@
 
 			$vs_import_target = caGetOption('importTarget', $pa_options, 'ca_objects');
 			
-			$o_dm = Datamodel::load();
-			$t_instance = $o_dm->getInstance($vs_import_target);
+			
+			$t_instance = Datamodel::getInstance($vs_import_target);
 			
 			$o_config = Configuration::load();
 
@@ -732,7 +732,7 @@
  					continue;
  				}
 
-				$t_instance = $o_dm->getInstance($vs_import_target, false);
+				$t_instance = Datamodel::getInstance($vs_import_target, false);
 				//$t_instance->setTransaction($o_trans);
 
 				$vs_modified_filename = $f;
@@ -1073,7 +1073,7 @@
 						foreach($va_extracted_idnos_from_filename as $vs_idno) {
 							foreach($va_create_relationship_for as $vs_rel_table) {
 								if (!isset($va_relationship_type_id_for[$vs_rel_table]) || !$va_relationship_type_id_for[$vs_rel_table]) { continue; }
-								$t_rel = $t_instance->getAppDatamodel()->getInstanceByTableName($vs_rel_table);
+								$t_rel = Datamodel::getInstanceByTableName($vs_rel_table);
 								if ($t_rel->load(array($t_rel->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
 									$t_instance->addRelationship($vs_rel_table, $t_rel->getPrimaryKey(), $va_relationship_type_id_for[$vs_rel_table]);
 

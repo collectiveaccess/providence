@@ -541,11 +541,10 @@ class ca_data_importer_items extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public function getDestinationType() {
-		$vo_dm = Datamodel::load();
 		$vs_destination = $this->get("destination");
 		
 		$t_importer = new ca_data_importers($this->get("importer_id"));
-		$t_instance = $vo_dm->getInstanceByTableNum($t_importer->get("table_num"));
+		$t_instance = Datamodel::getInstanceByTableNum($t_importer->get("table_num"));
 		
 		$va_split = explode(".",$vs_destination);
 		

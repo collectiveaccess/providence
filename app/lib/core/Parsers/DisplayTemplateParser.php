@@ -171,9 +171,9 @@ class DisplayTemplateParser {
 		// Parse template
 		if(!is_array($va_template = DisplayTemplateParser::parse($ps_template, $pa_options))) { return null; }
 		
-		$o_dm = Datamodel::load();
-		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
-		$t_instance = $o_dm->getInstanceByTableName($ps_tablename, true);
+		
+		$ps_tablename = is_numeric($pm_tablename_or_num) ? Datamodel::getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
+		$t_instance = Datamodel::getInstanceByTableName($ps_tablename, true);
 		$vs_pk = $t_instance->primaryKey();
 		
 		
@@ -338,7 +338,6 @@ class DisplayTemplateParser {
 	 *
 	 */
 	private static function _getTags($po_nodes, $pa_options=null) {
-		$o_dm = caGetOption('datamodel', $pa_options, Datamodel::load());
 		$ps_relative_to = caGetOption('relativeTo', $pa_options, null);
 	
 		$pa_tags = caGetOption('tags', $pa_options, array());
@@ -351,7 +350,7 @@ class DisplayTemplateParser {
 					$va_codes = caGetTemplateTags((string)$o_node->rule, $pa_options, null);
 					foreach($va_codes as $vs_code) { 
 						$va_code = explode('.', $vs_code);
-						if ($ps_relative_to && !$o_dm->tableExists($va_code[0])) { $vs_code = "{$ps_relative_to}.{$vs_code}"; }
+						if ($ps_relative_to && !Datamodel::tableExists($va_code[0])) { $vs_code = "{$ps_relative_to}.{$vs_code}"; }
 						$pa_tags[$vs_code] = true; 
 					}
 					// fall through to default case
@@ -359,7 +358,7 @@ class DisplayTemplateParser {
 					$va_codes = caGetTemplateTags((string)$o_node->html(), $pa_options);
 					foreach($va_codes as $vs_code) { 
 						$va_code = explode('.', $vs_code);
-						if ($ps_relative_to && !$o_dm->tableExists($va_code[0])) { $vs_code = "{$ps_relative_to}.{$vs_code}"; }
+						if ($ps_relative_to && !Datamodel::tableExists($va_code[0])) { $vs_code = "{$ps_relative_to}.{$vs_code}"; }
 						$pa_tags[$vs_code] = true; 
 					}
 					break;
@@ -379,8 +378,8 @@ class DisplayTemplateParser {
 		$vs_acc = '';
 		$ps_tablename = $pr_res->tableName();
 				
-		$o_dm = Datamodel::load();
-		$t_instance = $o_dm->getInstanceByTableName($ps_tablename, true);
+		
+		$t_instance = Datamodel::getInstanceByTableName($ps_tablename, true);
 		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
 		$pb_is_case = caGetOption('isCase', $pa_options, false, ['castTo' => 'boolean']);
 		$pb_quote = caGetOption('quote', $pa_options, false, ['castTo' => 'boolean']);
@@ -520,7 +519,7 @@ class DisplayTemplateParser {
 				case 'unit':
 					$va_relative_to_tmp = $o_node->relativeTo ? explode(".", $o_node->relativeTo) : [$ps_tablename];
 				
-					if ($va_relative_to_tmp[0] && !($t_rel_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
+					if ($va_relative_to_tmp[0] && !($t_rel_instance = Datamodel::getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
 					
 					$vn_last_unit_omit_count = 0;
 					
@@ -716,7 +715,7 @@ class DisplayTemplateParser {
 									} elseif($t_rel_instance->isRelationship()) {
 										// return type on relationship
 										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
-									} elseif(($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) && $o_dm->isRelationship($vs_rel_tablename)) {
+									} elseif(($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) && Datamodel::isRelationship($vs_rel_tablename)) {
 										// grab type from adjacent relationship table
 										$va_relationship_type_ids = $pr_res->get("{$vs_rel_tablename}.type_id", ['returnAsArray' => true]);
  									}
@@ -792,7 +791,7 @@ class DisplayTemplateParser {
 						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
 							$vs_linking_context = array_shift($va_tmp);
 							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
-								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".$o_dm->primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs']]);
+								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".Datamodel::primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs']]);
 							}
 						}
 						
@@ -863,7 +862,7 @@ class DisplayTemplateParser {
 		
 		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $pa_options, array(), ['castTo' => 'array']);
 		
-		$o_dm = Datamodel::load();
+		
 		
 		
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
@@ -882,7 +881,7 @@ class DisplayTemplateParser {
 			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index', 'omitcount'])) {
 				$va_tag = explode(".", $vs_tag);
 				$vs_get_spec = $vs_tag;
-				if ($ps_prefix && (!$o_dm->tableExists($va_tag[0])) &&  (!preg_match("!^".preg_quote($ps_prefix, "!")."\.!", $vs_tag)) && (sizeof($va_tag) > 0)) {
+				if ($ps_prefix && (!Datamodel::tableExists($va_tag[0])) &&  (!preg_match("!^".preg_quote($ps_prefix, "!")."\.!", $vs_tag)) && (sizeof($va_tag) > 0)) {
 					$vs_get_spec = "{$ps_prefix}.".array_shift($va_tag);
 					if(sizeof($va_tag) > 0) {
 						$vs_get_spec .= ".".join(".", $va_tag);
@@ -1228,10 +1227,10 @@ class DisplayTemplateParser {
 	 *
 	 */
 	static public function _getRelativeIDsForRowIDs($ps_tablename, $ps_relative_to, $pa_row_ids, $ps_mode, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		$t_instance = $o_dm->getInstanceByTableName($ps_tablename, true);
+		
+		$t_instance = Datamodel::getInstanceByTableName($ps_tablename, true);
 		if (!$t_instance) { return null; }
-		$t_rel_instance = $o_dm->getInstanceByTableName($ps_relative_to, true);
+		$t_rel_instance = Datamodel::getInstanceByTableName($ps_relative_to, true);
 		if (!$t_rel_instance) { return null; }
 		
 		$vs_pk = $t_instance->primaryKey();
@@ -1245,7 +1244,7 @@ class DisplayTemplateParser {
 				if ($ps_tablename !== $ps_relative_to) {
 					// related
 					$vs_relationship_type_sql = null;
-					if (!is_array($va_path = array_keys($o_dm->getPath($ps_tablename, $ps_relative_to))) || !sizeof($va_path)) {
+					if (!is_array($va_path = array_keys(Datamodel::getPath($ps_tablename, $ps_relative_to))) || !sizeof($va_path)) {
 						throw new Exception(_t("Cannot be path between %1 and %2", $ps_tablename, $ps_relative_to));
 					}
 					
@@ -1255,7 +1254,7 @@ class DisplayTemplateParser {
 							$vs_left_table = $va_path[1];
 							$vs_right_table = $va_path[0];
 							
-							$va_relationships = $o_dm->getRelationships($vs_left_table, $vs_right_table);
+							$va_relationships = Datamodel::getRelationships($vs_left_table, $vs_right_table);
 							$va_conditions = array();								
 							foreach($va_relationships[$vs_left_table][$vs_right_table] as $va_rel) {
 								$va_conditions[] = "{$vs_left_table}.{$va_rel[0]} = {$vs_right_table}.{$va_rel[1]}";
@@ -1266,7 +1265,7 @@ class DisplayTemplateParser {
 							$va_path = array_reverse($va_path);
 							$vs_left_table = array_shift($va_path);
 							foreach($va_path as $vs_right_table) {
-								$va_relationships = $o_dm->getRelationships($vs_left_table, $vs_right_table);
+								$va_relationships = Datamodel::getRelationships($vs_left_table, $vs_right_table);
 								
 								$va_conditions = array();								
 								foreach($va_relationships[$vs_left_table][$vs_right_table] as $va_rel) {
@@ -1313,7 +1312,7 @@ class DisplayTemplateParser {
 						}		
 					}
 					
-					$t_rel = $o_dm->getInstanceByTableName($vs_link, true);
+					$t_rel = Datamodel::getInstanceByTableName($vs_link, true);
 					$vs_left_field = $t_rel->getLeftTableFieldName();
 					$vs_right_field = $t_rel->getRightTableFieldName();
 					$qr_res = $o_db->query($x="

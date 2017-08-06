@@ -209,7 +209,6 @@ class Request {
  */	
 	public function __construct () {
 		$this->config = Configuration::load();
-		$this->datamodel = Datamodel::load();
 		
 		$this->opa_params = array();
 		$this->opa_action_errors = array();
@@ -220,13 +219,6 @@ class Request {
  */
 	public function getAppConfig() {
 		return $this->config;
-	}
-	
-/**
- * Returns application datamodel object
- */
-	public function getAppDatamodel() {
-		return $this->datamodel;
 	}
 	
 /**

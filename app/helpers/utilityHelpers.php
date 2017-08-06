@@ -2271,8 +2271,8 @@ function caFileIsIncludable($ps_file) {
 	 * @return null|SearchResult
 	 */
 	function caMakeSearchResult($ps_table, $pa_ids, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		if ($t_instance = $o_dm->getInstanceByTableName('ca_objects', true)) {	// get an instance of a model inherits from BundlableLabelableBaseModelWithAttributes; doesn't matter which one
+		
+		if ($t_instance = Datamodel::getInstanceByTableName('ca_objects', true)) {	// get an instance of a model inherits from BundlableLabelableBaseModelWithAttributes; doesn't matter which one
 			return $t_instance->makeSearchResult($ps_table, $pa_ids, $pa_options);
 		}
 		return null;
@@ -3376,10 +3376,10 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caGetPrimaryTablesForHTMLSelect() {
 		$va_tables = caGetPrimaryTables();
-		$o_dm = Datamodel::load();
+		
 		$va_ret = [];
 		foreach($va_tables as $vn_table_num => $vs_table) {
-			$va_ret[$o_dm->getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
+			$va_ret[Datamodel::getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
 		}
 		return $va_ret;
 	}

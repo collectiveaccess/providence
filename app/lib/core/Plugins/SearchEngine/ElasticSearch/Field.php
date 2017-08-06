@@ -66,7 +66,7 @@ class Field {
 	 */
 	public function __construct($opn_content_tablenum, $ops_indexing_fieldname) {
 		$this->opn_content_tablenum = $opn_content_tablenum;
-		$this->ops_content_tablename = \Datamodel::load()->getTableName($this->getContentTableNum());
+		$this->ops_content_tablename = \Datamodel::getTableName($this->getContentTableNum());
 
 		if(!$this->ops_content_tablename) {
 			throw new \Exception(_t('Invalid table num %1', $opn_content_tablenum));

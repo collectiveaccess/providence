@@ -123,8 +123,8 @@ class MediaContentLocationIndexer  {
 	static public function _getTableNum($pm_table) {
 		if(!is_numeric($pm_table)) { 
 			if (!isset(MediaContentLocationIndexer::$s_table_num_cache[$pm_table])) {
-				$o_dm = Datamodel::load();
-				MediaContentLocationIndexer::$s_table_num_cache[$pm_table] = $o_dm->getTableNum($pm_table);
+				
+				MediaContentLocationIndexer::$s_table_num_cache[$pm_table] = Datamodel::getTableNum($pm_table);
 			}
 			$pm_table = MediaContentLocationIndexer::$s_table_num_cache[$pm_table];
 		}
@@ -152,7 +152,7 @@ class MediaContentLocationIndexer  {
 	 *
 	 */
 	static function searchWithinMedia($ps_query, $pm_table, $pn_row_id, $ps_field) {
-		$o_dm = Datamodel::load();
+		
 		$o_config = Configuration::load();
 		$o_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
 		$vs_indexing_regex = $o_search_config->get('indexing_tokenizer_regex');
@@ -165,7 +165,7 @@ class MediaContentLocationIndexer  {
 			'query' => $ps_query
 		);
 		
-		if (!($t_instance = is_numeric($pm_table) ? $o_dm->getInstanceByTableNum($pm_table) : $o_dm->getInstanceByTableName($pm_table))) {
+		if (!($t_instance = is_numeric($pm_table) ? Datamodel::getInstanceByTableNum($pm_table) : Datamodel::getInstanceByTableName($pm_table))) {
 			throw new Exception(_t("Invalid table %1", $pm_table));
 		}
 		if (!$t_instance->load($pn_row_id)) {

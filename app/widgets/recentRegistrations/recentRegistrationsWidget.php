@@ -45,7 +45,7 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentRegistrations.conf');
-			$this->opo_datamodel = Datamodel::load();
+			
 		}
 		# -------------------------------------------------------
 		/**

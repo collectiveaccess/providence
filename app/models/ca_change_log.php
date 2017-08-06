@@ -243,7 +243,7 @@ class ca_change_log extends BaseModel {
 	public static function getLog($pn_from, $pn_limit=null, $pa_options=null, &$pa_media=null) {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 
-		$o_dm = Datamodel::load();
+		
 
 		if(!is_null($pn_limit)) {
 			$vs_limit_sql = "LIMIT $pn_limit";
@@ -271,13 +271,13 @@ class ca_change_log extends BaseModel {
 
 		$va_ignore_tables = [];
 		foreach($pa_ignore_tables as $vs_ignore_table) {
-			if($vn_ignore_table_num = $o_dm->getTableNum($vs_ignore_table)) {
+			if($vn_ignore_table_num = Datamodel::getTableNum($vs_ignore_table)) {
 				$va_ignore_tables[] = $vn_ignore_table_num;
 			}
 		}		
 		$va_only_tables = [];
 		foreach($pa_only_tables as $vs_only_table) {
-			if($vn_only_table_num = $o_dm->getTableNum($vs_only_table)) {
+			if($vn_only_table_num = Datamodel::getTableNum($vs_only_table)) {
 				$va_only_tables[] = $vn_only_table_num;
 			}
 		}
@@ -414,7 +414,7 @@ class ca_change_log extends BaseModel {
 				// don't sync inserts/updates for deleted records, UNLESS they're in a hierarchical table,
 				// in which case other records may have depended on them when they were inserted
 				// (meaning their insert() could fail if a related/parent record is absent)
-				$t_instance = $o_dm->getInstance((int) $qr_results->get('logged_table_num'), true);
+				$t_instance = Datamodel::getInstance((int) $qr_results->get('logged_table_num'), true);
 				//if(!$t_instance->isHierarchical() && ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
 				//	continue;
 				//}
@@ -422,7 +422,7 @@ class ca_change_log extends BaseModel {
 				// decode snapshot
 				$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));
 			
-				$va_many_to_one_rels = $o_dm->getManyToOneRelations($t_instance->tableName());
+				$va_many_to_one_rels = Datamodel::getManyToOneRelations($t_instance->tableName());
 
 				// add additional sync info to snapshot. we need to be able to properly identify
 				// attributes and elements on the far side of the sync and the primary key doesn't cut it
@@ -434,7 +434,7 @@ class ca_change_log extends BaseModel {
 							} elseif($vs_code = ca_metadata_elements::getElementCodeForId($vm_val)) {
 								$va_snapshot['element_code'] = $vs_code;
 							
-								$vs_table_name = $o_dm->getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
+								$vs_table_name = Datamodel::getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
 							
 								// Skip elements not in include list, when a list is provided for the current table
 								if (!$vs_table_name || (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code]))) {
@@ -486,7 +486,7 @@ class ca_change_log extends BaseModel {
 						deflabel:
 							if(
 								// don't break ca_list_items.item_id!!
-								($o_dm->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
+								(Datamodel::getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
 								&&
 								($vs_fld == 'item_id')
 							) {
@@ -494,7 +494,7 @@ class ca_change_log extends BaseModel {
 								$va_snapshot['item_label'] = caGetListItemForDisplayByItemID($vm_val);
 							}
 
-							$t_instance = $o_dm->getInstance((int) $qr_results->get('logged_table_num'), true);
+							$t_instance = Datamodel::getInstance((int) $qr_results->get('logged_table_num'), true);
 							if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
 								// handle all other list referencing fields
 								$vs_new_fld = str_replace('_id', '', $vs_fld) . '_code';
@@ -507,7 +507,7 @@ class ca_change_log extends BaseModel {
 								if($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 									// handle monohierarchy (usually parent_id) fields
 									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
-								} elseif (isset($va_many_to_one_rels[$vs_fld]) && ($t_rel_item = $o_dm->getInstanceByTableName($va_many_to_one_rels[$vs_fld]['one_table'], true))) {
+								} elseif (isset($va_many_to_one_rels[$vs_fld]) && ($t_rel_item = Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_fld]['one_table'], true))) {
 									// handle many-one keys
 									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_rel_item->tableNum(), $vm_val);
 								}
@@ -516,7 +516,7 @@ class ca_change_log extends BaseModel {
 								if (($va_fld_info['FIELD_TYPE'] === FT_MEDIA)
 									||
 									(
-										($o_dm->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
+										(Datamodel::getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
 										&&
 										($vs_fld == 'value_blob')
 									)
@@ -607,7 +607,7 @@ class ca_change_log extends BaseModel {
 								// handle 1:n foreign keys like ca_representation_annotations.representation_id
 								// @todo: don't use hardcoded field names!? -- another case would be ca_objects.lot_id
 								if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
-									$va_snapshot['representation_guid'] = ca_guids::getForRow($o_dm->getTableNum('ca_object_representations'), $vm_val);
+									$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
 								}
 							}
 							break;
@@ -627,9 +627,9 @@ class ca_change_log extends BaseModel {
 					}
 
 					// handle skip if expression relative to subjects
-					$vs_subject_table_name = $o_dm->getTableName($qr_subjects->get('subject_table_num'));
+					$vs_subject_table_name = Datamodel::getTableName($qr_subjects->get('subject_table_num'));
 					if(isset($pa_skip_if_expression[$vs_subject_table_name])) {
-						$t_subject_instance = $o_dm->getInstance($vs_subject_table_name);
+						$t_subject_instance = Datamodel::getInstance($vs_subject_table_name);
 						$vs_exp = $pa_skip_if_expression[$vs_subject_table_name];
 						// have to load() unfortch.
 						$t_subject_instance->load($qr_subjects->get('subject_row_id'));
@@ -669,9 +669,9 @@ class ca_change_log extends BaseModel {
 	 */
 	static public function logEntryHasAccess($pa_log_entry, $pa_access) {
 		$o_db = new Db();
-		$o_dm = Datamodel::load();
 		
-		if (!($t_instance = $o_dm->getInstanceByTableNum($pa_log_entry['logged_table_num'], true))) { return false; }
+		
+		if (!($t_instance = Datamodel::getInstanceByTableNum($pa_log_entry['logged_table_num'], true))) { return false; }
 		if ($t_instance->hasField('access')) { 
 			$qr_res = $o_db->query("SELECT access FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pa_log_entry['logged_row_id']]);
 			if ($qr_res->nextRow()) {
@@ -681,7 +681,7 @@ class ca_change_log extends BaseModel {
 		
 		if (is_array($pa_log_entry['subjects'])) {
 			foreach($pa_log_entry['subjects'] as $va_subject) {
-				if (!($t_instance = $o_dm->getInstanceByTableNum($va_subject['subject_table_num'], true))) { continue; }
+				if (!($t_instance = Datamodel::getInstanceByTableNum($va_subject['subject_table_num'], true))) { continue; }
 				if ($t_instance->hasField('access')) { 
 					$qr_res = $o_db->query("SELECT access FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$va_subject['subject_row_id']]);
 					if ($qr_res->nextRow()) {
@@ -698,9 +698,9 @@ class ca_change_log extends BaseModel {
 	 */
 	static public function rowHasAccess($pn_table_num, $pn_row_id, $pa_access) {
 		$o_db = new Db();
-		$o_dm = Datamodel::load();
 		
-		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num, true))) { return false; }
+		
+		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return false; }
 		if ($t_instance->hasField('access')) { 
 			$qr_res = $o_db->query("SELECT access FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_row_id]);
 			if ($qr_res->nextRow()) {

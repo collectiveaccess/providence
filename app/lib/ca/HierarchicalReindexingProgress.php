@@ -63,13 +63,13 @@
 				set_time_limit(3600*8);
 				$o_db = new Db();
 				$t_timer = new Timer();
-				$o_dm = Datamodel::load();
+				
 	
-				$va_table_names = $o_dm->getTableNames();
+				$va_table_names = Datamodel::getTableNames();
 				
 				$vn_tc = 0;
 				foreach($va_table_names as $vs_table) {
-					if ($o_instance = $o_dm->getInstanceByTableName($vs_table)) {
+					if ($o_instance = Datamodel::getInstanceByTableName($vs_table)) {
 						if ($o_instance->isHierarchical()) {
 							if (!$o_instance->rebuildAllHierarchicalIndexes()) {
 								$o_instance->rebuildHierarchicalIndex();

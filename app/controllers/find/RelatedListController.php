@@ -112,12 +112,12 @@ class RelatedListController extends BaseSearchController {
 			$vs_sort = array_shift($va_tmp);
 		}
 
-		$t_subject = $this->getAppDatamodel()->getInstance($vs_primary_table);
+		$t_subject = Datamodel::getInstance($vs_primary_table);
 		if(!$t_subject || !$t_subject->load($vn_primary_id)) { throw new Exception(_t('Invalid table name')); }
 
-		$t_related = $this->getAppDatamodel()->getInstance($vs_related_table, true);
+		$t_related = Datamodel::getInstance($vs_related_table, true);
 		/** @var BaseRelationshipModel $t_related_rel */
-		$t_related_rel = $this->getAppDatamodel()->getInstance($vs_related_rel_table, true);
+		$t_related_rel = Datamodel::getInstance($vs_related_rel_table, true);
 		if(!$t_related || !$t_related_rel) { throw new Exception(_t('Invalid table name')); }
 
 		// we need the rel table to translate the incoming relation_ids to primary keys in the related table for the list search result
@@ -186,7 +186,7 @@ class RelatedListController extends BaseSearchController {
 		$vs_related_rel_table = $this->getRequest()->getParameter('related_rel_table', pString);
 		$va_ids  = $this->getRequest()->getParameter('ids', pArray);
 
-		$t_related_rel_instance = $this->getAppDatamodel()->getInstance($vs_related_rel_table);
+		$t_related_rel_instance = Datamodel::getInstance($vs_related_rel_table);
 
 		if(!($t_related_rel_instance instanceof BaseRelationshipModel)) { return false; }
 		if(!is_array($va_ids) || !sizeof($va_ids)) { return false; }

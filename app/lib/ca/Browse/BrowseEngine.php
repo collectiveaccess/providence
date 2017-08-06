@@ -139,16 +139,16 @@
 		 *
 		 */
 		public function __construct($pm_subject_table_name_or_num, $pn_browse_id=null, $ps_browse_context='') {
-			$this->opo_datamodel = Datamodel::load();
+			
 			$this->opo_db = new Db();
 
 			$this->opa_result_filters = array();
 
 			if (is_numeric($pm_subject_table_name_or_num)) {
 				$this->opn_browse_table_num = intval($pm_subject_table_name_or_num);
-				$this->ops_browse_table_name = $this->opo_datamodel->getTableName($this->opn_browse_table_num);
+				$this->ops_browse_table_name = Datamodel::getTableName($this->opn_browse_table_num);
 			} else {
-				$this->opn_browse_table_num = $this->opo_datamodel->getTableNum($pm_subject_table_name_or_num);
+				$this->opn_browse_table_num = Datamodel::getTableNum($pm_subject_table_name_or_num);
 				$this->ops_browse_table_name = $pm_subject_table_name_or_num;
 			}
 
@@ -229,7 +229,7 @@
 				// you can also use this on other authorities to provide a finer-grained browse without having to know the type hierarchy ahead of time
 				if (($va_facet_info['type'] === 'authority') && isset($va_facet_info['generate_facets_for_types']) && $va_facet_info['generate_facets_for_types']) {
 					// get types for authority
-					$t_table = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table'], true);
+					$t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true);
 
 					$va_type_list = $t_table->getTypeList();
 
@@ -267,7 +267,7 @@
 						}
 						break;
 					case 'fieldList':
-						$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+						$t_instance = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 						if ($vn_item_id = caGetListItemID($t_instance->getFieldInfo($va_facet_info['field'], 'LIST_CODE'), $va_facet_info['single_value'])) {
 							$va_revised_facets[$vs_facet]['single_value'] = $vn_item_id;
 						}
@@ -303,7 +303,7 @@
 		 * @return BaseModel
 		 */
 		public function getSubjectInstance() {
-			return $this->opo_datamodel->getInstanceByTableNum($this->opn_browse_table_num, true);
+			return Datamodel::getInstanceByTableNum($this->opn_browse_table_num, true);
 		}
 		# ------------------------------------------------------
 		/**
@@ -543,14 +543,14 @@
 					break;
 				# -----------------------------------------------------
 				case 'label':
-					if (!($t_table = $this->opo_datamodel->getInstanceByTableName((isset($va_facet_info['relative_to']) && $va_facet_info['relative_to']) ? $va_facet_info['relative_to'] : $this->ops_browse_table_name, true))) { break; }
+					if (!($t_table = Datamodel::getInstanceByTableName((isset($va_facet_info['relative_to']) && $va_facet_info['relative_to']) ? $va_facet_info['relative_to'] : $this->ops_browse_table_name, true))) { break; }
 					if (!$t_table->load($pn_row_id)) { return '???'; }
 
 					return $t_table->getLabelForDisplay();
 					break;
 				# -----------------------------------------------------
 				case 'authority':
-					if (!($t_table = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table'], true))) { break; }
+					if (!($t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true))) { break; }
 					if (!$t_table->load($pn_row_id)) { return '???'; }
 
 					return $t_table->getLabelForDisplay();
@@ -590,7 +590,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'field':
-					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!($t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
 					if($vb_is_bit = ($t_item->getFieldInfo($va_facet_info['field'], 'FIELD_TYPE') == FT_BIT)) {
 						return ((bool)$pn_row_id) ? caGetOption('label_yes', $va_facet_info, _t('Yes')) : caGetOption('label_no', $va_facet_info, _t('No'));
 					}
@@ -599,7 +599,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'violations':
-					if (!($t_rule = $this->opo_datamodel->getInstanceByTableName('ca_metadata_dictionary_rules', true))) { break; }
+					if (!($t_rule = Datamodel::getInstanceByTableName('ca_metadata_dictionary_rules', true))) { break; }
 					if ($t_rule->load(array('rule_code' => $pn_row_id))) {
 						return $t_rule->getSetting('label');
 					}
@@ -647,10 +647,10 @@
 				# -----------------------------------------------------
 				case 'location':
 					$va_tmp = explode(":", urldecode($pn_row_id));
-					$vs_loc_table_name = $this->opo_datamodel->getTableName($va_tmp[0]);
+					$vs_loc_table_name = Datamodel::getTableName($va_tmp[0]);
 					$va_collapse_map = $this->getCollapseMapForLocationFacet($va_facet_info);
 
-					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_loc_table_name, true);
+					$t_instance = Datamodel::getInstanceByTableName($vs_loc_table_name, true);
 
 					if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
 						$vs_table_name = 'ca_storage_locations';
@@ -689,7 +689,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'fieldList':
-					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!($t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
@@ -725,7 +725,7 @@
 						}
 					}
 
-					if($va_facet_info['table'] && ($t_browse_table = $this->opo_datamodel->getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true))) {
+					if($va_facet_info['table'] && ($t_browse_table = Datamodel::getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true))) {
 						if (!($app = AppController::getInstance())) { return '???'; }
 						if ($t_browse_table->load($pn_row_id) && $t_browse_table->isReadable($app->getRequest(), 'preferred_labels')) {
 							return $t_browse_table->get("{$vs_facet_table}.preferred_labels");
@@ -796,7 +796,7 @@
 			$va_type_restrictions = $this->getTypeRestrictionList();
 
 			$t_list = new ca_lists();
-			$t_subject = $this->opo_datamodel->getInstanceByTableNum($this->opn_browse_table_num, true);
+			$t_subject = Datamodel::getInstanceByTableNum($this->opn_browse_table_num, true);
 			$vs_type_list_code = $t_subject->getTypeListCode();
 
 			$va_criteria_facets = is_array($va_tmp = $this->getCriteria()) ? array_keys($this->getCriteria()) : array();
@@ -1026,7 +1026,7 @@
 			}
 			$this->opb_criteria_have_changed = false;
 
-			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 
 			$va_results = array();
 
@@ -1086,18 +1086,18 @@
 										if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
 										$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table']);
 
-										$vn_table_num = $this->opo_datamodel->getTableNum($vs_rel_table_name);
-										$vs_rel_table_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_table_num);
+										$vn_table_num = Datamodel::getTableNum($vs_rel_table_name);
+										$vs_rel_table_pk = Datamodel::primaryKey($vn_table_num);
 
-											switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_target_browse_table_name, $vs_rel_table_name)))) {
+											switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_target_browse_table_name, $vs_rel_table_name)))) {
 												case 3:
-													$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
-													$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+													$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
+													$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 													$vs_key = 'relation_id';
 													break;
 												case 2:
 													$t_item_rel = null;
-													$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+													$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 													$vs_key = $t_rel_item->primaryKey();
 													break;
 												default:
@@ -1120,7 +1120,7 @@
 											$vn_state = array_pop($va_row_ids);
 
 											foreach($va_path as $vs_join_table) {
-												$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+												$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 												$va_joins[] = ($vn_state ? 'INNER' : 'LEFT').' JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 												$vs_cur_table = $vs_join_table;
 											}
@@ -1228,7 +1228,7 @@
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
 
-											$t_target = $this->opo_datamodel->getInstanceByTableName($va_facet_info['relative_to'], true);
+											$t_target = Datamodel::getInstanceByTableName($va_facet_info['relative_to'], true);
 											$t_target_label = $t_target->getLabelTableInstance();
 
 											$vs_item_pk = $t_target->primaryKey();
@@ -1621,8 +1621,8 @@
 									if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
 									$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table']);
 					
-									$vn_table_num = $this->opo_datamodel->getTableNum($vs_rel_table_name);
-									$vs_rel_table_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_table_num);
+									$vn_table_num = Datamodel::getTableNum($vs_rel_table_name);
+									$vs_rel_table_pk = Datamodel::primaryKey($vn_table_num);
 
 									if ($va_facet_info['relative_to']) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
@@ -1637,15 +1637,15 @@
 									foreach($va_row_ids as $vn_row_id) {
 										$va_sql_params = [];
 
-										switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_target_browse_table_name, $vs_rel_table_name)))) {
+										switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_target_browse_table_name, $vs_rel_table_name)))) {
 											case 3:
-												$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
-												$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+												$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
+												$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 												$vs_key = 'relation_id';
 												break;
 											case 2:
 												$t_item_rel = null;
-												$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+												$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 												$vs_key = $t_rel_item->primaryKey();
 												break;
 											default:
@@ -1659,7 +1659,7 @@
 										$va_wheres = array();
 										
 										foreach($va_path as $vs_join_table) {
-											$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+											$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 											$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 											$vs_cur_table = $vs_join_table;
 										}
@@ -1988,12 +1988,12 @@
 										$va_acc[$vn_i] = [];
 										foreach($va_row_ids as $vs_tmp) {
 											$va_tmp = explode(":", $vs_tmp);
-											if (!($t_target = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true))) { break; }
+											if (!($t_target = Datamodel::getInstanceByTableName($va_tmp[0], true))) { break; }
 											
-											$va_path_to_target = array_keys($this->opo_datamodel->getPath($vs_target_browse_table_name, $t_target->tableName()));
+											$va_path_to_target = array_keys(Datamodel::getPath($vs_target_browse_table_name, $t_target->tableName()));
 											
 											if (is_array($va_path_to_target) && (sizeof($va_path_to_target) == 3)) {
-												if (!($t_target_rel = $this->opo_datamodel->getInstanceByTableName($va_path_to_target[1], true)) || !$t_target_rel->isRelationship() || !$t_target_rel->hasField('type_id')) { break; }
+												if (!($t_target_rel = Datamodel::getInstanceByTableName($va_path_to_target[1], true)) || !$t_target_rel->isRelationship() || !$t_target_rel->hasField('type_id')) { break; }
 												$va_ids_from_rel = array_unique($this->_getRelationshipTypeIDs(explode(",", $va_tmp[1]), $va_path_to_target[1]));
 												if (is_array($va_ids_from_rel) && (sizeof($va_ids_from_rel) > 0)) {
 													$qr_res = $this->opo_db->query("SELECT DISTINCT {$vs_target_browse_table_pk} FROM ".$va_path_to_target[1]." WHERE type_id IN (?)", [$va_ids_from_rel]);
@@ -2025,7 +2025,7 @@
 						if (sizeof($va_hits) < sizeof($va_acc[$vn_smallest_list_index])) { $vn_smallest_list_index = $vn_i; }
 					}
 					
-					if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = $this->opo_datamodel->getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
+					if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = Datamodel::getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
 
                        foreach($va_acc as $vn_i => $va_acc_content) {
                             $qr_expand =  $this->opo_db->query("
@@ -2335,7 +2335,7 @@
 			$t_rel_types = new ca_relationship_types();
 			$va_relationship_types = $t_rel_types->getRelationshipInfo($va_facet_info['relationship_table']);
 
-			$t_model = $this->opo_datamodel->getTableInstance($va_facet_info['table']);
+			$t_model = Datamodel::getInstance($va_facet_info['table']);
 			if (method_exists($t_model, "getTypeList")) {
 				$va_types = $t_model->getTypeList();
 			}
@@ -2522,7 +2522,7 @@
 				} else {
 					$vs_browse_table_name = $va_facet_info['relative_to'];
 				}
-				$vs_browse_table_num = $this->opo_datamodel->getTableNum($vs_browse_table_name);
+				$vs_browse_table_num = Datamodel::getTableNum($vs_browse_table_name);
 			}
 
 			$vs_browse_type_limit_sql = '';
@@ -2581,7 +2581,7 @@
 					$vn_state = null;
 					if (isset($va_all_criteria[$ps_facet_name])) { break; }		// only one instance of this facet allowed per browse
 
-					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true))) { break; }
+					if (!($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true))) { break; }
 
 					$vs_yes_text = (isset($va_facet_info['label_yes']) && $va_facet_info['label_yes']) ? $va_facet_info['label_yes'] : _t('Yes');
 					$vs_no_text = (isset($va_facet_info['label_no']) && $va_facet_info['label_no']) ? $va_facet_info['label_no'] : _t('No');
@@ -2650,7 +2650,7 @@
 							}
 
 							if ($this->opo_config->get('perform_item_level_access_checking')) {
-								if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+								if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 									// Join to limit what browse table items are used to generate facet
 									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 									$va_wheres[] = "(
@@ -2710,18 +2710,18 @@
 						if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
 						$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table']);
 
-						$vn_table_num = $this->opo_datamodel->getTableNum($vs_rel_table_name);
-						$vs_rel_table_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_table_num);
+						$vn_table_num = Datamodel::getTableNum($vs_rel_table_name);
+						$vs_rel_table_pk = Datamodel::primaryKey($vn_table_num);
 
-						switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_browse_table_name, $vs_rel_table_name)))) {
+						switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_browse_table_name, $vs_rel_table_name)))) {
 							case 3:
-								$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
-								$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+								$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
+								$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 								$vs_key = 'relation_id';
 								break;
 							case 2:
 								$t_item_rel = null;
-								$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+								$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 								$vs_key = $t_rel_item->primaryKey();
 								break;
 							default:
@@ -2742,7 +2742,7 @@
 						$va_joins_init = array();
 
 						foreach($va_path as $vs_join_table) {
-							$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+							$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 							$va_joins_init[] = ($vn_state ? 'INNER' : 'LEFT').' JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 							$vs_cur_table = $vs_join_table;
 						}
@@ -2831,7 +2831,7 @@
 							}
 
 							if ($this->opo_config->get('perform_item_level_access_checking')) {
-								if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+								if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 									// Join to limit what browse table items are used to generate facet
 									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 									$va_wheres[] = "(
@@ -2892,7 +2892,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'label':
-					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true))) { break; }
+					if (!($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true))) { break; }
 					if (!($t_label = $t_item->getLabelTableInstance())) { break; }
 					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
 
@@ -2971,7 +2971,7 @@
 
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_where_sql[] = "(
@@ -3066,7 +3066,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'attribute':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
 					
 					if (!$t_element->load(array('element_code' => array_pop(explode(".", $va_facet_info['element_code']))))) {
@@ -3114,7 +3114,7 @@
 					}
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
@@ -3348,7 +3348,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'location':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 
 					$vs_sort_field = null;
 					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
@@ -3381,7 +3381,7 @@
 					}
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
@@ -3450,7 +3450,7 @@
 						foreach($va_values_by_table as $vs_loc_class => $va_loc_id_by_subclass) {
 							foreach($va_loc_id_by_subclass as $vs_loc_subclass => $va_loc_ids) {
 								if(sizeof($va_tmp = array_keys($va_loc_ids))) {
-									$vs_table_name = $vs_loc_table_name = $this->opo_datamodel->getTableName($vs_loc_class);
+									$vs_table_name = $vs_loc_table_name = Datamodel::getTableName($vs_loc_class);
 									$vs_hier_table_name = (($vs_loc_table_name) == 'ca_objects_x_storage_locations') ? 'ca_storage_locations' : $vs_loc_table_name;
 
 									$qr_res = caMakeSearchResult($vs_hier_table_name, $va_tmp);
@@ -3472,7 +3472,7 @@
 										}
 										if (!$vn_max_browse_depth) { $vn_max_browse_depth = null; } else { $vn_max_browse_depth++; }	// add one to account for invisible root
 										
-										$vs_hier_pk = $this->opo_datamodel->getTablePrimaryKeyName($vs_hier_table_name, true);
+										$vs_hier_pk = Datamodel::primaryKey($vs_hier_table_name, true);
 									
 										$va_hier_ids = [];
 										while($qr_res->nextHit()) {
@@ -3520,7 +3520,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'fieldList':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
@@ -3570,7 +3570,7 @@
 						}
 
 						if ($this->opo_config->get('perform_item_level_access_checking')) {
-							if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+							if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 								// Join to limit what browse table items are used to generate facet
 								$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 								$va_wheres[] = "(
@@ -3706,7 +3706,7 @@
 							}
 
 							if ($this->opo_config->get('perform_item_level_access_checking')) {
-								if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+								if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 									// Join to limit what browse table items are used to generate facet
 									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 									$va_wheres[] = "(
@@ -3772,7 +3772,7 @@
 								return $va_values;
 							}
 						} else {
-							if ($t_browse_table = $this->opo_datamodel->getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true)) {
+							if ($t_browse_table = Datamodel::getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true)) {
 								// Handle fields containing ca_list_item.item_id's
 								$va_joins = array(
 									'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$vs_field_name.' = '.$vs_facet_table.'.'.$t_browse_table->primaryKey()
@@ -3813,7 +3813,7 @@
 								}
 
 								if ($this->opo_config->get('perform_item_level_access_checking')) {
-									if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+									if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 										// Join to limit what browse table items are used to generate facet
 										$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 										$va_wheres[] = "(
@@ -3883,7 +3883,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'field':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
 					if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item, 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
 					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
@@ -3957,7 +3957,7 @@
 					}
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
@@ -4036,7 +4036,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'violations':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
@@ -4077,7 +4077,7 @@
 					}
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
@@ -4224,7 +4224,7 @@
 					}
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
@@ -4372,7 +4372,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'normalizedDates':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
 
 					$vb_is_element = $vb_is_field = false;
@@ -4422,7 +4422,7 @@
 						}
 					}
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
@@ -4678,7 +4678,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'normalizedLength':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
 
 					$vb_is_element = $vb_is_field = false;
@@ -4728,7 +4728,7 @@
 						}
 					}
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
@@ -4867,21 +4867,21 @@
 					if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
 					if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
 
-					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 
 					if ($vs_browse_table_name == $vs_rel_table_name) {
 						// browsing on self-relations not supported
 						break;
 					} else {
-						switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_browse_table_name, $vs_rel_table_name)))) {
+						switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_browse_table_name, $vs_rel_table_name)))) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
-								$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
-								$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+								$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
+								$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 								$vs_key = 'relation_id';
 								break;
 							case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 								$t_item_rel = null;
-								$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+								$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 								$vs_key = $t_rel_item->primaryKey();
 								break;
 							default:
@@ -4915,7 +4915,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					$vs_cur_table = array_shift($va_path);
 
 					foreach($va_path as $vs_join_table) {
-						$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+						$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 						$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 						$vs_cur_table = $vs_join_table;
 					}
@@ -4924,7 +4924,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						$va_path = array_reverse($va_path);		// in "show_all" mode we turn the browse on it's head and grab records by the "subject" table, rather than the browse table
 						$vs_cur_table = array_shift($va_path);
 						$vs_join_table = $va_path[0];
-						$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+						$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 						$va_joins[] = 'LEFT JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 
 					}
@@ -5068,7 +5068,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 
 							// Join to limit what browse table items are used to generate facet
 							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
@@ -5234,7 +5234,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						// Get labels for facet items
 						if (sizeof($va_row_ids = array_keys($va_facet_items))) {
 							if ($vs_label_table_name = $t_rel_item->getLabelTableName()) {
-								$t_rel_item_label = $this->opo_datamodel->getInstanceByTableName($vs_label_table_name, true);
+								$t_rel_item_label = Datamodel::getInstanceByTableName($vs_label_table_name, true);
 								$vs_label_display_field = $t_rel_item_label->getDisplayField();
 
 								$vs_rel_pk = $t_rel_item->primaryKey();
@@ -5352,7 +5352,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$vs_sort = caGetOption('sort', $pa_options, null);
 			$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
 
-			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 			$vb_will_sort = ($vs_sort && (($this->getCachedSortSetting() != $vs_sort) || ($this->getCachedSortDirectionSetting() != $vs_sort_direction)));
 
 			$vs_pk = $t_item->primaryKey();
@@ -5470,7 +5470,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		public function addResultFilter($ps_field, $ps_operator, $pm_value) {
 			$ps_operator = strtolower($ps_operator);
 			if (!in_array($ps_operator, array('=', '<', '>', '<=', '>=', 'in', 'not in', 'is', 'is not'))) { return false; }
-			$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+			$t_table = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 			$va_tmp = explode(".", $ps_field);
 			$ps_field = array_pop($va_tmp);
 			if (!$t_table->hasField($ps_field)) { return false; }
@@ -5840,15 +5840,15 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				
 				return array('joins' => $va_joins, 'wheres' => $va_wheres);
 			} 
-			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
+			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
 				case __CA_ATTRIBUTE_VALUE_LIST__:
-					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
-					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
+					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
 				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					$t_item_rel = null;
-					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
 					break;
 				default:
@@ -5859,7 +5859,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 			$vs_cur_table = array_shift($va_path);
 			foreach($va_path as $vs_join_table) {
-				$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+				$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 				$vs_cur_table = $vs_join_table;
 			}
@@ -5880,7 +5880,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				$va_relative_joins[] = "INNER JOIN {$ps_relative_to_table} AS parent ON ".$this->ops_browse_table_name.".parent_id = parent.object_id";
 				$va_wheres = [];
 						
-				if (!($t_target = $this->opo_datamodel->getInstanceByTableName($vs_relative_to_table, true))) { return null; }
+				if (!($t_target = Datamodel::getInstanceByTableName($vs_relative_to_table, true))) { return null; }
 				$vs_target_browse_table_num = $t_target->tableNum();
 				$vs_target_browse_table_pk = $t_target->primaryKey();
 				
@@ -5893,20 +5893,20 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			}
 		
 		
-			if (!($t_target = $this->opo_datamodel->getInstanceByTableName($ps_relative_to_table, true))) { return null; }
+			if (!($t_target = Datamodel::getInstanceByTableName($ps_relative_to_table, true))) { return null; }
 			$vs_target_browse_table_num = $t_target->tableNum();
 			$vs_target_browse_table_pk = $t_target->primaryKey();
-			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 
-			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
+			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
 				case __CA_ATTRIBUTE_VALUE_LIST__:
-					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
-					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
+					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
 				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					$t_item_rel = null;
-					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
 					break;
 				default:
@@ -5919,7 +5919,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 			$vs_cur_table = array_shift($va_path);
 			foreach($va_path as $vs_join_table) {
-				$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+				$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 				$vs_cur_table = $vs_join_table;
 			}
@@ -5934,7 +5934,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				$va_relative_to_join[] = "INNER JOIN ".$t_item_rel->tableName()." ON ".$t_item_rel->tableName().".".$t_item->primaryKey()." = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey();
 				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
 			} else { // path of length 2, i.e. direct relationship like ca_objects.lot_id = ca_object_lots.lot_id ==> join relative_to and browse target tables directly
-				$va_rel_info = $this->opo_datamodel->getRelationships($ps_relative_to_table, $t_rel_item->tableName());
+				$va_rel_info = Datamodel::getRelationships($ps_relative_to_table, $t_rel_item->tableName());
 				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][0][0]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][0][0]}";
 			}
 
@@ -5964,7 +5964,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								break;
 							default:
 								$vn_type_id = null;
-								if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_selector[0], true)) {
+								if ($t_instance = Datamodel::getInstanceByTableName($va_selector[0], true)) {
 									$vn_type_id = $t_instance->getTypeIDForCode($va_selector[1]);
 								}
 								break;

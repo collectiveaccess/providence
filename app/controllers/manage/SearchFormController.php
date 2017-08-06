@@ -54,7 +54,7 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
+ 			
  			$t_form = new ca_search_forms();
  			$this->view->setVar('form_count', $t_form->getFormCount(array('user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_EDIT_ACCESS__)));
  			

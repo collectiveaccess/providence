@@ -48,13 +48,13 @@
 			
 
 			$t_form = new ca_search_forms();
-			$o_dm = Datamodel::load();
+			
 			
 			$va_forms = caExtractValuesByUserLocale($t_form->getForms(array('user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)));
 			
 			$va_form_list = array();
 			foreach($va_forms as $va_form){
-				$va_form_list[unicode_ucfirst($o_dm->getTableProperty($va_form['table_num'], 'NAME_PLURAL')).": ".$va_form["name"]] = $va_form["form_id"];
+				$va_form_list[unicode_ucfirst(Datamodel::getTableProperty($va_form['table_num'], 'NAME_PLURAL')).": ".$va_form["name"]] = $va_form["form_id"];
 			}
 			
 			BaseWidget::$s_widget_settings['advancedSearchFormWidget']["form_code"] =
@@ -103,11 +103,10 @@
 			
 			$this->opo_view->setVar("t_form",$t_form);
 			if($t_form->haveAccessToForm($this->getRequest()->user->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__)){
-				$vo_dm = Datamodel::load();
-				$vo_result_context = new ResultContext($this->getRequest(), $vo_dm->getTableName($t_form->get("table_num")), "advanced_search");
+				$vo_result_context = new ResultContext($this->getRequest(), Datamodel::getTableName($t_form->get("table_num")), "advanced_search");
 				$va_form_data = $vo_result_context->getParameter('form_data');
 					
-				$this->opo_view->setVar("controller_name",$this->getAdvancedSearchControllerNameForTable($vo_dm->getTableName($t_form->get("table_num"))));
+				$this->opo_view->setVar("controller_name",$this->getAdvancedSearchControllerNameForTable(Datamodel::getTableName($t_form->get("table_num"))));
 				$this->opo_view->setVar('form_data', $va_form_data);
 				$this->opo_view->setVar('form_elements', $t_form->getHTMLFormElements($this->getRequest(), $va_form_data));
 			} else {

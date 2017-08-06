@@ -83,7 +83,7 @@
 					<?php print $va_log_entry[0]['changetype_display']; ?>
 				</td>
 				<td>
-					<?php print Datamodel::load()->getInstance($va_log_entry[0]['subject_table_num'], true)->getProperty('NAME_PLURAL'); ?>
+					<?php print Datamodel::getInstance($va_log_entry[0]['subject_table_num'], true)->getProperty('NAME_PLURAL'); ?>
 				</td>
 				<td>
 					<?php

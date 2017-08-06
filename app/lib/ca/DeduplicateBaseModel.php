@@ -97,7 +97,7 @@ trait DeduplicateBaseModel {
 	 */
 	public static function listPotentialDupes() {
 		/** @var BundlableLabelableBaseModelWithAttributes $t_instance */
-		$t_instance = Datamodel::load()->getInstance(get_called_class());
+		$t_instance = Datamodel::getInstance(get_called_class());
 		$vs_deleted_sql = '';
 		if($t_instance->hasField('deleted')) {
 			$vs_deleted_sql = "WHERE deleted = 0";
@@ -131,17 +131,17 @@ trait DeduplicateBaseModel {
 	 */
 	public static function mergeRecords($pa_records) {
 		if(!is_array($pa_records)) { return false; }
-		$o_dm = Datamodel::load();
+		
 
 		/** @var BundlableLabelableBaseModelWithAttributes $t_main_record */
-		$t_main_record = $o_dm->getInstance(get_called_class(), false);
+		$t_main_record = Datamodel::getInstance(get_called_class(), false);
 		if(!$t_main_record->load(array_shift($pa_records))) {
 			throw new DeduplicateException('Could not load main record for deduplication');
 		}
 		$t_main_record->setMode(ACCESS_WRITE);
 
 		/** @var BundlableLabelableBaseModelWithAttributes $t_other_record */
-		$t_other_record = $o_dm->getInstance(get_called_class(), false);
+		$t_other_record = Datamodel::getInstance(get_called_class(), false);
 
 		foreach($pa_records as $vn_record_id) {
 			if(!is_numeric($vn_record_id)) { throw new DeduplicateException('One of the identifiers in the deduplication list is not numeric: ' . $vn_record_id); }

@@ -75,7 +75,7 @@ class SearchEngine extends SearchBase {
 		$this->opa_options = array();
 		$this->opa_result_filters = array();
 		
-		$this->opn_tablenum = $this->opo_datamodel->getTableNum($this->ops_tablename);
+		$this->opn_tablenum = Datamodel::getTableNum($this->ops_tablename);
 		
 		$this->opa_tables = array();	
 	}
@@ -187,7 +187,7 @@ class SearchEngine extends SearchBase {
 		$vn_cache_timeout = (int) $this->opo_search_config->get('cache_timeout');
 		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
-		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+		$t_table = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options))."/".serialize($this->opa_result_filters));
 
 		$o_cache = new SearchCache();
@@ -373,7 +373,7 @@ class SearchEngine extends SearchBase {
 	public function filterHitsBySets($pa_hits, $pa_set_ids, $pa_options=null) {
 		if (!sizeof($pa_hits)) { return $pa_hits; }
 		if (!sizeof($pa_set_ids)) { return $pa_hits; }
-		if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_tablenum, true))) { return $pa_hits; }
+		if (!($t_table = Datamodel::getInstanceByTableNum($this->opn_tablenum, true))) { return $pa_hits; }
 		
 		$vs_search_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, md5(isset($pa_options['search']) ? $pa_options['search'] : rand(0, 1000000)));
 			
@@ -397,7 +397,7 @@ class SearchEngine extends SearchBase {
 	 *
 	 */
 	public function getRandomResult($pn_num_hits=10, $po_result=null) {
-		if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_tablenum, true))) { return null; }
+		if (!($t_table = Datamodel::getInstanceByTableNum($this->opn_tablenum, true))) { return null; }
 		$vs_table_pk = $t_table->primaryKey();
 		$vs_table_name = $this->ops_tablename;
 		
@@ -550,7 +550,7 @@ class SearchEngine extends SearchBase {
 					$va_tmp = explode(".", $vs_field);
 					
 					// Rewrite FT_BIT fields to accept yes/no values
-					if ($this->opo_datamodel->getFieldInfo($va_tmp[0], $va_tmp[1], 'FIELD_TYPE') == FT_BIT) {
+					if (Datamodel::getFieldInfo($va_tmp[0], $va_tmp[1], 'FIELD_TYPE') == FT_BIT) {
 						switch(mb_strtolower($vs_term)) {
 							case 'yes':
 							case _t('yes'):
@@ -588,7 +588,7 @@ class SearchEngine extends SearchBase {
 		if (is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) { $va_idno_regexs = $va_idno_regexs[$this->ops_tablename]; }
 			foreach($va_idno_regexs as $vs_idno_regex) {
-				if ((preg_match("!{$vs_idno_regex}!", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+				if ((preg_match("!{$vs_idno_regex}!", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 					$vs_table_name = $t_instance->tableName();
 					return array(
 						'terms' => array(new Zend_Search_Lucene_Index_Term((string)((sizeof($va_matches) > 1) ? $va_matches[1] : $va_matches[0]), "{$vs_table_name}.{$vs_idno_fld}")),
@@ -603,7 +603,7 @@ class SearchEngine extends SearchBase {
 		$va_tmp = explode('/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
-			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp2[0], true)) {
+			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
 						'terms' => array(new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $t_instance->getLabelTableName().'.'.((isset($va_tmp2[2]) && $va_tmp2[2]) ? $va_tmp2[2] : $t_instance->getLabelDisplayField()).($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
@@ -665,7 +665,7 @@ class SearchEngine extends SearchBase {
 		$va_tmp = explode('/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
-			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp2[0], true)) {
+			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
 						'terms' => array(new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField().($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
@@ -841,7 +841,7 @@ class SearchEngine extends SearchBase {
 	 * @return boolean True on success, false on failure
 	 */
 	public function setTypeRestrictions($pa_type_codes_or_ids, $pa_options=null) {
-		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+		$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 		
 		if (!$pa_type_codes_or_ids) { return false; }
 		if (is_array($pa_type_codes_or_ids) && !sizeof($pa_type_codes_or_ids)) { return false; }
@@ -927,7 +927,7 @@ class SearchEngine extends SearchBase {
 	 * @return boolean True on success, false on failure
 	 */
 	public function setSourceRestrictions($pa_source_codes_or_ids, $pa_options=null) {
-		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+		$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 		
 		if (!$pa_source_codes_or_ids) { return false; }
 		if (is_array($pa_source_codes_or_ids) && !sizeof($pa_source_codes_or_ids)) { return false; }
@@ -1053,7 +1053,7 @@ class SearchEngine extends SearchBase {
 	 */
 	static function quickSearch($ps_search, $ps_tablename, $pn_tablenum, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_dm = Datamodel::load();
+		
 		
 		if (!($ps_plugin_name = $o_config->get('search_engine_plugin'))) { return null; }
 		if (!@require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'.php')) { return null; }
@@ -1063,7 +1063,7 @@ class SearchEngine extends SearchBase {
 		$va_ids = $o_engine->quickSearch($pn_tablenum, $ps_search, $pa_options);
 		
 		if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
-		$t_instance = $o_dm->getInstanceByTableNum($pn_tablenum, true);
+		$t_instance = Datamodel::getInstanceByTableNum($pn_tablenum, true);
 		
 		$t_label_instance = 		$t_instance->getLabelTableInstance();
 		$vs_label_table_name = 		$t_instance->getLabelTableName();
@@ -1144,10 +1144,10 @@ class SearchEngine extends SearchBase {
 	 * @return string
 	 */
 	static public function getSearchExpressionForDisplay($ps_search, $ps_table) {
-		$o_dm = Datamodel::load();
+		
 		$o_config = Configuration::load();
 		
-		if ($t_instance = $o_dm->getInstanceByTableName($ps_table, true)) {
+		if ($t_instance = Datamodel::getInstanceByTableName($ps_table, true)) {
 			$vs_char_set = $o_config->get('character_set');
 			
 			$o_query_parser = new LuceneSyntaxParser();

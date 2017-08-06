@@ -274,7 +274,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 			case 'ca_relationship_types':
 				// get # of relationships using this type
 				$vn_rel_count = $t_instance->getRelationshipCountForType();
-				$t_rel_instance = $t_instance->getAppDatamodel()->getInstanceByTableNum($t_instance->get('table_num'));
+				$t_rel_instance = Datamodel::getInstanceByTableNum($t_instance->get('table_num'));
 				if (!$t_rel_instance->load($t_instance->get('table_num'))) { return ''; }
 				if ($vn_rel_count == 1) {
 					$va_reference_to_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
@@ -661,8 +661,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 * @return string 
 	 */
 	function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+		
+		$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
 		$vs_buf = "<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
 			jQuery(document).bind('keydown.ctrl_h', function() {
@@ -715,7 +715,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		$va_reps 				= $po_view->getVar('representations');
 		
 		
-		$o_dm = Datamodel::load();
+		
 		
 		if ($t_item->isHierarchical()) {
 			$va_ancestors 		= $po_view->getVar('ancestors');
@@ -1176,7 +1176,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 				$vn_rel_type_id = $po_view->request->getParameter('rel_type_id', pString);
 				$vn_rel_id = $po_view->request->getParameter('rel_id', pInteger);
 				if($vs_rel_table && $po_view->request->datamodel->tableExists($vs_rel_table) && $vn_rel_type_id && $vn_rel_id) {
-					$t_rel = $po_view->request->datamodel->getTableInstance($vs_rel_table);
+					$t_rel = $po_view->request->datamodel->getInstance($vs_rel_table);
 					if($t_rel && $t_rel->load($vn_rel_id)){
 						$vs_buf .= '<strong>'._t("Will be related to %1", $t_rel->getTypeName()).'</strong>: '.$t_rel->getLabelForDisplay();
 					}
@@ -1299,7 +1299,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 			if (is_array($va_show_counts_for = $po_view->request->config->getList($t_item->tableName().'_show_related_counts_in_inspector_for')) && sizeof($va_show_counts_for)) {
 				foreach($va_show_counts_for as $vs_rel_table) {
 					if (($vn_count = (int)$t_item->getRelatedItems($vs_rel_table, ['returnAs' => 'count'])) > 0) {
-						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, $o_dm->getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
+						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, Datamodel::getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
 					}
 				}
 			}
@@ -1310,7 +1310,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 			if ($vs_table_name === 'ca_object_representations') {
 				foreach(array('ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements') as $vs_rel_table) {
 					if (sizeof($va_objects = $t_item->getRelatedItems($vs_rel_table))) {
-						$vs_buf .= "<div><strong>"._t("Related %1", $o_dm->getTableProperty($vs_rel_table, 'NAME_PLURAL'))."</strong>: <br/>\n";
+						$vs_buf .= "<div><strong>"._t("Related %1", Datamodel::getTableProperty($vs_rel_table, 'NAME_PLURAL'))."</strong>: <br/>\n";
 						
 						$vs_screen = '';
 						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_view->request, null)) {
@@ -1318,7 +1318,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 						}
 						foreach($va_objects as $vn_rel_id => $va_rel_info) {
 							if ($vs_label = array_shift($va_rel_info['labels'])) {
-								$vs_buf .= caEditorLink($po_view->request, '&larr; '.$vs_label.' ('.$va_rel_info['idno'].')', '', $vs_rel_table, $va_rel_info[$o_dm->getTablePrimaryKeyName($vs_rel_table)], array(), array(), array('action' => 'Edit'.($vs_screen ? "/{$vs_screen}" : "")))."<br/>\n";
+								$vs_buf .= caEditorLink($po_view->request, '&larr; '.$vs_label.' ('.$va_rel_info['idno'].')', '', $vs_rel_table, $va_rel_info[Datamodel::primaryKey($vs_rel_table)], array(), array(), array('action' => 'Edit'.($vs_screen ? "/{$vs_screen}" : "")))."<br/>\n";
 							}
 						}
 						$vs_buf .= "</div>\n";
@@ -1346,7 +1346,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 				
 				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
 				
-				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.$o_dm->getTableName($t_item->get('table_num'))))) {
+				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_item->get('table_num'))))) {
 					$vs_buf .= caNavButton($po_view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
 				}
 				TooltipManager::add(".editorBatchSetEditorLink", _t('Batch Edit')); 
@@ -1356,7 +1356,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 				if ($t_item->getPrimaryKey()) {
 					
 					$vn_set_table_num = $t_item->get('table_num');
-					$vs_set_table_name = $o_dm->getTableName($vn_set_table_num);
+					$vs_set_table_name = Datamodel::getTableName($vn_set_table_num);
 					$vs_buf .= "<strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
 					
 					$vs_buf .= "</div>\n";
@@ -1419,7 +1419,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 				if ($t_set->load($vn_set_id = $t_item->get('set_id'))) {
 					$vs_buf .= "<div><strong>"._t("Part of set")."</strong>: ".caEditorLink($po_view->request, $t_set->getLabelForDisplay(), '', 'ca_sets', $vn_set_id)."<br/>\n";
 					
-					$t_content_instance = $t_item->getAppDatamodel()->getInstanceByTableNum($vn_item_table_num = $t_item->get('table_num'));
+					$t_content_instance = Datamodel::getInstanceByTableNum($vn_item_table_num = $t_item->get('table_num'));
 					if ($t_content_instance->load($vn_row_id = $t_item->get('row_id'))) {
 						$vs_label = $t_content_instance->getLabelForDisplay();
 						if ($vs_id_fld = $t_content_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
@@ -1467,10 +1467,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 			// Output containing relationship type name for relationship types
 			// 
 			if ($vs_table_name === 'ca_relationship_types') {
-				if (!($t_rel_instance = $t_item->getAppDatamodel()->getInstanceByTableNum($t_item->get('table_num'), true))) {
+				if (!($t_rel_instance = Datamodel::getInstanceByTableNum($t_item->get('table_num'), true))) {
 					if ($vn_parent_id = $po_view->request->getParameter('parent_id', pInteger)) {
 						$t_rel_type = new ca_relationship_types($vn_parent_id);
-						$t_rel_instance = $t_item->getAppDatamodel()->getInstanceByTableNum($t_rel_type->get('table_num'), true);
+						$t_rel_instance = Datamodel::getInstanceByTableNum($t_rel_type->get('table_num'), true);
 					}
 				}
 				
@@ -1489,7 +1489,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 					$vs_buf .= "<div><strong>"._t("Referenced by user interfaces")."</strong>:<br/>\n";
 					foreach($va_uis as $vn_ui_id => $va_ui_info) {
 						$vs_buf .= caNavLink($po_view->request, $va_ui_info['name'], '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('ui_id' => $vn_ui_id, 'screen_id' => $va_ui_info['screen_id']));
-						$vs_buf .= " (".$o_dm->getTableProperty($va_ui_info['editor_type'], 'NAME_PLURAL').")<br/>\n";
+						$vs_buf .= " (".Datamodel::getTableProperty($va_ui_info['editor_type'], 'NAME_PLURAL').")<br/>\n";
 					}
 					$vs_buf .= "</div>\n";
 				}
@@ -1753,7 +1753,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		$o_result_context		= $po_view->getVar('result_context');
 		$t_ui 					= $po_view->getVar('t_ui');
 		
-		$o_dm = Datamodel::load();
+		
 	
 		// action extra to preserve currently open screen across next/previous links
 		//$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
@@ -1818,7 +1818,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		// Nav link for batch delete
 		// -------------------------------------------------------------------------------------
 
-		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.$o_dm->getTableName($t_set->get('table_num'))))) {
+		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($t_set->get('table_num'))))) {
 
 			$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More options")."</a> &rsaquo;</div>
 				<div id='inspectorInfo' class='setDelete'>";
@@ -1903,8 +1903,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	  *
 	  */
 	function caTableIsActive($pm_table) {
-		$o_dm = Datamodel::load();
-		$t_instance = is_numeric($pm_table) ? $o_dm->getInstanceByTableNum($pm_table, true) : $o_dm->getInstanceByTableName($pm_table, true);
+		
+		$t_instance = is_numeric($pm_table) ? Datamodel::getInstanceByTableNum($pm_table, true) : Datamodel::getInstanceByTableName($pm_table, true);
 		if (!$t_instance) { return null; }
 		
 		$vs_table_name = $t_instance->tableName();
@@ -1942,7 +1942,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	function caFilterTableList($pa_tables, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
 		$o_config = Configuration::load();
-		$o_dm = Datamodel::load();
+		
 		
 		// assume table display names (*not actual database table names*) are keys and table_nums are values
 		$va_filtered_tables = array();
@@ -1950,7 +1950,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 			
 			if (!caTableIsActive($vn_table_num)) { continue; }
-			$vs_table_name = $o_dm->getTableName($vn_table_num);
+			$vs_table_name = Datamodel::getTableName($vn_table_num);
 			
 			switch($vs_table_name) {
 				case 'ca_occurrences':
@@ -1987,9 +1987,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 */
 	function caGetTableDisplayName($pm_table_name_or_num, $pb_use_plural=true) {
 		require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
-		$o_dm = Datamodel::load();
 		
-		$vs_table = $o_dm->getTableName($pm_table_name_or_num);
+		
+		$vs_table = Datamodel::getTableName($pm_table_name_or_num);
 		
 		switch($vs_table) {
 			case 'ca_occurrences':
@@ -2003,7 +2003,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 					return join('/', $va_type_labels);
 				break;
 			default:
-				if($t_instance = $o_dm->getInstanceByTableName($vs_table, true)) {
+				if($t_instance = Datamodel::getInstanceByTableName($vs_table, true)) {
 					return $t_instance->getProperty(($pb_use_plural ? 'NAME_PLURAL' : 'NAME_SINGULAR'));
 				}
 				break;
@@ -2250,7 +2250,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 */
 	function caGetRelationDisplayString($po_request, $ps_table, $pa_attributes=null, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_dm = Datamodel::load();
+		
 		
 		if (!($vs_relationship_type_display_position = caGetOption('relationshipTypeDisplayPosition', $pa_options, null))) {
 			$vs_relationship_type_display_position = strtolower($o_config->get($ps_table.'_lookup_relationship_type_position'));
@@ -2259,7 +2259,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
 		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
 		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
-			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
+			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.Datamodel::primaryKey($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
 		switch($vs_relationship_type_display_position) {
@@ -2587,10 +2587,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		$va_related_item_info = $va_parent_ids = $va_hierarchy_ids = array();
 		$va_items = array();
 		
-		$o_dm = Datamodel::load();
-		$t_rel = $o_dm->getInstanceByTableName($vs_rel_table, true);
+		
+		$t_rel = Datamodel::getInstanceByTableName($vs_rel_table, true);
 		/** @var ca_sets $t_set */
-		$t_set = $o_dm->getInstance('ca_sets', true);
+		$t_set = Datamodel::getInstance('ca_sets', true);
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
 		$vn_c = 0;
@@ -3089,7 +3089,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 */
 	function caProcessBottomLineTemplateForPlacement($po_request, $pa_placement, $pr_res, $pa_options=null) {
 		global $g_ui_units_pref, $g_ui_locale;
-		$o_dm = Datamodel::load();
+		
 		
 		if (!$pr_res) { return null; }
 		
@@ -3117,7 +3117,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		
 			$va_tmp = explode(".", $vs_bundle_name);
 		
-			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+			if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
 				return null;
 			}
 
@@ -3407,7 +3407,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
  	 */
  	function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=null) {
  		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
- 		$o_dm = DataModel::load();
+ 		
  		
 		$va_access_values = caGetUserAccessValues($po_request);
 		
@@ -3420,7 +3420,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
 				
  		
- 		$t_instance = $o_dm->getInstanceByTableName($po_data->tableName(), true);
+ 		$t_instance = Datamodel::getInstanceByTableName($po_data->tableName(), true);
  		
  		$vo_data = null;
  		if(is_a($po_data, 'SearchResult') && ($t_instance) && (is_a($t_instance, 'RepresentableBaseModel'))) {
@@ -3716,9 +3716,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				
-				$o_dm = Datamodel::load();
 				
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -3795,8 +3795,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$o_dm = Datamodel::load();
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 			
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -3983,10 +3983,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 * @return bool
 	 */
 	function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id=null) {
-		$o_dm = Datamodel::load();
+		
 		$o_config = Configuration::load();
 		
-		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		
 		if(!$pt_request->isLoggedIn() || (!$pt_request->user->canDoAction("can_edit_{$ps_table}") && (($vs_hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$pt_request->user->canDoAction("can_edit_{$vs_hier_table}") : false))) { return false; }
 		if (!$t_instance->isHierarchical()) { return false; }
@@ -3996,7 +3996,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		$vs_def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
 		$vs_def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
 		
-		if ($vs_def_table_name && ($t_def = $o_dm->getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
+		if ($vs_def_table_name && ($t_def = Datamodel::getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
 			return true;
 		} else {
 			$va_sort_values = $o_config->getList("{$ps_table}_hierarchy_browser_sort_values");
@@ -4020,7 +4020,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 * @seealso caDragAndDropSortingForHierarchyEnabled
 	 */
 	function caGetDragAndDropSortingAvailabilityMap($pt_request, $ps_table, $pn_id) {
-		$o_dm = Datamodel::load();
+		
 		$o_config = Configuration::load();
 		
 		if ($ps_table == 'ca_list_items') {

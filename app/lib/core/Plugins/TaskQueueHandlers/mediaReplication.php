@@ -82,8 +82,8 @@ require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
 			$o_eventlog = new EventLog();
 			$o_replicator = new MediaReplicator();
 			
-			$o_dm = Datamodel::load();
-			if (!($t_instance = $o_dm->getInstanceByTableName($pa_parameters['TABLE'], true))) {
+			
+			if (!($t_instance = Datamodel::getInstanceByTableName($pa_parameters['TABLE'], true))) {
 				$o_eventlog->log(array(
 					"CODE" => "ERR",
 					"SOURCE" => "TaskQueue->mediaReplication->process()",

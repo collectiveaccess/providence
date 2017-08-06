@@ -130,7 +130,7 @@ class BrowseService extends BaseJSONService {
 			'limit' => (int) $this->opo_request->getParameter('limit', pInteger),
 		));
 
-		$t_instance = $this->_getTableInstance($this->getTableName());
+		$t_instance = $this->_getInstance($this->getTableName());
 
 		while($vo_result->nextHit()) {
 			$va_item = array();

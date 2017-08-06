@@ -77,8 +77,8 @@ class BrowseCache {
 			$this->ops_cache_key = $ps_cache_key;
 			
 			if (caGetOption('removeDeletedItems', $pa_options, true)) {
-				$o_dm = Datamodel::load();
-				if (($t_instance = $o_dm->getInstanceByTableNum($this->opa_browse['params']['table_num'], true)) && ($t_instance->hasField('deleted'))) {
+				
+				if (($t_instance = Datamodel::getInstanceByTableNum($this->opa_browse['params']['table_num'], true)) && ($t_instance->hasField('deleted'))) {
 					// check if there are any deleted items in the cache
 					if (is_array($va_ids = $this->opa_browse['results']) && sizeof($va_ids)) {
 						$vs_pk = $t_instance->primaryKey();

@@ -75,7 +75,7 @@
 
 				$vs_find_type = $req->getParameter('find_type',pString);
 				$vo_result_context = new ResultContext($req, $t_exporter->getTargetTableName(), $vs_find_type);
-				$t_instance = $t_exporter->getTargetTableInstance();
+				$t_instance = $t_exporter->getTargetInstance();
 				$o_result = $t_instance->makeSearchResult($t_instance->tableName(), $vo_result_context->getResultList());
 				ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $o_result, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
 

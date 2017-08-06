@@ -56,7 +56,7 @@
 				<ul>
 <?php
 				foreach($va_references as $vn_table_num => $va_rows) {
-					if ($t_ref_instance = $t_instance->getAppDatamodel()->getInstance($vn_table_num, true)) {
+					if ($t_ref_instance = Datamodel::getInstance($vn_table_num, true)) {
 						$vs_ref_table_name = $t_ref_instance->tableName();
 ?>
 						<li><a href="#<?php print $vs_id_prefix; ?>AuthorityReferenceTabs-<?php print $vs_ref_table_name; ?>"><span><?php print _t('%1 (%2)',caUcFirstUTF8Safe($t_ref_instance->getProperty('NAME_PLURAL')), sizeof($va_rows)); ?></span></a></li>
@@ -67,7 +67,7 @@
 				</ul>
 <?php
 			foreach($va_references as $vn_table_num => $va_rows) {
-				if ($t_ref_instance = $t_instance->getAppDatamodel()->getInstance($vn_table_num, true)) {
+				if ($t_ref_instance = Datamodel::getInstance($vn_table_num, true)) {
 					$vs_ref_table_name = $t_ref_instance->tableName();
 ?>
 				<div id="<?php print $vs_id_prefix; ?>AuthorityReferenceTabs-<?php print $vs_ref_table_name; ?>" class="authorityReferenceListTab">	

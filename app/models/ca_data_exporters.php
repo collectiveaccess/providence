@@ -516,7 +516,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = new Db();
 
 		$t_exporter = new ca_data_exporters();
-		$vo_dm = $t_exporter->getAppDatamodel();
 
 		$va_sql_params = array();
 		if((int)$pn_table_num) {
@@ -556,7 +555,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_exporters[$vn_id] = $va_row;
 
-			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
+			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num'], true);
 			$va_exporters[$vn_id]['exporter_type'] = $t_instance->getProperty('NAME_PLURAL');
 			$va_exporters[$vn_id]['exporter_type_singular'] = $t_instance->getProperty('NAME_SINGULAR');
 
@@ -600,19 +599,19 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	public function getTargetTableName() {
 		if(!$this->getPrimaryKey()) { return null; }
 
-		$o_dm = Datamodel::load();
-		return $o_dm->getTableName($this->get('table_num'));
+		
+		return Datamodel::getTableName($this->get('table_num'));
 	}
 	# ------------------------------------------------------
 	/**
 	 * Get instance for exporter target table
 	 * @return BaseModel|null
 	 */
-	public function getTargetTableInstance() {
+	public function getTargetInstance() {
 		if(!$this->getPrimaryKey()) { return null; }
 
-		$o_dm = Datamodel::load();
-		return $o_dm->getTableInstance($this->get('table_num'));
+		
+		return Datamodel::getInstance($this->get('table_num'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -898,8 +897,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return;
 		}
 
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($va_settings['table']))) {
+		
+		if (!($t_instance = Datamodel::getInstanceByTableName($va_settings['table']))) {
 			$pa_errors[] = _t("Error: Mapping target table %1 is invalid!", $va_settings['table']);
 			return;
 		}
@@ -1027,7 +1026,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 
-		$o_dm = Datamodel::load();
+		
 
 		$vs_wrap_before = $o_config->get('wrap_before');
 		$vs_wrap_after = $o_config->get('wrap_after');
@@ -1050,7 +1049,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 
 				$vn_table = $t_mapping->get('table_num');
-				$vs_key = $o_dm->getTablePrimaryKeyName($vn_table);
+				$vs_key = Datamodel::primaryKey($vn_table);
 
 				$vs_search = isset($va_mapping['restrictBySearch']) ? $va_mapping['restrictBySearch'] : "*";
 				$o_search = caGetSearchInstance($vn_table);
@@ -1074,8 +1073,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							}
 
 							$vn_rel_table = $t_related_mapping->get('table_num');
-							$vs_rel_table = $o_dm->getTableName($vn_rel_table);
-							$vs_rel_key = $o_dm->getTablePrimaryKeyName($vn_rel_table);
+							$vs_rel_table = Datamodel::getTableName($vn_rel_table);
+							$vs_rel_key = Datamodel::primaryKey($vn_rel_table);
 
 							$va_restrict_to_types = is_array($va_related_nodes['restrictToTypes']) ? $va_related_nodes['restrictToTypes'] : null;
 							$va_restrict_to_rel_types = is_array($va_related_nodes['restrictToRelationshipTypes']) ? $va_related_nodes['restrictToRelationshipTypes'] : null;
@@ -1221,7 +1220,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 
-		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
+		$t_instance = Datamodel::getInstanceByTableNum($t_mapping->get('table_num'));
 		$vn_num_items = $po_result->numHits();
 
 		$o_log->logInfo(_t("SearchResult contains %1 results. Now calling single-item export for each record.", $vn_num_items));
@@ -1254,7 +1253,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			ksort($va_header_sources);
 			foreach($va_header_sources as $vn_element => $vs_source) {
 				$va_tmp = explode(".", $vs_source);
-				if ($t_table = $t_mapping->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
+				if ($t_table = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 					$va_header[] = $t_table->getDisplayLabel($vs_source);
 				} else {
 					$va_header[] = $vs_source;
@@ -1360,7 +1359,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(!($t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code))) { return false; }
 		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0) { return false; }
 
-		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
+		$t_instance = Datamodel::getInstanceByTableNum($t_mapping->get('table_num'));
 
 		if (($vn_start > 0) && ($vn_start < $po_result->numHits())) {
 			$po_result->seek($vn_start);
@@ -1474,7 +1473,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_type_restrictions = $t_exporter->getSetting('typeRestrictions');
 		if(is_array($va_type_restrictions) && sizeof($va_type_restrictions)) {
-			$t_instance = Datamodel::load()->getInstance($t_exporter->get('table_num'));
+			$t_instance = Datamodel::getInstance($t_exporter->get('table_num'));
 			$t_instance->load($pn_record_id);
 			if(!in_array($t_instance->getTypeCode(), $va_type_restrictions)) {
 				$o_log->logError(_t("Could not run exporter with code '%1' for item with ID %2 because a type restriction is in place", $ps_exporter_code, $pn_record_id));
@@ -1580,12 +1579,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_check_access = $t_exporter_item->getSetting('checkAccess');
 			$va_sort = $t_exporter_item->getSetting('sort');
 
-			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
+			$vn_new_table_num = Datamodel::getTableNum($vs_context);
 			$vb_context_is_related_table = false;
 			$va_related = null;
 
 			if($vn_new_table_num) { // switch to new table
-				$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
+				$vs_key = Datamodel::primaryKey($vs_context);
 			} else { // this table, i.e. hierarchy context switch
 				$vs_key = $t_instance->primaryKey();
 			}
@@ -1627,10 +1626,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'ca_list_items.firstLevel':
 					if($t_instance->tableName() == 'ca_lists') {
-						$o_dm = Datamodel::load();
+						
 						$va_related = array();
 						$va_items_legacy_format = $t_instance->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
-						$vn_new_table_num = $o_dm->getTableNum('ca_list_items');
+						$vn_new_table_num = Datamodel::getTableNum('ca_list_items');
 						$vs_key = 'item_id';
 						foreach($va_items_legacy_format as $va_item_legacy_format) {
 							$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
@@ -1827,8 +1826,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 				$va_src_tmp = explode('.', $vs_source);
 				if(sizeof($va_src_tmp) == 2) {
-					$o_dm = Datamodel::load();
-					if($t_attr->get('table_num') == $o_dm->getTableNum($va_src_tmp[0])) {
+					
+					if($t_attr->get('table_num') == Datamodel::getTableNum($va_src_tmp[0])) {
 						$vs_source = $va_src_tmp[1];
 					}
 				}
@@ -2128,8 +2127,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(isset(ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id])) {
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id];
 		} else {
-			$o_dm = Datamodel::load();
-			$t_instance = $o_dm->getInstanceByTableNum($pn_table_num);
+			
+			$t_instance = Datamodel::getInstanceByTableNum($pn_table_num);
 			if(!$t_instance->load($pn_record_id)) {
 				return false;
 			}

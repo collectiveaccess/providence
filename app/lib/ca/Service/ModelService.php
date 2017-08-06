@@ -64,7 +64,7 @@ class ModelService extends BaseJSONService {
 	# -------------------------------------------------------
 	private function getModelInfoForTypes($pa_types=null){
 		$va_post = $this->getRequestBodyArray();
-		$t_instance = $this->_getTableInstance($this->getTableName());
+		$t_instance = $this->_getInstance($this->getTableName());
 		$va_return = array();
 
 		if(is_null($pa_types)){
@@ -84,7 +84,7 @@ class ModelService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	private function getModelInfoForType($ps_type){
-		$t_instance = $this->_getTableInstance($this->getTableName());
+		$t_instance = $this->_getInstance($this->getTableName());
 		$t_list = new ca_lists();
 		$va_return = array();
 

@@ -47,11 +47,11 @@
 		protected $ops_primary_key;
 		# ----------------------------------------------------------------------
 		public function __construct($pn_browse_id=null, $ps_context='', $ps_table) {
-			$o_dm = Datamodel::load();
+			
 			$this->ops_tablename = $ps_table;
-			$this->opn_tablenum = $o_dm->getTableNum($ps_table);
+			$this->opn_tablenum = Datamodel::getTableNum($ps_table);
 		
-			$this->ops_primary_key = $o_dm->getTablePrimaryKeyName($ps_table);
+			$this->ops_primary_key = Datamodel::primaryKey($ps_table);
 			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
 		}
 		# ------------------------------------------------------

@@ -113,7 +113,7 @@
 			
 			$vs_table_name = $this->tableName();
 			
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
@@ -188,7 +188,7 @@
 			
 			$vs_table_name = $this->tableName();
 			
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
@@ -267,7 +267,7 @@
  			if (!$this->getPrimaryKey()) { return null; }
 			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
  			
- 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
+ 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
  				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
@@ -307,7 +307,7 @@
  		public function removeAllLabels($pn_mode=__CA_LABEL_TYPE_ANY__, $pa_options = null) {
  			if (!$this->getPrimaryKey()) { return null; }
  			
- 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
+ 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
  				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
@@ -1047,7 +1047,7 @@
 				switch($va_tmp[1]) {
 					case 'parent':
 						if (($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+							$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 							if (!$t_instance->load($vn_parent_id)) {
 								$t_instance = $this;
 							} else {
@@ -1066,7 +1066,7 @@
 							$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 							
 							if (is_array($va_children_ids) && sizeof($va_children_ids)) {
-								$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+								$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 								
 								$vb_check_access = is_array($pa_options['checkAccess']) && $t_instance->hasField('access');
 								$va_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
@@ -1452,7 +1452,7 @@
 			} elseif ($vn_num_bits == 2) {
 				if (($va_bundle_bits[0] == $this->tableName()) && (in_array($va_bundle_bits[1], array('preferred_labels', 'nonpreferred_labels')))) {
 					return true;
-				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
 					return $t_rel->hasBundle($ps_bundle, $pn_type_id);
 				} else {
 					return parent::hasBundle($ps_bundle, $pn_type_id);
@@ -1461,7 +1461,7 @@
 				if (($va_bundle_bits[0] == $this->tableName()) && (in_array($va_bundle_bits[1], array('preferred_labels', 'nonpreferred_labels')))) {
 					if (!($t_label = $this->getLabelTableInstance())) { return false; }
 					return $t_label->hasField($va_bundle_bits[2]);
-				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
 					return $t_rel->hasBundle($ps_bundle, $pn_type_id);
 				} else {
 					return parent::hasBundle($ps_bundle, $pn_type_id);
@@ -1527,7 +1527,7 @@
 		 * @return string The label value
 		 */
  		public function getLabelForDisplay($pb_dont_cache=true, $pm_locale=null, $pa_options=null) {
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
@@ -1550,7 +1550,7 @@
 		 * @return array List of field names
 		 */
 		public function getLabelUIFields() {
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			return $t_label->getUIFields();
 		}
 		# ------------------------------------------------------------------
@@ -1560,7 +1560,7 @@
 		 * @return string Name of display field
 		 */
 		public function getLabelDisplayField() {
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			return $t_label->getDisplayField();
 		}
 		# ------------------------------------------------------------------
@@ -1570,7 +1570,7 @@
 		 * @return array
 		 */
 		public function getSecondaryLabelDisplayFields() {
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			return $t_label->getSecondaryDisplayFields();
 		}
 		# ------------------------------------------------------------------
@@ -1580,7 +1580,7 @@
 		 * @return string Name of sort field
 		 */
 		public function getLabelSortField() {
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			return $t_label->getSortField();
 		}
 		# ------------------------------------------------------------------
@@ -1590,7 +1590,7 @@
 		 * @return bool True if preferred labels are supported, false if not
 		 */
 		public function supportsPreferredLabelFlag() {
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			return (bool)$t_label->hasField('is_preferred');
 		}
 		# ------------------------------------------------------------------
@@ -1689,7 +1689,7 @@
  			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key])) {
  				return $va_tmp;
  			}
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
@@ -1837,7 +1837,7 @@
 		 */
  		public function getLabelCount($pb_preferred=true, $pn_locale_id=null) {
  			if (!$this->getPrimaryKey()) { return null; }
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
@@ -1960,8 +1960,8 @@
 		 * @return string|bool
 		 */
 		public static function getLabelTable($ps_table_name) {
-			$o_dm = Datamodel::load();
-			$t_instance = $o_dm->getInstance($ps_table_name, true);
+			
+			$t_instance = Datamodel::getInstance($ps_table_name, true);
 			if($t_instance instanceof LabelableBaseModelWithAttributes) {
 				return $t_instance->getLabelTableName();
 			}
@@ -1975,7 +1975,7 @@
 		 */
 		public function getLabelTableInstance() {
 			if ($vs_label_table_name = $this->getLabelTableName()) {
-				return $this->_DATAMODEL->getInstanceByTableName($vs_label_table_name, true);
+				return Datamodel::getInstanceByTableName($vs_label_table_name, true);
 			}
 			return null;
 		}
@@ -2035,7 +2035,7 @@
 		public function getPreferredLabelHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
 			global $g_ui_locale;
 			
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
@@ -2117,7 +2117,7 @@
 		public function getNonPreferredLabelHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
 			global $g_ui_locale;
 			
-			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
@@ -2390,8 +2390,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_group_rel_table);
 			
 			$vb_supports_date_restrictions = (bool)$t_rel->hasField('effective_date');
 			$o_tep = new TimeExpressionParser();
@@ -2478,8 +2478,8 @@
 			
 			$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : null;
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table, true);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_group_rel_table, true);
 			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_groups = $this->getUserGroups();
@@ -2540,8 +2540,8 @@
 			if (!($vs_group_rel_table = $this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_group_rel_table);
 			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_groups = $this->getUserGroups();
@@ -2573,7 +2573,7 @@
 			if (!($vs_group_rel_table = $this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_group_rel_table, true);
+			$t_rel = Datamodel::getInstanceByTableName($vs_group_rel_table, true);
 			if(is_array($va_groups = $this->getUserGroups(['returnAsInitialValuesForBundle' => true]))) {
 				foreach($va_groups as $vn_rel_id => $va_info) {
 					if($t_rel->load($vn_rel_id)) {
@@ -2601,8 +2601,8 @@
 			require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
 			$t_group = new ca_user_groups();
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'));
+			
+			$t_rel = Datamodel::getInstanceByTableName($this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'));
 			$o_view->setVar('t_rel', $t_rel);
 			
 			$o_view->setVar('t_instance', $this);
@@ -2636,8 +2636,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_user_rel_table);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_user_rel_table);
 			
 			$vb_supports_date_restrictions = (bool)$t_rel->hasField('effective_date');
 			$o_tep = new TimeExpressionParser();
@@ -2716,8 +2716,8 @@
 			if (!($vs_user_rel_table = $this->getProperty('USERS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_user_rel_table, true);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_user_rel_table, true);
 			
 			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			foreach($pa_user_ids as $vn_user_id => $vn_access) {
@@ -2772,8 +2772,8 @@
 			if (!($vs_user_rel_table = $this->getProperty('USERS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_user_rel_table);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_user_rel_table);
 			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_users = $this->getUsers();
@@ -2805,7 +2805,7 @@
 			if (!($vs_user_rel_table = $this->getProperty('USERS_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_user_rel_table, true);
+			$t_rel = Datamodel::getInstanceByTableName($vs_user_rel_table, true);
 			if(is_array($va_users = $this->getUsers(['returnAsInitialValuesForBundle' => true]))) {
 				foreach($va_users as $vn_rel_id => $va_info) {
 					if($t_rel->load($vn_rel_id)) {
@@ -2832,8 +2832,8 @@
 			require_once(__CA_MODELS_DIR__.'/ca_users.php');
 			$t_user = new ca_users();
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($this->getProperty('USERS_RELATIONSHIP_TABLE'));
+			
+			$t_rel = Datamodel::getInstanceByTableName($this->getProperty('USERS_RELATIONSHIP_TABLE'));
 			$o_view->setVar('t_rel', $t_rel);
 			
 			$o_view->setVar('t_instance', $this);
@@ -2867,8 +2867,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_group_rel_table);
 			
 			$o_db = $this->getDb();
 			
@@ -2940,8 +2940,8 @@
 			
 			$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : null;
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_role_rel_table, true);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_role_rel_table, true);
 			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_roles = $this->getUserroles();
@@ -2999,8 +2999,8 @@
 			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($vs_role_rel_table);
+			
+			$t_rel = Datamodel::getInstanceByTableName($vs_role_rel_table);
 			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_roles = $this->getUserRoles();
@@ -3031,7 +3031,7 @@
 			if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
 			
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_role_rel_table, true);
+			$t_rel = Datamodel::getInstanceByTableName($vs_role_rel_table, true);
 			if(is_array($va_roles = $this->getUserRoles(['returnAsInitialValuesForBundle' => true]))) {
 				foreach($va_roles as $vn_rel_id => $va_info) {
 					if($t_rel->load($vn_rel_id)) {
@@ -3059,8 +3059,8 @@
 			require_once(__CA_MODELS_DIR__.'/ca_user_roles.php');
 			$t_role = new ca_user_roles();
 			
-			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'));
+			
+			$t_rel = Datamodel::getInstanceByTableName($this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'));
 			$o_view->setVar('t_rel', $t_rel);
 			
 			$o_view->setVar('t_instance', $this);

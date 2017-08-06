@@ -69,7 +69,7 @@
  			AssetLoadManager::register('bundleableEditor');
  			AssetLoadManager::register('panel');
  			
- 			$this->opo_datamodel = Datamodel::load();
+ 			
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
 
@@ -107,11 +107,11 @@
 
 			// get import type from request
 			$vs_import_target = $this->getRequest()->getParameter('target', pString);
-			$t_instance = $this->getRequest()->getAppDatamodel()->getInstance($vs_import_target);
+			$t_instance = Datamodel::getInstance($vs_import_target);
 			// if that failed, try last settings
 			if(!$t_instance) {
 				$vs_import_target = $va_last_settings['importTarget'];
-				$t_instance = $this->getRequest()->getAppDatamodel()->getInstance($vs_import_target);
+				$t_instance = Datamodel::getInstance($vs_import_target);
 			}
 			// if that too failed, go back to objects
 			if(!$t_instance) {
@@ -174,7 +174,7 @@
  			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
  				if ($va_importer_info['table_num'] == $t_instance->tableNum()) { // target table
  					$va_object_importer_options[$va_importer_info['label']] = $vn_importer_id;
- 				} elseif($va_importer_info['table_num'] == $t_instance->getAppDatamodel()->getTableNum('ca_object_representations')) {
+ 				} elseif($va_importer_info['table_num'] == Datamodel::getTableNum('ca_object_representations')) {
  					$va_object_representation_importer_options[$va_importer_info['label']] = $vn_importer_id;
  				}
  			}
@@ -214,7 +214,7 @@
  			list($t_ui) = $this->_initView($pa_options);
 
 			$vs_import_target = $this->getRequest()->getParameter('import_target', pString);
-			if(!$this->getRequest()->getAppDatamodel()->tableExists($vs_import_target)) {
+			if(!Datamodel::tableExists($vs_import_target)) {
 				$vs_import_target = 'ca_objects';
 			}
  			$vs_directory = $this->request->getParameter('directory', pString);
@@ -547,8 +547,6 @@
  		 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
  		 */
  		public function info($pa_parameters) {
- 			$o_dm 				= Datamodel::load();
- 			
 			$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 			$this->view->setVar('result_context', $this->getResultContext());
 			
@@ -556,4 +554,3 @@
  		}
 		# ------------------------------------------------------------------
  	}
- ?>

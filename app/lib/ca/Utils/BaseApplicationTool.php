@@ -119,7 +119,7 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 		public function __construct($pa_settings=null, $ps_mode='CLI', $ps_tool_config_path=null, $ps_log_path=null) {
 			$this->SETTINGS = new ApplicationToolSettings($this->opa_available_settings, array());
 			
-			$this->opo_datamodel = Datamodel::load();
+			
 			$this->opo_app_config = Configuration::load();
 			
 			if (is_array($pa_settings)) { $this->setSettings($pa_settings); }
@@ -187,15 +187,6 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 		 */
 		public function getAppConfig() {
 			return $this->opo_app_config;
-		}
-		# -------------------------------------------------------
-		/**
-		 * Get application Datamodel instance
-		 *
-		 * @return Datamodel
-		 */
-		public function getAppDatamodel() {
-			return $this->opo_datamodel;
 		}
 		# -------------------------------------------------------
 		/**

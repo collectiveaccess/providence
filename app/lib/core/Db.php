@@ -98,7 +98,6 @@ class Db extends DbBase {
 	 */
 	public function __construct($ps_config_file_path="", $pa_options=null, $pb_die_on_error=false) {
 		$this->config = Configuration::load();
-		$this->datamodel = Datamodel::load();
 
 		$this->opn_transaction_count = 0;
 
@@ -507,8 +506,8 @@ class Db extends DbBase {
 	 * @param string $ps_table name of the table
 	 * @return mixed
 	 */
-	public function getTableInstance($ps_table) {
-		return $this->datamodel->getInstanceByTableName($ps_table);
+	public function getInstance($ps_table) {
+		return Datamodel::getInstanceByTableName($ps_table);
 	}
 
 	/**

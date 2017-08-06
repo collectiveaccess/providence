@@ -42,7 +42,14 @@ require_once(__CA_LIB_DIR__.'/core/Zend/Translate.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Registry.php');
 require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php'); // is used in utilityHelpers
+
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+
+require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php'); // is used in Datamodel
+require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php'); // is used in Datamodel
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+Datamodel::load();
+
 require_once(__CA_APP_DIR__.'/helpers/initializeLocale.php');
 
 if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {

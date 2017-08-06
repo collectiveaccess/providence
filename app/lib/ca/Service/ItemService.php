@@ -98,7 +98,7 @@ class ItemService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	protected function getSpecificItemInfo() {
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
+		if(!($t_instance = $this->_getInstance($this->ops_table,$this->opn_id))) {	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
 
@@ -148,13 +148,13 @@ class ItemService extends BaseJSONService {
 	 * Try to return a generic summary for the specified record
 	 */
 	protected function getAllItemInfo() {
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
+		if(!($t_instance = $this->_getInstance($this->ops_table,$this->opn_id))) {	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
 
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
-		$o_dm = Datamodel::load();
+		
 
 		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 
@@ -221,7 +221,7 @@ class ItemService extends BaseJSONService {
 				}
 				switch($vs_field_name) {
 					case 'parent_id':
-						if($t_parent = $this->_getTableInstance($this->ops_table, $vs_val)) {
+						if($t_parent = $this->_getInstance($this->ops_table, $vs_val)) {
 							$va_return['intrinsic'][$vs_field_name] = $t_parent->get('idno');
 						}
 						break;
@@ -303,7 +303,7 @@ class ItemService extends BaseJSONService {
 			//
 
 			$va_related_items = $t_instance->get($vs_get_spec, $va_get_options);
-			$t_rel_instance = $o_dm->getInstance($vs_rel_table);
+			$t_rel_instance = Datamodel::getInstance($vs_rel_table);
 
 			if(is_array($va_related_items) && sizeof($va_related_items)>0) {
 				if($t_rel_instance instanceof RepresentableBaseModel) {
@@ -325,7 +325,7 @@ class ItemService extends BaseJSONService {
 	 * PUT portion of this very service. With this hack editing operations should be easier to handle.
 	 */
 	private function getItemInfoForEdit() {
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {
+		if(!($t_instance = $this->_getInstance($this->ops_table,$this->opn_id))) {
 			return false;
 		}
 		$t_locales = new ca_locales();
@@ -472,7 +472,7 @@ class ItemService extends BaseJSONService {
 	 * Get a record summary that is easier to parse when importing to another system
 	 */
 	private function getItemInfoForImport() {
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {
+		if(!($t_instance = $this->_getInstance($this->ops_table,$this->opn_id))) {
 			return false;
 		}
 
@@ -513,7 +513,7 @@ class ItemService extends BaseJSONService {
 				}
 				switch($vs_field_name) {
 					case 'parent_id':
-						if($t_parent = $this->_getTableInstance($this->ops_table, $vs_val)) {
+						if($t_parent = $this->_getInstance($this->ops_table, $vs_val)) {
 							$va_return['intrinsic'][$vs_field_name] = $t_parent->get('idno');
 						}
 						break;
@@ -699,7 +699,7 @@ class ItemService extends BaseJSONService {
 	 */
 	public function addItem($ps_table=null, $pa_data=null) {
 		if(!$ps_table) { $ps_table = $this->ops_table; }
-		if(!($t_instance = $this->_getTableInstance($ps_table))) {
+		if(!($t_instance = $this->_getInstance($ps_table))) {
 			return false;
 		}
 
@@ -787,7 +787,7 @@ class ItemService extends BaseJSONService {
 						$vs_effective_date = isset($va_relationship["effective_date"]) ? $va_relationship["effective_date"] : null;
 						$vs_direction = isset($va_relationship["direction"]) ? $va_relationship["direction"] : null;
 
-						$t_rel_instance = $this->_getTableInstance($vs_table);
+						$t_rel_instance = $this->_getInstance($vs_table);
 
 						$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
 						$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
@@ -857,7 +857,7 @@ class ItemService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	private function editItem() {
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {
+		if(!($t_instance = $this->_getInstance($this->ops_table,$this->opn_id))) {
 			return false;
 		}
 
@@ -950,7 +950,7 @@ class ItemService extends BaseJSONService {
 					$vs_effective_date = isset($va_relationship["effective_date"]) ? $va_relationship["effective_date"] : null;
 					$vs_direction = isset($va_relationship["direction"]) ? $va_relationship["direction"] : null;
 
-					$t_rel_instance = $this->_getTableInstance($vs_table);
+					$t_rel_instance = $this->_getInstance($vs_table);
 
 					$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
 					$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
@@ -995,7 +995,7 @@ class ItemService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	private function deleteItem() {
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {
+		if(!($t_instance = $this->_getInstance($this->ops_table,$this->opn_id))) {
 			return false;
 		}
 

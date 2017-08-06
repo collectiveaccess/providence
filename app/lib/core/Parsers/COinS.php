@@ -59,8 +59,8 @@
 			} else {
 				$qr_res = $pm_instance_or_result;
 			}
-			$o_dm = Datamodel::load();
-			$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+			
+			$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 			$vs_type_fld_name = $t_instance->getTypeFieldName();
 			
 			$t_item = new ca_list_items();

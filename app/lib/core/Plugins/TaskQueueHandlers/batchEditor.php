@@ -110,8 +110,8 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 			$o_app = AppController::getInstance($o_request, $o_response);
 			
 			$t_set = new ca_sets($pa_parameters['set_id']);
-			$o_dm = Datamodel::load();
-			$t_subject = $o_dm->getInstanceByTableNum($t_set->get('table_num'));
+			
+			$t_subject = Datamodel::getInstanceByTableNum($t_set->get('table_num'));
 			
 			if (isset($pa_parameters['isBatchTypeChange']) && $pa_parameters['isBatchTypeChange']) {
 				$va_report = BatchProcessor::changeTypeBatchForSet($o_request, $pa_parameters['new_type_id'], $t_set, $t_subject, array('sendMail' => (bool)$pa_parameters['sendMail'], 'sendSMS' => (bool)$pa_parameters['sendSMS']));

@@ -329,9 +329,9 @@ class OAIPMHService extends BaseService {
 		$getRecord = $oaiData->createElement('GetRecord');
 		$oaiData->documentElement->appendChild($getRecord);
 	
-		$o_dm = Datamodel::load();
+		
 	
-		$t_item = $o_dm->getInstanceByTableName($this->table,true);
+		$t_item = Datamodel::getInstanceByTableName($this->table,true);
 	
 		if (!($t_item->load($vs_item_id))) {
 			// error - identifier invalid
@@ -477,9 +477,9 @@ class OAIPMHService extends BaseService {
 	 */
 	private function listResponse($oaiData, $verb, $metadataPrefix, $cursor, $set, $from, $until) {
 		$listLimit = $this->_listLimit;
-		$o_dm = Datamodel::load();
+		
 		// by this point, the mapping code was checked to be valid
-		$t_instance = $o_dm->getInstanceByTableName($this->table, true);
+		$t_instance = Datamodel::getInstanceByTableName($this->table, true);
 		$vs_pk = $t_instance->primaryKey();
 		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
 	
@@ -778,7 +778,7 @@ class OAIPMHService extends BaseService {
 					$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Selected mapping %1 is invalid", $vs_mapping));
 				}
 
-				$this->table = $this->exporter->getAppDatamodel()->getTableName($this->exporter->get('table_num'));
+				$this->table = Datamodel::getTableName($this->exporter->get('table_num'));
 			} else {
 				$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("Exporter with code %1 does not exist", $vs_mapping));
 			}

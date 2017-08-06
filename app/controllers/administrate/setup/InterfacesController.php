@@ -47,10 +47,9 @@ class InterfacesController extends BaseEditorController {
 		
 		$this->checkConfiguration();
 		
-		$vo_dm = Datamodel::load();
 		$va_uis = ca_editor_uis::getUIList(null);
 		foreach($va_uis as $vs_key => $va_ui){
-			if (!($t_instance = $vo_dm->getInstanceByTableNum($va_ui['editor_type'], true))) { continue; }
+			if (!($t_instance = Datamodel::getInstanceByTableNum($va_ui['editor_type'], true))) { continue; }
 			$va_uis[$vs_key]['editor_type'] = $t_instance->getProperty('NAME_PLURAL');
 		}
 		$this->view->setVar('editor_ui_list',$va_uis);

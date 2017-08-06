@@ -127,8 +127,8 @@
 				throw new ApplicationException(_t('No duplication preferences for %1', $this->request->getActionExtra()));
 			}
 			
- 			$o_dm = Datamodel::load();
-			if (!$t_instance = $o_dm->getInstanceByTableName($vs_current_table, true)) {
+ 			
+			if (!$t_instance = Datamodel::getInstanceByTableName($vs_current_table, true)) {
 				throw new ApplicationException(_t('Invalid table: %1', $this->request->getActionExtra()));
 			}
 			
@@ -143,7 +143,7 @@
 			
 			$va_available_bundles = $t_screen->getAvailableBundles($vs_current_table);
 			foreach($va_available_bundles as $vs_bundle_name => $va_bundle_info) {
-				if ($o_dm->tableExists($vs_bundle_name)) { continue; }
+				if (Datamodel::tableExists($vs_bundle_name)) { continue; }
 				$vn_duplication_setting = isset($va_duplication_element_settings[$vs_bundle_name]) ? $va_duplication_element_settings[$vs_bundle_name] : 1;
 				$va_bundle_list[$vs_bundle_name] = array(
 					'bundle_info' => $va_bundle_info,

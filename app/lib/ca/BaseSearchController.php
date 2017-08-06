@@ -67,7 +67,7 @@
  			
  			AssetLoadManager::register('hierBrowser');
  			AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
- 			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			$va_access_values = caGetUserAccessValues($this->request);
  			
  			// Get elements of result context
@@ -238,7 +238,7 @@
  			//
  			// Set up view for display of results
  			//
- 			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 			$this->view->setVar('views', $this->opa_views);	// pass view list to view for rendering
 			$this->view->setVar('current_view', $vs_view);
 			
@@ -356,7 +356,7 @@
 		# Navigation (menu bar)
 		# -------------------------------------------------------
  		public function _genTypeNav($pa_params) {
- 			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_subject = Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			
  			$t_list = new ca_lists();
  			$t_list->load(array('list_code' => $t_subject->getTypeListCode()));

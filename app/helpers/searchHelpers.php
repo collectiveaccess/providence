@@ -45,11 +45,11 @@
 	 * @return BaseSearch
 	 */
 	function caGetSearchInstance($pm_table_name_or_num, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		
-		$vs_table = (is_numeric($pm_table_name_or_num)) ? $o_dm->getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
 		
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return null; }
+		$vs_table = (is_numeric($pm_table_name_or_num)) ? Datamodel::getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
+		
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { return null; }
 		if ($t_instance->isRelationship()) { 
 			require_once(__CA_LIB_DIR__.'/ca/Search/InterstitialSearch.php');
 			return new InterstitialSearch($vs_table);
@@ -181,12 +181,12 @@
 	 * @return string 
 	 */
 	function caSearchUrl($po_request, $ps_table, $ps_search=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
-		$o_dm = Datamodel::load();
+		
 		
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		
 		$vb_return_advanced = isset($pa_options['returnAdvanced']) && $pa_options['returnAdvanced'];
@@ -563,8 +563,8 @@
 	 * @return array 
 	 */
 	function caSplitSearchResultByType($pr_res, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($pr_res->tableName(), true))) { return null; }
+		
+		if (!($t_instance = Datamodel::getInstanceByTableName($pr_res->tableName(), true))) { return null; }
 		
 		if (!($vs_type_fld = $t_instance->getTypeFieldName())) { return null; }
 		$vs_table = $t_instance->tableName();
@@ -747,7 +747,7 @@
 		$pa_form_values = caGetOption('formValues', $pa_options, $_REQUEST);
 		$va_form_contents = explode('|', caGetOption('_formElements', $pa_form_values, ''));
 
-		$o_dm = Datamodel::load();
+		
 		
 	 	$va_display_string = array();
 	 	
@@ -764,7 +764,7 @@
 			if(!($vs_label = trim($pa_form_values[$vs_dotless_element.'_label']))) { $vs_label = "???"; }
 		
 			$va_fld = explode(".", $vs_element);
-			$t_table = $o_dm->getInstanceByTableName($va_fld[0], true);
+			$t_table = Datamodel::getInstanceByTableName($va_fld[0], true);
 		
 		// TODO: need universal way to convert item_ids in attributes and intrinsics to display text
 			if ($t_table && ($t_table->hasField($va_fld[1]))) {
@@ -950,10 +950,10 @@
 	 *
 	 */
 	function caGetLabelForBundle($ps_bundle) {
-		$o_dm = Datamodel::load();
+		
 		$va_tmp = explode(".", $ps_bundle);
 		
-		if ($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+		if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 			return $t_instance->getDisplayLabel($ps_bundle);
 		}
 		return $ps_bundle;
@@ -963,10 +963,10 @@
 	 *
 	 */
 	function caGetDisplayValueForBundle($ps_bundle, $ps_value) {
-		$o_dm = Datamodel::load();
+		
 		$va_tmp = explode(".", $ps_bundle);
 		
-		if ($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+		if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 			if ($t_instance->hasField($va_tmp[1])) {		// intrinsic
 				return $ps_value;
 			} elseif($t_instance->hasElement($va_tmp[1])) {	// metadata element
@@ -1004,15 +1004,15 @@
 		$pb_for_select = caGetOption('forSelect', $pa_options, false);
 		$pa_filter = caGetOption('filter', $pa_options, null);
 		
-		$o_dm = Datamodel::load();
+		
 		$o_config = Configuration::load();
 		$o_indexing_config = caGetSearchIndexingConfig();
 		
-		$pm_table_name_or_num = $o_dm->getTableNum($pm_table_name_or_num);
+		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
 		
-		$t_instance = $o_dm->getInstanceByTableNum($pm_table_name_or_num, true);
-		$va_search_settings = $o_indexing_config->getAssoc($o_dm->getTableName($pm_table_name_or_num));
+		$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
+		$va_search_settings = $o_indexing_config->getAssoc(Datamodel::getTableName($pm_table_name_or_num));
 		
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
@@ -1037,7 +1037,7 @@
 			foreach($pa_filter as $vn_i => $vs_filter) {
 				$va_tmp = explode('.', $vs_filter);
 				if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
-					if ($t_filter_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+					if ($t_filter_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 						$pa_filter[] = $t_filter_instance->getLabelTableName().($va_tmp[2] ? '.'.$va_tmp[2] : '');
 					}
 				}
@@ -1103,7 +1103,7 @@
 			} else {
 				// related table
 					if ($o_config->get($vs_table.'_disable')) { continue; }
-					$t_table = $o_dm->getInstanceByTableName($vs_table, true);
+					$t_table = Datamodel::getInstanceByTableName($vs_table, true);
 					if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
 						if ($o_config->get($vs_subject_table.'_disable')) { continue; }
 					}
@@ -1189,7 +1189,7 @@
 			foreach($va_sorted_bundles as $vs_label => $vs_key) {
 				$va_tmp = explode('.', $vs_key);
 				if (preg_match('!_labels$!', $va_tmp[0])) {
-					if (($t_label_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) && (is_a($t_label_instance, 'BaseLabel'))) {
+					if (($t_label_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) && (is_a($t_label_instance, 'BaseLabel'))) {
 						$va_sorted_bundles[$vs_label] = $t_label_instance->getSubjectTableName().'.preferred_labels'.($va_tmp[1] ? '.'.$va_tmp[1] : '');
 					}
 				}
@@ -1338,16 +1338,16 @@
 		global $g_ui_locale_id;
 
 		if(is_numeric($ps_table)) {
-			$ps_table = $o_dm->getTableName($ps_table);
+			$ps_table = Datamodel::getTableName($ps_table);
 		}
-		$o_dm = Datamodel::load();
-		if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return []; }
+		
+		if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return []; }
 		
 		$t_rel = null;
 		if ($ps_related_table = caGetOption('includeInterstitialSortsFor', $pa_options, null)) {
-			$o_dm = Datamodel::load();
-			if (is_array($va_path = array_keys($o_dm->getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
-				$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
+			
+			if (is_array($va_path = array_keys(Datamodel::getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
+				$t_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 			}
 		} 
 		
@@ -1359,7 +1359,7 @@
 					foreach($va_placements as $va_placement) {
 						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
 						$va_bundle_bits = explode('.', $vs_bundle_name);
-						if (!$o_dm->tableExists($va_bundle_bits[0])) {
+						if (!Datamodel::tableExists($va_bundle_bits[0])) {
 							array_unshift($va_bundle_bits, $ps_table);
 							$vs_bundle_name = join('.', $va_bundle_bits);	
 						}

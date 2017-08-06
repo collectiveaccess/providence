@@ -227,8 +227,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 *
 	 */
 	protected function GetHierarchyLevelData($pa_ids) {
-
-		$vo_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		$t_object = new ca_objects();
 
@@ -245,7 +243,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 			$vn_item_count = 0;
 
-			$t_item = $vo_dm->getInstanceByTableName($vs_table, true);
+			$t_item = Datamodel::getInstanceByTableName($vs_table, true);
 			$vs_label_table_name = $t_item->getLabelTableName();
 			$vs_label_display_field_name = $t_item->getLabelDisplayField();
 			$vs_pk = $t_item->primaryKey();
@@ -262,7 +260,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 				$vs_table = $va_params['table'];
 				$vn_id = $va_params['id'];
 				$vn_start = $va_params['start'];
-				$t_item = $vo_dm->getInstanceByTableName($vs_table, true);
+				$t_item = Datamodel::getInstanceByTableName($vs_table, true);
 
 				$vs_label_table_name = $t_item->getLabelTableName();
 				$vs_label_display_field_name = $t_item->getLabelDisplayField();
@@ -478,8 +476,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 * Returned data is JSON format
 	 */
 	public function GetHierarchyAncestorList() {
-		$vo_dm = Datamodel::load();
-
 		$pn_id = $this->request->getParameter('id', pString);
 
 		$va_params = $this->getItemIDComponents($pn_id, 'ca_objects');
@@ -487,7 +483,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 		$vn_id = $va_params['id'];
 		$vn_start = $va_params['start'];
 
-		$t_item = $vo_dm->getInstanceByTableName($vs_table, true);
+		$t_item = Datamodel::getInstanceByTableName($vs_table, true);
 		$t_item->load($vn_id);
 		$va_ancestors = [];
 		if ($t_item->getPrimaryKey()) {

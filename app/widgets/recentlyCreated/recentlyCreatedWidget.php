@@ -45,7 +45,7 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentlyCreated.conf');
-			$this->opo_datamodel = Datamodel::load();
+			
 			$this->opb_dont_show_timestamp = (bool)Configuration::load()->get('dont_show_timestamp_in_change_log');
 
 			$this->opa_table_display_names = array(
@@ -98,7 +98,7 @@
 			if(!in_array($pa_settings['display_type'],BaseWidget::$s_widget_settings['recentlyCreatedWidget']["display_type"]["options"])){
 				return "";
 			}
-			if ($t_table = $this->opo_datamodel->getInstanceByTableName($pa_settings['display_type'], true)) {
+			if ($t_table = Datamodel::getInstanceByTableName($pa_settings['display_type'], true)) {
 				$vo_db = new Db();
 				$o_tep = new TimeExpressionParser();
 				if($pa_settings["display_limit"] && intval($pa_settings["display_limit"])>0 && intval($pa_settings["display_limit"])<1000){
@@ -179,7 +179,7 @@
 					$this->opo_view->setVar("height_px", intval($pa_settings["height_px"]));
 				}
 				$this->opo_view->setVar('item_list', $va_item_list);
-				$this->opo_view->setVar('table_num', $this->opo_datamodel->getTableNum($t_table->tableName()));
+				$this->opo_view->setVar('table_num', Datamodel::getTableNum($t_table->tableName()));
 				$this->opo_view->setVar('request', $this->getRequest());
 				$this->opo_view->setVar('table_display', $this->opa_table_display_names[$t_table->tableName()]);
 				$this->opo_view->setVar('idno_display', (isset($pa_settings["display_idno"]) ? $pa_settings["display_idno"] : FALSE));

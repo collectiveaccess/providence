@@ -413,8 +413,8 @@
 					
 					if($va_properties['showTypesForTable']) {
 						$vs_select_element = '';
-						$o_dm = Datamodel::load();
-						if (!($t_show_types_for_table = $o_dm->getInstanceByTableName($va_properties['showTypesForTable'], true))) {
+						
+						if (!($t_show_types_for_table = Datamodel::getInstanceByTableName($va_properties['showTypesForTable'], true))) {
 							break;
 						}
 						
@@ -532,8 +532,8 @@
 						if (strlen($va_properties['showSortableBundlesFor']) > 0) {
  							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  							
- 							$o_dm = Datamodel::load();
- 							if (!($t_rel = $o_dm->getInstanceByTableName($va_properties['showSortableBundlesFor'], true))) {
+ 							
+ 							if (!($t_rel = Datamodel::getInstanceByTableName($va_properties['showSortableBundlesFor'], true))) {
  								break;
  							}
 							$va_elements = ca_metadata_elements::getSortableElements($va_properties['showSortableBundlesFor']);
@@ -591,8 +591,8 @@
 								}
 							
 								if($va_properties['includeIntrinsics']) {
-									$o_dm = Datamodel::load();
-									if (!($t_rep = $o_dm->getInstanceByTableName($vs_table, true))) { continue; }
+									
+									if (!($t_rep = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
 							
 									foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
 										if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }

@@ -53,8 +53,6 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	/** @var Configuration */
 	private $opo_config;
-	/** @var Datamodel */
-	private $opo_dm;
 	/** @var Db */
 	private $opo_db;
 	/** @var ca_locales */
@@ -74,7 +72,6 @@ final class ConfigurationExporter {
 	public function __construct($pn_modified_after = null, $pb_output_status = false) {
 		$this->opo_config = Configuration::load();
 		$this->opo_db = new Db();
-		$this->opo_dm = Datamodel::load();
 
 		$this->opo_dom = new DOMDocument('1.0', 'utf-8');
 		$this->opo_dom->preserveWhiteSpace = false;
@@ -457,7 +454,7 @@ final class ConfigurationExporter {
 				/** @var ca_metadata_type_restrictions $t_restriction */
 				$t_restriction = new ca_metadata_type_restrictions($va_restriction["restriction_id"]);
 
-				$vs_table_name = $this->opo_dm->getTableName($t_restriction->get("table_num"));
+				$vs_table_name = Datamodel::getTableName($t_restriction->get("table_num"));
 				if(!(strlen($vs_table_name)>0)) { continue; } // there could be lingering restrictions for tables that have since been removed. don't export those.
 				$vo_restriction = $this->opo_dom->createElement("restriction");
 				$vo_table = $this->opo_dom->createElement("table",$vs_table_name);
@@ -465,7 +462,7 @@ final class ConfigurationExporter {
 
 				if($t_restriction->get("type_id")) {
 					/** @var BaseRelationshipModel $t_instance */
-					$t_instance = $this->opo_dm->getInstanceByTableNum($t_restriction->get("table_num"));
+					$t_instance = Datamodel::getInstanceByTableNum($t_restriction->get("table_num"));
 					$vs_type_code = $t_instance->getTypeListCode();
 
 					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $t_restriction->get("type_id"));
@@ -731,7 +728,7 @@ final class ConfigurationExporter {
 			$vo_ui = $this->opo_dom->createElement("userInterface");
 			$t_ui = new ca_editor_uis($qr_uis->get("ui_id"));
 
-			$vs_type = $this->opo_dm->getTableName($qr_uis->get("editor_type"));
+			$vs_type = Datamodel::getTableName($qr_uis->get("editor_type"));
 
 			if(strlen($vs_code = $qr_uis->get("editor_code")) > 0) {
 				$vo_ui->setAttribute("code", $this->makeIDNO($vs_code));
@@ -773,7 +770,7 @@ final class ConfigurationExporter {
 					//$vo_restriction = $this->opo_dom->createElement("restriction");
 					//$vo_ui_type_restrictions->appendChild($vo_restriction);
 					/** @var BaseModelWithAttributes $t_instance */
-					$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
+					$t_instance = Datamodel::getInstanceByTableNum($va_restriction["table_num"]);
 					if($t_instance instanceof BaseRelationshipModel) {
 						$t_rel_type->load($va_restriction["type_id"]);
 						//$vo_restriction->setAttribute("type", $t_rel_type->get('type_code'));
@@ -883,7 +880,7 @@ final class ConfigurationExporter {
 					foreach($t_screen->getTypeRestrictions() as $va_restriction) {
 						//$vo_type_restriction = $this->opo_dom->createElement("restriction");
 
-						$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
+						$t_instance = Datamodel::getInstanceByTableNum($va_restriction["table_num"]);
 						if($t_instance instanceof BaseRelationshipModel) {
 							$t_rel_type->load($va_restriction["type_id"]);
 							//$vo_type_restriction->setAttribute("type", $t_rel_type->get('type_code'));
@@ -1024,7 +1021,7 @@ final class ConfigurationExporter {
 
 		while($qr_tables->nextRow()) {
 			$vo_table = $this->opo_dom->createElement("relationshipTable");
-			$vo_table->setAttribute("name", $this->opo_dm->getTableName($qr_tables->get("table_num")));
+			$vo_table->setAttribute("name", Datamodel::getTableName($qr_tables->get("table_num")));
 
 			$qr_root = $this->opo_db->query("
 				SELECT type_id FROM ca_relationship_types
@@ -1105,12 +1102,12 @@ final class ConfigurationExporter {
 
 			// restrictions (left side)
 			/** @var BaseRelationshipModel $t_instance */
-			$t_instance = $this->opo_dm->getInstanceByTableNum($qr_types->get("table_num"));
+			$t_instance = Datamodel::getInstanceByTableNum($qr_types->get("table_num"));
 
 			if($qr_types->get("sub_type_left_id")) {
 				/** @var BaseModelWithAttributes $t_left_instance */
 				$vs_left_table = $t_instance->getLeftTableName();
-				$t_left_instance = $this->opo_dm->getInstanceByTableNum($vs_left_table);
+				$t_left_instance = Datamodel::getInstanceByTableNum($vs_left_table);
 
 				$vs_type_code = $t_left_instance->getTypeListCode();
 				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_left_id"));
@@ -1124,7 +1121,7 @@ final class ConfigurationExporter {
 			if($qr_types->get("sub_type_right_id")) {
 				/** @var BaseModelWithAttributes $t_right_instance */
 				$vs_right_table = $t_instance->getRightTableName();
-				$t_right_instance = $this->opo_dm->getInstanceByTableNum($vs_right_table);
+				$t_right_instance = Datamodel::getInstanceByTableNum($vs_right_table);
 
 				$vs_type_code = $t_right_instance->getTypeListCode();
 				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_right_id"));
@@ -1222,7 +1219,7 @@ final class ConfigurationExporter {
 					$vn_type_id = $va_tmp[1];
 					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
 					/** @var BaseModelWithAttributes $t_instance */
-					$t_instance = $this->opo_dm->getInstanceByTableName($vs_table_name, true);
+					$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 					if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 
 					$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vn_type_id);
@@ -1328,7 +1325,7 @@ final class ConfigurationExporter {
 
 			$vo_form = $this->opo_dom->createElement("searchForm");
 			$vo_form->setAttribute("code", $this->makeIDNOFromInstance($t_form, "form_code"));
-			$vo_form->setAttribute("type", $this->opo_dm->getTableName($qr_forms->get("table_num")));
+			$vo_form->setAttribute("type", Datamodel::getTableName($qr_forms->get("table_num")));
 			$vo_form->setAttribute("system", $qr_forms->get("is_system"));
 			
 			if(is_array($va_restrictions = $t_form->getTypeRestrictions()) && sizeof($va_restrictions)) {
@@ -1455,7 +1452,7 @@ final class ConfigurationExporter {
 	public function getDisplaysAsXML() {
 		$t_display = new ca_bundle_displays();
 		/** @var Datamodel $o_dm */
-		$o_dm = Datamodel::load();
+		
 		$this->opt_locale = new ca_locales();
 
 		$va_options = [];
@@ -1503,7 +1500,7 @@ final class ConfigurationExporter {
 				}
 			}
 
-			$vs_buf .= "\t<display code='".($va_info['display_code'] && preg_match('!^[A-Za-z0-9_]+$!', $va_info['display_code']) ? $va_info['display_code'] : 'display_'.$va_info['display_id'])."' type='".$o_dm->getTableName($va_info['table_num'])."' system='".$t_display->get('is_system')."' {$vs_type_restriction_attr}>\n";
+			$vs_buf .= "\t<display code='".($va_info['display_code'] && preg_match('!^[A-Za-z0-9_]+$!', $va_info['display_code']) ? $va_info['display_code'] : 'display_'.$va_info['display_id'])."' type='".Datamodel::getTableName($va_info['table_num'])."' system='".$t_display->get('is_system')."' {$vs_type_restriction_attr}>\n";
 			$vs_buf .= "\t\t<labels>\n";
 			foreach($va_display_by_locale as $vn_locale_id => $va_display_info) {
 				if(strlen($this->opt_locale->localeIDToCode($vn_locale_id))>0) {

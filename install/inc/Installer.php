@@ -407,14 +407,13 @@ class Installer {
 	public function loadSchema($f_callback=null) {
 
 		$vo_config = Configuration::load();
-		$vo_dm = Datamodel::load();
 		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
 			$this->opo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
 			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
 			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
 
-		$va_ca_tables = $vo_dm->getTableNames();
+		$va_ca_tables = Datamodel::getTableNames();
 
 		$qr_tables = $this->opo_db->query("SHOW TABLES");
 
@@ -690,7 +689,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
-		$vo_dm = Datamodel::load();
 		$t_rel_types = new ca_relationship_types();
 		$t_list = new ca_lists();
 
@@ -722,11 +720,11 @@ class Installer {
 				foreach($vo_element->typeRestrictions->children() as $vo_restriction) {
 					$vs_restriction_code = self::getAttribute($vo_restriction, "code");
 
-					if (!($vn_table_num = $vo_dm->getTableNum((string)$vo_restriction->table))) {
+					if (!($vn_table_num = Datamodel::getTableNum((string)$vo_restriction->table))) {
 						$this->addError("Invalid table specified for restriction $vs_restriction_code in element $vs_element_code");
 						return false;
 					}
-					$t_instance = $vo_dm->getTableInstance((string)$vo_restriction->table);
+					$t_instance = Datamodel::getInstance((string)$vo_restriction->table);
 					$vn_type_id = null;
 					$vs_type = trim((string)$vo_restriction->type);
 
@@ -900,7 +898,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
-		$vo_dm = Datamodel::load();
 		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
 
 		$t_placement = new ca_editor_ui_bundle_placements();
@@ -923,7 +920,7 @@ class Installer {
 
 		foreach($va_uis as $vs_ui_code => $vo_ui) {
 			$vs_type = self::getAttribute($vo_ui, "type");
-			if (!($vn_type = $vo_dm->getTableNum($vs_type))) {
+			if (!($vn_type = Datamodel::getTableNum($vs_type))) {
 				$this->addError("Invalid type {$vs_type} for UI code {$vs_ui_code}");
 				return false;
 			}
@@ -931,7 +928,7 @@ class Installer {
 			$this->logStatus(_t('Processing user interface with code %1', $vs_ui_code));
 
 			// model instance of UI type
-			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
+			$t_instance = Datamodel::getInstanceByTableNum($vn_type);
 
 			// create ui row
 			if(!($t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
@@ -1254,15 +1251,12 @@ class Installer {
 			$vs_type_code = $va_list_names[$qr_list_item_result->get('list_id')];
 			$va_list_item_ids[$vs_type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
 		}
-
-		$vo_dm = Datamodel::load();
-
-
+		
 		foreach($va_rel_tables as $vs_table => $vo_rel_table) {
-			$vn_table_num = $vo_dm->getTableNum($vs_table);
+			$vn_table_num = Datamodel::getTableNum($vs_table);
 			$this->logStatus(_t('Processing relationship types for table %1', $vs_table));
 
-			$t_rel_table = $vo_dm->getTableInstance($vs_table);
+			$t_rel_table = Datamodel::getInstance($vs_table);
 
 			if (!method_exists($t_rel_table, 'getLeftTableName')) {
 				continue;
@@ -1306,7 +1300,7 @@ class Installer {
 	}
 	# --------------------------------------------------
 	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids) {
-		$o_dm = Datamodel::load();
+		
 
 		// nuke caches to be safe
 		ca_relationship_types::$s_relationship_type_id_cache = array();
@@ -1369,7 +1363,7 @@ class Installer {
 				||
 				($vs_left_subtype_code = trim((string) $vo_type->subTypeLeft))
 			) {
-				$t_obj = $o_dm->getTableInstance($ps_left_table);
+				$t_obj = Datamodel::getInstance($ps_left_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $vs_left_subtype_code, $vs_type_code));
@@ -1399,7 +1393,7 @@ class Installer {
 				||
 				($vs_right_subtype_code = trim((string) $vo_type->subTypeRight))
 			) {
-				$t_obj = $o_dm->getTableInstance($ps_right_table);
+				$t_obj = Datamodel::getInstance($ps_right_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $vs_right_subtype_code, $vs_type_code));
@@ -1577,8 +1571,6 @@ class Installer {
 
 		$o_config = Configuration::load();
 
-		$vo_dm = Datamodel::load();
-
 		$va_displays = array();
 		if($this->ops_base_name) { // "merge" profile and its base
 			if($this->opo_base->displays) {
@@ -1606,7 +1598,7 @@ class Installer {
 			$vs_display_code = self::getAttribute($vo_display, "code");
 			$vb_system = self::getAttribute($vo_display, "system");
 			$vs_table = self::getAttribute($vo_display, "type");
-			$vn_table_num = $vo_dm->getTableNum($vs_table);
+			$vn_table_num = Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing display with code %1', $vs_display_code));
 
@@ -1629,7 +1621,7 @@ class Installer {
 
 			$t_display->set("display_code", $vs_display_code);
 			$t_display->set("is_system", $vb_system);
-			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
+			$t_display->set("table_num",Datamodel::getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 
 			$this->_processSettings($t_display, $vo_display->settings);
@@ -1762,7 +1754,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 
 		$o_config = Configuration::load();
-		$vo_dm = Datamodel::load();
 
 		$va_forms = array();
 		if($this->ops_base_name) { // "merge" profile and its base
@@ -1791,10 +1782,10 @@ class Installer {
 			$vs_form_code = self::getAttribute($vo_form, "code");
 			$vb_system = self::getAttribute($vo_form, "system");
 			$vs_table = self::getAttribute($vo_form, "type");
-			if (!($t_instance = $vo_dm->getInstanceByTableName($vs_table, true))) { continue; }
+			if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
 			if ($o_config->get($vs_table.'_disable')) { continue; }
-			$vn_table_num = (int)$vo_dm->getTableNum($vs_table);
+			$vn_table_num = (int)Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing search form with code %1', $vs_form_code));
 

@@ -183,7 +183,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// and if it is the root of the hierarchy it can only take a top-level type
 					if ($vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD)) {
 						// is child
-						$t_parent = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+						$t_parent = Datamodel::getInstanceByTableName($this->tableName());
 						if ($t_parent->load($vn_parent_id)) {
 							$vn_parent_type_id = $t_parent->getTypeID();
 							$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') == '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
@@ -236,7 +236,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if ((bool)$this->getAppConfig()->get($this->tableName().'_allow_access_inheritance') && $this->hasField('access_inherit_from_parent')) {
 				// Child record with inheritance set
 				if ((bool)$this->get('access_inherit_from_parent') && (($vn_parent_id = $this->get('parent_id')) > 0)) {
-					$t_parent = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), false);
+					$t_parent = Datamodel::getInstanceByTableNum($this->tableNum(), false);
 					if ($t_parent->load($vn_parent_id)) {
 						$this->set('access', $t_parent->set('access'));
 					}
@@ -316,7 +316,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ((bool)$this->getAppConfig()->get($this->tableName().'_allow_access_inheritance') && $this->hasField('access_inherit_from_parent')) {
 			// Child record with inheritance set
 			if ((bool)$this->get('access_inherit_from_parent') && (($vn_parent_id = $this->get('parent_id')) > 0)) {
-				$t_parent = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), false);
+				$t_parent = Datamodel::getInstanceByTableNum($this->tableNum(), false);
 				if ($t_parent->load($vn_parent_id)) {
 					$this->set('access', $t_parent->set('access'));
 				}
@@ -407,7 +407,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// create new instance
-		if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableName($this->tableName()))) { 
+		if (!($t_dupe = Datamodel::getInstanceByTableName($this->tableName()))) { 
 			if ($vb_we_set_transaction) { $o_t->rollback();}
 			return null;
 		}
@@ -470,7 +470,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	
 			if ($vs_idno_stub) {
 				if ($vb_needs_suffix_generated) {
-					$t_lookup = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+					$t_lookup = Datamodel::getInstanceByTableName($this->tableName());
 				
 					$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
 					$vs_suffix = (is_array($va_tmp) && (sizeof($va_tmp) > 1)) ? array_pop($va_tmp) : '';
@@ -698,7 +698,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$ps_bundle = join('.', $va_bundle_bits);
 		}
 		
-		if (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+		if (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
 			return ($vn_num_bits == 1) ? true : $t_rel->hasBundle($ps_bundle, $pn_type_id);
 		} 
 		return parent::hasBundle($ps_bundle, $pn_type_id);
@@ -1962,14 +1962,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		switch(sizeof($va_tmp)) {
 			# -------------------------------------
 			case 1:		// table_name
-				if ($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
+				if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 					return _t("Related %1", $t_instance->getProperty('NAME_PLURAL'));
 				}
 				break;
 			# -------------------------------------
 			case 2:		// table_name.field_name
 			case 3:		// table_name.field_name.sub_element	
-				if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { break; }
+				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { break; }
 				$vs_prefix = $vs_suffix = '';
 				$vs_suffix_string = ' ('._t('from related %1', $t_instance->getProperty('NAME_PLURAL')).')';
 				if ($va_tmp[0] !== $this->tableName()) {
@@ -2055,14 +2055,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		switch(sizeof($va_tmp)) {
 			# -------------------------------------
 			case 1:		// table_name
-				if ($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
+				if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 					return _t("A list of related %1", $t_instance->getProperty('NAME_PLURAL'));
 				}
 				break;
 			# -------------------------------------
 			case 2:		// table_name.field_name
 			case 3:		// table_name.field_name.sub_element	
-				if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
+				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { return null; }
 				
 				$vs_suffix = '';
 				if ($va_tmp[0] !== $this->tableName()) {
@@ -2231,7 +2231,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				# -------------------------------------
 				case 2:		// table_name.field_name
 				case 3:		// table_name.field_name.sub_element	
-					if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
+					if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { return null; }
 										
 					if ($va_tmp[0] != $this->tableName()) {
 						switch(sizeof($va_tmp)) {
@@ -2257,7 +2257,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									return caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $t_instance, $pa_options);
 								} elseif (caGetOption('select', $pa_options, false)) {
 									$va_access = caGetOption('checkAccess', $pa_options, null);
-									if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
+									if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { return null; }
 								
 									$vs_label_display_field = $t_instance->getLabelDisplayField();
 									$va_find_params = array('parent_id' => null);
@@ -2277,10 +2277,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									
 									$va_in_use_list = $vs_rel_pk = null;
 									if (caGetOption('inUse', $pa_options, false)) {
-										if (is_array($va_path = $this->_DATAMODEL->getPath($this->tableName(), $va_tmp[0]))) {
+										if (is_array($va_path = Datamodel::getPath($this->tableName(), $va_tmp[0]))) {
 											$va_path = array_keys($va_path);
 											if (sizeof($va_path) == 3) {
-												if ($t_rel = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
+												if ($t_rel = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 													$vs_table = $this->tableName();
 													$vs_pk = $this->primaryKey();
 											
@@ -2368,7 +2368,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			# -------------------------------------
 			case 2:		// table_name.field_name
 			case 3:		// table_name.field_name.sub_element	
-				if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
+				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { return null; }
 				
 				switch($va_tmp[1]) {
 					# --------------------
@@ -2457,16 +2457,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_bundles_present = array();
 		if (is_array($va_bundles)) {
-			
-			$o_dm = $this->getAppDatamodel();
-			
 			$va_definition_bundle_names = array();
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
-				$va_definition_bundle_names[(!$o_dm->tableExists($va_bundle['bundle_name']) ? "{$vs_table_name}." : "").str_replace("ca_attribute_", "", $va_bundle['bundle_name'])] = 1;
+				$va_definition_bundle_names[(!Datamodel::tableExists($va_bundle['bundle_name']) ? "{$vs_table_name}." : "").str_replace("ca_attribute_", "", $va_bundle['bundle_name'])] = 1;
 			}
 			ca_metadata_dictionary_entries::preloadDefinitions(array_keys($va_definition_bundle_names));
 		
@@ -2718,7 +2715,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_object_ids = array_keys($va_ancestor_list);
 			$vn_top_object_id = array_shift($va_object_ids);
 			if ($vn_top_object_id != $this->getPrimaryKey()) { 
-				$t_object = $this->getAppDatamodel()->getInstanceByTableName("ca_objects", true);
+				$t_object = Datamodel::getInstanceByTableName("ca_objects", true);
 				$t_object->load($vn_top_object_id); 
 			} else { 
 				$t_object = $this;
@@ -2791,24 +2788,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
 		/** @var BundlableLabelableBaseModelWithAttributes $t_item */
-		$t_item = $this->getAppDatamodel()->getTableInstance($ps_related_table);
+		$t_item = Datamodel::getInstance($ps_related_table);
 		$vb_is_many_many = false;
 		
-		$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $ps_related_table));
+		$va_path = array_keys(Datamodel::getPath($this->tableName(), $ps_related_table));
 		if ($this->tableName() == $ps_related_table) {
 			// self relationship
-			$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+			$t_item_rel = Datamodel::getInstance($va_path[1]);
 			$vb_is_many_many = true;
 		} else {
 			switch(sizeof($va_path)) {
 				case 3:
 					// many-many relationship
-					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					$t_item_rel = Datamodel::getInstance($va_path[1]);
 					$vb_is_many_many = true;
 					break;
 				case 2:
 					// many-one relationship
-					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					$t_item_rel = Datamodel::getInstance($va_path[1]);
 					break;
 				default:
 					$t_item_rel = null;
@@ -2826,7 +2823,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_get_related_opts['sortDirection'] = $pa_bundle_settings['sortDirection'];
 		}
 
-		$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
+		$t_rel = Datamodel::getInstanceByTableName($ps_related_table, true);
 		$va_opts = [
 			'table' => $vb_is_many_many ? $t_rel->tableName() : null,
 			'primaryKey' => $vb_is_many_many ? $t_rel->primaryKey() : null,
@@ -2896,24 +2893,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
-		$t_item = $this->getAppDatamodel()->getTableInstance($ps_related_table);
+		$t_item = Datamodel::getInstance($ps_related_table);
 		$vb_is_many_many = false;
 		
-		$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $ps_related_table));
+		$va_path = array_keys(Datamodel::getPath($this->tableName(), $ps_related_table));
 		if ($this->tableName() == $ps_related_table) {
 			// self relationship
-			$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+			$t_item_rel = Datamodel::getInstance($va_path[1]);
 			$vb_is_many_many = true;
 		} else {
 			switch(sizeof($va_path)) {
 				case 3:
 					// many-many relationship
-					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					$t_item_rel = Datamodel::getInstance($va_path[1]);
 					$vb_is_many_many = true;
 					break;
 				case 2:
 					// many-one relationship
-					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					$t_item_rel = Datamodel::getInstance($va_path[1]);
 					break;
 				default:
 					if($ps_related_table == 'ca_sets') {
@@ -2955,7 +2952,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$t_label = null;
 		if ($t_item->getLabelTableName()) {
-			$t_label = $this->_DATAMODEL->getInstanceByTableName($t_item->getLabelTableName(), true);
+			$t_label = Datamodel::getInstanceByTableName($t_item->getLabelTableName(), true);
 		}
 		if (method_exists($t_item_rel, 'getRelationshipTypes')) {
 			$o_view->setVar('relationship_types', $t_item_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
@@ -3014,10 +3011,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 
-		$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $vs_table_name));
+		$va_path = array_keys(Datamodel::getPath($this->tableName(), $vs_table_name));
 		$t_item = new $vs_table_name;
 		/** @var BaseRelationshipModel $t_item_rel */
-		$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+		$t_item_rel = Datamodel::getInstance($va_path[1]);
 
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('bundle_name', $ps_bundle_name);
@@ -4788,7 +4785,7 @@ if (!$vb_batch) {
 		$va_bundle_names = array();
 		foreach($va_bundles as $va_bundle) {
 			$vs_bundle_name = str_replace('ca_attribute_', '', $va_bundle['bundle_name']);
-			if (!$this->getAppDatamodel()->getInstanceByTableName($vs_bundle_name, true)) {
+			if (!Datamodel::getInstanceByTableName($vs_bundle_name, true)) {
 				$vs_bundle_name = $this->tableName().'.'.$vs_bundle_name;
 			}
 			
@@ -4927,11 +4924,11 @@ if (!$vb_batch) {
 		// Check min/max
 		$vn_total_rel_count = (sizeof($va_rel_items) + sizeof($va_rels_to_add) - sizeof($va_rels_to_delete));
 		if ($vn_min_relationships && ($vn_total_rel_count < $vn_min_relationships)) {
-			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		if ($vn_max_relationships && ($vn_total_rel_count > $vn_max_relationships)) {
-			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		
@@ -5125,12 +5122,12 @@ if (!$vb_batch) {
 		$pn_start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
 
 		if (is_numeric($pm_rel_table_name_or_num)) {
-			if(!($vs_related_table_name = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num))) { return null; }
+			if(!($vs_related_table_name = Datamodel::getTableName($pm_rel_table_name_or_num))) { return null; }
 		} else {
 			if (sizeof($va_tmp = explode(".", $pm_rel_table_name_or_num)) > 1) {
 				$pm_rel_table_name_or_num = array_shift($va_tmp);
 			}
-			if (!($o_instance = $this->getAppDatamodel()->getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
+			if (!($o_instance = Datamodel::getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
 			$vs_related_table_name = $pm_rel_table_name_or_num;
 		}
 
@@ -5140,12 +5137,12 @@ if (!$vb_batch) {
 		
 		$vs_subject_table_name = $this->tableName();
 		$vs_item_rel_table_name = $vs_rel_item_table_name = null;
-		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($vs_subject_table_name, $vs_related_table_name)))) {
+		switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_subject_table_name, $vs_related_table_name)))) {
 			case 3:
-				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$t_item_rel = Datamodel::getInstance($va_path[1]);
 				$vs_item_rel_table_name = $t_item_rel->tableName();
 				
-				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[2]);
+				$t_rel_item = Datamodel::getInstance($va_path[2]);
 				$vs_rel_item_table_name = $t_rel_item->tableName();
 				
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
@@ -5154,7 +5151,7 @@ if (!$vb_batch) {
 				$t_item_rel = $this->isRelationship() ? $this : null;
 				$vs_item_rel_table_name = $t_item_rel ? $t_item_rel->tableName() : null;
 				
-				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$t_rel_item = Datamodel::getInstance($va_path[1]);
 				$vs_rel_item_table_name = $t_rel_item->tableName();
 				
 				$vs_key = $t_rel_item->primaryKey();
@@ -5162,7 +5159,7 @@ if (!$vb_batch) {
 			default:
 				// is this related with row_id/table_num combo?
 				if (
-					($t_rel_item = $this->getAppDatamodel()->getTableInstance($vs_related_table_name))
+					($t_rel_item = Datamodel::getInstance($vs_related_table_name))
 					&&
 					$t_rel_item->hasField('table_num') && $t_rel_item->hasField('row_id')
 				) {
@@ -5182,10 +5179,10 @@ if (!$vb_batch) {
 		$vb_self_relationship = false;
 		if($vs_subject_table_name == $vs_related_table_name) {
 			$vb_self_relationship = true;
-			$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+			$t_item_rel = Datamodel::getInstance($va_path[1]);
 			$vs_item_rel_table_name = $t_item_rel->tableName();
 			
-			$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[0]);
+			$t_rel_item = Datamodel::getInstance($va_path[0]);
 			$vs_rel_item_table_name = $t_rel_item->tableName();
 		}
 
@@ -5347,7 +5344,7 @@ if (!$vb_batch) {
 		if (method_exists($t_rel_item, "getLabelTableName") && (!isset($pa_options['dontReturnLabels']) || !$pa_options['dontReturnLabels'])) {
 			if($vs_label_table_name = $t_rel_item->getLabelTableName()) {           // make sure it actually has a label table...
 				$va_path[] = $vs_label_table_name;
-				$t_rel_item_label = $this->getAppDatamodel()->getTableInstance($vs_label_table_name);
+				$t_rel_item_label = Datamodel::getInstance($vs_label_table_name);
 				$vs_label_display_field = $t_rel_item_label->getDisplayField();
 
 				if($pb_return_labels_as_array || (is_array($pa_sort_fields) && sizeof($pa_sort_fields))) {
@@ -5389,9 +5386,9 @@ if (!$vb_batch) {
 			//
 			// START - traverse self relation
 			//
-			$va_rel_info = $this->getAppDatamodel()->getRelationships($va_path[0], $va_path[1]);
+			$va_rel_info = Datamodel::getRelationships($va_path[0], $va_path[1]);
 			if ($vs_label_table_name) {
-				$va_label_rel_info = $this->getAppDatamodel()->getRelationships($va_path[0], $vs_label_table_name);
+				$va_label_rel_info = Datamodel::getRelationships($va_path[0], $vs_label_table_name);
 			}
 	
 			$va_rels = $va_rels_by_date = [];
@@ -5553,7 +5550,7 @@ if (!$vb_batch) {
 			$vs_cur_table = array_shift($va_path);
 			$vs_rel_table = array_shift($va_path);
 			
-			$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_rel_table);
+			$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_rel_table);
 
 			$va_rels = array();
 			foreach($va_rel_info[$vs_cur_table][$vs_rel_table] as $vn_i => $va_rel) {
@@ -5563,7 +5560,7 @@ if (!$vb_batch) {
 				
 				$vs_base_table = $vs_rel_table;
 				foreach($va_path as $vs_join_table) {
-					$va_label_rel_info = $this->getAppDatamodel()->getRelationships($vs_base_table, $vs_join_table);
+					$va_label_rel_info = Datamodel::getRelationships($vs_base_table, $vs_join_table);
 					$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_base_table.'.'.$va_label_rel_info[$vs_base_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_label_rel_info[$vs_base_table][$vs_join_table][0][1]."\n";
 					$vs_base_table = $vs_join_table;
 				}
@@ -5703,7 +5700,7 @@ if (!$vb_batch) {
 				$va_joins = array("INNER JOIN {$vs_related_table_name} ON {$vs_related_table_name}.row_id = ".$this->primaryKey(true)." AND {$vs_related_table_name}.table_num = ".$this->tableNum());
 			} else {
 				foreach($va_path as $vs_join_table) {
-					$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
+					$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 					$vs_join = 'INNER JOIN '.$vs_join_table.' ON ';
 				
 					$va_tmp = array();
@@ -5718,7 +5715,7 @@ if (!$vb_batch) {
 			
                 if (method_exists($t_rel_item, 'isRelationship') && $t_rel_item->isRelationship()) {
                     if(is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
-                        $va_rels = $this->getAppDataModel()->getManyToOneRelations($t_rel_item->tableName());
+                        $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
 
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {
                             if ($va_rel_info['one_table'] != $this->tableName()) {
@@ -5732,7 +5729,7 @@ if (!$vb_batch) {
                             }
                         }
                     }elseif(is_array($pa_options['excludeTypes']) && sizeof($pa_options['excludeTypes'])) {
-                        $va_rels = $this->getAppDataModel()->getManyToOneRelations($t_rel_item->tableName());
+                        $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
 
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {
                             if ($va_rel_info['one_table'] != $this->tableName()) {
@@ -6098,7 +6095,7 @@ if (!$vb_batch) {
 				}
 			} elseif ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { 
 				// Parent will be set
-				$t_parent = $this->getAppDatamodel()->getInstanceByTableName($this->tableName(), false);
+				$t_parent = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				
 				if ($t_parent->load($vn_parent_id)) {
@@ -6264,8 +6261,8 @@ $pa_options["display_form_field_tips"] = true;
 		if (!is_array($pa_ids)) { return null; }
 		
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
-			$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
-			if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num, true))) { return null; }
+			$pn_table_num = Datamodel::getTableNum($pm_rel_table_name_or_num);
+			if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return null; }
 		}
 		$va_ids = array();
 		foreach($pa_ids as $vn_k => $vn_id) {
@@ -6307,9 +6304,9 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	static public function createResultSet($pa_ids) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-		$o_dm = Datamodel::load();
-		$pn_table_num = $o_dm->getTableNum(get_called_class());
-		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num))) { return null; }
+		
+		$pn_table_num = Datamodel::getTableNum(get_called_class());
+		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num))) { return null; }
 		
 		foreach($pa_ids as $vn_id) {
 			if (!is_numeric($vn_id)) { 
@@ -6340,7 +6337,7 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_MODELS_DIR__.'/ca_users.php');
 		$t_user = new ca_users();
 		
-		$o_dm = Datamodel::load();
+		
 		
 		$o_view->setVar('t_instance', $this);
 		$o_view->setVar('table_num', $pn_table_num);
@@ -6519,7 +6516,7 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
 		$t_group = new ca_user_groups();
 		
-		$o_dm = Datamodel::load();
+		
 		
 		$o_view->setVar('t_instance', $this);
 		$o_view->setVar('table_num', $pn_table_num);
@@ -7052,7 +7049,7 @@ side. For many self-relations the direction determines the nature and display te
 		$vs_parent_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
 		if (!$vs_parent_fld) { return; }
 		
-	 	$o_dm = Datamodel::load();
+	 	
 	 
 	 	$vs_pk = $this->primaryKey();
 	 	$vn_id = $this->getPrimaryKey();
@@ -7112,7 +7109,7 @@ side. For many self-relations the direction determines the nature and display te
 				// currently loaded row is not the root so get the root
 				$va_ancestors = $this->getHierarchyAncestors();
 				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-				$t_instance = $o_dm->getInstanceByTableName($this->tableName(), true);
+				$t_instance = Datamodel::getInstanceByTableName($this->tableName(), true);
 				$t_instance->load($va_ancestors[0]["NODE"][$this->primaryKey()]);
 			} else {
 				$t_instance =& $this;
@@ -7137,10 +7134,10 @@ side. For many self-relations the direction determines the nature and display te
 	 * Returns name of hierarchy for currently loaded row or, if specified, row identified by optional $pn_id parameter
 	 */
 	 public function getHierarchyName($pn_id=null) {
-	 	$o_dm = Datamodel::load();
+	 	
 	 	if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
 	 	
-	 	$t_instance = $o_dm->getInstanceByTableName($this->tableName(), true);
+	 	$t_instance = Datamodel::getInstanceByTableName($this->tableName(), true);
 	 	
 		$va_ancestors = $this->getHierarchyAncestors($pn_id, array('idsOnly' => true));
 		if (is_array($va_ancestors) && sizeof($va_ancestors)) {

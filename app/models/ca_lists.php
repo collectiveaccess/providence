@@ -1361,8 +1361,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_in_use_list = null;
 		if ($pa_options['inUse'] && (int)$pa_options['element_id'] && $pa_options['table']) {
-			$o_dm = Datamodel::load();
-			if ($t_instance = $o_dm->getInstance($pa_options['table'], true)) {
+			
+			if ($t_instance = Datamodel::getInstance($pa_options['table'], true)) {
 				$va_params = array((int)$pa_options['element_id']);
 				if(is_array($pa_check_access) && sizeof($pa_check_access)) {
 					$va_params[] = $pa_check_access;

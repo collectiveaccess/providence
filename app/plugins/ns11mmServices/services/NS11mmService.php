@@ -44,14 +44,7 @@ class NS11mmService extends BaseService {
 	
 	const OAI_DATE_PCRE     = "/^\\d{4}\\-\\d{2}\\-\\d{2}$/";
 	const OAI_DATETIME_PCRE = "/^\\d{4}\\-\\d{2}\\-\\d{2}T\\d{2}\\:\\d{2}\\:\\d{2}Z$/";
-	
-	# -------------------------------------------------------
-	protected $opo_dm;
-	# -------------------------------------------------------
-	public function  __construct($po_request) {
-		parent::__construct($po_request);
-		$this->opo_dm = Datamodel::load();
-	}	
+		
 	# -------------------------------------------------------
 	/**
 	 * Handles authentification

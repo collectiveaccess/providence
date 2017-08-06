@@ -254,7 +254,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		unset($this->opo_config);
 		unset($this->opo_search_config);
-		unset($this->opo_datamodel);
 		unset($this->opo_db);
 		unset($this->opo_tep);
 	}
@@ -268,7 +267,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$t = new Timer();
 		$this->_setMode('search');
 		$this->opa_filters = $pa_filters;
-		if (!($t_instance = $this->opo_datamodel->getInstanceByTableNum($pn_subject_tablenum, true))) {
+		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_subject_tablenum, true))) {
 			// TODO: Better error message
 			die("Invalid subject table");
 		}
@@ -300,17 +299,17 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					
 					$va_path = array();
 					if ($va_tmp[0] != $vs_table_name) {
-						$va_path = $this->opo_datamodel->getPath($vs_table_name, $va_tmp[0]);
+						$va_path = Datamodel::getPath($vs_table_name, $va_tmp[0]);
 					} 
 					if (sizeof($va_path)) {
 						$vs_last_table = null;
 						// generate related joins
 						foreach($va_path as $vs_table => $va_info) {
-							$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+							$t_table = Datamodel::getInstanceByTableName($vs_table, true);
 							if ($vs_last_table) {
-								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
+								$va_rels = Datamodel::getOneToManyRelations($vs_last_table, $vs_table);
 								if (!sizeof($va_rels)) {
-									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
+									$va_rels = Datamodel::getOneToManyRelations($vs_table, $vs_last_table);
 								}
     							if ($vs_table == $va_rels['one_table']) {
 									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'];
@@ -374,19 +373,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$va_tmp = explode('.', $va_filter['field']);
 					$va_path = array();
 					if ($va_tmp[0] != $vs_table_name) {
-						$va_path = $this->opo_datamodel->getPath($vs_table_name, $va_tmp[0]);
+						$va_path = Datamodel::getPath($vs_table_name, $va_tmp[0]);
 					} 
 					if (sizeof($va_path)) {
 						$vs_last_table = null;
 						// generate related joins
 						foreach($va_path as $vs_table => $va_info) {
-							$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+							$t_table = Datamodel::getInstanceByTableName($vs_table, true);
 							if (!$vs_last_table) {
 								$va_joins[$vs_table] = "INNER JOIN ".$vs_table." ON ".$vs_table.".".$t_table->primaryKey()." = ca_sql_search_search_final.row_id";
 							} else {
-								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
+								$va_rels = Datamodel::getOneToManyRelations($vs_last_table, $vs_table);
 								if (!sizeof($va_rels)) {
-									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
+									$va_rels = Datamodel::getOneToManyRelations($vs_table, $vs_last_table);
 								}
     							if ($vs_table == $va_rels['one_table']) {
 									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'];
@@ -399,7 +398,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						}
 						$vs_where = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					} else {
-						$t_table = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true);
+						$t_table = Datamodel::getInstanceByTableName($va_tmp[0], true);
 						// join in primary table
 						if (!isset($va_joins[$va_tmp[0]])) {
 							$va_joins[$va_tmp[0]] = "INNER JOIN ".$va_tmp[0]." ON ".$va_tmp[0].".".$t_table->primaryKey()." = ca_sql_search_search_final.row_id";
@@ -481,7 +480,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : null;
 		
-		if (!($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true))) { 
+		if (!($t_table = Datamodel::getInstanceByTableName($vs_table, true))) { 
 			return array('access_point' => $va_tmp[0]);
 		}
 		$vs_table_num = $t_table->tableNum();
@@ -671,7 +670,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							    $vn_lower_val = intval($va_lower_term->text);
                                 $vn_upper_val = intval($va_upper_term->text);
                                 
-                                if ($t_instance = $this->opo_datamodel->getInstanceByTableNum($pn_subject_tablenum, true)) {
+                                if ($t_instance = Datamodel::getInstanceByTableNum($pn_subject_tablenum, true)) {
                                 
                                     $vs_direct_sql_query = "
                                         SELECT ".$t_instance->primaryKey()." AS row_id, 1
@@ -931,7 +930,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
 								
 								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['._t('BLANK').']')) {
-									$t_ap = $this->opo_datamodel->getInstanceByTableNum($va_access_point_info['table_num'], true);
+									$t_ap = Datamodel::getInstanceByTableNum($va_access_point_info['table_num'], true);
 									if (is_a($t_ap, 'BaseLabel')) {	// labels have the literal text "[blank]" indexed to "blank" to indicate blank-ness 
 										$vb_is_blank_search = false;
 										$vs_term = _t('blank');
@@ -1060,7 +1059,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 							}
 						} else {
-							if ((!$vb_is_blank_search && !$vb_is_not_blank_search) && $vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) ) {
+							if ((!$vb_is_blank_search && !$vb_is_not_blank_search) && $vs_table && $vs_field && ($t_table = Datamodel::getInstanceByTableName($vs_table, true)) ) {
 								$vs_table_num = $t_table->tableNum();
 								
 								if (is_numeric($vs_field)) {
@@ -1553,18 +1552,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						// We're doing direct queries on metadata in a related table, fun!
 						// Now let's rewrite the direct query to work...
 						
-						if ($t_target = $this->opo_datamodel->getInstanceByTableNum($vn_direct_sql_target_table_num, true)) {
+						if ($t_target = Datamodel::getInstanceByTableNum($vn_direct_sql_target_table_num, true)) {
 							// First we create the join from the related table to our subject
 							$vs_target_table_name = $t_target->tableName();
 							
-							$va_path = array_keys($this->opo_datamodel->getPath($vn_direct_sql_target_table_num, $pn_subject_tablenum));
+							$va_path = array_keys(Datamodel::getPath($vn_direct_sql_target_table_num, $pn_subject_tablenum));
 							
 							$vs_left_table = array_shift($va_path);
-							$va_join[] = "INNER JOIN {$vs_left_table} ON {$vs_left_table}.".$this->opo_datamodel->primaryKey($vs_left_table)." = ca.row_id";
+							$va_join[] = "INNER JOIN {$vs_left_table} ON {$vs_left_table}.".Datamodel::primaryKey($vs_left_table)." = ca.row_id";
 							
 							$vn_cj = 0;
 							foreach($va_path as $vs_right_table) {
-								if (sizeof($va_rels = $this->opo_datamodel->getRelationships($vs_left_table, $vs_right_table)) > 0) {
+								if (sizeof($va_rels = Datamodel::getRelationships($vs_left_table, $vs_right_table)) > 0) {
 									$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".("{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
 								}
 								$vs_left_table = $vs_right_table;
@@ -1572,7 +1571,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 						
 							// Next we rewrite the key we're pulling to be from our subject
-							$vs_direct_sql_query = str_replace("SELECT ca.row_id", "SELECT ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true), $vs_direct_sql_query);
+							$vs_direct_sql_query = str_replace("SELECT ca.row_id", "SELECT ".Datamodel::primaryKey($pn_subject_tablenum, true), $vs_direct_sql_query);
 							// Finally we pray
 						}
 					}
@@ -1622,7 +1621,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							case 'AND':
 								if ($vs_direct_sql_query) {
 									if ($vn_direct_sql_target_table_num != $pn_subject_tablenum) {
-										array_push($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true));
+										array_push($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ".Datamodel::primaryKey($pn_subject_tablenum, true));
 									} else {
 										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id");
 									}
@@ -1657,7 +1656,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4). ' '.$qr_res->numRows()); }
 						
-								if (is_array($va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id')) && sizeof($va_ids)) {
+								if (is_array($va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? Datamodel::primaryKey($pn_subject_tablenum) : 'row_id')) && sizeof($va_ids)) {
 									
 									$vs_sql = "DELETE FROM {$ps_dest_table} WHERE row_id NOT IN (?)";
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
@@ -1686,7 +1685,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
 								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
 								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
-								$va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id');
+								$va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? Datamodel::primaryKey($pn_subject_tablenum) : 'row_id');
 								
 								if (sizeof($va_ids) > 0) {
 									$vs_sql = "
@@ -1992,7 +1991,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		
 		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options, true)) {
-			$t_content = $this->opo_datamodel->getInstanceByTableNum($pn_content_tablenum, true);
+			$t_content = Datamodel::getInstanceByTableNum($pn_content_tablenum, true);
 			if (method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
 				$va_values = $o_idno->getIndexValues($ps_content);
 				$va_words += $va_values;
@@ -2144,11 +2143,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	 * @return array List of suggested searches
 	 */
 	public function suggest($ps_text, $pa_options=null) {
-		$o_dm = Datamodel::load();
+		
 		$va_tokens = $this->_tokenize($ps_text);
 		
 		$pm_table = caGetOption('table', $pa_options, null);
-		$vn_table_num = $pm_table ? $o_dm->getTableNum($pm_table) : null;
+		$vn_table_num = $pm_table ? Datamodel::getTableNum($pm_table) : null;
 		
 		$va_word_ids = array();
 		foreach($va_tokens as $vn_i => $vs_token) {
@@ -2355,8 +2354,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	private function getFieldNum($pn_table_name_or_num, $ps_fieldname) {
 		if (isset(WLPlugSearchEngineSqlSearch::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname])) { return WLPlugSearchEngineSqlSearch::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname]; }
 		
-		$vs_table_name = is_numeric($pn_table_name_or_num) ? $this->opo_datamodel->getTableName((int)$pn_table_name_or_num) : (string)$pn_table_name_or_num;
-		return WLPlugSearchEngineSqlSearch::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname] = $this->opo_datamodel->getFieldNum($vs_table_name, $ps_fieldname);
+		$vs_table_name = is_numeric($pn_table_name_or_num) ? Datamodel::getTableName((int)$pn_table_name_or_num) : (string)$pn_table_name_or_num;
+		return WLPlugSearchEngineSqlSearch::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname] = Datamodel::getFieldNum($vs_table_name, $ps_fieldname);
 	}
 	# -------------------------------------------------------
 	private function _filterValueToQueryValue($pa_filter) {

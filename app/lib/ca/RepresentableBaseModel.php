@@ -195,7 +195,7 @@
 			$vs_filter_sql = '';
 			$pa_params = array($pn_id);
 			if ($va_restrict_to_relationship_types || $va_restrict_to_types) {
-				if ($va_restrict_to_relationship_types && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_linking_table, true)) && ($t_rel->hasField('type_id'))) {
+				if ($va_restrict_to_relationship_types && ($t_rel = Datamodel::getInstanceByTableName($ps_linking_table, true)) && ($t_rel->hasField('type_id'))) {
 					$va_restrict_to_relationship_types = caMakeRelationshipTypeIDList($ps_linking_table, $va_restrict_to_relationship_types);
 					
 					if (is_array($va_restrict_to_relationship_types) && sizeof($va_restrict_to_relationship_types)) {
@@ -807,10 +807,10 @@
 		
 			$vb_update_is_primary = false;
 			
-			$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), 'ca_object_representations'));
+			$va_path = array_keys(Datamodel::getPath($this->tableName(), 'ca_object_representations'));
 			if (is_array($va_path) && sizeof($va_path) == 3) {
 				$vs_rel_table = $va_path[1];
-				if ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_rel_table)) {
+				if ($t_rel = Datamodel::getInstanceByTableName($vs_rel_table)) {
 					if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 					if ($t_rel->load(array($this->primaryKey() => $this->getPrimaryKey(), 'representation_id' => $pn_representation_id))) {
 						if ($t_rel->hasField('is_primary') && $t_rel->get('is_primary')) {
@@ -1142,8 +1142,8 @@
 		 *
 		 */
 		static public function getRepresentationRelationshipTableName($ps_table_name) {
-			$o_dm = Datamodel::load();
-			$va_path = $o_dm->getPath($ps_table_name, 'ca_object_representations');
+			
+			$va_path = Datamodel::getPath($ps_table_name, 'ca_object_representations');
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
 			return $va_path[1];
@@ -1153,11 +1153,11 @@
 		 *
 		 */
 		private function _getRepresentationRelationshipTableInstance() {
-			$o_dm = Datamodel::load();
-			$va_path = $o_dm->getPath($this->tableName(), 'ca_object_representations');
+			
+			$va_path = Datamodel::getPath($this->tableName(), 'ca_object_representations');
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
-			return $o_dm->getInstanceByTableName($va_path[1], true);
+			return Datamodel::getInstanceByTableName($va_path[1], true);
 		}
 		# ------------------------------------------------------
 	}

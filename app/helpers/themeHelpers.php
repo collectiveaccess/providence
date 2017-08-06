@@ -263,10 +263,10 @@
 			$vs_access_where = ' AND orep.access IN ('.join(',', $pa_access_values).')';
 		}
 		$o_db = new Db();
-		$o_dm = Datamodel::load();
+		
 
 		if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($ps_table))) { return null; }
-		$vs_pk = $o_dm->getTablePrimaryKeyName($ps_table);
+		$vs_pk = Datamodel::primaryKey($ps_table);
 
 		$qr_res = $o_db->query("
 			SELECT oxor.{$vs_pk}, orep.media, orep.representation_id
@@ -710,14 +710,14 @@
 		$vs_current_action = ($po_request = caGetOption('request', $pa_options, null)) ? $po_request->getAction() : null;
 		if (isset($g_theme_detail_for_type_cache[$pm_table.'/'.$pm_type])) { return $g_theme_detail_for_type_cache[$pm_table.'/'.$pm_type.'/'.$vs_current_action]; }
 		$o_config = caGetDetailConfig();
-		$o_dm = Datamodel::load();
+		
 
 		$vs_preferred_detail = caGetOption('preferredDetail', $pa_options, null);
 
-		if (!($vs_table = $o_dm->getTableName($pm_table))) { return null; }
+		if (!($vs_table = Datamodel::getTableName($pm_table))) { return null; }
 
 		if ($pm_type) {
-			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 			$vs_type = is_numeric($pm_type) ? $t_instance->getTypeCode($pm_type) : $pm_type;
 		} else {
 			$vs_type = null;
@@ -753,8 +753,8 @@
 	 *
 	 */
 	function caGetDisplayImagesForAuthorityItems($pm_table, $pa_ids, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($pm_table, true))) { return null; }
+		
+		if (!($t_instance = Datamodel::getInstanceByTableName($pm_table, true))) { return null; }
 		if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) { return array(); }
 		
 		if ((!caGetOption("useRelatedObjectRepresentations", $pa_options, array())) && method_exists($t_instance, "getPrimaryMediaForIDs")) {
@@ -778,7 +778,7 @@
 		if($pa_options['checkAccess']){
 			$vs_access_wheres = " AND ca_objects.access IN (".join(",", $pa_access_values).") AND ca_object_representations.access IN (".join(",", $pa_access_values).")";
 		}
-		$va_path = array_keys($o_dm->getPath($vs_table = $t_instance->tableName(), "ca_objects"));
+		$va_path = array_keys(Datamodel::getPath($vs_table = $t_instance->tableName(), "ca_objects"));
 		$vs_pk = $t_instance->primaryKey();
 
 		$va_params = array();
@@ -990,8 +990,8 @@
 		
 		if (!($va_search_info = caGetInfoForAdvancedSearchType($ps_function))) { return null; }
 		
-		$o_dm = Datamodel::load();
- 		if (!($pt_subject = $o_dm->getInstanceByTableName($va_search_info['table'], true))) { return null; }
+		
+ 		if (!($pt_subject = Datamodel::getInstanceByTableName($va_search_info['table'], true))) { return null; }
  		
 		$po_request = caGetOption('request', $pa_options, null);
 		$ps_controller = caGetOption('controller', $pa_options, null);

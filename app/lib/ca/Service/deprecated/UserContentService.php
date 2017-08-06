@@ -41,13 +41,6 @@ require_once(__CA_MODELS_DIR__."/ca_set_items.php");
 
 class UserContentService extends BaseService {
 	# -------------------------------------------------------
-	protected $opo_dm;
-	# -------------------------------------------------------
-	public function  __construct($po_request) {
-		parent::__construct($po_request);
-		$this->opo_dm = Datamodel::load();
-	}
-	# -------------------------------------------------------
 	/**
 	 * Add comment to specified item
 	 * 
@@ -58,7 +51,7 @@ class UserContentService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addComment($type, $item_id, $comment_info_array){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		$t_comment = new ca_item_comments();
@@ -83,7 +76,7 @@ class UserContentService extends BaseService {
 	 * @return array
 	 */
 	public function getComments($type, $item_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		return $t_subject_instance->getComments();
@@ -99,7 +92,7 @@ class UserContentService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addTag($type, $item_id, $tag_info_array){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		$ps_tag = isset($tag_info_array["tag"]) ? $tag_info_array["tag"] : "";
@@ -122,7 +115,7 @@ class UserContentService extends BaseService {
 	 * @return array
 	 */
 	public function getTags($type, $item_id){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+		if(!($t_subject_instance = $this->getInstance($type,$item_id))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		return $t_subject_instance->getTags();
@@ -137,7 +130,7 @@ class UserContentService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addSet($type, $set_info_array){
-		if(!($vn_tablenum = $this->opo_dm->getTableNum($type))){
+		if(!($vn_tablenum = Datamodel::getTableNum($type))){
 			throw new SoapFault("Server", "Invalid set type");
 		}
 		$t_new_set = new ca_sets();
@@ -207,7 +200,7 @@ class UserContentService extends BaseService {
 	 * @throws SoapFault
 	 */
 	public function addItemToSet($set_id, $type, $item_id, $set_item_info_array){
-		if(!($vn_tablenum = $this->opo_dm->getTableNum($type))){
+		if(!($vn_tablenum = Datamodel::getTableNum($type))){
 			throw new SoapFault("Server", "Invalid type");
 		}
 		$t_set_item = new ca_set_items();
@@ -271,7 +264,7 @@ class UserContentService extends BaseService {
 	# -------------------------------------------------------
 	# Utilities
 	# -------------------------------------------------------
-	private function getTableInstance($ps_type,$pn_type_id_to_load=null){
+	private function getInstance($ps_type,$pn_type_id_to_load=null){
 		if(!in_array($ps_type, array("ca_objects", "ca_entities", "ca_places", "ca_occurrences", "ca_collections", "ca_list_items", "ca_object_representations", "ca_storage_locations", "ca_movements", "ca_loans", "ca_tours", "ca_tour_stops"))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		} else {

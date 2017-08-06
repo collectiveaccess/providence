@@ -148,7 +148,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 *		PRIVATE = Set indexing to private
 	 */
 	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
-		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		$vs_table_name = Datamodel::getTableName($pn_subject_tablenum);
 
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
 		$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
@@ -257,7 +257,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
 
-			if(!$vs_table_name = $this->opo_datamodel->getTableName($pn_table_num)) { return false; }
+			if(!$vs_table_name = Datamodel::getTableName($pn_table_num)) { return false; }
 
 			$va_search_params = array(
 				'search_type' => 'scan',    // use search_type=scan
@@ -341,7 +341,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		$va_search_params = array(
 			'index' => $this->getIndexName(),
-			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
+			'type' => Datamodel::getTableName($pn_subject_tablenum),
 			'body' => array(
 				// we do paging in our code
 				'from' => 0, 'size' => 2147483647, // size is Java's 32bit int, for ElasticSearch
@@ -388,7 +388,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$this->opa_index_content_buffer = array();
 		$this->opn_indexing_subject_tablenum = $pn_subject_tablenum;
 		$this->opn_indexing_subject_row_id = $pn_subject_row_id;
-		$this->ops_indexing_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		$this->ops_indexing_subject_tablename = Datamodel::getTableName($pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	/**
@@ -470,7 +470,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int|null $pn_content_row_id
 	 */
 	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pm_field_nums=null, $pn_content_row_id=null) {
-		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		$vs_table_name = Datamodel::getTableName($pn_subject_tablenum);
 		// if the field table num is set, we only remove content for this field and don't nuke the entire record!
 		if($pn_field_tablenum) {
 			foreach($pm_field_nums as $ps_content_fieldnum) {
@@ -578,7 +578,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_doc_content_buffer,
 				caGetChangeLogForElasticSearch(
 					$this->opo_db,
-					$this->opo_datamodel->getTableNum($vs_table_name),
+					Datamodel::getTableNum($vs_table_name),
 					$vn_primary_key
 				)
 			);
@@ -603,7 +603,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					$va_fragment,
 					caGetChangeLogForElasticSearch(
 						$this->opo_db,
-						$this->opo_datamodel->getTableNum($vs_table_name),
+						Datamodel::getTableNum($vs_table_name),
 						$vn_row_id
 					)
 				);

@@ -103,9 +103,9 @@
 			$pn_locale_id = $t_locale->loadLocaleByCode($o_config->get('locale_default'));		// default locale_id
 			
 			$o_db = new Db();
-			$o_dm = Datamodel::load();
 			
-			$va_tables = $o_dm->getTableNames();
+			
+			$va_tables = Datamodel::getTableNames();
 		
 			foreach($va_tables as $vs_table) {
 				if (!preg_match('!_x_!', $vs_table)) { continue; }

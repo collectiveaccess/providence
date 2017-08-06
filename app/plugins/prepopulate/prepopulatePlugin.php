@@ -253,7 +253,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 // labels
 				} elseif($va_parts[1] == 'preferred_labels' || $va_parts[1] == 'nonpreferred_labels') {
 					$vb_preferred = ($va_parts[1] == 'preferred_labels');
-					if (!($t_label = $t_instance->getAppDatamodel()->getInstanceByTableName($t_instance->getLabelTableName(), true))) { continue; }
+					if (!($t_label = Datamodel::getInstanceByTableName($t_instance->getLabelTableName(), true))) { continue; }
 					if(!$t_label->hasField($va_parts[2])) { continue; }
 
 					switch($t_instance->getLabelCount($vb_preferred)) {

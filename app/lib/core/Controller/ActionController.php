@@ -109,10 +109,6 @@ class ActionController extends BaseObject {
 		}
 	}
 	# -------------------------------------------------------
-	public function getAppDatamodel() {
-		return Datamodel::load();
-	}
-	# -------------------------------------------------------
 	/**
 	 * Init new view
 	 * @return View

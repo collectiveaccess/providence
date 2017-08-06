@@ -61,7 +61,7 @@
 			list($vs_target_table, $vs_target_key) = $this->_getTarget();
 			$vs_rel_table = $this->tableName();
 			
-			$t_target = $this->getAppDatamodel()->getInstanceByTableName($vs_target_table);
+			$t_target = Datamodel::getInstanceByTableName($vs_target_table);
 			
 			$vn_target_id = $this->get($vs_target_key);
 			if (!$t_target->load($vn_target_id)) { 
@@ -123,7 +123,7 @@
 			list($vs_target_table, $vs_target_key) = $this->_getTarget();
 			
 			$vs_rel_table = $this->tableName();
-			$t_target = $this->getAppDatamodel()->getInstanceByTableName($vs_target_table);
+			$t_target = Datamodel::getInstanceByTableName($vs_target_table);
 			
 			$vn_target_id = $this->get($vs_target_key);
 			if (!$t_target->load($vn_target_id)) { 
@@ -198,7 +198,7 @@
 			list($vs_target_table, $vs_target_key) = $this->_getTarget();
 			$vs_rel_table = $this->tableName();
 			
-			$t_target = $this->getAppDatamodel()->getInstanceByTableName($vs_target_table);
+			$t_target = Datamodel::getInstanceByTableName($vs_target_table);
 			
 			$vn_target_id = $this->get($vs_target_key);
 			if (!$t_target->load($vn_target_id)) { 
@@ -233,7 +233,7 @@
 					", (int)$vn_target_id, (int)$this->getPrimaryKey());
 					if($qr_res->nextRow()) {
 						// nope - force this one to be primary
-						$t_rep_link = $this->getAppDatamodel()->getInstanceByTableName($vs_rel_table);
+						$t_rep_link = Datamodel::getInstanceByTableName($vs_rel_table);
 						$t_rep_link->setTransaction($o_trans);
 						if ($t_rep_link->load($qr_res->get('relation_id'))) {
 							$t_rep_link->setMode(ACCESS_WRITE);

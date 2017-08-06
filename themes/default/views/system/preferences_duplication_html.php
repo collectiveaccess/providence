@@ -50,11 +50,11 @@
 	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'PreferencesForm');
 	
 	
-	$o_dm = Datamodel::load();
+	
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
 	if (caTableIsActive($vs_current_table) && $this->request->user->canDoAction('can_duplicate_'.$vs_current_table)) {
-		$t_instance = $o_dm->getInstanceByTableName($vs_current_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_current_table, true);
 		print "<h2>"._t('Settings for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
 	
 		print "<table width='100%'><tr valign='top'><td width='250'>";

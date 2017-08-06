@@ -48,7 +48,7 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recordsByStatus.conf');
-			$this->opo_datamodel = Datamodel::load();
+			
 			# -- get status values
 			$t_lists = new ca_lists();
 			$va_statuses = caExtractValuesByUserLocale($t_lists->getItemsForList("workflow_statuses"));
@@ -115,7 +115,7 @@
 				return "";
 			}
 
-			if ($t_table = $this->opo_datamodel->getInstanceByTableName($pa_settings['display_type'], true)) {
+			if ($t_table = Datamodel::getInstanceByTableName($pa_settings['display_type'], true)) {
 				$vo_db = new Db();
 				
 				$vs_deleted_sql = '';
@@ -153,7 +153,7 @@
 					);
 				}
 				$this->opo_view->setVar('item_list', $va_item_list);
-				$this->opo_view->setVar('table_num', $this->opo_datamodel->getTableNum($t_table->tableName()));
+				$this->opo_view->setVar('table_num', Datamodel::getTableNum($t_table->tableName()));
 				$this->opo_view->setVar('request', $this->getRequest());
 				$this->opo_view->setVar('table_display', $this->opa_table_display_names[$t_table->tableName()]);
 				$this->opo_view->setVar('status_display', $this->opa_status_display_names[intval($pa_settings["display_status"])]);

@@ -245,7 +245,7 @@
 		 * parameters and returns it. Will return null if there are no relevant breadcrumb hints.
 		 */
 		private function _getBreadcrumbHint($pa_hints) {
-			$o_dm = Datamodel::load();
+			
 			foreach($pa_hints as $vs_var => $vs_val) {
 				$va_tmp = explode(":", $vs_var);
 				
@@ -258,7 +258,7 @@
 							switch($va_vtmp[0]) {
 								case 'method':
 									$va_tmp2 = explode('.', $va_vtmp[1]);
-									if ($t_instance = $o_dm->getInstanceByTableName($va_tmp2[0], true)) {
+									if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
 										if ($t_instance->load($vn_p)) {
 											if (method_exists($t_instance, $va_tmp2[1])) {
 												return $t_instance->{$va_tmp2[1]}();

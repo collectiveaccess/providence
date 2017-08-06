@@ -201,7 +201,7 @@ class ca_guids extends BaseModel {
 			$vs_guid = $qr_guid->get('guid');
 			return $vs_guid;
 		} else {
-			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::load()->getInstance($pn_table_num, true))) {
+			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::getInstance($pn_table_num, true))) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id, $pa_options)) {
 					return $vs_guid;
 				}
@@ -268,7 +268,7 @@ class ca_guids extends BaseModel {
 		$va_info = self::getInfoForGUID($ps_guid, $pa_options);
 		if(!$va_info) { return false; }
 
-		$t_instance = Datamodel::load()->getInstance($va_info['table_num'], true);
+		$t_instance = Datamodel::getInstance($va_info['table_num'], true);
 		if(!$t_instance) { return false; }
 
 		/** @var Transaction $o_tx */

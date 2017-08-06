@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,7 +41,6 @@
  			$t_role = $this->getRoleObject();
  			
  			$t_screen = new ca_editor_ui_screens();
-			$o_dm = Datamodel::load();
 			$t_list = new ca_lists();
 			
 			$va_role_vars = $t_role->get('vars');
@@ -51,7 +50,7 @@
 	
 			$va_bundle_list = $va_table_names = array(); 
 			foreach(ca_users::$s_bundlable_tables as $vs_table) {
-				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+				$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 				
 				$va_table_names[$vs_table] = caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'));
 				
@@ -74,7 +73,7 @@
 			$va_type_access_settings = $va_role_vars['type_access_settings'];
 			
 			foreach(ca_users::$s_bundlable_tables as $vs_table) {
-				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+				$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 				if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 				
 				$va_table_names[$vs_table] = caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'));
@@ -100,7 +99,7 @@
 			$va_source_access_settings = $va_role_vars['source_access_settings'];
 			
 			foreach(ca_users::$s_bundlable_tables as $vs_table) {
-				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+				$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 				if (!($vs_list_code = $t_instance->getSourceListCode())) { continue; }
 				
 				$va_table_names[$vs_table] = caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'));
@@ -149,8 +148,6 @@
  		# -------------------------------------------------------
  		public function Save() {
  			AssetLoadManager::register('tableList');
- 			
-			$o_dm = Datamodel::load();
 			$t_list = new ca_lists();
 			
  			$t_role = $this->getRoleObject();
@@ -188,7 +185,7 @@
 				
 				foreach(ca_users::$s_bundlable_tables as $vs_table) {
 					if ((!caTableIsActive($vs_table)) && ($vs_table != 'ca_object_representations')) { continue; }
-					$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+					$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 					if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 					$va_type_ids = $t_list->getItemsForList($vs_list_code, array('idsOnly' => true));
 					
@@ -210,7 +207,7 @@
 				
 				foreach(ca_users::$s_bundlable_tables as $vs_table) {
 					if ((!caTableIsActive($vs_table)) && ($vs_table != 'ca_object_representations')) { continue; }
-					$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+					$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 					if (!($vs_list_code = $t_instance->getSourceListCode())) { continue; }
 					$va_source_ids = $t_list->getItemsForList($vs_list_code, array('idsOnly' => true));
 					

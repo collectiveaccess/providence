@@ -47,7 +47,7 @@
 	
 	$va_prefs = $t_user->getValidPreferences($vs_group);
 	
-	$o_dm = Datamodel::load();
+	
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
 	foreach(array(
@@ -55,7 +55,7 @@
 		'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops'
 	) as $vs_table) {
 		if (!caTableIsActive($vs_table)) { continue; }
-		$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 		print "<h2>"._t('Batch user interface for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
 		
 		print "<table width='100%'><tr valign='top'><td width='250'>";

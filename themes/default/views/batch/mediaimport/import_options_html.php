@@ -452,7 +452,7 @@
 	<?php
 		foreach(array('ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections') as $vs_rel_table) {
 			if ($o_config->get("{$vs_rel_table}_disable")) { continue; }
-			if (!($t_rel_table = $t_instance->getAppDatamodel()->getInstanceByTableName($vs_rel_table))) { continue; }
+			if (!($t_rel_table = Datamodel::getInstanceByTableName($vs_rel_table))) { continue; }
 			$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), $vs_rel_table);
 			if (!$t_rel) { continue; }
 	?>

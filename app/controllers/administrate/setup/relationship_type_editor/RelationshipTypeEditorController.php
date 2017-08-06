@@ -76,8 +76,6 @@
  		public function info($pa_parameters) {
  			parent::info($pa_parameters);
  			
-			$o_dm = Datamodel::load();
- 			
  			$t_item = $this->view->getVar('t_item');
  			$vn_item_id = $t_item->getPrimaryKey();
  			

@@ -57,8 +57,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 */
 	public function insert($pa_options=null) {
 		if ($vn_rc = parent::insert($pa_options)) {
-			$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
-			$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+			$t_left = Datamodel::getInstanceByTableNum($this->getLeftTableNum());
+			$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
 			
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
@@ -76,8 +76,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 */
 	public function update($pa_options=null) {
 		if ($vn_rc = parent::update($pa_options)) {
-			$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
-			$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+			$t_left = Datamodel::getInstanceByTableNum($this->getLeftTableNum());
+			$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
 			
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
@@ -94,11 +94,11 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * 
 	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
-		$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
+		$t_left = Datamodel::getInstanceByTableNum($this->getLeftTableNum());
 		$vn_left_id = $this->get($this->getLeftTableFieldName());
 		$vn_right_id = $this->get($this->getRightTableFieldName());
 		
-		$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+		$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
 		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
@@ -150,7 +150,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * @return int
 	 */
 	public function getLeftTableNum() {
-		return $this->getAppDatamodel()->getTableNum($this->getLeftTableName());
+		return Datamodel::getTableNum($this->getLeftTableName());
 	}
 	# ------------------------------------------------------
 	/**
@@ -160,7 +160,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * @return int
 	 */
 	public function getRightTableNum() {
-		return $this->getAppDatamodel()->getTableNum($this->getRightTableName());
+		return Datamodel::getTableNum($this->getRightTableName());
 	}
 	# ------------------------------------------------------
 	/**
@@ -686,7 +686,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * 
 	 */
 	public function getLeftTableInstance() {
-		$t_left = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_LEFT_TABLENAME, false);
+		$t_left = Datamodel::getInstanceByTableName($this->RELATIONSHIP_LEFT_TABLENAME, false);
 
 		if ($t_left) {
 			$t_left->load($this->get($this->getLeftTableFieldName()));
@@ -698,7 +698,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * 
 	 */
 	public function getRightTableInstance() {
-		$t_right = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_RIGHT_TABLENAME, false);
+		$t_right = Datamodel::getInstanceByTableName($this->RELATIONSHIP_RIGHT_TABLENAME, false);
 		
 		if ($t_right) {
 			$t_right->load($this->get($this->getRightTableFieldName()));
@@ -730,7 +730,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * @return BaseModel
 	 */
 	public function getInstanceOpposite($pm_tablename_or_num) {
-		if ($t_one_side = $this->getAppDatamodel()->getInstanceByTableName($pm_tablename_or_num, true)) {
+		if ($t_one_side = Datamodel::getInstanceByTableName($pm_tablename_or_num, true)) {
 			if ($this->getLeftTableName() == $t_one_side->tableName()) {
 				// other side is right
 				return $this->getRightTableInstance();

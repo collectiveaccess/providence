@@ -139,17 +139,17 @@
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_type_restriction_cache[$vs_cache_key])) { return $g_access_helpers_type_restriction_cache[$vs_cache_key]; }
-		$o_dm = Datamodel::load();
+		
 		$o_config = Configuration::load();
 		
 		$vn_min_access = isset($pa_options['access']) ? (int)$pa_options['access'] : __CA_BUNDLE_ACCESS_READONLY__;
 		
 		if (is_numeric($pm_table_name_or_num)) {
-			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 		} else {
 			$vs_table_name = $pm_table_name_or_num;
 		}
-		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 		if (!$t_instance) { return null; }	// bad table
 		
 		// get types user has at least read-only access to
@@ -206,17 +206,17 @@
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_source_restriction_cache[$vs_cache_key])) { return $g_access_helpers_source_restriction_cache[$vs_cache_key]; }
-		$o_dm = Datamodel::load();
+		
 		$o_config = Configuration::load();
 		
 		$vn_min_access = isset($pa_options['access']) ? (int)$pa_options['access'] : __CA_BUNDLE_ACCESS_READONLY__;
 		
 		if (is_numeric($pm_table_name_or_num)) {
-			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 		} else {
 			$vs_table_name = $pm_table_name_or_num;
 		}
-		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 		if (!$t_instance) { return null; }	// bad table
 		
 		// get sources user has at least read-only access to
@@ -260,8 +260,8 @@
 	 */
 	function caGetTypeListForUser($pm_table_name_or_num, $pa_options=null) {
 		if(is_null($va_types = caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options))) {
-			$o_dm = Datamodel::load();
-			$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
+			
+			$t_instance = Datamodel::getInstanceByTableName($pm_table_name_or_num, true);
 			if (!$t_instance) { return null; }	// bad table
 			$va_types = array_keys($t_instance->getTypeList());
 		}
@@ -283,8 +283,8 @@
 	 */
 	function caGetSourceListForUser($pm_table_name_or_num, $pa_options=null) {
 		if(is_null($va_sources = caGetSourceRestrictionsForUser($pm_table_name_or_num, $pa_options))) {
-			$o_dm = Datamodel::load();
-			$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
+			
+			$t_instance = Datamodel::getInstanceByTableName($pm_table_name_or_num, true);
 			if (!$t_instance) { return null; }	// bad table
 			$va_sources = array_keys($t_instance->getSourceList());
 		}
@@ -307,7 +307,7 @@
 		if (!is_array($pa_types) && !sizeof($pa_types)) { return array(); }
 		if (!is_array($pa_types)) { $pa_types = [$pa_types]; }
 		
-		$o_dm = Datamodel::load();
+		
 		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	
 		if (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) {
@@ -315,11 +315,11 @@
 		}
 		
 		if (is_numeric($pm_table_name_or_num)) {
-			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 		} else {
 			$vs_table_name = $pm_table_name_or_num;
 		}
-		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 		if (!$t_instance) { return null; }	// bad table
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
@@ -367,14 +367,14 @@
 		if (is_array($pa_type_ids) && !sizeof($pa_type_ids)) { return array(); }
 		if (!is_array($pa_type_ids)) { $pa_type_ids = [$pa_type_ids]; }
 		
-		$o_dm = Datamodel::load();
+		
 	
 		if (is_numeric($pm_table_name_or_num)) {
-			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 		} else {
 			$vs_table_name = $pm_table_name_or_num;
 		}
-		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 		if (!$t_instance) { return null; }	// bad table
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
@@ -407,7 +407,7 @@
 	 * @return array List of numeric source_ids
 	 */
 	function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null) {
-		$o_dm = Datamodel::load();
+		
 		if(isset($pa_options['dontIncludeSubsourcesInSourceRestriction']) && (!isset($pa_options['dont_include_subsources_in_source_restriction']) || !$pa_options['dont_include_subsources_in_source_restriction'])) { $pa_options['dont_include_subsources_in_source_restriction'] = $pa_options['dontIncludeSubsourcesInSourceRestriction']; }
 	 	
 		if (isset($pa_options['dont_include_subsources_in_source_restriction']) && $pa_options['dont_include_subsources_in_source_restriction']) {
@@ -415,11 +415,11 @@
 		}
 		
 		if (is_numeric($pm_table_name_or_num)) {
-			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 		} else {
 			$vs_table_name = $pm_table_name_or_num;
 		}
-		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 		if (!$t_instance) { return null; }	// bad table
 		if (!($vs_source_list_code = $t_instance->getSourceListCode())) { return null; }	// table doesn't use sources
 		
@@ -465,7 +465,7 @@
 	 * @return array List of numeric type_ids
 	 */
 	function caMakeRelationshipTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
-		$o_dm = Datamodel::load();
+		
 		if (!$pa_types) { return []; }
 		if (!is_array($pa_types)) { $pa_types = [$pa_types]; }
 		
@@ -481,14 +481,14 @@
 	 * 
 	 */
 	function caGetRelationshipTableName($pm_table_name_or_num_left, $pm_table_name_or_num_right, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		
-		$va_path = $o_dm->getPath($pm_table_name_or_num_left, $pm_table_name_or_num_right);
+		
+		$va_path = Datamodel::getPath($pm_table_name_or_num_left, $pm_table_name_or_num_right);
 		if (!is_array($va_path)) { return null; }
 		
 		
 		foreach(array_keys($va_path) as $vs_table) {
-			if ($t_instance = $o_dm->getInstanceByTableName($vs_table, true)) {
+			if ($t_instance = Datamodel::getInstanceByTableName($vs_table, true)) {
 				if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship() && $t_instance->hasField('type_id')) {
 					return $vs_table;
 				}
@@ -655,8 +655,8 @@ $g_source_access_level_cache = array();
 		$t_user = new ca_users($pn_user_id, true);
 		if (!$t_user->getPrimaryKey()) { return null; }
 		
-		$o_dm = Datamodel::load();
-		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;		
+		
+		$ps_table_name = (is_numeric($pm_table)) ? Datamodel::getTableName($pm_table) : $pm_table;		
 	
 		if (!is_array($pm_id)) { $pm_id = array($pm_id); }
 		
@@ -666,7 +666,7 @@ $g_source_access_level_cache = array();
 			}
 		}
 		
-		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table_name, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table_name, true))) { return null; }
 	
 		$vb_do_type_access_check = (bool)$t_instance->getAppConfig()->get('perform_type_access_checking');
 		$vb_do_item_access_check = (bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking');
@@ -716,8 +716,8 @@ $g_source_access_level_cache = array();
 			unset($va_tmp[1]); 
 		}
 		
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table_name, true))) { return array($ps_table_name, $ps_bundle_name); }
+		
+		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table_name, true))) { return array($ps_table_name, $ps_bundle_name); }
 		
 			
 		// Translate primary label references
@@ -728,7 +728,7 @@ $g_source_access_level_cache = array();
 		}
 		
 		// Translate related label references
-		$t_rel = $o_dm->getInstanceByTableName($va_tmp[0], true);
+		$t_rel = Datamodel::getInstanceByTableName($va_tmp[0], true);
 		if ($t_rel) {
 			if (method_exists($t_rel, 'getSubjectTableName')) {
 				return array($t_rel->getSubjectTableName(), 'preferred_labels');
@@ -736,7 +736,7 @@ $g_source_access_level_cache = array();
 		}
 		
 		// Related tables
-		if($t_rel && (is_array($va_path = $o_dm->getPath($va_tmp[0], $ps_table_name))) && (sizeof($va_path) == 3)) {
+		if($t_rel && (is_array($va_path = Datamodel::getPath($va_tmp[0], $ps_table_name))) && (sizeof($va_path) == 3)) {
 			return array($ps_table_name, $va_tmp[0]);
 		}
 		

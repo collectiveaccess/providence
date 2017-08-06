@@ -53,7 +53,7 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	protected function setUp(){
 		$o_dm = new Datamodel(true); // PHPUnit seems to barf on the caching code if we don't instanciate a Datamodel instance
-		$o_dm->getTableNum("ca_objects");
+		Datamodel::getTableNum("ca_objects");
 
 		// set up test role
 

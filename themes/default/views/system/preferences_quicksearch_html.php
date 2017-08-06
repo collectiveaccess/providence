@@ -92,7 +92,7 @@
 </div>
 <?php
 	
-	$o_dm = Datamodel::load();
+	
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
 	

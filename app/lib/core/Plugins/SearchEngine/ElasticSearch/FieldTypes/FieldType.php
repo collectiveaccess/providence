@@ -89,7 +89,7 @@ abstract class FieldType {
 				// Plain intrinsic
 				$vb_could_be_attribute = false;
 				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
-				$ps_content_fieldname = \Datamodel::load()->getFieldName($ps_table, $vn_field_num_proc);
+				$ps_content_fieldname = \Datamodel::getFieldName($ps_table, $vn_field_num_proc);
 			}
 
 		}

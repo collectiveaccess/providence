@@ -49,8 +49,6 @@ include_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 # ----------------------------------------------------------------------
 class SearchResult extends BaseObject {
-	
-	private static $opo_datamodel;
 	private $opo_search_config;
 	private $opo_db;
 	private $opn_table_num;
@@ -200,10 +198,8 @@ class SearchResult extends BaseObject {
 
 
 	public function __construct($po_engine_result=null, $pa_tables=null) {
-		if (!SearchResult::$opo_datamodel) { SearchResult::$opo_datamodel = Datamodel::load(); }
-		
 		$this->opo_db = (SearchResult::$o_db) ? SearchResult::$o_db : SearchResult::$o_db = new Db();
-		$this->opo_subject_instance = SearchResult::$opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
+		$this->opo_subject_instance = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 		
 		$this->ops_subject_pk = $this->opo_subject_instance->primaryKey();
 		$this->ops_subject_idno = $this->opo_subject_instance->getProperty('ID_NUMBERING_ID_FIELD');
@@ -213,7 +209,7 @@ class SearchResult extends BaseObject {
 		
 		if (!SearchResult::$opo_locales) { SearchResult::$opo_locales = new ca_locales();; }
 		if (!SearchResult::$opa_locales) { SearchResult::$opa_locales = ca_locales::getLocaleList(); }
-		if (!SearchResult::$opt_list) { SearchResult::$opt_list = SearchResult::$opo_datamodel->getInstanceByTableName('ca_lists', true); }
+		if (!SearchResult::$opt_list) { SearchResult::$opt_list = Datamodel::getInstanceByTableName('ca_lists', true); }
 		
 		if ($po_engine_result) {
 			$this->init($po_engine_result, $pa_tables);
@@ -249,8 +245,7 @@ class SearchResult extends BaseObject {
 	# ------------------------------------------------------------------
 	public function cloneInit() {
 		$this->opo_db = new Db();
-		SearchResult::$opo_datamodel = Datamodel::load();
-		$this->opo_subject_instance = SearchResult::$opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
+		$this->opo_subject_instance = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -299,7 +294,7 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	public function primaryKey() {
-		return SearchResult::$opo_datamodel->getTablePrimaryKeyName($this->opn_table_num);
+		return Datamodel::primaryKey($this->opn_table_num);
 	}
 	# ------------------------------------------------------------------
 	public function numHits() {
@@ -363,7 +358,7 @@ class SearchResult extends BaseObject {
 	public function prefetchLabels($ps_tablename, $pn_start, $pn_num_rows, $pa_options=null) {
 		if (!$ps_tablename ) { return; }
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
-			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = SearchResult::$opo_datamodel->getInstanceByTableName($ps_tablename, true);
+			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = Datamodel::getInstanceByTableName($ps_tablename, true);
 		}
 
 		$vs_label_table = $t_rel_instance->getLabelTableName();
@@ -396,7 +391,7 @@ class SearchResult extends BaseObject {
 		if (sizeof($va_row_ids) == 0) { return false; }
 
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
-			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = SearchResult::$opo_datamodel->getInstanceByTableName($ps_tablename, true);
+			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = Datamodel::getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_rel_instance->isHierarchical()) { return false; }
 		
@@ -478,7 +473,7 @@ class SearchResult extends BaseObject {
 		if (sizeof($va_row_ids) == 0) { return false; }
 
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
-			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = SearchResult::$opo_datamodel->getInstanceByTableName($ps_tablename, true);
+			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = Datamodel::getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_rel_instance->isHierarchical()) { return false; }
 
@@ -566,7 +561,7 @@ class SearchResult extends BaseObject {
 		if (sizeof($va_row_ids) == 0) { return false; }
 
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
-			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = SearchResult::$opo_datamodel->getInstanceByTableName($ps_tablename, true);
+			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = Datamodel::getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_rel_instance->isHierarchical()) { return false; }
 
@@ -662,10 +657,10 @@ class SearchResult extends BaseObject {
 		$va_joins = array();
 		
 		if (!($t_instance = SearchResult::$s_instance_cache[$this->ops_table_name])) {
-			$t_instance = SearchResult::$s_instance_cache[$this->ops_table_name] = SearchResult::$opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
+			$t_instance = SearchResult::$s_instance_cache[$this->ops_table_name] = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 		}
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
-			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = SearchResult::$opo_datamodel->getInstanceByTableName($ps_tablename, true);
+			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = Datamodel::getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_instance || !$t_rel_instance) { return; }
 		
@@ -696,7 +691,7 @@ class SearchResult extends BaseObject {
 			$va_order_bys = array();
 			foreach($va_linking_tables as $vs_right_table) {
 				$vs_join_eq = '';
-				if (($va_rels = SearchResult::$opo_datamodel->getOneToManyRelations($vs_left_table)) && is_array($va_rels[$vs_right_table])) {
+				if (($va_rels = Datamodel::getOneToManyRelations($vs_left_table)) && is_array($va_rels[$vs_right_table])) {
 					$va_acc = array();
 					foreach($va_rels[$vs_right_table] as $va_rel) {
 						$va_acc[] =	$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
@@ -705,7 +700,7 @@ class SearchResult extends BaseObject {
 					$va_joins[] = 'INNER JOIN '.$vs_right_table.' ON '.$vs_join_eq; 
 					
 					if (!($t_link = SearchResult::$s_instance_cache[$va_rel['many_table']])) {
-						$t_link = SearchResult::$s_instance_cache[$va_rel['many_table']] = SearchResult::$opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
+						$t_link = SearchResult::$s_instance_cache[$va_rel['many_table']] = Datamodel::getInstanceByTableName($va_rel['many_table'], true);
 					}
 					if (is_a($t_link, 'BaseRelationshipModel') && $t_link->hasField('type_id')) {
 						$va_fields[] = $va_rel['many_table'].'.type_id rel_type_id';
@@ -714,7 +709,7 @@ class SearchResult extends BaseObject {
 						$va_order_bys[] = $t_link->tableName().'.rank';
 					}
 				} else {
-					if (($va_rels = SearchResult::$opo_datamodel->getOneToManyRelations($vs_right_table)) && is_array($va_rels[$vs_left_table])) {
+					if (($va_rels = Datamodel::getOneToManyRelations($vs_right_table)) && is_array($va_rels[$vs_left_table])) {
 						$va_acc = array();
 						foreach($va_rels[$vs_left_table] as $va_rel) {
 							$va_acc[] = $va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
@@ -814,7 +809,7 @@ class SearchResult extends BaseObject {
 		if (!is_array($va_rel_items) || !sizeof($va_rel_items)) { return; }
 		
 		if (!isset($this->opa_tables[$ps_tablename])) {
-			$va_join_tables = SearchResult::$opo_datamodel->getPath($this->ops_table_name, $ps_tablename);
+			$va_join_tables = Datamodel::getPath($this->ops_table_name, $ps_tablename);
 			array_shift($va_join_tables); 	// remove subject table
 			array_pop($va_join_tables);		// remove content table (we only need linking tables here)
 			
@@ -1026,7 +1021,7 @@ class SearchResult extends BaseObject {
 		$va_filters = is_array($pa_options['filters']) ? $pa_options['filters'] : array();
 		
 		// Add table name to field specs that lack it
-		if ((strpos($ps_field, '.') === false) && (!SearchResult::$opo_datamodel->tableExists($ps_field))) {
+		if ((strpos($ps_field, '.') === false) && (!Datamodel::tableExists($ps_field))) {
 			$va_tmp = array($this->ops_table_name, $ps_field);
 			$ps_field = $this->ops_table_name.".{$ps_field}";
 		}
@@ -1124,7 +1119,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if (!($t_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
-			$t_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = SearchResult::$opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
+			$t_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = Datamodel::getInstanceByTableName($va_path_components['table_name'], true);
 		}
 		if (!$t_instance) { return null; }	// Bad table
 		
@@ -1640,7 +1635,7 @@ class SearchResult extends BaseObject {
 			
 			
 			if (!($t_instance = SearchResult::$s_instance_cache[$va_tmp[0]])) {
-				$t_instance = SearchResult::$s_instance_cache[$va_tmp[0]] = SearchResult::$opo_datamodel->getInstanceByTableName($va_tmp[0], true);
+				$t_instance = SearchResult::$s_instance_cache[$va_tmp[0]] = Datamodel::getInstanceByTableName($va_tmp[0], true);
 			}
 			
 			if ($t_instance) {
@@ -1753,7 +1748,7 @@ class SearchResult extends BaseObject {
 		if (!is_array($pa_exclude_idnos	= $pa_options['excludeIdnos'])) { $pa_exclude_idnos = []; }
 		
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
-			$t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = SearchResult::$opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
+			$t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = Datamodel::getInstanceByTableName($va_path_components['table_name'], true);
 		}
 		
 		if (!($t_rel_instance instanceof BaseModel)) { return null; }
@@ -2026,7 +2021,7 @@ class SearchResult extends BaseObject {
 									
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$vs_auth_table_name = $o_value->tableName();
-						if (!is_array($va_auth_spec) || !sizeof($va_auth_spec)) { $va_auth_spec = [SearchResult::$opo_datamodel->primaryKey($vs_auth_table_name)]; }
+						if (!is_array($va_auth_spec) || !sizeof($va_auth_spec)) { $va_auth_spec = [Datamodel::primaryKey($vs_auth_table_name)]; }
 						array_unshift($va_auth_spec, $vs_auth_table_name);
 						
 						if ($qr_res = caMakeSearchResult($vs_auth_table_name, array($o_value->getID()))) {
@@ -2670,7 +2665,7 @@ class SearchResult extends BaseObject {
 		if ($vn_cur_pos < 0) { $vn_cur_pos = 0; }
 		$this->seek(0);
 		
-		$o_dm = Datamodel::load();
+		
 		
 		if(!is_array($pa_fields) && ($pa_fields)) { $pa_fields = array($pa_fields); }
 		
@@ -2679,7 +2674,7 @@ class SearchResult extends BaseObject {
 		//
 		foreach($pa_fields as $vn_i => $vs_field) {
 			$va_tmp = explode('.', $vs_field);
-			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) { unset($pa_fields[$vn_i]); continue; } 
+			if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { unset($pa_fields[$vn_i]); continue; } 
 			if (!$t_instance->hasField($va_tmp[1]) && (!$t_instance->hasElement($va_tmp[1], null, false, array('dontCache' => false)))) { unset($pa_fields[$vn_i]); }
 		}
 		
@@ -2713,8 +2708,8 @@ class SearchResult extends BaseObject {
 				return array("table" => null, "field" => $ps_field, "instance" => null);
 				break;
 			case 2:		// table.field format fieldname
-				$o_dm = Datamodel::load();
-				$o_instance = $o_dm->getInstanceByTableName($va_tmp[0], true);
+				
+				$o_instance = Datamodel::getInstanceByTableName($va_tmp[0], true);
 				if ($o_instance) {
 					return array("table" => $va_tmp[0], "field" => $va_tmp[1], "instance" => $o_instance);
 				}
@@ -3086,7 +3081,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	public function getResultTableInstance() {
-		return SearchResult::$opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
+		return Datamodel::getInstanceByTableName($this->ops_table_name, true);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3130,7 +3125,7 @@ class SearchResult extends BaseObject {
 		switch(sizeof($va_tmp)) {
 			# -------------------------------------
 			case 1:		
-				if ($t_instance = SearchResult::$opo_datamodel->getInstanceByTableName($va_tmp[0], true)) {	// table name
+				if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {	// table name
 					$vs_table_name = $va_tmp[0];
 					$vs_field_name = null;
 					$vs_subfield_name = null;
@@ -3157,7 +3152,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		// rewrite label tables to use preferred_labels syntax
-		if (($t_instance = SearchResult::$opo_datamodel->getInstanceByTableName($vs_table_name, true)) && (is_a($t_instance, "BaseLabel"))) {
+		if (($t_instance = Datamodel::getInstanceByTableName($vs_table_name, true)) && (is_a($t_instance, "BaseLabel"))) {
 			$vs_table_name = $t_instance->getSubjectTableName();
 			$vs_subfield_name = $vs_field_name;
 			$vs_field_name = "preferred_labels";
