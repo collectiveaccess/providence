@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Mapping.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Mapping.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
 class MappingTest extends PHPUnit_Framework_TestCase {

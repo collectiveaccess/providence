@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	require_once(__CA_LIB_DIR__.'/ca/BaseToolsPlugin.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseToolsPlugin.php');
  	require_once(__CA_APP_DIR__.'/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php');
  
 	class pier21ToolsPlugin extends BaseToolsPlugin {

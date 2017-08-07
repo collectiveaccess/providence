@@ -46,7 +46,7 @@
 		//
 		// do a sanity check on application and server configuration before servicing a request
 		//
-		require_once(__CA_APP_DIR__.'/lib/ca/ConfigurationCheck.php');
+		require_once(__CA_LIB_DIR__.'/ConfigurationCheck.php');
 		ConfigurationCheck::performQuick();
 		if(ConfigurationCheck::foundErrors()){
 			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__ && $_REQUEST['updateSchema']) {
@@ -101,7 +101,7 @@
 		//
 		// PageFormat plug-in generates header/footer shell around page content
 		//
-		require_once(__CA_APP_DIR__.'/lib/ca/PageFormat.php');
+		require_once(__CA_LIB_DIR__.'/PageFormat.php');
 		if (!$req->isAjax() && !$req->isDownload()) {
 			$app->registerPlugin(new PageFormat());
 		}

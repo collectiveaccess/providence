@@ -34,7 +34,7 @@
   *
   */
   
-require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
+require_once(__CA_LIB_DIR__."/Service/BaseService.php");
 
 class NS11mmService extends BaseService {
 	

@@ -31,7 +31,7 @@
  */
 define("__CA_DISABLE_CONFIG_CACHING__", true);
 
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
 
 class ConfigurationTest extends PHPUnit_Framework_TestCase {
 	public function testScalars() {

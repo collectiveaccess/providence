@@ -33,23 +33,23 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_LIB_DIR__.'/ca/Import/DataReaderManager.php');
-require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
-require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/Import/DataReaderManager.php');
+require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
+require_once(__CA_LIB_DIR__.'/ProgressBar.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 require_once(__CA_MODELS_DIR__."/ca_data_import_events.php");
 require_once(__CA_MODELS_DIR__."/ca_locales.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
-require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
+require_once(__CA_LIB_DIR__.'/Parsers/PHPExcel/PHPExcel.php');
+require_once(__CA_LIB_DIR__.'/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__.'/Db/Transaction.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(

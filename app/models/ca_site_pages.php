@@ -34,7 +34,7 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_MODELS_DIR__.'/ca_site_templates.php');
 require_once(__CA_MODELS_DIR__.'/ca_site_page_media.php');
 

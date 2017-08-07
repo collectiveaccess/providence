@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_metadata_type_restriction_settings;
 $_ca_metadata_type_restriction_settings = array(		// global

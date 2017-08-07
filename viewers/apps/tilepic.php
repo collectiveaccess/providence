@@ -30,8 +30,8 @@
 # to save time. If you are using non-JPEG tiles (unlikely, right?) then change the 
 # Content-type header below.
 require("../../setup.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/Parsers/TilepicParser.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
 
 $vo_conf = Configuration::load();
 

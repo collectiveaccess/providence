@@ -31,7 +31,7 @@
  */
 
 
-require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
+require_once(__CA_LIB_DIR__.'/Cache/CompositeCache.php');
 
 class CompositeCacheTest extends PHPUnit_Framework_TestCase {
 

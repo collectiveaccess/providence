@@ -29,12 +29,12 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
-require_once(__CA_LIB_DIR__."/core/Controller/RequestDispatcher.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Response/ResponseHTTP.php");
+require_once(__CA_LIB_DIR__."/Db.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
+require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
+require_once(__CA_LIB_DIR__."/Controller/RequestDispatcher.php");
+require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
+require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 

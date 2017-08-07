@@ -29,10 +29,10 @@
 require_once(__CA_MODELS_DIR__."/ca_objects.php"); 
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
-require_once(__CA_LIB_DIR__."/core/Media.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
-require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
-require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
+require_once(__CA_LIB_DIR__."/Media.php");
+require_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
+require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+require_once(__CA_LIB_DIR__."/MediaContentLocationIndexer.php");
 
 
 class ObjectEditorController extends BaseEditorController {

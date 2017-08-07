@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
- 	require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Service/Twitter.php');
+ 	require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Service/Twitter.php');
  
 
 	

@@ -31,7 +31,7 @@
 		die("ERROR: you must place the AAT.xml data file in the same directory as this script.\n");
 	}
 
-	require_once(__CA_LIB_DIR__.'/core/Db.php');
+	require_once(__CA_LIB_DIR__.'/Db.php');
 	require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');

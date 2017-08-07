@@ -31,7 +31,7 @@
  */
 
 
-require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
+require_once(__CA_LIB_DIR__.'/Cache/ExternalCache.php');
 
 class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 

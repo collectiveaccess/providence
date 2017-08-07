@@ -33,15 +33,15 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
-require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
+require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
+require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
-require_once(__CA_LIB_DIR__ . '/core/Auth/AuthenticationManager.php');
-require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
+require_once(__CA_LIB_DIR__.'/Auth/AuthenticationManager.php');
+require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(

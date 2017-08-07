@@ -27,7 +27,7 @@
  */
 
  	require_once(__CA_MODELS_DIR__.'/ca_users.php');
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
  	class UsersController extends ActionController {
  		# -------------------------------------------------------

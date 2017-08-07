@@ -33,9 +33,9 @@
  /**
    *
    */
-	require_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
-	require_once(__CA_LIB_DIR__."/core/Print/Barcode.php");
-	require_once(__CA_LIB_DIR__."/core/Print/phpqrcode/qrlib.php");
+	require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
+	require_once(__CA_LIB_DIR__."/Print/Barcode.php");
+	require_once(__CA_LIB_DIR__."/Print/phpqrcode/qrlib.php");
 
 	global $g_print_measurement_cache;
 	$g_print_measurement_cache = array();

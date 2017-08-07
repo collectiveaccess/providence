@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-require_once(__CA_LIB_DIR__.'/ca/Service/ModelService.php');
-require_once(__CA_LIB_DIR__.'/ca/ConfigurationExporter.php');
+require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+require_once(__CA_LIB_DIR__.'/Service/ModelService.php');
+require_once(__CA_LIB_DIR__.'/ConfigurationExporter.php');
 
 require_once(__CA_BASE_DIR__.'/install/inc/Installer.php');
 
@@ -74,7 +74,7 @@ class ModelController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function updateConfig() {
 		$vs_post_data = $this->getRequest()->getRawPostData();
-		require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+		require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 		// @todo make this configurable or get from app.conf?
 		$o_log = new KLogger(__CA_BASE_DIR__ . '/app/log', KLogger::DEBUG);
 		try {

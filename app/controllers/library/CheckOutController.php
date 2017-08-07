@@ -27,9 +27,9 @@
  */
 
  	require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
-	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
+	require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+	require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
  	class CheckOutController extends ActionController {
  		# -------------------------------------------------------

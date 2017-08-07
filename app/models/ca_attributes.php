@@ -35,8 +35,8 @@
    */
 
 require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
-require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 		
 
 BaseModel::$s_ca_models_definitions['ca_attributes'] = array(

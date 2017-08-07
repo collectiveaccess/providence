@@ -34,9 +34,9 @@
   *
   */
  
-require_once(__CA_LIB_DIR__.'/ca/Utils/BaseApplicationTool.php');
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/core/Db.php');
+require_once(__CA_LIB_DIR__.'/Utils/BaseApplicationTool.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/Db.php');
 require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");	
 require_once(__CA_MODELS_DIR__."/ca_objects.php");	
 require_once(__CA_MODELS_DIR__."/ca_entities.php");
@@ -46,7 +46,7 @@ require_once(__CA_MODELS_DIR__."/ca_users.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 require_once(__CA_MODELS_DIR__."/ca_locales.php");
 require_once(__CA_MODELS_DIR__."/ca_data_import_events.php");
-require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
  
 	class pier21OralHistoryImportTool extends BaseApplicationTool {
 		# -------------------------------------------------------

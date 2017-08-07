@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/plugins/AbstractPluginIntegrationTest.php');
-require_once(__CA_LIB_DIR__ . '/ca/ApplicationPluginManager.php');
-require_once __CA_APP_DIR__ . '/plugins/relationshipGenerator/relationshipGeneratorPlugin.php';
-require_once __CA_APP_DIR__ . '/models/ca_collections.php';
+require_once(__CA_BASE_DIR__.'/tests/plugins/AbstractPluginIntegrationTest.php');
+require_once(__CA_LIB_DIR__.'/ApplicationPluginManager.php');
+require_once __CA_APP_DIR__.'/plugins/relationshipGenerator/relationshipGeneratorPlugin.php';
+require_once __CA_APP_DIR__.'/models/ca_collections.php';
 
 // Force initial setup of plugins so it isn't called later, which will overwrite our manually set up plugin
 ApplicationPluginManager::initPlugins();

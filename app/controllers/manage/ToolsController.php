@@ -36,7 +36,7 @@
  
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/importHelpers.php");
- 	require_once(__CA_LIB_DIR__."/ca/ToolsManager.php");
+ 	require_once(__CA_LIB_DIR__."/ToolsManager.php");
 
  
  	class ToolsController extends ActionController {

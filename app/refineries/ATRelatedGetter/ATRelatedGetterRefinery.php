@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
  
 	class ATRelatedGetterRefinery extends BaseRefinery {
 		# -------------------------------------------------------

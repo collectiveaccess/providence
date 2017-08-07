@@ -29,7 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Db.php");
+require_once(__CA_LIB_DIR__."/Db.php");
 
 class DbTest extends PHPUnit_Framework_TestCase {
 

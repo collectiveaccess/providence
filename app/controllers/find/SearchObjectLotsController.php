@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectLotSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/ObjectLotBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectLotSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/ObjectLotBrowse.php");
  	
  	class SearchObjectLotsController extends BaseSearchController {
  		# -------------------------------------------------------

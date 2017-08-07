@@ -294,7 +294,7 @@ if (!(file_exists($_CA_CONFIG_PATH))) {
 	exit();
 }
 
-set_include_path(__CA_LIB_DIR__.'/ca'.PATH_SEPARATOR.__CA_LIB_DIR__.'/core'.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
+set_include_path(__CA_LIB_DIR__.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
 
 # The path to the main instance configuration file defined as a constant
 if (!defined('__CA_APP_CONFIG__')) {

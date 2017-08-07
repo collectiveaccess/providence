@@ -26,9 +26,9 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Oauth.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Oauth/Consumer.php');  
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Oauth.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Oauth/Consumer.php');  
 
  	class AuthController extends ActionController {
  		# -------------------------------------------------------

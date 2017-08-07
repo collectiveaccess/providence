@@ -31,7 +31,7 @@
  */
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
+require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
 
 class DisplayTemplateParserTest extends BaseTestWithData {
 	# -------------------------------------------------------

@@ -29,8 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
-require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/ExcelDataReader.php');
+require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+require_once(__CA_LIB_DIR__.'/Import/DataReaders/ExcelDataReader.php');
 
 class RefineryText extends PHPUnit_Framework_TestCase {
     protected $data;

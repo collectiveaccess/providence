@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 
 class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 

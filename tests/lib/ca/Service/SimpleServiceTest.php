@@ -31,7 +31,7 @@
  */
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
-require_once(__CA_LIB_DIR__.'/ca/Service/SimpleService.php');
+require_once(__CA_LIB_DIR__.'/Service/SimpleService.php');
 
 /**
  * Class SimpleServiceTest

@@ -28,7 +28,7 @@
  
  	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
  	require_once(__CA_MODELS_DIR__."/ca_bundle_display_placements.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
  	
  
  	class BundleDisplayEditorController extends BaseEditorController {

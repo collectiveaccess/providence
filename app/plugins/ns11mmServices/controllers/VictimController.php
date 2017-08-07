@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_APP_DIR__.'/plugins/ns11mmServices/services/VictimService.php');
-	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
+	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
 
 	class VictimController extends BaseServiceController {
 		/**

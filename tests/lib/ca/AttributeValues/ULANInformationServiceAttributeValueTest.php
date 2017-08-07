@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/ULAN.php");
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/ULAN.php");
 
 class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 

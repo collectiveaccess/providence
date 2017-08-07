@@ -39,11 +39,11 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchEditorProgress.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchMediaImportProgress.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
+ 	require_once(__CA_LIB_DIR__."/BatchProcessor.php");
+ 	require_once(__CA_LIB_DIR__."/BatchEditorProgress.php");
+ 	require_once(__CA_LIB_DIR__."/BatchMediaImportProgress.php");
 
  
  	class MediaImportController extends ActionController {

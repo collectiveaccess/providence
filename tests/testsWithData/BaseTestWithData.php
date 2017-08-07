@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
-require_once(__CA_LIB_DIR__.'/core/Search/SearchIndexer.php');
+require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
+require_once(__CA_LIB_DIR__.'/Search/SearchIndexer.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
 abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {

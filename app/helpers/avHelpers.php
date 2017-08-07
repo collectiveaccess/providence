@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/OggParser.php");
+require_once(__CA_LIB_DIR__."/Parsers/getid3/getid3.php");
+require_once(__CA_LIB_DIR__."/Parsers/OggParser.php");
 
 # ------------------------------------------------------------------------------------------------
 /**

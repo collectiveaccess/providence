@@ -31,8 +31,8 @@
 	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
 	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_labels.php');
 	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_bundle_placements.php');
-	require_once(__CA_LIB_DIR__.'/ca/BaseEditorController.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+	require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
+	require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
 class InterfacesController extends BaseEditorController {
 	# -------------------------------------------------------

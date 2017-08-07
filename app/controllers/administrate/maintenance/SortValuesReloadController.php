@@ -26,12 +26,12 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
-require_once(__CA_LIB_DIR__."/core/Media.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
+require_once(__CA_LIB_DIR__."/Media.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
-require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
-require_once(__CA_LIB_DIR__.'/ca/SortValueReloadingProgress.php');
+require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
+require_once(__CA_LIB_DIR__.'/SortValueReloadingProgress.php');
 
 class SortValuesReloadController extends ActionController {
 

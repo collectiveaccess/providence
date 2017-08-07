@@ -38,9 +38,9 @@ require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
-require_once(__CA_LIB_DIR__."/ca/BatchMetadataExportProgress.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/BatchProcessor.php");
+require_once(__CA_LIB_DIR__."/BatchMetadataExportProgress.php");
 
 
 class MetadataExportController extends ActionController {

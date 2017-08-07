@@ -26,15 +26,15 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Db.php');
-require_once(__CA_LIB_DIR__.'/core/Media/MediaVolumes.php');
+require_once(__CA_LIB_DIR__.'/Cache/CompositeCache.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Db.php');
+require_once(__CA_LIB_DIR__.'/Media/MediaVolumes.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -103,7 +103,7 @@ class Installer {
 		}
 
 		if($pb_log_output) {
-			require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+			require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 			// @todo make this configurable or get from app.conf?
 			$this->opo_log = new KLogger(__CA_BASE_DIR__ . '/app/log', KLogger::DEBUG);
 			$this->opb_logging_status = true;
@@ -291,7 +291,7 @@ class Installer {
 	 * @return bool
 	 */
 	protected static function addLabelsFromXMLElement($t_instance,$po_labels, $pa_locales, $pb_force_preferred=false) {
-		require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
+		require_once(__CA_LIB_DIR__."/LabelableBaseModelWithAttributes.php");
 
 		if(!($t_instance instanceof LabelableBaseModelWithAttributes)) {
 			return false;

@@ -29,9 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Response/ResponseHTTP.php");
+require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
+require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
+require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 
 class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------

@@ -34,8 +34,8 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/ca/BaseVersionUpdater.php');
- require_once(__CA_LIB_DIR__."/core/Db.php");
+ require_once(__CA_LIB_DIR__.'/BaseVersionUpdater.php');
+ require_once(__CA_LIB_DIR__."/Db.php");
  
 	class VersionUpdate77 extends BaseVersionUpdater {
 		# -------------------------------------------------------

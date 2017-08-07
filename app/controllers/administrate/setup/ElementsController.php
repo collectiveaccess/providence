@@ -30,9 +30,9 @@
 	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 	require_once(__CA_MODELS_DIR__.'/ca_metadata_element_labels.php');
 	require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
-	require_once(__CA_LIB_DIR__.'/ca/BaseEditorController.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
+	require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
+	require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
 class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------

@@ -34,7 +34,7 @@
    *
    */
    	
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
 
 	# ----------------------------------------------------------------
 	/**

@@ -33,12 +33,12 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
-require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
-require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
+require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
+require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
+require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -1469,7 +1469,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	function caFormatXML($ps_xml){  
-		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
+		require_once(__CA_LIB_DIR__.'/Parsers/XMLFormatter.php');
 
 		$va_options = array(
 			"paddingString" => " ",
@@ -2415,7 +2415,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string Converted value with currency specifier, unless numericValue option is set. Returns null if value could not be converted.
 	 */
 	function caConvertCurrencyValue($ps_value, $ps_to, $pa_options=null) {
-		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		require_once(__CA_LIB_DIR__."/Plugins/CurrencyConversion/EuroBank.php");
 		if ((!$ps_value) || is_numeric($ps_value)) return null;
 		try {
 			return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to, $pa_options);
@@ -2430,7 +2430,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return array List of three character currency codes, or null if conversion is not available.
 	 */
 	function caAvailableCurrenciesForConversion() {
-		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		require_once(__CA_LIB_DIR__."/Plugins/CurrencyConversion/EuroBank.php");
 		
 		try {
 			$va_currency_list = WLPlugCurrencyConversionEuroBank::getCurrencyList();

@@ -34,8 +34,8 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_APP_DIR__.'/models/ca_set_items.php');
 require_once(__CA_APP_DIR__.'/models/ca_set_item_labels.php');
 require_once(__CA_APP_DIR__.'/models/ca_users.php');

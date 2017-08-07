@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/CollectionSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/CollectionBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/CollectionSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/CollectionBrowse.php");
  	
  	class SearchCollectionsController extends BaseSearchController {
  		# -------------------------------------------------------

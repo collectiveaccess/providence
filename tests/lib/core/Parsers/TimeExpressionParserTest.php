@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 
 class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 
