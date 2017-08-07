@@ -306,7 +306,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
 			bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+			defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>
 		});
 <?php	
 	} else {
@@ -344,7 +344,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
 			bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>,
 			onInitializeItem: caHideBundlesForReadOnlyContainers, /* todo: look for better callback (or make one up?) */
 			
 			listItemClassName: 'repeatingItem',

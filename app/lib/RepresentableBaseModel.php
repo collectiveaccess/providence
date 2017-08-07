@@ -497,7 +497,7 @@
 		 */
 		public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
+			if (!$pn_locale_id) { $pn_locale_id = LocaleManager::getDefaultCataloguingLocaleID(); }
 		
 		
 			$t_rep = new ca_object_representations();
@@ -909,7 +909,7 @@
 		 */
 		public function linkRepresentation($pn_representation_id, $pb_is_primary, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
+			if (!$pn_locale_id) { $pn_locale_id = LocaleManager::getDefaultCataloguingLocaleID(); }
 		
 			if (!ca_object_representations::find(array('representation_id' => $pn_representation_id), array('transaction' => $this->getTransaction()))) { return null; }
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }

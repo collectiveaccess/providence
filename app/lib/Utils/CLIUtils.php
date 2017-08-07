@@ -3274,12 +3274,12 @@
 			require_once(__CA_LIB_DIR__.'/Parsers/PHPExcel/PHPExcel.php');
 			require_once(__CA_LIB_DIR__.'/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 			require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-			require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+			require_once(__CA_LIB_DIR__."/LocaleManager.php");
 
 			$t_list = new ca_lists();
 			$o_db = $t_list->getDb();
 			
-			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+			$vn_locale_id = LocaleManager::getDefaultCataloguingLocaleID();
 
 			if (!($ps_source = (string)$po_opts->getOption('file'))) {
 				CLIUtils::addError(_t("You must specify a file"));

@@ -10032,7 +10032,7 @@ $pa_options["display_form_field_tips"] = true;
 			$va_locale_dedup[$g_ui_locale_id] = true;
 		}
 		
-		$va_locales = ca_locales::getLocaleList();
+		$va_locales = LocaleManager::getLocaleList();
 		
 		if (is_array($va_locale_defaults = $this->getAppConfig()->getList('locale_defaults'))) {
 			foreach($va_locale_defaults as $vs_locale_default) {

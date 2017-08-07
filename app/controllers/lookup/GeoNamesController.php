@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 
 
 class GeoNamesController extends ActionController {

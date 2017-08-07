@@ -42,7 +42,7 @@ require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 require_once(__CA_MODELS_DIR__."/ca_data_import_events.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_LIB_DIR__.'/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/Parsers/PHPExcel/PHPExcel/IOFactory.php');

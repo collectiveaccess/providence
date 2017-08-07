@@ -135,9 +135,7 @@
  				die(_t("Invalid caption file"));
  			}
  			
- 			$t_locale = new ca_locales();
- 			$vn_locale_id = $t_caption->get('locale_id');
- 			$vs_locale = $t_locale->localeIDToCode($vn_locale_id);
+ 			$vs_locale = LocaleManager::IDToCode($t_caption->get('locale_id'));
  			$this->view->setVar('file_path', $t_caption->getFilePath('caption_file'));
  			$va_info = $t_caption->getFileInfo("caption_file");
  			

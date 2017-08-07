@@ -226,7 +226,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 						'typename' => $ps_code_base,
 						'typename_reverse' => $ps_code_base . ' reverse'
 				),
-				ca_locales::getDefaultCataloguingLocaleID(),
+				LocaleManager::getDefaultCataloguingLocaleID(),
 				null,
 				true
 		);
@@ -268,7 +268,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 						'name_singular' => $ps_idno_base,
 						'name_plural' => $ps_idno_base
 				),
-				ca_locales::getDefaultCataloguingLocaleID(),
+				LocaleManager::getDefaultCataloguingLocaleID(),
 				null,
 				true
 		);
@@ -307,7 +307,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 				array(
 						'name' => $ps_idno_base
 				),
-				ca_locales::getDefaultCataloguingLocaleID(),
+				LocaleManager::getDefaultCataloguingLocaleID(),
 				null,
 				true
 		);
@@ -333,7 +333,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 				'displayname' => $ps_idno_base,
 				'surname' => $ps_idno_base
 			),
-			ca_locales::getDefaultCataloguingLocaleID(),
+			LocaleManager::getDefaultCataloguingLocaleID(),
 			null,
 			true
 		);

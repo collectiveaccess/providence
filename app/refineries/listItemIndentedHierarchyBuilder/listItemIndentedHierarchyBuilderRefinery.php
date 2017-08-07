@@ -72,7 +72,7 @@
 			global $g_ui_locale_id;
 			$vs_delimiter = caGetOption('delimiter', $pa_options, null);
 			
-			if(!($pn_locale_id = ca_locales::getDefaultCataloguingLocaleID())) {
+			if(!($pn_locale_id = LocaleManager::getDefaultCataloguingLocaleID())) {
 				$pn_locale_id = $g_ui_locale_id;
 			}
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;

@@ -32,7 +32,7 @@
 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
-require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 require_once(__CA_MODELS_DIR__.'/ca_search_form_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_form_type_restrictions.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_forms_x_user_groups.php');
@@ -1387,7 +1387,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 
-			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
+			$va_locale_list = LocaleManager::getLocaleList(array('index_by_code' => true));
 
 			$va_available_bundles = $t_form->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {

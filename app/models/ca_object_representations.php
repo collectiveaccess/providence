@@ -1490,7 +1490,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			}
  		}
  		
- 		$t_locale = new ca_locales();
  		$va_locale_ids = array();
  		if ($pa_locale_ids) {
  			if (!is_array($pa_locale_ids)) { $pa_locale_ids = array($pa_locale_ids); }
@@ -1498,7 +1497,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				if (is_numeric($vm_locale) && (int)$vm_locale) {
  					$va_locale_ids[] = (int)$vm_locale;
  				} else {
- 					if ($vn_locale_id = $t_locale->localeCodeToID($vm_locale)) {
+ 					if ($vn_locale_id = LocaleManager::CodeToID($vm_locale)) {
  						$va_locale_ids[] = $vn_locale_id;
  					}
  				}
@@ -1537,8 +1536,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			}
  			$va_files[$vn_caption_id]['caption_id'] = $vn_caption_id;
  			$va_files[$vn_caption_id]['locale_id'] = $vn_locale_id;
- 			$va_files[$vn_caption_id]['locale'] = $t_locale->localeIDToName($vn_locale_id);
- 			$va_files[$vn_caption_id]['locale_code'] = $t_locale->localeIDToCode($vn_locale_id);
+ 			$va_files[$vn_caption_id]['locale'] = LocaleManager::IDToName($vn_locale_id);
+ 			$va_files[$vn_caption_id]['locale_code'] = LocaleManager::IDToCode($vn_locale_id);
  		}
  		return $va_files;
  	}

@@ -100,6 +100,6 @@
 		deleteButtonClassName: 'caDeleteLabelButton',
 		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? 'true' : 'false'; ?>,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

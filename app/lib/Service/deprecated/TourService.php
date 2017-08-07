@@ -38,7 +38,7 @@ require_once(__CA_LIB_DIR__."/Service/BaseService.php");
 require_once(__CA_LIB_DIR__."/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/Db.php");
 require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 require_once(__CA_MODELS_DIR__."/ca_tours.php");
 require_once(__CA_MODELS_DIR__."/ca_tour_stops.php");
 
@@ -186,7 +186,6 @@ class TourService extends BaseService {
 		if(!($t_subject_instance = $this->getInstance($type,$item_id,true))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
-		$t_locale = new ca_locales();
 
 		$va_attrs = $t_subject_instance->getAttributesByElement($attribute_code_or_id);
 		$va_return = array();
@@ -197,7 +196,7 @@ class TourService extends BaseService {
 					"element_id" => $vo_value->getElementID(),
 					"value_id" => $vo_value->getValueID(),
 					"display_value" => $vo_value->getDisplayValue(),
-					"locale" => $t_locale->localeIDToCode($vo_attr->getLocaleID()),
+					"locale" => LocaleManager::IDToCode($vo_attr->getLocaleID()),
 				);
 			}
 			$va_return[] = $va_attr;
@@ -456,7 +455,7 @@ class TourService extends BaseService {
 	 * @return array List of available language
 	 */
 	public function getLocaleList($pa_options = null){
-		return ca_locales::getLocaleList($pa_options);
+		return LocaleManager::getLocaleList($pa_options);
 	}
 	# -------------------------------------------------------
 	# Utilities

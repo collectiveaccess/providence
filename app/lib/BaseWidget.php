@@ -245,7 +245,7 @@
 					$vb_takes_locale = false;
 					if (isset($va_properties['takesLocale']) && $va_properties['takesLocale']) {
 						$vb_takes_locale = true;
-						$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true)); 
+						$va_locales = LocaleManager::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true)); 
 					} else {
 						$va_locales = array('_generic' => array());
 					}

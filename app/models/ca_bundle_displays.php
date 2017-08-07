@@ -2137,7 +2137,7 @@ if (!$pb_omit_editing_info) {
 				}
 			}
 			
-			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
+			$va_locale_list = LocaleManager::getLocaleList(array('index_by_code' => true));
 
 			$va_available_bundles = $t_display->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {

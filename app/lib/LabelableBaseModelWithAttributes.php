@@ -41,7 +41,6 @@
  require_once(__CA_LIB_DIR__.'/BaseModelWithAttributes.php');
  require_once(__CA_LIB_DIR__.'/BaseModel.php');
  require_once(__CA_LIB_DIR__.'/ILabelable.php');
- require_once(__CA_APP_DIR__.'/models/ca_locales.php');
  require_once(__CA_APP_DIR__.'/models/ca_users.php');
  require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
  require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
@@ -1477,7 +1476,6 @@
 		public function getValuesForExport($pa_options=null) {
 			$va_data = parent::getValuesForExport($pa_options);		// get intrinsics and attributes
 			
-			$t_locale = new ca_locales();
 			$t_list = new ca_lists();
 			
 			// get labels
@@ -1487,7 +1485,7 @@
 				$va_preferred_labels_for_export = array();
 				foreach($va_preferred_labels as $vn_id => $va_labels_by_locale) {
 					foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
-						if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
+						if (!($vs_locale = LocaleManager::IDToCode($vn_locale_id))) {
 							$vs_locale = 'NONE';
 						}
 						$va_preferred_labels_for_export[$vs_locale] = array_shift($va_labels);
@@ -1502,7 +1500,7 @@
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {
 					foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
-						if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
+						if (!($vs_locale = LocaleManager::IDToCode($vn_locale_id))) {
 							$vs_locale = 'NONE';
 						}
 						$va_nonpreferred_labels_for_export[$vs_locale] = $va_labels;
@@ -1881,7 +1879,7 @@
  			global $g_ui_locale_id;
  			
  			if (!$this->getPreferredLabelCount()) {
-				$va_locale_list = ca_locales::getLocaleList();
+				$va_locale_list = LocaleManager::getLocaleList();
 				
 				if ($pn_locale_id && isset($va_locale_list[$pn_locale_id])) {
 					$vn_locale_id = $pn_locale_id;

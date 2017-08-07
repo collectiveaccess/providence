@@ -651,7 +651,6 @@
 			
 			$va_data = parent::getValuesForExport($pa_options);		// get intrinsics
 			
-			$t_locale = new ca_locales();
 			$t_list = new ca_lists();
 			
 			// get attributes
@@ -661,7 +660,7 @@
 						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
 							if(!is_array($va_v_list)) { continue; }
 							
-							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
+							if (!($vs_locale = LocaleManager::IDToCode($vn_locale_id))) {
 								$vs_locale = 'NONE';
 							}
 							$vn_i = 0;

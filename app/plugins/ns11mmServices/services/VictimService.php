@@ -37,7 +37,7 @@
 require_once(__CA_APP_DIR__."/plugins/ns11mmServices/services/NS11mmService.php");
 require_once(__CA_LIB_DIR__."/Search/EntitySearch.php");
 require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 require_once(__CA_MODELS_DIR__."/ca_entities.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");

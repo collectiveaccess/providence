@@ -56,7 +56,7 @@
 	require_once(__CA_LIB_DIR__.'/Db.php');
 	require_once(__CA_LIB_DIR__.'/Utils/CLIProgressBar.php');
 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
-	require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+	require_once(__CA_LIB_DIR__."/LocaleManager.php");
 	require_once(__CA_MODELS_DIR__.'/ca_places.php');
 	require_once(__CA_MODELS_DIR__.'/ca_places_x_places.php');
 	require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');

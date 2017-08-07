@@ -108,6 +108,6 @@
 		showEmptyFormsOnLoad: 1,
 		isSortable: true,
 		listSortOrderID: '<?php print $vs_id_prefix; ?>_StopBundleList',
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

@@ -38,7 +38,7 @@ require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
 require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
@@ -54,8 +54,6 @@ final class ConfigurationExporter {
 	private $opo_config;
 	/** @var Db */
 	private $opo_db;
-	/** @var ca_locales */
-	private $opt_locale;
 	/** @var DOMDocument */
 	private $opo_dom;
 	/**
@@ -75,8 +73,6 @@ final class ConfigurationExporter {
 		$this->opo_dom = new DOMDocument('1.0', 'utf-8');
 		$this->opo_dom->preserveWhiteSpace = false;
 		$this->opo_dom->formatOutput = true;
-
-		$this->opt_locale = new ca_locales();
 
 		if(is_int($pn_modified_after)) {
 			$this->opn_modified_after = $pn_modified_after;
@@ -241,7 +237,7 @@ final class ConfigurationExporter {
 				while($qr_list_labels->nextRow()) {
 					$vo_label = $this->opo_dom->createElement("label");
 
-					$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_list_labels->get("locale_id")));
+					$vo_label->setAttribute("locale", LocaleManager::IDToCode($qr_list_labels->get("locale_id")));
 					$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_list_labels->get("name"))));
 
 					$vo_labels->appendChild($vo_label);
@@ -288,7 +284,7 @@ final class ConfigurationExporter {
 		}
 
 		$vo_items = $this->opo_dom->createElement("items");
-		$vs_default_locale = $this->opt_locale->localeIDToCode($this->opt_locale->getDefaultCataloguingLocaleID());
+		$vs_default_locale = LocaleManager::IDToCode(LocaleManager::getDefaultCataloguingLocaleID());
 
 		if($this->opn_modified_after &&
 			is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_list_item->tableNum(), 'idno', array('list_id' => $pn_list_id)))
@@ -320,7 +316,7 @@ final class ConfigurationExporter {
 				while($qr_list_item_labels->nextRow()) {
 					$vo_label = $this->opo_dom->createElement("label");
 
-					$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_list_item_labels->get("locale_id")));
+					$vo_label->setAttribute("locale", LocaleManager::IDToCode($qr_list_item_labels->get("locale_id")));
 					$vo_label->setAttribute("preferred", $qr_list_item_labels->get("is_preferred"));
 					$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($qr_list_item_labels->get("name_singular"))));
 					$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($qr_list_item_labels->get("name_plural"))));
@@ -391,7 +387,7 @@ final class ConfigurationExporter {
 			while($qr_element_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
-				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_element_labels->get("locale_id")));
+				$vo_label->setAttribute("locale", LocaleManager::IDToCode($qr_element_labels->get("locale_id")));
 				$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_element_labels->get("name"))));
 				if(strlen(trim($qr_element_labels->get("description")))>0) {
 					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_element_labels->get("description"))));
@@ -523,7 +519,7 @@ final class ConfigurationExporter {
 			while($qr_element_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
-				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_element_labels->get("locale_id")));
+				$vo_label->setAttribute("locale", LocaleManager::IDToCode($qr_element_labels->get("locale_id")));
 				$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_element_labels->get("name"))));
 				if(strlen(trim($qr_element_labels->get("description")))>0) {
 					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_element_labels->get("description"))));
@@ -742,7 +738,7 @@ final class ConfigurationExporter {
 			$qr_ui_labels = $this->opo_db->query("SELECT * FROM ca_editor_ui_labels WHERE ui_id=?",$qr_uis->get("ui_id"));
 			if($qr_ui_labels->numRows() > 0) {
 				while($qr_ui_labels->nextRow()) {
-					if($vs_locale = $this->opt_locale->localeIDToCode($qr_ui_labels->get("locale_id"))) {
+					if($vs_locale = LocaleManager::IDToCode($qr_ui_labels->get("locale_id"))) {
 						$vo_label = $this->opo_dom->createElement("label");
 						$vo_label->setAttribute("locale", $vs_locale);
 						$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_ui_labels->get("name"))));
@@ -851,7 +847,7 @@ final class ConfigurationExporter {
 				$qr_screen_labels = $this->opo_db->query("SELECT * FROM ca_editor_ui_screen_labels WHERE screen_id=?",$qr_screens->get("screen_id"));
 				if($qr_ui_labels->numRows() > 0) {
 					while($qr_screen_labels->nextRow()) {
-						if($vs_locale = $this->opt_locale->localeIDToCode($qr_screen_labels->get("locale_id"))) {
+						if($vs_locale = LocaleManager::IDToCode($qr_screen_labels->get("locale_id"))) {
 							$vo_label = $this->opo_dom->createElement("label");
 							$vo_label->setAttribute("locale", $vs_locale);
 							$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_screen_labels->get("name"))));
@@ -1090,7 +1086,7 @@ final class ConfigurationExporter {
 			while($qr_type_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
-				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_type_labels->get("locale_id")));
+				$vo_label->setAttribute("locale", LocaleManager::IDToCode($qr_type_labels->get("locale_id")));
 				$vo_label->appendChild($this->opo_dom->createElement("typename",caEscapeForXML($qr_type_labels->get("typename"))));
 				$vo_label->appendChild($this->opo_dom->createElement("typename_reverse",caEscapeForXML($qr_type_labels->get("typename_reverse"))));
 
@@ -1345,7 +1341,7 @@ final class ConfigurationExporter {
 			while($qr_form_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
-				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_form_labels->get("locale_id")));
+				$vo_label->setAttribute("locale", LocaleManager::IDToCode($qr_form_labels->get("locale_id")));
 				$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_form_labels->get("name"))));
 
 				$vo_labels->appendChild($vo_label);
@@ -1423,7 +1419,7 @@ final class ConfigurationExporter {
 								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
 								$vo_setting->setAttribute("name", $vs_setting);
 								if($vs_setting=="label" || $vs_setting=="add_label") {
-									if(is_numeric($vs_key)) { $vs_key = $this->opt_locale->localeIDToCode($vs_key); }
+									if(is_numeric($vs_key)) { $vs_key = LocaleManager::IDToCode($vs_key); }
 									$vo_setting->setAttribute("locale", $vs_key);
 								}
 								$vo_settings->appendChild($vo_setting);
@@ -1451,8 +1447,6 @@ final class ConfigurationExporter {
 	public function getDisplaysAsXML() {
 		$t_display = new ca_bundle_displays();
 		/** @var Datamodel $o_dm */
-		
-		$this->opt_locale = new ca_locales();
 
 		$va_options = [];
 
@@ -1502,8 +1496,8 @@ final class ConfigurationExporter {
 			$vs_buf .= "\t<display code='".($va_info['display_code'] && preg_match('!^[A-Za-z0-9_]+$!', $va_info['display_code']) ? $va_info['display_code'] : 'display_'.$va_info['display_id'])."' type='".Datamodel::getTableName($va_info['table_num'])."' system='".$t_display->get('is_system')."' {$vs_type_restriction_attr}>\n";
 			$vs_buf .= "\t\t<labels>\n";
 			foreach($va_display_by_locale as $vn_locale_id => $va_display_info) {
-				if(strlen($this->opt_locale->localeIDToCode($vn_locale_id))>0) {
-					$vs_buf .= "\t\t\t<label locale='".$this->opt_locale->localeIDToCode($vn_locale_id)."'><name>".caEscapeForXML($va_display_info['name'])."</name></label>\n";
+				if(strlen(LocaleManager::IDToCode($vn_locale_id))>0) {
+					$vs_buf .= "\t\t\t<label locale='".LocaleManager::IDToCode($vn_locale_id)."'><name>".caEscapeForXML($va_display_info['name'])."</name></label>\n";
 				}
 			}
 			$vs_buf .= "\t\t</labels>\n";
@@ -1560,7 +1554,7 @@ final class ConfigurationExporter {
 										if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vn_locale_id)) { // locale code
 											$vs_locale_code = $vn_locale_id;
 										} else {
-											if(!($vs_locale_code = $this->opt_locale->localeIDToCode($vn_locale_id))) {
+											if(!($vs_locale_code = LocaleManager::IDToCode($vn_locale_id))) {
 												$vs_locale_code = 'en_US';
 											}
 										}

@@ -166,8 +166,7 @@
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
 				if (!($vs_locale = $this->getAppConfig()->get('use_locale_for_sortable_titles'))) {
-					$t_locale = new ca_locales();
-					$vs_locale = $t_locale->localeIDToCode($this->get('locale_id'));
+					$vs_locale = LocaleManager::IDToCode($this->get('locale_id'));
 				}
 				$vs_display_value = caSortableValue($this->get($vs_display_field), array('locale' => $vs_locale));
 				

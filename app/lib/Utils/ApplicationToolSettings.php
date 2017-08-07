@@ -75,7 +75,7 @@
 		 * on the ca_search_forms instance to save settings to the database
 		 */ 
 		public function setSettingsFromHTMLForm($po_request, $pa_options=null) {
-			$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
+			$va_locales = LocaleManager::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 			$va_available_settings = $this->getAvailableSettings();
 
 			$this->o_instance->setMode(ACCESS_WRITE);

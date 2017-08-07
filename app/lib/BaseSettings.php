@@ -315,7 +315,7 @@
 					$vb_takes_locale = false;
 					if (isset($va_properties['takesLocale']) && $va_properties['takesLocale']) {
 						$vb_takes_locale = true;
-						$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
+						$va_locales = LocaleManager::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 					} else {
 						$va_locales = array('_generic' => array());
 					}
@@ -477,7 +477,7 @@
 						} else {
 							if ($vb_locale_list) {
  								include_once(__CA_MODELS_DIR__.'/ca_locales.php');
- 								$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
+ 								$va_rel_opts = array_flip(LocaleManager::getLocaleList(array('return_display_values' => true)));
 							} else {
 								if ($vb_show_lists) {
  									include_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -645,7 +645,7 @@
 		 * on the ca_search_forms instance to save settings to the database
 		 */ 
 		public function setSettingsFromHTMLForm($po_request) {
-			$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
+			$va_locales = LocaleManager::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 			$va_available_settings = $this->getAvailableSettings();
 
 			$this->o_instance->setMode(ACCESS_WRITE);

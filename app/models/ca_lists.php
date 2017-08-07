@@ -38,7 +38,7 @@ require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_APP_DIR__.'/models/ca_list_items.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
-require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 require_once(__CA_MODELS_DIR__.'/ca_list_item_labels.php');
 
 define('__CA_LISTS_SORT_BY_LABEL__', 0);
@@ -281,7 +281,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				return false;
 			}
 			
-			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+			$vn_locale_id = LocaleManager::getDefaultCataloguingLocaleID();
 			$t_item_root->addLabel(
 				array('name_singular' => $vs_title, 'name_plural' => $vs_title),
 				$vn_locale_id, null, true

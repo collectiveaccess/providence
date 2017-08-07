@@ -333,7 +333,7 @@
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>_MediaBundleList',
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>,
 			
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $va_lookup_params); ?>',

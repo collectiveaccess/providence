@@ -31,7 +31,7 @@
  	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
  	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+ 	require_once(__CA_LIB_DIR__."/LocaleManager.php");
  	require_once(__CA_APP_DIR__.'/plugins/statisticsViewer/lib/statisticsSQLHandler.php');
  	
 

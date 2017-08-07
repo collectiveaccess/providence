@@ -38,7 +38,7 @@ require_once(__CA_LIB_DIR__."/Service/BaseService.php");
 require_once(__CA_LIB_DIR__."/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/Db.php");
 require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_LIB_DIR__."/LocaleManager.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_MODELS_DIR__."/ca_set_items.php");
 require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
@@ -194,7 +194,7 @@ class ItemInfoService extends BaseService {
 		if(!($t_subject_instance = $this->getInstance($type,$item_id,true))){
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
-		$t_locale = new ca_locales();
+		
 		$t_element = new ca_metadata_elements();
 		$va_attrs = $t_subject_instance->getAttributesByElement($attribute_code_or_id);
 		$va_return = array();
@@ -210,7 +210,7 @@ class ItemInfoService extends BaseService {
 					"element_id" => $vo_value->getElementID(),
 					"attribute_info" => $t_subject_instance->getAttributeLabelAndDescription($vo_value->getElementCode()),
 					"datatype" => $va_element_type_cfg[$t_element->get("datatype")],
-					"locale" => $t_locale->localeIDToCode($vo_attr->getLocaleID()),
+					"locale" => LocaleManager::IDToCode($vo_attr->getLocaleID()),
 				);
 			}
 			$va_return[$vo_attr->getAttributeID()] = $va_attr;
@@ -643,7 +643,7 @@ class ItemInfoService extends BaseService {
 	 * @return array List of available language
 	 */
 	public function getLocaleList($pa_options = null){
-		return ca_locales::getLocaleList($pa_options);
+		return LocaleManager::getLocaleList($pa_options);
 	}
 	# -------------------------------------------------------
 	# Utilities

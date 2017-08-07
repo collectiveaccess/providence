@@ -213,7 +213,7 @@ class RequestHTTP extends Request {
 		
 		$t_locale = new ca_locales();
 		if (sizeof($va_locale_codes) == 0) {
-			foreach(ca_locales::getLocaleList() as $vn_locale_id => $va_locale_info) {
+			foreach(LocaleManager::getLocaleList() as $vn_locale_id => $va_locale_info) {
 				$va_locale_ids[] = $vn_locale_id;
 			}
 		} else {

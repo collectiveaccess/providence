@@ -465,7 +465,7 @@ class Installer {
 	# PROFILE CONTENT PROCESSING
 	# --------------------------------------------------
 	public function processLocales() {
-		require_once(__CA_MODELS_DIR__."/ca_locales.php");
+		require_once(__CA_LIB_DIR__."/LocaleManager.php");
 
 		$t_locale = new ca_locales();
 		$t_locale->setMode(ACCESS_WRITE);

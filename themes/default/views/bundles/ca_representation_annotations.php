@@ -185,7 +185,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_gotoButton_', '<?php print $vs_id_prefix; ?>_edit_'],
 		addMode: 'prepend',
 		incrementLocalesForNewBundles: false,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>
 <!-- END Annotation List -->

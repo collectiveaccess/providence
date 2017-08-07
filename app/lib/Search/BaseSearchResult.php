@@ -36,7 +36,7 @@
   
  require_once(__CA_LIB_DIR__.'/Search/SearchResult.php');
  require_once(__CA_MODELS_DIR__.'/ca_lists.php');
- require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+ require_once(__CA_LIB_DIR__."/LocaleManager.php");
  
 	class BaseSearchResult extends SearchResult {
 		# -------------------------------------------------------
@@ -59,7 +59,7 @@
 			$this->opo_list = new ca_lists();
 			
 			
-			$this->opa_locales = ca_locales::getLocaleList();
+			$this->opa_locales = LocaleManager::getLocaleList();
 			$this->ops_label_table_name = method_exists($this->opo_subject_instance, "getLabelTableName") ? $this->opo_subject_instance->getLabelTableName() : null;
 			$this->ops_label_display_field = method_exists($this->opo_subject_instance, "getLabelDisplayField") ? $this->opo_subject_instance->getLabelDisplayField() : null;
 		}

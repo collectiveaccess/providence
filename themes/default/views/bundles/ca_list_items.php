@@ -396,7 +396,7 @@
 			maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
 			defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
 			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+			defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>
 		});
 <?php
 	} 

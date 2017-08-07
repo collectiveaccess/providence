@@ -32,7 +32,7 @@
 	}
 
 	require_once(__CA_LIB_DIR__.'/Db.php');
-	require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+	require_once(__CA_LIB_DIR__."/LocaleManager.php");
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	require_once(__CA_MODELS_DIR__.'/ca_list_items_x_list_items.php');

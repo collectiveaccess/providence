@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_MODELS_DIR__."/ca_locales.php");
+ 	require_once(__CA_LIB_DIR__."/LocaleManager.php");
 
  	class LocalesController extends ActionController {
  		# -------------------------------------------------------
@@ -77,7 +77,7 @@
 			if ($this->request->numActionErrors()) {
 				$this->render('locale_edit_html.php');
 			} else {
- 				$this->view->setVar('locale_list', ca_locales::getLocaleList());
+ 				$this->view->setVar('locale_list', LocaleManager::getLocaleList());
 
  				$this->render('locale_list_html.php');
  			}
@@ -88,7 +88,7 @@
  			
  			$t_locale = $this->getLocaleObject();
  			$vs_sort_field = $this->request->getParameter('sort', pString);
- 			$this->view->setVar('locale_list', ca_locales::getLocaleList(array('sort_field' => $vs_sort_field, 'sort_order' => 'asc', 'index_by_code' => false)));
+ 			$this->view->setVar('locale_list', LocaleManager::getLocaleList(array('sort_field' => $vs_sort_field, 'sort_order' => 'asc', 'index_by_code' => false)));
 
  			$this->render('locale_list_html.php');
  		}

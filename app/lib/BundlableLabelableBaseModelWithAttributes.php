@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,11 +78,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected $opo_idno_plugin_instance;
-	
-	/**
-	 * ca_locales model
-	 */
-	static $s_locales = null;
 	
 	/**
 	 * TimeExpressionParser 
@@ -710,7 +705,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function getValuesForExport($pa_options=null) {
 		$va_data = parent::getValuesForExport($pa_options);		// get intrinsics, attributes and labels
 		
-		$t_locale = new ca_locales();
 		$t_list = new ca_lists();
 		
 		// get related items
@@ -5101,7 +5095,6 @@ if (!$vb_batch) {
 		$pn_row_id = (isset($pa_options['row_id']) && $pa_options['row_id']) ? $pa_options['row_id'] : $this->getPrimaryKey();
 
 		$o_db = $this->getDb();
-		$t_locale = $this->getLocaleInstance();
 		$o_tep = $this->getTimeExpressionParser();
 		
 		$vb_uses_effective_dates = false;
@@ -5467,7 +5460,7 @@ if (!$vb_batch) {
 
 					$vn_locale_id = $qr_res->get('locale_id');
 					if ($pb_use_locale_codes) {
-						$va_rels[$vs_sort_key][$vn_id]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
+						$va_rels[$vs_sort_key][$vn_id]['locale_id'] = $vn_locale_id = LocaleManager::IDToCode($vn_locale_id);
 					}
 
 					$va_rels[$vs_sort_key][$vn_id]['labels'][$vn_locale_id] =  ($pb_return_labels_as_array) ? $va_row : $vs_display_label;
@@ -5631,7 +5624,7 @@ if (!$vb_batch) {
 					$vn_locale_id = $qr_res->get('locale_id');
 
 					if ($pb_use_locale_codes) {
-						$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
+						$va_rels[$vs_v]['locale_id'] = $vn_locale_id = LocaleManager::IDToCode($vn_locale_id);
 					}
 
 					$va_rels[$vs_v]['labels'][$vn_locale_id] =  ($pb_return_labels_as_array) ? $va_row : $vs_display_label;
@@ -5823,7 +5816,7 @@ if (!$vb_batch) {
 
 				$vn_locale_id = $qr_res->get('locale_id');
 				if ($pb_use_locale_codes) {
-					$va_rels_for_id[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
+					$va_rels_for_id[$vs_v]['locale_id'] = $vn_locale_id = LocaleManager::IDToCode($vn_locale_id);
 				}
 
 				$va_rels_for_id[$vs_v]['labels'][$vn_locale_id] =  ($pb_return_labels_as_array) ? $va_row : $vs_display_label;
@@ -7181,7 +7174,7 @@ side. For many self-relations the direction determines the nature and display te
 					}
 					// Ensure we have a locale
 					if (!isset($va_value_instance['locale_id'])) {
-						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
+						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : LocaleManager::getDefaultCataloguingLocaleID();
 					}
 					// Create or update the attribute
 					if ($pb_update) {

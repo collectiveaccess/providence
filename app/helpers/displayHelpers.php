@@ -111,7 +111,7 @@ require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
 	 */
 	function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 		if (!is_array($pa_values)) { return array(); }
-		$va_locales = ca_locales::getLocaleList();
+		$va_locales = LocaleManager::getLocaleList();
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }

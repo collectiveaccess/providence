@@ -71,7 +71,6 @@ class SearchResult extends BaseObject {
 	
 	private static $o_db;
 	private static $opa_locales = null;
-	private static $opo_locales; // ca_locales instance
 	private static $opt_list = null; // ca_lists instance
 	
 	private $opa_cached_result_counts;
@@ -206,8 +205,7 @@ class SearchResult extends BaseObject {
 		$this->opa_row_ids_to_prefetch_cache = array();
 		
 		
-		if (!SearchResult::$opo_locales) { SearchResult::$opo_locales = new ca_locales();; }
-		if (!SearchResult::$opa_locales) { SearchResult::$opa_locales = ca_locales::getLocaleList(); }
+		if (!SearchResult::$opa_locales) { SearchResult::$opa_locales = LocaleManager::getLocaleList(); }
 		if (!SearchResult::$opt_list) { SearchResult::$opt_list = Datamodel::getInstanceByTableName('ca_lists', true); }
 		
 		if ($po_engine_result) {
@@ -1868,9 +1866,9 @@ class SearchResult extends BaseObject {
 			foreach($pa_value_list as $vn_locale_id => $va_labels_by_locale) {
 									
 				if ($pa_options['useLocaleCodes']) {
-					if (!$vn_locale_id || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
+					if (!$vn_locale_id || !($vm_locale_id = LocaleManager::IDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 				} else {
-					if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
+					if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = LocaleManager::CodeToID(__CA_DEFAULT_LOCALE__); }; 
 				}
 				
 				foreach($va_labels_by_locale as $vn_id => $va_label) {
@@ -1977,9 +1975,9 @@ class SearchResult extends BaseObject {
 				$va_values = $o_attribute->getValues();
 				
 				if ($pa_options['useLocaleCodes']) {
-					if (!$o_attribute->getLocaleID() || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($o_attribute->getLocaleID()))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
+					if (!$o_attribute->getLocaleID() || !($vm_locale_id = LocaleManager::IDToCode($o_attribute->getLocaleID()))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 				} else {
-					if (!($vm_locale_id = $o_attribute->getLocaleID())) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
+					if (!($vm_locale_id = $o_attribute->getLocaleID())) { $vm_locale_id = LocaleManager::CodeToID(__CA_DEFAULT_LOCALE__); }; 
 				}
 				
 				$vb_did_return_value = false;
@@ -2256,9 +2254,9 @@ class SearchResult extends BaseObject {
 				foreach($pa_value_list as $vn_locale_id => $va_values) {
 					
 					if ($pa_options['useLocaleCodes']) {
-						if (!$vn_locale_id || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
+						if (!$vn_locale_id || !($vm_locale_id = LocaleManager::IDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 					} else {
-						if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
+						if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = LocaleManager::CodeToID(__CA_DEFAULT_LOCALE__); }; 
 					}
 					
 					foreach($va_values as $vn_i => $va_value) {
@@ -2304,9 +2302,9 @@ class SearchResult extends BaseObject {
 				foreach($pa_value_list as $vn_locale_id => $va_values) {
 				
 					if ($pa_options['useLocaleCodes']) {
-						if (!$vn_locale_id || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
+						if (!$vn_locale_id || !($vm_locale_id = LocaleManager::IDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 					} else {
-						if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
+						if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = LocaleManager::CodeToID(__CA_DEFAULT_LOCALE__); }; 
 					}
 					
 					foreach($va_values as $vn_i => $va_value) {
@@ -2344,9 +2342,9 @@ class SearchResult extends BaseObject {
 				foreach($pa_value_list as $vn_locale_id => $va_values) {
 				
 					if ($pa_options['useLocaleCodes']) {
-						if (!$vn_locale_id || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
+						if (!$vn_locale_id || !($vm_locale_id = LocaleManager::IDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 					} else {
-						if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
+						if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = LocaleManager::CodeToID(__CA_DEFAULT_LOCALE__); }; 
 					}
 					
 					foreach($va_values as $vn_i => $va_value) {

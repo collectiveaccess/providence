@@ -46,7 +46,7 @@
 	function caLoadAAT($ps_path_to_aat_data=null, $pa_options=null) {
 		if (!$ps_path_to_aat_data) { $ps_path_to_aat_data = "./AAT.xml"; }
 		require_once(__CA_LIB_DIR__.'/Db.php');
-		require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+		require_once(__CA_LIB_DIR__."/LocaleManager.php");
 		require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		require_once(__CA_MODELS_DIR__.'/ca_list_items_x_list_items.php');
@@ -461,7 +461,7 @@
 		require_once(__CA_LIB_DIR__.'/Db.php');
 		require_once(__CA_LIB_DIR__.'/Configuration.php');
 		require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
-		require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+		require_once(__CA_LIB_DIR__."/LocaleManager.php");
 		require_once(__CA_MODELS_DIR__.'/ca_entities.php');
 		require_once(__CA_MODELS_DIR__.'/ca_entities_x_entities.php');			
 		require_once(__CA_MODELS_DIR__.'/ca_lists.php');

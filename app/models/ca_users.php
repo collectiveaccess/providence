@@ -38,7 +38,6 @@ require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
-require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
 require_once(__CA_LIB_DIR__.'/Auth/AuthenticationManager.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
@@ -1861,7 +1860,6 @@ class ca_users extends BaseModel {
 							$va_restrict_to_ui_locales = $this->getAppConfig()->getList('restrict_to_ui_locales');
 							
 							$va_opts = array();
-							$t_locale = new ca_locales();
 							foreach($va_locales as $vs_code => $va_parts) {
 								if (is_array($va_restrict_to_ui_locales) && sizeof($va_restrict_to_ui_locales) && !in_array($vs_code, $va_restrict_to_ui_locales)) { continue; }
 								try {
@@ -3041,19 +3039,18 @@ class ca_users extends BaseModel {
 		if (!(defined("__CA_DEFAULT_LOCALE__"))) {
 			define("__CA_DEFAULT_LOCALE__", "en_US"); // if all else fails...
 		}
-		$t_locale = new ca_locales();
 		if ($vs_locale = $this->getPreference('ui_locale')) {
-			if ($vn_locale_id = $t_locale->localeCodeToID($vs_locale)) {
+			if ($vn_locale_id = LocaleManager::CodeToID($vs_locale)) {
 				return $vn_locale_id;
 			}
 		} 
 		
 		$va_default_locales = $this->getAppConfig()->getList('locale_defaults');
-		if (sizeof($va_default_locales) && $vn_locale_id = $t_locale->localeCodeToID($va_default_locales[0])) {
+		if (sizeof($va_default_locales) && $vn_locale_id = LocaleManager::localeCodeToID($va_default_locales[0])) {
 			return $vn_locale_id;
 		}
 		
-		return $t_locale->localeCodeToID(__CA_DEFAULT_LOCALE__);
+		return LocaleManager::CodeToID(__CA_DEFAULT_LOCALE__);
 	}
 	# ----------------------------------------
 	/**

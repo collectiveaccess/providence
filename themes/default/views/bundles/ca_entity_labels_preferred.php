@@ -198,7 +198,7 @@
 		deleteButtonClassName: 'caDeleteLabelButton',
 		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+		defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>,
 		checkForDupes: <?php print ($t_label->getAppConfig()->get('ca_entities_warn_when_preferred_label_exists') ? 'true' : 'false') ?>,
 		checkForDupesUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'EntityEditor', 'checkForDupeLabels')?>',
 		dupeLabelWarning: '<?php print _t('Label is already in use'); ?>'
