@@ -32,8 +32,6 @@
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
 
-	caWriteServerConfigHints();
-
 	try {
 		// connect to database
 		$o_db = new Db(null, null, false);

@@ -541,6 +541,15 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Date format'),
 			'description' => _t('Formatting option for DateRange attributes.')
 		);
+		$va_settings['coordinatesOnly'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Return geocode coordinates only'),
+			'description' => _t('Formatting option for Geocode attributes. Forces return of coordinates only, omitting text labels.')
+		);
 		
 		$va_settings['_id'] = array(
 			'formatType' => FT_TEXT,

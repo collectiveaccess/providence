@@ -1184,7 +1184,7 @@ function caFileIsIncludable($ps_file) {
 			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
-				$va_key[] = $va_data[$vs_sort_key];
+				$va_key[] = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
 			}
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
@@ -2213,21 +2213,6 @@ function caFileIsIncludable($ps_file) {
             $len--;
         }
         return($arabic);
-	}
-
-	# ----------------------------------------------------------------
-	/**
-	 *
-	 */
-	function caWriteServerConfigHints() {
-		if (file_exists(__CA_APP_DIR__."/tmp/server_config_hints.txt")) { return false; }
-		return @file_put_contents(__CA_APP_DIR__."/tmp/server_config_hints.txt", serialize(
-			array(
-				'SCRIPT_FILENAME' => $_SERVER['SCRIPT_FILENAME'],
-				'HTTP_HOST' => $_SERVER['HTTP_HOST'],
-				'DOCUMENT_ROOT' => $_SERVER['DOCUMENT_ROOT']
-			)
-		));
 	}
 	# ----------------------------------------
 	/**

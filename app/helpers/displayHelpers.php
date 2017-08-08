@@ -2128,10 +2128,49 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 * @return string
 	 */
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives) {
+	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
 			switch(strtoupper($va_tmp[0])) {
+			    case 'UNITS':
+			        try {
+                        $vo_measurement = caParseLengthDimension($ps_value);
+                    
+                        $vs_measure_conv = null;
+                        switch(strtoupper($va_tmp[1])) {
+                            case 'INFRAC':
+                                $vs_measure_conv = caLengthToFractions($vo_measurement->convertTo(Zend_Measure_Length::INCH, 4), 8, true);
+                                break;
+                            case 'M':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, 4);
+                                break;
+                            case 'CM':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 4);
+                                break;
+                            case 'FT':
+                            case 'FT.':
+                            case 'FOOT':
+                            case 'FEET':
+                            case "'":
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::FEET, 4);
+                                break;
+                            case 'IN':
+                            case 'INCH':
+                            case 'INCHES':
+                            case 'IN.':
+                            case '"':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 4);
+                                break;
+                        }
+                    
+                        if ($vs_measure_conv) {
+                            $ps_value = "{$vs_measure_conv}";
+                        }
+                    } catch (Exception $e) {
+                        // noop
+                    }
+			        break;
 				case 'LP':		// left padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
