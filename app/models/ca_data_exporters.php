@@ -317,6 +317,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'XML' => 'XML',
 			'MARC' => 'MARC',
 			'CSV' => 'CSV',
+			'JSON' => 'JSON',
 		);
 	}
 	# ------------------------------------------------------
@@ -633,6 +634,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			case 'ExifTool':
 				$o_export = new ExportExifTool();
 				break;
+			case 'JSON':
+				$o_export = new ExportJSON();
+				break;
 			default:
 				return;
 		}
@@ -654,6 +658,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'CSV':
 				$o_export = new ExportCSV();
+				break;
+			case 'JSON':
+				$o_export = new ExportJSON();
 				break;
 			default:
 				return;
@@ -1150,7 +1157,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		ca_data_exporters::$s_exporter_cache = array();
 		ca_data_exporters::$s_exporter_item_cache = array();
-
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)) { return false; }
 
 		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
@@ -1181,7 +1187,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::DEBUG = Debugging messages
 	 * @return boolean success state
 	 */
-	static public function exportRecordsFromSearchResult($ps_exporter_code, $po_result, $ps_filename, $pa_options=array()) {
+	static public function exportRecordsFromSearchResult($ps_exporter_code, $po_result, $ps_filename=null, $pa_options=array()) {
 		if(!($po_result instanceof SearchResult)) { return false; }
 
 		$vs_log_dir = caGetOption('logDirectory',$pa_options);
@@ -1194,6 +1200,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		$o_log = new KLogger($vs_log_dir, $vn_log_level);
+
+
+		$o_config = Configuration::load();
+
 
 		ca_data_exporters::$s_exporter_cache = array();
 		ca_data_exporters::$s_exporter_item_cache = array();
@@ -1220,6 +1230,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
+		$vs_export_format = $t_mapping->getSetting('exporter_format');
 
 		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
 		$vn_num_items = $po_result->numHits();
@@ -1228,6 +1239,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if($vs_wrap_before) {
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
+		}
+
+		if($vs_export_format == 'JSON'){
+			$va_json_data = [];
 		}
 
 		if ($vb_show_cli_progress_bar) {
@@ -1279,7 +1294,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
-			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
+			if($vs_export_format == 'JSON'){
+				array_push($va_json_data, json_decode($vs_item_export));
+				#file_put_contents($ps_filename, $vs_item_export.",", FILE_APPEND);
+			} else {
+				file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
+			}
 
 			if ($vb_show_cli_progress_bar) {
 				print CLIProgressBar::next(1, _t("Exporting records ..."));
@@ -1294,6 +1314,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if($vs_wrap_after) {
 			file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
+		}
+
+		if($vs_export_format == 'JSON'){
+			file_put_contents($ps_filename, json_encode($va_json_data), FILE_APPEND);
+			#file_put_contents($ps_filename, "]", FILE_APPEND);
 		}
 
 		if ($vb_show_cli_progress_bar) {
@@ -1408,6 +1433,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				case 'ExifTool':
 					$o_export = new ExportExifTool();
 					break;
+				case 'JSON':
+					$o_export = new ExportJSON();
+					break;
 				default:
 					return array(_t("Invalid exporter format"));
 			}
@@ -1492,7 +1520,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$o_log->logInfo(_t("The export tree for exporter code '%1' and item with ID %2 is now ready to be processed by the export format (i.e. transformed to XML, for example).", $ps_exporter_code, $pn_record_id));
 		$o_log->logDebug(print_r($va_export,true));
-
 		// we may wanna auto-load this?
 		switch($t_exporter->getSetting('exporter_format')) {
 			case 'XML':
@@ -1506,6 +1533,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'ExifTool':
 				$o_export = new ExportExifTool();
+				break;
+			case 'JSON':
+				$o_export = new ExportJSON();
 				break;
 			default:
 				return;
@@ -1675,7 +1705,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,
 									array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
 								);
-								
+
 								$va_info = array_merge($va_info, $va_attribute_export);
 								$vn_i++;
 							}
@@ -1782,7 +1812,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($t_exporter_item->getSetting('end_as_iso8601')) {
 			$va_get_options['end_as_iso8601'] = true;
 		}
-		
+
 		if($t_exporter_item->getSetting('timeOmit')) {
 			$va_get_options['timeOmit'] = true;
 		}
@@ -1889,7 +1919,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								}
 								break;
 						}
-			
+
 						$va_item_info[] = array(
 							'text' => $vs_display_value,
 							'element' => $vs_element,
@@ -1938,7 +1968,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				} else { // user wants current element repeated in case of multiple returned values
 					$va_get_options['delimiter'] = ';#;';
 					$vs_values = $t_instance->get($vs_source,$va_get_options);
-					
+
 					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
