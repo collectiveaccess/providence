@@ -2687,15 +2687,14 @@
 								}
 							} else {
 								$vs_sql = "
-									SELECT ".$vs_browse_table_name.'.'.$t_item->primaryKey()."
+									SELECT DISTINCT ".$vs_browse_table_name.'.'.$t_item->primaryKey()."
 									FROM ".$vs_browse_table_name."
 									{$vs_join_sql}
-									{$vs_where_sql}
-								";
+									{$vs_where_sql}";
 								//print "$vs_sql<hr>";
 								$qr_res = $this->opo_db->query($vs_sql);
 								if ($qr_res->numRows() > 0) {
-									$va_facet[$vs_state_name] = $va_state_info;
+									$va_facet[$vs_state_name] = array_merge($va_state_info, ['content_count' => $qr_res->numRows()]);
 								} else {
 									return array();		// if either option in a "has" facet fails then don't show the facet
 								}
@@ -2752,8 +2751,7 @@
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
 							$va_joins = $va_joins_init;
-
-
+							
 							if (!(bool)$va_state_info['id']) {	// no option
 								$vn_num_wheres = sizeof($va_wheres);
 								
@@ -2868,15 +2866,15 @@
 								}
 							} else {
 								$vs_sql = "
-									SELECT ".$vs_browse_table_name.'.'.$t_item->primaryKey()."
+									SELECT DISTINCT ".$vs_browse_table_name.'.'.$t_item->primaryKey()."
 									FROM ".$vs_browse_table_name."
 									{$vs_join_sql}
-									{$vs_where_sql}
-								";
+									{$vs_where_sql}";
+									
 								//print "$vs_sql<hr>";
 								$qr_res = $this->opo_db->query($vs_sql);
 								if ($qr_res->numRows() > 0) {
-									$va_facet[$vs_state_name] = $va_state_info;
+									$va_facet[$vs_state_name] = array_merge($va_state_info, ['content_count' => $qr_res->numRows()]);
 								} else {
 									return array();		// if either option in a "has" facet fails then don't show the facet
 								}
@@ -3008,10 +3006,11 @@
 					} else {
 						$vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD');
 						$vs_sql = "
-							SELECT  l.* ".(($vs_parent_fld) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '')."
+							SELECT COUNT(*) as _count, ".$t_item->primaryKey(true).", l.* ".(($vs_parent_fld) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '')."
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
+							GROUP BY l.{$vs_label_display_field}
 							ORDER BY l.{$vs_label_display_field}
 						";
 
@@ -3040,7 +3039,8 @@
 								'id' => $vn_id,
 								'parent_id' => $vn_parent_id,
 								'label' => $vs_label,
-								'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label)
+								'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label),
+								'content_count' => $qr_res->get('_count')
 							));
 							if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 								$vb_single_value_is_present = true;
@@ -3156,12 +3156,14 @@
 						return ((int)$qr_res->numRows() > 1) ? true : false;
 					} else {
 						$vs_sql = "
-							SELECT DISTINCT value_longtext1, value_decimal1, value_longtext2, value_integer1
+							SELECT COUNT(*) as _count, value_longtext1, value_decimal1, value_longtext2, value_integer1
 							FROM ca_attributes
 
 							{$vs_join_sql}
 							WHERE
-								ca_attribute_values.element_id = ? {$vs_where_sql}";
+								ca_attribute_values.element_id = ? {$vs_where_sql}
+						    GROUP BY value_longtext1	
+						";
 						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
 
 						$va_values = array();
@@ -3216,7 +3218,8 @@
 										'id' => $vn_val,
 										'label' => ($vs_label = html_entity_decode($va_list_label_cache[$vn_val])) ? $vs_label : '['._t('BLANK').']',
 										'parent_id' => isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
-										'child_count' => $vn_child_count
+										'child_count' => $vn_child_count,
+										'content_count' => $qr_res->get('_count')
 									);
 								}
 								
@@ -3247,7 +3250,8 @@
 												'label' => ($vs_label = $qr_ancestors->get('ca_list_items.preferred_labels.name_plural')) ? $vs_label : '['._t('BLANK').']',
 												'parent_id' => $vn_parent_id,
 												'hierarchy_id' => $qr_ancestors->get('list_id'),
-												'child_count' => 1
+												'child_count' => 1,
+										        'content_count' => $qr_res->get('_count')
 											);
 										}
 									}
@@ -3295,7 +3299,8 @@
 										'id' => str_replace('/', '&#47;', $vs_val),
 										'label' => html_entity_decode($va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value']),
 										'parent_id' => $va_list_items[$vs_val]['parent_id'],
-										'child_count' => $vn_child_count
+										'child_count' => $vn_child_count,
+										'content_count' => $qr_res->get('_count')
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_OBJECTS__:
@@ -3310,25 +3315,29 @@
 									$vn_id = $qr_res->get('value_integer1');
 									$va_values[$vs_val] = array(
 										'id' => $vn_id,
-										'label' => html_entity_decode($va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val)
+										'label' => html_entity_decode($va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val),
+										'content_count' => $qr_res->get('_count')
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_LCSH__:
 									$va_values[$vs_val] = array(
 										'id' => str_replace('/', '&#47;', $vs_val),
-										'label' => preg_replace('![ ]*\[[^\]]*\]!', '', $vs_val)
+										'label' => preg_replace('![ ]*\[[^\]]*\]!', '', $vs_val),
+										'content_count' => $qr_res->get('_count')
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 									$va_values[sprintf("%014.2f", preg_replace("![\D]+!", "", $vs_val))] = array(
 										'id' => str_replace('/', '&#47;', $vs_val),
-										'label' => $vs_val
+										'label' => $vs_val,
+										'content_count' => $qr_res->get('_count')
 									);
 									break;
 								default:
 									$va_values[$vs_val] = array(
 										'id' => str_replace('/', '&#47;', $vs_val),
-										'label' => $vs_val
+										'label' => $vs_val,
+										'content_count' => $qr_res->get('_count')
 									);
 									break;
 							}
@@ -3423,11 +3432,13 @@
 
 						$vs_pk = $t_item->primaryKey();
 						$vs_sql = "
-							SELECT DISTINCT {$vs_browse_table_name}.current_loc_class, {$vs_browse_table_name}.current_loc_subclass, {$vs_browse_table_name}.current_loc_id
+							SELECT COUNT(*) _count, {$vs_browse_table_name}.current_loc_class, {$vs_browse_table_name}.current_loc_subclass, {$vs_browse_table_name}.current_loc_id
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 							WHERE
-								{$vs_where_sql}";
+								{$vs_where_sql}
+							GROUP BY {$vs_browse_table_name}.current_loc_class, {$vs_browse_table_name}.current_loc_subclass, {$vs_browse_table_name}.current_loc_id	
+							";
 						if($vs_sort_field) {
 							$vs_sql .= " ORDER BY {$vs_sort_field}";
 						}
@@ -3503,7 +3514,8 @@
 										if (!$vn_id || !($vs_label = $qr_res->getWithTemplate($vs_template, $va_config))) { continue; }
 										$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}:{$vn_id}"] = array(
 											'id' => $vs_id,
-											'label' => $vs_label
+											'label' => $vs_label,
+											'content_count' => $qr_res->get('_count')
 										);
 									}
 								}
@@ -3637,12 +3649,14 @@
 
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 							$vs_sql = "
-								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort
+								SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort
 								FROM ca_list_items li
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
 								WHERE
-									ca_lists.list_code = ?  AND lil.is_preferred = 1 {$vs_where_sql} {$vs_order_by}";
+									ca_lists.list_code = ?  AND lil.is_preferred = 1 {$vs_where_sql}
+								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort {$vs_order_by}
+								";
 							//print $vs_sql." [$vs_list_name]";
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 
@@ -3653,7 +3667,8 @@
 
 								$va_values[$vn_id][$qr_res->get('locale_id')] = array(
 									'id' => $vn_id,
-									'label' => $qr_res->get('name_plural')
+									'label' => $qr_res->get('name_plural'),
+									'content_count' => $qr_res->get('_count')
 								);
 								if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 									$vb_single_value_is_present = true;
@@ -3742,11 +3757,13 @@
 								return ((int)$qr_res->numRows() > 1) ? true : false;
 							} else {
 								$vs_sql = "
-									SELECT DISTINCT ".$vs_browse_table_name.'.'.$vs_field_name."
+									SELECT COUNT(*) _count, ".$vs_browse_table_name.'.'.$vs_field_name."
 									FROM ".$vs_browse_table_name."
 									{$vs_join_sql}
 									".($vs_where_sql ? 'WHERE' : '')."
-										{$vs_where_sql}";
+										{$vs_where_sql}
+									GROUP BY {$vs_browse_table_name}.{$vs_field_name}
+								";
 								//print $vs_sql." [$vs_list_name]";
 
 								$qr_res = $this->opo_db->query($vs_sql);
@@ -3758,7 +3775,8 @@
 									if (isset($va_list_items_by_value[$vn_id])) {
 										$va_values[$vn_id] = array(
 											'id' => $vn_id,
-											'label' => $va_list_items_by_value[$vn_id]
+											'label' => $va_list_items_by_value[$vn_id],
+											'content_count' => $qr_res->get('_count')
 										);
 										if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 											$vb_single_value_is_present = true;
@@ -3848,11 +3866,13 @@
 									return ((int)$qr_res->numRows() > 0) ? true : false;
 								} else {
 									$vs_sql = "
-										SELECT DISTINCT *
+										SELECT COUNT(*) _count,  *
 										FROM {$vs_facet_table}
 
 										{$vs_join_sql}
-										{$vs_where_sql}";
+										{$vs_where_sql}
+									    GROUP BY {$vs_facet_table}.{$vs_display_field_name}
+									";
 									//print $vs_sql;
 									$qr_res = $this->opo_db->query($vs_sql);
 
@@ -3864,7 +3884,8 @@
 
 										$va_values[$vn_id][$qr_res->get('locale_id')] = array(
 											'id' => $vn_id,
-											'label' => $qr_res->get($vs_display_field_name)
+											'label' => $qr_res->get($vs_display_field_name),
+									        'content_count' => $qr_res->get('_count')
 										);
 										if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 											$vb_single_value_is_present = true;
@@ -3997,11 +4018,13 @@
 
 						$vs_pk = $t_item->primaryKey();
 						$vs_sql = "
-							SELECT DISTINCT {$vs_browse_table_name}.{$vs_field_name}
+							SELECT COUNT(*) _count, {$vs_browse_table_name}.{$vs_field_name}
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 							WHERE
-								{$vs_where_sql}";
+								{$vs_where_sql}
+						    GROUP BY {$vs_browse_table_name}.{$vs_field_name}
+						";
 						if($vs_sort_field) {
 							$vs_sql .= " ORDER BY {$vs_sort_field}";
 						}
@@ -4017,7 +4040,8 @@
 							} else {
 								$va_values[$vs_val] = array(
 									'id' => str_replace('/', '&#47;', $vs_val),
-									'label' => $vs_val
+									'label' => $vs_val,
+									'content_count' => $qr_res->get('_count')
 								);
 							}
 							if (!is_null($vs_single_value) && ($vs_val == $vs_single_value)) {
@@ -4118,13 +4142,15 @@
 					} else {
 						$vs_pk = $t_item->primaryKey();
 						$vs_sql = "
-							SELECT DISTINCT ca_metadata_dictionary_rules.rule_id
+							SELECT COUNT(*) _count, ca_metadata_dictionary_rules.rule_id
 							FROM {$vs_browse_table_name}
 							INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = {$vs_browse_table_num}
 							INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
 							{$vs_join_sql}
 							WHERE
-								{$vs_where_sql}";
+								{$vs_where_sql}
+							GROUP BY ca_metadata_dictionary_rules.rule_id
+						";
 
 						$qr_res = $this->opo_db->query($vs_sql);
 
@@ -4141,7 +4167,8 @@
 								} else {
 									$va_values[$vs_code] = array(
 										'id' => $vs_code,
-										'label' => $vs_val
+										'label' => $vs_val,
+									    'content_count' => $qr_res->get('_count')
 									);
 								}
 								if (!is_null($vs_single_value) && ($vs_code == $vs_single_value)) {
@@ -4282,11 +4309,12 @@
 						switch($va_facet_info['mode']) {
 							case 'user':
 								$vs_sql = "
-									SELECT DISTINCT ca_object_checkouts.user_id, ca_users.fname, ca_users.lname, ca_users.email
+									SELECT COUNT(*) _count, ca_object_checkouts.user_id, ca_users.fname, ca_users.lname, ca_users.email
 									FROM ca_objects
 									{$vs_join_sql}
 									WHERE
-										{$vs_where_sql} ".(sizeof($va_results) ? " AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))" : "");
+										{$vs_where_sql} ".((sizeof($va_results) ? " AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))" : "")).
+									" GROUP BY ca_object_checkouts.user_id, ca_users.fname, ca_users.lname, ca_users.email";
 
 								$qr_res = $this->opo_db->query($vs_sql);
 
@@ -4300,7 +4328,8 @@
 									} else {
 										$va_values[$vn_user_id] = array(
 											'id' => $vn_user_id,
-											'label' => $vs_val
+											'label' => $vs_val,
+											'count' => $qr_res->get('_count')
 										);
 									}
 									if (!is_null($vs_single_value) && ($vn_user_id == $vs_single_value)) {
@@ -4351,7 +4380,8 @@
 									if (!$qr_res->get('c')) { continue; }
 									$va_values[$vs_status] = array(
 										'id' => $vs_status,
-										'label' => $vs_status_text
+										'label' => $vs_status_text,
+										'count' => $qr_res->get('c')
 									);
 
 									if (!is_null($vs_single_value) && ($vs_status == $vs_single_value)) {
@@ -4503,7 +4533,7 @@
 							return ((int)$qr_res->numRows() > 0) ? true : false;
 						} else {
 							$vs_sql = "
-								SELECT DISTINCT ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2
+								SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2
 								FROM ca_attributes
 								{$vs_join_sql}
 								WHERE
@@ -4511,6 +4541,7 @@
 									{$vs_min_sql}
 									{$vs_max_sql}
 									{$vs_where_sql}
+								GROUP BY ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2
 							";
 							//print $vs_sql;
 							$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
@@ -4540,7 +4571,8 @@
 									if (is_numeric($vs_normalized_value) && (int)$vs_normalized_value === 0) { continue; }		// don't include year=0
 									$va_values[$vn_sort_value][$vs_normalized_value] = array(
 										'id' => $vs_normalized_value,
-										'label' => $vs_normalized_value
+										'label' => $vs_normalized_value,
+										'content_count' => $qr_res->get('_count')
 									);
 									if (!is_null($vs_single_value) && ($vs_normalized_value == $vs_single_value)) {
 										$vb_single_value_is_present = true;
@@ -4569,7 +4601,8 @@
 							if ($vb_unknown_is_set && (sizeof($va_values) > 0)) {
 								$va_values['999999999'][_t('Date unknown')] = array(
 									'id' => 'null',
-									'label' => _t('Date unknown')
+									'label' => _t('Date unknown'),
+									'content_count' => $qr_res->numRows()
 								);
 							}
 
@@ -4628,7 +4661,7 @@
 							return ((int)$qr_res->numRows() > 0) ? true : false;
 						} else {
 							$vs_sql = "
-								SELECT DISTINCT {$vs_browse_table_name}.{$vs_browse_start_fld}, {$vs_browse_table_name}.{$vs_browse_end_fld}
+								SELECT COUNT(*) _count, {$vs_browse_table_name}.{$vs_browse_start_fld}, {$vs_browse_table_name}.{$vs_browse_end_fld}
 								FROM {$vs_browse_table_name}
 								{$vs_join_sql}
 								WHERE
@@ -4636,6 +4669,7 @@
 									{$vs_min_sql}
 									{$vs_max_sql}
 									{$vs_where_sql}
+								GROUP BY {$vs_browse_table_name}.{$vs_browse_start_fld}, {$vs_browse_table_name}.{$vs_browse_end_fld}
 							";
 							//print $vs_sql;
 							$qr_res = $this->opo_db->query($vs_sql);
@@ -4653,7 +4687,8 @@
 									if (is_numeric($vs_normalized_value) && (int)$vs_normalized_value === 0) { continue; }		// don't include year=0
 									$va_values[$vn_sort_value][$vs_normalized_value] = array(
 										'id' => $vs_normalized_value,
-										'label' => $vs_normalized_value
+										'label' => $vs_normalized_value,
+										'content_count' => $qr_res->get('_count')
 									);
 									if (!is_null($vs_single_value) && ($vs_normalized_value == $vs_single_value)) {
 										$vb_single_value_is_present = true;
@@ -4786,7 +4821,7 @@
 						return ((int)$qr_res->numRows() > 0) ? true : false;
 					} else {
 						$vs_sql = "
-							SELECT DISTINCT ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
+							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
 							FROM ca_attributes
 							{$vs_join_sql}
 							WHERE
@@ -4794,6 +4829,7 @@
 								{$vs_min_sql}
 								{$vs_max_sql}
 								{$vs_where_sql}
+							GROUP BY ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
 						";
 						//print $vs_sql;
 						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
@@ -4823,7 +4859,8 @@
 							$vs_normalized_range_with_units = "{$vn_normalized} {$vs_units} - ".($vn_normalized + $vn_increment_in_current_units)." {$vs_units}";
 							$va_values[$vn_normalized][$vn_normalized] = array(
 								'id' => $vn_normalized,
-								'label' => $vs_normalized_range_with_units
+								'label' => $vs_normalized_range_with_units,
+								'content_count' => $qr_res->get('_count')
 							);
 							if (!is_null($vs_single_value) && ($vn_normalized == $vs_single_value)) {
 								$vb_single_value_is_present = true;
@@ -5125,19 +5162,20 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 	if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) {
 						$vs_sql = "
-							SELECT DISTINCT ".join(', ', $va_selects)."
+							SELECT COUNT(*) _count, ".join(', ', $va_selects)."
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 	} else {
 						$vs_sql = "
-							SELECT DISTINCT ".join(', ', $va_selects)."
+							SELECT COUNT(*) _count, ".join(', ', $va_selects)."
 							FROM ".$t_rel_item->tableName()."
 							{$vs_join_sql}
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
-	}
+	}                  
+	                    $vs_sql .= " GROUP BY ".$t_rel_item->primaryKey(true);
 						//print "<hr>$vs_sql<hr>\n";
 
 						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
@@ -5178,7 +5216,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 									'parent_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_parent_id_fld] : null,
 									'hierarchy_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_id_fld] : null,
 									'rel_type_id' => array(),
-									'child_count' => 0
+									'child_count' => 0,
+									'content_count' => $va_fetched_row['_count']
 								);
 
 								if (!is_null($vs_single_value) && ($va_fetched_row[$vs_rel_pk] == $vs_single_value)) {
