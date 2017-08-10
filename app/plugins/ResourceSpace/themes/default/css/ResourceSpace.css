@@ -1,0 +1,122 @@
+#caResourceSpaceResults {
+	padding: 8px;
+	margin: 5px 0 0 0;
+	min-height: 400px;
+	border-radius: 6px;
+}
+
+.caResourceSpaceResultsMessage {
+	padding: 10px;
+	font-size: 20px;
+	color: #aaaaaa;
+	font-weight: bold;
+	text-align: center;
+
+	margin: 180px 0 0 0;
+}
+
+.caResourceSpaceDetailsMessage {
+	padding: 10px;
+	font-size: 14px;
+	color: #aaaaaa;
+	font-weight: bold;
+	text-align: center;
+
+	margin: 140px 0 0 0;
+}
+
+.caResourceSpaceResultsContainer {
+	position: relative;
+}
+
+.caResourceSpaceExistingObjectIcon a, .caResourceSpaceExistingObjectIcon a:hover {
+	color: #000;
+	text-decoration: none;
+}
+
+.caResourceSpaceExistingObjectKey {
+	position: absolute;
+	right: 5px;
+	bottom: 5px;
+}
+
+ul.caResourceSpaceResultList {
+	padding-left: 0px;
+}
+
+.caResourceSpaceResultHeader{
+	clear: both;
+}
+
+.caResourceSpaceResultWrapper, .caResourceSpaceCollectionResultWrapper{
+	max-height: 600px;
+	overflow-x: scroll;
+	background-color: #f7f7f7;
+	border-radius: 6px;
+}
+
+.caResourceSpaceResultWrapper ul{
+	padding-left: 0px;
+}
+.caResourceSpaceCollectionResultWrapper ul{
+	padding-left: 0px;
+}
+
+li.caResourceSpaceResultItem {
+	list-style-type: none;
+	width: 228px;
+	height: 250px;
+	float: left;
+	padding: 0 5px;
+	text-align: center;
+}
+
+li.caResourceSpaceCollectionResultItem {
+	list-style-type: none;
+	float: left;
+}
+
+li.caResourceSpaceResultItem img {
+	max-width: 228px;
+	max-height: 200px;
+}
+
+li.caResourceSpaceCollectionResultItem img {
+	max-width: 228px;
+	max-height: 200px;
+}
+
+div.caResourceSpaceSearchResultDetails {
+	display: none;
+	border: 2px solid #ccc;
+	margin: 5px 0px 5px 20px;
+	padding: 5px 10px 5px 10px;
+	height: 300px;
+	overflow: auto;
+}
+
+a.caResourceSpaceSearchResultItem {
+	text-decoration: none;
+}
+
+div.caResourceSpaceResultsPagination {
+	float: right;
+	padding: 5px;
+}
+
+#caResourceSpaceResultsNextLink {
+	display: none;
+}
+#caResourceSpaceResultsPreviousLink {
+	margin-right: 10px;
+	display: none;
+}
+
+.formLabelImport{
+	padding-top: 20px;
+}
+
+.formLabelThird{
+	width: 220px;
+	float: left;
+}
