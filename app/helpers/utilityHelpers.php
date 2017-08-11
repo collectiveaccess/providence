@@ -2125,7 +2125,6 @@ function caFileIsIncludable($ps_file) {
 	function caRomanNumeralsRegexp() {
 		return "M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})";
 	}
-
 	# ---------------------------------------
 	/**
 	 * Detects if a string is a valid roman number
@@ -3151,6 +3150,63 @@ function caFileIsIncludable($ps_file) {
 		$vs_data[8] = chr(ord($vs_data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
 		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
+	}
+	# ----------------------------------------
+	/**
+	 * Generate a CSRF token and add to session CSRF store
+	 *
+	 * @param RequestHTTP $po_request Current request
+	 * @return string
+	 */
+	function caGenerateCSRFToken($po_request=null){
+	    if(function_exists("random_bytes")) {           // PHP 7
+	        $vs_token = bin2hex(random_bytes(32));
+	    } elseif (function_exists("openssl_random_pseudo_bytes")) {     // PHP 5.x with OpenSSL
+			$vs_token = bin2hex(openssl_random_pseudo_bytes(32));
+		} elseif (function_exists('mcrypt_create_iv')) {                // PHP 5.x with mcrypt
+            $vs_token = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+        } else {
+            $vs_token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
+	    }
+	    if ($po_request) {
+	        if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
+	        if (sizeof($va_tokens) > 100) { $va_tokens = array_slice($va_tokens, 50, 50, true); }
+	    
+	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = 1; }
+	        
+	        
+	        $po_request->session->setVar('csrf_tokens', $va_tokens);
+	    }
+	    return $vs_token;
+	}
+	# ----------------------------------------
+	/**
+	 * Validate CSRF token using current session
+	 *
+	 * @param RequestHTTP $po_request Current request
+	 * @param string $ps_token CSRF token to validate. If omitted token in the "crsfToken" parameter is extracted from current request.
+	 * @param array $pa_options Options include:
+	 *      remove = remove validated token from active token list. [Default is true]
+	 *      exceptions = throw exception if token is invalid. [Default is true]
+	 * @return bool
+	 * @throws ApplicationException
+	 */
+	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
+	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
+	    if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
+	    
+	    if (isset($va_tokens[$ps_token])) { 
+	        if (caGetOption('remove', $pa_options, true)) {
+	            unset($va_tokens[$ps_token]);
+	            $po_request->session->setVar('csrf_tokens', $va_tokens);
+	        }
+	        return true;
+	    }
+	    
+	    if (caGetOption('exceptions', $pa_options, true)) {
+	        throw new ApplicationException(_t('CSRF token is not valid'));
+	    }
+	    return false;   
 	}
 	# ----------------------------------------
 	/**
