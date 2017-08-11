@@ -3187,6 +3187,7 @@
 								if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['restrict_to_types'], array('instance' => new ca_list_items(), 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
 
 								$va_values = $qr_res->getAllFieldValues('value_longtext1');
+								$va_value_counts = $qr_res->getAllFieldValues('_count');
 								$qr_res->seek(0);
 
 								$t_list_item = new ca_list_items();
@@ -3205,7 +3206,7 @@
 								if (is_array($va_suppress_values)) { $va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_suppress_values); }
 
 								$va_facet_list = array();
-								foreach($va_values as $vn_val) {
+								foreach($va_values as $i => $vn_val) {
 									if (!$vn_val) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
 									if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
@@ -3219,7 +3220,7 @@
 										'label' => ($vs_label = html_entity_decode($va_list_label_cache[$vn_val])) ? $vs_label : '['._t('BLANK').']',
 										'parent_id' => isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
 										'child_count' => $vn_child_count,
-										'content_count' => $qr_res->get('_count')
+										'content_count' => $va_value_counts[$i]
 									);
 								}
 								
