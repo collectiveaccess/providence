@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,10 @@
  		}
  		# -------------------------------------------------------
  		public function DoLogin() {
+ 		    caValidateCSRFToken($this->request);
+ 		    
  			global $g_ui_locale;
+ 			
 			$vs_redirect_url = $this->request->getParameter('redirect', pString) ?: caNavUrl($this->request, null, null, null);
 			if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $vs_redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
@@ -99,6 +102,7 @@
 		# -------------------------------------------------------
 		public function RequestPassword() {
 			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+		    caValidateCSRFToken($this->request);
 
 			$vs_username = $this->getRequest()->getParameter('username',pString);
 			$t_user = new ca_users();
@@ -137,6 +141,7 @@
 		# -------------------------------------------------------
 		public function DoReset() {
 			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+		    caValidateCSRFToken($this->request);
 
 			$vs_token = $this->getRequest()->getParameter('token',pString);
 			$vs_username = $this->getRequest()->getParameter('username',pString);
