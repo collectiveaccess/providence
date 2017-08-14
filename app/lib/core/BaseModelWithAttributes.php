@@ -90,6 +90,16 @@
 		# ------------------------------------------------------------------
 		/**
 		 * create an attribute linked to the current row using values in $pa_values
+		 *
+		 * @param array $pa_values
+		 * @param mixed $pm_element_code_or_id
+		 * @param string $ps_error_source
+		 * @param array $pa_options Options include:
+		 *      skipExistingValues = Don't add values that already exist on this record. [Default is false]
+		 *      showRepeatCountErrors = Emit visible errors when minimum/maximum repeat counts are exceeded. [Default is false]
+		 *      dontCheckMinMax = Don't do minimum/maximum repeat count checks. [Default is false]
+		 *      
+		 * @return bool True on success, false on error or null if attribute was skipped.
 		 */
 		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			require_once(__CA_APP_DIR__.'/models/ca_metadata_elements.php');
@@ -131,6 +141,27 @@
 					}
 					return null; 
 				}	// # attributes is at upper limit
+			}
+			
+			if (caGetOption('skipExistingValues', $pa_options, false)) {
+			    // filter out any values that already exist on this row
+			    if(is_array($va_attrs = $this->getAttributesByElement($pm_element_code_or_id))) {
+			        $vb_already_exists = false;
+			        foreach($va_attrs as $o_attr) {
+			            foreach($o_attr->getValues() as $o_value) {
+			                $vn_element_id = $o_value->getElementID();
+			                print_R($pa_values);
+			                if ($pa_values[$vn_element_id] != $o_value->getDisplayValue()) {
+			                    continue(2);
+			                }
+			            }
+			            $vb_already_exists = true;
+			            break;
+			        }
+			        if ($vb_already_exists) {
+			            return null;
+			        }
+			    }
 			}
 			
 			$this->opa_attributes_to_add[] = array(
