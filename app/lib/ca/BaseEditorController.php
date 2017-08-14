@@ -222,7 +222,7 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($pa_options=null) {
-	    caValidateCSRFToken($this->request);
+	    caValidateCSRFToken($this->request, null, ['remove' => false]);
 	    
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
@@ -484,7 +484,7 @@ class BaseEditorController extends ActionController {
 		}
 
 		if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
-	        caValidateCSRFToken($this->request);
+	        caValidateCSRFToken($this->request, null, ['remove' => false]);
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
 				$t_subject->setTransaction($o_t = new Transaction());
