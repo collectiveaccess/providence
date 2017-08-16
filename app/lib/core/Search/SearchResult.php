@@ -2156,6 +2156,7 @@ class SearchResult extends BaseObject {
 					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name'] && !$pa_options['returnWithStructure']) {
 						if (strlen($vs_val_proc) > 0)  {$va_val_proc[] = $vs_val_proc; }
 						$vs_val_proc = join($vs_delimiter, $va_val_proc);
+						$va_val_proc = [];
 					} 
 					
 					$va_spec = $va_path_components['components'];
