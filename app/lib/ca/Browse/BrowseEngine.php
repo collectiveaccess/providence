@@ -2028,6 +2028,7 @@
 					if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = $this->opo_datamodel->getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
 
                        foreach($va_acc as $vn_i => $va_acc_content) {
+                            if(!sizeof($va_acc_content)) { continue; }
                             $qr_expand =  $this->opo_db->query("
                                 SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
                                 FROM ".$this->ops_browse_table_name."
