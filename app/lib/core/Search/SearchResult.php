@@ -2069,7 +2069,7 @@ class SearchResult extends BaseObject {
 						    case __CA_ATTRIBUTE_VALUE_FILE__:
 						        $vs_return_type = 'tag';
                                 $va_versions = $o_value->getVersions();
-                                $vs_version = $va_versions[0];
+                                $vs_version = caGetOption('version', $pa_options, $va_versions[0]);
                                 
                                 $va_e = array_slice($va_path_components['components'], 2);
                                 foreach($va_e as $vs_e) {
