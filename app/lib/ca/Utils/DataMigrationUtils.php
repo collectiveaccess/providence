@@ -717,14 +717,14 @@
 							$pt_instance->addAttribute(
 								array_merge($va_value, array(
 									'locale_id' => $pn_locale_id
-								)), $vs_element);
+								)), $vs_element, null, ['skipExistingValues' => true]);
 						} else {
 							// scalar value (simple single value attribute)
 							if ($va_value) {
 								$pt_instance->addAttribute(array(
 									'locale_id' => $pn_locale_id,
 									$vs_element => $va_value
-								), $vs_element);
+								), $vs_element, null, ['skipExistingValues' => true]);
 							}
 						}
 						if ($vb_separate_updates) {

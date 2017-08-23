@@ -1199,10 +1199,6 @@
 				CLIUtils::addError(_t('You must specify a data source for import'));
 				return false;
 			}
-			if (!$vs_data_source) {
-				CLIUtils::addError(_t('You must specify a source'));
-				return false;
-			}
 			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
 				CLIUtils::addError(_t('You must specify a mapping'));
 				return false;
@@ -4021,16 +4017,12 @@
                                 }
                             }
                             break;
-                        // other service types are no cacheable
+                        // other service types are not cacheable
                     }
                 }
             }
 			
 			CLIUtils::addMessage(_t("Added %1 templates; updated %2 templates"));
-			
-			//if (is_array($va_results['errors']) && sizeof($va_results['errors'])) {
-			//	CLIUtils::addError(_t("Templates with errors: %1", join(", ", array_keys($va_results['errors']))));
-			//}
 		}
 		# -------------------------------------------------------
 		public static function precache_simple_servicesParamList() {
@@ -4059,6 +4051,273 @@
 		 */
 		public static function precache_simple_servicesHelp() {
 			return _t('Pre-cache responses for appropriately configurated simple services. Caching can dramatically improve performance for services providing infrequently changing data.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_media($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
+			
+			$o_dm = Datamodel::load();
+			
+			if (!caCheckMediaDirectoryPermissions()) {
+			    CLIUtils::addError(_t('The media directory is not writeable by the current user. Try again, running the import as the web server user.'));
+				return false;
+			}
+
+			if (!($vs_data_source = $po_opts->getOption('source'))) {
+				CLIUtils::addError(_t('You must specify a directory to import media from'));
+				return false;
+			}
+			if (!$vs_data_source) {
+				CLIUtils::addError(_t('You must specify a source'));
+				return false;
+			}
+			
+			if (($vs_add_to_set = $po_opts->getOption('add-to-set')) && (!($t_set = ca_sets::find(['set_code' => $vs_add_to_set], ['returnAs' => 'firstModelInstance'])))) {
+				CLIUtils::addError(_t('Set %1 does not exist', $vs_add_to_set));
+				return false;
+			}
+			if ($t_set && ((int)$t_set->get('table_num') !== (int)$t_mapping->get('table_num'))) {
+				CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
+				return false;
+			}
+			
+			$vn_user_id = null;
+			if ($vs_user_name = $po_opts->getOption('username')) {
+				if ($t_user = ca_users::find(['user_name' => $vs_user_name], ['returnAs' => 'firstModelInstance'])) {
+				    $vn_user_id = $t_user->getPrimaryKey();
+				} else {
+				    CLIUtils::addError(_t('User name %1 is not valid', $vs_user_name));
+				    return false;
+				}
+			} else {
+			    CLIUtils::addError(_t('A user name to attribute the import to must be specified'));
+				return false;
+			}
+			
+			$vs_import_mode = $po_opts->getOption('import-mode');
+			if (!in_array($vs_import_mode, ['TRY_TO_MATCH', 'ALWAYS_MATCH'])) {
+				CLIUtils::addMessage(_t('Setting import mode to default value TRY_TO_MATCH'));
+				$vs_import_mode = 'TRY_TO_MATCH';
+			}
+			$vs_match_mode = $po_opts->getOption('match-mode');
+			if (!in_array($vs_match_mode, ['DIRECTORY_NAME', 'DIRECTORY_NAME', 'FILE_NAME'])) {
+				CLIUtils::addMessage(_t('Setting match mode to default value FILE_NAME'));
+				$vs_match_mode = 'FILE_NAME';
+			}
+			$vs_match_type = $po_opts->getOption('match-type');
+			if (!in_array($vs_match_type, ['STARTS', 'ENDS', 'CONTAINS', 'EXACT'])) {
+				CLIUtils::addMessage(_t('Setting match type to default value EXACT'));
+				$vs_match_type = 'EXACT';
+			}
+			
+			if (!($vs_import_target = $po_opts->getOption('import-target'))) {
+			    $vs_import_target = 'ca_objects';
+			    CLIUtils::addMessage(_t('Setting import target to default %1.', $vs_import_target));
+			}
+			$t_instance = $o_dm->getInstance($vs_import_target);
+			if (!$t_instance || !is_subclass_of($t_instance, 'RepresentableBaseModel')) {
+				CLIUtils::addMessage(_t('Import target %1 is invalid. Defaulting to ca_objects.', $vs_import_target));
+				$vs_import_target = 'ca_objects';
+			}
+			if (!($t_instance = $o_dm->getInstanceByTableName($vs_import_target, true))) {
+			    CLIUtils::addError(_t('Import target %1 is invalid.', $vs_import_target));
+			    return false;
+			}
+			$vs_import_target_idno_mode = $po_opts->getOption('import-target-idno-mode');
+			if (!in_array($vs_import_target_idno_mode, ['AUTO', 'FILENAME', 'FILENAME_NO_EXT', 'DIRECTORY_AND_FILENAME'])) {
+				CLIUtils::addMessage(_t('Setting target identifier type to default value AUTO'));
+				$vs_import_target_idno_mode = '';
+			}
+			$vs_representation_idno_mode = $po_opts->getOption('representation-idno-mode');
+			if (!in_array($vs_representation_idno_mode, ['AUTO', 'FILENAME', 'FILENAME_NO_EXT', 'DIRECTORY_AND_FILENAME'])) {
+				CLIUtils::addMessage(_t('Setting representation identifier type to default value AUTO'));
+				$vs_representation_idno_mode = '';
+			}
+		
+			$vn_type_id = null;
+			if ($vs_import_target_type = $po_opts->getOption('import-target-type')) {
+			    $vn_type_id = $t_instance->getTypeIDForCode($vs_import_target_type);
+			}
+			if (!$vn_type_id) {
+			    $vn_type_id = array_shift($t_instance->getTypeList(['idsOnly' => true]));
+			    CLIUtils::addMessage(_t('Setting target type to default %1', $t_instance->getTypeCodeForID($vn_type_id)));
+			}
+			
+			$vn_rep_type_id = null;
+			$t_rep = new ca_object_representations();
+			if ($vs_rep_type = $po_opts->getOption('representation-type')) {
+			    $vn_rep_type_id = $t_rep->getTypeIDForCode($vs_rep_type);
+			}
+			if (!$vn_rep_type_id) {
+			    $vn_rep_type_id = array_shift($t_rep->getTypeList(['idsOnly' => true]));
+			    CLIUtils::addMessage(_t('Setting representation type to default %1', $t_rep->getTypeCodeForID($vn_rep_type_id)));
+			}
+			
+			$vn_access = null;
+			if ($vs_import_target_access = $po_opts->getOption('import-target-access')) {
+			    $vn_access = caGetListItemID('access_statuses', $vs_import_target_access);
+			}
+			if (!$vn_access) {
+			    $vn_id = caGetDefaultItemID('access_statuses');
+			    $vn_access = caGetListItemValueForID($vn_id);
+			    CLIUtils::addMessage(_t('Setting target access to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			}
+
+			$vn_rep_access = null;
+			if ($vs_rep_access = $po_opts->getOption('import-representation-access')) {
+			    $vn_rep_access = caGetListItemID('access_statuses', $vs_import_target_access);
+			}
+			if (!$vn_rep_access) {
+			    $vn_id = caGetDefaultItemID('access_statuses');
+			    $vn_rep_access = caGetListItemValueForID($vn_id);
+			    CLIUtils::addMessage(_t('Setting representation access to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			}
+			
+			$vn_status = null;
+			if ($vs_import_target_status = $po_opts->getOption('import-target-status')) {
+			    $vn_status = caGetListItemID('workflow_statuses', $vs_import_target_status);
+			}
+			if (!$vn_status) {
+			    $vn_id = caGetDefaultItemID('workflow_statuses');
+			    $vn_status = caGetListItemValueForID($vn_id);
+			    CLIUtils::addMessage(_t('Setting target status to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			}
+
+			$vn_rep_status = null;
+			if ($vs_rep_status = $po_opts->getOption('import-representation-status')) {
+			    $vn_rep_status = caGetListItemID('workflow_statuses', $vs_import_target_status);
+			}
+			if (!$vn_rep_status) {
+			    $vn_id = caGetDefaultItemID('workflow_statuses');
+			    $vn_rep_status = caGetListItemValueForID($vn_id);
+			    CLIUtils::addMessage(_t('Setting representation status to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			}
+			
+			$vn_mapping_id = null;
+			if ($vs_mapping_code = $po_opts->getOption('representation-mapping')) {
+			    if($t_mapping = ca_data_importers::mappingExists($vs_mapping_code)) {
+			        if ($t_mapping->get('table_num') == $t_instance->tableNum()) {
+			            $vn_mapping_id = $t_mapping->getPrimaryKey();
+			        } else {
+			             CLIUtils::addError(_t('Mapping %1 does not exist', $vs_mapping_code));
+			        }
+			    } else {
+			        CLIUtils::addError(_t('Mapping %1 is not for target %2', $vs_mapping_code, $vs_import_target));
+			    }
+			}
+			
+			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback'); 
+
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+
+            $va_opts = [
+                'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
+                'addToSet' => $vs_add_to_set,
+                'importTarget' => $vs_import_target,
+                'user_id' => $vn_user_id,
+                'importFromDirectory' => $vs_data_source,
+                'importMode' => $vs_import_mode,
+                'matchMode' => $vs_match_mode,
+                'matchType' => $vs_match_type,
+                'allowDuplicateMedia' => (bool)$po_opts->getOption('allow-duplicate-media'),
+                'includeSubDirectories' => (bool)$po_opts->getOption('include-subdirectories'),
+                'deleteMediaOnImport' => (bool)$po_opts->getOption('delete-media-on-import'),
+                
+                'idno' => (string)$po_opts->getOption('import-target-idno'),
+                'idnoMode' => $vs_import_target_idno_mode,
+                'representationIdnoMode' => $vs_representation_idno_mode,
+                'representation_idno' => (string)$po_opts->getOption('representation-idno'),
+                
+                $vs_import_target.'__mapping_id' => $vn_mapping_id,
+                
+                $vs_import_target.'_type_id' => $vn_type_id,
+                'ca_object_representations_type_id' => $vn_rep_type_id,
+                
+                $vs_import_target.'_access' => $vn_access,
+                'ca_object_representations_access' => $vn_rep_access,
+                
+                $vs_import_target.'_status' => $vn_status,
+                'ca_object_representations_status' => $vn_rep_status,
+                
+                'progressCallback' => function($r, $c, $total, $message, $time, $memory, $notices, $errors) {
+                    print CLIProgressBar::seek($c, $message);
+                },
+                'reportCallback' => function($r, $general, $notices, $errors) {
+                    print CLIProgressBar::finish();
+                }
+            ];
+            $va_counts = caGetDirectoryContentsCount($vs_data_source, (bool)$po_opts->getOption('include-subdirectories'));
+            
+            if ((bool)$po_opts->getOption('include-subdirectories')) {
+                CLIUtils::addMessage(_t('Found %1 files in %2 directories', $va_counts['files'], $va_counts['directories']));
+            } else {
+                CLIUtils::addMessage(_t('Found %1 files', $va_counts['files']));
+            }
+            print CLIProgressBar::start($va_counts['files'], _t('Processing media'));
+			if (!BatchProcessor::importMediaFromDirectory(null, $va_opts)) {
+				CLIUtils::addError(_t("Could not import media from %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
+				return false;
+			} else {
+				CLIUtils::addMessage(_t("Imported media from source %1", $vs_data_source));
+				return true;
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_mediaParamList() {
+			return array(
+				"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
+				"username|u-s" => _t('User name of user to log import against.'),
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+				"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
+				"log-to-tmp-directory-as-fallback|f-s" => _t('Use the system temporary directory for the import log if the application logging directory is not writable. Default report an error if the application log directory is not writeable.'),
+				"include-subdirectories|i-s" => _t('Process media in sub-directories. Default is false.'),
+				"match-type|mt-s" => _t('Sets how match between media and target record identifier is made. Valid values are: STARTS, ENDS, CONTAINS, EXACT. Default is EXACT.'),
+				"match-mode|m-s" => _t('Determines how matches are made between media and records. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES, FILE_NAME. Set to DIRECTORY_NAME to match media directory names to target record identifiers; to FILE_AND_DIRECTORY_NAMES to match on both file and directory names; to FILE_NAME to match only on file names. Default is FILE_NAME.'),
+				"import-mode" => _t('Determines if target records are created for media that do not match existing target records. Set to TRY_TO_MATCH to create new target records when no match is found. Set to ALWAYS_MATCH to only import media for existing records. Default is TRY_TO_MATCH.'),
+				'allow-duplicate-media|du-s' => _t('Import media even if it already exists in CollectiveAccess. Default is false – skip import of duplicate media.'),
+				'import-target|it-s' => _t('Table name of record to import media into. Should be a valid representation-taking table such as ca_objects, ca_entities, ca_occurrences, ca_places, etc. Default is ca_objects.'),
+				'import-target-type|itt-s' => _t('Type to use for all newly created target records. Default is the first type in the target\'s type list.'),
+				'import-target-idno|iti-s' => _t('Identifier to use for all newly created target records.'),
+				'import-target-idno-mode|itim-s' => _t('Sets how identifiers of newly created target records are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory name and file name with extension. Default is AUTO.'),
+				'import-target-access|ita-s' => _t('Set access for newly created target records. Default is private.'),
+				'import-target-status|its-s' => _t('Set status for newly created target records. Default is first value in status list.'),
+				'representation-type|rt-s' => _t('Type to use for all newly created representations. Default is the first type in the representation type list.'),
+				'representation-idno|ri-s' => _t('Identifier to use for all newly created representation records.'),
+				'representation-idno-mode|rim-s' => _t('Sets how identifiers of newly created representations are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory name and file name with extension. Default is AUTO.'),
+				'representation-access|ra-s' => _t('Set access for newly created representations. Default is private.'),
+				'representation-status|rs-s' => _t('Set status for newly created representations. Default is first value in status list.'),
+				'representation-mapping|rm-s' => _t('Code for mapping to apply when importing media.'),
+				'delete-media-on-import|dmoi-s' => _t('Remove media from directory after it has been successfully imported. Default is false.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_mediaUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_mediaShortHelp() {
+			return _t("Import media.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_mediaHelp() {
+			return _t("Import media from a directory or directory tree.");
 		}
 		# -------------------------------------------------------
 	}
