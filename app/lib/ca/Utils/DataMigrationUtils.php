@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -713,18 +713,37 @@
 					}
 					foreach($va_values as $va_value) {
 						if (is_array($va_value)) {
+						    if (($vs_delimiter = caGetOption('delimiter', $va_value, null)) && !sizeof(array_filter($va_value, function($v) { return is_array($v); }))) {
+						        $va_split_values = $va_expanded_values = [];
+						        foreach($va_value as $vs_k => $vs_v) {
+						            if(is_array($vs_v)) { continue; }
+						            if(in_array($vs_k, ['delimiter', 'matchOn'])) { continue; }
+						            
+						            $va_split_values[$vs_k] = explode($vs_delimiter, $vs_v);
+						       }
+						       foreach($va_split_values as $vs_k => $va_v) {
+						            foreach($va_v as $vn_i => $vs_v) {
+						                $va_expanded_values[$vn_i][$vs_k] = trim($vs_v);
+						            }
+						       }
+						    } else {
+						        $va_expanded_values = [$va_value];
+						    }
+						    
 							// array of values (complex multi-valued attribute)
-							$pt_instance->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element, null, ['skipExistingValues' => true]);
+							foreach($va_expanded_values as $va_v) {
+                                $pt_instance->addAttribute(
+                                    array_merge($va_v, array(
+                                        'locale_id' => $pn_locale_id
+                                    )), $vs_element, null, ['skipExistingValues' => true, 'matchOn' => caGetOption('matchOn', $va_values, null)]);
+                            }
 						} else {
 							// scalar value (simple single value attribute)
 							if ($va_value) {
 								$pt_instance->addAttribute(array(
 									'locale_id' => $pn_locale_id,
 									$vs_element => $va_value
-								), $vs_element, null, ['skipExistingValues' => true]);
+								), $vs_element, null, ['skipExistingValues' => true, 'matchOn' => caGetOption('matchOn', $va_values, null)]);
 							}
 						}
 						if ($vb_separate_updates) {
