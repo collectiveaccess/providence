@@ -286,7 +286,7 @@ class ca_attributes extends BaseModel {
 			    $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
 			}
 			
-			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options)) === false) {
+			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, array_merge($pa_options, ['t_attribute' => $this]))) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->addAttribute()');
 				$vb_dont_create_attribute = false;	// this causes an error to be displayed to the user, which is what we want here
 				break;
@@ -411,7 +411,7 @@ class ca_attributes extends BaseModel {
 				$vm_value = $pa_values[$va_element['element_code']];
 			}
 			
-			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options) === false) {
+			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, array_merge($pa_options, ['t_attribute' => $this])) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				break;
 			}
@@ -914,6 +914,20 @@ class ca_attributes extends BaseModel {
 
 		MemoryCache::save($this->getPrimaryKey(), $vs_element_code, 'AttributeToElementCodeCache');
 		return $vs_element_code;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getRowInstance() {
+		if(!$this->getPrimaryKey()) { return false; }
+
+        $o_dm = Datamodel::load();
+        if (($t_instance = $o_dm->getInstanceByTableNum($this->get('table_num'), true)) && ($t_instance->load($this->get('row_id')))) {
+            return $t_instance;
+        }
+        
+		return null;
 	}
 	# ------------------------------------------------------
 	/**

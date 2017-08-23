@@ -150,7 +150,8 @@
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
-			                if ($pa_values[$vn_element_id] != $o_value->getDisplayValue()) {
+			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
+			                if ($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $o_value->getDisplayValue())) {
 			                    continue(2);
 			                }
 			            }
