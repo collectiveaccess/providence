@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,16 +28,14 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
-	
+ */	
 # --------------------------------------------------------------------------------------------
 /**
  * Display exception error screen
  * @param Exception $e
  */
 function caDisplayException(Exception $e) {
+    if (defined("__CA_LIB_DIR__")) { require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php'); }
 	if(!is_a($e, "DatabaseException") && class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
 
 	$pn_errno = 0;
