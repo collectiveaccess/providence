@@ -878,7 +878,7 @@ class DisplayTemplateParser {
 		
 		$va_get_specs = [];
 		foreach(array_keys($pa_tags) as $vs_tag) {
-			// Apply placeholder prefix to any tag except the "specials"
+		    // Apply placeholder prefix to any tag except the "specials"
 			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index', 'omitcount'])) {
 				$va_tag = explode(".", $vs_tag);
 				$vs_get_spec = $vs_tag;
@@ -906,10 +906,10 @@ class DisplayTemplateParser {
 			$va_get_specs[$vs_tag] = [
 				'spec' => $vs_get_spec,
 				'parsed' => $va_parsed_tag_opts,
-				'isRelated' => $vs_table !== $vs_spec_table
+				'isRelated' => $vs_table !== $vs_spec_table,
+				'modifiers' => $va_parsed_tag_opts['modifiers']
 			];
 		}
-		
 		
 		$vn_count = 1;
 		$va_tag_vals = null;
@@ -971,7 +971,6 @@ class DisplayTemplateParser {
 		}
 		
 		$va_vals = [];
-		
 		$vb_val_is_referenced = $vb_val_is_set = $vb_rel_type_is_set = false;
 		for($vn_c = 0; $vn_c < $vn_count; $vn_c++) {
 			foreach(array_keys($pa_tags) as $vs_tag) {
@@ -1044,6 +1043,11 @@ class DisplayTemplateParser {
                                 }
                             }
 						}
+						
+						if (is_array($va_parsed_tag_opts['modifiers']) && (sizeof($va_parsed_tag_opts['modifiers']) > 0)) {
+						    $va_val_list = array_map(function($v) use ($va_parsed_tag_opts) { return caProcessTemplateTagDirectives($v, $va_parsed_tag_opts['modifiers']); }, $va_val_list);
+						}
+						
 						$vb_val_is_referenced = true;														// Flag that a data value is in the template 
 						if(!$pb_include_blanks) { $va_val_list = array_filter($va_val_list, 'strlen'); }
 						if(sizeof($va_val_list)) { $vb_val_is_set = true; }									// Flag that the data value was set to something
@@ -1186,6 +1190,10 @@ class DisplayTemplateParser {
 		$va_skip_opts = ['checkAccess'];
 		$va_tag_opts = $va_tag_opts = [];
 		
+		$va_tmp = explode('~', $ps_get_spec);
+		$ps_get_spec = $va_tmp[0];
+		if (!is_array($va_modifiers = array_slice($va_tmp, 1))) { $va_modifiers = null; }
+		
 		$va_tmp = explode('.', $ps_get_spec);
 		$vs_last_element = $va_tmp[sizeof($va_tmp)-1];
 		$va_tag_opt_tmp = preg_split("![\%\&]{1}!", $vs_last_element);
@@ -1221,7 +1229,7 @@ class DisplayTemplateParser {
 			$ps_get_spec = $vs_tag_proc;
 		}
 		
-		return ['tag' => $ps_get_spec, 'options' => $va_tag_opts, 'filters' => $va_tag_filters];
+		return ['tag' => $ps_get_spec, 'options' => $va_tag_opts, 'filters' => $va_tag_filters, 'modifiers' => $va_modifiers];
 	}
 	# -------------------------------------------------------------------
 	/**
@@ -1517,7 +1525,8 @@ class DisplayTemplateParser {
 		
 		foreach($va_tags as $vs_tag) {
 			$va_tmp = explode("~", $vs_tag);
-			$vs_proc_tag = array_shift($va_tmp);
+			$vs_proc_tag = $vs_tag;
+			
 			if ($ps_remove_prefix) {
 				$vs_proc_tag = str_replace($ps_remove_prefix, '', $vs_proc_tag);
 			}
@@ -1525,8 +1534,8 @@ class DisplayTemplateParser {
 				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
 			}
 			
-			if ($t_instance && !isset($pa_values[$vs_proc_tag])) {
-				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($vs_proc_tag, $pa_options), $va_tmp);
+			if ($t_instance && !isset($pa_values[$vs_tag])) {
+				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($va_tmp[0], $pa_options), array_slice($va_tmp, 1));
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
