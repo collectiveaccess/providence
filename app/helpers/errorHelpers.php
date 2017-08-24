@@ -30,13 +30,15 @@
  * ----------------------------------------------------------------------
  */
 
+	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+	
 # --------------------------------------------------------------------------------------------
 /**
  * Display exception error screen
  * @param Exception $e
  */
 function caDisplayException(Exception $e) {
-	if(class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
+	if(!is_a($e, "DatabaseException") && class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
 
 	$pn_errno = 0;
 	$ps_errstr = $e->getMessage();
