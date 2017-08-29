@@ -150,7 +150,6 @@
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
-			                print_R($pa_values);
 			                if ($pa_values[$vn_element_id] != $o_value->getDisplayValue()) {
 			                    continue(2);
 			                }

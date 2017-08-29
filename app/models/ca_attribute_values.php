@@ -250,6 +250,8 @@ class ca_attribute_values extends BaseModel {
 	 * @param string $ps_value The user-input value to parse
 	 * @param array $pa_element_info An array of information about the element for which this value will be set
 	 * @param int $pn_attribute_id The attribute_id of the attribute to add the value to
+	 * @param array $pa_options Options include:
+	 *      skipExistingValues = attempt to detect and skip values already attached to the specified row to which the attribute is bound. [Default is false]
 	 *
 	 * @return int Returns the value_id of the newly created value. If the value cannot be added due to an error, false is returned. "Silent" failures, for which the user should not see an error message, are indicated by a null return value.
 	 */
@@ -270,6 +272,26 @@ class ca_attribute_values extends BaseModel {
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
 		
 		if (is_array($va_values)) {
+		    if ((caGetOption('skipExistingValues', $pa_options, false)) && ($t_attr = caGetOption('t_attribute', $pa_options, null)) && ($t_instance = $t_attr->getRowInstance())) {
+                if(is_array($va_attrs = $t_instance->getAttributesByElement($vn_attr_element_id = $t_attr->get('element_id')))){
+                    $o_attr_value->loadTypeSpecificValueFromRow($va_values);
+                    $vs_new_value = (string)$o_attr_value->getDisplayValue($pa_options);
+                    
+                    $vb_already_exists = false;
+                    foreach($va_attrs as $o_attr) {
+                        foreach($o_attr->getValues() as $o_val) {
+                            if ((int)$o_val->getElementID() !== (int)$pa_element_info['element_id']) { continue; }
+                            $vs_old_value = (string)$o_val->getDisplayValue($pa_options);
+                            if (strlen($vs_old_value) && strlen($vs_new_value) && ($vs_old_value === $vs_new_value)) {
+                                return null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+		
+		
 			$this->useBlobAsFileField(false);
 			if (!$o_attr_value->numErrors()) {
 				foreach($va_values as $vs_key => $vs_val) {
