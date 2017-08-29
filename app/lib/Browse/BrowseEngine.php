@@ -2027,6 +2027,7 @@
 					if (caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = Datamodel::getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) { 
 
                        foreach($va_acc as $vn_i => $va_acc_content) {
+                            if(!sizeof($va_acc_content)) { continue; }
                             $qr_expand =  $this->opo_db->query("
                                 SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
                                 FROM ".$this->ops_browse_table_name."
@@ -2750,8 +2751,7 @@
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
 							$va_joins = $va_joins_init;
-
-
+							
 							if (!(bool)$va_state_info['id']) {	// no option
 								$vn_num_wheres = sizeof($va_wheres);
 								
@@ -3004,13 +3004,13 @@
 
 						return ((int)$qr_res->numRows() > 0) ? true : false;
 					} else {
-						$vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD');
+						$vs_parent_fld_select = (($vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD')) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '');
 						$vs_sql = "
-							SELECT COUNT(*) as _count, ".$t_item->primaryKey(true).", l.* ".(($vs_parent_fld) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '')."
+							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
-							GROUP BY l.{$vs_label_display_field}
+							GROUP BY l.{$vs_label_display_field} {$vs_parent_fld_select}, l.locale_id
 							ORDER BY l.{$vs_label_display_field}
 						";
 
@@ -3021,8 +3021,9 @@
 						$vn_parent_id = null;
 
 						$va_unique_values = array();
+						$vn_id = 0;
 						while($qr_res->nextRow()) {
-							$vn_id = $qr_res->get($t_item->primaryKey());
+							$vn_id++;
 
 							if ($vs_parent_fld) {
 								$vn_parent_id = $qr_res->get($vs_parent_fld);
@@ -3162,7 +3163,7 @@
 							{$vs_join_sql}
 							WHERE
 								ca_attribute_values.element_id = ? {$vs_where_sql}
-						    GROUP BY value_longtext1	
+						    GROUP BY value_longtext1, value_decimal1, value_longtext2, value_integer1	
 						";
 						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
 
@@ -3671,7 +3672,8 @@
 								{$vs_join_sql}
 								WHERE
 									ca_lists.list_code = ?  AND lil.is_preferred = 1 {$vs_where_sql}
-								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort {$vs_order_by}
+								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort 
+								{$vs_order_by}
 								";
 							//print $vs_sql." [$vs_list_name]";
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
@@ -4501,13 +4503,22 @@
 						// If a date criterion is already set then force current facet to only return values within the
 						// envelope set by the existing criterion.
 						if (is_array($va_current_criteria = $this->getCriteria())) {
+						    $vn_min = $vn_max = null;
 							foreach($va_current_criteria as $vs_criteria_facet => $va_criteria_values) {
 								if (is_array($va_criteria_facet_info = $this->getInfoForFacet($vs_criteria_facet))) {
 									if ($va_criteria_facet_info['type'] == 'normalizedDates') {
 										foreach(array_keys($va_criteria_values) as $vs_date) {
 											if ($o_tep->parse($vs_date)) {
-												$va_facet_info['minimum_date'] = $o_tep->getText(['start_as_iso8601' => true]);
-												$va_facet_info['maximum_date'] = $o_tep->getText(['end_as_iso8601' => true]);
+											    $va_ts = $o_tep->getHistoricTimestamps();
+											 
+											    if (is_null($vn_min) || ($va_ts['start'] < $vn_min)) {
+												    $va_facet_info['minimum_date'] = $o_tep->getText(['start_as_iso8601' => true]);
+												    $vn_min = $va_ts['start'];
+												}
+												if (is_null($vn_max) || ($va_ts['end'] > $vn_max)) {
+												    $va_facet_info['maximum_date'] = $o_tep->getText(['end_as_iso8601' => true]);
+												    $vn_max = $va_ts['end'];
+												}
 											}
 										}
 									}
@@ -4959,10 +4970,8 @@
 					// look up relationship type restrictions
 					$va_restrict_to_relationship_types = $this->_getRelationshipTypeIDs($va_restrict_to_relationship_types, $va_facet_info['relationship_table']);
 					$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table']);
-					$va_joins = array();
-					$va_selects = array();
-					$va_wheres = array();
-					$va_orderbys = array();
+					
+					$va_joins = $va_selects = $va_select_flds =  $va_wheres = $va_orderbys = [];
 
 if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) {
 					$vs_cur_table = array_shift($va_path);
@@ -5064,6 +5073,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							$va_selects[] = $t_rel_item->tableName().'.'.$vs_hier_id_fld;
 						}
 					}
+					
+					$va_select_flds = $va_selects;
 
 					// analyze group_fields (if defined) and add them to the query
 					$va_groupings_to_fetch = array();
@@ -5072,12 +5083,14 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							// is grouping type_id?
 							if (($vs_grouping === 'type') && $t_rel_item->hasField('type_id')) {
 								$va_selects[] = $t_rel_item->tableName().'.type_id';
+								$va_select_flds[] = $t_rel_item->tableName().'.type_id';
 								$va_groupings_to_fetch[] = 'type_id';
 							}
 
 							// is group field a relationship type?
 							if ($vs_grouping === 'relationship_types') {
 								$va_selects[] = $va_facet_info['relationship_table'].'.type_id rel_type_id';
+								$va_select_flds[] = $va_facet_info['relationship_table'].'.type_id';
 								$va_groupings_to_fetch[] = 'rel_type_id';
 							}
 
@@ -5191,9 +5204,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 	}                  
-	                    $vs_sql .= " GROUP BY ".$t_rel_item->primaryKey(true);
+	                    $vs_sql .= " GROUP BY ".join(', ', $va_select_flds);
 						//print "<hr>$vs_sql<hr>\n";
-
 						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
 
 						$va_facet = $va_facet_items = array();
