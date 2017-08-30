@@ -567,7 +567,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Set rank of duplicated record such that it immediately follows its original
-		if($t_dupe->getProperty('RANK')) {
+		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')) > 0)) {
 			$t_dupe->setRankAfter($this->getPrimaryKey());
 		}
 		
