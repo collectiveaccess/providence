@@ -465,9 +465,9 @@ class ca_change_log extends BaseModel {
 								goto deflabel;
 							} elseif($t_instance) {
 								if($t_instance instanceof BaseRelationshipModel) {
-									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { continue(3); }
+									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { continue(2); }
 								} elseif($t_instance instanceof BaseModel) {
-									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(3); }
+									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
 							} else {
 								$va_snapshot = ['SKIP' => true];

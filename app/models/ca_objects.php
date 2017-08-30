@@ -622,6 +622,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if ($t_lot->load(array('idno_stub' => $vs_val))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
 					$pm_fields[$vs_fld] = $vn_lot_id;
+				} else {
+					return false;
 				}
 			}
 		}
@@ -939,9 +941,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		// Loans
-		$va_loans = $this->get('ca_objects_x_loans.relation_id', array('returnAsArray' => true));
+		$va_loans = $this->get('ca_loans_x_objects.relation_id', array('returnAsArray' => true));
 		if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans) && sizeof($va_loans)) {	
-			$qr_loans = caMakeSearchResult('ca_objects_x_loans', $va_loans);
+			$qr_loans = caMakeSearchResult('ca_loans_x_objects', $va_loans);
 			
 			$t_loan = new ca_loans();
 			$va_loan_type_info = $t_loan->getTypeList(); 
@@ -1011,9 +1013,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		// Movements
-		$va_movements = $this->get('ca_objects_x_movements.relation_id', array('returnAsArray' => true));
+		$va_movements = $this->get('ca_movements_x_objects.relation_id', array('returnAsArray' => true));
 		if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements) && sizeof($va_movements)) {	
-			$qr_movements = caMakeSearchResult('ca_objects_x_movements', $va_movements);
+			$qr_movements = caMakeSearchResult('ca_movements_x_objects', $va_movements);
 			
 			$t_movement = new ca_movements();
 			$va_movement_type_info = $t_movement->getTypeList(); 
@@ -1030,7 +1032,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			while($qr_movements->nextHit()) {
 				$vn_movement_id = $qr_movements->get('ca_movements.movement_id');
 				if ((string)$qr_movements->get('ca_movements.deleted') !== '0') { continue; }	// filter out deleted
-				$vn_type_id = $qr_movements->get('type_id');
+				$vn_type_id = $qr_movements->get('ca_movements.type_id');
 				
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
@@ -1433,10 +1435,10 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	# ------------------------------------------------------
 	private function _processObjectHistoryBundleSettings($pa_bundle_settings) {
 
-		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_critiera = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_critiera)) {
+		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_criteria = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_criteria)) {
 			// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
 			$va_bundle_settings = array();
-			foreach($va_current_location_critiera as $vs_table => $va_info) {
+			foreach($va_current_location_criteria as $vs_table => $va_info) {
 				switch($vs_table) {
 					case 'ca_storage_locations':
 						if(is_array($va_info)) {
@@ -1494,9 +1496,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
 						'hide_add_to_occurrence_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection'
 					) as $vs_key) {
-				if (isset($va_current_location_critiera[$vs_key]) && $vb_use_app_defaults) {
-					$va_bundle_settings[$vs_key] = $va_current_location_critiera[$vs_key];
-				} else {
+				if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
+					$va_bundle_settings[$vs_key] = $va_current_location_criteria[$vs_key];
+				} elseif(!$vb_use_app_defaults || !in_array($vs_key, ['sortDirection'])) {
 					$va_bundle_settings[$vs_key] = $pa_bundle_settings[$vs_key];
 				}
 			}

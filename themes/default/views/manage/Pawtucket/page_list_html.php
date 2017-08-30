@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,13 +28,15 @@
  
  	$t_page				= $this->getVar('t_page');
 	$va_page_list 		= $this->getVar('page_list');
+	
+	$vs_page_select     = ca_site_templates::getTemplateListAsHTMLSelect(['id' => 'templateList']);
 
-	$vs_site_page_template_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
+	$vs_site_page_template_menu = $vs_page_select ? '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
 						'<div class="caNavHeaderIcon">'.
 							'<a href="#" onclick="_navigateToNewForm(jQuery(\'#templateList\').val(), jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 						'</div>'.
-					'<form action="#">'._t('New %1 page', ca_site_templates::getTemplateListAsHTMLSelect(['id' => 'templateList'])).'</form>'.
-					'</div>';
+					'<form action="#">'._t('New %1 page', $vs_page_select).'</form>'.
+					'</div>' : '';
 ?>
 <script type="text/javascript">
 	jQuery(document).ready(function(){
@@ -114,7 +116,7 @@
 		<tr>
 			<td colspan='8'>
 				<div align="center">
-					<?php print _t('No pages have been created'); ?>
+					<?php print $vs_page_select ? _t('No pages have been created') : _t('No page templates are been defined'); ?>
 				</div>
 			</td>
 		</tr>

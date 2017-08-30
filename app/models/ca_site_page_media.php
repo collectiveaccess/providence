@@ -61,7 +61,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Representation identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this media.'),
+				'LABEL' => _t('Media identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this media.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'idno_sort' => array(
@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Sortable representation identifier', 'DESCRIPTION' => 'Value used for sorting media on identifier value.',
+				'LABEL' => 'Sortable media identifier', 'DESCRIPTION' => 'Value used for sorting media on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'caption' => array(

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
  
 require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
 require_once(__CA_MODELS_DIR__.'/ca_site_templates.php');
+require_once(__CA_MODELS_DIR__.'/ca_site_page_media.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
@@ -117,7 +118,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this page.'
+				'LABEL' => _t('View count'), 'DESCRIPTION' => _t('Number of views for this page.')
 		)
  	)
 );
@@ -234,6 +235,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_site_pages_content'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Page content'));
+		$this->BUNDLES['ca_site_page_media'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Page media'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -267,6 +269,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array An array of arrays, each of which contains fields values for a content tag present in the page template.
 	 */
 	public function getHTMLFormElements($pa_options=null) {
+	    if(!is_array($pa_options)) { $pa_options = []; }
 		if (!($vn_template_id = $this->get('template_id'))) { return null; }
 		
 		if(!is_array($va_page_content = $this->get('content'))) { $va_page_content = []; }
@@ -387,6 +390,57 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
  		$o_view->setVar('t_template', new ca_site_templates($this->get('template_id')));
 		
 		return $o_view->render('ca_site_pages_content.php');
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle (ca_site_page_media) for media on page instance
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getPageMediaHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+ 		$o_view->setVar('t_page', $this);
+ 		$o_view->setVar('t_item', new ca_site_page_media());
+		
+		return $o_view->render('ca_site_page_media.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return the total number of media for current page. Return null if no page is loaded 
+	 *
+	 * @return int
+	 */
+	public function pageMediaCount($pa_options=null) {
+	    if (!($vn_page_id = $this->getPrimaryKey())) { return null; }
+		return ca_site_page_media::find(['page_id' => $vn_page_id], ['returnAs' => 'count']);
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * Return the total number of media for current page. Return null if no page is loaded 
+	 *
+	 * @return int
+	 */
+	public function getPageMedia($pa_options=null) {
+	    if (!($vn_page_id = $this->getPrimaryKey())) { return null; }
+		return ca_site_page_media::find(['page_id' => $vn_page_id], ['returnAs' => 'array']);
 	}
 	# ------------------------------------------------------
 }

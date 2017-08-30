@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -460,6 +460,7 @@
 		 * Compare file name to entries in skip-file list and return true if file matches any entry.
 		 */
 		private static function _skipFile($ps_file, $pa_skip_list) {
+		    if (preg_match("!SynoResource!", $ps_file)) { return true; }        // skip Synology res files
 			foreach($pa_skip_list as $vn_i => $vs_skip) {
 				if (strpos($vs_skip, "*") !== false) {
 					// is wildcard
@@ -505,26 +506,32 @@
 			$o_log = new KLogger($vs_log_dir, $vn_log_level);
 
 			$vs_import_target = caGetOption('importTarget', $pa_options, 'ca_objects');
-			$t_instance = $po_request->getAppDatamodel()->getInstance($vs_import_target);
+			
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstance($vs_import_target);
+			
+			$o_config = Configuration::load();
 
  			$o_eventlog = new Eventlog();
  			$t_set = new ca_sets();
 
  			$va_notices = $va_errors = array();
 
- 			$vb_we_set_transaction = false;
- 			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
- 			if (!$o_trans) {
- 				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction($t_set->getDb());
- 			}
+ 			//$vb_we_set_transaction = false;
+ 			//$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
+ 			//if (!$o_trans) {
+ 			//	$vb_we_set_transaction = true;
+ 			//	$o_trans = new Transaction($t_set->getDb());
+ 			//}
+
+            $vn_user_id = caGetOption('user_id', $pa_options, $po_request ? $po_request->getUserID() : null);
 
  			$o_batch_log = new Batchlog(array(
- 				'user_id' => $po_request->getUserID(),
+ 				'user_id' => $vn_user_id,
  				'batch_type' => 'MI',
  				'table_num' => (int)$t_instance->tableNum(),
  				'notes' => '',
- 				'transaction' => $o_trans
+ 				//'transaction' => $o_trans
  			));
 
  			if (!is_dir($pa_options['importFromDirectory'])) {
@@ -537,7 +544,7 @@
  				return null;
  			}
 
- 			$vs_batch_media_import_root_directory = $po_request->config->get('batch_media_import_root_directory');
+ 			$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
  			if (!preg_match("!^{$vs_batch_media_import_root_directory}!", $pa_options['importFromDirectory'])) {
  				$o_eventlog->log(array(
 					"CODE" => 'ERR',
@@ -610,7 +617,7 @@
  				$t_set->load($vn_set_id);
  			} else {
  				if (($vs_set_mode == 'create') && ($vs_set_create_name)) {
- 					$va_set_ids = $t_set->getSets(array('user_id' => $po_request->getUserID(), 'table' => $t_instance->tableName(), 'access' => __CA_SET_EDIT_ACCESS__, 'setIDsOnly' => true, 'name' => $vs_set_create_name));
+ 					$va_set_ids = $t_set->getSets(array('user_id' => $vn_user_id, 'table' => $t_instance->tableName(), 'access' => __CA_SET_EDIT_ACCESS__, 'setIDsOnly' => true, 'name' => $vs_set_create_name));
  					$vn_set_id = null;
  					if (is_array($va_set_ids) && (sizeof($va_set_ids) > 0)) {
  						$vn_possible_set_id = array_shift($va_set_ids);
@@ -626,8 +633,8 @@
 
  					if (!$t_set->getPrimaryKey()) {
 						$t_set->setMode(ACCESS_WRITE);
-						$t_set->set('user_id', $po_request->getUserID());
-						$t_set->set('type_id', $po_request->config->get('ca_sets_default_type'));
+						$t_set->set('user_id', $vn_user_id);
+						$t_set->set('type_id', $o_config->get('ca_sets_default_type'));
 						$t_set->set('table_num', $t_instance->tableNum());
 						$t_set->set('set_code', $vs_set_code);
 
@@ -659,7 +666,7 @@
  				}
  			}
 
- 			if ($t_set->getPrimaryKey() && !$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+ 			if ($t_set->getPrimaryKey() && !$t_set->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__)) {
  				$va_notices['set_access'] = array(
 					'idno' => '',
 					'label' => _t('You do not have access to set %1', $vs_set_create_name),
@@ -698,28 +705,35 @@
  				array_push($va_tmp, $d);
  				$vs_directory = join("/", $va_tmp);
 
+				$vn_c++;
+
+ 				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
+
+ 				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+					$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%3)", caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30), $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), $t_new_rep, time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
+				}
+				
+				
  				// Skip file names using $vs_skip_file_list
  				if (BatchProcessor::_skipFile($f, $va_skip_list)) {
  					$o_log->logInfo(_t('Skipped file %1 because it was on the skipped files list', $f));
  					continue;
  				}
-
- 				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
-
+ 				
  				// does representation already exist?
  				if (!$vb_allow_duplicate_media && ($t_dupe = ca_object_representations::mediaExists($vs_file))) {
  					$va_notices[$vs_relative_directory.'/'.$f] = array(
 						'idno' => '',
 						'label' => $f,
-						'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey())),
+						'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, $po_request ? caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey()) : ''),
 						'status' => 'SKIPPED'
 					);
 					$o_log->logInfo($vs_msg);
  					continue;
  				}
 
-				$t_instance = $po_request->getAppDatamodel()->getInstance($vs_import_target, false);
-				$t_instance->setTransaction($o_trans);
+				$t_instance = $o_dm->getInstance($vs_import_target, false);
+				//$t_instance->setTransaction($o_trans);
 
 				$vs_modified_filename = $f;
 				$va_extracted_idnos_from_filename = array();
@@ -792,7 +806,7 @@
 									$va_extracted_idnos_from_filename[] = $va_matches[1];
 
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
-										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
+										if(!is_array($va_fields_to_match_on = $o_config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
 											$va_fields_to_match_on = array('idno');
 										}
 
@@ -904,7 +918,7 @@
 							'status' => 'ERROR',
 						);
 						$o_log->logError($vs_msg);
-						$o_trans->rollback();
+						//$o_trans->rollback();
 						continue;
 					} else {
 						if ($vb_delete_media_on_import) {
@@ -928,7 +942,7 @@
 							$t_instance->set('hierarchy_id', $vn_hierarchy_id);
 						}
 
-						switch($vs_idno_mode) {
+						switch(strtolower($vs_idno_mode)) {
 							case 'filename':
 								// use the filename as identifier
 								$t_instance->set('idno', $f);
@@ -967,7 +981,7 @@
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
-							$o_trans->rollback();
+							//$o_trans->rollback();
 							continue;
 						}
 
@@ -996,7 +1010,7 @@
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
-							$o_trans->rollback();
+							//$o_trans->rollback();
 							continue;
 						}
 
@@ -1022,7 +1036,7 @@
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
-							$o_trans->rollback();
+							//$o_trans->rollback();
 							continue;
 						} else {
 							if ($vb_delete_media_on_import) {
@@ -1035,10 +1049,10 @@
 				if ($t_instance->getPrimaryKey()) {
 					// Perform import of embedded metadata (if required)
 					if ($vn_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()], 'transaction' => $o_trans]);
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()]]);//, 'transaction' => $o_trans]);
 					}
 					if ($vn_object_representation_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()], 'transaction' => $o_trans]);
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()]]); //, 'transaction' => $o_trans]);
 					}
 
 					$va_notices[$t_instance->getPrimaryKey()] = array(
@@ -1050,7 +1064,7 @@
 					$o_log->logInfo($vs_msg);
 
 					if ($vn_set_id) {
-						$t_set->addItem($t_instance->getPrimaryKey(), null, $po_request->getUserID());
+						$t_set->addItem($t_instance->getPrimaryKey(), null, $vn_user_id);
 					}
 					$o_batch_log->addItem($t_instance->getPrimaryKey(), $t_instance->errors());
 
@@ -1093,12 +1107,6 @@
 					);
 					$o_log->logInfo($vs_msg);
 				}
-
- 				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-					$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%3)", caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30), $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), $t_new_rep, time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
-				}
-
-				$vn_c++;
  			}
 
 			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
@@ -1120,18 +1128,18 @@
 			}
 			$o_batch_log->close();
 
-			if ($vb_we_set_transaction) {
-				if (sizeof($va_errors) > 0) {
-					$o_trans->rollback();
-				} else {
-					$o_trans->commit();
-				}
-			}
+			//if ($vb_we_set_transaction) {
+			//	if (sizeof($va_errors) > 0) {
+					//$o_trans->rollback();
+			//	} else {
+					//$o_trans->commit();
+			//	}
+			//}
 
 			$vs_set_name = $t_set->getLabelForDisplay();
 			$vs_started_on = caGetLocalizedDate($vn_start_time);
 
-			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
+			if ($po_request && isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 				if ($vs_email = trim($po_request->user->get('email'))) {
 					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch media import completed', $po_request->config->get('app_display_name')), 'batch_media_import_completed.tpl',
 						array(
@@ -1148,10 +1156,10 @@
 				}
 			}
 
-			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
+			if ($po_request && isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
 				SMS::send($po_request->getUserID(), _t("[%1] Media import processing for directory %2 with %3 %4 begun at %5 is complete", $po_request->config->get('app_display_name'), $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files')), $vs_started_on));
 			}
-			$o_log->logInfo(_t("Media import processing for directory %1 with %2 %3 begun at %4 is complete", $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files'))));
+			$o_log->logInfo(_t("Media import processing for directory %1 with %2 %3 begun at %4 is complete", $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files')), $vs_started_on));
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
 		# ----------------------------------------

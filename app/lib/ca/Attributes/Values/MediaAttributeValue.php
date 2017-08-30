@@ -104,11 +104,17 @@
  		private $ops_file_original_name;
  		private $opo_media_info_coder;
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function __construct($pa_value_array=null) {
  			$this->opo_media_info_coder = new MediaInfoCoder();
  			parent::__construct($pa_value_array);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->opn_value_id = $pa_value_array['value_id'];
  			$this->ops_media_data = $pa_value_array['value_blob'];
@@ -144,17 +150,29 @@
 			
 			if(!isset($pa_options['return'])) { $pa_options['return'] = null; } else { $pa_options['return'] = strtolower($pa_options['return']); }
 			
-			switch($pa_options['return']) {
-				case 'url':
-					return $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, $vs_version);
-					break;
-				case 'tag':
-					return $this->opo_media_info_coder->getMediaTag($this->opa_media_data, $vs_version);
-					break;
-				case 'path':
-					return $this->opo_media_info_coder->getMediaPath($this->opa_media_data, $vs_version);
-					break;
-			}
+			if(isset($pa_options['return'])) {
+                switch($pa_options['return']) {
+                    case 'width':
+                        return $this->opo_media_info_coder->getMediaInfo($this->opa_media_data, $vs_version, 'WIDTH');
+                        break;
+                    case 'height':
+                        return $this->opo_media_info_coder->getMediaInfo($this->opa_media_data, $vs_version, 'HEIGHT');
+                        break;
+                    case 'mimetype':
+                        return $this->opo_media_info_coder->getMediaInfo($this->opa_media_data, $vs_version, 'MIMETYPE');
+                        break;
+                    case 'tag':
+                        return $this->opo_media_info_coder->getMediaTag($this->opa_media_data, $vs_version);
+                        break;
+                    case 'path':
+                        return $this->opo_media_info_coder->getMediaPath($this->opa_media_data, $vs_version);
+                        break;
+                    case 'url':
+                    default:
+                        return $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, $vs_version);
+                        break;
+                }
+            }
 			
 			if ($vs_url = $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, 'original')) {
 				AssetLoadManager::register('panel');
@@ -244,6 +262,18 @@
 			return $vs_val;
 		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return list of available media versions
+ 		 *
+ 		 * @return array
+ 		 */
+ 		public function getVersions() {
+ 			return $this->opo_media_info_coder->getMediaVersions($this->opa_media_data);
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_is_file_path = false;
  			$vb_is_user_media = false;
@@ -320,6 +350,9 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
@@ -345,4 +378,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>
