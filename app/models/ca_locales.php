@@ -486,8 +486,16 @@ class ca_locales extends BaseModel {
 		$va_language = explode('_', $ps_language);
 		$ps_language = array_shift($va_language);
 		$pb_codes_only = caGetOption('codesOnly', $pa_options, false);
-		$va_locales =  array_filter(ca_locales::getLocaleList(['index_by_code' => true]), function($v, $k) use ($ps_language) { return ($ps_language == array_shift(explode('_', $k))); }, ARRAY_FILTER_USE_BOTH);
+		//$va_locales =  array_filter(ca_locales::getLocaleList(['index_by_code' => true]), function($v, $k) use ($ps_language) { return ($ps_language == array_shift(explode('_', $k))); }, ARRAY_FILTER_USE_BOTH);
 	
+	    $va_locales = [];
+	    $va_list = ca_locales::getLocaleList(['index_by_code' => true]);
+	    foreach($va_list as $k => $v) {
+	        if ($ps_language == array_shift(explode('_', $k))) { 
+	            $va_locales[$k] = $v;
+	        }
+	    }
+	    
 		return $pb_codes_only ? array_keys($va_locales) : $va_locales;
 	}
 	# ------------------------------------------------------
