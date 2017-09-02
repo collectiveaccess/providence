@@ -156,7 +156,7 @@ class ItemService extends BaseJSONService {
 		$t_locales = new ca_locales();
 		
 
-		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
+		$va_locales = LocaleManager::getLocaleList(array("available_for_cataloguing_only" => true));
 
 		$va_return = array();
 
@@ -330,7 +330,7 @@ class ItemService extends BaseJSONService {
 		}
 		$t_locales = new ca_locales();
 
-		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
+		$va_locales = LocaleManager::getLocaleList(array("available_for_cataloguing_only" => true));
 
 		$va_return = array();
 
@@ -487,7 +487,7 @@ class ItemService extends BaseJSONService {
 		$va_flatten = preg_split("![ ]*[;]+[ ]*!", $vs_flatten);
 		$va_flatten = array_flip($va_flatten);
 
-		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
+		$va_locales = LocaleManager::getLocaleList(array("available_for_cataloguing_only" => true));
 
 		$va_return = array();
 
@@ -721,7 +721,7 @@ class ItemService extends BaseJSONService {
 			foreach($pa_data["attributes"] as $vs_attribute_name => $va_values) {
 				foreach($va_values as $va_value) {
 					if($va_value["locale"]) {
-						$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+						$va_value["locale_id"] = LocaleManager::localeCodeToID($va_value["locale"]);
 						unset($va_value["locale"]);
 					}
 					$t_instance->addAttribute($va_value,$vs_attribute_name);
@@ -743,7 +743,7 @@ class ItemService extends BaseJSONService {
 		if(is_array($pa_data["preferred_labels"]) && sizeof($pa_data["preferred_labels"])) {
 			foreach($pa_data["preferred_labels"] as $va_label) {
 				if($va_label["locale"]) {
-					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					$vn_locale_id = LocaleManager::localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
 				}
 				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
@@ -758,7 +758,7 @@ class ItemService extends BaseJSONService {
 		if(is_array($pa_data["nonpreferred_labels"]) && sizeof($pa_data["nonpreferred_labels"])) {
 			foreach($pa_data["nonpreferred_labels"] as $va_label) {
 				if($va_label["locale"]) {
-					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					$vn_locale_id = LocaleManager::localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
 				}
 				if($va_label["type_id"]) {
@@ -802,7 +802,7 @@ class ItemService extends BaseJSONService {
 								foreach($va_relationship["attributes"] as $vs_attribute_name => $va_values) {
 									foreach($va_values as $va_value) {
 										if($va_value["locale"]) {
-											$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+											$va_value["locale_id"] = LocaleManager::localeCodeToID($va_value["locale"]);
 											unset($va_value["locale"]);
 										}
 										$t_rel->addAttribute($va_value,$vs_attribute_name);
@@ -824,8 +824,8 @@ class ItemService extends BaseJSONService {
 				foreach($pa_data['representations'] as $va_rep) {
 					if(!isset($va_rep['media']) || (!file_exists($va_rep['media']) && !isURL($va_rep['media']))) { continue; }
 
-					if(!($vn_rep_locale_id = $t_locales->localeCodeToID($va_rep['locale']))) {
-						$vn_rep_locale_id = $t_locales->localeCodeToID('en_US');
+					if(!($vn_rep_locale_id = LocaleManager::localeCodeToID($va_rep['locale']))) {
+						$vn_rep_locale_id = LocaleManager::localeCodeToID('en_US');
 					}
 
 					$t_instance->addRepresentation(
@@ -896,7 +896,7 @@ class ItemService extends BaseJSONService {
 			foreach($va_post["attributes"] as $vs_attribute_name => $va_values) {
 				foreach($va_values as $va_value) {
 					if($va_value["locale"]) {
-						$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+						$va_value["locale_id"] = LocaleManager::localeCodeToID($va_value["locale"]);
 						unset($va_value["locale"]);
 					}
 					$t_instance->addAttribute($va_value,$vs_attribute_name);
@@ -918,7 +918,7 @@ class ItemService extends BaseJSONService {
 		if(is_array($va_post["preferred_labels"]) && sizeof($va_post["preferred_labels"])) {
 			foreach($va_post["preferred_labels"] as $va_label) {
 				if($va_label["locale"]) {
-					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					$vn_locale_id = LocaleManager::localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
 				}
 				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
@@ -929,7 +929,7 @@ class ItemService extends BaseJSONService {
 		if(is_array($va_post["nonpreferred_labels"]) && sizeof($va_post["nonpreferred_labels"])) {
 			foreach($va_post["nonpreferred_labels"] as $va_label) {
 				if($va_label["locale"]) {
-					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					$vn_locale_id = LocaleManager::localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
 				}
 				if($va_label["type_id"]) {
@@ -977,7 +977,7 @@ class ItemService extends BaseJSONService {
 							foreach($va_relationship["attributes"] as $vs_attribute_name => $va_values) {
 								foreach($va_values as $va_value) {
 									if($va_value["locale"]) {
-										$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+										$va_value["locale_id"] = LocaleManager::localeCodeToID($va_value["locale"]);
 										unset($va_value["locale"]);
 									}
 									$t_rel->addAttribute($va_value,$vs_attribute_name);

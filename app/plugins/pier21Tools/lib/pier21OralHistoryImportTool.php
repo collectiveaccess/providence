@@ -109,7 +109,7 @@ require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
 			
 			// Get locale from config and translate to numeric code
 			$t_locale = new ca_locales();
-			$pn_locale_id = $t_locale->localeCodeToID($o_conf->get('locale'));
+			$pn_locale_id = LocaleManager::localeCodeToID($o_conf->get('locale'));
 			
 			$o_log = $this->getLogger();
 			$o_progress = $this->getProgressBar(0);

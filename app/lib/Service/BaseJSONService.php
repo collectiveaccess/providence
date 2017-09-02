@@ -69,7 +69,7 @@ class BaseJSONService {
 			global $g_ui_locale, $g_ui_locale_id, $_;
 			$g_ui_locale = $vs_locale;
 			$t_locale = new ca_locales();
-			if($g_ui_locale_id = $t_locale->localeCodeToID($vs_locale)) {
+			if($g_ui_locale_id = LocaleManager::localeCodeToID($vs_locale)) {
 				$g_ui_locale = $vs_locale;
 				if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
 				$this->opo_request->reloadAppConfig();
