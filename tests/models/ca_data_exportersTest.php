@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,7 @@ class ca_data_exportersTest extends PHPUnit_Framework_TestCase {
 	 * @link http://clangers.collectiveaccess.org/jira/browse/PROV-1026
 	 */
 	public function testDataExporterCanLoadFromFile(){
-		$t_locale = new ca_locales();
-		$va_locales = $t_locale->getLocaleList();
+		$va_locales = LocaleManager::getLocaleList();
 		$vn_locale_id = key($va_locales);
 
 		$t_exporter = new ca_data_exporters();
