@@ -470,7 +470,7 @@ class Installer {
 		$t_locale = new ca_locales();
 		$t_locale->setMode(ACCESS_WRITE);
 		// Find any existing locales
-		$va_locales = $t_locale->getLocaleList(array('index_by_code' => true));
+		$va_locales = LocaleManager::getLocaleList(array('index_by_code' => true));
 		foreach($va_locales as $vs_code => $va_locale) {
 			$this->opa_locales[$vs_code] = $va_locale['locale_id'];
 		}
@@ -513,7 +513,7 @@ class Installer {
 		}
 
 		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
-		$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+		$vn_locale_id = LocaleManager::localeCodeToID($va_locales[0]);
 
 		if(!$vn_locale_id) {
 			throw new Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
