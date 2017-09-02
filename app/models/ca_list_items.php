@@ -616,7 +616,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				// insert root or place hierarchy when creating non-root items in 'place_hierarchies' list
 				$t_locale = new ca_locales();
 				$va_locales = $this->getAppConfig()->getList('locale_defaults');
-				$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+				$vn_locale_id = LocaleManager::localeCodeToID($va_locales[0]);
 
 				if(!$vn_locale_id) {
 					$this->postError(750, _t('Locale %1 does not exist', $va_locales[0]), 'ca_list_items->insert()');
