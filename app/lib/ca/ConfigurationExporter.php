@@ -317,6 +317,9 @@ final class ConfigurationExporter {
 			if(is_numeric($vn_value = $qr_items->get("item_value"))) {
 				$vo_item->setAttribute("value", $vn_value);
 			}
+			if($qr_items->get('type_id')){
+				$vo_item->setAttribute('type', $t_list_item->getTypeCode($qr_items->get('type_id')));
+			}
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_list_item_labels = $this->opo_db->query("SELECT * FROM ca_list_item_labels WHERE item_id=?",$qr_items->get("item_id"));
@@ -341,6 +344,16 @@ final class ConfigurationExporter {
 			}
 
 			$vo_item->appendChild($vo_labels);
+			$va_settings = $qr_items->get('settings', ['unserialize' => true]);
+			if ($va_settings){
+				$vo_settings = $this->opo_dom->createElement("settings");
+				foreach($va_settings as $vs_name => $va_setting){
+					$vo_setting = $this->opo_dom->createElement("setting",caEscapeForXML($va_setting));
+					$vo_setting->setAttribute('name', $vs_name);
+					$vo_settings->appendChild($vo_setting);
+				}
+				$vo_item->appendChild($vo_settings);
+			}
 
 			if($vo_sub_items = $this->getListItemsAsDOM($qr_items->get("item_id"), $pn_list_id)) {
 				$vo_item->appendChild($vo_sub_items);
