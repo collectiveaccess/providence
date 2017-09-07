@@ -1540,20 +1540,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get data for current row
 			//
 			$va_row = array_replace($o_reader->getRow(), $va_environment);
-			
-			// replace values (EXPERIMENTAL)
-			$va_row_with_replacements = $va_row;
-			foreach($va_mapping_items as $vn_item_id => $va_item) {
-				$vs_key = $va_item['source'];
-				
-				if (!isset($va_row[$vs_key])) { 
-					$va_tmp = explode('.', $vs_key); array_shift($va_tmp);
-					$vs_key = join('.', $va_tmp);
-				}
-				if(!isset($va_row[$vs_key])) { continue; }
-				$va_row_with_replacements[$vs_key] = ca_data_importers::replaceValue($va_row[$vs_key], $va_item, []);
-			}
-			
+
 			//
 			// Apply rules
 			//
@@ -1631,7 +1618,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($vs_idno) && ($vs_idno[0] == '^') && preg_match("!^\^[^ ]+$!", $vs_idno)) {
 					// Parse placeholder when it's at the beginning of the value
 
-					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row_with_replacements, $va_item, null, array('reader' => $o_reader, 'returnAsString' => true)))) {
+					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, null, array('reader' => $o_reader, 'returnAsString' => true)))) {
 						$vs_idno = $vm_parsed_val;
 					}
 				}
@@ -1644,7 +1631,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'])) {
-					$vs_idno = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'], $va_row_with_replacements, ['getFrom' => $o_reader]);
+					$vs_idno = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'], $va_row, ['getFrom' => $o_reader]);
 				}
 										
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
@@ -1671,6 +1658,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_idnos_for_row = array($vs_idno);
 			}
 			
+
 			foreach($va_idnos_for_row as $vs_idno) {
 				$t_subject = $o_dm->getInstanceByTableNum($vn_table_num);
 				if ($o_trans) { $t_subject->setTransaction($o_trans); }
@@ -1684,7 +1672,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 					// If a template is specified format the label value with it so merge-on-preferred_label doesn't fail
 					if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'])) {
-						$vs_label_val = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'], $va_row_with_replacements);
+						$vs_label_val = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'], $va_row);
 					}
 					if ($vs_opt = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['displaynameFormat']) {
 						$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, array('displaynameFormat' => $vs_opt, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']));
@@ -1882,12 +1870,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							if (!is_array($vm_val) && ($vm_val[0] == '^') && preg_match("!^\^[^ ]+$!", $vm_val)) {
 								// Parse placeholder
-								if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vm_val, $va_row_with_replacements, $va_item, $vn_i, array('reader' => $o_reader, 'returnAsString' => true)))) {
+								if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vm_val, $va_row, $va_item, $vn_i, array('reader' => $o_reader, 'returnAsString' => true)))) {
 									$vm_val = $vm_parsed_val;
 								}
 							}
 							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
-								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row_with_replacements, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logIdno' => $vs_idno]))), array('getFrom' => $o_reader));
+								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logIdno' => $vs_idno]))), array('getFrom' => $o_reader));
 							}
 						
 							if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
@@ -1901,9 +1889,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							$va_vals[$vn_i] = $vm_val;
 							if ($o_reader->valuesCanRepeat()) {
-								$va_row_with_replacements[$va_item['source']][$vn_i] = $va_row[$va_item['source']][$vn_i] = $va_row[mb_strtolower($va_item['source'])][$vn_i] = $vm_val;
+								$va_row[$va_item['source']][$vn_i] = $va_row[mb_strtolower($va_item['source'])][$vn_i] = $vm_val;
 							} else {
-								$va_row_with_replacements[$va_item['source']] = $va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
+								$va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
 							}
 						}
 						
@@ -2037,7 +2025,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if (!$vs_refinery) { continue; }
 								
 									if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-										$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row_with_replacements, array('mapping' => $t_mapping, 'source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'reader' => $o_reader, 'valueIndex' => $vn_i));
+										$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('mapping' => $t_mapping, 'source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'reader' => $o_reader, 'valueIndex' => $vn_i));
 
 										if (!$va_refined_values || (is_array($va_refined_values) && !sizeof($va_refined_values))) { continue(2); }
 									
