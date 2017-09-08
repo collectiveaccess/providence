@@ -52,6 +52,8 @@
 		/**
 		 *
 		 */
+		 
+	    public static $s_import_error_list = array();
 		# ----------------------------------------
 		public function __construct() {
 
@@ -497,6 +499,8 @@
 		 */
 		public static function importMediaFromDirectory($po_request, $pa_options=null) {
 			global $g_ui_locale_id;
+			
+			BatchProcessor::$s_import_error_list = [];
 
 			$vs_log_dir = caGetOption('log', $pa_options, __CA_APP_DIR__."/log");
 			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO");
@@ -540,6 +544,7 @@
 					"SOURCE" => "mediaImport",
 					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
 				));
+				BatchProcessor::$s_import_error_list[] = $vs_msg;
 				$o_log->logError($vs_msg);
  				return null;
  			}
@@ -552,6 +557,7 @@
 					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
 				));
 				$o_log->logError($vs_msg);
+				BatchProcessor::$s_import_error_list[] = $vs_msg;
  				return null;
  			}
 
@@ -562,6 +568,7 @@
 					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
 				));
 				$o_log->logError($vs_msg);
+				BatchProcessor::$s_import_error_list[] = $vs_msg;
  				return null;
  			}
 
@@ -1192,6 +1199,7 @@
 		public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
 			$va_errors = $va_noticed = array();
 			$vn_start_time = time();
+			BatchProcessor::$s_import_error_list = [];
 			
 			$o_config = Configuration::load();
 			if (!(ca_data_importers::mappingExists($ps_importer))) {
@@ -1228,6 +1236,7 @@
 						'errors' => array(_t("Could not import source %1", $ps_source)),
 						'status' => 'ERROR'
 					);
+					BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $ps_source);
 					return false;
 				} else {
 					$va_notices['general'][] = array(
@@ -1264,6 +1273,15 @@
 			}
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
+		# ------------------------------------------------------
+        /**
+         * Return list of errors from last import
+         *
+         * @return array
+         */
+        public static function getErrorList() {
+            return BatchProcessor::$s_import_error_list;
+        }
 		# ----------------------------------------
 		/**
 		 *
