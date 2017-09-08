@@ -14,7 +14,7 @@ if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
 // If you require any overrides in setup.php that are specific to running unit tests, put them here.
 
 if (!defined("__CA_DB_TYPE__")) {
-	define("__CA_DB_TYPE__", 'pdo_mysql');
+	define("__CA_DB_TYPE__", 'mysqli');
 }
 
 // Use remaining settings from main config.

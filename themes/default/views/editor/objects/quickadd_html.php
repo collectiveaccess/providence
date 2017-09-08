@@ -81,6 +81,13 @@
 			print join("\n", $va_form_elements);
 ?>
 		<input type='hidden' name='_formName' value='<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
+<?php
+    if ($this->getVar('source') == 'ca_object_lots') {
+?>
+		<input type='hidden' name='lot_id' value='<?php print (int)$this->getVar('source_id'); ?>'/>
+<?php
+    }
+?>
 		<input type='hidden' name='q' value='<?php print htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
 		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
 		<input type='hidden' name='types' value='<?php print htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>

@@ -1014,13 +1014,14 @@ class SearchIndexer extends SearchBase {
                                         }
 
 										if (!$vb_skip && is_array($va_labels = $t_rel->getPreferredLabels(null, false, array('row_id' => $vn_row_id)))) {
-											foreach($va_labels as $vn_label_id => $va_labels_by_locale) {
+											foreach($va_labels as $vn_x => $va_labels_by_locale) {
 												foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 													foreach($va_label_list as $va_label) {
+													    $vn_label_id = $va_label['label_id'];
 
 														foreach($va_label_info['related']['fields'] as $vs_label_field => $va_config) {
-															$this->opo_engine->indexField($vn_label_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vn_label_table_num, $vs_label_field)), $vn_row_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
-															$this->_genIndexInheritance($t_subject, $t_label, "I{$vn_fn}", $pn_subject_row_id, $vn_row_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+															$this->opo_engine->indexField($vn_label_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vn_label_table_num, $vs_label_field)), $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+															$this->_genIndexInheritance($t_subject, $t_label, "I{$vn_fn}", $pn_subject_row_id, $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 														}
 													}
 												}
@@ -1830,9 +1831,10 @@ class SearchIndexer extends SearchBase {
 
 						if ($vb_index_labels) {
 							$va_labels = $t_dep->getPreferredLabels();
-							foreach($va_labels as $vn_label_id => $va_labels_by_locale) {
+							foreach($va_labels as $vn_x => $va_labels_by_locale) {
 								foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 									foreach($va_label_list as $va_label) {
+									    $vn_label_id = $va_label['label_id'];
 
 										$vs_key = $vn_dep_table_num.'/'.$vn_id_1.'/'.$vn_label_table_num.'/'.$vn_label_id;
 
