@@ -50,7 +50,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'title' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Title'), 'DESCRIPTION' => _t('Short descriptive title for media'),
@@ -58,7 +58,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'idno' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Media identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this media.'),
@@ -66,7 +66,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'idno_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable media identifier', 'DESCRIPTION' => 'Value used for sorting media on identifier value.',
@@ -74,7 +74,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'caption' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Caption'), 'DESCRIPTION' => _t('Long description for media')
@@ -235,7 +235,7 @@ class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = null;
+	protected $RANK = 'rank';
 	
 	
 	# ------------------------------------------------------

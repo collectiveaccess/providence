@@ -2171,7 +2171,9 @@ class BaseEditorController extends ActionController {
 	 */
 	public function DownloadMedia($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-		$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
+		if (!($pn_representation_id = $this->request->getParameter('representation_id', pInteger))) { 
+		    $pn_representation_id = $this->request->getParameter('media_id', pInteger);
+		}
 		$pn_value_id = $this->request->getParameter('value_id', pInteger);
 		if ($pn_value_id) {
 			return $this->DownloadAttributeFile();
@@ -2204,15 +2206,22 @@ class BaseEditorController extends ActionController {
 		$t_download_log = new Downloadlog();
 		foreach($va_child_ids as $vn_child_id) {
 			if (!$t_subject->load($vn_child_id)) { continue; }
-			if ($t_subject->tableName() == 'ca_object_representations') {
-				$va_reps = array(
-					$vn_child_id => array(
-						'representation_id' => $vn_child_id,
-						'info' => array($ps_version => $t_subject->getMediaInfo('media', $ps_version))
-					)
-				);
-			} else {
-				$va_reps = $t_subject->getRepresentations(array($ps_version));
+			
+			switch($t_subject->tableName()) {
+			    case 'ca_object_representations':
+                    $va_reps = array(
+                        $vn_child_id => array(
+                            'representation_id' => $vn_child_id,
+                            'info' => array($ps_version => $t_subject->getMediaInfo('media', $ps_version))
+                        )
+                    );
+                    break;
+				case 'ca_site_pages':
+				    $va_reps = $t_subject->getPageMedia([$ps_version]);
+				    break;
+				default:
+				    $va_reps = $t_subject->getRepresentations([$ps_version]);
+				    break;
 			}
 			$vs_idno = $t_subject->get('idno');
 			
@@ -2234,7 +2243,7 @@ class BaseEditorController extends ActionController {
 						break;
 					case 'original_name':
 					default:
-						if ($va_rep['info']['original_filename']) {
+						if (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
 							$va_tmp = explode('.', $va_rep['info']['original_filename']);
 							if (sizeof($va_tmp) > 1) {
 								if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
@@ -2258,13 +2267,17 @@ class BaseEditorController extends ActionController {
 
 				//
 				// Perform metadata embedding
-				$t_rep = new ca_object_representations($va_rep['representation_id']);
-				if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
-					$t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
-					$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
-				))) {
-					$vs_path = $t_rep->getMediaPath('media', $ps_version);
-				}
+				if (($t_subject->tableName() == 'ca_object_representations')) {
+                    $t_rep = new ca_object_representations($va_rep['representation_id']);
+                    if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+                        $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
+                        $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
+                    ))) {
+                        $vs_path = $va_rep['paths'][$ps_version];
+                    }
+                } else {
+                    $vs_path = $va_rep['paths'][$ps_version];
+                }
 
 				$va_file_paths[$vs_path] = $vs_file_name;
 

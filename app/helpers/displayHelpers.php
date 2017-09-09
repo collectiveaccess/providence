@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
+require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -460,6 +461,60 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 */
 	function caBusyIndicatorIcon($po_request, $pa_attributes=null) {
 		return caNavIcon(__CA_NAV_ICON_SPINNER__, 1, $pa_attributes);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	function caGetMediaInfoForDisplay($pm_media, $ps_version) {
+	    $o_coder = (is_a($pm_media, "MediaInfoCoder")) ? $pm_media : new MediaInfoCoder($pm_media);
+	    
+	    $va_ret = [];
+	    $va_media_info = $o_coder->getMediaInfo();
+	    $va_dimensions = [];
+        if (isset($va_media_info[$ps_version]['WIDTH']) && isset($va_media_info[$ps_version]['HEIGHT'])) {
+            if (($vn_w = $va_media_info[$ps_version]['WIDTH']) && ($vn_h = $va_media_info[$ps_version]['WIDTH'])) {
+                $va_dimensions[] = $va_media_info[$ps_version]['WIDTH'].'p x '.$va_media_info[$ps_version]['HEIGHT'].'p';
+            }
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_media_info[$ps_version]['PROPERTIES']['bitdepth'])) {
+            $va_dimensions[] = $va_ret['bitdepth'] = intval($vn_depth).' bpp';
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_media_info[$ps_version]['PROPERTIES']['colorspace'])) {
+            $va_dimensions[] = $va_ret['colorspace'] = $vs_colorspace;
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_media_info[$ps_version]['PROPERTIES']['resolution'])) {
+            if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
+                // TODO: units for resolution? right now assume pixels per inch
+                if ($va_resolution['x'] == $va_resolution['y']) {
+                    $va_dimensions[] = $va_ret['resolution'] = $va_resolution['x'].'ppi';
+                } else {
+                    $va_dimensions[] = $va_ret['resolution'] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
+                }
+            }
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['duration']) && ($vn_duration = $va_media_info[$ps_version]['PROPERTIES']['duration'])) {
+            $va_dimensions[] = $va_ret['duration'] = sprintf("%4.1f", $vn_duration).'s';
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['pages']) && ($vn_pages = $va_media_info[$ps_version]['PROPERTIES']['pages'])) {
+            $va_dimensions[] = $va_ret['pages'] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
+        }
+        if (!isset($va_media_info[$ps_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_media_info[$ps_version]['PROPERTIES']['filesize'])) {
+            $va_ret['filesize'] = $vn_filesize = @filesize($o_coder->getMediaPath($ps_version));
+        }
+        if ($vn_filesize) {
+            $va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
+        }
+        $va_ret['dimensions'] = join('; ', $va_dimensions);
+        
+        $va_ret['MD5'] = $va_media_info[$ps_version]['MD5'];
+        $va_ret['mimetype'] = $va_media_info[$ps_version]['MIMETYPE'];
+        $va_ret['type'] = Media::getTypenameForMimetype($va_media_info[$ps_version]['MIMETYPE']);
+        $va_ret['filename'] = $va_media_info['ORIGINAL_FILENAME'];
+        $va_ret['thumbnail'] = $o_coder->getMediaTag('thumbnail');
+        $va_ret['info'] = $va_media_info;
+	    
+	    return $va_ret;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
