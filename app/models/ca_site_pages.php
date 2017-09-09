@@ -418,6 +418,8 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		$o_view->setVar('t_subject', $this);
  		$o_view->setVar('t_page', $this);
  		$o_view->setVar('t_item', new ca_site_page_media());
+ 		
+		$o_view->setVar('defaultRepresentationUploadType', $po_request->user->getVar('defaultRepresentationUploadType'));
 		
 		return $o_view->render('ca_site_page_media.php');
 	}
@@ -437,34 +439,36 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return array
 	 */
-	public function getPageMedia($pa_options=null) {
+	public function getPageMedia($pa_versions=null, $pa_options=null) {
 	    if (!($vn_page_id = $this->getPrimaryKey())) { return null; }
-		$va_media =  ca_site_page_media::find(['page_id' => $vn_page_id], ['returnAs' => 'arrays']);
-		
-		$o_coder = new MediaInfoCoder();
-		foreach($va_media as $i => $va_media_info) {
-		    $va_media[$i]['_display'] = $va_media_info['caption'];
-		    $va_media[$i]['access_display'] = $this->getChoiceListValue('access', $va_media_info['access']);
-		    $va_media[$i]['media'] = caUnserializeForDatabase($va_media_info['media']);
-		    
-		    $va_media[$i]['icon'] = $o_coder->getMediaTag($va_media[$i]['media'], 'thumbnail');
-		    $va_media[$i]['mimetype'] = $o_coder->getMediaInfo($va_media[$i]['media'], 'original', 'MIMETYPE');
-		    $va_media[$i]['dimensions'] = '?';
-		    $va_media[$i]['metadata'] = '?';
-		    $va_media[$i]['md5'] = '?';
-		    $va_media[$i]['fetched_from'] = '?';
-		    $va_media[$i]['fetched_on'] = '?';
-		    $va_media[$i]['fetched'] = '?';
-		}
-		//print_r($va_media);
-		return $va_media;
-	}
+	    if (!is_array($pa_versions) || !sizeof($pa_versions)) { $pa_versions = ['original']; }
+		$va_media =  ca_site_page_media::find(['page_id' => $vn_page_id], ['returnAs' => 'arrays', 'sort' => 'rank']);
 	
-								
-									//'fetched_from' => $va_rep['fetched_from'],
-								//	'fetched_on' => date('c', $va_rep['fetched_on']),
-								//	'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on'])) : ""
-								
+	    $va_media_list = []; 
+        foreach($va_media as $i => $va_media_info) {
+            $o_coder = new MediaInfoCoder($va_media_info['media']);
+            $va_media_list[$va_media_info['media_id']] = array_merge($va_media_info, [
+                'info' => $o_coder->getMedia(),
+                'tags' => [],
+                'urls' => [],
+                'paths' => [],
+                'fetched_on' => null,
+                'fetched_from' => null,
+                'dimensions' => null
+            ]);
+            $va_media_list[$va_media_info['media_id']]['info']['original_filename'] = $va_media_list[$va_media_info['media_id']]['info']['ORIGINAL_FILENAME'];
+            
+	        foreach($pa_versions as $vs_version) {
+                $va_disp = caGetMediaInfoForDisplay($o_coder, $vs_version);
+                
+                $va_media_list[$va_media_info['media_id']]['tags'][$vs_version] = $o_coder->getMediaTag($vs_version);
+                $va_media_list[$va_media_info['media_id']]['urls'][$vs_version] = $o_coder->getMediaUrl($vs_version);
+                $va_media_list[$va_media_info['media_id']]['paths'][$vs_version] = $o_coder->getMediaPath($vs_version);
+                $va_media_list[$va_media_info['media_id']]['dimensions'][$vs_version] = $va_disp['dimensions'];
+            }
+        }
+		return $va_media_list;
+	}
 	# ------------------------------------------------------
 	/**
 	 * 
@@ -481,12 +485,94 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	        'caption' => $ps_caption,
 	        'idno' => $ps_idno,
 	        'access' => $pn_access
-	    ]);
+	    ], null, $pa_options);
 	    if (!($vn_rc = $t_media->insert($pa_options))) {
 	        $this->errors = $t_media->errors;
 	        return $vn_rc;
 	    }
 	    return $t_media;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	public function editMedia($pn_media_id, $ps_path, $ps_title, $ps_caption, $ps_idno, $pn_access, $pa_options=null) {
+	    $t_media = new ca_site_page_media($pn_media_id);
+	    if (!$t_media->isLoaded()) { return null; }
+	    $t_media->setMode(ACCESS_WRITE);
+	    
+	    $va_fld_data = [
+	        'page_id' => $this->getPrimaryKey(),
+	        'media' => $ps_path,
+	        'title' => $ps_title,
+	        'caption' => $ps_caption,
+	        'idno' => $ps_idno,
+	        'access' => $pn_access
+	    ];
+	    if ($vn_rank = caGetOption('rank', $pa_options, null)) {
+	        $va_fld_data['rank'] = $vn_rank;
+	        unset($pa_options['rank']);
+	    }
+	    
+	    foreach($va_fld_data as $vs_f => $vs_v) {
+	        $t_media->set($vs_f, $vs_v, $pa_options);
+	    }
+	    if (!($vn_rc = $t_media->update($pa_options))) {
+	        $this->errors = $t_media->errors;
+	        return $vn_rc;
+	    }
+	    return $t_media;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	public function removeMedia($pn_media_id, $pa_options=null) {
+	    $t_media = new ca_site_page_media($pn_media_id);
+	    if (!$t_media->isLoaded()) { return null; }
+	    $t_media->setMode(ACCESS_WRITE);
+	    $t_media->delete(true);
+	    if (!($vn_rc = $t_media->insert($pa_options))) {
+	        $this->errors = $t_media->errors;
+	    }
+	    return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	public function getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {
+	    $va_media = $this->getPageMedia(array('thumbnail', 'original'), $pa_options);
+				       
+        $t_item = new ca_site_page_media();
+        $va_initial_values = [];
+        foreach($va_media as $vn_media_id => $va_m) {
+            $va_initial_values[$vn_media_id] = array(
+                    'idno' => $va_m['idno'], 
+                    'title' => $va_m['title'],
+                    'caption' => $va_m['caption'],
+                    'access' => $va_m['access'],
+                    'access_display' => $t_item->getChoiceListValue('access', $va_m['access']), 
+                    'icon' => $va_m['tags']['thumbnail'], 
+                    'mimetype' => $va_m['info']['original']['PROPERTIES']['mimetype'], 
+                    'filesize' => @filesize($va_m['paths']['original']), 
+                    'type' => $va_m['info']['original']['PROPERTIES']['typename'], 
+                    'dimensions' => $va_m['dimensions']['original'], 
+                    'filename' => $va_m['info']['ORIGINAL_FILENAME'] ? $va_m['info']['ORIGINAL_FILENAME'] : _t('Unknown'),
+                    'metadata' => $vs_extracted_metadata,
+                    'md5' => $va_m['info']['original']['PROPERTIES']['MD5'],
+                    'fetched_from' => $va_m['fetched_from'],
+                    'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,
+                    'fetched' => $va_m['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_m['fetched_from'].'" target="_ext" title="'.$va_m['fetched_from'].'">'.$va_m['fetched_from'].'</a>', date('c', $va_m['fetched_on'])): ""
+                );
+        }
+        return $va_initial_values;
 	}
 	# ------------------------------------------------------
 }
