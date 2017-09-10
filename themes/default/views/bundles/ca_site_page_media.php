@@ -94,7 +94,7 @@
 ?>	
 			<div style="width: 680px;">
 				<div style="float: left;">
-					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'media_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
+					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'manage/site_pages', 'SitePageEditor', 'GetMediaOverlay', array('page_id' => $t_subject->getPrimaryKey(), 'media_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
 				</div>
 				<div style="float: right; width: 550px;">
 					<div style="float: left; width: 80%;">

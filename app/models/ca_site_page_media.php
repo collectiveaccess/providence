@@ -182,7 +182,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
  	)
 );
 
-class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
+class ca_site_page_media extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -251,6 +251,13 @@ class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
 			
 		)
 	);
+	
+	# ------------------------------------------------------
+	# ID numbering
+	# ------------------------------------------------------
+	protected $ID_NUMBERING_ID_FIELD = 'idno';		// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;		// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	
 	
 	# ------------------------------------------------------
 	# Search

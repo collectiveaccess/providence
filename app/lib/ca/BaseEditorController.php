@@ -1748,6 +1748,7 @@ class BaseEditorController extends ActionController {
 			//
 			// View object representation
 			//
+			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
@@ -1778,6 +1779,33 @@ class BaseEditorController extends ActionController {
 					$vn_subject_id = array_shift($va_subject_ids);
 				} else {
 					$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationInfo');
+					return;
+				}
+			}
+
+			$this->response->addContent($vs_viewer_name::getViewerHTML(
+				$this->request, 
+				"representation:{$pn_representation_id}", 
+				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => $va_display_info])
+			);
+		} elseif ($pn_media_id = $this->request->getParameter('media_id', pInteger)) {
+		    //
+			// View site page media
+			//
+			require_once(__CA_MODELS_DIR__."/ca_site_page_media.php");
+			$t_instance = new ca_site_page_media($pn_media_id);
+			
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				throw new ApplicationException(_t('Invalid viewer'));
+			}
+			
+			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
+			
+			if(!$vn_subject_id) {
+				if (is_array($va_subject_ids = $t_instance->get($t_subject->tableName().'.'.$t_subject->primaryKey(), array('returnAsArray' => true))) && sizeof($va_subject_ids)) {
+					$vn_subject_id = array_shift($va_subject_ids);
+				} else {
+					$this->postError(1100, _t('Invalid object/media'), 'ObjectEditorController->GetRepresentationInfo');
 					return;
 				}
 			}
