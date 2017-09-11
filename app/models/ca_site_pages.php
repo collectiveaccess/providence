@@ -567,6 +567,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
                     'filename' => $va_m['info']['ORIGINAL_FILENAME'] ? $va_m['info']['ORIGINAL_FILENAME'] : _t('Unknown'),
                     'metadata' => $vs_extracted_metadata,
                     'md5' => $va_m['info']['original']['PROPERTIES']['MD5'],
+                    'page_id' => $va_m['page_id'],
                     'fetched_from' => $va_m['fetched_from'],
                     'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,
                     'fetched' => $va_m['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_m['fetched_from'].'" target="_ext" title="'.$va_m['fetched_from'].'">'.$va_m['fetched_from'].'</a>', date('c', $va_m['fetched_on'])): ""

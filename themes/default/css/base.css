@@ -3234,6 +3234,13 @@ div.caObjectRepresentationDetailEditorElement {
     margin-right: 5px;
 }
 
+input.caObjectRepresentationDetailEditorElementReadOnly {
+    float: left;
+    font-size: 10px;
+    margin-right: 5px;
+    background-color: transparent !important;
+}
+
 div.caObjectRepresentationDetailEditorText {
     font-size: 14px;
     font-weight: normal;

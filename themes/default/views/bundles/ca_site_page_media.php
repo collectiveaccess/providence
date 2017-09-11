@@ -122,7 +122,7 @@
 							<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationDetailEditorContainer">
                                 <div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('title', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}title_{n}", 'name' => "{fieldNamePrefix}title_{n}", 'value' => "{title}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
                                 <div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('caption', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}caption_{n}", 'name' => "{fieldNamePrefix}caption_{n}", 'value' => "{caption}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
-                                <div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", 'value' => "{idno}", "readonly" => true, 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
+                                <div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElementReadOnly', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", 'value' => "{idno}", "readonly" => true, 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?> <div style='margin-bottom: 10px;' id='{fieldNamePrefix}idno_status_{n}'></div></div>
 								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
 						
 								<br class="clear"/>
@@ -169,9 +169,24 @@
 										
 										jQuery("#{fieldNamePrefix}title_{n}").on('keyup', function(e) {
 										    var t = jQuery(this).val();
-										    jQuery("#{fieldNamePrefix}idno_{n}").val(t.replace(/[^A-Za-z0-9\_]+/g, "_"));
+										    jQuery("#{fieldNamePrefix}idno_{n}").val(t.replace(/[^A-Za-z0-9\_]+/g, "_")).trigger('change');
 										});
 									});
+									
+                                    caUI.initIDNoChecker({
+                                        errorIcon: "<?php print caNavIcon(__CA_NAV_ICON_ALERT__, 1); ?>",
+                                        processIndicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+                                        idnoStatusID: '{fieldNamePrefix}idno_status_{n}',
+                                        lookupUrl: '<?php print caNavUrl($this->request, 'lookup', 'SitePageMedia', 'IDNo'); ?>',
+                                        searchUrl: '',
+                                        idnoFormElementIDs: ['#{fieldNamePrefix}idno_{n}'],
+                                        separator: '',
+                                        row_id: "{n}",
+                                        context_id: "{page_id}",
+
+                                        singularAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use')); ?>',
+                                        pluralAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use %1 times')); ?>'
+                                    });
 								</script>
 							</div>
 <?php
@@ -227,7 +242,7 @@
 			<div id='{fieldNamePrefix}detail_editor_{n}'>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('title', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}title_{n}", 'name' => "{fieldNamePrefix}title_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('caption', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}caption_{n}", 'name' => "{fieldNamePrefix}caption_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", "readonly" => true, 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
+				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElementReadOnly', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", "readonly" => false, 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?> <div style='margin-bottom: 10px;' id='{fieldNamePrefix}idno_status_{n}'></div></div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
 				
 				<br class="clear"/>
@@ -273,7 +288,23 @@
 					
                     jQuery("#{fieldNamePrefix}title_{n}").on('keyup', function(e) {
                         var t = jQuery(this).val();
-                        jQuery("#{fieldNamePrefix}idno_{n}").val(t.replace(/[^A-Za-z0-9\_]+/g, "_"));
+                        jQuery("#{fieldNamePrefix}idno_{n}").val(t.replace(/[^A-Za-z0-9\_]+/g, "_")).trigger('change');
+                    });
+                    
+									
+                    caUI.initIDNoChecker({
+                        errorIcon: "<?php print caNavIcon(__CA_NAV_ICON_ALERT__, 1); ?>",
+                        processIndicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+                        idnoStatusID: '{fieldNamePrefix}idno_status_{n}',
+                        lookupUrl: '<?php print caNavUrl($this->request, 'lookup', 'SitePageMedia', 'IDNo'); ?>',
+                        searchUrl: '',
+                        idnoFormElementIDs: ['#{fieldNamePrefix}idno_{n}'],
+                        separator: '',
+                        row_id: "",
+                        context_id: "{page_id}",
+
+                        singularAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use')); ?>',
+                        pluralAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use %1 times')); ?>'
                     });
 				});
 			</script>
@@ -329,7 +360,7 @@
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['access', 'access_display', 'media', 'icon', 'type', 'dimensions', 'filename', 'fetched', 'idno', 'id', 'fetched_from','mimetype', 'idno', 'title', 'caption'],
+			templateValues: ['access', 'access_display', 'media', 'icon', 'type', 'dimensions', 'filename', 'fetched', 'idno', 'id', 'page_id', 'fetched_from','mimetype', 'idno', 'title', 'caption'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
