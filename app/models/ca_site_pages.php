@@ -452,6 +452,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
                 'tags' => [],
                 'urls' => [],
                 'paths' => [],
+                'versions' => $o_coder->getMediaVersions(),
                 'fetched_on' => null,
                 'fetched_from' => null,
                 'dimensions' => null
@@ -567,6 +568,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
                     'filename' => $va_m['info']['ORIGINAL_FILENAME'] ? $va_m['info']['ORIGINAL_FILENAME'] : _t('Unknown'),
                     'metadata' => $vs_extracted_metadata,
                     'md5' => $va_m['info']['original']['PROPERTIES']['MD5'],
+                    'versions' => join("; ", $va_m['versions']),
                     'page_id' => $va_m['page_id'],
                     'fetched_from' => $va_m['fetched_from'],
                     'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,

@@ -104,15 +104,17 @@
 								<em>{title}</em><br/>
 								<h3><?php print _t('Identifier'); ?></h3> {idno}<br/>
 								<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span><br/>
-                                <h3><?php print _t('Access'); ?></h3> {access_display}
+                                <h3><?php print _t('Access'); ?></h3> {access_display}<br/>
 <?php
 	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{{filename}}"), 'bundle_ca_site_page_media');
 ?>
+								<h3><?php print _t('Versions'); ?></h3> {versions}
 								</div>
 								<div class='caObjectRepresentationListInfoSubDisplay'>
 									<h3><?php print _t('Format'); ?></h3> {type};
 									<h3><?php print _t('Dimensions'); ?></h3> {dimensions}
 								</div>
+								
 						
 								<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied when you save'); ?></div>
 							</div>		
