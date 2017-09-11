@@ -40,3 +40,4 @@ branches:
     - develop
     - master
     - master-fix
+    - dev/refactor

@@ -837,6 +837,1951 @@
         </item>
       </items>
     </list>
+    <list code="materials" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Materials</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="animal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>animal</name_singular>
+              <name_plural>animal</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="blood" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>blood</name_singular>
+                  <name_plural>blood</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="claw" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>claw</name_singular>
+                  <name_plural>claw</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="talon" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>talon</name_singular>
+                      <name_plural>talon</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified2" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="dew_claws" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>dew claws</name_singular>
+                      <name_plural>dew claws</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="feather" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>feather</name_singular>
+                  <name_plural>feather</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="emu" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>emu</name_singular>
+                      <name_plural>emu</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="ostrich" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>ostrich</name_singular>
+                      <name_plural>ostrich</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified3" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="fur" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>fur</name_singular>
+                  <name_plural>fur</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="otter" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>otter</name_singular>
+                      <name_plural>otter</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="rabbit" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>rabbit</name_singular>
+                      <name_plural>rabbit</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified4" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="wallaby" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>wallaby</name_singular>
+                      <name_plural>wallaby</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="lynx" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>lynx</name_singular>
+                      <name_plural>lynx</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="hair" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>hair</name_singular>
+                  <name_plural>hair</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="horse" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>horse</name_singular>
+                      <name_plural>horse</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="human" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>human</name_singular>
+                      <name_plural>human</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified5" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="hide_skin" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>hide/skin</name_singular>
+                  <name_plural>hide/skin</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="elk" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>elk</name_singular>
+                      <name_plural>elk</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="leather" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>leather</name_singular>
+                      <name_plural>leather</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="lizard" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>lizard</name_singular>
+                      <name_plural>lizard</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="moose" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>moose</name_singular>
+                      <name_plural>moose</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="ostrich1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>ostrich</name_singular>
+                      <name_plural>ostrich</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="rawhide" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>rawhide</name_singular>
+                      <name_plural>rawhide</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="seal" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seal</name_singular>
+                      <name_plural>seal</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="seal_intestine" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seal-intestine</name_singular>
+                      <name_plural>seal-intestine</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="snake" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>snake</name_singular>
+                      <name_plural>snake</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified6" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="cow_skin" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cow </name_singular>
+                      <name_plural>cow </name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="intestine" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>intestine</name_singular>
+                      <name_plural>intestine</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="hoof" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>hoof</name_singular>
+                  <name_plural>hoof</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified7" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="horn" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>horn</name_singular>
+                  <name_plural>horn</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified8" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="quill" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>quill</name_singular>
+                  <name_plural>quill</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="porcupine" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>porcupine</name_singular>
+                      <name_plural>porcupine</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="quills" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Unidentified</name_singular>
+                      <name_plural>Unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="sinew" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>sinew</name_singular>
+                  <name_plural>sinew</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="seal1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seal</name_singular>
+                      <name_plural>seal</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified9" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="antler" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>antler</name_singular>
+                  <name_plural>antler</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified10" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="baleen" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>baleen</name_singular>
+                  <name_plural>baleen</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="whale" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>whale</name_singular>
+                      <name_plural>whale</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="ivory" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ivory</name_singular>
+                  <name_plural>ivory</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="teeth" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>teeth</name_singular>
+                  <name_plural>teeth</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="shark" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>shark</name_singular>
+                      <name_plural>shark</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="tooth" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Unidentified</name_singular>
+                      <name_plural>Unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="bone" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bone</name_singular>
+                  <name_plural>bone</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="whale1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>whale</name_singular>
+                      <name_plural>whale</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified11" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="toe_bones" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>toe bones</name_singular>
+                      <name_plural>toe bones</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="shell" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>shell</name_singular>
+                  <name_plural>shell</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="mother_of_pearl" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>mother of pearl</name_singular>
+                      <name_plural>mother of pearl</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified12" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Exoskeleton" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Exoskeleton</name_singular>
+                  <name_plural>Exoskeletons</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="turtle_shell" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>turtle shell</name_singular>
+                      <name_plural>turtle shell</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
+        <item idno="binding_agents" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>binding agents</name_singular>
+              <name_plural>binding agents</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="joiners" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>joiners</name_singular>
+                  <name_plural>joiners</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="nail_square" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>nail square</name_singular>
+                      <name_plural>nail square</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="nail_round" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>nail round</name_singular>
+                      <name_plural>nail round</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="metal_tack" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>metal tack</name_singular>
+                      <name_plural>metal tack</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="metal_screw" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>screw</name_singular>
+                          <name_plural>screw</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="unidentified13" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="metal_wire" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>metal wire</name_singular>
+                      <name_plural>metal wire</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="metal_armature_" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>armature </name_singular>
+                          <name_plural>armature </name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="metal_staple" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>metal staple</name_singular>
+                      <name_plural>metal staple</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="wooden_peg" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>wooden peg</name_singular>
+                      <name_plural>wooden peg</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="adhesive" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>adhesive</name_singular>
+                  <name_plural>adhesive</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="synthetic_glue" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>synthetic glue</name_singular>
+                      <name_plural>synthetic glue</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified14" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="natural_glue" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>natural glue</name_singular>
+                      <name_plural>natural glue</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="resin" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>resin</name_singular>
+                      <name_plural>resin</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="tar" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tar</name_singular>
+                      <name_plural>tar</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
+        <item idno="botanical" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>botanical</name_singular>
+              <name_plural>botanical</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="reed" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>reed</name_singular>
+                  <name_plural>reed</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="bamboo" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>bamboo</name_singular>
+                      <name_plural>bamboo</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="cane" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cane</name_singular>
+                      <name_plural>cane</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified15" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="bark" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bark</name_singular>
+                  <name_plural>bark</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="birch" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>birch</name_singular>
+                      <name_plural>birch</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified16" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="fiber" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>fiber</name_singular>
+                  <name_plural>fiber</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified17" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="plant_fiber" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>plant fiber</name_singular>
+                          <name_plural>plant fiber</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="yucca" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>yucca</name_singular>
+                      <name_plural>yucca</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="gourd" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gourd</name_singular>
+                  <name_plural>gourd</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified18" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="grass" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>grass</name_singular>
+                  <name_plural>grass</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified19" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="leaves" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>leaves</name_singular>
+                  <name_plural>leaves</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="palm" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>palm</name_singular>
+                      <name_plural>palm</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified20" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="nut_shell" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>nut shell</name_singular>
+                  <name_plural>nut shell</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified21" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="root" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>root</name_singular>
+                  <name_plural>root</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified22" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="seed" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>seed</name_singular>
+                  <name_plural>seed</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified23" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Elaeocarpus_" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Elaeocarpus </name_singular>
+                      <name_plural>Elaeocarpus </name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="wood" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>wood</name_singular>
+                  <name_plural>wood</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified24" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="willow_strip" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>willow strip</name_singular>
+                      <name_plural>willow strip</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Wood_beads" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>beads</name_singular>
+                      <name_plural>beads</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="fruit" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>fruit</name_singular>
+                  <name_plural>fruit</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="cornhusks" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cornhusks</name_singular>
+                  <name_plural>cornhusks</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="straw" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>straw</name_singular>
+                  <name_plural>straw</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Thorn" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Thorn</name_singular>
+                  <name_plural>Thorn</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="cork" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cork</name_singular>
+                  <name_plural>cork</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="plant" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>plant</name_singular>
+                  <name_plural>plant</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="clay" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>clay</name_singular>
+              <name_plural>clay</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="ceramic" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ceramic</name_singular>
+                  <name_plural>ceramic</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="earthenware" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>earthenware</name_singular>
+                      <name_plural>earthenware</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="kaolinite" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>kaolinite</name_singular>
+                      <name_plural>kaolinite</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="porcelain" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>porcelain</name_singular>
+                      <name_plural>porcelain</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified25" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
+        <item idno="colorant" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>colorant</name_singular>
+              <name_plural>colorant</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="dye" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>dye</name_singular>
+                  <name_plural>dye</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="botanical1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>botanical</name_singular>
+                      <name_plural>botanical</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified26" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="glaze" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>glaze</name_singular>
+                  <name_plural>glaze</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified27" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="ink" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ink</name_singular>
+                  <name_plural>ink</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified28" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="paint" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>paint</name_singular>
+                  <name_plural>paint</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="lacquer" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>lacquer</name_singular>
+                      <name_plural>lacquer</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="mineral" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>mineral</name_singular>
+                      <name_plural>mineral</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="organic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>organic</name_singular>
+                      <name_plural>organic</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified29" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="pigment" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>pigment</name_singular>
+                  <name_plural>pigment</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="mineral1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>mineral</name_singular>
+                      <name_plural>mineral</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="pencil" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>pencil</name_singular>
+                  <name_plural>pencil</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="pen" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>pen</name_singular>
+                  <name_plural>pen</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Varnish" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Varnish</name_singular>
+                  <name_plural>Varnish</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="fabric" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>fabric</name_singular>
+              <name_plural>fabric</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="cloth" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cloth</name_singular>
+                  <name_plural>cloth</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="cotton" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cotton</name_singular>
+                      <name_plural>cotton</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Aida_Cloth" enabled="1" default="0">
+                      <labels>
+                        <label preferred="1" locale="en_US">
+                          <name_singular>Aida_Cloth</name_singular>
+                          <name_plural>Aida_Cloth</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                    <item idno="Aida_Cloth_1" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>Aida Cloth</name_singular>
+                          <name_plural>Aida</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                    <item idno="Monks_Cloth" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>Monks Cloth</name_singular>
+                          <name_plural>Monks</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                    <item idno="linen_cloth" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>linen</name_singular>
+                          <name_plural>linen</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="lace" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>lace</name_singular>
+                      <name_plural>lace</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="ribbon" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>ribbon</name_singular>
+                      <name_plural>ribbon</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="silk" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>silk</name_singular>
+                      <name_plural>silk</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified39" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="velvet" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>velvet</name_singular>
+                      <name_plural>velvet</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="wicker_botanical" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>wicker botanical</name_singular>
+                      <name_plural>wicker botanical</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="wicker_synthetic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>wicker synthetic</name_singular>
+                      <name_plural>wicker synthetic</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="yucca1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>yucca</name_singular>
+                      <name_plural>yucca</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="satin" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>satin</name_singular>
+                      <name_plural>satin</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="cordage" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cordage</name_singular>
+                  <name_plural>cordage</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="nylon_string" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>nylon string</name_singular>
+                      <name_plural>nylon string</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="twine" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>twine</name_singular>
+                      <name_plural>twine</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified31" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="natural_fiber" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>natural fiber</name_singular>
+                      <name_plural>natural fiber</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="rope" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>rope</name_singular>
+                  <name_plural>rope</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="palm_thong" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>palm thong</name_singular>
+                      <name_plural>palm thong</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified32" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="rope_plant_fiber" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Plant Fiber</name_singular>
+                      <name_plural>Plant Fiber</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="thread" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>thread</name_singular>
+                  <name_plural>thread</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="silk1" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>silk</name_singular>
+                      <name_plural>silk</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="unidentified33" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="embroidery_thread" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>embroidery thread</name_singular>
+                      <name_plural>embroidery thread</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="thread_metal" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>metal</name_singular>
+                      <name_plural>metal</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="yarn" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>yarn</name_singular>
+                  <name_plural>yarn</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified34" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="wool" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>wool</name_singular>
+                      <name_plural>wool</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="yarn_pom" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>pom</name_singular>
+                      <name_plural>pom</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="felt" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>felt</name_singular>
+                  <name_plural>felt</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="glass" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>glass</name_singular>
+              <name_plural>glass</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="blown" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>blown</name_singular>
+                  <name_plural>blown</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="bottle" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bottle</name_singular>
+                  <name_plural>bottle</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="colored" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>colored</name_singular>
+                  <name_plural>colored</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="unidentified35" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>unidentified</name_singular>
+                  <name_plural>unidentified</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="window_pane" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>window pane</name_singular>
+                  <name_plural>window pane</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="bead" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bead</name_singular>
+                  <name_plural>bead</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="insect" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>insect</name_singular>
+              <name_plural>insect</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="beetle" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>beetle</name_singular>
+                  <name_plural>beetle</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="unidentified36" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>unidentified</name_singular>
+                  <name_plural>unidentified</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="metal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>metal</name_singular>
+              <name_plural>metal</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="brass" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>brass</name_singular>
+                  <name_plural>brass</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="brass_buttons" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>buttons</name_singular>
+                      <name_plural>buttons</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="bronze" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bronze</name_singular>
+                  <name_plural>bronze</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="copper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>copper</name_singular>
+                  <name_plural>copper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gold" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gold</name_singular>
+                  <name_plural>gold</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="iron" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>iron</name_singular>
+                  <name_plural>iron</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="lead" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>lead</name_singular>
+                  <name_plural>lead</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="ore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ore</name_singular>
+                  <name_plural>ore</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="silver" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>silver</name_singular>
+                  <name_plural>silver</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="steel" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>steel</name_singular>
+                  <name_plural>steel</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="unidentified37" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>unidentified</name_singular>
+                  <name_plural>unidentified</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gauntlets_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gauntlets.</name_singular>
+                  <name_plural>gauntlets.</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="metal_beads" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>beads</name_singular>
+                  <name_plural>beads</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="can" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>can</name_singular>
+                  <name_plural>can</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="paper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>paper</name_singular>
+              <name_plural>paper</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="cardboard" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cardboard</name_singular>
+                  <name_plural>cardboard</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="drawing_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>drawing paper</name_singular>
+                  <name_plural>drawing paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tissue_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>tissue paper</name_singular>
+                  <name_plural>tissue paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="unidentified38" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>unidentified</name_singular>
+                  <name_plural>unidentified</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="rice_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>rice paper</name_singular>
+                  <name_plural>rice paper</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="stone" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stone/Mineral</name_singular>
+              <name_plural>stone/minerals</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="chert" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>chert</name_singular>
+                  <name_plural>chert</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="jade" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>jade</name_singular>
+                  <name_plural>jade</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="obsidian" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>obsidian</name_singular>
+                  <name_plural>obsidian</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="pipestone_catlinite_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>pipestone (catlinite)</name_singular>
+                  <name_plural>pipestone (catlinite)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="slate" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>slate</name_singular>
+                  <name_plural>slate</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="turquoise" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>turquoise</name_singular>
+                  <name_plural>turquoise</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="unidentified43" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>unidentified</name_singular>
+                  <name_plural>unidentified</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="unidentified40" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>unidentified</name_singular>
+                      <name_plural>unidentified</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="_black_stone_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>black stone</name_singular>
+                  <name_plural>black stone</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="stone1" enabled="1" default="0">
+              <labels>
+                <label preferred="1" locale="en_US">
+                  <name_singular>stone</name_singular>
+                  <name_plural>stone</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="stone_1" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>mica</name_singular>
+                  <name_plural>mica</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="synthetic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>synthetic</name_singular>
+              <name_plural>synthetic</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="plaster" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>plaster</name_singular>
+                  <name_plural>plaster</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="plastic" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>plastic</name_singular>
+                  <name_plural>plastic</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="plastic_bead" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>bead</name_singular>
+                      <name_plural>bead</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="rubber" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>rubber</name_singular>
+                  <name_plural>rubber</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="sequine" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>sequine</name_singular>
+                  <name_plural>sequine</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="unidentified42" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>unidentified</name_singular>
+                  <name_plural>unidentified</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="polyester_fiber" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>polyester fiber</name_singular>
+                  <name_plural>polyester fiber</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Unidentified_Materials" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unidentified Material</name_singular>
+              <name_plural>Unidentified Materials</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="polished_beads" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>polished beads</name_singular>
+                  <name_plural>polished beads</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+      </items>
+    </list>
   </lists>
   <elementSets>
     <!--Basic Elements-->
@@ -1062,6 +3007,28 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="materials" datatype="List" list="materials">
+      <labels>
+        <label locale="en_US">
+          <name>Materials</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">horiz_hierbrowser</setting>
+        <setting name="listWidth">70</setting>
+        <setting name="displayDelimiter">, </setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -2441,6 +4408,13 @@
             </placement>
             <placement code="ca_attribute_collection_reference">
               <bundle>ca_attribute_collection_reference</bundle>
+            </placement>
+            <placement code="ca_attribute_materials9">
+              <bundle>ca_attribute_materials</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="ca_attribute_tgn">
               <bundle>ca_attribute_tgn</bundle>

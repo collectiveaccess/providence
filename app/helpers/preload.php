@@ -47,7 +47,7 @@ require_once(__CA_APP_DIR__.'/helpers/initializeLocale.php');
 
 if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	$g_ui_locale = $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'];
-	initializeLocale($g_ui_locale);
+	if (!initializeLocale($g_ui_locale)) { $g_ui_locale = null; }
 }
 
 require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');

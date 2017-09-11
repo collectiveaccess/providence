@@ -6485,7 +6485,7 @@ class BaseModel extends BaseObject {
 
 			// log to self
 			if($vb_log_changes_to_self) {
-				if (($vn_id = $this->getPrimaryKey()) > 0) {
+				if (!caGetOption('row_id', $pa_options, null) && ($vn_id = $this->getPrimaryKey()) > 0) {
 					$va_subjects[$this->tableNum()][] = $vn_id;
 				}
 			}
@@ -12046,8 +12046,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function setRankAfter($pn_after_id, $pa_options=null) {
 		$o_db = $this->getDb();
-		
-		
+			
 		$vs_item_pk = $this->primaryKey();
 		$vs_item_table = $this->tableName();
 		$vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
