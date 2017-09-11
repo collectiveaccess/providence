@@ -118,7 +118,7 @@
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->opn_value_id = $pa_value_array['value_id'];
  			$this->ops_media_data = $pa_value_array['value_blob'];
- 			$this->opa_media_data = $this->opo_media_info_coder->setMediaInfo($pa_value_array['value_blob']);
+ 			$this->opa_media_data = $this->opo_media_info_coder->setMedia($pa_value_array['value_blob']);
  			$this->ops_file_original_name = $pa_value_array['value_longtext2'];
  		}
  		# ------------------------------------------------------------------
