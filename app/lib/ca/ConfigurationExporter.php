@@ -405,6 +405,8 @@ final class ConfigurationExporter {
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_element_labels = $this->opo_db->query("SELECT * FROM ca_metadata_element_labels WHERE element_id=?",$qr_elements->get("element_id"));
+			
+			$vn_num_labels = 0;
 			while($qr_element_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
@@ -414,6 +416,13 @@ final class ConfigurationExporter {
 					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_element_labels->get("description"))));
 				}
 
+				$vo_labels->appendChild($vo_label);
+				$vn_num_labels++;
+			}
+			if (!$vn_num_labels) {
+			    $vo_label = $this->opo_dom->createElement("label");
+				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode(ca_locales::getDefaultCataloguingLocaleID()));
+				$vo_label->appendChild($this->opo_dom->createElement("name", "BLANK"));
 				$vo_labels->appendChild($vo_label);
 			}
 
