@@ -121,6 +121,7 @@ class ActionController extends BaseObject {
 	public function initView() {
 		$this->opo_view = new View($this->opo_request, $this->opa_view_paths);
 		$this->opo_view->setVar('request', $this->getRequest());
+		$this->opo_view->setVar('controller', $this);
 		
 		// Set globals
 		if (is_array($va_globals = $this->opo_request->config->getAssoc('global_template_values'))) {

@@ -320,16 +320,16 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	public static function renderPageForPath($po_controller, $ps_path, $pa_options=null) {
 		if (($t_page = ca_site_pages::find(['path' => $ps_path], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $pa_options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))) {
 			$o_content_view = new View($po_controller->request, $po_controller->request->getViewsDirectoryPath());
-			
+	
 			if (is_array($va_content = caUnserializeForDatabase($t_page->get('content')))) {
 				foreach($va_content as $vs_tag => $vs_content) {
-					$o_content_view->setVar($vs_tag, $vs_content);
+					$o_content_view->setVar($vs_tag, caProcessReferenceTags($po_controller->request, $vs_content, ['page' => $t_page->getPrimaryKey()]));
 				}
 			}
 			
 			// Set standard page fields for use in template
 			foreach(['title', 'description', 'path', 'access', 'keywords', 'view_count'] as $vs_field) {
-				$o_content_view->setVar("page_{$vs_field}", $t_page->get($vs_field));
+				$o_content_view->setVar("page_{$vs_field}", caProcessReferenceTags($po_controller->request, $t_page->get($vs_field), ['page' => $t_page->getPrimaryKey()]));
 			}
 			
 			if (caGetOption('incrementViewCount', $pa_options, false)) {

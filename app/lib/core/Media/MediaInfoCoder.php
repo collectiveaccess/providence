@@ -287,7 +287,7 @@ class MediaInfoCoder {
 	 *
 	 */
 	public function getMediaVersions($pa_options=null) {
-		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { print "feh"; return false; }
 		
 		unset($va_media_info["ORIGINAL_FILENAME"]);
 		unset($va_media_info["INPUT"]);

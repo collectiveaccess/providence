@@ -4217,3 +4217,85 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		return null;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_text
+	 * @param array $pa_options Options include:
+	 *      page = Page_id or path to evaluate media within. [Default is null]
+	 *
+	 * @return string
+	 */
+	function caProcessReferenceTags($po_request, $ps_text, $pa_options=null) {
+	    $pm_page = caGetOption('page', $pa_options, null);
+	    $va_idnos = [];
+        foreach([
+            'object' => 'ca_objects', 'entity' => 'ca_entities', 'place' => 'ca_places', 
+            'occurrrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans', 
+            'movement' => 'ca_movements', 'location' => 'ca_storage_locations', 'media' => 'ca_site_page_media'] as $vs_ref_tag => $vs_ref_type
+        ) { 
+            if (preg_match_all("!\[{$vs_ref_tag} ([^\]]+)\]([^\[]+)\[/{$vs_ref_tag}\]!", $ps_text, $va_matches)) {
+                foreach($va_matches[1] as $i => $vs_attr_string) {
+                    if (sizeof($va_vals = caParseAttributes($vs_attr_string, ['idno', 'class', 'version'])) > 0) {
+                        $va_idnos[$vs_ref_type][$va_matches[0][$i]] = ['idno' => $va_vals['idno'], 'class' => $va_vals['class'], 'version' => $va_vals['version'], 'content' => $va_matches[2][$i]]; 
+                    }
+                }
+            }
+            if (preg_match_all("!\[{$vs_ref_tag} ([^\]]+)/\]!", $ps_text, $va_matches)) {
+                foreach($va_matches[1] as $i => $vs_attr_string) {
+                    if (sizeof($va_vals = caParseAttributes($vs_attr_string, ['idno', 'class', 'version'])) > 0) {
+                        $va_idnos[$vs_ref_type][$va_matches[0][$i]] = ['idno' => $va_vals['idno'], 'class' => $va_vals['class'], 'version' => $va_vals['version'], 'content' => '']; 
+                    }
+                }
+            }
+        }
+        if (sizeof($va_idnos)) {
+            foreach($va_idnos as $vs_ref_type => $va_tags) {
+                switch($vs_ref_type) {
+                    case 'ca_site_page_media':
+                        foreach($va_idnos[$vs_ref_type] as $vs_tag => $va_l) {
+                            $va_params = ['idno' => $va_l['idno']];
+                            if ($pm_page && ((int)$pm_page > 0)) {
+                                $va_params['page_id'] = (int)$pm_page;
+                            } elseif (strlen($pm_page)) {
+                                $va_params['path'] = $pm_page;
+                            }
+                            $qr_m = ca_site_page_media::find($va_params, ['returnAs' => 'searchResult']);
+                            if ($qr_m->nextHit()) {
+                                if ($vs_template = $va_l['content']) {
+                                    $vs_template = str_replace("^title", $qr_m->get('title'), $vs_template);
+                                    $vs_template = str_replace("^caption", $qr_m->get('caption'), $vs_template);
+                                    $vs_template = str_replace("^idno", $qr_m->get('idno'), $vs_template);
+                                    $vs_template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $vs_template);
+                                    $ps_text = str_replace($vs_tag, $vs_template, $ps_text);
+                                } else {
+                                    $ps_text = str_replace($vs_tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $ps_text);
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        $va_map = call_user_func($vs_ref_type.'::getIDsForIdnos', $va_idnos, ['forceToLowercase' => true]);
+            
+                        $va_idnos[$vs_ref_type] = array_map(function($v) use ($va_map) { $v['id'] = $va_map[$v['idno']]; return $v; }, $va_tags);
+            
+                        foreach($va_idnos[$vs_ref_type] as $vs_tag => $va_l) {
+                            switch(__CA_APP_TYPE__) {
+                                case 'PROVIDENCE':
+                                    $vs_link_text= caEditorLink($po_request, $va_l['content'], $va_l['class'], $vs_ref_type, $va_l['id']);
+                                    break;
+                                case 'PAWTUCKET':
+                                    $vs_link_text= caDetailLink($po_request, $va_l['content'], $va_l['class'], $vs_ref_type, $va_l['id']);
+                                    break;
+                            }	
+                            $ps_text = str_replace($vs_tag, $vs_link_text, $ps_text);
+                        }
+                        break;
+                }
+            
+            }
+        }
+        return $ps_text;
+	}
+	# ------------------------------------------------------------------

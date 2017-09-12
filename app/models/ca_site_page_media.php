@@ -263,8 +263,8 @@ class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# Search
 	# ------------------------------------------------------
-	protected $SEARCH_CLASSNAME = null;
-	protected $SEARCH_RESULT_CLASSNAME = null;
+	protected $SEARCH_CLASSNAME = 'SitePageMediaSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'SitePageMediaSearchResults';
 	
 	# ------------------------------------------------------
 	# ACL

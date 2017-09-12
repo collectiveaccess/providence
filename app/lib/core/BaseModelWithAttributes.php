@@ -1594,7 +1594,8 @@
 					't_subject' => $this,
 					'request' => $po_request,
 					'form_name' => $ps_form_name,
-					'format' => ''
+					'format' => '',
+					'dontDoRefSubstitution' => true
 				))));
 				
 				//if the elements datatype returns true from renderDataType, then force render the element

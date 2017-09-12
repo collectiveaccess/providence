@@ -3170,7 +3170,10 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 100) { $va_tokens = array_slice($va_tokens, 50, 50, true); }
+	        if (sizeof($va_tokens) > 100) { 
+	            print "<h1>CULL TOKENS</h1><Br>";
+	            $va_tokens = array_slice($va_tokens, 50, 50, true); 
+	        }
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = 1; }
 	        
@@ -3730,5 +3733,26 @@ function caFileIsIncludable($ps_file) {
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
 		return $va_tags;
+	}
+	# ----------------------------------------
+	/**
+	 * Extract attribute values from an HTML-like formatted attribute string. 
+	 * Ex. if attribute string is: idno="2010.001.5" type="object" and the values to be extracted are "idno" and "type" an array 
+	 * in the form ["idno" => "2010.001.5", "type" => "object"] is returned.
+	 *
+	 * @param string $ps_attr_string The attribute text
+	 * @param array $pa_attributes A list of attributes to extract
+	 * 
+	 * @return array
+	 */
+	function caParseAttributes($ps_attr_string, $pa_attributes) {
+	    $va_ret = [];
+	    foreach($pa_attributes as $vs_attr) {
+	        if(preg_match("!{$vs_attr}[ ]*=[ ]*[\"']{1}([^\"']+)[\"']{1}!", $ps_attr_string, $va_matches)) {
+	            $va_ret[$vs_attr] = $va_matches[1];
+	        }
+	    }
+	    
+	    return $va_ret;
 	}
 	# ----------------------------------------
