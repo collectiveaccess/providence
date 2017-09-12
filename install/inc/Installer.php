@@ -1159,26 +1159,27 @@ class Installer {
 						}
 					}
 				}
-			}
-			if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
-				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				if ($t_instance instanceof BaseRelationshipModel) {
-					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
-				} elseif($t_instance instanceof ca_representation_annotations) {
-					$va_ids = [];
-					foreach($va_codes as $vs_annotation_type) {
-						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
-							$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
-						}
-					}
-				} else {
-					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-				}
 				
-				foreach($va_ids as $vn_i => $vn_type_id) {
-					$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
-					$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
-				}
+				if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
+                    $va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+                    if ($t_instance instanceof BaseRelationshipModel) {
+                        $va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
+                    } elseif($t_instance instanceof ca_representation_annotations) {
+                        $va_ids = [];
+                        foreach($va_codes as $vs_annotation_type) {
+                            if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+                                $va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+                            }
+                        }
+                    } else {
+                        $va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
+                    }
+                
+                    foreach($va_ids as $vn_i => $vn_type_id) {
+                        $t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
+                        $this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
+                    }
+                }
 			}
 
 			// set user and group access
