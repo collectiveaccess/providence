@@ -532,15 +532,26 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function addMedia($ps_path, $ps_title, $ps_caption, $ps_idno, $pn_access, $pa_options=null) {
 	    $t_media = new ca_site_page_media();
+	    if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_media->setTransaction($o_trans); }
 	    $t_media->setMode(ACCESS_WRITE);
-	    $t_media->set([
+	    
+	    $va_fld_data = [
 	        'page_id' => $this->getPrimaryKey(),
 	        'media' => $ps_path,
 	        'title' => $ps_title,
 	        'caption' => $ps_caption,
 	        'idno' => $ps_idno,
 	        'access' => $pn_access
-	    ], null, $pa_options);
+	    ];
+	    
+	    $vb_errored = false;
+	    foreach($va_fld_data as $vs_f => $vs_v) {
+	        if (!($t_media->set($vs_f, $vs_v, $pa_options))) {
+	            $this->errors += $t_media->errors;
+	            $vb_errored = true;
+	        }
+	    }
+	    if ($vb_errored) return false;
 	    if (!($vn_rc = $t_media->insert($pa_options))) {
 	        $this->errors = $t_media->errors;
 	        return $vn_rc;
@@ -555,6 +566,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function editMedia($pn_media_id, $ps_path, $ps_title, $ps_caption, $ps_idno, $pn_access, $pa_options=null) {
 	    $t_media = new ca_site_page_media($pn_media_id);
+	    if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_media->setTransaction($o_trans); }
 	    if (!$t_media->isLoaded()) { return null; }
 	    $t_media->setMode(ACCESS_WRITE);
 	    
@@ -571,9 +583,14 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	        unset($pa_options['rank']);
 	    }
 	    
+	    $vb_errored = false;
 	    foreach($va_fld_data as $vs_f => $vs_v) {
-	        $t_media->set($vs_f, $vs_v, $pa_options);
+	        if (!($t_media->set($vs_f, $vs_v, $pa_options))) {
+	            $this->errors += $t_media->errors;
+	            $vb_errored = true;
+	        }
 	    }
+	    if ($vb_errored) return false;
 	    if (!($vn_rc = $t_media->update($pa_options))) {
 	        $this->errors = $t_media->errors;
 	        return $vn_rc;
@@ -588,10 +605,10 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function removeMedia($pn_media_id, $pa_options=null) {
 	    $t_media = new ca_site_page_media($pn_media_id);
+	    if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_media->setTransaction($o_trans); }
 	    if (!$t_media->isLoaded()) { return null; }
 	    $t_media->setMode(ACCESS_WRITE);
-	    $t_media->delete(true);
-	    if (!($vn_rc = $t_media->insert($pa_options))) {
+	    if (!($vn_rc = $t_media->delete(true))) {
 	        $this->errors = $t_media->errors;
 	    }
 	    return $vn_rc;

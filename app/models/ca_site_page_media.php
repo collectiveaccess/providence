@@ -54,7 +54,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Title'), 'DESCRIPTION' => _t('Short descriptive title for media'),
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(1,255)
 		),
 		'idno' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -62,7 +62,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Media identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this media.'),
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(1,255)
 		),
 		'idno_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 

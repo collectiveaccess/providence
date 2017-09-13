@@ -4622,7 +4622,6 @@ if (!$vb_batch) {
 									
 									$this->editMedia($va_media['media_id'], $vs_path, $vs_title, $vs_caption, $vs_idno, $vn_access, ['original_filename' => $vs_original_name, 'rank' => $vn_rank]);
 									if ($this->numErrors()) {
-										//$po_request->addActionErrors($this->errors(), $vs_f, $va_media['media_id']);
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
 												case 795:
@@ -4655,7 +4654,6 @@ if (!$vb_batch) {
 									// is it a delete key?
 									$this->clearErrors();
 									if (($po_request->getParameter($vs_prefix_stub.$va_media['media_id'].'_delete', pInteger)) > 0) {
-										// delete!
 										$this->removeMedia($va_media['media_id']);
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, $va_media['media_id']);
