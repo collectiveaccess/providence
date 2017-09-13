@@ -2252,7 +2252,7 @@ class BaseEditorController extends ActionController {
 				    break;
 			}
 			$vs_idno = $t_subject->get('idno');
-			
+	
 			$vb_download_for_record = false;
 			foreach($va_reps as $vn_representation_id => $va_rep) {
 				if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
@@ -2332,7 +2332,7 @@ class BaseEditorController extends ActionController {
 				$o_zip->addFile($vs_path, $vs_name);
 			}
 			$o_view->setVar('zip_stream', $o_zip);
-			$o_view->setVar('archive_name', preg_replace('![^A-Za-z0-9\.\-]+!', '_', $t_subject->get('idno')).'.zip');
+			$o_view->setVar('archive_name', preg_replace('![^A-Za-z0-9\.\-]+!', '_', trim($t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), "/")).'.zip');
 		} else {
 			foreach($va_file_paths as $vs_path => $vs_name) {
 				$o_view->setVar('archive_path', $vs_path);
