@@ -327,6 +327,60 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 			
+			$va_tags = $o_content_view->getTagList($t_template->get('template'), ['string' => true]);
+		    $va_media_to_render = [];
+			foreach($va_tags as $vs_tag) {
+			    if (substr($vs_tag, 0, 5) === 'media') {
+			        $va_tmp = explode(':', $vs_tag);
+			        $va_media_to_render[] = [
+			            'tag' => $vs_tag,
+			            'index' => (int)$va_tmp[1],
+			            'version' => (string)$va_tmp[2],
+			            'mode' => (string)$va_tmp[3]
+			        ]; 
+			    }
+			}
+			if (sizeof($va_media_to_render) > 0) {
+			    $va_media_list = array_values($t_page->getPageMedia(array_unique(array_map(function($v) { return $v['version']; }, $va_media_to_render))));
+
+			    foreach($va_media_to_render as $va_media) {
+			        $vn_index = (int)caGetOption('index', $va_media, 0) - 1;
+			        if ($vn_index < 0) { $vn_index = 0; }
+			        if ($vn_index > sizeof($va_media_list) - 1) { $vn_index = sizeof($va_media_list) - 1; }
+			        
+			        if (!isset($va_media_list[$vn_index])) { continue; }
+			        
+			        $vs_media_tag = null;
+			        switch($vs_version = caGetOption('version', $va_media, 'small')) {
+			            case 'caption':
+			                $vs_media_tag = $va_media_list[$vn_index]['caption'];
+			                break;
+			            case 'title':
+			                $vs_media_tag = $va_media_list[$vn_index]['title'];
+			                break;
+			            case 'idno':
+			                $vs_media_tag = $va_media_list[$vn_index]['idno'];
+			                break;
+			        }
+			        
+			        if (is_null($vs_media_tag)) {
+                        switch($va_media['mode']) {
+                            case 'url':
+                                $vs_media_tag = $va_media_list[$vn_index]['urls'][$vs_version];
+                                break;
+                            case 'path':
+                                $vs_media_tag = $va_media_list[$vn_index]['paths'][$vs_version];
+                                break;
+                            case 'tag':
+                            default:
+                                $vs_media_tag = $va_media_list[$vn_index]['tags'][$vs_version];
+                                break;
+                        }
+                    }
+			        $o_content_view->setVar($va_media['tag'], $vs_media_tag);
+			    }
+			}
+			
 			// Set standard page fields for use in template
 			foreach(['title', 'description', 'path', 'access', 'keywords', 'view_count'] as $vs_field) {
 				$o_content_view->setVar("page_{$vs_field}", caProcessReferenceTags($po_controller->request, $t_page->get($vs_field), ['page' => $t_page->getPrimaryKey()]));

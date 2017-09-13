@@ -4276,7 +4276,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
                         }
                         break;
                     default:
-                        $va_map = call_user_func($vs_ref_type.'::getIDsForIdnos', $va_idnos, ['forceToLowercase' => true]);
+                        $va_map = call_user_func($vs_ref_type.'::getIDsForIdnos', array_map(function($v) { return $v['idno']; }, $va_idnos[$vs_ref_type]), ['forceToLowercase' => true]);
             
                         $va_idnos[$vs_ref_type] = array_map(function($v) use ($va_map) { $v['id'] = $va_map[$v['idno']]; return $v; }, $va_tags);
             

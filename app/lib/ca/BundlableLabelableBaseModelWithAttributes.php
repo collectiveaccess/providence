@@ -5998,7 +5998,7 @@ if (!$vb_batch) {
 	public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		foreach (array(
-				'name', 'form_name', 'request', 'field_errors', 'display_form_field_tips', 'no_tooltips', 'label', 'readonly', 'dontDoRefSubstitution'
+				'name', 'form_name', 'request', 'field_errors', 'display_form_field_tips', 'no_tooltips', 'label', 'readonly'
 				) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
