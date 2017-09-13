@@ -70,6 +70,11 @@ class Installer {
 	protected $opo_db;
 	# --------------------------------------------------
 	/**
+	 * @var array
+	 */
+	protected $opa_metadata_element_deferred_settings_processing = [];
+	# --------------------------------------------------
+	/**
 	 * Constructor
 	 *
 	 * @param string $ps_profile_dir path to a directory containing profiles and XML schema
@@ -384,6 +389,26 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
+	    // process metadata element settings that couldn't be processed during install
+	    // (Eg. those for hideIfSelected_*)
+	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
+	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
+	            if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
+	            $t_element->setMode(ACCESS_WRITE);
+	            $va_available_settings = $t_element->getAvailableSettings();
+	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
+	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
+	                
+	                if (isset($va_available_settings[$vs_setting_name]['multiple']) && $va_available_settings[$vs_setting_name]['multiple']) {
+	                    $t_element->setSetting($vs_setting_name, $va_setting_values);
+	                } else {
+	                    $t_element->setSetting($vs_setting_name, array_shift($va_setting_values));
+	                }
+	            }
+	        }
+	        $t_element->update();
+	    } 
+	    
 		// generate system GUID -- used to identify systems in data sync protocol
 		$o_vars = new ApplicationVars();
 		$o_vars->setVar('system_guid', caGenerateGUID());
@@ -2146,7 +2171,7 @@ class Installer {
 		$va_settings = array();
 		
 		$pa_settings_info = caGetOption('settingsInfo', $pa_options, []);
-		
+
 		if($po_settings_node) {
 			foreach($po_settings_node->children() as $vo_setting) {
 				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
@@ -2159,6 +2184,12 @@ class Installer {
 
 				$vs_setting_name = self::getAttribute($vo_setting, "name");
 				$vs_value = (string) $vo_setting;
+				
+				
+                if (isset($pa_settings_info[$vs_setting_name]) && isset($pa_settings_info[$vs_setting_name]['deferred']) && $pa_settings_info[$vs_setting_name]['deferred']) {
+                    $this->opa_metadata_element_deferred_settings_processing[$pt_instance->get('element_code')][$vs_setting_name][] = $vs_value;
+                    continue;
+                }
 
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
 					if ($vs_locale) { // settings with locale (those can't repeat)
