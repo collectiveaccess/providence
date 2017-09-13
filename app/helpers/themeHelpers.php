@@ -1006,6 +1006,8 @@
 		$o_dm = Datamodel::load();
  		if (!($pt_subject = $o_dm->getInstanceByTableName($va_search_info['table'], true))) { return null; }
  		
+ 		$va_globals = $pt_subject->getAppConfig()->getAssoc('global_template_values');
+ 		
 		$po_request = caGetOption('request', $pa_options, null);
 		$ps_controller = caGetOption('controller', $pa_options, null);
 		$ps_form_name = caGetOption('formName', $pa_options, 'caAdvancedSearch');
@@ -1019,6 +1021,8 @@
 		
 		$vb_submit_or_reset_set = false;
 		foreach($pa_tags as $vs_tag) {
+		    if(isset($va_globals[$vs_tag])) { continue; }
+		    
 			$va_parse = caParseTagOptions($vs_tag);
 			$vs_tag_proc = $va_parse['tag'];
 			$va_opts = $va_parse['options'];
