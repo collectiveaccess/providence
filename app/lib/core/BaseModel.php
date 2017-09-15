@@ -1194,7 +1194,7 @@ class BaseModel extends BaseObject {
 		
 		$o_db = $this->getDb();
 		
-		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
+		$vs_deleted_sql = $this->hasField('deleted') ? " AND deleted = 0" : "";
 		
 		$qr_res = $o_db->query("
 			SELECT {$vs_pk}, {$vs_fld_list}
