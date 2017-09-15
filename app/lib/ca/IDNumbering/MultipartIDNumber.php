@@ -653,21 +653,39 @@ class MultipartIDNumber extends IDNumber {
 
 		// Get the next number based upon field data
 		$vn_type_id = null;
+		$vs_type_limit_sql = '';
 		
 		$o_dm = Datamodel::load();
 		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return 'ERR'; }
 		if ((bool)$va_element_info['sequence_by_type']) {
-			$vn_type_id = (int)$t_instance->getTypeIDForCode($this->getType());
+			$vs_type = $this->getType();
+			if ($vs_type == '__default__') {
+			    $va_types = $this->getTypes(); 
+			    
+			    $va_exclude_type_ids = [];
+			    foreach($va_types as $vs_type) {
+			        if ($vs_type == '__default__') { continue; }
+			        if ($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
+			            $va_exclude_type_ids[] = $vn_type_id;
+			        }
+			    }
+			    if (sizeof($va_exclude_type_ids) > 0) {
+			        $vs_type_limit_sql = " AND type_id NOT IN (".join(", ", $va_exclude_type_ids).")";
+			    }
+			} elseif($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
+		        $vs_type_limit_sql = " AND type_id = {$vn_type_id}";
+		    }
 		}
 		
-		if ($qr_res = $this->opo_db->query($x="
+		
+		if ($qr_res = $this->opo_db->query("
 			SELECT $vs_field FROM ".$vs_table."
 			WHERE
-				$vs_field LIKE ? ".(($vn_type_id > 0) ? " AND type_id = {$vn_type_id}" : "")."
+				$vs_field LIKE ? {$vs_type_limit_sql}
 				".($t_instance->hasField('deleted') ? " AND (deleted = 0)" : '')."
 			ORDER BY
 				$vs_sort_field DESC
-		", ($y=$vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%')))) {
+		", ($vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%')))) {
 			if ($this->opo_db->numErrors()) {
 				return "ERR";
 			}
