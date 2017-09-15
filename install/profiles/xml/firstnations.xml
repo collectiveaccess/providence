@@ -22297,8 +22297,8 @@ differs from the holder of rights for the work. Example: The work rights are “
               <typename_reverse>is parent of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>ind</subTypeLeft>
-          <subTypeRight>ind</subTypeRight>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
         </type>
         <type code="spouse" default="0">
           <labels>
@@ -22307,8 +22307,8 @@ differs from the holder of rights for the work. Example: The work rights are “
               <typename_reverse>is spouse of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>ind</subTypeLeft>
-          <subTypeRight>ind</subTypeRight>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
         </type>
         <type code="principal" default="0">
           <labels>
@@ -22317,8 +22317,8 @@ differs from the holder of rights for the work. Example: The work rights are “
               <typename_reverse>had as principal</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>school</subTypeLeft>
-          <subTypeRight/>
+          <subTypeLeft/>
+          <subTypeRight>school</subTypeRight>
         </type>
         <type code="administrator" default="0">
           <labels>
@@ -22327,8 +22327,8 @@ differs from the holder of rights for the work. Example: The work rights are “
               <typename_reverse>had as administrator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>school</subTypeLeft>
-          <subTypeRight>ind</subTypeRight>
+          <subTypeLeft/>
+          <subTypeRight>school</subTypeRight>
         </type>
         <type code="teacher" default="0">
           <labels>
@@ -22377,7 +22377,7 @@ differs from the holder of rights for the work. Example: The work rights are “
               <typename_reverse>has member</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>ind</subTypeLeft>
+          <subTypeLeft></subTypeLeft>
           <subTypeRight/>
         </type>
       </types>
