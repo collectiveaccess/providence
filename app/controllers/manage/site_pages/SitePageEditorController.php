@@ -41,7 +41,17 @@
 		 */
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
-
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+		 *
+		 */
+ 		public function getMediaList() {
+ 		    $pn_page_id = $this->request->getParameter('page_id', pInteger);
+ 			$t_page = new ca_site_pages($pn_page_id);
+ 			$this->view->setVar('media_list', $t_page->getPageMedia(['icon']));
+ 			
+ 			$this->render('media_list_html.php');
  		}
  		# -------------------------------------------------------
  		/**

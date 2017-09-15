@@ -232,6 +232,9 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 		$vs_form_element_format = $o_config->get('form_element_display_format');
 		$pb_include_tooltips = caGetOption('addTooltips', $pa_options, false);
 		
+		$vs_content_url = caGetOption('contentUrl', $pa_options, '');
+		$vs_cktoolbar = caGetOption('cktoolbar', $pa_options, 'wysiwyg_content_editor_toolbar');
+		
 		$vs_tagname_prefix = caGetOption('tagnamePrefix', $pa_options, 'page_field');
 	
 		if (!is_array($va_tags = $this->get('tags'))) { return []; }
@@ -242,7 +245,7 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 			$va_form_elements[] = [
 				'code' => $vs_tag,
 				'label' => ($vs_label = trim($va_tag_info['label'])) ? $vs_label : $vs_tag,
-				'element' => caHTMLTextInput("{$vs_tagname_prefix}_{$vs_tag}", ['id' => "{$vs_tagname_prefix}_{$vs_tag}", 'value' => $pa_values[$vs_tag]], ['width' => caGetOption('width', $va_tag_info, '300px'), 'height' => caGetOption('height', $va_tag_info, '35px'), 'usewysiwygeditor' => caGetOption('usewysiwygeditor', $va_tag_info, false)]),
+				'element' => caHTMLTextInput("{$vs_tagname_prefix}_{$vs_tag}", ['id' => "{$vs_tagname_prefix}_{$vs_tag}", 'value' => $pa_values[$vs_tag]], ['width' => caGetOption('width', $va_tag_info, '300px'), 'height' => caGetOption('height', $va_tag_info, '35px'), 'usewysiwygeditor' => caGetOption('usewysiwygeditor', $va_tag_info, false), 'cktoolbar' => $vs_cktoolbar, 'contentUrl' => $vs_content_url]),
 				'value' => $pa_values[$vs_tag]
 			];
 			

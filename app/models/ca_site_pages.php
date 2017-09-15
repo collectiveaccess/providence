@@ -276,7 +276,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_template = new ca_site_templates($vn_template_id);
 		
-		$va_element_defs = $t_template->getHTMLFormElements($va_page_content, array_merge($pa_options, ['addTooltips' => true]));
+		$va_element_defs = $t_template->getHTMLFormElements($va_page_content, array_merge($pa_options, ['addTooltips' => true, 'contentUrl' => caGetOption('contentUrl', $pa_options, null)]));
 		
 		$va_form_elements = [];
 		foreach($va_element_defs as $va_element_def) {
@@ -501,6 +501,9 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	    $va_media_list = []; 
         foreach($va_media as $i => $va_media_info) {
             $o_coder = new MediaInfoCoder($va_media_info['media']);
+            unset($va_media_info['media']);
+            unset($va_media_info['media_metadata']);
+            unset($va_media_info['media_content']);
             $va_media_list[$va_media_info['media_id']] = array_merge($va_media_info, [
                 'info' => $o_coder->getMedia(),
                 'tags' => [],
