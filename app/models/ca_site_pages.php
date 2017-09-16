@@ -392,7 +392,15 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 				$t_page->update();
 			}
 			
-			return $o_content_view->render($t_template->get('template'), false, ['string' => true]); 
+			if ((bool)$t_page->getAppConfig()->get('allow_php_in_site_page_templates')) {
+			    ob_start();
+			    eval("?>".$t_template->get('template'));
+			    $vs_template_content = ob_get_clean();
+			} else {
+			    $vs_template_content = $t_template->get('template');
+			}
+			
+			return $o_content_view->render($vs_template_content, false, ['string' => true]); 
 		}
 		return false;
 	}
