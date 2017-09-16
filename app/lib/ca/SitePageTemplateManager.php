@@ -100,6 +100,8 @@
   			
   			if ($t_template->load(['template_code' => $vs_template_name])) {
   				$t_template->setMode(ACCESS_WRITE);
+  				
+  				$t_template->purify(false);
   				$t_template->set([
   					'template' => $vs_template_content,
   					'tags' => $va_tags_with_info,
@@ -109,6 +111,7 @@
   				if (!$t_template->numErrors()) { $vn_template_update_count++; }
   			} else {
   				$t_template->setMode(ACCESS_WRITE);
+  				$t_template->purify(false);
   				$t_template->set([
   					'template_code' => $vs_template_name,
   					'title' => $vs_template_name,
