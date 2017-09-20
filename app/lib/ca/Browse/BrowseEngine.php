@@ -3007,7 +3007,7 @@
 					} else {
 						$vs_parent_fld_select = (($vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD')) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '');
 						$vs_sql = "
-							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}
+							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}, l.{$vs_label_pk}
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
@@ -3038,7 +3038,7 @@
 							$va_unique_values[$vs_label] = true;
 
 							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
-								'id' => $vn_id,
+								'id' => $qr_res->get($vs_label_pk),
 								'parent_id' => $vn_parent_id,
 								'label' => $vs_label,
 								'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label),
