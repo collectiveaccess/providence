@@ -80,7 +80,7 @@
 					
 					// HTML for tileviewer
 					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
-				}elseif (is_a($t_instance, "ca_site_page_media")) {
+				} elseif (is_a($t_instance, "ca_site_page_media")) {
 					$va_viewer_opts = [
 						'id' => $vs_id,
 						'read_only' => true,

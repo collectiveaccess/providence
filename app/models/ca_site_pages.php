@@ -78,7 +78,7 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Page metadata: URL path'), 'DESCRIPTION' => _t('The unique root-relative URL path used by the public to access this page. For example, if set to <em>/pages/staff</em> this page would be accessible to the public using a URL similiar to this: <em>http://your.domain.com/pages/staff</em>.'),
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(2,255)
 		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -343,12 +343,14 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			if (sizeof($va_media_to_render) > 0) {
 			    $va_media_list = array_values($t_page->getPageMedia(array_unique(array_map(function($v) { return $v['version']; }, $va_media_to_render))));
 
+                if (!is_array($va_access_values = caGetUserAccessValues($po_controller->request)) || !sizeof($va_access_values)) { $va_access_values = null; }
 			    foreach($va_media_to_render as $va_media) {
 			        $vn_index = (int)caGetOption('index', $va_media, 0) - 1;
 			        if ($vn_index < 0) { $vn_index = 0; }
 			        if ($vn_index > sizeof($va_media_list) - 1) { $vn_index = sizeof($va_media_list) - 1; }
 			        
 			        if (!isset($va_media_list[$vn_index])) { continue; }
+			        if (is_array($va_access_values) && !in_array($va_media_list[$vn_index]['access'], $va_access_values)) { print "x=".$va_media_list[$vn_index]['access'];continue; }
 			        
 			        $vs_media_tag = null;
 			        switch($vs_version = caGetOption('version', $va_media, 'small')) {
@@ -381,6 +383,8 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			    }
 			}
 			
+		    $o_content_view->setVar("page", $t_page);
+		     
 			// Set standard page fields for use in template
 			foreach(['title', 'description', 'path', 'access', 'keywords', 'view_count'] as $vs_field) {
 				$o_content_view->setVar("page_{$vs_field}", caProcessReferenceTags($po_controller->request, $t_page->get($vs_field), ['page' => $t_page->getPrimaryKey()]));
@@ -391,10 +395,12 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 				$t_page->set('view_count', (int)$t_page->get('view_count') + 1);
 				$t_page->update();
 			}
-			
+	
 			if ((bool)$t_page->getAppConfig()->get('allow_php_in_site_page_templates')) {
 			    ob_start();
-			    eval("?>".$t_template->get('template'));
+			    $that = $o_content_view;    // Simulate "$this" in a view while eval'ing the raw template code by copying view into "$that"...
+			    $vs_template = preg_replace('!\$this([^A-Za-z0-9]+)!', '$that\1', $t_template->get('template'));    // ... and then rewrite all instances of "$this" to "$that"
+			    eval("?>{$vs_template}");
 			    $vs_template_content = ob_get_clean();
 			} else {
 			    $vs_template_content = $t_template->get('template');
@@ -542,9 +548,13 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array
 	 */
 	public function addMedia($ps_path, $ps_title, $ps_caption, $ps_idno, $pn_access, $pa_options=null) {
+	    if (!$this->getPrimaryKey()) { return false; }
 	    $t_media = new ca_site_page_media();
 	    if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_media->setTransaction($o_trans); }
 	    $t_media->setMode(ACCESS_WRITE);
+	    
+	    if (!$ps_idno) { $ps_idno = uniqid("Media-".$this->getPrimaryKey()); }
+	    if (!$ps_title) { $ps_title = $ps_idno; }
 	    
 	    $va_fld_data = [
 	        'page_id' => $this->getPrimaryKey(),
@@ -576,6 +586,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array
 	 */
 	public function editMedia($pn_media_id, $ps_path, $ps_title, $ps_caption, $ps_idno, $pn_access, $pa_options=null) {
+	    if (!$this->getPrimaryKey()) { return false; }
 	    $t_media = new ca_site_page_media($pn_media_id);
 	    if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_media->setTransaction($o_trans); }
 	    if (!$t_media->isLoaded()) { return null; }
@@ -596,7 +607,8 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	    
 	    $vb_errored = false;
 	    foreach($va_fld_data as $vs_f => $vs_v) {
-	        if (!($t_media->set($vs_f, $vs_v, $pa_options))) {
+	        $t_media->set($vs_f, $vs_v, $pa_options);
+	        if ($t_media->numErrors() > 0) {
 	            $this->errors += $t_media->errors;
 	            $vb_errored = true;
 	        }
@@ -615,7 +627,9 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array
 	 */
 	public function removeMedia($pn_media_id, $pa_options=null) {
+	    if (!$this->getPrimaryKey()) { return false; }
 	    $t_media = new ca_site_page_media($pn_media_id);
+	    if ($t_media->get('page_id') != $this->getPrimaryKey()) { return false; } 
 	    if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_media->setTransaction($o_trans); }
 	    if (!$t_media->isLoaded()) { return null; }
 	    $t_media->setMode(ACCESS_WRITE);
