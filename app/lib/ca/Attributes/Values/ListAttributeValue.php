@@ -570,6 +570,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_SELECT,
+							'multiple' => true,
 							'options' => $va_options_for_settings,
 							'takesLocale' => false,
 							'default' => '',
@@ -588,7 +589,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			if(is_array($va_list_items) && sizeof($va_list_items)) {
 				foreach($va_list_items as $va_items_by_locale) {
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-						$va_element_settings['hideIfSelected_'.$va_item['idno']] = true;
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => true, 'multiple' => true];
 					}
 				}
 			}

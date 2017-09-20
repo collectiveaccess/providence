@@ -4262,7 +4262,7 @@
             }
             print CLIProgressBar::start($va_counts['files'], _t('Processing media'));
 			if (!BatchProcessor::importMediaFromDirectory(null, $va_opts)) {
-				CLIUtils::addError(_t("Could not import media from %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
+				CLIUtils::addError(_t("Could not import media from %1: %2", $vs_data_source, join("; ", BatchProcessor::getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported media from source %1", $vs_data_source));
