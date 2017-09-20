@@ -3038,7 +3038,7 @@
 							$va_unique_values[$vs_label] = true;
 
 							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
-								'id' => $qr_res->get($vs_label_pk),
+								'id' => $qr_res->get($vs_item_pk),
 								'parent_id' => $vn_parent_id,
 								'label' => $vs_label,
 								'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label),
