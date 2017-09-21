@@ -223,7 +223,19 @@
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * @param array $pa_options Options include:
+ 		 *      doRefSubstitution = Parse and replace reference tags (in the form [table idno="X"]...[/table]). [Default is false in Providence; true in Pawtucket].
+ 		 * @return string
+ 		 */
 		public function getDisplayValue($pa_options=null) {
+		    global $g_request;
+		    
+		    // process reference tags
+		    if ($g_request && caGetOption('doRefSubstitution', $pa_options, __CA_APP_TYPE__ == 'PAWTUCKET')) {
+                return caProcessReferenceTags($g_request, $this->ops_text_value);
+            }
+		
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------

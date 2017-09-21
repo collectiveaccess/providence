@@ -1194,11 +1194,13 @@ class BaseModel extends BaseObject {
 		
 		$o_db = $this->getDb();
 		
+		$vs_deleted_sql = $this->hasField('deleted') ? " AND deleted = 0" : "";
+		
 		$qr_res = $o_db->query("
 			SELECT {$vs_pk}, {$vs_fld_list}
 			FROM {$vs_table_name}
 			WHERE
-				{$vs_pk} IN (?)
+				{$vs_pk} IN (?) {$vs_deleted_sql}
 		", array($va_ids));
 		
 		$va_vals = array();
@@ -1211,6 +1213,45 @@ class BaseModel extends BaseObject {
 			}
 		}
 		return BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num][$vs_cache_key] = $va_vals;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Translate an array of idnos into row_ids 
+	 * 
+	 * @param array $pa_idnos A list of idnos
+	 * @param array $pa_options Options include:
+	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false]
+	 *
+	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
+	 */
+	static public function getIDsForIdnos($pa_idnos, $pa_options=null) {
+	    $o_dm = Datamodel::load();
+	    if (!is_array($pa_idnos) && strlen($pa_idnos)) { $pa_idnos = [$pa_idnos]; }
+		
+		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name, true))) { return null; }
+		
+	    $pa_idnos = array_map(function($v) { return (string)$v; }, $pa_idnos);
+	    
+	    $vs_pk = $t_instance->primaryKey();
+	    $vs_table_name = $t_instance->tableName();
+	    $vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
+		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
+	    
+	    $qr_res = $t_instance->getDb()->query("
+			SELECT {$vs_pk}, {$vs_idno_fld}
+			FROM {$vs_table_name}
+			WHERE
+				{$vs_idno_fld} IN (?) {$vs_deleted_sql}
+		", array($pa_idnos));
+		
+		$pb_force_to_lowercase = caGetOption('forceToLowercase', $pa_options, false);
+		
+		$va_ret = [];
+		while($qr_res->nextRow()) {
+		    $va_ret[$pb_force_to_lowercase ? strtolower($qr_res->get($vs_idno_fld)) : $qr_res->get($vs_idno_fld)] = $qr_res->get($vs_pk);
+		}
+		return $va_ret;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -6271,8 +6312,8 @@ class BaseModel extends BaseObject {
 		if ($this->hasField($va_tmp[1])) {
 			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
 			return $this->htmlFormElement($va_tmp[1], '^ELEMENT', array_merge($pa_options, array(
-					'name' => $ps_field,
-					'id' => str_replace(".", "_", $ps_field),
+					'name' => caGetOption('name', $pa_options, $ps_field).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
+					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),

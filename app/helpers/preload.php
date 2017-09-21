@@ -29,21 +29,23 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-require_once(__CA_APP_DIR__.'/helpers/errorHelpers.php');
+ 
+  /**
+   *
+   */
+require_once(__CA_APP_DIR__."/helpers/errorHelpers.php");
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
 
-require_once(__CA_LIB_DIR__.'/core/Utils/Debug.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Translate.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Registry.php');
-require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php'); // is used in utilityHelpers
-require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
-require_once(__CA_APP_DIR__.'/helpers/initializeLocale.php');
+require_once(__CA_LIB_DIR__."/core/Zend/Translate.php");
+require_once(__CA_LIB_DIR__."/core/Zend/Cache.php");
+require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php"); // is used in utilityHelpers
+require_once(__CA_LIB_DIR__."/core/Cache/ExternalCache.php"); // is used in utilityHelpers
+require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php"); // is used in utilityHelpers
+require_once(__CA_LIB_DIR__."/core/Zend/Registry.php");
+
+require_once(__CA_LIB_DIR__."/core/Utils/Debug.php");
+require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/initializeLocale.php");
 
 if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	$g_ui_locale = $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'];

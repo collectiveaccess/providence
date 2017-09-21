@@ -1370,12 +1370,12 @@
 
 														$va_item_ids[] = (int)$vs_v;
 														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
-														$va_attr_values[] = $va_item_ids;
+														$va_attr_values[] = array_map(function($v) { return (int)$v; }, array_unique($va_item_ids));
 														break;
 													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
 														if($vs_f == '_dont_save') {
 															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
-															$va_attr_values[] = $vn_row_id;
+															$va_attr_values[] = (int)$vn_row_id;
 															break(2);
 														}
 														break;
@@ -3007,11 +3007,11 @@
 					} else {
 						$vs_parent_fld_select = (($vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD')) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '');
 						$vs_sql = "
-							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}
+							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}, l.{$vs_item_pk}
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
-							GROUP BY l.{$vs_label_display_field} {$vs_parent_fld_select}, l.locale_id
+							GROUP BY l.{$vs_label_display_field} {$vs_parent_fld_select}, l.locale_id, l.{$vs_item_pk}
 							ORDER BY l.{$vs_label_display_field}
 						";
 
@@ -3038,7 +3038,7 @@
 							$va_unique_values[$vs_label] = true;
 
 							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
-								'id' => $vn_id,
+								'id' => $qr_res->get($vs_item_pk),
 								'parent_id' => $vn_parent_id,
 								'label' => $vs_label,
 								'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label),
