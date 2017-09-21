@@ -3170,12 +3170,13 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 100) { $va_tokens = array_slice($va_tokens, 50, 50, true); }
+	        if (sizeof($va_tokens) > 100) { $va_tokens = array_slice($va_tokens, 25, 75, true); }
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = 1; }
 	        
 	        
 	        $po_request->session->setVar('csrf_tokens', $va_tokens);
+	        $po_request->session->save();
 	    }
 	    return $vs_token;
 	}
