@@ -1540,20 +1540,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get data for current row
 			//
 			$va_row = array_replace($o_reader->getRow(), $va_environment);
-			
+
 			// replace values (EXPERIMENTAL)
 			$va_row_with_replacements = $va_row;
 			foreach($va_mapping_items as $vn_item_id => $va_item) {
 				$vs_key = $va_item['source'];
-				
-				if (!isset($va_row[$vs_key])) { 
+
+				if (!isset($va_row[$vs_key])) {
 					$va_tmp = explode('.', $vs_key); array_shift($va_tmp);
 					$vs_key = join('.', $va_tmp);
 				}
 				if(!isset($va_row[$vs_key])) { continue; }
 				$va_row_with_replacements[$vs_key] = ca_data_importers::replaceValue($va_row[$vs_key], $va_item, []);
 			}
-			
+
 			//
 			// Apply rules
 			//
@@ -1671,6 +1671,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_idnos_for_row = array($vs_idno);
 			}
 			
+
 			foreach($va_idnos_for_row as $vs_idno) {
 				$t_subject = $o_dm->getInstanceByTableNum($vn_table_num);
 				if ($o_trans) { $t_subject->setTransaction($o_trans); }
