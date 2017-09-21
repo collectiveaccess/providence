@@ -218,6 +218,8 @@
 			if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $pa_options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
 			
 			$vs_content_url = caGetOption('contentUrl', $pa_options, '');
+			$va_lookup_urls = caGetOption('lookupUrls', $pa_options, null);
+			
 			$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
 			var ckEditor = CKEDITOR.replace( '".$pa_attributes['id']."',
 			{
@@ -226,7 +228,8 @@
 				height: '{$vn_height}px',
 				toolbarLocation: 'top',
 				enterMode: CKEDITOR.ENTER_BR,
-				contentUrl: '{$vs_content_url}'
+				contentUrl: '{$vs_content_url}',
+				lookupUrls: ".json_encode($va_lookup_urls)."
 			});
 	
 			ckEditor.on('instanceReady', function(){ 

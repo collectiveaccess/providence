@@ -49,7 +49,7 @@
 		<div class="caItemList">
 			<div class="labelInfo">		
 <?php
-	if(is_array($va_fields = $t_page->getHTMLFormElements(['tagnamePrefix' => $vs_id_prefix, 'contentUrl' => caNavUrl($this->request, '*', '*', 'getMediaList', ['page_id' => $t_subject->getPrimaryKey()])]))) {
+	if(is_array($va_fields = $t_page->getHTMLFormElements(['tagnamePrefix' => $vs_id_prefix, 'lookupUrls' => $this->getVar('lookup_urls'), 'contentUrl' => caNavUrl($this->request, '*', '*', 'getMediaList', ['page_id' => $t_subject->getPrimaryKey()])]))) {
 		foreach($va_fields as $vs_field => $va_element_info) {
 			print $va_element_info['element_with_label']."\n";
 		}

@@ -40,6 +40,6 @@ CKEDITOR.editorConfig = function( config ) {
 	
 	startupFocus : false;
 	
-	config.extraPlugins = 'camediacontent';
+	config.extraPlugins = 'camediacontent,calinks';
 	config.allowedContent = true;
 };
