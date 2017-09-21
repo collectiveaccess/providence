@@ -3170,7 +3170,7 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 100) { $va_tokens = array_slice($va_tokens, 25, 75, true); }
+	        if (sizeof($va_tokens) > 300) { $va_tokens = array_slice($va_tokens, 50, 250, true); }
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = 1; }
 	        
@@ -3197,7 +3197,7 @@ function caFileIsIncludable($ps_file) {
 	    if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
-	        if (caGetOption('remove', $pa_options, true)) {
+	        if (caGetOption('remove', $pa_options, false)) {
 	            unset($va_tokens[$ps_token]);
 	            $po_request->session->setVar('csrf_tokens', $va_tokens);
 	        }
