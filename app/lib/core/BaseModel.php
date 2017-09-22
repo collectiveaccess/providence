@@ -8802,6 +8802,7 @@ $pa_options["display_form_field_tips"] = true;
 								
 								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 								
+								
 								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
 								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
 								{
@@ -8809,7 +8810,9 @@ $pa_options["display_form_field_tips"] = true;
 									width: '{$vs_width}',
 									height: '{$vs_height}',
 									toolbarLocation: 'top',
-									enterMode: CKEDITOR.ENTER_BR
+									enterMode: CKEDITOR.ENTER_BR,
+                                    lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
+                                    key: '".$pa_options['id']."_lookup'
 								});
 						
 								ckEditor.on('instanceReady', function(){ 

@@ -448,13 +448,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
-		$va_lookup_urls = [];
-        foreach(['ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'] as $vs_table) {
-            if (!caTableIsActive($vs_table)) { continue; }
-            $va_urls = caJSONLookupServiceUrl($po_request, $vs_table);
-            $va_lookup_urls[$vs_table] = ['singular' => $this->getAppDatamodel()->getTableProperty($vs_table, 'NAME_SINGULAR'), 'plural' => $this->getAppDatamodel()->getTableProperty($vs_table, 'NAME_PLURAL'), 'code' => strtolower($this->getAppDatamodel()->getTableProperty($vs_table, 'NAME_SINGULAR')), 'url' => $va_urls['search']];   
-        }
-        $o_view->setVar('lookup_urls', $va_lookup_urls);
+        $o_view->setVar('lookup_urls', caGetLookupUrlsForTables($po_request));
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
