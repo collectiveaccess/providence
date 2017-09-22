@@ -2000,7 +2000,7 @@ if (!$pb_omit_editing_info) {
 			if(caGetOption(array('showHierarchy', 'show_hierarchy'), $pa_options, false) && (sizeof($va_bundle_bits) == 1)) {
 				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
 			}
-			$vs_val = $po_result->get(join(".", $va_bundle_bits), $pa_options);
+			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $pa_options));
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {
