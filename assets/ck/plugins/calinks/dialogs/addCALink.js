@@ -2,6 +2,7 @@ CKEDITOR.dialog.add('addCALink', function( editor ) {
     var leditor = editor;
     var type = null;
     var selectedIdno = null;
+    var lookupId = "calinklookup" + (editor.config.key ? editor.config.key : '');
     
     return {
         title: 'Insert link',
@@ -28,11 +29,11 @@ CKEDITOR.dialog.add('addCALink', function( editor ) {
             var selectedType = editor.config.lookupUrls[type];
             if (!selectedType) { return false; }
             
-            $("#calinklookup").autocomplete({
+            $("#" + lookupId).autocomplete({
                 delay: 800, html: true,
                 source: selectedType.url + "?noInline=1&quickadd=0",
                 select: function( event, ui ) {
-                    jQuery("#calinklookup").val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+                    jQuery("#" + lookupId).val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
                     selectedIdno = ui.item.idno;
                     
                     if(selectedIdno) { CKEDITOR.dialog.getCurrent().enableButton('ok'); } else {CKEDITOR.dialog.getCurrent().disableButton('ok');}
@@ -69,13 +70,13 @@ CKEDITOR.dialog.add('addCALink', function( editor ) {
                         'default': type,
                         onChange: function( api ) {
                             type =  this.getValue();
-                            $("#calinklookup").autocomplete( "option", { source: editor.config.lookupUrls[type].url + "?noInline=1&quickadd=0" } )
+                            $("#" + lookupId).autocomplete( "option", { source: editor.config.lookupUrls[type].url + "?noInline=1&quickadd=0" } )
                         }
                     },
                     {
                         type: 'html',
                         label: 'Select media',
-                        html: '<label>Find</label><br/><input id="calinklookup" type="text" value="" size="50"/>'
+                        html: '<label>Find</label><br/><input id="' + lookupId + '" type="text" value="" size="50"/>'
                     },
                     {
                         type: 'textarea',

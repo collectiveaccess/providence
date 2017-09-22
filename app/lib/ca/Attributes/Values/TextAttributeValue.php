@@ -294,6 +294,7 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
+ 			global $g_request;
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique'));
 
  			if (isset($pa_options['usewysiwygeditor'])) {
@@ -322,6 +323,16 @@
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				AssetLoadManager::register("ckeditor");
  				
+ 				$va_lookup_urls = [];
+ 				if ($g_request) {
+ 				    $o_dm = Datamodel::load();
+                    foreach(['ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'] as $vs_table) {
+                        if (!caTableIsActive($vs_table)) { continue; }
+                        $va_urls = caJSONLookupServiceUrl($g_request, $vs_table);
+                        $va_lookup_urls[$vs_table] = ['singular' => $o_dm->getTableProperty($vs_table, 'NAME_SINGULAR'), 'plural' => $o_dm->getTableProperty($vs_table, 'NAME_PLURAL'), 'code' => strtolower($o_dm->getTableProperty($vs_table, 'NAME_SINGULAR')), 'url' => $va_urls['search']];   
+                    }
+                }
+ 				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
 						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
 						{
@@ -329,7 +340,9 @@
 							width: '{$vs_width}',
 							height: '{$vs_height}',
 							toolbarLocation: 'top',
-							enterMode: CKEDITOR.ENTER_BR
+							enterMode: CKEDITOR.ENTER_BR,
+				            lookupUrls: ".json_encode($va_lookup_urls).",
+				            key: '".$pa_element_info['element_id']."_{n}'
 						});
 						
 						ckEditor.on('instanceReady', function(){ 
