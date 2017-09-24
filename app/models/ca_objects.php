@@ -924,7 +924,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$vs_default_display_template = '^ca_object_lots.preferred_labels.name (^ca_object_lots.idno_stub)';
 					$vs_display_template = $pb_display_label_only ? "" : caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
 				
-				    $o_media_coder->setMediaInfo($va_lot_type_info[$vn_type_id]['icon']);
+				    $o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_object_lots',
 						'id' => $vn_lot_id,
@@ -997,7 +997,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
-					$o_media_coder->setMediaInfo($va_loan_type_info[$vn_type_id]['icon']);
+					$o_media_coder->setMedia($va_loan_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_loans',
 						'id' => $vn_loan_id,
@@ -1071,7 +1071,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
-					$o_media_coder->setMediaInfo($va_movement_type_info[$vn_type_id]['icon']);
+					$o_media_coder->setMedia($va_movement_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_movements',
 						'id' => $vn_movement_id,
@@ -1145,7 +1145,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
-					$o_media_coder->setMediaInfo($va_occurrence_type_info[$vn_type_id]['icon']);
+					$o_media_coder->setMedia($va_occurrence_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_occurrences',
 						'id' => $vn_occurrence_id,
@@ -1218,7 +1218,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
-					$o_media_coder->setMediaInfo($va_collection_type_info[$vn_type_id]['icon']);
+					$o_media_coder->setMedia($va_collection_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_collections',
 						'id' => $vn_collection_id,
@@ -1274,7 +1274,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				$vs_color = str_replace("#", "", $vs_color);
 				
-				$o_media_coder->setMediaInfo($va_location_type_info[$vn_type_id]['icon']);
+				$o_media_coder->setMedia($va_location_type_info[$vn_type_id]['icon']);
 				$va_history[$va_date['sortable']][] = array(
 					'type' => 'ca_storage_locations',
 					'id' => $vn_location_id,
