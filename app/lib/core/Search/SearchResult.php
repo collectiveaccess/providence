@@ -2737,6 +2737,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 		$vn_index = (isset($pa_options['index']) && ((int)$pa_options['index'] > 0)) ? (int)$pa_options['index'] : 0;
 		
 		if (!isset($this->opa_field_media_info[$ps_field])) {
@@ -2749,6 +2750,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaPath($ps_field, $ps_version, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 	    if (!isset($this->opa_field_media_info[$ps_field])) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
@@ -2760,6 +2762,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	function getMediaPaths($ps_field, $ps_version, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 		if (!isset($this->opa_field_media_info[$ps_field])) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
