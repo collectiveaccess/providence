@@ -1921,6 +1921,8 @@ if (!$pb_omit_editing_info) {
 		$pa_options['hierarchyDirection'] =				caGetOption('hierarchy_order', $va_settings, null);
 		$pa_options['hierarchyDelimiter'] =				caGetOption('hierarchical_delimiter', $va_settings, null);
 		
+		$pb_show_hierarchy = caGetOption(array('showHierarchy', 'show_hierarchy'), $pa_options, false);
+		
 		unset($pa_options['format']);	// don't pass format strings to get() here
 		if ((sizeof($va_bundle_bits) == 1) || ((sizeof($va_bundle_bits) == 2) && ($va_bundle_bits[1] == 'related'))) {
 			$pa_options['template'] = caGetOption('format', $va_settings, $this->getAppConfig()->get($va_bundle_bits[0].'_relationship_display_format'));;
@@ -1940,7 +1942,7 @@ if (!$pb_omit_editing_info) {
 			$vs_template = $t_element->getSetting('displayTemplate'); 
 		}
 		
-		if($vs_template) {
+		if(!$pb_show_hierarchy && $vs_template) {
 			unset($pa_options['template']);
 			
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true)) {
@@ -1997,7 +1999,7 @@ if (!$pb_omit_editing_info) {
 			}
 		} else {
 			// Straight get
-			if(caGetOption(array('showHierarchy', 'show_hierarchy'), $pa_options, false) && (sizeof($va_bundle_bits) == 1)) {
+			if($pb_show_hierarchy && (sizeof($va_bundle_bits) == 1)) {
 				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
 			}
 			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $pa_options));
