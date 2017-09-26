@@ -432,14 +432,13 @@ class DisplayTemplateParser {
 		
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
 					foreach($va_codes as $vs_code) {
-						$va_vals = $pr_res->get($vs_code, ['checkAccess' => $pa_check_access, 'returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
-						if (is_array($va_vals)) { 
-							if ($vb_bool == 'AND') {
-								$vm_count += sizeof($va_vals); 
-							} else {
-								$vm_count[$vs_code] = sizeof($va_vals);
-							}
-						}
+						$vn_count = $pr_res->get($vs_code, ['limit' => ($vn_max > 0) ? $vn_max : $vn_min, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
+                      
+                        if ($vb_bool == 'AND') {
+                            $vm_count += $vn_count;
+                        } else {
+                            $vm_count[$vs_code] = $vn_count; 
+                        }
 					}
 					
 					if ($vb_bool == 'AND') {
