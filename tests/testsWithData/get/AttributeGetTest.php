@@ -117,11 +117,11 @@ class AttributeGetTest extends BaseTestWithData {
 				),
 
 				// Georeference
-				'georeference' => array(
-					array(
-						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
-					),
-				),
+				// 'georeference' => array(
+// 					array(
+// 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+// 					),
+// 				),
 
 				// InformationService/TGN
 				'tgn' => array(
@@ -180,8 +180,8 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.currency_test');
 		$this->assertEquals("$ 100.00", $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_objects.georeference');
-		$this->assertRegExp("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);
+		//$vm_ret = $this->opt_object->get('ca_objects.georeference');
+		//$this->assertRegExp("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);
 
 		// This is how we fetch the bundle preview for containers:
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
