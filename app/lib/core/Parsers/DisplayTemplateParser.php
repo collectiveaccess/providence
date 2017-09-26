@@ -431,9 +431,12 @@ class DisplayTemplateParser {
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 		
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
+					
+					if (($vn_limit = ($vn_max > 0) ? $vn_max : $vn_min) == 0) { $vn_limit = 1; }
+					$vn_limit++;
 					foreach($va_codes as $vs_code) {
-						$vn_count = $pr_res->get($vs_code, ['limit' => ($vn_max > 0) ? $vn_max : $vn_min, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
-                      
+						$vn_count = (int)$pr_res->get($vs_code, ['limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
+
                         if ($vb_bool == 'AND') {
                             $vm_count += $vn_count;
                         } else {
