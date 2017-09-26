@@ -2755,6 +2755,7 @@
 							
 							if (!(bool)$va_state_info['id']) {	// no option
 								$vn_num_wheres = sizeof($va_wheres);
+								$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
 								
 								if ($t_rel_item->hasField('deleted')) {
 									$va_wheres[] = "((".$t_rel_item->tableName().".deleted = 0) OR (".$t_rel_item->tableName().".deleted IS NULL))";
