@@ -75,10 +75,6 @@
 		
 		if ($t_item->get('ca_collections.children.collection_id')) {
 			print "<div class='heading' style='margin-bottom:10px;'>".$t_item->get('ca_collections.type_id', array('convertCodesToDisplayText' => true))." Contents</div>";
-
-<<<<<<< HEAD
-			$va_hierarchy = $t_item->hierarchyWithTemplate("<l>^ca_collections.preferred_labels.name</l> (^ca_collections.idno)", array('collection_id' => $vn_item_id, 'sort' => 'ca_collections.idno'));
-=======
 			//
 			if (
 				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_summary_sort_values')) && !sizeof($va_sort_fields))
@@ -96,7 +92,6 @@
 			}
 			
 			$va_hierarchy = $t_item->hierarchyWithTemplate($vs_template, array('collection_id' => $vn_item_id, 'sort' => $va_sort_fields));
->>>>>>> e743dc39b6ac181b7535e2782dd10df9484a1d76
 			foreach($va_hierarchy as $vn_i => $va_hierarchy_item) {
 				$vs_margin = $va_hierarchy_item['level']*20;
 				print "<div style='margin-left:".$vs_margin."px;margin-bottom:10px;'><i class='fa fa-angle-right' ></i> ".$va_hierarchy_item['display']."</div>";

@@ -104,9 +104,7 @@ class SearchJSONService extends BaseJSONService {
 		$vo_result = $vo_search->search($this->ops_query, array(
 			'deletedOnly' => $this->opb_deleted_only,
 			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
-			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
-			//'start' => $this->opo_request->getParameter('start', pInteger),
-			//'limit' => $this->opo_request->getParameter('limit', pInteger)
+			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString)
 		));
 		
 		$va_return = ['total' => $vo_result->numHits()];

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -102,10 +102,13 @@
 		
 				if (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) {
 					$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplates');
+					
+					$vn_template_rev = file_exists($vs_template_path) ? filemtime($vs_template_path) : 0;
+					$vn_local_rev = file_exists("{$vs_template_path}/local") ? filemtime("{$vs_template_path}/local") : 0;
 					if(
 						$va_list && is_array($va_list) &&
-						(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= filemtime($vs_template_path)) &&
-						(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= filemtime("{$vs_template_path}/local"))
+						(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= $vn_template_rev) &&
+						(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= $vn_local_rev)
 					){
 						$va_templates = array_merge($va_templates, $va_list);
 						continue;
@@ -529,32 +532,34 @@
 	 *
 	 */
 	function caGetPrintFormatsListAsHTMLForSetItemBundles($ps_id_prefix, $po_request, $pt_set, $pa_row_ids) {
-		
+	    require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
+	    
 		$vs_set_table = Datamodel::getTableName($pt_set->get("table_num"));
 		$va_formats = caGetAvailablePrintTemplates('sets', ['table' => $vs_set_table, 'type' => null]);
 		
 		if(!is_array($va_formats) || (sizeof($va_formats) == 0)) { return ''; }
 		$vs_pk = $pt_set->primaryKey();
 		
-#		$va_ids = [];
-		
-#		foreach($pa_initial_values as $vn_relation_id => $va_info) {
-#			$va_ids[$vn_relation_id] = $va_info[$vs_pk];
-#		}
-		
 		$va_options = [];
 		foreach($va_formats as $vn_ => $va_form_info) {
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
 		
+		$t_display = new ca_bundle_displays();
+		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
+		    foreach($va_displays as $vn_display_id => $va_display_info) {
+		        $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];
+		    }
+		}
+		
+		
 		uksort($va_options, 'strnatcasecmp');
 		
 		$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
-		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList"), array('value' => null, 'width' => '150px'))."\n";
+		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => null, 'width' => '150px'))."\n";
 		
 		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);
 		
-		#$vs_url = caNavUrl($po_request, 'find', 'RelatedList', 'Export', ['relatedRelTable' => $pt_relation->tableName(), 'primaryTable' => $pt_primary->tableName(), 'primaryID' => $pt_primary->getPrimaryKey(), 'download' => 1, 'relatedTable' => $pt_related->tableName()]);
 		$vs_url = caNavUrl($po_request, 'manage', 'sets', 'setEditor/exportSetItems', ['set_id' => $pt_set->get("set_id"), 'download' => 1]);
 		$vs_buf .= "</div>";
 		$vs_buf .= "

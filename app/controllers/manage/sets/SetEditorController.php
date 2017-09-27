@@ -29,6 +29,7 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
 	require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
+	require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
 
  	class SetEditorController extends BaseEditorController {
  		# -------------------------------------------------------
@@ -305,11 +306,17 @@
 
 			$qr_res = $vs_subject_table::createResultSet($va_record_ids);
 			$qr_res->filterNonPrimaryRepresentations(false);
+			
+			# --- get the export format/template to use
+			$ps_export_format = $this->request->getParameter('export_format', pString);
+			
+			caExportResult($this->request, $qr_res, $ps_export_format, '_output', []);
+			
+			return;
+			
 			$this->view->setVar('result', $qr_res);
 			$this->view->setVar('t_set', $t_set);
 
-			# --- get the export format/template to use
-			$ps_export_format = $this->request->getParameter('export_format', pString);
 			
 			//
 			// PDF output

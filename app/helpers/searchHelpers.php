@@ -481,10 +481,12 @@
 			$va_sort_by = caGetOption('sortBy', $va_block_info, null);
 			
 			$vs_sort_list = '';
+			$va_sort_dd = array();
 			if(is_array($va_sort_by)) {
 				$va_sort_list = array();
 				foreach ($va_sort_by as $vs_sort_label => $vs_sort) {
 					$va_sort_list[] = "<li".(($vs_sort_label == $ps_sort) ? " class='selectedSort'" : '')."><a href='#' rel='{$vs_sort_label}'>{$vs_sort_label}</a></li>";
+					$va_sort_dd[$vs_sort_label] = $vs_sort_label;
 				}
 				
 				$vs_sort_list = "<ul id='{$vs_block}_sort'>".join("\n", $va_sort_list)."</ul>";
@@ -502,7 +504,7 @@
 			$o_view->setVar('itemsPerColumn', $vn_items_per_column);
 			$o_view->setVar('hasMore', (bool)($vn_count > $vn_start + $vn_items_per_page));
 			$o_view->setVar('sortBy', is_array($va_sort_by) ? $va_sort_by : null);
-			$o_view->setVar('sortBySelect', $vs_sort_by_select = (is_array($va_sort_by) ? caHTMLSelect("{$vs_block}_sort", $va_sort_by, array('id' => "{$vs_block}_sort", "class" => "form-control input-sm"), array("value" => $ps_sort)) : ''));
+			$o_view->setVar('sortBySelect', $vs_sort_by_select = (is_array($va_sort_dd) ? caHTMLSelect("{$vs_block}_sort", $va_sort_dd, array('id' => "{$vs_block}_sort", "class" => "form-control input-sm"), array("value" => $ps_sort)) : ''));
 			$o_view->setVar('sortByControl', ($va_block_info["sortControlType"] && ($va_block_info["sortControlType"] == "list")) ? $vs_sort_list : $vs_sort_by_select); // synonym for sortBySelect
 			$o_view->setVar('sortByList', $vs_sort_list);
 			$o_view->setVar('sort', $ps_sort);
@@ -645,6 +647,8 @@
 	 *
 	 */
 	function caGetQueryStringForHTMLFormInput($po_result_context, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		
 		$pa_form_values = caGetOption('formValues', $pa_options, $_REQUEST);
 		$va_form_contents = explode('|', caGetOption('_formElements', $pa_form_values, ''));
 		
@@ -671,14 +675,27 @@
 					}
 					if (is_array($pa_form_values[$vs_dotless_element])) {
 						// are there relationship types?
+						$vs_element_rel_type = '';
 						if (is_array($pa_form_values[$vs_dotless_element.':relationshipTypes'])) {
-							$vs_element .= "/".join(";", $pa_form_values[$vs_dotless_element.':relationshipTypes']);
+							$vs_element_rel_type = "/".join(";", $pa_form_values[$vs_dotless_element.':relationshipTypes']);
 						}
-						foreach($pa_form_values[$vs_dotless_element] as $vn_j => $vs_element_value) {
+					
+						if(isset($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}_autocomplete"])) {
+							$va_fld = explode(".", $vs_element);
+							$t_table = $o_dm->getInstanceByTableName($va_fld[0], true);
+							foreach($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}"] as $vn_j => $vs_element_value) {
+								if ($t_table) { $vs_search_element = $t_table->primaryKey(true); }
+								
+								$va_values[$vs_search_element.$vs_element_rel_type][] = trim($vs_element_value);
+								$va_booleans["{$vs_search_element}{$vs_element_rel_type}:boolean"][] = isset($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j]) ? $pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j] : null;
+							}
+							continue;
+						}
+						foreach($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}"] as $vn_j => $vs_element_value) {
 							if(!strlen(trim($vs_element_value))) { continue; }
-							$va_default_values[$vs_element][] = trim($vs_element_value);
-							$va_values[$vs_element][] = trim($vs_element_value);
-							$va_booleans["{$vs_element}:boolean"][] = isset($pa_form_values["{$vs_dotless_element}:boolean"][$vn_j]) ? $pa_form_values["{$vs_dotless_element}:boolean"][$vn_j] : null;
+							$va_default_values[$vs_element.$vs_element_rel_type][] = trim($vs_element_value);
+							$va_values[$vs_element.$vs_element_rel_type][] = trim($vs_element_value);
+							$va_booleans["{$vs_element}{$vs_element_rel_type}:boolean"][] = isset($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j]) ? $pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j] : null;
 						}
 					}
 					break;
@@ -761,8 +778,15 @@
 			) { continue; }
 	
 			if(!is_array($pa_form_values[$vs_dotless_element])) { $pa_form_values[$vs_dotless_element] = array($pa_form_values[$vs_dotless_element]); }
-			if(!($vs_label = trim($pa_form_values[$vs_dotless_element.'_label']))) { $vs_label = "???"; }
-		
+			if(!($vs_label = trim($pa_form_values["{$vs_dotless_element}_label"]))) { $vs_label = "???"; }
+			
+			if(isset($pa_form_values["{$vs_dotless_element}_autocomplete"])) {
+				if(!is_array($pa_form_values["{$vs_dotless_element}_autocomplete"])) { $pa_form_values["{$vs_dotless_element}_autocomplete"] = [$pa_form_values["{$vs_dotless_element}_autocomplete"]]; }
+				
+				foreach($pa_form_values[$vs_dotless_element] as $vn_j => $vs_element_value) {
+					$pa_form_values[$vs_dotless_element][$vn_j] = $pa_form_values["{$vs_dotless_element}_autocomplete"][$vn_j];
+				}
+			}
 			$va_fld = explode(".", $vs_element);
 			$t_table = Datamodel::getInstanceByTableName($va_fld[0], true);
 		

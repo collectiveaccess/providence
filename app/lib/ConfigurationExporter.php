@@ -309,6 +309,9 @@ final class ConfigurationExporter {
 			if(is_numeric($vn_value = $qr_items->get("item_value"))) {
 				$vo_item->setAttribute("value", $vn_value);
 			}
+			if($qr_items->get('type_id')){
+				$vo_item->setAttribute('type', $t_list_item->getTypeCode($qr_items->get('type_id')));
+			}
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_list_item_labels = $this->opo_db->query("SELECT * FROM ca_list_item_labels WHERE item_id=?",$qr_items->get("item_id"));
@@ -333,6 +336,16 @@ final class ConfigurationExporter {
 			}
 
 			$vo_item->appendChild($vo_labels);
+			$va_settings = $qr_items->get('settings', ['unserialize' => true]);
+			if ($va_settings){
+				$vo_settings = $this->opo_dom->createElement("settings");
+				foreach($va_settings as $vs_name => $va_setting){
+					$vo_setting = $this->opo_dom->createElement("setting",caEscapeForXML($va_setting));
+					$vo_setting->setAttribute('name', $vs_name);
+					$vo_settings->appendChild($vo_setting);
+				}
+				$vo_item->appendChild($vo_settings);
+			}
 
 			if($vo_sub_items = $this->getListItemsAsDOM($qr_items->get("item_id"), $pn_list_id)) {
 				$vo_item->appendChild($vo_sub_items);
@@ -384,6 +397,8 @@ final class ConfigurationExporter {
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_element_labels = $this->opo_db->query("SELECT * FROM ca_metadata_element_labels WHERE element_id=?",$qr_elements->get("element_id"));
+			
+			$vn_num_labels = 0;
 			while($qr_element_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
@@ -393,6 +408,13 @@ final class ConfigurationExporter {
 					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_element_labels->get("description"))));
 				}
 
+				$vo_labels->appendChild($vo_label);
+				$vn_num_labels++;
+			}
+			if (!$vn_num_labels) {
+			    $vo_label = $this->opo_dom->createElement("label");
+				$vo_label->setAttribute("locale", LocaleManager::localeIDToCode(LocaleManager::getDefaultCataloguingLocaleID()));
+				$vo_label->appendChild($this->opo_dom->createElement("name", "BLANK"));
 				$vo_labels->appendChild($vo_label);
 			}
 
@@ -1228,6 +1250,38 @@ final class ConfigurationExporter {
 				}
 				$vo_role->appendChild($vo_type_lvl_ac);
 			}
+			// add source level ACL items
+			if(is_array($va_vars['source_access_settings'])) {
+				$vo_type_lvl_ac = $this->opo_dom->createElement("sourceLevelAccessControl");
+				foreach($va_vars['source_access_settings'] as $vs_id => $vn_val) {
+					$va_tmp = explode('.', $vs_id);
+					$vs_table_name = $va_tmp[0];
+					if ($vs_table_name === $vs_id){
+						// this is the where the setting is $ps_table.'_default_id'
+						continue;
+					}
+					$vn_type_id = $va_tmp[1];
+					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
+
+					/** @var BaseModelWithAttributes $t_instance */
+					$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
+					if (!($vs_list_code = $t_instance->getSourceListCode())) { continue; }
+
+					$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vn_type_id);
+					if(!isset($va_item['idno'])) { continue; }
+
+
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_type_lvl_ac->appendChild($vo_permission);
+					$vo_permission->setAttribute('table',$vs_table_name);
+					$vo_permission->setAttribute('source',$va_item['idno']);
+					$vo_permission->setAttribute('access',$vs_access);
+					$vb_default = (int)(isset($va_vars['source_access_settings'][$vs_table_name.'_default_id']) && $vn_type_id == $va_vars['source_access_settings'][$vs_table_name.'_default_id']);
+					$vo_permission->setAttribute('default', $vb_default);
+
+				}
+				$vo_role->appendChild($vo_type_lvl_ac);
+			}
 
 			$vo_roles->appendChild($vo_role);
 		}
@@ -1446,7 +1500,6 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	public function getDisplaysAsXML() {
 		$t_display = new ca_bundle_displays();
-		/** @var Datamodel $o_dm */
 
 		$va_options = [];
 
@@ -1716,4 +1769,3 @@ final class ConfigurationExporter {
 	}
 	# --------------------------------------------------
 }
-

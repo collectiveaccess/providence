@@ -3156,6 +3156,7 @@
 				return;
 			}
 			$o_cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
+			if(!is_array($va_exclude_from_precache = $o_cache_config->get('exclude_from_precache'))) { $va_exclude_from_precache = []; }
 			
 			$va_cached_actions = $o_cache_config->getAssoc('cached_actions');
 			if(!is_array($va_cached_actions)) { 
@@ -3177,25 +3178,12 @@
 			}
 			
 			foreach($va_cached_actions as $vs_controller => $va_actions) {
+			    if(in_array($vs_controller, $va_exclude_from_precache)) { continue; }
 				switch($vs_controller) {
 					case 'Browse':
 					case 'Search':
 						// preloading of cache not supported
 						CLIUtils::addMessage(_t("Preloading from %1 is not supported", $vs_controller), array('color' => 'yellow'));
-						break;
-					case 'Splash':
-						$va_tmp = explode("/", $vs_controller);
-						$vs_controller = array_pop($va_tmp);
-						$vs_module_path = join("/", $va_tmp);
-						foreach($va_actions as $vs_action => $vn_ttl) {
-							if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action, array('noCache' => 1))) {
-							
-								CLIUtils::addMessage(_t("Preloading from %1::%2", $vs_controller, $vs_action), array('color' => 'bold_blue'));
-								$vs_url = $vs_site_protocol."://".$vs_site_hostname.$vs_url;
-							 	file_get_contents($vs_url);
-							}
-							
-						}
 						break;
 					case 'Detail':
 						$va_tmp = explode("/", $vs_controller);
@@ -3229,6 +3217,21 @@
 							
 						}
 						break;
+					case 'splash':
+					default:
+					    $va_tmp = explode("/", $vs_controller);
+						if ($vs_controller == 'splash') { $vs_controller = array_pop($va_tmp); }
+						$vs_module_path = join("/", $va_tmp);
+						foreach($va_actions as $vs_action => $vn_ttl) {
+							if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action, array('noCache' => 1))) {
+							
+								CLIUtils::addMessage(_t("Preloading from %1::%2", $vs_controller, $vs_action), array('color' => 'bold_blue'));
+								$vs_url = $vs_site_protocol."://".$vs_site_hostname.$vs_url;
+							 	file_get_contents($vs_url);
+							}
+							
+						}
+					    break;
 				}
 			}
 			
@@ -4259,7 +4262,7 @@
             }
             print CLIProgressBar::start($va_counts['files'], _t('Processing media'));
 			if (!BatchProcessor::importMediaFromDirectory(null, $va_opts)) {
-				CLIUtils::addError(_t("Could not import media from %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
+				CLIUtils::addError(_t("Could not import media from %1: %2", $vs_data_source, join("; ", BatchProcessor::getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported media from source %1", $vs_data_source));

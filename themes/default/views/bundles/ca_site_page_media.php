@@ -38,14 +38,19 @@
 	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
 
 	
-	$vb_allow_fetching_from_urls = true; $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
+	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
+	
+	
+	if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
+		$vs_default_upload_type = 'upload';
+	}
 	
 	// generate list of inital form values; the bundle Javascript call will
 	// use the template to generate the initial form
 	$va_errors = [];
 	
 	$vn_page_media_count = $t_subject->pageMediaCount($va_settings);
-	$va_initial_values = caSanitizeArray($t_subject->getPageMedia($va_settings), ['removeNonCharacterData' => false]);
+	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues('ca_site_page_media', $this->getVar('placement_code'), $va_settings, ['request' => $this->request]), ['removeNonCharacterData' => false]);
 
 	foreach($va_initial_values as $vn_media_id => $va_media) {
 		if(is_array($va_action_errors = $this->request->getActionErrors('ca_site_page_media', $vn_media_id))) {
@@ -71,7 +76,7 @@
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php
 	//
-	// Template to generate display for existing items
+	// Template to generate display for existing site page media
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
@@ -89,35 +94,37 @@
 ?>	
 			<div style="width: 680px;">
 				<div style="float: left;">
-					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
+					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'manage/site_pages', 'SitePageEditor', 'GetMediaOverlay', array('page_id' => $t_subject->getPrimaryKey(), 'media_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
 				</div>
 				<div style="float: right; width: 550px;">
 					<div style="float: left; width: 80%;">
 						<div id='{fieldNamePrefix}rep_info_ro{n}'>
-							<div class='caObjectRepresentationListInfo'>
-								<a title="{filename}">{rep_label}</a>
-							</div>
 											
 							<div class='caObjectRepresentationListInfoSubDisplay'>
-								{_display}
-								<em>{idno}</em><br/>
-								<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span>
+								<em>{title}</em><br/>
+								<h3><?php print _t('Identifier'); ?></h3> {idno}<br/>
+								<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span><br/>
+                                <h3><?php print _t('Access'); ?></h3> {access_display}<br/>
 <?php
 	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{{filename}}"), 'bundle_ca_site_page_media');
 ?>
+								<h3><?php print _t('Versions'); ?></h3> {versions}
 								</div>
 								<div class='caObjectRepresentationListInfoSubDisplay'>
 									<h3><?php print _t('Format'); ?></h3> {type};
-									<h3><?php print _t('Dimensions'); ?></h3> {dimensions}; {num_multifiles}
+									<h3><?php print _t('Dimensions'); ?></h3> {dimensions}
 								</div>
+								
 						
 								<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied when you save'); ?></div>
-								<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
 							</div>		
 <?php
 	if (!$vb_read_only) {
 ?>
 							<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationDetailEditorContainer">
+                                <div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('title', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}title_{n}", 'name' => "{fieldNamePrefix}title_{n}", 'value' => "{title}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
+                                <div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('caption', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}caption_{n}", 'name' => "{fieldNamePrefix}caption_{n}", 'value' => "{caption}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
+                                <div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElementReadOnly', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", 'value' => "{idno}", "readonly" => true, 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?> <div style='margin-bottom: 10px;' id='{fieldNamePrefix}idno_status_{n}'></div></div>
 								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
 						
 								<br class="clear"/>
@@ -142,7 +149,7 @@
 							
 								<div class='caObjectRepresentationDetailEditorDoneButton'>
 <?php 
-									print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
+									print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseMediaDetailEditor("{n}"); return false;')); 
 ?>
 								</div>	
 							
@@ -161,7 +168,27 @@
 										});
 					
 										jQuery("input.{fieldNamePrefix}upload_type{n}:checked").click();
+										
+										jQuery("#{fieldNamePrefix}title_{n}").on('keyup', function(e) {
+										    var t = jQuery(this).val();
+										    jQuery("#{fieldNamePrefix}idno_{n}").val(t.replace(/[^A-Za-z0-9\_]+/g, "_")).trigger('change');
+										});
 									});
+									
+                                    caUI.initIDNoChecker({
+                                        errorIcon: "<?php print caNavIcon(__CA_NAV_ICON_ALERT__, 1); ?>",
+                                        processIndicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+                                        idnoStatusID: '{fieldNamePrefix}idno_status_{n}',
+                                        lookupUrl: '<?php print caNavUrl($this->request, 'lookup', 'SitePageMedia', 'IDNo'); ?>',
+                                        searchUrl: '',
+                                        idnoFormElementIDs: ['#{fieldNamePrefix}idno_{n}'],
+                                        separator: '',
+                                        row_id: "{n}",
+                                        context_id: "{page_id}",
+
+                                        singularAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use')); ?>',
+                                        pluralAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use %1 times')); ?>'
+                                    });
 								</script>
 							</div>
 <?php
@@ -172,8 +199,16 @@
 						<div class="mediaRight">	
 
 							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{n}", $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
+								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'media_id' => "{n}", $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 							</div>
+<?php
+	if (!$vb_read_only) {
+?>                          <div class='caObjectRepresentationListActionButton'>
+								<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon' onclick="caOpenMediaDetailEditor('{n}'); return false;"><?php print caNavIcon(__CA_NAV_ICON_UPDATE__, 1).' '._t('Settings').'</a>'; ?></span>
+                            </div>
+<?php
+	}
+?>
 						</div>	
 					</div>
 				</div>
@@ -196,7 +231,7 @@
 		</textarea>
 <?php
 	//
-	// Template to generate controls for creating new relationship
+	// Template to generate controls for creating new site page media
 	//
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>	
@@ -209,7 +244,7 @@
 			<div id='{fieldNamePrefix}detail_editor_{n}'>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('title', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}title_{n}", 'name' => "{fieldNamePrefix}title_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('caption', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}caption_{n}", 'name' => "{fieldNamePrefix}caption_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
+				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElementReadOnly', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", "readonly" => false, 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?> <div style='margin-bottom: 10px;' id='{fieldNamePrefix}idno_status_{n}'></div></div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_site_page_media')); ?></div>
 				
 				<br class="clear"/>
@@ -226,25 +261,6 @@
 				<tr>
 					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
 					<td class='formLabel'><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '410px')); ?></td>
-				</tr>
-<?php
-		}
-		
-		if ((bool)$this->request->getAppConfig()->get($t_subject->tableName().'_allow_relationships_to_existing_representations')) {
-?>
-				<tr>
-					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_search{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'search'), array('checked' => ($vs_default_upload_type == 'search') ? 1 : 0)).' '._t('using existing'); ?></td>
-					<td class='formLabel'>
-						<?php print caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '425px')); ?>
-<?php
-	if ($t_item_rel && $t_item_rel->hasField('type_id')) {
-?>
-						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none; width: 72px;"></select>
-<?php
-	}
-?>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
-					</td>
 				</tr>
 <?php
 		}
@@ -271,6 +287,27 @@
 					});
 					
 					jQuery("input.{fieldNamePrefix}upload_type{n}:checked").click();
+					
+                    jQuery("#{fieldNamePrefix}title_{n}").on('keyup', function(e) {
+                        var t = jQuery(this).val();
+                        jQuery("#{fieldNamePrefix}idno_{n}").val(t.replace(/[^A-Za-z0-9\_]+/g, "_")).trigger('change');
+                    });
+                    
+									
+                    caUI.initIDNoChecker({
+                        errorIcon: "<?php print caNavIcon(__CA_NAV_ICON_ALERT__, 1); ?>",
+                        processIndicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+                        idnoStatusID: '{fieldNamePrefix}idno_status_{n}',
+                        lookupUrl: '<?php print caNavUrl($this->request, 'lookup', 'SitePageMedia', 'IDNo'); ?>',
+                        searchUrl: '',
+                        idnoFormElementIDs: ['#{fieldNamePrefix}idno_{n}'],
+                        separator: '',
+                        row_id: "",
+                        context_id: "{page_id}",
+
+                        singularAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use')); ?>',
+                        pluralAlreadyInUseMessage: '<?php print addslashes(_t('Identifier is already in use %1 times')); ?>'
+                    });
 				});
 			</script>
 	</div>
@@ -296,14 +333,14 @@
 <?php 
 	if (!$vb_read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add media")." &rsaquo;"; ?></a></div>
 <?php
 	}
 ?>
 	</div>
 </div>
 
-<input type="hidden" id="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" name="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
+<input type="hidden" id="<?php print $vs_id_prefix; ?>_MediaBundleList" name="<?php print $vs_id_prefix; ?>_MediaBundleList" value=""/>
 <?php
 	// order element
 	TooltipManager::add('.updateIcon', _t("Update Media"));
@@ -311,10 +348,21 @@
 <script type="text/javascript">
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	
+	function caOpenMediaDetailEditor(id) {
+		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideDown(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_rep_info_ro' + id).slideUp(250);
+	}
+	
+	function caCloseMediaDetailEditor(id) {
+		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideUp(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_rep_info_ro' + id).slideDown(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_change_indicator_' + id).show();
+	}
+	
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
+			templateValues: ['access', 'access_display', 'media', 'icon', 'type', 'dimensions', 'filename', 'fetched', 'idno', 'id', 'page_id', 'fetched_from','mimetype', 'idno', 'title', 'caption'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
@@ -334,12 +382,6 @@
 			isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>_MediaBundleList',
 			defaultLocaleID: <?php print LocaleManager::getDefaultCataloguingLocaleID(); ?>,
-			
-			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $va_lookup_params); ?>',
-			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
-			
-			extraParams: { exact: 1 },
 			
 			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,

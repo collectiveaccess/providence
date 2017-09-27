@@ -80,6 +80,18 @@
 					
 					// HTML for tileviewer
 					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
+				} elseif (is_a($t_instance, "ca_site_page_media")) {
+					$va_viewer_opts = [
+						'id' => $vs_id,
+						'read_only' => true,
+						'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
+						'viewer_base_url' => $po_request->getBaseUrlPath(),
+						'download_url' => caNavUrl($po_request, '*', '*', 'DownloadMedia', array('media_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
+						'help_load_url' => caNavUrl($po_request, '*', '*', 'ViewerHelp', array())
+					];
+					
+					// HTML for tileviewer
+					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
 				} else {
 					$va_viewer_opts = [
 						'id' => 'caMediaOverlayTileViewer',

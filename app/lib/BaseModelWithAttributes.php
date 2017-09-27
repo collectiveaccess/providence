@@ -150,7 +150,8 @@
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
-			                if ($pa_values[$vn_element_id] != $o_value->getDisplayValue()) {
+			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
+			                if ($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $o_value->getDisplayValue())) {
 			                    continue(2);
 			                }
 			            }
@@ -1364,7 +1365,20 @@
 			}
 											
 			if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
-				return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)), $pa_options);
+				$vs_autocomplete = caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : "";
+				if ($va_tmp[0] == $this->tableName() && $vs_autocomplete) {
+					
+					if (!caGetOption('nojs', $pa_options, false)) {	
+						return caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $this, $pa_options);
+					} else {
+						$ps_field_proc = preg_replace("![\.]+!", "_", $ps_field);
+						if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, []))) { $vs_rel_types_proc = "_{$vs_rel_types}"; $vs_rel_types = "/{$vs_rel_types}";  }
+					
+						return $vs_buf.caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field))).$vs_autocomplete), $pa_options);
+					}
+				} else {
+					return caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field)))), $pa_options);
+				}
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1579,7 +1593,8 @@
 					't_subject' => $this,
 					'request' => $po_request,
 					'form_name' => $ps_form_name,
-					'format' => ''
+					'format' => '',
+					'dontDoRefSubstitution' => true
 				))));
 				
 				//if the elements datatype returns true from renderDataType, then force render the element

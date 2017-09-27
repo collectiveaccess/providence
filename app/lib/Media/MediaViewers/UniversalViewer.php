@@ -77,7 +77,7 @@
 				
 					$va_display = caGetOption('display', $pa_data, []);
 					
-					if(is_a($t_instance, "ca_object_representations")) {
+					if(is_a($t_instance, "ca_object_representations") || is_a($t_instance, "ca_site_page_media")) {
 						$vs_media_fld = 'media';
 					} elseif(is_a($t_instance, "ca_attribute_values")) {
 						$vs_media_fld = 'value_blob';

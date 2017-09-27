@@ -125,11 +125,11 @@ class FindTest extends BaseTestWithData {
 				),
 
 				// Georeference
-				'georeference' => array(
-					array(
-						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
-					),
-				),
+				// 'georeference' => array(
+// 					array(
+// 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+// 					),
+// 				),
 
 				// coverageNotes
 				'coverageNotes' => array(

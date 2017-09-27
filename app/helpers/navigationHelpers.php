@@ -1296,6 +1296,14 @@
 			case 56:
 				$vs_controller = 'ObjectRepresentation';
 				break;
+			case 'ca_site_pages':
+			case 236:
+				$vs_controller = 'SitePage';
+				break;
+			case 'ca_site_page_media':
+			case 237:
+				$vs_controller = 'SitePageMedia';
+				break;
 			default:
 				return null;
 				break;

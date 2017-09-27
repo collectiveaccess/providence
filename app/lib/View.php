@@ -221,22 +221,25 @@ class View extends BaseObject {
 		$vb_output = false;
 		
 		$va_tags = null;
-		foreach(array_reverse($this->opa_view_paths) as $vs_path) {
-			if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
-				// if a l10ed view is at same path than normal but having the locale as last extension, display it (eg. splash_intro_text_html.php.fr_FR)
-				$va_tags = $this->compile($vs_path.'/'.$ps_filename.".".$g_ui_locale, false, $pa_options);
-				break;
-			}
-			elseif (file_exists($vs_path.'/'.$ps_filename)) {
-				// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
-				$va_tags = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
-				break;
-			} elseif (file_exists($ps_filename)) {
-				$va_tags = $this->compile($ps_filename, false, $pa_options);
-				break;
-			}
-		}
-		
+		if (caGetOption('string', $pa_options, false)) {
+		    $va_tags = $this->compile($ps_filename, false, $pa_options);
+		} else {
+            foreach(array_reverse($this->opa_view_paths) as $vs_path) {
+                if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
+                    // if a l10ed view is at same path than normal but having the locale as last extension, display it (eg. splash_intro_text_html.php.fr_FR)
+                    $va_tags = $this->compile($vs_path.'/'.$ps_filename.".".$g_ui_locale, false, $pa_options);
+                    break;
+                }
+                elseif (file_exists($vs_path.'/'.$ps_filename)) {
+                    // if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
+                    $va_tags = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
+                    break;
+                } elseif (file_exists($ps_filename)) {
+                    $va_tags = $this->compile($ps_filename, false, $pa_options);
+                    break;
+                }
+            }
+        }
 		return $va_tags;
 	}
 	# -------------------------------------------------------
