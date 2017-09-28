@@ -2074,7 +2074,7 @@ class SearchResult extends BaseObject {
 						    case __CA_ATTRIBUTE_VALUE_MEDIA__:
 						    case __CA_ATTRIBUTE_VALUE_FILE__:
 						        $vs_return_type = 'tag';
-                                $va_versions = $o_value->getVersions();
+                                $va_versions = ($o_value->getType() == __CA_ATTRIBUTE_VALUE_MEDIA__) ? $o_value->getVersions() : [];
                                 $vs_version = caGetOption('version', $pa_options, $va_versions[0]);
                                 
                                 $va_e = array_slice($va_path_components['components'], 2);
