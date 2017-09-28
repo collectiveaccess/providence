@@ -61,6 +61,7 @@ require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
 
 require_once(__CA_LIB_DIR__.'/ApplicationMonitor.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/Controller/AppController.php');
 
 require_once(__CA_LIB_DIR__.'/MetaTagManager.php');
