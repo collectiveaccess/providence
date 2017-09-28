@@ -4793,8 +4793,12 @@ class BaseModel extends BaseObject {
 						$vs_serialized_data = caSerializeForDatabase($this->_FILES[$ps_field], true);
 						$vs_sql =  "$ps_field = ".$this->quote($vs_serialized_data).",";
 						if (($vs_metadata_field_name = $o_media_proc_settings->getMetadataFieldName()) && $this->hasField($vs_metadata_field_name)) {
+						    $vn_embedded_media_metadata_limit = (int)$this->_CONFIG->get('dont_extract_embedded_media_metdata_when_length_exceeds');
+						    if (($vn_embedded_media_metadata_limit > 0) && (strlen($vs_serialized_metadata = caSerializeForDatabase($media_metadata, true)) > $vn_embedded_media_metadata_limit)) {
+						        $media_metadata = null; $vs_serialized_metadata = '';
+						    }
 							$this->set($vs_metadata_field_name, $media_metadata);
-							$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
+							$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote($vs_serialized_metadata).",";
 						}
 				
 						if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
