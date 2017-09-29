@@ -588,7 +588,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 				if (is_array($va_movement_ids) && sizeof($va_movement_ids)) {
 					// get list of objects on these movements...
 					$t_movement = new ca_movements();
-					$va_object_ids = $t_movement->getRelatedItems('ca_objects', array('idsOnly' => true, 'showCurrentOnly' => true, 'row_ids' => $va_movement_ids));
+					$va_object_ids = $t_movement->getRelatedItems('ca_objects', array('idsOnly' => true,'row_ids' => $va_movement_ids));
 					
 					// ... then get the list of objects for which the *current* movement is one of ours
 					$t_object = new ca_objects();
