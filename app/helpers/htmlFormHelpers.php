@@ -134,8 +134,9 @@
 	 * @param array Options include:
 	 *		width = Width of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
 	 *		height = Height of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
-	 * 		usewysiwygeditor = Use rich text editor for text element. Only available when the height of the text element is multi-line. [Default is false]
-	 *
+	 * 		usewysiwygeditor = Use rich text editor (CKEditor) for text element. Only available when the height of the text element is multi-line. [Default is false]
+	 *      cktoolbar = app.conf directive name to pull CKEditor toolbar spec from. [Default is wysiwyg_editor_toolbar]
+	 *      contentUrl = URL to use to load content when CKEditor is use with CA-specific plugins. [Default is null]
 	 * @return string
 	 */
 	function caHTMLTextInput($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -212,9 +213,12 @@
 		
 		if ($vb_use_wysiwyg_editor) {
 			AssetLoadManager::register("ckeditor");
-								
+
 			$o_config = Configuration::load();
-			if(!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = []; }
+			if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $pa_options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
+			
+			$vs_content_url = caGetOption('contentUrl', $pa_options, '');
+			$va_lookup_urls = caGetOption('lookupUrls', $pa_options, null);
 			
 			$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
 			var ckEditor = CKEDITOR.replace( '".$pa_attributes['id']."',
@@ -223,7 +227,9 @@
 				width: '{$vn_width}px',
 				height: '{$vn_height}px',
 				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR
+				enterMode: CKEDITOR.ENTER_BR,
+				contentUrl: '{$vs_content_url}',
+				lookupUrls: ".json_encode($va_lookup_urls)."
 			});
 	
 			ckEditor.on('instanceReady', function(){ 

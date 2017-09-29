@@ -622,6 +622,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if ($t_lot->load(array('idno_stub' => $vs_val))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
 					$pm_fields[$vs_fld] = $vn_lot_id;
+				} else {
+					return false;
 				}
 			}
 		}
@@ -922,12 +924,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$vs_default_display_template = '^ca_object_lots.preferred_labels.name (^ca_object_lots.idno_stub)';
 					$vs_display_template = $pb_display_label_only ? "" : caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
 				
+				    $o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_object_lots',
 						'id' => $vn_lot_id,
 						'display' => $t_lot->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
-						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_lot_type_info[$vn_type_id]['icon'], 'icon'),
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 						'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
 						'typename_plural' => $va_lot_type_info[$vn_type_id]['name_plural'],
 						'type_id' => $vn_type_id,
@@ -994,12 +997,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
+					$o_media_coder->setMedia($va_loan_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_loans',
 						'id' => $vn_loan_id,
 						'display' => $qr_loans->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
-						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_loan_type_info[$vn_type_id]['icon'], 'icon'),
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 						'typename_singular' => $vs_typename = $va_loan_type_info[$vn_type_id]['name_singular'],
 						'typename_plural' => $va_loan_type_info[$vn_type_id]['name_plural'],
 						'type_id' => $vn_type_id,
@@ -1067,12 +1071,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
+					$o_media_coder->setMedia($va_movement_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_movements',
 						'id' => $vn_movement_id,
 						'display' => $qr_movements->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
-						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_movement_type_info[$vn_type_id]['icon'], 'icon'),
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 						'typename_singular' => $vs_typename = $va_movement_type_info[$vn_type_id]['name_singular'],
 						'typename_plural' => $va_movement_type_info[$vn_type_id]['name_plural'],
 						'type_id' => $vn_type_id,
@@ -1140,12 +1145,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
+					$o_media_coder->setMedia($va_occurrence_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_occurrences',
 						'id' => $vn_occurrence_id,
 						'display' => $qr_occurrences->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
-						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_occurrence_type_info[$vn_type_id]['icon'], 'icon'),
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 						'typename_singular' => $vs_typename = $va_occurrence_type_info[$vn_type_id]['name_singular'],
 						'typename_plural' => $va_occurrence_type_info[$vn_type_id]['name_plural'],
 						'type_id' => $vn_type_id,
@@ -1212,12 +1218,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 					$vs_color = str_replace("#", "", $vs_color);
 					
+					$o_media_coder->setMedia($va_collection_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_collections',
 						'id' => $vn_collection_id,
 						'display' => $qr_collections->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
-						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_collection_type_info[$vn_type_id]['icon'], 'icon'),
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 						'typename_singular' => $vs_typename = $va_collection_type_info[$vn_type_id]['name_singular'],
 						'typename_plural' => $va_collection_type_info[$vn_type_id]['name_plural'],
 						'type_id' => $vn_type_id,
@@ -1267,13 +1274,14 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				$vs_color = str_replace("#", "", $vs_color);
 				
+				$o_media_coder->setMedia($va_location_type_info[$vn_type_id]['icon']);
 				$va_history[$va_date['sortable']][] = array(
 					'type' => 'ca_storage_locations',
 					'id' => $vn_location_id,
 					'relation_id' => $qr_locations->get('relation_id'),
 					'display' => $qr_locations->getWithTemplate($vs_display_template),
 					'color' => $vs_color,
-					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_location_type_info[$vn_type_id]['icon'], 'icon'),
+					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 					'typename_singular' => $vs_name_singular, //$vs_typename = $va_location_type_info[$vn_type_id]['name_singular'],
 					'typename_plural' => $vs_name_plural, //$va_location_type_info[$vn_type_id]['name_plural'],
 					'type_id' => $vn_type_id,
@@ -1433,10 +1441,10 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	# ------------------------------------------------------
 	private function _processObjectHistoryBundleSettings($pa_bundle_settings) {
 
-		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_critiera = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_critiera)) {
+		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_criteria = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_criteria)) {
 			// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
 			$va_bundle_settings = array();
-			foreach($va_current_location_critiera as $vs_table => $va_info) {
+			foreach($va_current_location_criteria as $vs_table => $va_info) {
 				switch($vs_table) {
 					case 'ca_storage_locations':
 						if(is_array($va_info)) {
@@ -1494,9 +1502,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
 						'hide_add_to_occurrence_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection'
 					) as $vs_key) {
-				if (isset($va_current_location_critiera[$vs_key]) && $vb_use_app_defaults) {
-					$va_bundle_settings[$vs_key] = $va_current_location_critiera[$vs_key];
-				} else {
+				if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
+					$va_bundle_settings[$vs_key] = $va_current_location_criteria[$vs_key];
+				} elseif(!$vb_use_app_defaults || !in_array($vs_key, ['sortDirection'])) {
 					$va_bundle_settings[$vs_key] = $pa_bundle_settings[$vs_key];
 				}
 			}

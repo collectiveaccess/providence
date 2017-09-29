@@ -465,9 +465,9 @@ class ca_change_log extends BaseModel {
 								goto deflabel;
 							} elseif($t_instance) {
 								if($t_instance instanceof BaseRelationshipModel) {
-									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { continue(3); }
+									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { continue(2); }
 								} elseif($t_instance instanceof BaseModel) {
-									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(3); }
+									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
 							} else {
 								$va_snapshot = ['SKIP' => true];
@@ -552,8 +552,8 @@ class ca_change_log extends BaseModel {
 												$va_snapshot[$vs_fld."_media_desc"] = array_shift($t_instance->get($vs_fld, array('returnWithStructure' => true)));
 											}
 										} elseif(is_array($va_snapshot[$vs_fld])) { // back in the day it would store the full media array here
-											$o_coder = MediaInfoCoder::load();
-											$va_snapshot[$vs_fld] = $o_coder->getMediaUrl($va_snapshot[$vs_fld], 'original');
+											$o_coder = new MediaInfoCoder($va_snapshot[$vs_fld]);
+											$va_snapshot[$vs_fld] = $o_coder->getMediaUrl('original');
 										}
 									} else { // if it's not the latest, we don't care about the media
 										unset($va_snapshot[$vs_fld]);

@@ -826,6 +826,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 */
 	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $pa_options=null){
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_table_name_or_num.'/'.$pm_type_name_or_id);
+		if(!caGetOption('noCache', $pa_options, false) && CompositeCache::contains($vs_cache_key, 'ElementsSortable')) {
+			return CompositeCache::fetch($vs_cache_key, 'ElementsSortable');
+		}
 		$va_elements = ca_metadata_elements::getElementsAsList(false, $pm_table_name_or_num, $pm_type_name_or_id);
 		if (!is_array($va_elements) || !sizeof($va_elements)) { return array(); }
 
@@ -843,6 +847,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 
+		CompositeCache::save($vs_cache_key, $va_sortable_elements, 'ElementsSortable');
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------

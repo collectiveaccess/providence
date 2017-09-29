@@ -70,6 +70,11 @@ class SearchResult extends BaseObject {
 
 	private $opa_row_ids_to_prefetch_cache;
 	
+	/**
+	 * Contains fetched media info blocks for the current row
+	 */
+	private $opa_field_media_info;
+	
 	private $opo_tep; // time expression parser
 	
 	private static $o_db;
@@ -222,7 +227,7 @@ class SearchResult extends BaseObject {
 		if (!$GLOBALS["_DbResult_time_expression_parser"]) { $GLOBALS["_DbResult_time_expression_parser"] = new TimeExpressionParser(); }
 		if (!$GLOBALS["_DbResult_timecodeparser"]) { $GLOBALS["_DbResult_timecodeparser"] = new TimecodeParser(); }
 		
-		if (!$GLOBALS["_DbResult_mediainfocoder"]) { $GLOBALS["_DbResult_mediainfocoder"] = MediaInfoCoder::load(); }
+		if (!$GLOBALS["_DbResult_mediainfocoder"]) { $GLOBALS["_DbResult_mediainfocoder"] = new MediaInfoCoder(); }
 		if (!$GLOBALS["_DbResult_fileinfocoder"]) { $GLOBALS["_DbResult_fileinfocoder"] = FileInfoCoder::load(); }
 		
 		
@@ -307,6 +312,7 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	public function nextHit() {
+	    $this->opa_field_media_info = [];
 		return $this->opo_engine_result->nextHit();
 	}
 	# ------------------------------------------------------------------
@@ -1231,7 +1237,8 @@ class SearchResult extends BaseObject {
 									if(is_array(SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])) {
 										$va_hier_id_list = array_merge(array($vn_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5]);
 										$va_hier_id_list = array_filter($va_hier_id_list, function($v) { return $v > 0 ;});
-										if ($vs_hierarchy_direction === 'asc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
+										
+										$va_hier_id_list = array_reverse($va_hier_id_list);
 										
 										if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 											$va_hier_id_list = array_slice($va_hier_id_list, 0, $vn_max_levels_from_top, true);
@@ -1244,6 +1251,7 @@ class SearchResult extends BaseObject {
 										if ($t_instance->getHierarchyType() == __CA_HIER_TYPE_MULTI_MONO__) {
 											array_shift($va_hier_id_list);
 										}
+										if ($vs_hierarchy_direction === 'desc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
 										$va_hier_ids[] = $va_hier_id_list;
 									}
 								}
@@ -2052,7 +2060,7 @@ class SearchResult extends BaseObject {
 										if ($pa_options['returnWithStructure']) {
 											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')][$vs_element_code] = $vb_has_hierarchy_modifier ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 										} else {
-											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')][] = $vb_has_hierarchy_modifier ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vb_has_hierarchy_modifier ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 										}
 									}
 								}
@@ -2066,8 +2074,8 @@ class SearchResult extends BaseObject {
 						    case __CA_ATTRIBUTE_VALUE_MEDIA__:
 						    case __CA_ATTRIBUTE_VALUE_FILE__:
 						        $vs_return_type = 'tag';
-                                $va_versions = $o_value->getVersions();
-                                $vs_version = $va_versions[0];
+                                $va_versions = ($o_value->getType() == __CA_ATTRIBUTE_VALUE_MEDIA__) ? $o_value->getVersions() : [];
+                                $vs_version = caGetOption('version', $pa_options, $va_versions[0]);
                                 
                                 $va_e = array_slice($va_path_components['components'], 2);
                                 foreach($va_e as $vs_e) {
@@ -2154,6 +2162,7 @@ class SearchResult extends BaseObject {
 					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name'] && !$pa_options['returnWithStructure']) {
 						if (strlen($vs_val_proc) > 0)  {$va_val_proc[] = $vs_val_proc; }
 						$vs_val_proc = join($vs_delimiter, $va_val_proc);
+						$va_val_proc = [];
 					} 
 					
 					$va_spec = $va_path_components['components'];
@@ -2167,6 +2176,9 @@ class SearchResult extends BaseObject {
 					
 						if ($pa_options['returnWithStructure']) {
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
+							if ($o_value->getType() == __CA_ATTRIBUTE_VALUE_DATERANGE__) {  // add sortable alternate value for dates
+							    $va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code.'_sort_'] = $o_value->getDisplayValue(['sortable' => true]); // add sortable alternate representation for dates; this will be used by the SearchResult::get() "sort" option to properly sort date values
+							}
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vs_val_proc;	
 						}
@@ -2215,8 +2227,8 @@ class SearchResult extends BaseObject {
 		//
 		// Flatten array for return as string or simple array value
 		// 
-		$va_flattened_values = array_map(function($v) { return is_array($v) ? join("; ", $v) : $v; }, $this->_flattenArray($va_return_values, $pa_options));
-		
+		$va_flattened_values = array_map(function($v) use ($pa_options) { return is_array($v) ? join($pa_options['delimiter'], $v) : $v; }, $this->_flattenArray($va_return_values, $pa_options));
+
 		if ($va_path_components['is_count']) {
 			return $pa_options['returnAsArray'] ? [sizeof($va_flattened_values)] : sizeof($va_flattened_values); 
 		}
@@ -2725,16 +2737,24 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 		$vn_index = (isset($pa_options['index']) && ((int)$pa_options['index'] > 0)) ? (int)$pa_options['index'] : 0;
-		$va_media_info = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo(array_shift($va_media_info), $ps_version, $ps_key, $pa_options);
+		
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, $pa_options, array_shift($this->opa_field_media_info[$ps_field]));
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * 
 	 */
 	function getMediaPath($ps_field, $ps_version, $pa_options=null) {
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath(array_shift($this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true))), $ps_version, $pa_options);
+	    if (!is_array($pa_options)) { $pa_options = []; }
+	    if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2742,12 +2762,15 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	function getMediaPaths($ps_field, $ps_version, $pa_options=null) {
-		$va_media = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+	    if (!is_array($pa_options)) { $pa_options = []; }
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
 		
 		$va_media_paths = array();
-		if (is_array($va_media) && sizeof($va_media)) {
-			foreach($va_media as $vm_media) {
-				$va_media_paths[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($vm_media, $ps_version, $pa_options);
+		if (is_array($this->opa_field_media_info[$ps_field]) && sizeof($this->opa_field_media_info[$ps_field])) {
+			foreach($this->opa_field_media_info[$ps_field] as $vm_media) {
+				$va_media_paths[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => $vm_media]));
 			}
 		}
 		return $va_media_paths;
@@ -2757,8 +2780,11 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaUrl($ps_field, $ps_version, $pa_options=null) {
-		$va_media_infos = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl(array_shift($va_media_infos), $ps_version, $pa_options);
+	    if (!is_array($pa_options)) { $pa_options = []; }
+	    if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2766,12 +2792,15 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	function getMediaUrls($ps_field, $ps_version, $pa_options=null) {
-		$va_media_infos = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+	    if (!is_array($pa_options)) { $pa_options = []; }
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
 		
 		$va_media_urls = array();
-		if (is_array($va_media_infos) && sizeof($va_media_infos)) {
-			foreach($va_media_infos as $vm_media) {
-				$va_media_urls[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($vm_media, $ps_version, $pa_options);
+		if (is_array($this->opa_field_media_info[$ps_field]) && sizeof($this->opa_field_media_info[$ps_field])) {
+			foreach($this->opa_field_media_info[$ps_field] as $vm_media) {
+				$va_media_urls[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($ps_version, array_merge($pa_options, ['data' => $vm_media]));
 			}
 		}
 		return $va_media_urls;
@@ -2781,8 +2810,11 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaTag($ps_field, $ps_version, $pa_options=null) {
-		$va_media_infos = self::get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag(array_shift($va_media_infos), $ps_version, $pa_options);
+	    if (!is_array($pa_options)) { $pa_options = []; }
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['data' => reset($this->opa_field_media_info[$ps_field])]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2790,12 +2822,14 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	function getMediaTags($ps_field, $ps_version, $pa_options=null) {
-		
-		$va_media_infos = self::get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+	    if (!is_array($pa_options)) { $pa_options = []; }
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
 		$va_media_tags = array();
-		if (is_array($va_media_infos) && sizeof($va_media_infos)) {
-			foreach($va_media_infos as $vm_media) {
-				$va_media_tags[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($vm_media, $ps_version, $pa_options);
+		if (is_array($this->opa_field_media_info[$ps_field]) && sizeof($this->opa_field_media_info[$ps_field])) {
+			foreach($this->opa_field_media_info[$ps_field] as $vm_media) {
+				$va_media_tags[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['data' => $vm_media]));
 			}
 		}
 		return $va_media_tags;
@@ -2806,13 +2840,14 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	function getMediaInfos($ps_field) {
-		
-		$va_media = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
 		
 		$va_media_infos = array();
-		if (is_array($va_media) && sizeof($va_media)) {
-			foreach($va_media as $vm_media) {
-				$va_media_infos[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($vm_media);
+		if (is_array($this->opa_field_media_info[$ps_field]) && sizeof($this->opa_field_media_info[$ps_field])) {
+			foreach($this->opa_field_media_info[$ps_field] as $vm_media) {
+				$va_media_infos[] = $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo(null, null, ['data' => $vm_media]);
 			}
 		}
 		return $va_media_infos;
@@ -2822,7 +2857,10 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaVersions($ps_field) {
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(array_shift($this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true))));
+	    if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(['data' => reset($this->opa_field_media_info[$ps_field])]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2839,33 +2877,41 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function hasMedia($ps_field) {  
-		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(['data' => reset($this->opa_field_media_info[$ps_field])]);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * 
 	 */
 	function getMediaScale($ps_field) {  
-		$va_media_infos = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+	    if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
 
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaScale(array_shift($va_media_infos), $pa_options);	
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaScale(['data' => reset($this->opa_field_media_info[$ps_field])]);	
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * 
 	 */
 	function mediaIsMirrored($ps_field, $ps_version) {
-		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_version);
+	    if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored($ps_version, ['data' => reset($this->opa_field_media_info[$ps_field])]);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * 
 	 */
 	function getMediaMirrorStatus($ps_field, $ps_version, $ps_mirror=null) {
-		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_version, $ps_mirror);
+		if (!$this->opa_field_media_info[$ps_field]) {
+		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus($ps_version, $ps_mirror, ['data' => reset($this->opa_field_media_info[$ps_field])]);
 	}
 	# ------------------------------------------------------------------
 	/**

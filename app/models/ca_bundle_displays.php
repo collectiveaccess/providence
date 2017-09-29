@@ -611,7 +611,7 @@ if (!$pb_omit_editing_info) {
 									} else {
 										$vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE');
 									}
-									if ($vs_list_code) {
+									if ($vs_list_code && ($t_list->numItemsInList($vs_list_code) <= 500)) {
 										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
 										if (!is_array($va_list_items = $t_list->getItemsForList($vs_list_code))) {
 											break;
@@ -654,20 +654,26 @@ if (!$pb_omit_editing_info) {
 											case 'horiz_hierbrowser':
 											case 'horiz_hierbrowser_with_search':
 											case 'vert_hierbrowser':
-												$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
-												$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
-												
-												$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
-												
-												$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
-												$va_list_item_labels = [];
-										
-												while($qr_list_items->nextHit()) {
-													$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
-												}
-												asort($va_list_item_labels);
-												$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
-												$va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
+											    if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
+											        // don't send very large lists
+											        $va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+												    $va_placements[$vn_placement_id]['inlineEditingType'] = null;
+											    } else {
+                                                    $va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+                                                    $va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
+                                                
+                                                    $va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
+                                                
+                                                    $qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
+                                                    $va_list_item_labels = [];
+                                        
+                                                    while($qr_list_items->nextHit()) {
+                                                        $va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
+                                                    }
+                                                    asort($va_list_item_labels);
+                                                    $va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
+                                                    $va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
+                                                }
 												break;
 											default: // if it's a render setting we don't know about it's not editable
 												$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
@@ -1915,6 +1921,8 @@ if (!$pb_omit_editing_info) {
 		$pa_options['hierarchyDirection'] =				caGetOption('hierarchy_order', $va_settings, null);
 		$pa_options['hierarchyDelimiter'] =				caGetOption('hierarchical_delimiter', $va_settings, null);
 		
+		$pb_show_hierarchy = caGetOption(array('showHierarchy', 'show_hierarchy'), $pa_options, false);
+		
 		unset($pa_options['format']);	// don't pass format strings to get() here
 		if ((sizeof($va_bundle_bits) == 1) || ((sizeof($va_bundle_bits) == 2) && ($va_bundle_bits[1] == 'related'))) {
 			$pa_options['template'] = caGetOption('format', $va_settings, $this->getAppConfig()->get($va_bundle_bits[0].'_relationship_display_format'));;
@@ -1934,7 +1942,7 @@ if (!$pb_omit_editing_info) {
 			$vs_template = $t_element->getSetting('displayTemplate'); 
 		}
 		
-		if($vs_template) {
+		if(!$pb_show_hierarchy && $vs_template) {
 			unset($pa_options['template']);
 			
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true)) {
@@ -1991,10 +1999,10 @@ if (!$pb_omit_editing_info) {
 			}
 		} else {
 			// Straight get
-			if(caGetOption(array('showHierarchy', 'show_hierarchy'), $pa_options, false) && (sizeof($va_bundle_bits) == 1)) {
+			if($pb_show_hierarchy && (sizeof($va_bundle_bits) == 1)) {
 				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
 			}
-			$vs_val = $po_result->get(join(".", $va_bundle_bits), $pa_options);
+			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $pa_options));
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {

@@ -39,7 +39,7 @@
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 	
-	\PhpOffice\PhpPresentation\Autoloader::register();
+	//\PhpOffice\PhpPresentation\Autoloader::register();
 	
    # ----------------------------------------
 	/**
@@ -150,6 +150,7 @@
 				$o_view->setVar('display', $t_display);
 				
 				$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
+				$o_view->setVar('display_list', $va_placements);
 				foreach($va_placements as $vn_placement_id => $va_display_item) {
 					$va_settings = caUnserializeForDatabase($va_display_item['settings']);
 				
@@ -512,7 +513,7 @@
 			$vb_printed_properly = true;
 		} catch (Exception $e) {
 			$vb_printed_properly = false;
-			throw new ApplicationException(_t("Could not generate PDF"));
+			throw new ApplicationException(_t("Could not generate PDF: ".$e->getMessage()));
 		}
 		
 		return $vb_printed_properly;

@@ -76,7 +76,6 @@ class getid3_asf extends getid3_handler
 			unset($info['fileformat']);
 			unset($info['asf']);
 			return false;
-			break;
 		}
 		$thisfile_asf_headerobject['objectsize']    = getid3_lib::LittleEndian2Int(substr($HeaderObjectData, 16, 8));
 		$thisfile_asf_headerobject['headerobjects'] = getid3_lib::LittleEndian2Int(substr($HeaderObjectData, 24, 4));

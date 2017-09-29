@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,7 +76,7 @@
 				
 					$va_display = caGetOption('display', $pa_data, []);
 					
-					if(is_a($t_instance, "ca_object_representations")) {
+					if(is_a($t_instance, "ca_object_representations") || is_a($t_instance, "ca_site_page_media")) {
 						$vs_media_fld = 'media';
 					} elseif(is_a($t_instance, "ca_attribute_values")) {
 						$vs_media_fld = 'value_blob';

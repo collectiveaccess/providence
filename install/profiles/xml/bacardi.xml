@@ -48,14 +48,14 @@
             </label>
           </labels>
           <items>
-        <item idno="museum" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Museum Object</name_singular>
-              <name_plural>Museum Objects</name_plural>
-            </label>
-          </labels>
-        </item>
+            <item idno="museum" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Museum Object</name_singular>
+                  <name_plural>Museum Objects</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
         <item idno="archival_item" enabled="1" default="0">
@@ -345,6 +345,23 @@
         </item>
       </items>
     </list>
+    <list code="storage_location_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Storage location sources</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="bacardi" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bacardi</name_singular>
+              <name_plural>Bacardi</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="storage_location_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -384,11 +401,43 @@
             </label>
           </labels>
         </item>
+        <item idno="rack" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>rack</name_singular>
+              <name_plural>rack</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bay" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bay</name_singular>
+              <name_plural>bay</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shelf" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>shelf</name_singular>
+              <name_plural>shelf</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="cabinet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>cabinet</name_singular>
-              <name_plural>cabinets</name_plural>
+              <name_plural>cabinet</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="plan_chest" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>plan chest</name_singular>
+              <name_plural>plan chest</name_plural>
             </label>
           </labels>
         </item>
@@ -400,11 +449,11 @@
             </label>
           </labels>
         </item>
-        <item idno="shelf" enabled="1" default="0">
+        <item idno="wall" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>shelf</name_singular>
-              <name_plural>shelf</name_plural>
+              <name_singular>wall</name_singular>
+              <name_plural>wall</name_plural>
             </label>
           </labels>
         </item>
@@ -488,6 +537,48 @@
             <label locale="en_US" preferred="1">
               <name_singular>Purchase</name_singular>
               <name_plural>Purchases</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="set_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Set types</name>
+        </label>
+        <label locale="en_CA">
+          <name>Set types</name>
+        </label>
+        <label locale="fr_FR">
+          <name>Types d\'ensembles</name>
+        </label>
+        <label locale="sv_SE">
+          <name>Grupperingstyper</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="user" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>User set</name_singular>
+              <name_plural>User sets</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="public_presentation" enabled="0" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Public presentation</name_singular>
+              <name_plural>Public presentations</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="disaster" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Disaster priority</name_singular>
+              <name_plural>Disaster priority</name_plural>
             </label>
           </labels>
         </item>
@@ -1004,25 +1095,2268 @@
     <list code="brand_name" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Brand Name</name>
+          <name>Brand and Product List</name>
         </label>
       </labels>
       <items>
-        <item idno="option0" enabled="1" default="1">
+        <item idno="Aberfeldy" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>-</name_singular>
-              <name_plural>-</name_plural>
+              <name_singular>Aberfeldy</name_singular>
+              <name_plural>Aberfeldy</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Aberfeldy_TO_BE_CONFIRMED" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>TO BE CONFIRMED</name_singular>
+                  <name_plural>TO BE CONFIRMED</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Aultmore" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aultmore</name_singular>
+              <name_plural>Aultmore</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Aultmore_Harvey_apos_s" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Harvey&apos;s</name_singular>
+                  <name_plural>Harvey&apos;s</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Flora_and_Fauna" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Flora and Fauna</name_singular>
+                  <name_plural>Flora and Fauna</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Rare_Malts_Collection" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rare Malts Collection</name_singular>
+                  <name_plural>Rare Malts Collection</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Centenary" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Centenary</name_singular>
+                  <name_plural>Centenary</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Limited_Edition_Cask_Strength" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Limited Edition Cask Strength</name_singular>
+                  <name_plural>Limited Edition Cask Strength</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Aultmore_12" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Aultmore 12</name_singular>
+                  <name_plural>Aultmore 12</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Aultmore_18" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Aultmore 18</name_singular>
+                  <name_plural>Aultmore 18</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Aultmore_21" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Aultmore 21</name_singular>
+                  <name_plural>Aultmore 21</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Aultmore_25" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Aultmore 25</name_singular>
+                  <name_plural>Aultmore 25</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_Single_Cask" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Single Cask</name_singular>
+                  <name_plural>Single Cask</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Aultmore_External_bottling" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>External bottling</name_singular>
+                  <name_plural>External bottling</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Bacardi" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bacardi</name_singular>
+              <name_plural>Bacardi</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Bacardi_TO_BE_CONFIRMED" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>TO BE CONFIRMED</name_singular>
+                  <name_plural>TO BE CONFIRMED</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="B_n_dictine" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bénédictine</name_singular>
+              <name_plural>Bénédictine</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="B_n_dictin_B_amp_B" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>B&amp;B</name_singular>
+                  <name_plural>B&amp;B</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="B_n_dictin_B_n_dictine" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bénédictine</name_singular>
+                  <name_plural>Bénédictine</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="B_n_dictin_Alcool_de_Menthe" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Alcool de Menthe</name_singular>
+                  <name_plural>Alcool de Menthe</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="B_n_dictin_Dom_Brandy" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dom Brandy</name_singular>
+                  <name_plural>Dom Brandy</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="B_n_dictin_Eau_de_M_lisse" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Eau de Mélisse</name_singular>
+                  <name_plural>Eau de Mélisse</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="B_n_dictin_Single_Cask" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Single Cask</name_singular>
+                  <name_plural>Single Cask</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Bombay_Gin" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bombay Gin</name_singular>
+              <name_plural>Bombay Gin</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Bombay_Gin_Bombay_Dry_Original" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bombay Dry / Original</name_singular>
+                  <name_plural>Bombay Dry / Original</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Bombay_Gin_Bombay_Sapphire" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bombay Sapphire</name_singular>
+                  <name_plural>Bombay Sapphire</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Calvados_Boulard" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Calvados Boulard</name_singular>
+              <name_plural>Calvados Boulard</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="tbd" enabled="1" default="0">
+        <item idno="Chianti_Melini" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>TBD</name_singular>
-              <name_plural>TBD</name_plural>
+              <name_singular>Chianti Melini</name_singular>
+              <name_plural>Chianti Melini</name_plural>
             </label>
           </labels>
+          <items>
+            <item idno="Chianti_Me_Grappa_Riserva_Melini" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grappa Riserva Melini</name_singular>
+                  <name_plural>Grappa Riserva Melini</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Chianti_Me_Vecchia_Grappa_Melini" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vecchia Grappa Melini</name_singular>
+                  <name_plural>Vecchia Grappa Melini</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Clan_Munro" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Clan Munro</name_singular>
+              <name_plural>Clan Munro</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Clan_Munro_TO_BE_CONFIRMED" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>TO BE CONFIRMED</name_singular>
+                  <name_plural>TO BE CONFIRMED</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Craigellachie" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Craigellachie</name_singular>
+              <name_plural>Craigellachie</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Craigellac_Old_Smuggler_Old_Gaelic" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Old Smuggler/Old Gaelic</name_singular>
+                  <name_plural>Old Smuggler/Old Gaelic</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Flora_and_Fauna" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Flora and Fauna</name_singular>
+                  <name_plural>Flora and Fauna</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Rare_Malts_Collection" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rare Malts Collection</name_singular>
+                  <name_plural>Rare Malts Collection</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Craigellachie_14" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Craigellachie 14</name_singular>
+                  <name_plural>Craigellachie 14</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Craigellachie_13" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Craigellachie 13</name_singular>
+                  <name_plural>Craigellachie 13</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Craigellachie_17" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Craigellachie 17</name_singular>
+                  <name_plural>Craigellachie 17</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Craigellachie_19" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Craigellachie 19</name_singular>
+                  <name_plural>Craigellachie 19</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Craigellachie_23" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Craigellachie 23</name_singular>
+                  <name_plural>Craigellachie 23</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Craigellachie_31" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Craigellachie 31</name_singular>
+                  <name_plural>Craigellachie 31</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Single_Cask" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Single Cask</name_singular>
+                  <name_plural>Single Cask</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_Special_Edition" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Special Edition</name_singular>
+                  <name_plural>Special Edition</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Craigellac_External_bottling" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>External bottling</name_singular>
+                  <name_plural>External bottling</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Dewar_apos_s" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dewar&apos;s</name_singular>
+              <name_plural>Dewar&apos;s</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Dewar_apos_Dewar_apos_s_White_Label" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s White Label</name_singular>
+                  <name_plural>Dewar&apos;s White Label</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_12" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s 12</name_singular>
+                  <name_plural>Dewar&apos;s 12</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_White_Label_12" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>White Label 12</name_singular>
+                  <name_plural>White Label 12</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_18" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s 18</name_singular>
+                  <name_plural>Dewar&apos;s 18</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_15_blend_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s 15 (blend)</name_singular>
+                  <name_plural>Dewar&apos;s 15 (blend)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_Signature" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s Signature</name_singular>
+                  <name_plural>Dewar&apos;s Signature</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_15_Malt_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s 15 (Malt)</name_singular>
+                  <name_plural>Dewar&apos;s 15 (Malt)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_Special" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s Special</name_singular>
+                  <name_plural>Dewar&apos;s Special</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_limited_edition_bottle_packs" enabled="1"
+              default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s limited edition bottle packs</name_singular>
+                  <name_plural>Dewar&apos;s limited edition bottle packs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Ancestor" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Ancestor</name_singular>
+                  <name_plural>Ancestor</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Victoria_Vat" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Victoria Vat</name_singular>
+                  <name_plural>Victoria Vat</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_NPU" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>NPU</name_singular>
+                  <name_plural>NPU</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_Pure_Malt" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s Pure Malt</name_singular>
+                  <name_plural>Dewar&apos;s Pure Malt</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_Blue_Label" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s Blue Label</name_singular>
+                  <name_plural>Dewar&apos;s Blue Label</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Old_Scotch_Whisky_Gold_Cap" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Old Scotch Whisky - Gold Cap</name_singular>
+                  <name_plural>Old Scotch Whisky - Gold Cap</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Imperial_Institute" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Imperial Institute</name_singular>
+                  <name_plural>Imperial Institute</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dewar_apos_Dewar_apos_s_special_bottling" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dewar&apos;s special bottling</name_singular>
+                  <name_plural>Dewar&apos;s special bottling</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="D_apos_Usse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>D&apos;Usse</name_singular>
+              <name_plural>D&apos;Usse</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="D_apos_Uss_D_apos_Uss_VSOP" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D&apos;Ussé VSOP</name_singular>
+                  <name_plural>D&apos;Ussé VSOP</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="D_apos_Uss_D_apos_Uss_XO" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D&apos;Ussé XO</name_singular>
+                  <name_plural>D&apos;Ussé XO</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Duval" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Duval</name_singular>
+              <name_plural>Duval</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Duval_Cassis_de_Fantaisie_Duval_Sirop" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cassis de Fantaisie Duval, Sirop</name_singular>
+                  <name_plural>Cassis de Fantaisie Duval, Sirop</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Duval_Grenadine_Duval_Sirop" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grenadine Duval, Sirop</name_singular>
+                  <name_plural>Grenadine Duval, Sirop</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Duval_Pastis_Duval" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Pastis Duval</name_singular>
+                  <name_plural>Pastis Duval</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Eristoff" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Eristoff</name_singular>
+              <name_plural>Eristoff</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Eristoff_Eristoff_Vodka_Eristow" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Eristoff Vodka / Eristow</name_singular>
+                  <name_plural>Eristoff Vodka / Eristow</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Gaston_de_Lagrange" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gaston de Lagrange</name_singular>
+              <name_plural>Gaston de Lagrange</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Get" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Get</name_singular>
+              <name_plural>Get</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Get_Pippermint_Get" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Pippermint Get</name_singular>
+                  <name_plural>Pippermint Get</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Get_Get_27" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Get 27</name_singular>
+                  <name_plural>Get 27</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Get_Get_31" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Get 31</name_singular>
+                  <name_plural>Get 31</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Get_China_Brun_Perod" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>China Brun-Perod</name_singular>
+                  <name_plural>China Brun-Perod</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Glenordie" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glenordie</name_singular>
+              <name_plural>Glenordie</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Glenordie_TO_BE_CONFIRMED" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>TO BE CONFIRMED</name_singular>
+                  <name_plural>TO BE CONFIRMED</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Grey_Goose" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Grey Goose</name_singular>
+              <name_plural>Grey Goose</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Grey_Goose_Grey_Goose_Cherry_Noir" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grey Goose Cherry Noir</name_singular>
+                  <name_plural>Grey Goose Cherry Noir</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Grey_Goose_Grey_Goose_La_Poire" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grey Goose La Poire</name_singular>
+                  <name_plural>Grey Goose La Poire</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Grey_Goose_Grey_Goose_La_Vanille" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grey Goose La Vanille</name_singular>
+                  <name_plural>Grey Goose La Vanille</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Grey_Goose_Grey_Goose_Le_Citron" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grey Goose Le Citron</name_singular>
+                  <name_plural>Grey Goose Le Citron</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Grey_Goose_Grey_Goose_Le_Melon" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grey Goose Le Melon</name_singular>
+                  <name_plural>Grey Goose Le Melon</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Grey_Goose_Grey_Goose_L_apos_Orange" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grey Goose L&apos;Orange</name_singular>
+                  <name_plural>Grey Goose L&apos;Orange</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Grey_Goose_Grey_Goose_VX" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grey Goose VX</name_singular>
+                  <name_plural>Grey Goose VX</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Macduff" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Macduff</name_singular>
+              <name_plural>Macduff</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Macduff_Macduff_Single_Malt" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Macduff Single Malt</name_singular>
+                  <name_plural>Macduff Single Malt</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_Glen_Deveron_5" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Glen Deveron 5</name_singular>
+                  <name_plural>Glen Deveron 5</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_Glen_Deveron_8" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Glen Deveron 8</name_singular>
+                  <name_plural>Glen Deveron 8</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_Glen_Deveron_12" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Glen Deveron 12</name_singular>
+                  <name_plural>Glen Deveron 12</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_Glen_Deveron_10" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Glen Deveron 10</name_singular>
+                  <name_plural>Glen Deveron 10</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_Glen_Deveron_15" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Glen Deveron 15</name_singular>
+                  <name_plural>Glen Deveron 15</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_Royal_Burgh_Collection" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Royal Burgh Collection</name_singular>
+                  <name_plural>Royal Burgh Collection</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_The_Deveron_10" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>The Deveron 10</name_singular>
+                  <name_plural>The Deveron 10</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_The_Deveron_12" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>The Deveron 12</name_singular>
+                  <name_plural>The Deveron 12</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_The_Deveron_18" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>The Deveron 18</name_singular>
+                  <name_plural>The Deveron 18</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Macduff_Special_Editions" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Special Editions</name_singular>
+                  <name_plural>Special Editions</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="MARTINI" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MARTINI</name_singular>
+              <name_plural>MARTINI</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="MARTINI_Acquavite_Dorata" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Acquavite Dorata</name_singular>
+                  <name_plural>Acquavite Dorata</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Alkermes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Alkermes</name_singular>
+                  <name_plural>Alkermes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Alpen_Bitter" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Alpen Bitter</name_singular>
+                  <name_plural>Alpen Bitter</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Amaro_Centauro_Elixir" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Amaro Centauro, Elixir</name_singular>
+                  <name_plural>Amaro Centauro, Elixir</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Amaro_Rovighi" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Amaro Rovighi</name_singular>
+                  <name_plural>Amaro Rovighi</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Amaro_Torino" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Amaro Torino</name_singular>
+                  <name_plural>Amaro Torino</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Angostura_Bitter" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Angostura Bitter</name_singular>
+                  <name_plural>Angostura Bitter</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Anisetta" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Anisetta</name_singular>
+                  <name_plural>Anisetta</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Aperitivo_Rossi" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Aperitivo Rossi</name_singular>
+                  <name_plural>Aperitivo Rossi</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Americano_Rossi" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Americano Rossi</name_singular>
+                  <name_plural>Americano Rossi</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Bellini_RTS_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bellini (RTS)</name_singular>
+                  <name_plural>Bellini (RTS)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Bibita_Aranciata" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bibita Aranciata</name_singular>
+                  <name_plural>Bibita Aranciata</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Bitter" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bitter</name_singular>
+                  <name_plural>Bitter</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Bitter_Aperitivo_Rossi_Ap_ritif_Bitter_Rossi" enabled="1"
+              default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bitter Aperitivo Rossi / Apéritif Bitter Rossi</name_singular>
+                  <name_plural>Bitter Aperitivo Rossi / Apéritif Bitter Rossi</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Caffaro_di_Carchifellone" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Caffaro di Carchifellone</name_singular>
+                  <name_plural>Caffaro di Carchifellone</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cannella" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cannella</name_singular>
+                  <name_plural>Cannella</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cedro_Acqua" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cedro, Acqua</name_singular>
+                  <name_plural>Cedro, Acqua</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cedro_Liquore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cedro, Liquore</name_singular>
+                  <name_plural>Cedro, Liquore</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Certosa_Liquore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Certosa, Liquore</name_singular>
+                  <name_plural>Certosa, Liquore</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Charles_de_Cazanove" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Charles de Cazanove</name_singular>
+                  <name_plural>Charles de Cazanove</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_China" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>China</name_singular>
+                  <name_plural>China</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Coca_Boliviana" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Coca Boliviana</name_singular>
+                  <name_plural>Coca Boliviana</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cognac" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cognac</name_singular>
+                  <name_plural>Cognac</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cognac_Savoia" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cognac Savoia</name_singular>
+                  <name_plural>Cognac Savoia</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cognac_Caff_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cognac-Caffè</name_singular>
+                  <name_plural>Cognac-Caffè</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cordial_Martini" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cordial Martini</name_singular>
+                  <name_plural>Cordial Martini</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Creme_de_Baunilha" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Creme de Baunilha</name_singular>
+                  <name_plural>Creme de Baunilha</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Cura_ao" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Curaçao</name_singular>
+                  <name_plural>Curaçao</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Dry_Gin_Bosford" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dry Gin, Bosford</name_singular>
+                  <name_plural>Dry Gin, Bosford</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Dry_Gin_Imported" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dry Gin, Imported</name_singular>
+                  <name_plural>Dry Gin, Imported</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Estratto_d_apos_Erbe" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Estratto d&apos;Erbe</name_singular>
+                  <name_plural>Estratto d&apos;Erbe</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Fernet" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Fernet</name_singular>
+                  <name_plural>Fernet</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Flora_delle_Alpi_Cristallizzata" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Flora delle Alpi Cristallizzata</name_singular>
+                  <name_plural>Flora delle Alpi Cristallizzata</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Fragola_Liquore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Fragola, Liquore</name_singular>
+                  <name_plural>Fragola, Liquore</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Frate_Arnaldo_da_Brescia" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Frate Arnaldo da Brescia</name_singular>
+                  <name_plural>Frate Arnaldo da Brescia</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Genepis_des_Alpes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Genepis des Alpes</name_singular>
+                  <name_plural>Genepis des Alpes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Gin_Secco_Superiore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Gin Secco Superiore</name_singular>
+                  <name_plural>Gin Secco Superiore</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Grande_Liquore_Marictine" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grande Liquore Marictine</name_singular>
+                  <name_plural>Grande Liquore Marictine</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Grappa" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grappa</name_singular>
+                  <name_plural>Grappa</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Grappa_Alpina" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grappa Alpina</name_singular>
+                  <name_plural>Grappa Alpina</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Jolandina" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Jolandina</name_singular>
+                  <name_plural>Jolandina</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Kirsch_Wasser" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Kirsch Wasser</name_singular>
+                  <name_plural>Kirsch Wasser</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Latte_di_Giovane" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Latte di Giovane</name_singular>
+                  <name_plural>Latte di Giovane</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Limone_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Limone, Sciroppo</name_singular>
+                  <name_plural>Limone, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Lungavita_Elixir" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Lungavita, Elixir</name_singular>
+                  <name_plural>Lungavita, Elixir</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Mandarino" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Mandarino</name_singular>
+                  <name_plural>Mandarino</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Mandarino_Cordial" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Mandarino Cordial</name_singular>
+                  <name_plural>Mandarino Cordial</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Mandarino_di_Palermo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Mandarino di Palermo</name_singular>
+                  <name_plural>Mandarino di Palermo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Maraschino" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Maraschino</name_singular>
+                  <name_plural>Maraschino</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Marsala_Superiore_Marca_Corona" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Marsala Superiore Marca Corona</name_singular>
+                  <name_plural>Marsala Superiore Marca Corona</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Mart_apos_anice" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Mart&apos;anice</name_singular>
+                  <name_plural>Mart&apos;anice</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Marzapane" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Marzapane</name_singular>
+                  <name_plural>Marzapane</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Medusa_Liquore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Medusa, Liquore</name_singular>
+                  <name_plural>Medusa, Liquore</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Menta" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Menta</name_singular>
+                  <name_plural>Menta</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Menta_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Menta, Sciroppo</name_singular>
+                  <name_plural>Menta, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Menta_Glaciale" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Menta Glaciale</name_singular>
+                  <name_plural>Menta Glaciale</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Menthe_Liqueur" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Menthe, Liqueur</name_singular>
+                  <name_plural>Menthe, Liqueur</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Mistura_Amara_Stomatica" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Mistura Amara Stomatica</name_singular>
+                  <name_plural>Mistura Amara Stomatica</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Montechiaro_d_apos_Asti_Passito_Vecchio" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Montechiaro d&apos;Asti Passito Vecchio</name_singular>
+                  <name_plural>Montechiaro d&apos;Asti Passito Vecchio</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Old_Dry_Gin_Superior" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Old Dry Gin Superior</name_singular>
+                  <name_plural>Old Dry Gin Superior</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Old_Jamaica_Rhum" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Old Jamaica Rhum</name_singular>
+                  <name_plural>Old Jamaica Rhum</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Orange_Bitter" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Orange Bitter</name_singular>
+                  <name_plural>Orange Bitter</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Padre_Auda_Elisir" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Padre Auda, Elisir</name_singular>
+                  <name_plural>Padre Auda, Elisir</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Pellicano" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Pellicano</name_singular>
+                  <name_plural>Pellicano</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Perfetto_Amore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Perfetto Amore</name_singular>
+                  <name_plural>Perfetto Amore</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Persico" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Persico</name_singular>
+                  <name_plural>Persico</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Persico_Reale" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Persico Reale</name_singular>
+                  <name_plural>Persico Reale</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Prunella" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Prunella</name_singular>
+                  <name_plural>Prunella</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Prunelle_d_apos_Italie" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Prunelle d&apos;Italie</name_singular>
+                  <name_plural>Prunelle d&apos;Italie</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Punch" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Punch</name_singular>
+                  <name_plural>Punch</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Punch_al_Mandarino" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Punch al Mandarino</name_singular>
+                  <name_plural>Punch al Mandarino</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Punch_all_apos_Alckermes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Punch all&apos;Alckermes</name_singular>
+                  <name_plural>Punch all&apos;Alckermes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Rabarbaro_Chinato" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rabarbaro Chinato</name_singular>
+                  <name_plural>Rabarbaro Chinato</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Ratafi_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Ratafià</name_singular>
+                  <name_plural>Ratafià</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Rhum_Superiore_Qualit_Superiore_Qualit_Superieure" enabled="1"
+              default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rhum Superiore / Qualità Superiore / Qualité Superieure</name_singular>
+                  <name_plural>Rhum Superiore / Qualità Superiore / Qualité Superieure</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Ribes_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Ribes, Sciroppo</name_singular>
+                  <name_plural>Ribes, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Robur_Bitter" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Robur Bitter</name_singular>
+                  <name_plural>Robur Bitter</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Rosa_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rosa, Sciroppo</name_singular>
+                  <name_plural>Rosa, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Rubro_Cura_ao" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rubro Curaçao</name_singular>
+                  <name_plural>Rubro Curaçao</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Sol_de_Espan_a" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Sol de España</name_singular>
+                  <name_plural>Sol de España</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Sorbettino_del_Serraglio" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Sorbettino del Serraglio</name_singular>
+                  <name_plural>Sorbettino del Serraglio</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Tintura_Sacra" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tintura Sacra</name_singular>
+                  <name_plural>Tintura Sacra</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Triple_Sec_Triplo_Secco" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Triple Sec / Triplo Secco</name_singular>
+                  <name_plural>Triple Sec / Triplo Secco</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vaniglia" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vaniglia</name_singular>
+                  <name_plural>Vaniglia</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vespetrum" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vespetrum</name_singular>
+                  <name_plural>Vespetrum</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vodka_Votka" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vodka / Votka</name_singular>
+                  <name_plural>Vodka / Votka</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Whisky" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Whisky</name_singular>
+                  <name_plural>Whisky</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Barbera" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Barbera</name_singular>
+                  <name_plural>Barbera</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Bianco_di_Custoza" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bianco di Custoza</name_singular>
+                  <name_plural>Bianco di Custoza</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Nero_Wine_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Nero (Wine)</name_singular>
+                  <name_plural>Nero (Wine)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Asti_Spumante" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Asti Spumante</name_singular>
+                  <name_plural>Asti Spumante</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Asti_Spumante_Vintage" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Asti Spumante Vintage</name_singular>
+                  <name_plural>Asti Spumante Vintage</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Gran_Spumante_Martini_Semi_Secco" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Gran Spumante Martini Semi Secco</name_singular>
+                  <name_plural>Gran Spumante Martini Semi Secco</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Gran_Spumante_Monterosa" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Gran Spumante Monterosa</name_singular>
+                  <name_plural>Gran Spumante Monterosa</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Grandi_Auguri" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Grandi Auguri</name_singular>
+                  <name_plural>Grandi Auguri</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Lacrima_Christi" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Lacrima Christi</name_singular>
+                  <name_plural>Lacrima Christi</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Magici_Istanti" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Magici Istanti</name_singular>
+                  <name_plural>Magici Istanti</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Prosecco" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Prosecco</name_singular>
+                  <name_plural>Prosecco</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Prosecco_Vintage" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Prosecco Vintage</name_singular>
+                  <name_plural>Prosecco Vintage</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Riesling_Italico" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Riesling Italico</name_singular>
+                  <name_plural>Riesling Italico</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Riserva_Montelera" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Riserva Montelera</name_singular>
+                  <name_plural>Riserva Montelera</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Riserva_Montelera_Talento" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Riserva Montelera Talento</name_singular>
+                  <name_plural>Riserva Montelera Talento</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Alta_Langa" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Alta Langa</name_singular>
+                  <name_plural>Alta Langa</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Ros_SPW_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rosé (SPW)</name_singular>
+                  <name_plural>Rosé (SPW)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Ros_Extra_Dry_SPW_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Rosé Extra Dry (SPW)</name_singular>
+                  <name_plural>Rosé Extra Dry (SPW)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Brut" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Brut</name_singular>
+                  <name_plural>Brut</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Moscato" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Moscato</name_singular>
+                  <name_plural>Moscato</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Rosso" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Rosso</name_singular>
+                  <name_plural>MARTINI Rosso</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Bianco" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Bianco</name_singular>
+                  <name_plural>MARTINI Bianco</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Dry" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Dry</name_singular>
+                  <name_plural>MARTINI Dry</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Rosato_Vermouth_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Rosato (Vermouth)</name_singular>
+                  <name_plural>MARTINI Rosato (Vermouth)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Ros_Vermouth_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Rosé (Vermouth)</name_singular>
+                  <name_plural>MARTINI Rosé (Vermouth)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_d_apos_Oro" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI d&apos;Oro</name_singular>
+                  <name_plural>MARTINI d&apos;Oro</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Fiero" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Fiero</name_singular>
+                  <name_plural>MARTINI Fiero</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Spirito" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Spirito</name_singular>
+                  <name_plural>MARTINI Spirito</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Gran_Lusso" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Gran Lusso</name_singular>
+                  <name_plural>MARTINI Gran Lusso</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Gold_by_Dolce_amp_Gabbana" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Gold by Dolce &amp; Gabbana</name_singular>
+                  <name_plural>MARTINI Gold by Dolce &amp; Gabbana</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Riserva_Speciale_Ambrato" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Riserva Speciale Ambrato</name_singular>
+                  <name_plural>MARTINI Riserva Speciale Ambrato</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_MARTINI_Riserva_Speciale_Rubino" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MARTINI Riserva Speciale Rubino</name_singular>
+                  <name_plural>MARTINI Riserva Speciale Rubino</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vermouth_Argentine_Extra_Dry" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vermouth Argentine Extra Dry</name_singular>
+                  <name_plural>Vermouth Argentine Extra Dry</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vermouth_tipo_Brasile" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vermouth tipo Brasile</name_singular>
+                  <name_plural>Vermouth tipo Brasile</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vermouth_al_Barolo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vermouth al Barolo</name_singular>
+                  <name_plural>Vermouth al Barolo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vermouth_An_ejo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vermouth Añejo</name_singular>
+                  <name_plural>Vermouth Añejo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vermouth_Chinato" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vermouth Chinato</name_singular>
+                  <name_plural>Vermouth Chinato</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Vino_Vermouth_Stravecchio_Semisecco" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vino Vermouth Stravecchio Semisecco</name_singular>
+                  <name_plural>Vino Vermouth Stravecchio Semisecco</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Tonic_Vino_Vermouth" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tonic Vino Vermouth</name_singular>
+                  <name_plural>Tonic Vino Vermouth</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_ROSSI_Vermouth" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ROSSI Vermouth</name_singular>
+                  <name_plural>ROSSI Vermouth</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Non_Alcoholic_Vermouth" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Non Alcoholic Vermouth</name_singular>
+                  <name_plural>Non Alcoholic Vermouth</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Martini_Cocktail" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Martini Cocktail</name_singular>
+                  <name_plural>Martini Cocktail</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Martini_Cocktail_Extra_Dry" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Martini Cocktail Extra Dry</name_singular>
+                  <name_plural>Martini Cocktail Extra Dry</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_American_Martini_Cocktail" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>American Martini Cocktail</name_singular>
+                  <name_plural>American Martini Cocktail</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Original_Martini_Cocktail_Dry" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Original Martini Cocktail, Dry</name_singular>
+                  <name_plural>Original Martini Cocktail, Dry</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Original_Martini_Cocktail_Sweet" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Original Martini Cocktail, Sweet</name_singular>
+                  <name_plural>Original Martini Cocktail, Sweet</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Original_Martini_Cocktail_Normal" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Original Martini Cocktail, Normal</name_singular>
+                  <name_plural>Original Martini Cocktail, Normal</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="MARTINI_Original_Martini_Cocktail_Manhattan" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Original Martini Cocktail, Manhattan</name_singular>
+                  <name_plural>Original Martini Cocktail, Manhattan</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Noilly_Prat" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Noilly Prat</name_singular>
+              <name_plural>Noilly Prat</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Noilly_Pra_Noilly_Prat_Ambr_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Noilly Prat Ambré</name_singular>
+                  <name_plural>Noilly Prat Ambré</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Noilly_Pra_Noilly_Prat_Dry" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Noilly Prat Dry</name_singular>
+                  <name_plural>Noilly Prat Dry</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Noilly_Pra_Noilly_Prat_Extra_Dry" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Noilly Prat Extra Dry</name_singular>
+                  <name_plural>Noilly Prat Extra Dry</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Noilly_Pra_Noilly_Prat_Rouge" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Noilly Prat Rouge</name_singular>
+                  <name_plural>Noilly Prat Rouge</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Noilly_Pra_Picardan" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Picardan</name_singular>
+                  <name_plural>Picardan</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Offley_Forrester" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Offley-Forrester</name_singular>
+              <name_plural>Offley-Forrester</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Otard" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Otard</name_singular>
+              <name_plural>Otard</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Otard_Otard_Extra" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Otard Extra</name_singular>
+                  <name_plural>Otard Extra</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Otard_Otard_Jade" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Otard Jade</name_singular>
+                  <name_plural>Otard Jade</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Otard_Otard_Napol_on" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Otard Napoléon</name_singular>
+                  <name_plural>Otard Napoléon</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Otard_Otard_VS" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Otard VS</name_singular>
+                  <name_plural>Otard VS</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Otard_Otard_VSOP" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Otard VSOP</name_singular>
+                  <name_plural>Otard VSOP</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Otard_Otard_XO" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Otard XO</name_singular>
+                  <name_plural>Otard XO</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Pastis_Casanis" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pastis Casanis</name_singular>
+              <name_plural>Pastis Casanis</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Royal_Brackla" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Royal Brackla</name_singular>
+              <name_plural>Royal Brackla</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Royal_Brac_TO_BE_CONFIRMED" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>TO BE CONFIRMED</name_singular>
+                  <name_plural>TO BE CONFIRMED</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="G_R_Sacco" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>G.R. Sacco</name_singular>
+              <name_plural>G.R. Sacco</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="G_R_Sacco_Amarena_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Amarena Sacco, Sciroppo</name_singular>
+                  <name_plural>Amarena Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="G_R_Sacco_Arancia_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Arancia Sacco, Sciroppo</name_singular>
+                  <name_plural>Arancia Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="G_R_Sacco_Cedromenta_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cedromenta Sacco, Sciroppo</name_singular>
+                  <name_plural>Cedromenta Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="G_R_Sacco_Granatina_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Granatina Sacco, Sciroppo</name_singular>
+                  <name_plural>Granatina Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="G_R_Sacco_Lampone_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Lampone Sacco, Sciroppo</name_singular>
+                  <name_plural>Lampone Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="G_R_Sacco_Menta_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Menta Sacco, Sciroppo</name_singular>
+                  <name_plural>Menta Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="G_R_Sacco_Orzata_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Orzata Sacco, Sciroppo</name_singular>
+                  <name_plural>Orzata Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="G_R_Sacco_Tamarindo_Sacco_Sciroppo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tamarindo Sacco, Sciroppo</name_singular>
+                  <name_plural>Tamarindo Sacco, Sciroppo</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Saint_Raphael" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Saint Raphael</name_singular>
+              <name_plural>Saint Raphael</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sermeq" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sermeq</name_singular>
+              <name_plural>Sermeq</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Sermeq_Sermeq_Vodka" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Sermeq Vodka</name_singular>
+                  <name_plural>Sermeq Vodka</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="St_Germain" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>St-Germain</name_singular>
+              <name_plural>St-Germain</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="St_Germain_Elderflower_Liqueur" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Elderflower Liqueur</name_singular>
+                  <name_plural>Elderflower Liqueur</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="William_Lawson_apos_s" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>William Lawson&apos;s</name_singular>
+              <name_plural>William Lawson&apos;s</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="William_La_Liqueur_Red_Seal_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Liqueur (Red Seal)</name_singular>
+                  <name_plural>Liqueur (Red Seal)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="William_La_King_Edward" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>King Edward</name_singular>
+                  <name_plural>King Edward</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="William_La_Finest_Blended" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Finest Blended</name_singular>
+                  <name_plural>Finest Blended</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="William_La_Scottish_Gold" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Scottish Gold</name_singular>
+                  <name_plural>Scottish Gold</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="William_La_Founder_apos_s_Reserve_18_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Founder&apos;s Reserve (18)</name_singular>
+                  <name_plural>Founder&apos;s Reserve (18)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="William_La_Private_Reserve_21_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Private Reserve (21)</name_singular>
+                  <name_plural>Private Reserve (21)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="William_La_Super_Spiced" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Super Spiced</name_singular>
+                  <name_plural>Super Spiced</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="William_La_13_Year_Old" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>13 Year Old</name_singular>
+                  <name_plural>13 Year Old</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
         </item>
       </items>
     </list>
@@ -1041,27 +3375,275 @@
             </label>
           </labels>
         </item>
-        <item idno="whisky" enabled="1" default="0">
+        <item idno="aperitif" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>whisky</name_singular>
-              <name_plural>whisky</name_plural>
+              <name_singular>Aromatised Wine - Aperitif</name_singular>
+              <name_plural>Aromatised Wine - Aperitif</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="vermouth" enabled="1" default="0">
+        <item idno="vermouth_dry" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>vermouth</name_singular>
-              <name_plural>vermouth</name_plural>
+              <name_singular>Aromatised Wine - Vermouth - Dry / Extra Dry</name_singular>
+              <name_plural>Aromatised Wine - Vermouth - Dry / Extra Dry</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="beer" enabled="1" default="0">
+        <item idno="vermouth_sweet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>beer</name_singular>
-              <name_plural>beer</name_plural>
+              <name_singular>Aromatised Wine - Vermouth - Red (sweet)</name_singular>
+              <name_plural>Aromatised Wine - Vermouth - Red (sweet)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vermouth_other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aromatised Wine - Vermouth - Other</name_singular>
+              <name_plural>Aromatised Wine - Vermouth - Other</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vermouth_white" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aromatised Wine - Vermouth - White</name_singular>
+              <name_plural>Aromatised Wine - Vermouth - White</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vermouth_speciale" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aromatised Wine - Vermouth Riserva Speciale</name_singular>
+              <name_plural>Aromatised Wine - Vermouth Riserva Speciale</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vermouth_rose" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aromatised Wine - Vermouth Rosé / Rosato</name_singular>
+              <name_plural>Aromatised Wine - Vermouth Rosé / Rosato</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vermouth_cocktail" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aromatised Wine - Vermouth RTS (Cocktail)</name_singular>
+              <name_plural>Aromatised Wine - Vermouth RTS (Cocktail)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vermouth_secco" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aromatised Wine - Vermouth Semi-secco</name_singular>
+              <name_plural>Aromatised Wine - Vermouth Semi-secco</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Counterfeit" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Counterfeit</name_singular>
+              <name_plural>Counterfeit</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="syrup" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Non-Alcoholic - Syrup</name_singular>
+              <name_plural>Non-Alcoholic - Syrup</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bitters" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Bitters</name_singular>
+              <name_plural>Spirits - Bitters</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_liqueur" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - China Liqueur</name_singular>
+              <name_plural>Spirits - China Liqueur</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_congnac" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Cognac</name_singular>
+              <name_plural>Spirits - Cognac</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_vie" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Eau de vie</name_singular>
+              <name_plural>Spirits - Eau de vie</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_fernet" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Fernet</name_singular>
+              <name_plural>Spirits - Fernet</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_gin" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Gin</name_singular>
+              <name_plural>Spirits - Gin</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_grappa" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Grappa</name_singular>
+              <name_plural>Spirits - Grappa</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_marsala" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Marsala</name_singular>
+              <name_plural>Spirits - Marsala</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Other</name_singular>
+              <name_plural>Spirits - Other</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_punch" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Punch</name_singular>
+              <name_plural>Spirits - Punch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_rum" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Rum</name_singular>
+              <name_plural>Spirits - Rum</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_blended" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Scotch Whisky - Blended</name_singular>
+              <name_plural>Spirits - Scotch Whisky - Blended</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_bmalt" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Scotch Whisky - Blended Malt</name_singular>
+              <name_plural>Spirits - Scotch Whisky - Blended Malt</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_smalt" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Scotch Whisky - Single Malt</name_singular>
+              <name_plural>Spirits - Scotch Whisky - Single Malt</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_tonic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Tonic Liqueur</name_singular>
+              <name_plural>Spirits - Tonic Liqueur</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spirits_vodka" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spirits - Vodka</name_singular>
+              <name_plural>Spirits - Vodka</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wine_champagne" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wine - Champagne</name_singular>
+              <name_plural>Wine - Champagne</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wine_other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wine - Other</name_singular>
+              <name_plural>Wine - Other</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wine_raisin" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wine - Raisin</name_singular>
+              <name_plural>Wine - Raisin</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wine_brut" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wine - Sparkling - Brut</name_singular>
+              <name_plural>Wine - Sparkling - Brut</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wine_sweet" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wine - Sparkling - Sweet</name_singular>
+              <name_plural>Wine - Sparkling - Sweet</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wine_red" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wine - Still - Red</name_singular>
+              <name_plural>Wine - Still - Red</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wine_white" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wine - Still - White</name_singular>
+              <name_plural>Wine - Still - White</name_plural>
             </label>
           </labels>
         </item>
@@ -1141,7 +3723,97 @@
         </item>
       </items>
     </list>
-    
+    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object deaccession types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="disposed" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>disposed</name_singular>
+              <name_plural>disposed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sale" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sale</name_singular>
+              <name_plural>sale</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="transfer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>transfer</name_singular>
+              <name_plural>transfer</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="destroyed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>destroyed</name_singular>
+              <name_plural>destroyed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="donated" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>donated</name_singular>
+              <name_plural>donated</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stolen" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stolen</name_singular>
+              <name_plural>stolen</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="deaccession_status" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Deaccession Status</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="tbd" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>tbd</name_singular>
+              <name_plural>tbd</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="cataloguers" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Cataloguers</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="cataloguer1" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cataloguer Name</name_singular>
+              <name_plural>Cataloguer Name</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!-- Video Lists -->
     <list code="genre_moving" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -4074,7 +6746,7 @@
       <labels>
         <label locale="en_US">
           <name>Rights</name>
-          <description></description>
+          <description/>
         </label>
       </labels>
       <settings>
@@ -4182,6 +6854,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+
     <!-- ISAD-G ATTRIBUTES -->
     <metadataElement code="isadg_date" datatype="DateRange">
       <labels>
@@ -4342,34 +7015,14 @@
       <typeRestrictions>
         <restriction code="collections">
           <table>ca_collections</table>
-          <type>archives</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <type>fonds</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <type>subseries</type>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -4843,7 +7496,6 @@
         </restriction>
         <restriction code="objects">
           <table>ca_objects</table>
-          <type>archival_item</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5147,6 +7799,37 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="old_catalogue_no" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Old Catalogue Numbers</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="collections">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
 
     <!-- Museum ATTRIBUTES -->
     <metadataElement code="accession_method" datatype="List" list="accession_method">
@@ -5209,13 +7892,16 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="materials" datatype="List" list="materials">
+    <metadataElement code="materials" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Materials</name>
         </label>
       </labels>
-      <settings/>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
@@ -5227,13 +7913,79 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="technique" datatype="List" list="technique">
+    <metadataElement code="technique" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Technique</name>
         </label>
       </labels>
-      <settings/>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="author_artist" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Author or Artist</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="producer" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Producer</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="geo_origin" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Geographical Origin</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
@@ -5301,6 +8053,18 @@
                 <setting name="fieldHeight">1</setting>
               </settings>
             </metadataElement>
+            <metadataElement code="dimensions_diameter" datatype="Length">
+              <labels>
+                <label locale="en_US">
+                  <name>Diameter</name>
+                  <description>Diameter of Object</description>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">10</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
           </elements>
         </metadataElement>
         <metadataElement code="dimensions_line2" datatype="Container">
@@ -5354,27 +8118,6 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="geographical_origin" datatype="InformationService">
-      <labels>
-        <label locale="en_US">
-          <name>Geographical Origin</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="service">TGN</setting>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="objects">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -5511,8 +8254,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>  
-    
+    </metadataElement>
     <metadataElement code="former_item" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -5529,7 +8271,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -5573,7 +8315,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -5641,6 +8383,102 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="accession_documents" datatype="Media">
+      <labels>
+        <label locale="en_US">
+          <name>Accession Documents</name>
+          <description/>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="deaccession_status" datatype="List" list="deaccession_status">
+      <labels>
+        <label locale="en_US">
+          <name>Deaccession Status</name>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="cataloguers" datatype="List" list="cataloguers">
+      <labels>
+        <label locale="en_US">
+          <name>Cataloguers</name>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="museum_documents" datatype="Media">
+      <labels>
+        <label locale="en_US">
+          <name>Related Documents</name>
+          <description/>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="museum_bibliography" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Bibliography</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">6</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- Video -->
     <metadataElement code="genre_moving" datatype="List" list="genre_moving">
       <labels>
@@ -5655,7 +8493,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5674,7 +8512,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5693,7 +8531,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5712,7 +8550,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5731,7 +8569,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5750,7 +8588,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5769,7 +8607,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5788,7 +8626,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5807,7 +8645,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5816,7 +8654,7 @@
         </restriction>
         <restriction code="r2">
           <table>ca_objects</table>
-          <type>audio</type> 
+          <type>audio</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5835,7 +8673,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>moving_image</type> 
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5854,7 +8692,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>audio</type> 
+          <type>audio</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6008,7 +8846,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>audio</type> 
+          <type>audio</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6122,7 +8960,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>audio</type> 
+          <type>audio</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6291,7 +9129,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <!-- Archival Items -->
     <metadataElement code="level" datatype="List" list="level">
       <labels>
@@ -6470,7 +9308,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <!-- Bottle attributes -->
     <metadataElement code="brand_name" datatype="List" list="brand_name">
       <labels>
@@ -6495,7 +9333,7 @@
       <labels>
         <label locale="en_US">
           <name>Product Category</name>
-          <description></description>
+          <description/>
         </label>
       </labels>
       <settings/>
@@ -6737,7 +9575,7 @@
       <labels>
         <label locale="en_US">
           <name>Digital Image</name>
-          <description></description>
+          <description/>
         </label>
       </labels>
       <settings>
@@ -6780,7 +9618,7 @@
           <labels>
             <label locale="en_US">
               <name>Use</name>
-              <description></description>
+              <description/>
             </label>
           </labels>
           <settings/>
@@ -6797,7 +9635,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <!-- Loan ATTRIBUTES -->
     <metadataElement code="date_scheduled_return" datatype="DateRange">
       <labels>
@@ -7036,7 +9874,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <!-- Accession ATTRIBUTES -->
     <metadataElement code="date_accessioned" datatype="DateRange">
       <labels>
@@ -7146,7 +9984,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <!-- Common ATTRIBUTES -->
     <metadataElement code="accession_date" datatype="DateRange">
       <labels>
@@ -7399,7 +10237,67 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+    <metadataElement code="catalog_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Date of Description</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="useDatePicker">1</setting>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="collections">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="legacy_cataloguer" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Legacy Cataloguer</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="collections">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- Entity ATTRIBUTES -->
     <metadataElement code="entity_date" datatype="DateRange">
       <labels>
@@ -7692,8 +10590,8 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
-  
+
+
     <!-- Exhibition ATTRIBUTES -->
     <metadataElement code="exhibition_date" datatype="DateRange">
       <labels>
@@ -7758,7 +10656,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-  
+
     <!-- Conservation ATTRIBUTES -->
     <metadataElement code="conservation_reports" datatype="Media">
       <labels>
@@ -7980,7 +10878,7 @@
         </label>
       </labels>
       <screens>
-<!-- Bottle -->  
+        <!-- Bottle -->
         <screen idno="bottle_basic" default="1">
           <labels>
             <label locale="en_US">
@@ -8036,6 +10934,9 @@
             <placement code="ca_attribute_product_category">
               <bundle>ca_attribute_product_category</bundle>
             </placement>
+            <placement code="ca_attribute_scopecontent">
+              <bundle>ca_attribute_scopecontent</bundle>
+            </placement>
             <placement code="ca_attribute_front_labels">
               <bundle>ca_attribute_front_labels</bundle>
             </placement>
@@ -8087,6 +10988,9 @@
                 <setting name="restrict_to_relationship_types">photographer</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_archivalhist">
+              <bundle>ca_attribute_archivalhist</bundle>
+            </placement>
             <placement code="ca_attribute_adminbiohist">
               <bundle>ca_attribute_adminbiohist</bundle>
             </placement>
@@ -8133,6 +11037,9 @@
             <placement code="ca_attribute_accessrestrict">
               <bundle>ca_attribute_accessrestrict</bundle>
             </placement>
+            <placement code="ca_attribute_physical_technical">
+              <bundle>ca_attribute_physical_technical</bundle>
+            </placement>
             <placement code="ca_attribute_reproduction">
               <bundle>ca_attribute_reproduction</bundle>
             </placement>
@@ -8157,14 +11064,11 @@
             <placement code="ca_attribute_condition">
               <bundle>ca_attribute_condition</bundle>
             </placement>
-            <placement code="ca_attribute_conservation_priorities">
-              <bundle>ca_attribute_conservation_priorities</bundle>
+            <placement code="ca_attribute_conservation_priority">
+              <bundle>ca_attribute_conservation_priority</bundle>
             </placement>
             <placement code="ca_attribute_otherfindingaid">
               <bundle>ca_attribute_otherfindingaid</bundle>
-            </placement>
-            <placement code="ca_attribute_digital_image">
-              <bundle>ca_attribute_digital_image</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -8210,7 +11114,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-<!-- Video -->       
+        <!-- Video -->
         <screen idno="video_basic" default="1">
           <labels>
             <label locale="en_US">
@@ -8345,7 +11249,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-<!-- Museum -->      
+        <!-- Museum -->
         <screen idno="museum_identity" default="1">
           <labels>
             <label locale="en_US">
@@ -8359,6 +11263,13 @@
           <bundlePlacements>
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            <settings>
+                <setting name="label" locale="en_US">Related Collections</setting>
+                <setting name="restrict_to_relationship_types">part_of</setting>
+              </settings>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -8431,26 +11342,17 @@
             <placement code="ca_attribute_technique">
               <bundle>ca_attribute_technique</bundle>
             </placement>
-            <placement code="ca_author">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Author or Artist</setting>
-                <setting name="restrict_to_relationship_types">author</setting>
-                <setting name="restrict_to_relationship_types">artist</setting>
-              </settings>
+           <placement code="ca_attribute_author_artist">
+              <bundle>ca_attribute_author_artist</bundle>
             </placement>
-            <placement code="ca_producer">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Producer</setting>
-                <setting name="restrict_to_relationship_types">producer</setting>
-              </settings>
+            <placement code="ca_attribute_producer">
+              <bundle>ca_attribute_producer</bundle>
             </placement>
             <placement code="ca_attribute_function">
               <bundle>ca_attribute_function</bundle>
             </placement>
-            <placement code="ca_attribute_geographical_origin">
-              <bundle>ca_attribute_geographical_origin</bundle>
+            <placement code="ca_attribute_geo_origin">
+              <bundle>ca_attribute_geo_origin</bundle>
             </placement>
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
@@ -8517,9 +11419,118 @@
             <placement code="ca_attribute_historic_cost">
               <bundle>ca_attribute_historic_cost</bundle>
             </placement>
+            <placement code="ca_attribute_accession_documents">
+              <bundle>ca_attribute_accession_documents</bundle>
+            </placement>
             </bundlePlacements>
         </screen>
-<!-- Archival -->       
+        <screen idno="deaccession" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Deaccession</name>
+            </label>
+          </labels>
+         <typeRestrictions>
+            <restriction code="museum" type="museum"/>
+            <restriction code="museum_lot" type="museum_lot"/>
+          </typeRestrictions>
+          <bundlePlacements>
+             <placement code="ca_attribute_reference_number">
+              <bundle>ca_attribute_reference_number</bundle>
+            </placement>
+            <placement code="ca_objects_deaccession">
+              <bundle>ca_objects_deaccession</bundle>
+            </placement>
+             <placement code="ca_attribute_removal_reason">
+              <bundle>ca_attribute_removal_reason</bundle>
+            </placement>
+             <placement code="ca_attribute_deaccession_status">
+              <bundle>ca_attribute_deaccession_status</bundle>
+            </placement>
+            <placement code="ca_company">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">External Company</setting>
+                <setting name="restrict_to_relationship_types">external_company</setting>
+              </settings>
+            </placement>
+             <placement code="ca_attribute_evidential_documents">
+              <bundle>ca_attribute_evidential_documents</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="museum_relationship" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="museum" type="museum"/>
+            <restriction code="museum_lot" type="museum_lot"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Exhibitions/Events</setting>
+              </settings>
+            </placement>
+            <placement code="ca_loans">
+              <bundle>ca_loans</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Loans</setting>
+              </settings>
+            </placement>
+            <placement code="ca_movements">
+              <bundle>ca_movements</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Conservation/Insurance</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="museum_notes" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Notes</name>
+            </label>
+          </labels>
+         <typeRestrictions>
+            <restriction code="museum" type="museum"/>
+            <restriction code="museum_lot" type="museum_lot"/>
+          </typeRestrictions>
+          <bundlePlacements>
+             <placement code="ca_attribute_cataloguers">
+              <bundle>ca_attribute_cataloguers</bundle>
+               <settings>
+                 <setting name="readonly">1</setting>
+               </settings>
+            </placement>
+             <placement code="ca_attribute_catalog_date">
+              <bundle>ca_attribute_catalog_date</bundle>
+               <settings>
+                 <setting name="readonly">1</setting>
+               </settings>
+            </placement>
+            <placement code="ca_attribute_museum_documents">
+              <bundle>ca_attribute_museum_documents</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Archives</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_museum_bibliography">
+              <bundle>ca_attribute_museum_bibliography</bundle>
+            </placement>
+            <placement code="ca_attribute_additional_notes">
+              <bundle>ca_attribute_additional_notes</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <!-- Archival -->
         <screen idno="archival_identity" default="1">
           <labels>
             <label locale="en_US">
@@ -8610,8 +11621,14 @@
             <placement code="ca_attribute_adminbiohist">
               <bundle>ca_attribute_adminbiohist</bundle>
             </placement>
+            <placement code="ca_attribute_archivalhist">
+              <bundle>ca_attribute_archivalhist</bundle>
+            </placement>
             <placement code="ca_attribute_acqinfo">
               <bundle>ca_attribute_acqinfo</bundle>
+            </placement>
+            <placement code="ca_attribute_old_catalogue_no">
+              <bundle>ca_attribute_old_catalogue_no</bundle>
             </placement>
              <placement code="ca_object_lots">
               <bundle>ca_object_lots</bundle>
@@ -8752,6 +11769,18 @@
             <placement code="ca_attribute_descrules">
               <bundle>ca_attribute_descrules</bundle>
             </placement>
+            <placement code="ca_attribute_catalog_date">
+              <bundle>ca_attribute_catalog_date</bundle>
+               <settings>
+                 <setting name="readonly">1</setting>
+               </settings>
+            </placement>
+            <placement code="ca_attribute_legacy_cataloguer">
+              <bundle>ca_attribute_legacy_cataloguer</bundle>
+               <settings>
+                 <setting name="readonly">1</setting>
+               </settings>
+            </placement>
             <placement code="status">
               <bundle>status</bundle>
               <settings>
@@ -8787,7 +11816,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-<!-- Other/Common -->        
+        <!-- Other/Common -->
         <screen idno="media" default="0">
           <labels>
             <label locale="en_US">
@@ -8809,37 +11838,6 @@
             </placement> 
           </bundlePlacements>
         </screen>
-        <screen idno="deaccession" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Deaccession</name>
-            </label>
-          </labels>
-          <typeRestrictions>
-            <restriction code="museum" type="museum"/>
-          </typeRestrictions>
-          <bundlePlacements>
-             <placement code="ca_attribute_reference_number">
-              <bundle>ca_attribute_reference_number</bundle>
-            </placement>
-             <placement code="ca_attribute_removal_reason">
-              <bundle>ca_attribute_removal_reason</bundle>
-            </placement>
-            <placement code="ca_objects_deaccession">
-              <bundle>ca_objects_deaccession</bundle>
-            </placement>
-            <placement code="ca_company">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">External Company</setting>
-                <setting name="restrict_to_relationship_types">external_company</setting>
-              </settings>
-            </placement>
-             <placement code="ca_attribute_evidential_documents">
-              <bundle>ca_attribute_evidential_documents</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
         <screen idno="relationship_other" default="0">
           <labels>
             <label locale="en_US">
@@ -8849,7 +11847,6 @@
           <typeRestrictions>
             <restriction code="bottle" type="bottle"/>
             <restriction code="video" type="video"/>
-            <restriction code="museum" type="museum"/>
           </typeRestrictions>
           <bundlePlacements>
              <placement code="ca_object_lots">
@@ -8916,6 +11913,12 @@
               <bundle>ca_occurrences</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Exhibitions</setting>
+              </settings>
+            </placement>
+             <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects</setting>
               </settings>
             </placement>
             <placement code="ca_places">
@@ -9323,6 +12326,13 @@
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="restrict_to_relationship_types">part_of</setting>
+              </settings>
+            </placement>
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
@@ -9480,6 +12490,9 @@
             <placement code="ca_attribute_acqinfo">
               <bundle>ca_attribute_acqinfo</bundle>
             </placement>
+            <placement code="ca_attribute_old_catalogue_no">
+              <bundle>ca_attribute_old_catalogue_no</bundle>
+            </placement>
             <placement code="ca_object_lots">
               <bundle>ca_object_lots</bundle>
               <settings>
@@ -9609,6 +12622,18 @@
             </placement>
             <placement code="ca_attribute_descrules">
               <bundle>ca_attribute_descrules</bundle>
+            </placement>
+            <placement code="ca_attribute_catalog_date">
+              <bundle>ca_attribute_catalog_date</bundle>
+               <settings>
+                 <setting name="readonly">1</setting>
+               </settings>
+            </placement>
+            <placement code="ca_attribute_legacy_cataloguer">
+              <bundle>ca_attribute_legacy_cataloguer</bundle>
+               <settings>
+                 <setting name="readonly">1</setting>
+               </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -10735,145 +13760,15 @@
     </relationshipTable>
     <relationshipTable name="ca_objects_x_objects">
       <types>
-        <type code="hasFormat" default="0">
+        <type code="related" default="0">
           <labels>
             <label locale="en_US">
-              <typename>has format</typename>
-              <typename_reverse>if format of</typename_reverse>
+              <typename>related</typename>
+              <typename_reverse>related</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="hasPart" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>has part</typename>
-              <typename_reverse>is part of</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="hasVersion" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>has version</typename>
-              <typename_reverse>is version of</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isFormatOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is format of</typename>
-              <typename_reverse>has format</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isPartOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is part of</typename>
-              <typename_reverse>has part</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isReferencedBy" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is referenced by</typename>
-              <typename_reverse>references</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isReplacedBy" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is replaced by</typename>
-              <typename_reverse>replaces</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isRequiredBy" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is required by</typename>
-              <typename_reverse>requires</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isVersionOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is version of</typename>
-              <typename_reverse>has version</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="references" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>references</typename>
-              <typename_reverse>references</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="relation" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>relation</typename>
-              <typename_reverse>relation</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="replaces" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>replaces</typename>
-              <typename_reverse>replaces</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="requires" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>requires</typename>
-              <typename_reverse>requires</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="source" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>source</typename>
-              <typename_reverse>source</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -10910,7 +13805,7 @@
               <typename_reverse>made for</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft></subTypeLeft>
+          <subTypeLeft/>
           <subTypeRight/>
         </type>
       </types>
@@ -11037,7 +13932,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="related" default="1">
           <labels>
@@ -11047,7 +13942,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -11447,7 +14342,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="mover" default="1">
           <labels>
@@ -11457,7 +14352,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -11471,18 +14366,18 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
-      <type code="related" default="0">
-        <labels>
-          <label locale="en_US">
-            <typename>valuation_source</typename>
-            <typename_reverse>valuation_source</typename_reverse>
-          </label>
-        </labels>
-        <subTypeLeft> </subTypeLeft>
-        <subTypeRight></subTypeRight>
-      </type>
+        <type code="related" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>valuation_source</typename>
+              <typename_reverse>valuation_source</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
         <type code="insurer" default="0">
           <labels>
             <label locale="en_US">
@@ -11491,7 +14386,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -11505,7 +14400,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -11519,7 +14414,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -11555,6 +14450,9 @@
         <placement code="ca_object_lots_description">
           <bundle>ca_object_lots.description</bundle>
         </placement>
+        <placement code="ca_attribute_lot_extent">
+          <bundle>ca_object_lots.lot_extent</bundle>
+        </placement>
         <placement code="ca_attribute_date_accessioned">
           <bundle>ca_object_lots.date_accessioned</bundle>
         </placement>
@@ -11568,6 +14466,240 @@
         </placement>
         <placement code="ca_attribute_cost">
           <bundle>ca_object_lots.cost</bundle>
+        </placement>
+        <placement code="lot_status_id">
+          <bundle>ca_object_lots.lot_status_id</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Status of Accession</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="archival" type="ca_objects" system="1" typeRestrictions="archival_item"
+      includeSubtypes="0">
+      <labels>
+        <label locale="en_US">
+          <name>Archival Item Display</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_object_date">
+          <bundle>ca_objects.object_date</bundle>
+        </placement>
+        <placement code="ca_attribute_isadg_extent">
+          <bundle>ca_objects.isadg_extent</bundle>
+        </placement>
+        <placement code="ca_attribute_medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="ca_attribute_scopecontent">
+          <bundle>ca_objects.scopecontent</bundle>
+        </placement>
+        <placement code="ca_attribute_product_name">
+          <bundle>ca_objects.product_name</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="bottle" type="ca_objects" system="1" typeRestrictions="bottle"
+      includeSubtypes="0">
+      <labels>
+        <label locale="en_US">
+          <name>Bottle Display</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_object_date">
+          <bundle>ca_objects.object_date</bundle>
+        </placement>
+        <placement code="ca_attribute_isadg_extent">
+          <bundle>ca_objects.isadg_extent</bundle>
+        </placement>
+        <placement code="ca_attribute_medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="ca_attribute_brand_name">
+          <bundle>ca_objects.brand_name</bundle>
+        </placement>
+        <placement code="ca_attribute_product_name">
+          <bundle>ca_objects.product_name</bundle>
+        </placement>
+        <placement code="ca_attribute_product_category">
+          <bundle>ca_objects.product_category</bundle>
+        </placement>
+        <placement code="ca_attribute_front_labels">
+          <bundle>ca_objects.front_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_back_labels">
+          <bundle>ca_objects.back_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_secondary_pack">
+          <bundle>ca_objects.secondary_pack</bundle>
+        </placement>
+        <placement code="ca_attribute_additional_description">
+          <bundle>ca_objects.additional_description</bundle>
+        </placement>
+        <placement code="ca_attribute_country_bottle">
+          <bundle>ca_objects.country_bottle</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="video" type="ca_objects" system="1" typeRestrictions="video" includeSubtypes="0">
+      <labels>
+        <label locale="en_US">
+          <name>Video Display</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_object_date">
+          <bundle>ca_objects.object_date</bundle>
+        </placement>
+        <placement code="ca_attribute_genre_moving">
+          <bundle>ca_objects.genre_moving</bundle>
+        </placement>
+        <placement code="ca_attribute_rights">
+          <bundle>ca_objects.rights</bundle>
+        </placement>
+        <placement code="ca_attribute_trt">
+          <bundle>ca_objects.trt</bundle>
+        </placement>
+        <placement code="ca_attribute_video_def">
+          <bundle>ca_objects.video_def</bundle>
+        </placement>
+        <placement code="ca_attribute_frame_rate">
+          <bundle>ca_objects.frame_rate</bundle>
+        </placement>
+        <placement code="ca_attribute_frame_size">
+          <bundle>cca_objects.frame_size</bundle>
+        </placement>
+        <placement code="ca_attribute_scan_type">
+          <bundle>ca_objects.scan_type</bundle>
+        </placement>
+        <placement code="ca_attribute_standard">
+          <bundle>ca_objects.standard</bundle>
+        </placement>
+        <placement code="ca_attribute_sampling">
+          <bundle>ca_objects.sampling</bundle>
+        </placement>
+        <placement code="ca_attribute_bit_depth_video">
+          <bundle>ca_objects.bit_depth_video</bundle>
+        </placement>
+        <placement code="ca_attribute_aspect_ratio">
+          <bundle>ca_objects.aspect_ratio</bundle>
+        </placement>
+        <placement code="ca_attribute_noise_reduction">
+          <bundle>ca_objects.noise_reduction</bundle>
+        </placement>
+        <placement code="ca_attribute_generation_moving">
+          <bundle>ca_objects.generation_moving</bundle>
+        </placement>
+        <placement code="ca_attribute_channels">
+          <bundle>ca_objects.channels</bundle>
+        </placement>
+        <placement code="ca_attribute_track">
+          <bundle>ca_objects.track</bundle>
+        </placement>
+        <placement code="ca_attribute_shoot_location">
+          <bundle>ca_objects.shoot_location</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="museum_lot" type="ca_objects" system="1" typeRestrictions="museum_lot"
+      includeSubtypes="1">
+      <labels>
+        <label locale="en_US">
+          <name>Museum Display</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_object_date">
+          <bundle>ca_objects.object_date</bundle>
+        </placement>
+        <placement code="ca_attribute_value">
+          <bundle>ca_objects.value</bundle>
+        </placement>
+        <placement code="ca_attribute_former_value">
+          <bundle>ca_objects.former_value</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="museum_collection" type="ca_collections" system="1" typeRestrictions="collection"
+      includeSubtypes="1">
+      <labels>
+        <label locale="en_US">
+          <name>Museum Collection Display</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_collections.idno</bundle>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_collections.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_description">
+          <bundle>ca_collections.description</bundle>
+        </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="archive_collection" type="ca_collections" system="1" typeRestrictions="archives"
+      includeSubtypes="1">
+      <labels>
+        <label locale="en_US">
+          <name>Archival Collection Display</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_collections.idno</bundle>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_collections.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_isadg_date">
+          <bundle>ca_collections.isadg_date</bundle>
+        </placement>
+        <placement code="ca_attribute_isadg_extent">
+          <bundle>ca_collections.isadg_extent</bundle>
+        </placement>
+        <placement code="ca_attribute_medium">
+          <bundle>ca_collections.medium</bundle>
+        </placement>
+        <placement code="ca_attribute_scopecontent">
+          <bundle>ca_collections.scopecontent</bundle>
+        </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<l>^ca_objects.preferred_labels</l> (^ca_object.idno)]]></setting>
+            <setting name="delimiter"><![CDATA[<br>]]></setting>
+          </settings>
         </placement>
       </bundlePlacements>
     </display>
@@ -11611,8 +14743,7 @@
       <role code="admin"/>
       <group code="admin"/>
     </login>
-    <login user_name="Paul" password="Choi" fname="Paul" lname="Choi"
-      email="pchoi@bacardi.com">
+    <login user_name="Paul" password="Choi" fname="Paul" lname="Choi" email="pchoi@bacardi.com">
       <role code="admin"/>
       <group code="admin"/>
     </login>

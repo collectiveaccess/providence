@@ -107,7 +107,7 @@
 					// copy value from failed update into form (so user can correct it)
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 				} else {
-					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true));
+					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true, 'dontDoRefSubstitution' => true));
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;

@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
+require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -460,6 +461,60 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 */
 	function caBusyIndicatorIcon($po_request, $pa_attributes=null) {
 		return caNavIcon(__CA_NAV_ICON_SPINNER__, 1, $pa_attributes);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	function caGetMediaInfoForDisplay($pm_media, $ps_version) {
+	    $o_coder = (is_a($pm_media, "MediaInfoCoder")) ? $pm_media : new MediaInfoCoder($pm_media);
+	    
+	    $va_ret = [];
+	    $va_media_info = $o_coder->getMediaInfo();
+	    $va_dimensions = [];
+        if (isset($va_media_info[$ps_version]['WIDTH']) && isset($va_media_info[$ps_version]['HEIGHT'])) {
+            if (($vn_w = $va_media_info[$ps_version]['WIDTH']) && ($vn_h = $va_media_info[$ps_version]['WIDTH'])) {
+                $va_dimensions[] = $va_media_info[$ps_version]['WIDTH'].'p x '.$va_media_info[$ps_version]['HEIGHT'].'p';
+            }
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_media_info[$ps_version]['PROPERTIES']['bitdepth'])) {
+            $va_dimensions[] = $va_ret['bitdepth'] = intval($vn_depth).' bpp';
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_media_info[$ps_version]['PROPERTIES']['colorspace'])) {
+            $va_dimensions[] = $va_ret['colorspace'] = $vs_colorspace;
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_media_info[$ps_version]['PROPERTIES']['resolution'])) {
+            if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
+                // TODO: units for resolution? right now assume pixels per inch
+                if ($va_resolution['x'] == $va_resolution['y']) {
+                    $va_dimensions[] = $va_ret['resolution'] = $va_resolution['x'].'ppi';
+                } else {
+                    $va_dimensions[] = $va_ret['resolution'] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
+                }
+            }
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['duration']) && ($vn_duration = $va_media_info[$ps_version]['PROPERTIES']['duration'])) {
+            $va_dimensions[] = $va_ret['duration'] = sprintf("%4.1f", $vn_duration).'s';
+        }
+        if (isset($va_media_info[$ps_version]['PROPERTIES']['pages']) && ($vn_pages = $va_media_info[$ps_version]['PROPERTIES']['pages'])) {
+            $va_dimensions[] = $va_ret['pages'] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
+        }
+        if (!isset($va_media_info[$ps_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_media_info[$ps_version]['PROPERTIES']['filesize'])) {
+            $va_ret['filesize'] = $vn_filesize = @filesize($o_coder->getMediaPath($ps_version));
+        }
+        if ($vn_filesize) {
+            $va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
+        }
+        $va_ret['dimensions'] = join('; ', $va_dimensions);
+        
+        $va_ret['MD5'] = $va_media_info[$ps_version]['MD5'];
+        $va_ret['mimetype'] = $va_media_info[$ps_version]['MIMETYPE'];
+        $va_ret['type'] = Media::getTypenameForMimetype($va_media_info[$ps_version]['MIMETYPE']);
+        $va_ret['filename'] = $va_media_info['ORIGINAL_FILENAME'];
+        $va_ret['thumbnail'] = $o_coder->getMediaTag('thumbnail');
+        $va_ret['info'] = $va_media_info;
+	    
+	    return $va_ret;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2128,10 +2183,49 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 	 * @return string
 	 */
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives) {
+	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
 			switch(strtoupper($va_tmp[0])) {
+			    case 'UNITS':
+			        try {
+                        $vo_measurement = caParseLengthDimension($ps_value);
+                    
+                        $vs_measure_conv = null;
+                        switch(strtoupper($va_tmp[1])) {
+                            case 'INFRAC':
+                                $vs_measure_conv = caLengthToFractions($vo_measurement->convertTo(Zend_Measure_Length::INCH, 4), 8, true);
+                                break;
+                            case 'M':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, 4);
+                                break;
+                            case 'CM':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 4);
+                                break;
+                            case 'FT':
+                            case 'FT.':
+                            case 'FOOT':
+                            case 'FEET':
+                            case "'":
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::FEET, 4);
+                                break;
+                            case 'IN':
+                            case 'INCH':
+                            case 'INCHES':
+                            case 'IN.':
+                            case '"':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 4);
+                                break;
+                        }
+                    
+                        if ($vs_measure_conv) {
+                            $ps_value = "{$vs_measure_conv}";
+                        }
+                    } catch (Exception $e) {
+                        // noop
+                    }
+			        break;
 				case 'LP':		// left padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
@@ -2342,7 +2436,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
 		$va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
 		
-		//if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+		if ($va_start['year'] <= -2000000) { $va_start['year'] = -50000; }
 		if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
 
 		if (
@@ -2572,6 +2666,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 				$vs_table = 	$qr_rel_items->tableName();
 				$vs_pk = 		$qr_rel_items->primaryKey();
 				
+				$vs_idno_fld = $o_dm->getTableProperty($vs_table, 'ID_NUMBERING_ID_FIELD');
 				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 				
 				while($qr_rel_items->nextHit()) {
@@ -2594,6 +2689,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 					
 					$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
 					$va_item['label'] = mb_strtolower($qr_rel_items->get("{$vs_table}.preferred_labels"));
+					if ($vs_idno_fld) { $va_item['idno'] = mb_strtolower($qr_rel_items->get("{$vs_table}.{$vs_idno_fld}")); }
 					
 					$va_items[$vn_id] = $va_item;
 					
@@ -3519,7 +3615,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id)){
 			# -- get version to download configured in media_display.conf
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-			$vs_download_version = $va_download_display_info['display_version'];
+			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
+			
 			$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("title" => _t("Download")));
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
@@ -3750,7 +3847,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 					}
 				}
 			
-				return $vs_viewer_name::getViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => $va_display_info, 'display_type' => $ps_display_type]);
+				return $vs_viewer_name::getViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => $va_display_info, 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 			case 'attribute':
 				$t_instance = new ca_attribute_values($va_identifier['id']);
@@ -3764,7 +3861,107 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
 			
-				return $vs_viewer_name::getViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type]);
+				return $vs_viewer_name::getViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
+				break;
+		}
+		
+		throw new ApplicationException(_t('Invalid identifier', $ps_identifier));
+	}
+	# ---------------------------------------
+	/*
+	 * 
+	 *
+	 * @param RequestHTTP $po_request The current request
+	 * @param string $ps_identifier IIIF-style media identifer
+	 * @param RepresentableBaseModel $pt_subject A model instance loaded with the subject (the record the media is shown in the context of. Eg. if a representation is shown for an object this is an instance for that object record)
+	 * @param array $pa_options Options include:
+	 *			display = media_display.conf display version to use. [Default is 'detail']
+	 *
+	 * @return string Data for media viewer (JSON, HTML, etc.)
+	 * @throws ApplicationException
+	 */
+	function caSearchMediaData($po_request, $ps_identifier, $pt_subject, $pa_options=null) {
+		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
+		}
+		
+		$ps_display_type = caGetOption('display', $pa_options, 'media_overlay');
+		
+		switch($va_identifier['type']) {
+			case 'representation':
+				$t_instance = new ca_object_representations($va_identifier['id']);
+			
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+					throw new ApplicationException(_t('Invalid viewer'));
+				}
+				
+				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
+				
+				return $vs_viewer_name::searchViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => $va_display_info, 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
+				break;
+			case 'attribute':
+				$t_instance = new ca_attribute_values($va_identifier['id']);
+				$t_instance->useBlobAsMediaField(true);
+				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
+				$o_dm = Datamodel::load();
+				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject->load($t_attr->get('row_id'));
+			
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+					throw new ApplicationException(_t('Invalid viewer'));
+				}
+			
+				return $vs_viewer_name::getViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
+				break;
+		}
+		
+		throw new ApplicationException(_t('Invalid identifier', $ps_identifier));
+	}
+	# ---------------------------------------
+	/*
+	 * 
+	 *
+	 * @param RequestHTTP $po_request The current request
+	 * @param string $ps_identifier IIIF-style media identifer
+	 * @param RepresentableBaseModel $pt_subject A model instance loaded with the subject (the record the media is shown in the context of. Eg. if a representation is shown for an object this is an instance for that object record)
+	 * @param array $pa_options Options include:
+	 *			display = media_display.conf display version to use. [Default is 'detail']
+	 *
+	 * @return string Data for media viewer (JSON, HTML, etc.)
+	 * @throws ApplicationException
+	 */
+	function caMediaDataAutocomplete($po_request, $ps_identifier, $pt_subject, $pa_options=null) {
+		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
+		}
+		
+		$ps_display_type = caGetOption('display', $pa_options, 'media_overlay');
+		
+		switch($va_identifier['type']) {
+			case 'representation':
+				$t_instance = new ca_object_representations($va_identifier['id']);
+			
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+					throw new ApplicationException(_t('Invalid viewer'));
+				}
+				
+				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
+				
+				return $vs_viewer_name::autocomplete($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => $va_display_info, 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
+				break;
+			case 'attribute':
+				$t_instance = new ca_attribute_values($va_identifier['id']);
+				$t_instance->useBlobAsMediaField(true);
+				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
+				$o_dm = Datamodel::load();
+				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject->load($t_attr->get('row_id'));
+			
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+					throw new ApplicationException(_t('Invalid viewer'));
+				}
+			
+				return $vs_viewer_name::autocomplete($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 		}
 		
@@ -4020,5 +4217,121 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 			}
 		}
 		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_text
+	 * @param array $pa_options Options include:
+	 *      page = Page_id or path to evaluate media within. [Default is null]
+	 *
+	 * @return string
+	 */
+	function caProcessReferenceTags($po_request, $ps_text, $pa_options=null) {
+	    $pm_page = caGetOption('page', $pa_options, null);
+	    $va_idnos = [];
+	    
+	    if (!is_array($va_access_values = caGetUserAccessValues($po_request)) || !sizeof($va_access_values)) { $va_access_values = null; }
+	    
+        foreach([
+            'object' => 'ca_objects', 'entity' => 'ca_entities', 'place' => 'ca_places', 
+            'occurrrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans', 
+            'movement' => 'ca_movements', 'location' => 'ca_storage_locations', 'media' => 'ca_site_page_media'] as $vs_ref_tag => $vs_ref_type
+        ) { 
+            if (preg_match_all("!\[{$vs_ref_tag} ([^\]]+)\]([^\[]+)\[/{$vs_ref_tag}\]!", $ps_text, $va_matches)) {
+                foreach($va_matches[1] as $i => $vs_attr_string) {
+                    if (sizeof($va_vals = caParseAttributes($vs_attr_string, ['idno', 'class', 'version'])) > 0) {
+                        $va_idnos[$vs_ref_type][$va_matches[0][$i]] = ['idno' => $va_vals['idno'], 'class' => $va_vals['class'], 'version' => $va_vals['version'], 'content' => $va_matches[2][$i]]; 
+                    }
+                }
+            }
+            if (preg_match_all("!\[{$vs_ref_tag} ([^\]]+)/\]!", $ps_text, $va_matches)) {
+                foreach($va_matches[1] as $i => $vs_attr_string) {
+                    if (sizeof($va_vals = caParseAttributes($vs_attr_string, ['idno', 'class', 'version'])) > 0) {
+                        $va_idnos[$vs_ref_type][$va_matches[0][$i]] = ['idno' => $va_vals['idno'], 'class' => $va_vals['class'], 'version' => $va_vals['version'], 'content' => '']; 
+                    }
+                }
+            }
+        }
+        if (sizeof($va_idnos)) {
+            foreach($va_idnos as $vs_ref_type => $va_tags) {
+                switch($vs_ref_type) {
+                    case 'ca_site_page_media':
+                        foreach($va_idnos[$vs_ref_type] as $vs_tag => $va_l) {
+                            $va_params = ['idno' => $va_l['idno']];
+                            if ($pm_page && ((int)$pm_page > 0)) {
+                                $va_params['page_id'] = (int)$pm_page;
+                            } elseif (strlen($pm_page)) {
+                                $va_params['path'] = $pm_page;
+                            }
+                            $qr_m = ca_site_page_media::find($va_params, ['returnAs' => 'searchResult']);
+                            while ($qr_m->nextHit()) {
+                                if (is_array($va_access_values) && !in_array($qr_m->get('access'), $va_access_values)) { 
+                                    $ps_text = str_replace($vs_tag, '', $ps_text); // remove tag that cannot be resolved.
+                                    continue; 
+                                }
+                                if ($vs_template = $va_l['content']) {
+                                    $vs_template = str_replace("^title", $qr_m->get('title'), $vs_template);
+                                    $vs_template = str_replace("^caption", $qr_m->get('caption'), $vs_template);
+                                    $vs_template = str_replace("^idno", $qr_m->get('idno'), $vs_template);
+                                    $vs_template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $vs_template);
+                                    $ps_text = str_replace($vs_tag, $vs_template, $ps_text);
+                                } else {
+                                    $ps_text = str_replace($vs_tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $ps_text);
+                                }
+                                
+                                break;
+                            }
+                        }
+                        break;
+                    default:
+                        $va_map = call_user_func($vs_ref_type.'::getIDsForIdnos', array_map(function($v) { return $v['idno']; }, $va_idnos[$vs_ref_type]), ['forceToLowercase' => true, 'checkAccess' => $va_access_values]);
+            
+                        $va_idnos[$vs_ref_type] = array_map(function($v) use ($va_map) { $v['id'] = $va_map[$v['idno']]; return $v; }, $va_tags);
+            
+                        foreach($va_idnos[$vs_ref_type] as $vs_tag => $va_l) {
+                            $vs_link_text = '';
+                            if (isset($va_l['id']) && $va_l['id']) {
+                                switch(__CA_APP_TYPE__) {
+                                    case 'PROVIDENCE':
+                                        $vs_link_text= caEditorLink($po_request, $va_l['content'], $va_l['class'], $vs_ref_type, $va_l['id']);
+                                        break;
+                                    case 'PAWTUCKET':
+                                        $vs_link_text= caDetailLink($po_request, $va_l['content'], $va_l['class'], $vs_ref_type, $va_l['id']);
+                                        break;
+                                }	
+                            }
+                            $ps_text = str_replace($vs_tag, $vs_link_text, $ps_text);
+                        }
+                        break;
+                }
+            
+            }
+        }
+        return $ps_text;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetLookupUrlsForTables($po_request=null, $pa_tables=null) {
+	    global $g_request;
+	    if (!$po_request) { $po_request = $g_request; }
+	    if (!$po_request) { return []; }
+	    if (!is_array($pa_tables) && !sizeof($pa_tables)) {
+	        $pa_tables = ['ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
+	    }
+	    
+	    $o_dm = Datamodel::load();
+	    
+	    $va_lookup_urls = [];
+        foreach($pa_tables as $vs_table) {
+            if (!caTableIsActive($vs_table)) { continue; }
+            $va_urls = caJSONLookupServiceUrl($po_request, $vs_table);
+            $va_lookup_urls[$vs_table] = ['singular' => $o_dm->getTableProperty($vs_table, 'NAME_SINGULAR'), 'plural' => $o_dm->getTableProperty($vs_table, 'NAME_PLURAL'), 'code' => strtolower($o_dm->getTableProperty($vs_table, 'NAME_SINGULAR')), 'url' => $va_urls['search']];   
+        }
+        return $va_lookup_urls;
 	}
 	# ------------------------------------------------------------------
