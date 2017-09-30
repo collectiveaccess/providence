@@ -1291,12 +1291,13 @@
 				}
 			}
 			
-			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
-				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes'], $pa_options);
+			$va_restrict_to_types = caGetOption(['restrictToTypes', 'restrict_to_types'], $pa_options, null);
+			if (isset($va_restrict_to_types) && is_array($va_restrict_to_types)) {
+				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $va_restrict_to_types, $pa_options);
 				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
-					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
+					$pa_options['limitToItemsWithID'] = $va_restrict_to_types;
 				} else {
-					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $va_restrict_to_types);
 				}
 			}
 			
@@ -1799,15 +1800,30 @@
 		 *
 		 */
 		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
-			if ($vs_source_id_fld_name = $this->getSourceFieldName()) {
+		    $vs_source_id_fld_name = $this->getSourceFieldName();
+		    $vs_type_id_fld_name = $this->getTypeFieldName();
+			if ($vs_source_id_fld_name || $vs_type_id_fld_name) {
+			    $va_field_info = $this->getFieldInfo($ps_field);
+			    $vs_field_label = caGetOption('label', $pa_options, $va_field_info["LABEL"]);
+			    $vs_field_desc = caGetOption('description', $pa_options, $va_field_info["DESCRIPTION"]);
+			    
+			    $vs_element = null;
 				switch($ps_field) {
 					case $vs_source_id_fld_name:
 						if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
 							$pa_options['value'] = $this->get($ps_field);
 							$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
-							return $this->getSourceListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
+							$vs_element = $this->getSourceListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
 						}
 						break;
+					case $vs_type_id_fld_name:
+						$pa_options['value'] = $this->get($ps_field);
+						$vs_element =  $this->getTypeListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
+						break;
+				}
+				
+				if ($vs_element) {
+				    return str_replace("^DESCRIPTION", $vs_field_desc, str_replace("^LABEL", $vs_field_label, str_replace("^EXTRA", '', str_replace("^ELEMENT", $vs_element, $this->_CONFIG->get('form_element_display_format')))));
 				}
 			}
 			
