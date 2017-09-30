@@ -1611,6 +1611,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vn_type_id_mapping_item_id) {
 				// Type is specified in row
 				$vs_type = ca_data_importers::getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment));
+			    if (isset($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && strlen($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && !strlen($vs_type)) {
+					$vs_type = $va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default'];
+				}
 			} else {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
