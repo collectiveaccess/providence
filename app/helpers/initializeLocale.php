@@ -57,6 +57,8 @@
    	function initializeLocale($ps_locale) {
    		global $_, $_locale;
    		
+	    $ps_locale = preg_replace("![^A-Za-z_]+!", "", $ps_locale);
+   		
 		MemoryCache::flush('translation');
 
    		if (!($va_locale_paths = validateLocale($ps_locale))) {
