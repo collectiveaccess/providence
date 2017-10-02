@@ -110,6 +110,23 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		}
 		return $vn_rc;
 	}
+    # ------------------------------------------------------------------
+    /**
+     * 
+     *
+     */
+    public function set($pa_fields, $pm_value="", $pa_options=null) {
+        if($pa_fields && $pm_value && !is_array($pa_fields)) { $pa_fields = [$pa_fields => $pm_value]; }
+        if(is_array($pa_fields)) {
+            if (isset($pa_fields['type_id']) && !is_numeric($pa_fields['type_id'])) {
+                $t_rel_type = new ca_relationship_types();
+                if ($vn_type_id = $t_rel_type->getRelationshipTypeID($this->tableNum(), $pa_fields['type_id'])) {
+                    $pa_fields['type_id'] = $vn_type_id;
+                }
+            }
+        } 
+        return parent::set($pa_fields, $pm_value, $pa_options);
+    }
 	# ------------------------------------------------------
 	/**
 	 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
