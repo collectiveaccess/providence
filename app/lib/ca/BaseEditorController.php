@@ -1741,7 +1741,10 @@ class BaseEditorController extends ActionController {
 				"attribute:{$pn_value_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
 			);
-		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {			
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {	
+		    if ($t_subject->tableName() == 'ca_set_items') {
+		        $t_subject = $t_subject->getItemInstance();
+		    }		
 			if (!$t_subject->isReadable($this->request)) { 
 				throw new ApplicationException(_t('Cannot view media'));
 			}
