@@ -47,7 +47,7 @@ class ItemService extends BaseJSONService {
 		switch($this->getRequestMethod()) {
 			case "GET":
 			case "POST":
-				if($this->opn_id) {	// we allow that this might be a string here for idno-based fetching
+				if(strlen($this->opn_id) > 0) {	// we allow that this might be a string here for idno-based fetching
 					if(sizeof($this->getRequestBodyArray())==0) {
 						// allow different format specifications
 						if($vs_format = $this->opo_request->getParameter("format", pString)) {
@@ -77,7 +77,7 @@ class ItemService extends BaseJSONService {
 					$this->addError(_t("Missing request body for PUT"));
 					return false;
 				}
-				if($this->opn_id>0) {
+				if(strlen($this->opn_id) > 0) {   // we allow that this might be a string here for idno-based updating
 					return $this->editItem();
 				} else {
 					return $this->addItem();
@@ -868,7 +868,8 @@ class ItemService extends BaseJSONService {
 		}
 	}
 	# -------------------------------------------------------
-	private function editItem() {
+	private function editItem($ps_table=null) {
+		if(!$ps_table) { $ps_table = $this->ops_table; }
 		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {
 			return false;
 		}
@@ -994,6 +995,29 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
+		
+		if(($ps_table == 'ca_sets') && is_array($va_post["set_content"]) && sizeof($va_post["set_content"])>0) {
+            $vn_table_num = $t_instance->get('table_num');
+            if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
+                $vs_set_table = $t_set_table->tableName();
+                
+               $va_current_set_item_ids = $t_instance->getItems(['returnRowIdsOnly' => true]);
+                foreach($va_post["set_content"] as $vs_idno) {
+                    if (
+                        ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId']))
+                        &&
+                        (!$t_instance->isInSet($vs_set_table, $vn_set_item_id, $t_instance->getPrimaryKey()))
+                    ) {
+                        $t_instance->addItem($vn_set_item_id);
+                    }
+                    if ($vn_set_item_id) { unset($va_current_set_item_ids[$vn_set_item_id]); }
+                }
+                
+                foreach(array_keys($va_current_set_item_ids) as $vn_item_id) {
+                    $t_instance->removeItem($vn_item_id);
+                }
+            }
+        }
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {
