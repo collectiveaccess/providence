@@ -1741,13 +1741,13 @@ class BaseEditorController extends ActionController {
 				"attribute:{$pn_value_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
 			);
-		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {	
-		    if ($t_subject->tableName() == 'ca_set_items') {
-		        $t_subject = $t_subject->getItemInstance();
-		    }		
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {		
 			if (!$t_subject->isReadable($this->request)) { 
 				throw new ApplicationException(_t('Cannot view media'));
 			}
+			
+			$t_media = ($t_subject->tableName() == 'ca_set_items') ? $t_subject->getItemInstance() : $t_subject;
+			
 			//
 			// View object representation
 			//
@@ -1764,8 +1764,8 @@ class BaseEditorController extends ActionController {
 				||
 				($vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $va_display_info, null)))
 			) {
-				$vn_image_count = $t_subject->numberOfRepresentationsOfClass('image');
-				$vn_rep_count = $t_subject->getRepresentationCount();
+				$vn_image_count = $t_media->numberOfRepresentationsOfClass('image');
+				$vn_rep_count = $t_media->getRepresentationCount();
 				
 				// Are there enough representations? Are all representations images? 
 				if ($vn_image_count == $vn_rep_count) {
@@ -1789,7 +1789,7 @@ class BaseEditorController extends ActionController {
 			$this->response->addContent($vs_viewer_name::getViewerHTML(
 				$this->request, 
 				"representation:{$pn_representation_id}", 
-				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => $va_display_info])
+				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 't_media' => $t_media, 'display' => $va_display_info])
 			);
 		} elseif ($pn_media_id = $this->request->getParameter('media_id', pInteger)) {
 		    //
