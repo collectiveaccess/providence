@@ -6795,7 +6795,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ($this->update()) {
+		if ($this->update(['queueIndexing' => true])) {
 			if (!$vb_already_in_transaction) { $o_t->commit(); }
 			return true;
 		}
