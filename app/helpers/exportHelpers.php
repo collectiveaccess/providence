@@ -133,13 +133,14 @@
 		
 		
 		$o_view->setVar('result', $po_result);
+		$o_view->setVar('t_set', caGetOption('set', $pa_options, null));
 		$o_view->setVar('criteria_summary', caGetOption('criteriaSummary', $pa_options, ''));
 		
 		$vs_table = $po_result->tableName();
 		
 		$vs_type = null;
 		if (!(bool)$o_config->get('disable_pdf_output') && substr($ps_template, 0, 5) === '_pdf_') {
-			$va_template_info = caGetPrintTemplateDetails('results', substr($ps_template, 5));
+			$va_template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $pa_options, 'results'), substr($ps_template, 5));
 			$vs_type = 'pdf';
 		} elseif (!(bool)$o_config->get('disable_pdf_output') && (substr($ps_template, 0, 9) === '_display_')) {
 			$vn_display_id = substr($ps_template, 9);
@@ -172,7 +173,7 @@
 			} else {
 				throw new ApplicationException(_t("Invalid format %1", $ps_template));
 			}
-			$va_template_info = caGetPrintTemplateDetails('results', 'display');
+			$va_template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $pa_options, 'results'), 'display');
 			$vs_type = 'pdf';
 		} elseif(!(bool)$o_config->get('disable_export_output')) {
 			// Look it up in app.conf export_formats
