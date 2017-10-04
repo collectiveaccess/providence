@@ -373,99 +373,11 @@
         </label>
       </labels>
       <items>
-        <item idno="campus" enabled="1" default="1">
+        <item idno="location" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>campus</name_singular>
-              <name_plural>campuses</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="building" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>building</name_singular>
-              <name_plural>buildings</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="floor" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>floor</name_singular>
-              <name_plural>floors</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="room" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>room</name_singular>
-              <name_plural>rooms</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="cabinet" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>cabinet</name_singular>
-              <name_plural>cabinets</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="drawer" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>drawer</name_singular>
-              <name_plural>drawers</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="shelf" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>shelf</name_singular>
-              <name_plural>shelves</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="box" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>box</name_singular>
-              <name_plural>boxes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="folder" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>folder</name_singular>
-              <name_plural>folders</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="zone" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>zone</name_singular>
-              <name_plural>zones</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="gallery" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>gallery</name_singular>
-              <name_plural>galleries</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="row" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>row</name_singular>
-              <name_plural>rows</name_plural>
+              <name_singular>location/area</name_singular>
+              <name_plural>location/area</name_plural>
             </label>
           </labels>
         </item>
@@ -614,6 +526,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>Permission granted</name_singular>
               <name_plural>Permission granted</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="non_exclusive" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Non-exclusive</name_singular>
+              <name_plural>Non-exclusive</name_plural>
             </label>
           </labels>
         </item>
@@ -3186,6 +3106,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="ca_object_representations">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="checklist" datatype="Media">
@@ -4733,7 +4661,7 @@
           <type>exhibition</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -5003,6 +4931,144 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="access_audio_format" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Access Audio Format</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>oral_history</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="access_audio_filename" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Access Filename/s</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>oral_history</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="access_audio_file_size" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Access Audio Format</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>oral_history</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="access_video_filename" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Access Video Filename/s</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>oral_history</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="access_video_format" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Access Video Format</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>oral_history</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="access_video_file_size" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Access Video File Size</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>oral_history</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="audio_format" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -5136,6 +5202,50 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="file_locations" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Archival File Locations</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
+      </settings>
+      <elements>
+        <metadataElement code="file_details" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>File Details</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">50</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="file_location" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>File Location</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">50</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -5653,7 +5763,7 @@
                 <setting name="restrict_to_relationship_types">artist</setting>
                 <setting name="label" locale="en_US">Artist</setting>
               <setting name="display_template"><![CDATA[<unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit>]]></setting>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit>]]></setting>
             </settings>
              </placement>
             <placement code="ca_attribute_object_date">
@@ -5718,7 +5828,7 @@
                 <setting name="restrict_to_relationship_types">artist</setting>
                 <setting name="label" locale="en_US">Artist</setting>
               <setting name="display_template"><![CDATA[<unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit>]]></setting>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit>]]></setting>
             </settings>
              </placement>
             <placement code="ca_attribute_subtitle">
@@ -5845,6 +5955,13 @@
                 <setting name="label" locale="en_US">Interviewer</setting>
               </settings>
              </placement>
+            <placement code="ca_interviewee">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="restrict_to_relationship_types">interviewee</setting>
+                <setting name="label" locale="en_US">Interviewee</setting>
+              </settings>
+             </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
             </placement>
@@ -5864,22 +5981,6 @@
                 <setting name="restrict_to_lists">Keywords</setting>
               </settings>
              </placement>
-            <placement code="ca_objects">
-          <bundle>ca_objects</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Related Objects</setting>
-            <setting name="restrict_to_types">sk_artwork</setting>
-            <setting name="restrict_to_types">loaned_artwork</setting>
-            <setting name="list_format">list</setting>
-            <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
-<unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
-<unit relativeTo="ca_objects"><l><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef></l>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
-^ca_objects.medium<br>
-^ca_objects.dimensions.display_dimensions<br>
-^ca_objects.credit_line</unit><br>]]></setting>
-          </settings>
-        </placement>
           </bundlePlacements>
         </screen>
         <screen idno="conservation" default="0">
@@ -5931,13 +6032,8 @@
             <restriction code="oral_history" type="oral_history"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_object_representations">
-              <bundle>ca_object_representations</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Media</setting>
-                <setting name="restrict_to_types">not_approved</setting>
-                <setting name="restrict_to_types">approved</setting>
-              </settings>
+            <placement code="ca_attribute_RR_contact">
+              <bundle>ca_attribute_RR_contact</bundle>
             </placement>
             <placement code="ca_attribute_permission">
               <bundle>ca_attribute_permission</bundle>
@@ -5948,8 +6044,13 @@
             <placement code="ca_attribute_permission_other">
               <bundle>ca_attribute_permission_other</bundle>
             </placement>
-            <placement code="ca_attribute_RR_contact">
-              <bundle>ca_attribute_RR_contact</bundle>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Media</setting>
+                <setting name="restrict_to_types">not_approved</setting>
+                <setting name="restrict_to_types">approved</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_audio_format">
               <bundle>ca_attribute_audio_format</bundle>
@@ -5968,6 +6069,27 @@
             </placement>
              <placement code="ca_attribute_video_file_size">
               <bundle>ca_attribute_video_file_size</bundle>
+            </placement>
+             <placement code="ca_attribute_access_audio_format">
+              <bundle>ca_attribute_access_audio_format</bundle>
+            </placement>
+             <placement code="ca_attribute_access_audio_filename">
+              <bundle>ca_attribute_access_audio_filename</bundle>
+            </placement>
+             <placement code="ca_attribute_access_audio_filesize">
+              <bundle>ca_attribute_access_audio_filesize</bundle>
+            </placement>
+             <placement code="ca_attribute_access_video_filename">
+              <bundle>ca_attribute_access_video_filename</bundle>
+            </placement>
+             <placement code="ca_attribute_access_video_format">
+              <bundle>ca_attribute_access_video_format</bundle>
+            </placement>
+             <placement code="ca_attribute_access_video_file_size">
+              <bundle>ca_attribute_access_video_file_size</bundle>
+            </placement>
+             <placement code="ca_attribute_file_locations">
+              <bundle>ca_attribute_file_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -6218,7 +6340,7 @@
              <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
                <settings>
-                <setting name="label" locale="en_US">Related Storage Locations</setting>
+                <setting name="label" locale="en_US">Related Locations</setting>
              <setting name="display_template"><![CDATA[<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➔_</l>]]></setting>
                  <setting name="label" locale="en_US">Related Location(s)</setting>
                </settings>
@@ -6371,12 +6493,73 @@
             <restriction code="oral_history" type="oral_history"/>
           </typeRestrictions>
           <bundlePlacements>
-             <placement code="ca_artist">
+            <placement code="ca_related">
               <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="label" locale="en_US">Related Entites</setting>
+              </settings>
+             </placement>
+             <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Artworks</setting>
+            <setting name="restrict_to_types">sk_artwork</setting>
+            <setting name="restrict_to_types">loaned_artwork</setting>
+            <setting name="list_format">list</setting>
+            <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
+<unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
+<unit relativeTo="ca_objects"><l><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef></l>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
+^ca_objects.medium<br>
+^ca_objects.dimensions.display_dimensions<br>
+^ca_objects.credit_line</unit><br>]]></setting>
+          </settings>
+        </placement>
+         <placement code="ca_oral">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Oral Histories</setting>
+            <setting name="restrict_to_types">oral_history</setting>
+            <setting name="list_format">list</setting>
+          </settings>
+        </placement>
+         <placement code="ca_archival">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Archival Items</setting>
+            <setting name="restrict_to_types">archival</setting>
+            <setting name="list_format">list</setting>
+          </settings>
+        </placement>
+      <placement code="ca_library">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Library Books</setting>
+            <setting name="restrict_to_types">library</setting>
+            <setting name="list_format">list</setting>
+          </settings>
+        </placement>
+            <placement code="ca_program">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Public Program</setting>
+                <setting name="restrict_to_types">public_program</setting>
+              </settings>
+            </placement>
+            <placement code="ca_exhibitions">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Exhibitions</setting>
+                <setting name="restrict_to_types">exhibition</setting>
+              </settings>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
                <settings>
-                <setting name="restrict_to_relationship_types">artist</setting>
-                <setting name="label" locale="en_US">Artist</setting>
-                </settings>
+                <setting name="label" locale="en_US">Related Locations</setting>
+             <setting name="display_template"><![CDATA[<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➔_</l>]]></setting>
+               </settings>
              </placement>
           </bundlePlacements>
         </screen>
@@ -6385,7 +6568,7 @@
     <userInterface code="standard_entity_ui" type="ca_entities">
       <labels>
         <label locale="en_US">
-          <name>Eentity editor</name>
+          <name>Entity editor</name>
         </label>
       </labels>
       <screens>
@@ -6487,7 +6670,7 @@
             <setting name="list_format">list</setting>
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
 <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
 <unit relativeTo="ca_objects"><l><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef></l>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
 ^ca_objects.medium<br>
 ^ca_objects.dimensions.display_dimensions<br>
@@ -6690,7 +6873,7 @@
             <setting name="list_format">list</setting>
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
 <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
 <unit relativeTo="ca_objects"><l><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef></l>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
 ^ca_objects.medium<br>
 ^ca_objects.dimensions.display_dimensions<br>
@@ -6746,7 +6929,7 @@
             <setting name="list_format">list</setting>
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
 <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
 <unit relativeTo="ca_objects"><l><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef></l>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
 ^ca_objects.medium<br>
 ^ca_objects.dimensions.display_dimensions<br>
@@ -6851,16 +7034,20 @@
           <bundlePlacements>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Artworks, Archival Items, Library Books &amp; Oral Histories</setting>
+               </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Entities</setting>
+               </settings>
             </placement>
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="restrict_to_type">event</setting>
-                <setting name="label" locale="en_US">Related events</setting>
-                <setting name="label" locale="fr_FR">Evénements liés</setting>
+                <setting name="label" locale="en_US">Related Exhibitions/Public Programs</setting>
               </settings>
             </placement>
             <placement code="ca_places">
@@ -6868,7 +7055,17 @@
             </placement>
             <placement code="ca_collections">
               <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Collections</setting>
+               </settings>
             </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Locations</setting>
+             <setting name="display_template"><![CDATA[<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➔_</l>]]></setting>
+               </settings>
+             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="subjects" default="0">
@@ -7389,6 +7586,9 @@
                 <setting name="label" locale="en_US">Photographer</setting>
          </settings>  
            </placement>
+            <placement code="ca_attribute_caption">
+              <bundle>ca_attribute_caption</bundle>
+            </placement>
             <placement code="ca_attribute_orientation">
               <bundle>ca_attribute_orientation</bundle>
             </placement>
@@ -7627,7 +7827,7 @@
             <setting name="list_format">list</setting>
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
 <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
 <unit relativeTo="ca_objects"><l><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef></l>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
 ^ca_objects.medium<br>
 ^ca_objects.dimensions.display_dimensions<br>
@@ -7767,7 +7967,7 @@
             <setting name="list_format">list</setting>
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
 <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
 <unit relativeTo="ca_objects"><l><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef></l>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
 ^ca_objects.medium<br>
 ^ca_objects.dimensions.display_dimensions<br>
@@ -7938,6 +8138,26 @@
             <label locale="en_US">
               <typename>interviewer</typename>
               <typename_reverse>interviewer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="interviewee" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>interviewee</typename>
+              <typename_reverse>interviewee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="related" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>related</typename>
+              <typename_reverse>related</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -8885,7 +9105,7 @@
             <setting name="restrict_to_relationship_types">artist</setting>
             <setting name="format"><![CDATA[
                   <unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist"><l>^ca_entities.preferred_labels</l><br>
-^ca_entities.nationality<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit>
 ]]></setting>
             <setting name="delimiter">; </setting>
           </settings>
@@ -8912,6 +9132,103 @@
           <bundle>ca_objects.credit_line</bundle>
         </placement>
         
+      </bundlePlacements>
+    </display>
+    <display code="copy_paste" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Copy &amp; Paste</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction type="sk_artwork"/>
+        <restriction type="loaned_artwork"/>
+      </typeRestrictions>
+      <bundlePlacements>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Artwork Info</setting>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects">^ca_object_representations.media.icon<br>
+<unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="artist">^ca_entities.preferred_labels<br>
+^ca_entities.nationality_text<ifdef code="entity_display_date">, </ifdef>^ca_entities.entity_display_date</unit></unit><br>
+<unit relativeTo="ca_objects"><em>^ca_objects.preferred_labels</em><ifdef code="display_date">, </ifdef>^ca_objects.display_date<ifdef code="idno"> (</ifdef>^ca_objects.idno<ifdef code="idno">)</ifdef><br>
+^ca_objects.medium<br>
+^ca_objects.dimensions.display_dimensions<br>
+^ca_objects.credit_line</unit><br>]]></setting>
+            <setting name="delimiter">; </setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="photo_credit" type="ca_object_representations" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Photo Credit</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Photo Credit</setting>
+            <setting name="restrict_to_relationship_types">photographer</setting>
+            <setting name="format"><![CDATA[
+                  ^ca_object_representations.caption
+                  <unit relativeTo="ca_entities" delimiter="<br>" restrictToRelationshipTypes="photographer">Photo: ^ca_entities.preferred_labels</unit>
+]]></setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="oral_history" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Display Caption</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction type="oral_history"/>
+      </typeRestrictions>
+      <bundlePlacements>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Entities</setting>
+            <setting name="delimiter">; </setting>
+          </settings>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_object_date">
+          <bundle>ca_objects.object_date</bundle>
+        </placement>
+        <placement code="ca_attribute_description">
+          <bundle>ca_objects.description</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="storage" type="ca_storage_locations" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Storage Summary</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_storage_locations.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+        </placement>
       </bundlePlacements>
     </display>
   </displays>
