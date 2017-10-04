@@ -399,7 +399,7 @@
 					}
 				}
 			}
-			return $this->update();
+			return $this->update(['queueIndexing' => true]);
 		}
 		# ------------------------------------------------------------------
 		private function _commitAttributes($po_trans=null) {
