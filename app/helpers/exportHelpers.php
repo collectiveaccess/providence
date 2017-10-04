@@ -133,6 +133,7 @@
 		
 		
 		$o_view->setVar('result', $po_result);
+		$o_view->setVar('t_set', caGetOption('set', $pa_options, null));
 		$o_view->setVar('criteria_summary', caGetOption('criteriaSummary', $pa_options, ''));
 		
 		$vs_table = $po_result->tableName();
