@@ -1698,7 +1698,7 @@
 		var $total = null, $page = 0, $pages = null, $photos, $_extra = null;
 
 
-		function phpFlickr_pager($phpFlickr, $method = null, $args = null, $per_page = 30) {
+		function __construct($phpFlickr, $method = null, $args = null, $per_page = 30) {
 			$this->per_page = $per_page;
 			$this->method = $method;
 			$this->args = $args;

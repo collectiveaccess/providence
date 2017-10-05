@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -223,7 +223,19 @@
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * @param array $pa_options Options include:
+ 		 *      doRefSubstitution = Parse and replace reference tags (in the form [table idno="X"]...[/table]). [Default is false in Providence; true in Pawtucket].
+ 		 * @return string
+ 		 */
 		public function getDisplayValue($pa_options=null) {
+		    global $g_request;
+		    
+		    // process reference tags
+		    if ($g_request && caGetOption('doRefSubstitution', $pa_options, __CA_APP_TYPE__ == 'PAWTUCKET')) {
+                return caProcessReferenceTags($g_request, $this->ops_text_value);
+            }
+		
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
@@ -282,6 +294,7 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
+ 			global $g_request;
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique'));
 
  			if (isset($pa_options['usewysiwygeditor'])) {
@@ -301,7 +314,7 @@
  			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
  				$vs_width = ((int)$vs_width * 6)."px";
  			}
- 			if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
+ 			if (!preg_match("!^[\d\.]+px$!i", $vs_height) && ((int)$vs_height > 1)) {
  				$vs_height = ((int)$vs_height * 16)."px";
  			}
  			
@@ -317,7 +330,9 @@
 							width: '{$vs_width}',
 							height: '{$vs_height}',
 							toolbarLocation: 'top',
-							enterMode: CKEDITOR.ENTER_BR
+							enterMode: CKEDITOR.ENTER_BR,
+				            lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
+				            key: '".$pa_element_info['element_id']."_{n}'
 						});
 						
 						ckEditor.on('instanceReady', function(){ 
@@ -361,10 +376,10 @@
  				}
  				
  				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true));
  				";
  				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').bind('keyup', function(e) { 
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
  				});";
  				
  				$vs_element .="});</script>";

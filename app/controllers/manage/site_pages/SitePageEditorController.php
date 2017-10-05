@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,7 +41,17 @@
 		 */
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
-
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+		 *
+		 */
+ 		public function getMediaList() {
+ 		    $pn_page_id = $this->request->getParameter('page_id', pInteger);
+ 			$t_page = new ca_site_pages($pn_page_id);
+ 			$this->view->setVar('media_list', $t_page->getPageMedia(['icon']));
+ 			
+ 			$this->render('media_list_html.php');
  		}
  		# -------------------------------------------------------
  		/**

@@ -1194,11 +1194,13 @@ class BaseModel extends BaseObject {
 		
 		$o_db = $this->getDb();
 		
+		$vs_deleted_sql = $this->hasField('deleted') ? " AND deleted = 0" : "";
+		
 		$qr_res = $o_db->query("
 			SELECT {$vs_pk}, {$vs_fld_list}
 			FROM {$vs_table_name}
 			WHERE
-				{$vs_pk} IN (?)
+				{$vs_pk} IN (?) {$vs_deleted_sql}
 		", array($va_ids));
 		
 		$va_vals = array();
@@ -1211,6 +1213,45 @@ class BaseModel extends BaseObject {
 			}
 		}
 		return BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num][$vs_cache_key] = $va_vals;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Translate an array of idnos into row_ids 
+	 * 
+	 * @param array $pa_idnos A list of idnos
+	 * @param array $pa_options Options include:
+	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false]
+	 *
+	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
+	 */
+	static public function getIDsForIdnos($pa_idnos, $pa_options=null) {
+	    $o_dm = Datamodel::load();
+	    if (!is_array($pa_idnos) && strlen($pa_idnos)) { $pa_idnos = [$pa_idnos]; }
+		
+		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name, true))) { return null; }
+		
+	    $pa_idnos = array_map(function($v) { return (string)$v; }, $pa_idnos);
+	    
+	    $vs_pk = $t_instance->primaryKey();
+	    $vs_table_name = $t_instance->tableName();
+	    $vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
+		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
+	    
+	    $qr_res = $t_instance->getDb()->query("
+			SELECT {$vs_pk}, {$vs_idno_fld}
+			FROM {$vs_table_name}
+			WHERE
+				{$vs_idno_fld} IN (?) {$vs_deleted_sql}
+		", array($pa_idnos));
+		
+		$pb_force_to_lowercase = caGetOption('forceToLowercase', $pa_options, false);
+		
+		$va_ret = [];
+		while($qr_res->nextRow()) {
+		    $va_ret[$pb_force_to_lowercase ? strtolower($qr_res->get($vs_idno_fld)) : $qr_res->get($vs_idno_fld)] = $qr_res->get($vs_pk);
+		}
+		return $va_ret;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -3152,7 +3193,7 @@ class BaseModel extends BaseObject {
 	 * @return bool true on success, false on failure of indexing
 	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
-		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
+		if (defined("__CA_DONT_DO_SEARCH_INDEXING__") || defined('__CA_IS_SIMPLE_SERVICE_CALL__')) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
@@ -4752,8 +4793,12 @@ class BaseModel extends BaseObject {
 						$vs_serialized_data = caSerializeForDatabase($this->_FILES[$ps_field], true);
 						$vs_sql =  "$ps_field = ".$this->quote($vs_serialized_data).",";
 						if (($vs_metadata_field_name = $o_media_proc_settings->getMetadataFieldName()) && $this->hasField($vs_metadata_field_name)) {
+						    $vn_embedded_media_metadata_limit = (int)$this->_CONFIG->get('dont_extract_embedded_media_metdata_when_length_exceeds');
+						    if (($vn_embedded_media_metadata_limit > 0) && (strlen($vs_serialized_metadata = caSerializeForDatabase($media_metadata, true)) > $vn_embedded_media_metadata_limit)) {
+						        $media_metadata = null; $vs_serialized_metadata = '';
+						    }
 							$this->set($vs_metadata_field_name, $media_metadata);
-							$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
+							$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote($vs_serialized_metadata).",";
 						}
 				
 						if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
@@ -6271,8 +6316,8 @@ class BaseModel extends BaseObject {
 		if ($this->hasField($va_tmp[1])) {
 			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
 			return $this->htmlFormElement($va_tmp[1], '^ELEMENT', array_merge($pa_options, array(
-					'name' => $ps_field,
-					'id' => str_replace(".", "_", $ps_field),
+					'name' => caGetOption('name', $pa_options, $ps_field).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
+					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),
@@ -6485,7 +6530,7 @@ class BaseModel extends BaseObject {
 
 			// log to self
 			if($vb_log_changes_to_self) {
-				if (($vn_id = $this->getPrimaryKey()) > 0) {
+				if (!caGetOption('row_id', $pa_options, null) && ($vn_id = $this->getPrimaryKey()) > 0) {
 					$va_subjects[$this->tableNum()][] = $vn_id;
 				}
 			}
@@ -8761,6 +8806,7 @@ $pa_options["display_form_field_tips"] = true;
 								
 								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 								
+								
 								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
 								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
 								{
@@ -8768,7 +8814,9 @@ $pa_options["display_form_field_tips"] = true;
 									width: '{$vs_width}',
 									height: '{$vs_height}',
 									toolbarLocation: 'top',
-									enterMode: CKEDITOR.ENTER_BR
+									enterMode: CKEDITOR.ENTER_BR,
+                                    lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
+                                    key: '".$pa_options['id']."_lookup'
 								});
 						
 								ckEditor.on('instanceReady', function(){ 
@@ -9143,6 +9191,8 @@ $pa_options["display_form_field_tips"] = true;
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
+				} elseif(!is_numeric($pn_rel_id)) {
+					return false;
 				}
 			}
 		}
@@ -12044,8 +12094,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function setRankAfter($pn_after_id, $pa_options=null) {
 		$o_db = $this->getDb();
-		
-		
+			
 		$vs_item_pk = $this->primaryKey();
 		$vs_item_table = $this->tableName();
 		$vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
@@ -12054,9 +12103,9 @@ $pa_options["display_form_field_tips"] = true;
 		if (!($vs_rank_fld = $this->getProperty('RANK'))) { return null; }
 		
 		$va_params = [];
-		$vs_parent_sql = "{$vs_parent_id_fld} IS NULL";
+		$vs_parent_sql = $vs_parent_id_fld ? "{$vs_parent_id_fld} IS NULL" : '';
 		if ($pn_after_id) { $va_params[] = $pn_after_id; }
-		if ($vn_parent_id) { 
+		if ($vs_parent_id_fld && $vn_parent_id) { 
 			$va_params[] = $vn_parent_id; 
 			$vs_parent_sql = "{$vs_parent_id_fld} = ?";
 		}
@@ -12064,11 +12113,11 @@ $pa_options["display_form_field_tips"] = true;
 		// If "after_id" is null then change ranks such that the "id" row is at the beginning
 		if (!$pn_after_id) {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_parent_sql} ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} ".($vs_parent_sql ? "WHERE {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
 			", $va_params);
 		} else {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? AND {$vs_parent_sql} ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? ".($vs_parent_sql ? "AND {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
 			", $va_params);
 		}
 	
@@ -12080,20 +12129,20 @@ $pa_options["display_form_field_tips"] = true;
 		}
 	
 		$va_params = [];
-		$vs_parent_sql = "{$vs_parent_id_fld} IS NULL";
-		if ($vn_parent_id) { 
+		$vs_parent_sql = $vs_parent_id_fld ? "{$vs_parent_id_fld} IS NULL" : "";
+		if ($vs_parent_id_fld && $vn_parent_id) { 
 			$va_params[] = $vn_parent_id; 
 			$vs_parent_sql = "{$vs_parent_id_fld} = ?";
 		}
 		$va_params[] = $vn_after_rank;
 		
 		$qr_res = $o_db->query("
-			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE {$vs_parent_sql} AND {$vs_rank_fld} > ?
+			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
 		", $va_params);
 		
 		// Log changes to ranks
 		$qr_res = $o_db->query("
-			SELECT * FROM {$vs_item_table} WHERE {$vs_parent_sql} AND {$vs_rank_fld} > ?
+			SELECT * FROM {$vs_item_table} WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
 		", $va_params);
 		while($qr_res->nextRow()) {
 			$this->logChange("U", null, ['row_id' => $qr_res->get($vs_item_pk), 'snapshot' => $qr_res->getRow()]);

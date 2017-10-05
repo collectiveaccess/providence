@@ -104,7 +104,7 @@ class gPoint
 	var $secondStdParallel;						// For lambert Projection
 
 	// constructor
-	function gPoint($datum='WGS 84')			// Default datum is WGS 84
+	function __construct($datum='WGS 84')			// Default datum is WGS 84
 	{
 		$this->a = $this->ellipsoid[$datum][0];		// Set datum Equatorial Radius
 		$this->e2 = $this->ellipsoid[$datum][1];	// Set datum Square of eccentricity

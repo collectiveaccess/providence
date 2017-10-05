@@ -265,9 +265,20 @@ final class ConfigurationCheck {
 	 */
 	public static function PHPVersionQuickCheck() {
 		$va_php_version = caGetPHPVersion();
-		if($va_php_version["versionInt"]<50400){
-			self::addError(_t("CollectiveAccess requires PHP version 5.4 or higher to function properly. You're running %1. Please upgrade.",$va_php_version["version"]));
+		if($va_php_version["versionInt"]<50600){
+			self::addError(_t("CollectiveAccess requires PHP version 5.6 or higher to function properly. You're running %1. Please upgrade.",$va_php_version["version"]));
 		}
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Check if __CA_SITE_PROTOCOL__ is set
+	 */
+	public static function SiteProtocolSetQuickCheck() {
+		if (!defined("__CA_SITE_PROTOCOL__")) {
+			self::addError(_t("Your setup.php file does not include a setting for __CA_SITE_PROTOCOL__. Please update it using the current setup.php-dist as a template."));
+		}
+		
 		return true;
 	}
 	# -------------------------------------------------------

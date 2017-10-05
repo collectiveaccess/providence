@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,11 +26,6 @@
  * ----------------------------------------------------------------------
  */
  	
- 	$vs_type_id_form_element = '';
-	if ($vn_type_id = intval($this->getVar('type_id'))) {
-		$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
-	}
-	
 	$t_form = $this->getVar('t_form');
 	$vn_form_id = $t_form->getPrimaryKey();
 	
@@ -71,7 +66,7 @@
 	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
 		<div class="control-box rounded">
 			<div class="simple-search-box">
-				<?php print $this->render('Search/search_forms/search_form_table_html.php').$vs_type_id_form_element; ?>
+				<?php print $this->render('Search/search_forms/search_form_table_html.php'); ?>
 			</div>
 			
 			<br style="clear: both;"/>

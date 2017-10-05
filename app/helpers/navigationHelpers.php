@@ -203,7 +203,7 @@
 		
 		if ($ps_classname) { $pa_attributes['class'] = $ps_classname; }
 		if (is_array($pa_attributes)) {
-			$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
+			$vs_tag .= " "._caHTMLMakeAttributeString($pa_attributes);
 		}
 		
 		$vs_tag .= ">{$ps_content}</a>";
@@ -373,6 +373,7 @@
 	 * Options:
 	 * 	disableUnsavedChangesWarning = if true, unsaved change warnings (when user tries to navigate away from the form before saving) are disabled. [Default is false]
 	 *	noTimestamp = if true no form timestamp (used to determine if other users have made changes while the form is being displayed) is included. [Default is false]
+	 *  noCSRFToken = if true CSRF token is omitted. [Default is false]
 	 *	disableSubmit = don't allow form to be submitted. [Default is false]
 	 *	submitOnReturn = submit form if user hits return in any form element. [Default is false]
 	 */
@@ -400,6 +401,10 @@
 		if (!caGetOption('noTimestamp', $pa_options, false)) {
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
+		if (!caGetOption('noCSRFToken', $pa_options, false)) {
+			$vs_buf .= caHTMLHiddenInput('crsfToken', array('value' => caGenerateCSRFToken($po_request)));
+		}
+		
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
 			// tagging form elements with the CSS 'dontTriggerUnsavedChangeWarning' class lets us skip over selected form elements
 			// when applying unsaved change warning event handlers
@@ -1290,6 +1295,14 @@
 			case 'ca_object_representations':
 			case 56:
 				$vs_controller = 'ObjectRepresentation';
+				break;
+			case 'ca_site_pages':
+			case 236:
+				$vs_controller = 'SitePage';
+				break;
+			case 'ca_site_page_media':
+			case 237:
+				$vs_controller = 'SitePageMedia';
 				break;
 			default:
 				return null;

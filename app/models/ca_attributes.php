@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -224,6 +224,7 @@ class ca_attributes extends BaseModel {
 	 *
 	 */
 	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		
 		global $g_ui_locale_id;
@@ -273,7 +274,6 @@ class ca_attributes extends BaseModel {
 		$va_elements = $t_element->getElementsInSet();
 		
 		$vb_dont_create_attribute = true;
-		
 		foreach($va_elements as $va_element) {
 			if ($va_element['datatype'] == 0) { continue; }	// 0 is always 'container' ...
 			
@@ -282,7 +282,12 @@ class ca_attributes extends BaseModel {
 			} else {
 				$vm_value = isset($pa_values[$va_element['element_code']]) ? $pa_values[$va_element['element_code']] : null;
 			}
-			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options)) === false) {
+			
+			if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
+			    $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
+			}
+			
+			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, array_merge($pa_options, ['t_attribute' => $this]))) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->addAttribute()');
 				$vb_dont_create_attribute = false;	// this causes an error to be displayed to the user, which is what we want here
 				break;
@@ -376,6 +381,11 @@ class ca_attributes extends BaseModel {
 				} else {
 					$vm_value = $pa_values[$o_attr_val->getElementCode()];
 				}
+							
+                if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
+                    $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
+                }
+                
 				if ($t_attr_val->editValue($vm_value, $pa_options) === false) {
 					$this->postError(1973, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				}
@@ -402,7 +412,7 @@ class ca_attributes extends BaseModel {
 				$vm_value = $pa_values[$va_element['element_code']];
 			}
 			
-			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options) === false) {
+			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, array_merge($pa_options, ['t_attribute' => $this])) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				break;
 			}
@@ -905,6 +915,20 @@ class ca_attributes extends BaseModel {
 
 		MemoryCache::save($this->getPrimaryKey(), $vs_element_code, 'AttributeToElementCodeCache');
 		return $vs_element_code;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getRowInstance() {
+		if(!$this->getPrimaryKey()) { return false; }
+
+        $o_dm = Datamodel::load();
+        if (($t_instance = $o_dm->getInstanceByTableNum($this->get('table_num'), true)) && ($t_instance->load($this->get('row_id')))) {
+            return $t_instance;
+        }
+        
+		return null;
 	}
 	# ------------------------------------------------------
 	/**

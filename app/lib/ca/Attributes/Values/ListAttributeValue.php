@@ -317,8 +317,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
 		if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
-		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'item_id'); }
-		if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno', 'item_id'); }
+		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'label', 'item_id'); }
+		if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno', 'label', 'item_id'); }
 		if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
 		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('item_id'); }
 
@@ -392,7 +392,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		/** @var RequestHTTP $o_request */
 		$o_request = $pa_options['request'];
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
 		if (($pa_element_info['parent_id']) && ($pa_element_info['settings']['render'] == 'checklist')) { $pa_element_info['settings']['render'] = ''; }	// checklists can only be top-level
 		if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
 		if ((!isset($pa_options['height']) || !strlen($pa_options['height'])) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
@@ -570,6 +570,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_SELECT,
+							'multiple' => true,
 							'options' => $va_options_for_settings,
 							'takesLocale' => false,
 							'default' => '',
@@ -588,7 +589,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			if(is_array($va_list_items) && sizeof($va_list_items)) {
 				foreach($va_list_items as $va_items_by_locale) {
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-						$va_element_settings['hideIfSelected_'.$va_item['idno']] = true;
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => true, 'multiple' => true];
 					}
 				}
 			}

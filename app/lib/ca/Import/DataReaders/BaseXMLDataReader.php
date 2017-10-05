@@ -154,7 +154,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
 			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
-		
+		print "XPATH=".$this->ops_xpath." [".$this->opb_register_root_tag."]\n";
 		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
 
 		$this->opn_current_row = 0;
@@ -285,7 +285,14 @@ class BaseXMLDataReader extends BaseDataReader {
 		$vo_children = $po_node->childNodes; 
 		if($vo_children) {
 			foreach ($vo_children as $vo_child) { 
-				$vs_buf .= $vo_child->ownerDocument->saveXML( $vo_child ); 
+				$vs_val = $vo_child->ownerDocument->saveXML( $vo_child ); 
+				
+				if (strpos($vs_val, "<![CDATA[") === 0) {
+				    $vs_val = substr($vs_val, 9);
+				    $vs_val = substr($vs_val, 0, strlen($vs_val) - 3);
+				}
+				
+				$vs_buf .= $vs_val;
 			} 
 		}
 

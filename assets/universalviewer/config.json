@@ -12,7 +12,7 @@
     "preserveViewport": false,
     "rightPanelEnabled": false,
     "saveUserSettings": false,
-    "searchWithinEnabled": false,
+    "searchWithinEnabled": true,
     "theme": "uv-en-GB-theme",
     "tokenStorage": "session",
     "useArrowKeysToNavigate": false

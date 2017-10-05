@@ -110,6 +110,23 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		}
 		return $vn_rc;
 	}
+    # ------------------------------------------------------------------
+    /**
+     * 
+     *
+     */
+    public function set($pa_fields, $pm_value="", $pa_options=null) {
+        if($pa_fields && $pm_value && !is_array($pa_fields)) { $pa_fields = [$pa_fields => $pm_value]; }
+        if(is_array($pa_fields)) {
+            if (isset($pa_fields['type_id']) && !is_numeric($pa_fields['type_id'])) {
+                $t_rel_type = new ca_relationship_types();
+                if ($vn_type_id = $t_rel_type->getRelationshipTypeID($this->tableNum(), $pa_fields['type_id'])) {
+                    $pa_fields['type_id'] = $vn_type_id;
+                }
+            }
+        } 
+        return parent::set($pa_fields, $pm_value, $pa_options);
+    }
 	# ------------------------------------------------------
 	/**
 	 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
@@ -444,6 +461,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						// is left
 						$vs_subtype_orientation = "right";
 						$vs_subtype = $va_row['sub_type_right_id'];	
+						$va_right_subtype_candidates = $va_row['sub_type_right_id'] ? [$va_row['sub_type_right_id']] : null;
 					}
 					if ($va_row['sub_type_right_id'] && in_array($va_row['sub_type_right_id'], $va_right_subtype_candidates)) {
 						// is right
@@ -454,6 +472,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						} else {
 							$vs_subtype_orientation = "left";
 							$vs_subtype = $va_row['sub_type_left_id'];	
+						    $va_left_subtype_candidates = $vs_subtype ? [$va_row['sub_type_left_id']] : null;
 						}
 					}
 					if (($va_row['sub_type_left_id'] || $va_row['sub_type_right_id']) && !$vs_subtype_orientation) {
@@ -461,6 +480,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					}
 				}
 				if (!$vs_subtype) { $vs_subtype = 'NULL'; }
+				
 				switch($vs_subtype_orientation) {
 					case 'left':
 						$va_tmp = $va_row;
@@ -468,9 +488,13 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						$va_tmp['typename'] = $va_tmp['typename_reverse'];
 						unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
-						foreach($va_left_subtype_candidates as $vs_left_subtype) {
-							$va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
-						}
+                        if(!$va_left_subtype_candidates) {
+                             $va_types[$vn_parent_id]['NULL'][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+                        } else {
+                            foreach($va_left_subtype_candidates as $vs_left_subtype) {
+                                $va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
+                            }
+                        }
 						break;
 					case 'right':
 						$va_tmp = $va_row;
@@ -479,9 +503,13 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					
 						unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
-						foreach($va_right_subtype_candidates as $vs_right_subtype) {
-							$va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-						}
+                        if (!$va_right_subtype_candidates) { 
+                            $va_types[$vn_parent_id]['NULL'][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+                        } else {
+                            foreach($va_right_subtype_candidates as $vs_right_subtype) {
+                                $va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+                            }
+                        }
 						break;
 					default:
 						$va_tmp = $va_row;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,18 +66,29 @@
 		static public function prepareViewerHTML($po_request, $o_view, $pa_data=null, $pa_options=null) {
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
 			$t_subject = isset($pa_data['t_subject']) ? $pa_data['t_subject'] : null;
+			$t_media = isset($pa_data['t_media']) ? $pa_data['t_media'] : $t_subject;
 				
 			// Controls
 			$vs_controls = '';
 			if ($t_subject) {
-				$vs_media_overlay_titlebar_text = ($vs_media_overlay_titlebar_template = $po_request->config->get('media_overlay_titlebar_template')) ? caProcessTemplateForIDs($vs_media_overlay_titlebar_template, $t_subject->tableName(), [$t_subject->getPrimaryKey()], $pa_options) : caTruncateStringWithEllipsis($t_subject->get($t_subject->tableName().'.preferred_labels'), 80)." (".$t_subject->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
+				$vs_media_overlay_titlebar_text = null;
+				if (($vs_media_overlay_titlebar_template = $po_request->config->get('media_overlay_titlebar_template')) && (is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes'))) { 
+				    // for everything except ca_site_page_media when a template is defined
+				    $vs_media_overlay_titlebar_text = caProcessTemplateForIDs($vs_media_overlay_titlebar_template, $t_subject->tableName(), [$t_subject->getPrimaryKey()], $pa_options);
+				} elseif(is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes')) {
+				    // for everything except ca_site_page_media
+				    $vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_subject->get($t_subject->tableName().'.preferred_labels'), 80)." (".$t_subject->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
+			    } else {
+			        // for ca_site_page_media 
+			        $vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_instance->get($t_instance->tableName().'.'.array_shift($t_instance->getProperty('LIST_FIELDS'))), 80)." (".$t_instance->get($t_instance->tableName().'.'.$t_instance->getProperty('ID_NUMBERING_ID_FIELD')).")";
+			    }
 				$vs_controls .= "<div class='objectInfo'>{$vs_media_overlay_titlebar_text}</div>";
 			}
 			if ($t_subject && $t_instance && is_a($t_instance, 'ca_object_representations')) {
-				if (($vn_num_media = $t_subject->getRepresentationCount()) > 1) {
+				if (($vn_num_media = $t_media->getRepresentationCount()) > 1) {
 					$vs_controls .= "<div class='repNav'>";
 				
-					$va_ids = array_keys($t_subject->getRepresentationIDs());
+					$va_ids = array_keys($t_media->getRepresentationIDs());
 					$vn_rep_index = array_search($t_instance->getPrimaryKey(), $va_ids);
 				
 					$vs_context = $po_request->getParameter('context', pString);
@@ -104,6 +115,7 @@
 						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
 						$vs_controls .= caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey()));
 						if (is_a($t_instance, 'ca_object_representations')) { $vs_controls .= caHTMLHiddenInput("representation_id", array('value' => $t_instance->getPrimaryKey())); }
+						if (is_a($t_instance, 'ca_site_page_media')) { $vs_controls .= caHTMLHiddenInput("media_id", array('value' => $t_instance->getPrimaryKey())); }
 						if (is_a($t_instance, 'ca_attribute_values')) { $vs_controls .= caHTMLHiddenInput("value_id", array('value' => $t_instance->getPrimaryKey())); }
 						$vs_controls .= caHTMLHiddenInput("download", array('value' => 1));
 						$vs_controls .= "</form>\n";
@@ -120,6 +132,20 @@
 			$o_view->setVar('controls', $vs_controls);
 		
 			return $o_view->render(caGetOption('viewerWrapper', $pa_options, 'viewerWrapper').'.php');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function searchViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
+		    throw new ApplicationException(_t('Media search is not available'));
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function autocomplete($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
+		    throw new ApplicationException(_t('Media search autocomplete is not available'));
 		}
 		# -------------------------------------------------------
 	}
