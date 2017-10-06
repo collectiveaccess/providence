@@ -46,7 +46,7 @@ class IIIFService {
 	 */
 	public static function dispatch($ps_identifier, $po_request, $po_response) {
 		$va_path = array_slice(explode("/", $po_request->getPathInfo()), 3);
-		$vs_key = join("/", $va_path);
+		$vs_key = $ps_identifier."/".join("/", $va_path);
 		
 		if ($vs_tile = CompositeCache::fetch($vs_key, 'IIIFTiles')) {
 		    header("Content-type: ".CompositeCache::fetch($vs_key, 'IIIFTileTypes'));
