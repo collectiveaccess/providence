@@ -457,13 +457,13 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				$vs_subtype_orientation = null;
 				$vs_subtype = null;
 				if ($pn_type_id) {
-					if ($va_row['sub_type_left_id'] && in_array($va_row['sub_type_left_id'], $va_left_subtype_candidates)) {
+					if (!$va_row['sub_type_left_id'] || ($va_row['sub_type_left_id'] && in_array($va_row['sub_type_left_id'], $va_left_subtype_candidates))) {
 						// is left
 						$vs_subtype_orientation = "right";
 						$vs_subtype = $va_row['sub_type_right_id'];	
 						$va_right_subtype_candidates = $va_row['sub_type_right_id'] ? [$va_row['sub_type_right_id']] : null;
 					}
-					if ($va_row['sub_type_right_id'] && in_array($va_row['sub_type_right_id'], $va_right_subtype_candidates)) {
+					if (!$va_row['sub_type_left_id'] || ($va_row['sub_type_right_id'] && in_array($va_row['sub_type_right_id'], $va_right_subtype_candidates))) {
 						// is right
 						if ($vs_subtype_orientation == 'right') {
 							// left and right
@@ -524,12 +524,16 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							
 							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							
-							foreach($va_left_subtype_candidates as $vs_left_subtype) {
-								$va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-							}
-							foreach($va_right_subtype_candidates as $vs_right_subtype) {
-								$va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-							}
+							if(is_array($va_left_subtype_candidates)) { 
+                                foreach($va_left_subtype_candidates as $vs_left_subtype) {
+                                    $va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+                                }
+                            }
+							if (is_array($va_right_subtype_candidates)) {
+                                foreach($va_right_subtype_candidates as $vs_right_subtype) {
+                                    $va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+                                }
+                            }
 							
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
@@ -545,9 +549,11 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							$va_tmp['direction'] = 'ltor';
 							
-							foreach($va_left_subtype_candidates as $vs_left_subtype) {
-								$va_types[$vn_parent_id][$vs_left_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-							}
+							if(is_array($va_left_subtype_candidates)) {
+                                foreach($va_left_subtype_candidates as $vs_left_subtype) {
+                                    $va_types[$vn_parent_id][$vs_left_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+                                }
+                            }
 							
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
@@ -560,9 +566,11 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							$va_tmp['direction'] = 'rtol';
 							
-							foreach($va_right_subtype_candidates as $vs_right_subtype) {
-								$va_types[$vn_parent_id][$vs_right_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-							}
+							if(is_array($va_right_subtype_candidates)) {
+                                foreach($va_right_subtype_candidates as $vs_right_subtype) {
+                                    $va_types[$vn_parent_id][$vs_right_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+                                }
+                            }
 							
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
