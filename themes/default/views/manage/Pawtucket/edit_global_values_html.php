@@ -66,3 +66,4 @@
 	}
 ?>
 </form>
+	<div class="editorBottomPadding"><!-- empty --></div>
