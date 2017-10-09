@@ -526,4 +526,12 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertContains($this->opn_object_id2, $vm_ret);
 	}
 	# -------------------------------------------------------
+	public function testFindNull() {	
+		$vm_ret = ca_objects::find(['parent_id' => null], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+	}
+	# -------------------------------------------------------
 }
