@@ -1220,13 +1220,16 @@ class BaseModel extends BaseObject {
 	 * 
 	 * @param array $pa_idnos A list of idnos
 	 * @param array $pa_options Options include:
-	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false]
+	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
+	 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
 	 *
 	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
 	 */
 	static public function getIDsForIdnos($pa_idnos, $pa_options=null) {
 	    $o_dm = Datamodel::load();
 	    if (!is_array($pa_idnos) && strlen($pa_idnos)) { $pa_idnos = [$pa_idnos]; }
+	    
+	    $pa_access_values = caGetOption('checkAccess', $pa_options, null);
 		
 		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
 		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name, true))) { return null; }
@@ -1237,13 +1240,21 @@ class BaseModel extends BaseObject {
 	    $vs_table_name = $t_instance->tableName();
 	    $vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
+		
+		$va_params = array($pa_idnos);
+		
+		$vs_access_sql = '';
+		if (is_array($pa_access_values) && sizeof($pa_access_values)) {
+		    $vs_access_sql = " AND access IN (?)";
+		    $va_params[] = $pa_access_values;
+		}
 	    
 	    $qr_res = $t_instance->getDb()->query("
 			SELECT {$vs_pk}, {$vs_idno_fld}
 			FROM {$vs_table_name}
 			WHERE
-				{$vs_idno_fld} IN (?) {$vs_deleted_sql}
-		", array($pa_idnos));
+				{$vs_idno_fld} IN (?) {$vs_deleted_sql} {$vs_access_sql}
+		", $va_params);
 		
 		$pb_force_to_lowercase = caGetOption('forceToLowercase', $pa_options, false);
 		
@@ -7026,6 +7037,7 @@ class BaseModel extends BaseObject {
 	 *		returnDeleted = return deleted records in list [default: false]
 	 *		additionalTableToJoin = name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
 	 *		idsOnly = return simple array of primary key values for child records rather than full result
+	 *      sort = 
 	 *
 	 * @return Mixed DbResult or array
 	 */
@@ -7043,6 +7055,8 @@ class BaseModel extends BaseObject {
 			$vs_hier_parent_id_fld	= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
 			$vs_hier_id_fld 		= $this->getProperty("HIERARCHY_ID_FLD");
 			$vs_hier_id_table 		= $this->getProperty("HIERARCHY_DEFINITION_TABLE");
+			
+			if (!($vs_rank_fld = caGetOption('sort', $pa_options, $this->getProperty('RANK'))) || !$this->hasField($vs_rank_fld)) { $vs_rank_fld = $vs_hier_left_fld; }
 		
 			if (!$pn_id) {
 				if (!($pn_id = $t_instance->getHierarchyRootID($t_instance->get($vs_hier_id_fld)))) {
@@ -7131,7 +7145,7 @@ class BaseModel extends BaseObject {
 							{$vs_deleted_sql}
 							{$vs_additional_wheres}
 						ORDER BY
-							{$vs_table_name}.{$vs_hier_left_fld}
+							{$vs_table_name}.{$vs_rank_fld}
 					";
 					//print $vs_sql;
 					$qr_hier = $o_db->query($vs_sql);
