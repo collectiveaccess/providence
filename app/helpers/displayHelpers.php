@@ -2664,7 +2664,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_table = 	$qr_rel_items->tableName();
 				$vs_pk = 		$qr_rel_items->primaryKey();
 				
-				$vs_idno_fld = $o_dm->getTableProperty($vs_table, 'ID_NUMBERING_ID_FIELD');
+				$vs_idno_fld = Datamodel::getTableProperty($vs_table, 'ID_NUMBERING_ID_FIELD');
 				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 				
 				while($qr_rel_items->nextHit()) {
@@ -3851,8 +3851,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$o_dm = Datamodel::load();
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 			
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -3901,8 +3900,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$o_dm = Datamodel::load();
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 			
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -4208,7 +4206,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (isset($pa_settings[$ps_key])) {
 			if (isset($pa_settings[$ps_key][$ps_locale]) && ($pa_settings[$ps_key][$ps_locale])) {
 				return $pa_settings[$ps_key][$ps_locale];
-			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
+			} elseif(is_array($va_locales_for_language = LocaleManager::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
 				foreach($va_locales_for_language as $vs_locale) {
 					if($pa_settings[$ps_key][$vs_locale]) { return $pa_settings[$ps_key][$vs_locale]; }
 				}
@@ -4322,13 +4320,11 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	        $pa_tables = ['ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
 	    }
 	    
-	    $o_dm = Datamodel::load();
-	    
 	    $va_lookup_urls = [];
         foreach($pa_tables as $vs_table) {
             if (!caTableIsActive($vs_table)) { continue; }
             $va_urls = caJSONLookupServiceUrl($po_request, $vs_table);
-            $va_lookup_urls[$vs_table] = ['singular' => $o_dm->getTableProperty($vs_table, 'NAME_SINGULAR'), 'plural' => $o_dm->getTableProperty($vs_table, 'NAME_PLURAL'), 'code' => strtolower($o_dm->getTableProperty($vs_table, 'NAME_SINGULAR')), 'url' => $va_urls['search']];   
+            $va_lookup_urls[$vs_table] = ['singular' => Datamodel::getTableProperty($vs_table, 'NAME_SINGULAR'), 'plural' => Datamodel::getTableProperty($vs_table, 'NAME_PLURAL'), 'code' => strtolower(Datamodel::getTableProperty($vs_table, 'NAME_SINGULAR')), 'url' => $va_urls['search']];   
         }
         return $va_lookup_urls;
 	}

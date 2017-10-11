@@ -1563,7 +1563,7 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 * Returns list of names of fields that may be used to generate the display field. For most labels this will be empty. For ca_entities this will be a list on constituent name fields.
+		 * Returns list of names of fields that may be used to generate the display field. For most labels this will be empty. For ca_entities this will be a list of constituent name fields.
 		 *
 		 * @return array
 		 */
