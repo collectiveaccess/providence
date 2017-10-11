@@ -1374,7 +1374,7 @@
 													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
 														if($vs_f == '_dont_save') {
 															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
-															$va_attr_values[] = (int)$vn_row_id;
+															$va_attr_values[] = $vn_row_id;
 															break(2);
 														}
 														break;
