@@ -6830,7 +6830,7 @@ create table ca_site_pages (
 
   primary key (page_id),
   key (template_id),
-  unique index u_path (path)
+  key (path)
 
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -6874,4 +6874,4 @@ create table ca_schema_updates (
 
 /* Indicate up to what migration this schema definition covers */
 /* CURRENT MIGRATION: 147 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (147, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (148, unix_timestamp());
