@@ -2197,7 +2197,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
                         $vs_measure_conv = null;
                         switch(strtoupper($va_tmp[1])) {
                             case 'INFRAC':
-                                $vs_measure_conv = caLengthToFractions($vo_measurement->convertTo(Zend_Measure_Length::INCH, 4), 8, true);
+                                $vs_measure_conv = caLengthToFractions($vo_measurement->convertTo(Zend_Measure_Length::INCH, 8), 16, true);
                                 break;
                             case 'M':
                                 $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, 4);
@@ -2222,7 +2222,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
                         }
                     
                         if ($vs_measure_conv) {
-                            if (caGetOption('omitUnits', $pa_options, false)) { $vs_measure_conv = floatval($vs_measure_conv); }
+                            if (caGetOption('omitUnits', $pa_options, false)) { $vs_measure_conv = trim(preg_replace("![^\d\-\.\/ ]+!", "", $vs_measure_conv)); }
                             $ps_value = "{$vs_measure_conv}";
                         }
                     } catch (Exception $e) {
