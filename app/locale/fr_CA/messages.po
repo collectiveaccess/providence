@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-04-27 13:59-0400\n"
-"PO-Revision-Date: 2017-10-12 16:29-0400\n"
+"PO-Revision-Date: 2017-10-12 16:34-0400\n"
 "Last-Translator: Seth <Seth@collectiveacess.org>\n"
 "Language-Team: French (France) (http://www.transifex.com/collectiveaccess/"
 "collectiveaccess-providence/language/fr_FR/)\n"
@@ -11153,7 +11153,7 @@ msgstr "Impossible de déterminer les éléments frères/soeurs de %1"
 #: app/lib/core/BaseModel.php:8381 app/lib/core/BaseModel.php:8476
 #: app/lib/core/BaseModel.php:8571 app/lib/core/BaseModel.php:8664
 msgid "- NONE -"
-msgstr ""
+msgstr "Aucun"
 
 #: app/lib/core/BaseModel.php:8737
 msgid "Value must be unique. Please try another."
