@@ -6872,5 +6872,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 147 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (147, unix_timestamp());
+/* CURRENT MIGRATION: 148 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (148, unix_timestamp());
