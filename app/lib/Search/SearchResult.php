@@ -2606,10 +2606,11 @@ class SearchResult extends BaseObject {
 		}
 		if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = caGetListItemIdno($vs_prop);
-		} else {
-			if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
-				$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
-			}
+		} elseif (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+			$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
+	    } elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+		    $t_rel_type = new ca_relationship_types($vs_prop);
+		    return $t_rel_type->get('type_code');
 		}
 		return $vs_prop;
 	}
@@ -2630,24 +2631,21 @@ class SearchResult extends BaseObject {
 		
 		if ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
-		} else {
-			if ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
-				$vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
-			} else {
-				if ($vb_convert_codes_to_display_text && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
-					$t_locale = new ca_locales($vs_prop);
-					$vs_prop = $t_locale->getName();
-				} else {
-					if ($vb_convert_codes_to_display_text && (is_array($va_list = $pt_instance->getFieldInfo($vs_field_name,"BOUNDS_CHOICE_LIST")))) {
-						foreach($va_list as $vs_option => $vs_value) {
-							if ($vs_value == $vs_prop) {
-								$vs_prop = $vs_option;
-								break;
-							}
-						}
-					}
-				}
-			}
+		} elseif ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+            $vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
+        } elseif ($vb_convert_codes_to_display_text && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
+            $t_locale = new ca_locales($vs_prop);
+            $vs_prop = $t_locale->getName();
+        } elseif ($vb_convert_codes_to_display_text && (is_array($va_list = $pt_instance->getFieldInfo($vs_field_name,"BOUNDS_CHOICE_LIST")))) {
+            foreach($va_list as $vs_option => $vs_value) {
+                if ($vs_value == $vs_prop) {
+                    $vs_prop = $vs_option;
+                    break;
+                }
+            }
+		} elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+		    $t_rel_type = new ca_relationship_types($vs_prop);
+		    return $t_rel_type->get('ca_relationship_types.preferred_labels');
 		}
 		return $vs_prop;
 	}
