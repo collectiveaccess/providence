@@ -6830,8 +6830,7 @@ create table ca_site_pages (
 
   primary key (page_id),
   key (template_id),
-  unique index u_path (path)
-
+  key (path)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
