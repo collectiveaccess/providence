@@ -2179,10 +2179,12 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 *
 	 * @param string $ps_value
 	 * @param array $pa_directives
+	 * @param array $pa_options Options include:
+	 *      omitUnits = Omit unit specifier on dimensional quantities. [Default is false]
 	 *
 	 * @return string
 	 */
-	function caProcessTemplateTagDirectives($ps_value, $pa_directives) {
+	function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=null) {
 	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
 		foreach($pa_directives as $vs_directive) {
@@ -2220,6 +2222,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
                         }
                     
                         if ($vs_measure_conv) {
+                            if (caGetOption('omitUnits', $pa_options, false)) { $vs_measure_conv = floatval($vs_measure_conv); }
                             $ps_value = "{$vs_measure_conv}";
                         }
                     } catch (Exception $e) {

@@ -71,17 +71,42 @@ var caUI = caUI || {};
         // --------------------------------------------------------------------------------
         // Define methods
         // --------------------------------------------------------------------------------
-        that.processDependentTemplate = function(template, values, init) {
+        that.processDependentTemplate = function(template, values, init, omitRepeatingUnits=false) {
         	if (!template) return '';
             var t = template;
             
             // get tags from template
             var tagRegex = /\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
             var tagList = template.match(tagRegex);
-            var unitRegex = /[\d\.\,]+(.*)$/;
-
-            var bAtLeastOneValueIsSet = false;
             
+            var unitMap = [], emitUnitMap = [], i;
+            if (omitRepeatingUnits) {
+                for(i in tagList) {
+                    var tag = tagList[i];
+                    if(tag.indexOf("~") === -1) { unitMap[i] = null; continue; }
+                    var tagBits = tag.split(/\~/);
+                    var tagRoot = tagBits[0].replace("^", "");
+                
+                    var val = jQuery(values[tagRoot]).val();
+                    if(!(val = val.replace(/[,]+/g, ''))) { unitMap[i] = null; continue; }
+                    var cmd = tagBits[1].split(/\:/);
+                
+                    unitMap[i] = cmd[1];
+                }
+            
+                i = tagList.length;
+                var lastUnitSeen = null;
+                while(i > 0) {
+                    emitUnitMap[i-1] = ((lastUnitSeen == null) || (lastUnitSeen != unitMap[i-1]))
+                
+                    if (unitMap[i-1]) { lastUnitSeen = unitMap[i-1]; }
+                    i--;
+                }
+            }
+            
+            var unitRegex = /[\d\.\,]+(.*)$/, bAtLeastOneValueIsSet = false;
+            
+            var lastUnits = null;
             jQuery.each(tagList, function(i, tag) {
                 var tagProc = tag.replace("^", "");
                 if(tag.indexOf("~") === -1) {
@@ -105,7 +130,6 @@ var caUI = caUI || {};
                             val = val.replace(/[,]+/g, '');
                             if (val) { bAtLeastOneValueIsSet = true; }
                             
-                            
                             val = that.convertFractionalNumberToDecimal(val);
 
                             var unitBits = val.match(unitRegex);
@@ -122,15 +146,21 @@ var caUI = caUI || {};
                             try {
                                 var qty = new Qty(val);
                                 switch(cmd[1]) {
-                                    case 'units':
-                                        t=t.replace(tag, qty.to(cmd[1]).toString());
-                                        break;
                                     case 'infrac':
-                                        var float = qty.to('in').toPrec(0.01).toString();
-                                        t=t.replace(tag, that.convertLengthToFractions(float, 16));
+                                        var q = qty.to('in').toPrec(0.01).toString();
+                                        if (!omitRepeatingUnits || emitUnitMap[i]) {
+                                            t=t.replace(tag, that.convertLengthToFractions(q, 16));
+                                        } else {
+                                            t=t.replace(tag, that.convertLengthToFractions(q, 16, false));
+                                        }
                                         break;
                                     default:
-                                        t=t.replace(tag, qty.to(cmd[1]).toPrec(0.01).toString());
+                                        var q = qty.to(cmd[1]).toPrec(0.01).toString();
+                                        if (!omitRepeatingUnits || emitUnitMap[i]) {
+                                            t=t.replace(tag, q);
+                                        } else {
+                                            t=t.replace(tag, parseFloat(q));
+                                        }
                                         break;
                                 }
                             } catch(e) {
@@ -197,7 +227,7 @@ var caUI = caUI || {};
          * @param {int} denom
          * @returns {string}
          */
-        that.convertLengthToFractions = function(inches, denom) {
+        that.convertLengthToFractions = function(inches, denom, includeUnits=true) {
             var inches_as_float = parseFloat(inches.replace(/[^0-9\.]+/, ''));
 
 			if (String(inches_as_float).match("\.1[0]*$")) { 
@@ -210,7 +240,7 @@ var caUI = caUI || {};
             num %= denom;
 
             if (!num) {
-                return "" + int + " in";
+                return "" + int + (includeUnits ? " in" : "");
             }
 
             // Use Euclid's algorithm to find the GCD.
@@ -236,10 +266,10 @@ var caUI = caUI || {};
                 if (num < 0) {
                     num *= -1;
                 }
-                return "" + int + " " + frac + " in";
+                return "" + int + " " + frac + (includeUnits ? " in" : "");
             }
 
-            return "" + frac + " in";
+            return "" + frac + (includeUnits ? " in" : "");
         };
         // --------------------------------------------------------------------------------
         return that;

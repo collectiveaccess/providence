@@ -375,11 +375,12 @@
  					$va_element_dom_ids[$va_element['element_code']] = "#{fieldNamePrefix}".$va_element['element_id']."_{n}";
  				}
  				
+ 				$vs_omit_units = ((bool)Configuration::load()->get('omit_repeating_units_for_measurements_in_templates')) ? "true" : "false";
  				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				";
  				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').bind('keyup', function(e) { 
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				});";
  				
  				$vs_element .="});</script>";
