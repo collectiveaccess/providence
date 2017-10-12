@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-04-27 13:59-0400\n"
-"PO-Revision-Date: 2017-04-27 14:17-0400\n"
+"PO-Revision-Date: 2017-10-12 16:29-0400\n"
 "Last-Translator: Seth <Seth@collectiveacess.org>\n"
 "Language-Team: French (France) (http://www.transifex.com/collectiveaccess/"
 "collectiveaccess-providence/language/fr_FR/)\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.12\n"
+"X-Generator: Poedit 2.0.1\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -21188,7 +21188,7 @@ msgstr "Historique d'utilisation de l'objet"
 
 #: app/models/ca_objects.php:558
 msgid "Deaccession status"
-msgstr "Statut de sortie d'inventaire"
+msgstr "Statut d’aliénation"
 
 #: app/models/ca_objects.php:559
 msgid "Object checkouts"
@@ -29904,7 +29904,7 @@ msgstr "Sorti de l'inventaire : %1"
 
 #: themes/default/views/bundles/ca_objects_deaccession.php:53
 msgid "Deaccessioned?"
-msgstr "Sorti de l'inventaire ?"
+msgstr "Aliéné?"
 
 #: themes/default/views/bundles/ca_objects_history.php:63
 #: themes/default/views/bundles/ca_objects_history.php:249
