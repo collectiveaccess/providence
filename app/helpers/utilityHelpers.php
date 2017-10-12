@@ -3594,7 +3594,7 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 			} else {
-				$va_values_proc[$vs_key][] = ['=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
+				$va_values_proc[$vs_key][] = [is_null($vm_val) ? 'IS' : '=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
 			}
 		}
 		return $va_values_proc;

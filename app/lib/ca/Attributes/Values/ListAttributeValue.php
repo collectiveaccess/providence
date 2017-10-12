@@ -445,6 +445,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
 						$vs_hide_js = '';
+						$vs_show_js = '';
 						$vs_condition = '';
 						$vs_select = '';
 
@@ -458,6 +459,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								if(!is_array($va_tmp)) { continue; }
 
 								$vs_hide_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().hide();\n";
+								$vs_show_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().show();\n";
 							}
 						}
 
@@ -496,6 +498,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			if ({$vs_condition}) {
 				jQuery('div.bundleLabel').show();
 				{$vs_hide_js}
+			} else {
+			    {$vs_show_js}
 			}
 		});
 

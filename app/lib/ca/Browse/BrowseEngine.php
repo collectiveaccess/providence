@@ -1375,7 +1375,7 @@
 													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
 														if($vs_f == '_dont_save') {
 															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
-															$va_attr_values[] = (int)$vn_row_id;
+															$va_attr_values[] = $vn_row_id;
 															break(2);
 														}
 														break;
@@ -2895,13 +2895,23 @@
 					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true))) { break; }
 					if (!($t_label = $t_item->getLabelTableInstance())) { break; }
 					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
-
+					
+					if(sizeof($va_label_order_by_fields = isset($va_facet_info['order_by_label_fields']) ? $va_facet_info['order_by_label_fields'] : [])) {
+					    $va_label_order_by_fields = array_map(function($v) { return "l.{$v}"; }, $va_label_order_by_fields);
+					} else {
+					    $va_label_order_by_fields = [];
+					}
 
 					$vs_item_pk = $t_item->primaryKey();
 					$vs_label_table_name = $t_label->tableName();
 					$vs_label_pk = $t_label->primaryKey();
 					$vs_label_display_field = $t_item->getLabelDisplayField();
+					$va_label_ui_fields = $t_item->getLabelUIFields(); 
 					$vs_label_sort_field = $t_item->getLabelSortField();
+					
+					if(is_array($va_label_ui_fields) && sizeof($va_label_ui_fields)) {
+					    $va_label_ui_fields = array_map(function($v) { return "l.{$v}"; }, $va_label_ui_fields);
+					}
 
 					$vs_where_sql = $vs_join_sql = '';
 					$vb_needs_join = false;
@@ -3008,12 +3018,12 @@
 					} else {
 						$vs_parent_fld_select = (($vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD')) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '');
 						$vs_sql = "
-							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}, l.{$vs_item_pk}
+							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}, l.{$vs_item_pk}".((sizeof($va_label_ui_fields) > 0) ? ", ".join(", ", $va_label_ui_fields) : "")."
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
-							GROUP BY l.{$vs_label_display_field} {$vs_parent_fld_select}, l.locale_id, l.{$vs_item_pk}
-							ORDER BY l.{$vs_label_display_field}
+							GROUP BY l.{$vs_label_display_field} {$vs_parent_fld_select}, l.locale_id, l.{$vs_item_pk}".((sizeof($va_label_order_by_fields) > 0) ? ", ".join(", ", $va_label_order_by_fields) : "")."
+							ORDER BY ".((sizeof($va_label_order_by_fields) > 0) ? join(", ", $va_label_order_by_fields) : "l.{$vs_label_display_field}")."
 						";
 
 						$qr_res = $this->opo_db->query($vs_sql);
@@ -3024,6 +3034,8 @@
 
 						$va_unique_values = array();
 						$vn_id = 0;
+						
+						$vs_label_template = caGetOption('template', $va_facet_info, null);
 						while($qr_res->nextRow()) {
 							$vn_id++;
 
@@ -3032,7 +3044,11 @@
 								if ($vn_parent_id) { $va_child_counts[$vn_parent_id]++; }
 							}
 
-							$vs_label = trim($qr_res->get($vs_label_display_field));
+                            if ($vs_label_template) {
+                                $vs_label = caProcessTemplate($vs_label_template, $qr_res->getRow());
+                            } else {
+							    $vs_label = trim($qr_res->get($vs_label_display_field));
+							}
 							$vs_sort_label = trim($qr_res->get($vs_label_sort_field));
 							
 							if (isset($va_unique_values[$vs_label])) { continue; }
