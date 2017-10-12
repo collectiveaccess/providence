@@ -935,7 +935,7 @@ function caFileIsIncludable($ps_file) {
 			} else {
 				$vn_val = '';
 			}
-			$vn_val = sprintf("%4.3f", ((float)$va_matches[1] + $vn_val));
+			$vn_val = sprintf("%4.4f", ((float)$va_matches[1] + $vn_val));
 
 			$vn_val = caConvertFloatToLocale($vn_val, $locale);
 			$ps_fractional_expression = str_replace($va_matches[0], $vn_val, $ps_fractional_expression);
