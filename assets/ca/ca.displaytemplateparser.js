@@ -147,7 +147,7 @@ var caUI = caUI || {};
                                 var qty = new Qty(val);
                                 switch(cmd[1]) {
                                     case 'infrac':
-                                        var q = qty.to('in').toPrec(0.01).toString();
+                                        var q = qty.to('in').toPrec(0.001).toString();
                                         if (!omitRepeatingUnits || emitUnitMap[i]) {
                                             t=t.replace(tag, that.convertLengthToFractions(q, 16));
                                         } else {
