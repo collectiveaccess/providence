@@ -2238,17 +2238,19 @@ class BaseEditorController extends ActionController {
 			
 			switch($t_subject->tableName()) {
 			    case 'ca_object_representations':
-                    $va_reps = array(
-                        $vn_child_id => array(
+                    $va_reps = [
+                        $vn_child_id => [
                             'representation_id' => $vn_child_id,
-                            'info' => array($ps_version => $t_subject->getMediaInfo('media', $ps_version))
-                        )
-                    );
+                            'info' => [$ps_version => $t_subject->getMediaInfo('media', $ps_version)],
+                            'paths' => [$ps_version => $t_subject->getMediaPath('media', $ps_version)]
+                        ]
+                    ];
                     break;
 				case 'ca_site_pages':
 				    $va_reps = $t_subject->getPageMedia([$ps_version]);
 				    break;
 				default:
+				    if(!is_a($t_subject, 'RepresentableBaseModel')) { throw new ApplicationException(_t('No media to download for this type of record')); }
 				    $va_reps = $t_subject->getRepresentations([$ps_version]);
 				    break;
 			}
@@ -2312,6 +2314,7 @@ class BaseEditorController extends ActionController {
 
 				$vn_c++;
 			}
+		
 			if($vb_download_for_record){
 				$t_download_log->log(array(
 						"user_id" => $this->request->getUserID(), 
