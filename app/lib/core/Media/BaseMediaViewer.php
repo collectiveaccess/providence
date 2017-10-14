@@ -108,12 +108,15 @@
 			}
 			if ($t_subject && $t_instance && $po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations')) {
 					if (is_array($va_versions = $po_request->config->getList('ca_object_representation_download_versions'))) {
+					    $va_editor_url = caEditorUrl($po_request, $t_media->tableName(), $t_media->getPrimaryKey(), true);
+					    $vs_download_path = $va_editor_url['module'].'/'.$va_editor_url['controller'];
+					
 						$vs_controls .= "<div class='download'>";
 						// -- provide user with a choice of versions to download
-						$vs_controls .= caFormTag($po_request, 'DownloadMedia', 'caMediaDownloadForm', $po_request->getModulePath().'/'.$po_request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+						$vs_controls .= caFormTag($po_request, 'DownloadMedia', 'caMediaDownloadForm', $vs_download_path, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 						$vs_controls .= _t('Download as %1', caHTMLSelect('version', array_combine(array_map("_t", $va_versions), $va_versions), array('style' => 'font-size: 8px; height: 16px;')));
 						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
-						$vs_controls .= caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey()));
+						$vs_controls .= caHTMLHiddenInput($t_media->primaryKey(), array('value' => $t_media->getPrimaryKey()));
 						if (is_a($t_instance, 'ca_object_representations')) { $vs_controls .= caHTMLHiddenInput("representation_id", array('value' => $t_instance->getPrimaryKey())); }
 						if (is_a($t_instance, 'ca_site_page_media')) { $vs_controls .= caHTMLHiddenInput("media_id", array('value' => $t_instance->getPrimaryKey())); }
 						if (is_a($t_instance, 'ca_attribute_values')) { $vs_controls .= caHTMLHiddenInput("value_id", array('value' => $t_instance->getPrimaryKey())); }
