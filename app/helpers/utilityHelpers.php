@@ -3093,6 +3093,7 @@ function caFileIsIncludable($ps_file) {
 			$va_measurements = array($pm_value);
 		}
 
+        $va_unit_map = [];
 		foreach($va_measurements as $vn_i => $vs_measurement) {
 			$vs_measurement = trim(preg_replace("![ ]+!", " ", $vs_measurement));
 
@@ -3102,24 +3103,36 @@ function caFileIsIncludable($ps_file) {
 					throw new Exception("Missing or invalid dimensions");
 				} else {
 					$vs_measurement = trim($vo_parsed_measurement->toString());
-					$vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
+					$va_unit_map[] = $vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
 					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
 				}
 			} catch(Exception $e) {
-				if (preg_match("!^([\d\.]+)!", $vs_measurement, $va_matches)) {
+				if (preg_match("!^([\d\. \/]+)!", $vs_measurement, $va_matches)) {
 					$vs_measurement = $va_matches[0]." {$ps_units}";
+                    $va_unit_map[] = null;
 				} else {
 					continue;
 				}
 			}
-			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d\.]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
+			$va_extracted_measurements[] = ['quantity' => trim(preg_replace("![^\d\. \/]+!", "", $vs_measurement)), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
 		}
+		
 		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
 
 		$vn_set_count = 0;
 
 		$va_return = [];
 		foreach($va_extracted_measurements as $vn_i => $va_measurement) {
+		
+		    // reparse those that didn't have specified units
+		    if((!$va_unit_map[$vn_i]) && (($vo_parsed_measurement = caParseLengthDimension($va_measurement['string'])))) {
+                $vs_m = trim($vo_parsed_measurement->toString());
+                $va_measurement = [
+                    'quantity' =>  trim(preg_replace("![^\d\. \/]+!", "", $vs_m)),
+                    'string' => $vs_m,
+                    'units' => caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true])
+                ];
+		    }
 
 			if ($va_measurement['units']) {
 				$vs_measurement = $va_measurement['quantity']." ".$va_measurement['units'];
