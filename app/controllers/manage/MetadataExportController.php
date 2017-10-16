@@ -216,7 +216,7 @@ class MetadataExportController extends ActionController {
 
 		$o_session = $this->getRequest()->getSession();
 
-		if(!($vs_tmp_file = $o_session->getVar('export_file')) || !($vs_tmp_data = $o_session->getVar('export_data'))) {
+		if(!($vs_tmp_file = $o_session->getVar('export_file')) && !($vs_tmp_data = $o_session->getVar('export_data'))) {
 			return; //@todo error handling
 		}
 		if(!($vs_content_type = $o_session->getVar('export_content_type'))) {
