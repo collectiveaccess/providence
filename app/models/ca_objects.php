@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -144,6 +144,16 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'DONT_ALLOW_IN_UI' => true,
 				'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
 				'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the object was deaccessioned.')
+		),
+		'deaccession_disposal_date' => array(
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'START' => 'deaccession_disposal_sdatetime', 'END' => 'deaccession_disposal_edatetime',
+				'LABEL' => _t('Date of disposal'), 'DESCRIPTION' => _t('Enter the date the deaccessioned object was disposed of.')
 		),
 		'deaccession_notes' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
