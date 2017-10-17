@@ -3108,7 +3108,7 @@ function caFileIsIncludable($ps_file) {
 				}
 			} catch(Exception $e) {
 				if (preg_match("!^([\d\. \/]+)!", $vs_measurement, $va_matches)) {
-					$vs_measurement = $va_matches[0]." {$ps_units}";
+					$vs_measurement = $va_matches[0];   // record without units; we'll infer them below
                     $va_unit_map[] = null;
 				} else {
 					continue;
@@ -3124,15 +3124,26 @@ function caFileIsIncludable($ps_file) {
 		$va_return = [];
 		foreach($va_extracted_measurements as $vn_i => $va_measurement) {
 		
-		    // reparse those that didn't have specified units
-		    if((!$va_unit_map[$vn_i]) && (($vo_parsed_measurement = caParseLengthDimension($va_measurement['string'])))) {
-                $vs_m = trim($vo_parsed_measurement->toString());
-                $va_measurement = [
-                    'quantity' =>  trim(preg_replace("![^\d\. \/]+!", "", $vs_m)),
-                    'string' => $vs_m,
-                    'units' => caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true])
-                ];
-		    }
+		    if(!$va_unit_map[$vn_i]) {
+                // reparse those that didn't have specified units
+                if (!($vs_inferred_units = $ps_units)) { $ps_units = "in"; }
+                for($x = $vn_i + 1; $x < sizeof($va_unit_map); $x++) {
+                    if ($va_unit_map[$x]) { $vs_inferred_units = $va_unit_map[$x]; break; }
+                }
+                
+                try {
+                    if($vo_parsed_measurement = caParseLengthDimension($va_measurement['string']." {$vs_inferred_units}")) {
+                        $vs_m = trim($vo_parsed_measurement->toString());
+                        $va_measurement = [
+                            'quantity' =>  trim(preg_replace("![^\d\. \/]+!", "", $vs_m)),
+                            'string' => $vs_m,
+                            'units' => caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true])
+                        ];
+                    }
+                } catch (Exception $e) {
+                    continue; 
+                }
+            }
 
 			if ($va_measurement['units']) {
 				$vs_measurement = $va_measurement['quantity']." ".$va_measurement['units'];
