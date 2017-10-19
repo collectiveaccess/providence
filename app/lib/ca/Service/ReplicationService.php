@@ -81,6 +81,9 @@ class ReplicationService {
 			case 'hasguid':
 				$va_return = self::hasGUID($po_request);
 				break;
+			case 'hasaccess':
+				$va_return = self::hasAccess($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint');
 
@@ -276,58 +279,64 @@ class ReplicationService {
 		}
 
 		$vn_last_applied_log_id = null;
-		$va_log = json_decode($po_request->getRawPostData(), true);
-		if(!is_array($va_log)) { throw new \Exception('log must be array'); }
-		$o_db = new Db();
+		$vn_force_last_applied_log_id = $po_request->getParameter('last_applied_log_id', pInteger);
+		
+		if ($vn_force_last_applied_log_id) {
+		    $vn_last_applied_log_id = $vn_force_last_applied_log_id;
+		} else {
+            $va_log = json_decode($po_request->getRawPostData(), true);
+            if(!is_array($va_log)) { throw new \Exception('log must be array'); }
+            $o_db = new Db();
 
-		// run
-		$va_sanity_check_errors = array();
-		$va_return = array(); $vs_error = null;
+            // run
+            $va_sanity_check_errors = array();
+            $va_return = array(); $vs_error = null;
 
-		foreach($va_log as $vn_log_id => $va_log_entry) {
-			$o_tx = new \Transaction($o_db);
-			try {
-				if ($va_log_entry['SKIP']) { throw new CA\Sync\LogEntry\IrrelevantLogEntry(_t('Skip log entry')); }
-				
-				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
-				$o_log_entry->sanityCheck();
-			} catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
-				// skip log entry (still counts as "applied")
-				$o_tx->rollback();
-				$vn_last_applied_log_id = $vn_log_id;
-				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
-				continue;
-			} catch (\Exception $e) {
-				// append log entry to message for easier debugging
-				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
-				ReplicationService::$s_logger->log("[ERROR] Sanity check error: ".$e->getMessage());
-			}
+            foreach($va_log as $vn_log_id => $va_log_entry) {
+                $o_tx = new \Transaction($o_db);
+                try {
+                    if ($va_log_entry['SKIP']) { throw new CA\Sync\LogEntry\IrrelevantLogEntry(_t('Skip log entry')); }
+                
+                    $o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
+                    $o_log_entry->sanityCheck();
+                } catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
+                    // skip log entry (still counts as "applied")
+                    $o_tx->rollback();
+                    $vn_last_applied_log_id = $vn_log_id;
+                    ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
+                    continue;
+                } catch (\Exception $e) {
+                    // append log entry to message for easier debugging
+                    $va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
+                    ReplicationService::$s_logger->log("[ERROR] Sanity check error: ".$e->getMessage());
+                }
 
-			// if there were sanity check errors, return them here
-			if(sizeof($va_sanity_check_errors)>0) {
-				$o_tx->rollback();
-				throw new \Exception(join("\n", $va_sanity_check_errors));
-			}
+                // if there were sanity check errors, return them here
+                if(sizeof($va_sanity_check_errors)>0) {
+                    $o_tx->rollback();
+                    throw new \Exception(join("\n", $va_sanity_check_errors));
+                }
 
-			$o_tx = new \Transaction($o_db);
-			try {
-				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
-				$o_log_entry->apply($pa_entry_options);
+                $o_tx = new \Transaction($o_db);
+                try {
+                    $o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
+                    $o_log_entry->apply($pa_entry_options);
 
-				$vn_last_applied_log_id = $vn_log_id;
-			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
-				$o_tx->rollback();
-				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
-				
-				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Apply error: ".$e->getMessage());
-			} catch(\Exception $e) {
-				$vs_error = get_class($e) . ': ' . $e->getMessage() . $e->getTraceAsString() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
-				$o_tx->rollback();
-				ReplicationService::$s_logger->log("[ERROR] Apply error: ".$e->getMessage());
-				break;
-			}
-			$o_tx->commit();
-		}
+                    $vn_last_applied_log_id = $vn_log_id;
+                } catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
+                    $o_tx->rollback();
+                    $vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
+                
+                    ReplicationService::$s_logger->log("[IrrelevantLogEntry] Apply error: ".$e->getMessage());
+                } catch(\Exception $e) {
+                    $vs_error = get_class($e) . ': ' . $e->getMessage() . $e->getTraceAsString() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
+                    $o_tx->rollback();
+                    ReplicationService::$s_logger->log("[ERROR] Apply error: ".$e->getMessage());
+                    break;
+                }
+                $o_tx->commit();
+            }
+        }
 
 		if($vn_last_applied_log_id) {
 			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
@@ -458,6 +467,32 @@ class ReplicationService {
 				if (!($va_results[$vs_guid] = ca_guids::getInfoForGUID($vs_guid))) {
 					$va_results[$vs_guid] = '???';
 				}
+			}
+		}
+		return $va_results;
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function hasAccess($po_request) {
+		if($po_request->getRequestMethod() === 'POST') { 
+			$va_guids_to_check = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$va_guids_to_check = explode(";", $po_request->getParameter('guids', pString));
+		}
+		$va_access = explode(";", $po_request->getParameter('access', pString));
+		if ((!is_array($va_guids_to_check) || !sizeof($va_guids_to_check)) && ($vs_guid = $po_request->getParameter('guid', pString))) {
+			$va_guids_to_check = [$vs_guid];
+		}
+		
+		$va_results = [];
+		if(is_array($va_guids_to_check)) {
+			foreach($va_guids_to_check as $vs_guid) {
+			    $vn_access_for_guid = ca_guids::getAccessForGUID($vs_guid, $va_access);
+			    $va_results[$vs_guid] = is_null($vn_access_for_guid) ? '?' : (in_array($vn_access_for_guid, $va_access) ? 1 : 0);
 			}
 		}
 		return $va_results;

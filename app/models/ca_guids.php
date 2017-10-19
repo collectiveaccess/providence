@@ -234,6 +234,7 @@ class ca_guids extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 * Get row id and table num for given GUID
+	 *
 	 * @param string $ps_guid
 	 * @param array $pa_options
 	 * @return array|null
@@ -254,6 +255,84 @@ class ca_guids extends BaseModel {
 		if($qr_guid->nextRow()) {
 			return $qr_guid->getRow();
 		}
+
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return access value for row identified by GUID
+	 *
+	 * @param string $ps_guid
+	 * @param array $pa_options
+	 * @return int|null
+	 */
+	public static function getAccessForGUID($ps_guid, $pa_access, $pa_options=null) {
+		/** @var Transaction $o_tx */
+		if($o_tx = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db($ps_guid);
+		}
+		
+		if (!($va_info = self::getInfoForGUID($ps_guid))) { return null; }
+
+        $o_dm = Datamodel::load();
+        
+        if ($o_dm->getTableName($va_info['table_num']) == 'ca_object_lots') {   //TODO: make tables for which we should ignore access configurable
+            return true;
+        } elseif ($o_dm->isLabel($va_info['table_num'])) {
+            if ($t_label = $o_dm->getInstanceByTableNum($va_info['table_num'], true)) {
+                if (($t_subject = $t_label->getSubjectTableInstance()) && $t_subject->hasField('access')) {
+                    $return = in_array($t_subject->get('access'), $pa_access);
+                }
+                return true;
+            }
+        } elseif ($o_dm->isRelationship($va_info['table_num'])) {
+            if ($t_rel = $o_dm->getInstanceByTableNum($va_info['table_num'], true)) {
+                $t_left = $t_rel->getLeftTableInstance();
+                $t_right = $t_rel->getRightTableInstance();
+                
+                $t_rel->load($va_info['row_id']);
+            
+                $vb_left = $vb_right = null;
+                if ($t_left->hasField('access') && ($t_left->load($t_rel->get($t_rel->getLeftTableFieldName())))) {
+                    $vb_left = in_array($t_left->get('access'), $pa_access);
+                }
+                if ($t_right->hasField('access') && ($t_right->load($t_rel->get($t_rel->getRightTableFieldName())))) {
+                    $vb_right = in_array($t_right->get('access'), $pa_access);
+                }
+                if (($vb_left === false) || ($vb_right === false)) { return false; }
+                if (is_null($vb_left) && is_null($vb_right)) { return null; }
+                return true;
+            }
+        } elseif(in_array($va_info['table_num'], [3,4])) {
+            if ($va_info['table_num'] == 3) {
+                $t_attr_val = new ca_attribute_values($va_info['row_id']);
+                $t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+            } else {
+                $t_attr = new ca_attributes($va_info['row_id']);
+            }
+            $vn_table_num = $t_attr->get('table_num');
+            $vn_row_id = $t_attr->get('row_id');
+            
+            if (!$o_dm->getFieldInfo($vn_table_num, 'access')) { return null; }
+            $qr_guid = $o_db->query('
+                SELECT access FROM '.$o_dm->getTableName($vn_table_num)." WHERE ".$o_dm->primaryKey($vn_table_num).' = ?
+            ', [$vn_row_id]);
+
+            if($qr_guid->nextRow()) {
+                return in_array((int)$qr_guid->get('access'), $pa_access);
+            }
+        } else {
+            if (!$o_dm->getFieldInfo($va_info['table_num'], 'access')) { return null; }
+            $qr_guid = $o_db->query('
+                SELECT access FROM '.$o_dm->getTableName($va_info['table_num'])." WHERE ".$o_dm->primaryKey($va_info['table_num']).' = ?
+            ', [$va_info['row_id']]);
+
+            if($qr_guid->nextRow()) {
+                return in_array((int)$qr_guid->get('access'), $pa_access);
+            }
+        }
 
 		return null;
 	}
