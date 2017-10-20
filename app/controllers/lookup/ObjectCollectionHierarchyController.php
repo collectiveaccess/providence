@@ -345,10 +345,10 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 				$vn_item_count = $qr_children->numRows();
 
-				$qr_children->seek($vn_start);
+				//$qr_children->seek($vn_start);
 				$va_item_ids = [];
 				
-				$qr_children = caMakeSearchResult($vs_table, $qr_children->getAllFieldValues($vs_pk));
+				$qr_children = caMakeSearchResult($vs_table, array_slice($qr_children->getAllFieldValues($vs_pk), $vn_start, $vn_max_items_per_page));
 				while($qr_children->nextHit()) {
 					$va_tmp = array(
 						$vs_pk => $vn_id = $qr_children->get($vs_table.'.'.$vs_pk),
