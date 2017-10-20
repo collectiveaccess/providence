@@ -199,7 +199,8 @@ class Replicator {
 				
 print "START REP AT $pn_replicated_log_id\n";
 				$pn_start_replicated_id = $pn_replicated_log_id;
-				
+				$vn_retry_count = 0;
+				$vn_max_retry_count = 1;
 				$pb_ok = true;
 				$vn_last_log_id = null;
 				while(true) { // use chunks of 10 entries until something happens (success/err)
@@ -244,7 +245,7 @@ print "START REP AT $pn_replicated_log_id\n";
 											->setRequestBody($z=array_unique(array_merge(caExtractArrayValuesFromArrayOfArrays($va_source_log_entries, 'guid'), array_keys($va_subject_guids))))
 											->request();
 						$va_access_by_guid = $o_access_by_guid->getRawData();
-
+print_r($va_access_by_guid);
 					    $va_filtered_log_entries = [];
 						$va_source_log_entries_for_missing_guids = [];
 						$va_source_log_entries_for_missing_guids_seen_guids = [];
@@ -422,21 +423,27 @@ print "START REP AT $pn_replicated_log_id\n";
 					if (is_array($va_filtered_log_entries)) {
 					    if (sizeof($va_filtered_log_entries) == 0) { 
 					        // All entries where filtered, so get another batch and try again
-					        //print "SET LOG POINTER TO $pn_replicated_log_id\n";
-					        $o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
-                                ->addGetParameter('system_guid', $vs_source_system_guid)
-                                ->addGetParameter('last_applied_log_id', $vn_last_log_id)
-                                ->setRequestBody([])
-                                ->request();
-                            $va_response_data = $o_resp->getRawData();
+						$va_last_log_entry = array_pop($va_source_log_entries);
+					       // $o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
+                          //       ->addGetParameter('system_guid', $vs_source_system_guid)
+//                                 //->addGetParameter('last_applied_log_id', $va_last_log_entry['log_id'])
+//                                 ->setRequestBody([])
+//                                 ->request();
+//                             $va_response_data = $o_resp->getRawData();
+//                             
+//                             
+//                             if (!$o_resp->isOk() || !isset($va_response_data['replicated_log_id'])) {
+//                                 $this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
+// 
+// 						        $pn_replicated_log_id = $vn_last_log_id + 1;
+//                             } else {
+//                                 $pn_replicated_log_id = ((int) $va_response_data['replicated_log_id']) + 1;
+//                             }
+                            $pn_replicated_log_id = $va_last_log_entry['log_id'] + 1;
                             
-                            if (!$o_resp->isOk() || !isset($va_response_data['replicated_log_id'])) {
-                                $this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
-
-						        $pn_replicated_log_id = $vn_last_log_id + 1;
-                            } else {
-                                $pn_replicated_log_id = ((int) $va_response_data['replicated_log_id']) + 1;
-                            }
+					        print "SET LOG POINTER TO $pn_replicated_log_id ".date(DATE_RFC2822, $va_last_log_entry['log_datetime'])."\n";
+					        
+				            $vn_retry_count = 0;
 					        continue; 
 					    }
 					    $va_source_log_entries = $va_filtered_log_entries;
@@ -467,14 +474,28 @@ print "START REP AT $pn_replicated_log_id\n";
 					$va_response_data = $o_resp->getRawData();
 					//print_r($va_response_data);
 					if (!$o_resp->isOk() || !isset($va_response_data['replicated_log_id'])) {
+					    print "[RETRY=$vn_retry_count] ERROR! Response was ";
+					    //print_R($va_response_data);
+					    //print_R($va_source_log_entries);
+					    //print_R($o_resp);
 						$this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
-						$pb_ok = false;
-						break;
+						
+						$vn_retry_count++;
+						
+						if ($vn_retry_count >= $vn_max_retry_count) {
+						    $pb_ok = false;
+						    break;
+						}
+						continue;
 					} else {
+					    
+				        $vn_retry_count = 0;
+					    //print_R($va_response_data);
+					    //print_R($va_source_log_entries);
 						$pn_replicated_log_id = ((int) $va_response_data['replicated_log_id']) + 1;
-					    //print "[x] SET LOG POINTER TO $pn_replicated_log_id\n";
 						$this->log(_t("Chunk sync for source %1 and target %2 successful.", $vs_source_key, $vs_target_key), Zend_Log::DEBUG);
 						$va_last_log_entry = array_pop($va_source_log_entries);
+					    print "[x] SET LOG POINTER TO $pn_replicated_log_id ".date(DATE_RFC2822, $va_last_log_entry['log_datetime'])."\n";
 						$this->log(_t("Last replicated log ID is: %1 (%2)", $va_response_data['replicated_log_id'], date(DATE_RFC2822, $va_last_log_entry['log_datetime'])), Zend_Log::DEBUG);
 					}
 

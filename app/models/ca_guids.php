@@ -278,7 +278,7 @@ class ca_guids extends BaseModel {
 
         $o_dm = Datamodel::load();
         
-        if ($o_dm->getTableName($va_info['table_num']) == 'ca_object_lots') {   //TODO: make tables for which we should ignore access configurable
+        if (in_array($o_dm->getTableName($va_info['table_num']), ['ca_object_lots', 'ca_object_lot_labels', 'ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels'])) {   //TODO: make tables for which we should ignore access configurable
             return true;
         } elseif ($o_dm->isLabel($va_info['table_num'])) {
             if ($t_label = $o_dm->getInstanceByTableNum($va_info['table_num'], true)) {
@@ -315,7 +315,10 @@ class ca_guids extends BaseModel {
             $vn_table_num = $t_attr->get('table_num');
             $vn_row_id = $t_attr->get('row_id');
             
-            if (!$o_dm->getFieldInfo($vn_table_num, 'access')) { return null; }
+            // TODO: make configurable
+            if(in_array($o_dm->getTableName($vn_table_num), ['ca_object_lots', 'ca_object_lot_labels', 'ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels']))  { return true; }
+            
+            if (!$o_dm->getFieldInfo($vn_table_num, 'access')) { return false; }        // TODO: support attributes on non-acess control tables (eg. config tables; interstitial attributes on relationships)
             $qr_guid = $o_db->query('
                 SELECT access FROM '.$o_dm->getTableName($vn_table_num)." WHERE ".$o_dm->primaryKey($vn_table_num).' = ?
             ', [$vn_row_id]);
@@ -323,6 +326,20 @@ class ca_guids extends BaseModel {
             if($qr_guid->nextRow()) {
                 return in_array((int)$qr_guid->get('access'), $pa_access);
             }
+            return false;
+        } elseif(in_array($va_info['table_num'], [105])) {
+            
+                $qr_guid = $o_db->query("
+                    SELECT s.access 
+                    FROM ca_set_items t
+                    INNER JOIN ca_sets AS s ON s.set_id = t.set_id
+                    WHERE t.item_id = ?
+                ", [$va_info['row_id']]);
+
+                if($qr_guid->nextRow()) {
+                    return in_array((int)$qr_guid->get('access'), $pa_access); 
+                }
+                return false;
         } else {
             if (!$o_dm->getFieldInfo($va_info['table_num'], 'access')) { return null; }
             $qr_guid = $o_db->query('

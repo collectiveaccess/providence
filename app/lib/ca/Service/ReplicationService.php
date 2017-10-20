@@ -279,11 +279,11 @@ class ReplicationService {
 		}
 
 		$vn_last_applied_log_id = null;
-		$vn_force_last_applied_log_id = $po_request->getParameter('last_applied_log_id', pInteger);
+		//$vn_force_last_applied_log_id = $po_request->getParameter('last_applied_log_id', pInteger);
 		
-		if ($vn_force_last_applied_log_id) {
-		    $vn_last_applied_log_id = $vn_force_last_applied_log_id;
-		} else {
+		//if ($vn_force_last_applied_log_id) {
+		//    $vn_last_applied_log_id = $vn_force_last_applied_log_id;
+		//} else {
             $va_log = json_decode($po_request->getRawPostData(), true);
             if(!is_array($va_log)) { throw new \Exception('log must be array'); }
             $o_db = new Db();
@@ -335,7 +335,7 @@ class ReplicationService {
                     break;
                 }
                 $o_tx->commit();
-            }
+           // }
         }
 
 		if($vn_last_applied_log_id) {
