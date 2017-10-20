@@ -1187,7 +1187,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			/* EXIF */
 			if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			    $va_exif_data = exif_read_data($ps_filepath, 'IFD0', true, false);
+			    $va_exif_data = @exif_read_data($ps_filepath, 'IFD0', true, false);
 			    $vn_exif_size = strlen(print_R($va_exif_data, true));
 				if (($vn_exif_size <= $this->opo_config->get('dont_use_exif_read_data_if_larger_than')) && (is_array($va_exif = caSanitizeArray($va_exif_data)))) { $va_metadata['EXIF'] = $va_exif; }
 			}
