@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -284,18 +284,4 @@ class BrowseCache {
 		ExternalCache::save("browse_global_{$ps_param}", $pm_value, 'Browse');
 	}
 	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	/*static public function _writeBrowseCacheToDisk() {
-		if (is_array(BrowseCache::$s_data )) {
-			$o_cache =  BrowseCache::_getCacheObject();
-			foreach(BrowseCache::$s_data as $vs_cache_key => $va_cached_data) {
-				$o_cache->save($va_cached_data, $vs_cache_key, array('ca_browse_cache'));
-			}
-		}
-	}*/
-	# ------------------------------------------------------
 }
-
-//register_shutdown_function("BrowseCache::_writeBrowseCacheToDisk");

@@ -3775,3 +3775,22 @@ function caFileIsIncludable($ps_file) {
 	    return $va_ret;
 	}
 	# ----------------------------------------
+	/**
+	 * Fast (well... faster) implementation of array_intersect()
+	 *
+	 * @param array $array1
+	 * @param array $array2
+	 *
+	 * @return array
+	 */
+	function caFastArrayIntersect($array1, $array2) {
+	    $index = array_flip($array1);
+        foreach ($array2 as $value) {
+            if (isset($index[$value])) unset($index[$value]);
+        }
+        foreach ($index as $value => $key) {
+            unset($array1[$key]);
+        }
+        return $array1;
+	}
+	# ----------------------------------------

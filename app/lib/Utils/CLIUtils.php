@@ -4323,4 +4323,40 @@
 			return _t("Import media from a directory or directory tree.");
 		}
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function rebuild_browse_index($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/Browse/BrowseManager.php");
+			
+			BrowseManager::reindex();
+			
+			CLIUtils::addMessage(_t("Reindexed browse"));
+		}
+		# -------------------------------------------------------
+		public static function rebuild_browse_indexParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_browse_indexUtilityClass() {
+			return _t('Browse');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_browse_indexShortHelp() {
+			return _t('Index for browse.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_browse_indexHelp() {
+			return _t('Index for browse.');
+		}
 	}
