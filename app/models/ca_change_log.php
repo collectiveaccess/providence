@@ -376,6 +376,12 @@ class ca_change_log extends BaseModel {
 				// attributes and elements on the far side of the sync and the primary key doesn't cut it
 				foreach($va_snapshot as $vs_fld => $vm_val) {
 					switch($vs_fld) {
+						case 'source_info':
+						    if (($vn_s = sizeof($va_snapshot['source_info'])) > 1000) {
+						        ReplicationService::$s_logger->log("[".$qr_results->get('log_id')."] LARGE SOURCE INFO ($vn_s) FOUND IN $vs_table_name");
+						    }
+						    $va_snapshot['source_info'] = '';       // this field should be blank but in older systems may have a ton of junk data
+						    break;
 						case 'element_id':
 							if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
 								goto deflabel;
