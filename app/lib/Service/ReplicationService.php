@@ -81,6 +81,9 @@ class ReplicationService {
 			case 'hasguid':
 				$va_return = self::hasGUID($po_request);
 				break;
+			case 'hasaccess':
+				$va_return = self::hasAccess($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint');
 
@@ -458,6 +461,32 @@ class ReplicationService {
 				if (!($va_results[$vs_guid] = ca_guids::getInfoForGUID($vs_guid))) {
 					$va_results[$vs_guid] = '???';
 				}
+			}
+		}
+		return $va_results;
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function hasAccess($po_request) {
+		if($po_request->getRequestMethod() === 'POST') { 
+			$va_guids_to_check = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$va_guids_to_check = explode(";", $po_request->getParameter('guids', pString));
+		}
+		$va_access = explode(";", $po_request->getParameter('access', pString));
+		if ((!is_array($va_guids_to_check) || !sizeof($va_guids_to_check)) && ($vs_guid = $po_request->getParameter('guid', pString))) {
+			$va_guids_to_check = [$vs_guid];
+		}
+		
+		$va_results = [];
+		if(is_array($va_guids_to_check)) {
+			foreach($va_guids_to_check as $vs_guid) {
+			    $vn_access_for_guid = ca_guids::getAccessForGUID($vs_guid, $va_access);
+			    $va_results[$vs_guid] = is_null($vn_access_for_guid) ? '?' : (in_array($vn_access_for_guid, $va_access) ? 1 : 0);
 			}
 		}
 		return $va_results;

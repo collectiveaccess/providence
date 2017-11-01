@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -333,58 +333,6 @@ class ca_change_log extends BaseModel {
 				{$vs_table_filter_subject_sql})
 				{$vs_limit_sql}
 			", [$ps_for_guid, $ps_for_guid]);
-			
-			// is GUID for ca_attributes?
-			if (($qr_results->numRows() == 0) && is_array($va_guid_info = ca_guids::getInfoForGUID($ps_for_guid)) && ($va_guid_info['table_num'] == 4)) {
-				// Synthesize an insert record for this based upon existing row
-				$t_attr = new ca_attributes($va_guid_info['row_id']);
-				if ($t_attr->isLoaded()) {
-					
-					$qr_log_start = $o_db->query("
-						SELECT log_id 
-						FROM ca_change_log
-						WHERE
-							changetype = 'I' AND logged_table_num = ? AND logged_row_id = ?
-					", [$t_attr->get('table_num'), $t_attr->get('row_id')]);
-					if ($qr_log_start->nextRow()) {
-						$vn_log_start = $qr_log_start->get('log_id');
-						$va_ret[$vn_log_start] = [
-							'SYN' => true,
-							'i' => $vn_log_start,
-							'log_id' => $vn_log_start,
-							'log_datetime' => time(),
-							'user_id' => null,
-							'changetype' => 'I',
-							'logged_table_num' => 4,
-							'logged_row_id' => $va_guid_info['row_id'],
-							'rolledback' => 0,
-							'unit_id' => null,
-							'batch_id' => null,
-							'snapshot' => [
-								'attribute_id' => $t_attr->getPrimaryKey(),
-								'element_id' => $t_attr->get('element_id'),
-								'element_code' => ca_metadata_elements::getElementCodeForId($t_attr->get('element_id')),
-								'element_id_guid' => ca_guids::getForRow(42,$t_attr->get('element_id')),
-								'locale_id' => $t_attr->get('locale_id'),
-								'locale_id_guid' => ca_guids::getForRow(37, $t_attr->get('locale_id')),
-								'table_num' => $t_attr->get('table_num'),
-								'row_id' => $t_attr->get('row_id'),
-								'row_guid' => ca_guids::getForRow($t_attr->get('table_num'), $t_attr->get('row_id'))
-							],
-							'guid' => $ps_for_guid,
-							'subjects' => [
-								0 => [
-									'log_id' => $vn_log_start,
-									'subject_table_num' => $vs_n = $t_attr->get('table_num'),
-									'subject_row_id' => $vn_r = $t_attr->get('row_id'),
-									'guid' => ca_guids::getForRow($vs_n, $vn_r)
-								]
-							]
-						];
-					}	
-				}
-				return $va_ret;
-			} 
 		} else {		
 			if(sizeof($va_only_tables)) {
 				$vs_table_filter_sql = 'AND cl.logged_table_num IN (' . join(',', $va_only_tables) . ')';
@@ -428,6 +376,12 @@ class ca_change_log extends BaseModel {
 				// attributes and elements on the far side of the sync and the primary key doesn't cut it
 				foreach($va_snapshot as $vs_fld => $vm_val) {
 					switch($vs_fld) {
+						case 'source_info':
+						    if (($vn_s = sizeof($va_snapshot['source_info'])) > 1000) {
+						        ReplicationService::$s_logger->log("[".$qr_results->get('log_id')."] LARGE SOURCE INFO ($vn_s) FOUND IN $vs_table_name");
+						    }
+						    $va_snapshot['source_info'] = '';       // this field should be blank but in older systems may have a ton of junk data
+						    break;
 						case 'element_id':
 							if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
 								goto deflabel;
@@ -465,7 +419,7 @@ class ca_change_log extends BaseModel {
 								goto deflabel;
 							} elseif($t_instance) {
 								if($t_instance instanceof BaseRelationshipModel) {
-									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { continue(2); }
+									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { $va_snapshot = ['SKIP' => true]; continue(2); }
 								} elseif($t_instance instanceof BaseModel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 

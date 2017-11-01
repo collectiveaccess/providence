@@ -408,6 +408,19 @@ class Datamodel {
 		return null;
 	}
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * Determines if table with number equal to $pn_tablenum is a label table
+	 *
+	 * @param int $pn_tablenum Table number
+	 * @return string Value of property or null if $pn_tablenum is invalid
+	 */
+	static public function isLabel($pn_tablenum) {
+		if ($t_instance = Datamodel::getInstanceByTableNum($pn_tablenum, true)) {
+			return is_a($t_instance, 'BaseLabel');
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
 	# 
 	# --------------------------------------------------------------------------------------------
 	/**
