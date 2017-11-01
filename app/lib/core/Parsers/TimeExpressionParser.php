@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2016 Whirl-i-Gig
+ * Copyright 2006-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,7 +247,23 @@ class TimeExpressionParser {
 			switch($vn_state) {
 				# -------------------------------------------------------
 				case TEP_STATE_BEGIN:
-					switch($va_token['type']) {
+					switch($va_token['type']) {						
+						# ----------------------
+						case TEP_TOKEN_RANGE_CONJUNCTION:
+							$this->getToken();
+							if ($va_date = $this->_parseDateExpression()) {
+								$va_dates['start'] = array(
+									'month' => null, 'day' => null, 
+									'year' => TEP_START_OF_UNIVERSE,
+									'hours' => null, 'minutes' => null, 'seconds' => null,
+									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+								);
+								$va_dates['end'] = $va_date;
+								$vn_state = TEP_STATE_ACCEPT;
+								$vb_can_accept = true;
+								break(2);
+							}
+							break;
 						# ----------------------
 						case TEP_TOKEN_INTEGER:
 							// is this a quarter century expression?
@@ -1969,6 +1985,12 @@ class TimeExpressionParser {
 						$pa_dates['end']['month'] = $pa_dates['start']['month']; 
 					}	
 				}
+			}
+			
+			if (($pa_dates['start']['year'] === TEP_START_OF_UNIVERSE) && ($pa_dates['end']['year'] !== TEP_END_OF_UNIVERSE)) {
+				if($pa_dates['end']['month'] === null) { $pa_dates['end']['month'] = 12; }
+				if($pa_dates['end']['day'] === null) { $pa_dates['end']['day'] = 31; }
+				if($pa_dates['end']['year'] === null) { $pa_dates['end']['year'] = date("Y"); }
 			}
 			
 
