@@ -74,6 +74,14 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1999.033123595900");
 		$this->assertEquals($va_parse[0], "-2000000000.000000000000");
 		$this->assertEquals($va_parse[1], "1999.033123595900");	
+		
+		$vb_res = $o_tep->parse('- 1950');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "-2000000000.000000000000");
+		$this->assertEquals($va_parse['end'], "1950.123123595900");
+		$this->assertEquals($va_parse[0], "-2000000000.000000000000");
+		$this->assertEquals($va_parse[1], "1950.123123595900");	
 	}
 	
 	public function testExifDates() {
