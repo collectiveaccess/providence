@@ -1077,7 +1077,7 @@
 				$va_hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
 			
 				if (!($vs_name = ($ps_mode == 'singular') ? $va_hier[$vn_type_id]['name_singular'] : $va_hier[$vn_type_id]['name_plural'])) {
-					$vs_name = '???';
+					$vs_name = mb_strtolower(($ps_mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
 				}
 				return mb_strtolower($vs_name);
 			} else {

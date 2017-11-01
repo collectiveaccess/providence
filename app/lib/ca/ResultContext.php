@@ -84,7 +84,7 @@
 		 * @return string - expression or null if no expression is defined
 		 */
 		public function getSearchExpression($pb_from_context_only=false) {
-			if(!$pb_from_context_only && ($ps_search = urldecode(htmlspecialchars(strip_tags($this->opo_request->getParameter('search', pString))))) != ''){
+			if(!$pb_from_context_only && ($ps_search = urldecode(htmlspecialchars(strip_tags(html_entity_decode($this->opo_request->getParameter('search', pString)))))) != ''){
 				// search specified by request parameter
 				if ($ps_search != $this->getContextValue('expression')) {
 					$this->setContextValue('expression', $ps_search);
@@ -476,7 +476,7 @@
 		 */
 		public function getTypeRestriction(&$pb_type_restriction_has_changed) {
 			$pb_type_restriction_has_changed = false;
-			if (!($pn_type_id = htmlspecialchars($this->opo_request->getParameter('type_id', pString)))) {
+			if (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString))))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
