@@ -23,7 +23,9 @@ CKEDITOR.dialog.add('addMediaDialog', function( editor ) {
             CKEDITOR.dialog.getCurrent().disableButton('ok');
             
             if (l) {
-                var data = jQuery('#camediacontentMediaList').load(editor.config.contentUrl);
+                var data = jQuery('#camediacontentMediaList').load(editor.config.contentUrl, function(e) {
+                    jQuery('#camediacontentMediaList').find("li.mediaItem").first().click();
+                });
                  jQuery('#camediacontentMediaList').off('click', 'li.mediaItem').on('click', 'li.mediaItem', {}, function(e) {
                    selectedMedia = this; 
                    jQuery(selectedMedia).parent().find("li").removeClass('mediaItem-selected');

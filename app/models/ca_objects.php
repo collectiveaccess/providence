@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -144,6 +144,16 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'DONT_ALLOW_IN_UI' => true,
 				'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
 				'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the object was deaccessioned.')
+		),
+		'deaccession_disposal_date' => array(
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'START' => 'deaccession_disposal_sdatetime', 'END' => 'deaccession_disposal_edatetime',
+				'LABEL' => _t('Date of disposal'), 'DESCRIPTION' => _t('Enter the date the deaccessioned object was disposed of.')
 		),
 		'deaccession_notes' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -789,8 +799,12 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
-		$vs_display_template		= caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined'));
-		$vs_history_template		= caGetOption('historyTemplate', $pa_bundle_settings, $vs_display_template);
+		if (is_array($vs_display_template = caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined')))) {
+		    $vs_display_template = caExtractSettingValueByLocale($pa_bundle_settings, 'displayTemplate', $g_ui_locale);
+		}
+		if (is_array($vs_history_template = caGetOption('historyTemplate', $pa_bundle_settings, $vs_display_template))) {
+		     $vs_history_template = caExtractSettingValueByLocale($pa_bundle_settings, 'historyTemplate', $g_ui_locale);
+		}
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code

@@ -34,7 +34,7 @@ rangePreConjunctions = [depuis, après]
 # ???
 rangeConjunctions = [to, -, et, .., through]
 
-dateTimeConjunctions = [at,@]
+dateTimeConjunctions = [à,@]
 
 dateDelimiters = [/,-,.]
 timeDelimiters = [:,.]

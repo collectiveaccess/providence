@@ -1968,7 +1968,12 @@ if (!$pb_omit_editing_info) {
 					$o_dm = $this->getAppDatamodel();
 					if (is_array($va_path = $o_dm->getPath($po_result->tableName(), $t_instance->tableName()))) {
 						$va_path = array_keys($va_path);
-						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types}>";
+						
+						$vs_sort_dir_attr = '';
+						if ($vs_sort_attr = ($vs_sort = caGetOption('sort', $pa_options, null, ['castTo' => 'string'])) ? "sort=\"{$vs_sort}\"" : "") {
+						    $vs_sort_dir_attr = ($vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string'])) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
+						}
+						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
 
 						switch(sizeof($va_path)) {
 							case 3:

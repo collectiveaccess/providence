@@ -1585,6 +1585,8 @@ create table ca_objects
    accession_edatetime            decimal(30,20),
    deaccession_sdatetime          decimal(30,20),
    deaccession_edatetime          decimal(30,20),
+   deaccession_disposal_sdatetime decimal(30,20),
+   deaccession_disposal_edatetime decimal(30,20),
    is_deaccessioned               tinyint                        not null default 0,
    deaccession_notes              text                           not null,
    deaccession_type_id            int unsigned                   null,
@@ -1648,6 +1650,8 @@ create index i_accession_sdatetime on ca_objects(accession_sdatetime);
 create index i_accession_edatetime on ca_objects(accession_edatetime);
 create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
 create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
+create index i_deaccession_disposal_sdatetime on ca_objects(deaccession_disposal_sdatetime);
+create index i_deaccession_disposal_edatetime on ca_objects(deaccession_disposal_edatetime);
 create index i_deaccession_type_id on ca_objects(deaccession_type_id);
 create index i_is_deaccessioned on ca_objects(is_deaccessioned);
 create index i_current_loc_class on ca_objects(current_loc_class);
@@ -6301,7 +6305,7 @@ create index i_field_table_num on ca_sql_search_word_index(field_table_num);
 create index i_field_num on ca_sql_search_word_index(field_num);
 CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, row_id);
 CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
-CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id);
+CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost);
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
 
 
@@ -6872,5 +6876,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 148 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (148, unix_timestamp());
+/* CURRENT MIGRATION: 150 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (150, unix_timestamp());
