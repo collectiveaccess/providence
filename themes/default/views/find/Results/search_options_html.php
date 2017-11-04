@@ -103,7 +103,7 @@ if($vo_result->numHits() > 0) {
 		print "<div class='col'>";
 		$va_views = $this->getVar("views");
 		$vs_current_view = $vo_result_context->getCurrentView();
-		print _t("Layout").": <select name='view' style='width: 100px;'>\n";
+		print _t("Layout").": <select id='view_select' name='view' style='width: 100px;' onchange='caUpdateDisplayList();'>\n";
 		if(is_array($va_views) && sizeof($va_views) > 0){
 			foreach($va_views as $vs_view => $vs_name){
 				print "<option value='".$vs_view."' ".(($vs_view == $vs_current_view) ? "SELECTED='1'" : "").">{$vs_name}</option>\n";
@@ -114,8 +114,9 @@ if($vo_result->numHits() > 0) {
 		
 		print "<div class='col'>";
 		$va_display_lists = $this->getVar("display_lists");
-		
-		print _t("Display").": <select name='display_id' style='width: 100px;'>\n";
+		$va_display_show_only_for_views = $this->getVar('display_show_only_for_views');
+	
+		print _t("Display").": <select id='display_select' name='display_id' style='width: 100px;'>\n";
 		if(is_array($va_display_lists) && sizeof($va_display_lists) > 0){
 			foreach($va_display_lists as $vn_display_id => $vs_display_name){
 				print "<option value='".$vn_display_id."' ".(($vn_display_id == $this->getVar("current_display_list")) ? "SELECTED='1'" : "").">{$vs_display_name}</option>\n";
@@ -146,6 +147,19 @@ if($vo_result->numHits() > 0) {
 	TooltipManager::add('#showResultsEditor', _t("Edit in Spreadsheet"));
 ?>
 <script type="text/javascript">
+    var caDisplayShowMap = <?php print json_encode($va_display_show_only_for_views); ?>;
+    function caUpdateDisplayList() {
+        var view = jQuery('#view_select').val();
+        
+        jQuery('#display_select option').each(function(i) {
+            var display_id = jQuery(this).val();
+            if(caDisplayShowMap[display_id] && (caDisplayShowMap[display_id] instanceof Array) && (caDisplayShowMap[display_id].length > 0) && caDisplayShowMap[display_id].indexOf(view) == -1) {
+                jQuery(this).prop('disabled', true);
+            } else {
+                jQuery(this).prop('disabled', false);
+            }
+        });
+    }
 	function caHandleResultsUIBoxes(mode, action) {
 		var boxes = ['searchOptionsBox', 'searchRefineBox', 'searchToolsBox', 'searchSetsBox'];
 		var showButtons = ['showOptions', 'showRefine', 'showTools', 'showSets'];
@@ -197,4 +211,8 @@ if($vo_result->numHits() > 0) {
 		
 		return false;
 	}
+	
+	jQuery(document).ready(function() { 
+	    caUpdateDisplayList(); 
+	});
 </script>

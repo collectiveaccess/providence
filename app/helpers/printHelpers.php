@@ -506,6 +506,14 @@
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
 		
+		// Get current display list
+		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
+		$t_display = new ca_bundle_displays();
+        foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $pt_related->tableName()])) as $va_display_info) {
+            if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
+            $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
+        }
+		
 		uksort($va_options, 'strnatcasecmp');
 		
 		$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
@@ -549,6 +557,7 @@
 		$t_display = new ca_bundle_displays();
 		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
 		    foreach($va_displays as $vn_display_id => $va_display_info) {
+		        if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('set_item_bundle', $va_display_info['settings']['show_only_in'])) { continue; }
 		        $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];
 		    }
 		}
