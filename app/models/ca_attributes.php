@@ -207,9 +207,10 @@ class ca_attributes extends BaseModel {
 		return $vm_ret;
 	}
 	# -------------------------------------------------------
-
-
-	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+    /**
+     *
+     */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$vn_primary_key = $this->getPrimaryKey();
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
@@ -943,6 +944,15 @@ class ca_attributes extends BaseModel {
 			}
 		}
 		return null;
+	}
+	# -------------------------------------------------------
+    /**
+     * Return maximum size of attribute cache
+     *
+     * @return int
+     */
+	public static function attributeCacheSize() {
+		return self::$s_attribute_cache_size;
 	}
 	# ------------------------------------------------------
 }

@@ -860,7 +860,8 @@ class SearchIndexer extends SearchBase {
 
 						if (method_exists($t_rel, "getApplicableElementCodes")) {
 							if (is_array($va_element_ids = array_keys($t_rel->getApplicableElementCodes(null, false, false))) && sizeof($va_element_ids)) {
-								$va_rel_row_ids = $qr_res->getAllFieldValues($vs_related_pk);
+								$va_rel_row_ids = $qr_res->getAllFieldValues($vs_related_pk, ['limit' => ca_attributes::attributeCacheSize()]); // only pull as many rows as the cache can hold, anything more than that you're just wasting time
+								
 								if(sizeof($va_rel_row_ids) > 0) {
 									ca_attributes::prefetchAttributes($this->opo_db, $vn_related_table_num, $va_rel_row_ids , $va_element_ids);
 								}
