@@ -49,7 +49,7 @@
 	$_SERVER['argc'] = $argc;
 	
 	ob_start();
-	$va_cwd = dirname( __DIR__);                                                                    │
-        require($va_cwd . "/bin/caUtils");
+	$va_cwd = dirname( __DIR__);
+	require($va_cwd . "/bin/caUtils");
 	ob_clean();
 ?>
