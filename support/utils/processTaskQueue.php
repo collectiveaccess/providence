@@ -49,10 +49,7 @@
 	$_SERVER['argc'] = $argc;
 	
 	ob_start();
-	$va_cwd = explode("/", $_SERVER['SCRIPT_FILENAME']);
-	array_pop($va_cwd);
-	array_pop($va_cwd);
-	chdir(join("/", $va_cwd));
-	require(join("/", $va_cwd)."/bin/caUtils");
+	$va_cwd = dirname( __DIR__);                                                                    │
+        require($va_cwd . "/bin/caUtils");
 	ob_clean();
 ?>
