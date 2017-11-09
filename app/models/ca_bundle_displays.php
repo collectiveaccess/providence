@@ -746,7 +746,7 @@ if (!$pb_omit_editing_info) {
 		$pn_user_access = 									caGetOption('access', $pa_options, null); 
 		$pa_access = 										caGetOption('checkAccess', $pa_options, null); 
 		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
-		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
+		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return ($v == '*') ? false : (bool)$v; });
 		
 		$pb_system_only = 									caGetOption('systemOnly', $pa_options, false);
 		
