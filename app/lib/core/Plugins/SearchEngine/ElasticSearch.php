@@ -441,7 +441,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function commitRowIndexing() {
 		if(sizeof($this->opa_index_content_buffer) > 0) {
-			WLPlugSearchEngineElasticSearch::$opa_doc_content_buffer[
+			$this->opa_doc_content_buffer[
 				$this->ops_indexing_subject_tablename.'/'.
 				$this->opn_indexing_subject_row_id
 			] = $this->opa_index_content_buffer;

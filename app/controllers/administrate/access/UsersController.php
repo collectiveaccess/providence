@@ -214,9 +214,10 @@
  		# -------------------------------------------------------
  		public function ListUsers() {
  			AssetLoadManager::register('tableList');
- 			if (($vn_userclass = $this->request->getParameter('userclass', pInteger)) == '') {
+ 			if (!strlen($vn_userclass = $this->request->getParameter('userclass', pString))) {
  				$vn_userclass = $this->request->user->getVar('ca_users_default_userclass');
  			} else {
+ 			    $vn_userclass = (int)$vn_userclass;
  				$this->request->user->setVar('ca_users_default_userclass', $vn_userclass);
  			}
  			if ((!$vn_userclass) || ($vn_userclass < 0) || ($vn_userclass > 255)) { $vn_userclass = 0; }
@@ -446,4 +447,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>
