@@ -877,7 +877,7 @@ if (!$pb_omit_editing_info) {
 			$va_content[_t('Default')] = 0;
 		}
 		
-		$ps_context = caGetOption('context', $pa_options, null); print "c=$ps_context";
+		$ps_context = caGetOption('context', $pa_options, null);
 		foreach($va_available_displays as $vn_display_id => $va_info) {
 		    if ($ps_context && is_array($va_info['settings']['show_only_in']) && sizeof($va_info['settings']['show_only_in']) && !in_array($ps_context, $va_info['settings']['show_only_in'])) { continue; }
 			$va_content[$va_info['name']] = $vn_display_id;

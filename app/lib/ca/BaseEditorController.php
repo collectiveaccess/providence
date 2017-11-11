@@ -619,13 +619,14 @@ class BaseEditorController extends ActionController {
 		}
 
 		$t_display = new ca_bundle_displays();
-		$va_displays = $t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID())));
+		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
 		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
-			if ((!($vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id')))  || !isset($va_displays[$vn_display_id])) {
-				$va_tmp = array_keys($va_displays);
-				$vn_display_id = $va_tmp[0];
-			}
+			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
+		}
+		if (!isset($va_displays[$vn_display_id]) || (!in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
+		    $va_tmp = array_filter($va_displays, function($v) { return in_array('editor_summary', $v['settings']['show_only_in']); });
+		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
 
 		// save where we are in session, for "Save and return" button
@@ -648,7 +649,7 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('display_id', $vn_display_id);
 
 			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
-
+       
 			$va_display_list = array();
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
 				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
@@ -672,8 +673,11 @@ class BaseEditorController extends ActionController {
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
 		} else {
-			$this->view->setVar('display_id', null);
-			$this->view->setVar('placements', array());
+            $va_display_list = $t_display->getDisplayListForResultsEditor($t_subject->tableName(), ['user_id' => $this->request->getUserID()]);
+            
+			$this->view->setVar('display_id', 0);
+			$this->view->setVar('placements', $va_display_list['displayList']);
+			
 		}
 		$this->render('summary_html.php');
 	}
@@ -692,15 +696,16 @@ class BaseEditorController extends ActionController {
 
 
 		$t_display = new ca_bundle_displays();
-		$va_displays = $t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID())));
+		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || (!isset($va_displays[$vn_display_id]))) {
-			if ((!($vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id'))) || !isset($va_displays[$vn_display_id])) {
-				$va_tmp = array_keys($va_displays);
-				$vn_display_id = $va_tmp[0];
-			}
+		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
-
+		if (!isset($va_displays[$vn_display_id]) || (!in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
+		    $va_tmp = array_filter($va_displays, function($v) { return in_array('editor_summary', $v['settings']['show_only_in']); });
+		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
+		}
+		
 		$this->view->setVar('t_display', $t_display);
 		$this->view->setVar('bundle_displays', $va_displays);
 
