@@ -624,7 +624,7 @@ class BaseEditorController extends ActionController {
 		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
-		if (!isset($va_displays[$vn_display_id]) || (!in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
+		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
 		    $va_tmp = array_filter($va_displays, function($v) { return in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
