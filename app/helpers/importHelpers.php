@@ -945,6 +945,8 @@
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
+								} elseif(file_exists($vs_path = ($vs_batch_media_directory.'/'.str_replace("\\", "/", $va_val['media']['media'])))) {	// try to located file in import directory
+									$va_val['media']['media'] = $vs_path;
 								} else {
 									$va_val['media']['media'] = $vs_item;
 								}
