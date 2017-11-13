@@ -507,7 +507,7 @@
 	 */
 	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values) {
 		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => null, 'showOnlyIn' => 'editor_relationship_bundle']);
-		if(!is_array($va_formats) || (sizeof($va_formats) == 0)) { return ''; }
+		if(!is_array($va_formats)) { $va_formats = []; }
 		$vs_pk = $pt_related->primaryKey();
 		
 		$va_ids = [];
@@ -517,9 +517,11 @@
 		}
 		
 		$va_options = [];
-		foreach($va_formats as $vn_ => $va_form_info) {
-			$va_options[$va_form_info['name']] = $va_form_info['code'];
-		}
+		if (sizeof($va_formats) > 0) {
+            foreach($va_formats as $vn_ => $va_form_info) {
+                $va_options[$va_form_info['name']] = $va_form_info['code'];
+            }
+        }
 		
 		// Get current display list
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");

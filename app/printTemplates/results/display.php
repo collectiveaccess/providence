@@ -29,8 +29,14 @@
  * @name PDF display
  * @type omit
  * @pageSize letter
- * @pageOrientation landscape
+ * @pageOrientation portrait
  * @tables ca_objects
+ * 
+ *
+ * @marginTop 0.75in
+ * @marginLeft 0.25in
+ * @marginBottom 0.5in
+ * @marginRight 0.25in
  *
  * ----------------------------------------------------------------------
  */
@@ -45,69 +51,52 @@
 
 	print $this->render("pdfStart.php");
 	print $this->render("header.php");
-	print $this->render("footer.php");
+	#print $this->render("footer.php");
 ?>
 		<div id='body'>
-			<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="0">
 <?php
 
 		$vo_result->seek(0);
 		
-		$i = 0;
 		$vn_line_count = 0;
 		while($vo_result->nextHit()) {
-			$vn_movement_id = $vo_result->get('object_id');
-			
-			($i == 2) ? $i = 0 : "";
+			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
-			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-			<td>
-				<table  width="100%"  cellpadding="0" cellspacing="0" class='summary' style='border:1px solid #ccc;'>
-					<tr style='background-color:#eeeeee;'>
-<?php
-				$i_field = 0;
-				$va_end_array = end($va_display_list);
-				foreach($va_display_list as $vn_placement_id => $va_display_item) {
-
-					$vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true));
-					if (($header_has_ended == "yes") | (($header_has_ended != "yes") && ($i_field == 1))) {
-						print "<td class='label'>".$va_display_item['display']."</td>";
-					} 
-					if (($header_has_ended != "yes") && ($i_field == 0)) {
-						$va_colspan = "colspan='2'";
+			<div class="row">
+			<table>
+			<tr>
+				<td style="width:250px;">
+<?php	
+					if ($va_rep = $vo_result->get('ca_object_representations.media.small', array('scaleCSSWidthTo' => '250px', 'scaleCSSHeightTo' => '200px'))) {
+						print "<div class='objThumb'>".$va_rep."</div>";
 					} else {
-						$va_colspan = "";
+						print "<div class='imageTinyPlaceholder'></div> ";
+						$va_rep = null;
 					}
-					print "<td style='width:250px;' class='value' ".$va_colspan.">".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</td>";
-					$i_field++;
-					if ($i_field == 2) {
-						$header_has_ended = "yes";
-					}
-					if (($header_has_ended == "yes") && ($i_field == 2)) {
-						$i_field = 0;
-					}
-					if (($header_has_ended == "yes") && ($i_field == 0)) {
-						print "</tr><tr>";
-					}
-					if ($va_end_array == $va_display_item) {
-						print "</tr>";
-					}
-					
-				}
-				$header_has_ended = "no";
-?>		
-					
-				</table>
-				<hr>
-			</td>	
+?>				
+				</td>
+				<td>
+					<div class="metaBlock">
+<?php				
+					#print "<div class='title'>".$vo_result->getWithTemplate('^ca_occurrences.preferred_labels.name (^ca_occurrences.idno)')."</div>"; 
+					if (is_array($va_display_list)) {
+                        foreach($va_display_list as $vn_placement_id => $va_display_item) {
+                            if (!strlen($vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true)))) {
+                                if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
+                                $vs_display_value = "&lt;"._t('not defined')."&gt;";
+                            } 
+                            print "<div class='metadata'><span class='displayHeader'>".$va_display_item['display']."</span>: <span class='displayValue' >".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</span></div>";		
+                        }	
+                    }						
+?>
+					</div>				
+				</td>	
 			</tr>
+			</table>	
+			</div>
 <?php
-			$i++;			
-			
 		}
 ?>
-			</table>
-		</div><!-- end body -->
 		</div>
 <?php
 	print $this->render("pdfEnd.php");

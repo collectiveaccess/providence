@@ -487,7 +487,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>sound</name_singular>
-              <name_plural>sounds</name_plural>
+              <name_plural>sound</name_plural>
             </label>
           </labels>
         </item>
@@ -495,7 +495,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>print</name_singular>
-              <name_plural>prints</name_plural>
+              <name_plural>print</name_plural>
             </label>
           </labels>
         </item>
@@ -3007,6 +3007,13 @@
                 <setting name="restrict_to_types">equipment</setting>
                 <setting name="label" locale="en_US">Related Prep Materials/Equipment</setting>
                 <setting name="add_label" locale="en_US">Add prep/equipment</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.serial_number"><br/></ifdef>
+                  ^ca_objects.serial_number<ifdef code="ca_objects.model_number"><br/></ifdef>
+                  ^ca_objects.model_number<br/>
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_art">
@@ -3015,6 +3022,14 @@
                 <setting name="restrict_to_types">art</setting>
                 <setting name="label" locale="en_US">Related Artworks</setting>
                 <setting name="add_label" locale="en_US">Add artworks</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition 
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_archive">
@@ -3033,6 +3048,13 @@
                 <setting name="restrict_to_relationship_types">reproduces</setting>
                 <setting name="label" locale="en_US">Related Bibliographic Entry</setting>
                 <setting name="add_label" locale="en_US">Add bibliographic entry</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.chapter_title"><br/></ifdef>
+                  ^ca_objects.chapter_title<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.pubType"><br/></ifdef>
+                  ^ca_objects.pubType
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_exh">
@@ -3125,6 +3147,13 @@
                 <setting name="restrict_to_types">equipment</setting>
                 <setting name="label" locale="en_US">Related Prep Materials/Equipment</setting>
                 <setting name="add_label" locale="en_US">Add prep/equipment</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.serial_number"><br/></ifdef>
+                  ^ca_objects.serial_number<ifdef code="ca_objects.model_number"><br/></ifdef>
+                  ^ca_objects.model_number<br/>
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_archive">
@@ -3141,6 +3170,13 @@
                 <setting name="restrict_to_types">book</setting>
                 <setting name="label" locale="en_US">Related Bibliographic Entry</setting>
                 <setting name="add_label" locale="en_US">Add bibliographic entry</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.chapter_title"><br/></ifdef>
+                  ^ca_objects.chapter_title<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.pubType"><br/></ifdef>
+                  ^ca_objects.pubType
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3182,6 +3218,14 @@
                 <setting name="restrict_to_types">art</setting>
                 <setting name="label" locale="en_US">Original Use (Related Artwork)</setting>
                 <setting name="add_label" locale="en_US">Add artwork</setting>
+                 <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition 
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_serial_number">
@@ -3279,6 +3323,14 @@
                 <setting name="restrict_to_types">art</setting>
                 <setting name="label" locale="en_US">Related Artwork</setting>
                 <setting name="add_label" locale="en_US">Add artwork</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition 
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_archive">
@@ -3295,6 +3347,13 @@
                 <setting name="restrict_to_types">book</setting>
                 <setting name="label" locale="en_US">Related Bibliographic Entry</setting>
                 <setting name="add_label" locale="en_US">Add bibliographic entry</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.chapter_title"><br/></ifdef>
+                  ^ca_objects.chapter_title<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.pubType"><br/></ifdef>
+                  ^ca_objects.pubType
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
              <placement code="ca_attribute_edition">
@@ -3373,6 +3432,14 @@
               <settings>
                 <setting name="restrict_to_types">art</setting>
                 <setting name="label" locale="en_US">Related Artworks</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition 
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_internal_notes">
@@ -3469,10 +3536,15 @@
               <settings>
                 <setting name="restrict_to_types">exhibition</setting>
                 <setting name="label" locale="en_US">Related Exhibitions</setting>
+                 <setting name="display_template"><![CDATA[
+                  <unit relativeTo="ca_occurrences"><l>^ca_occurrences.preferred_labels</l>
+ <unit relativeTo="ca_entities" delimiter="; ">^ca_entities.preferred_labels.displayname ^ca_entities_x_occurrences.venue_date</unit><unit>
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_loans">
-              <bundle>ca_occurrences</bundle>
+              <bundle>ca_loans</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Loans</setting>
               </settings>
@@ -3532,6 +3604,14 @@
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Objects/Items</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition 
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
            <placement code="ca_events">
@@ -3713,6 +3793,14 @@
                 <setting name="restrict_to_types">equipment</setting>
                 <setting name="restrict_to_relationship_types">included</setting>
                 <setting name="label" locale="en_US">Exhibited Items</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition 
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_book">
@@ -3723,6 +3811,13 @@
                 <setting name="restrict_to_relationship_types">published</setting>
                 <setting name="label" locale="en_US">Related Bibliographic Entry</setting>
                 <setting name="add_label" locale="en_US">Add bibliographic entry</setting>
+                 <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.chapter_title"><br/></ifdef>
+                  ^ca_objects.chapter_title<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.pubType"><br/></ifdef>
+                  ^ca_objects.pubType
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_internal_notes">
@@ -3933,6 +4028,20 @@
             </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l> (^ca_objects.type_id)<ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition <ifdef code="ca_objects.chapter_title"><br/></ifdef>
+                  ^ca_objects.chapter_title<ifdef code="ca_objects.pubType"><br/></ifdef>
+                  ^ca_objects.pubType<ifdef code="ca_objects.serial_number"><br/></ifdef>
+                  ^ca_objects.serial_number<ifdef code="ca_objects.model_number"><br/></ifdef>
+                  ^ca_objects.model_number<br/>
+                ]]></setting>
+                <setting name="list_format">list</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -4363,6 +4472,14 @@
                 <setting name="restrict_to_types">prep</setting>
                 <setting name="restrict_to_types">equipment</setting>
                 <setting name="label" locale="en_US">Loaned Items</setting>
+                <setting name="display_template"><![CDATA[
+                  <l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"><br/></ifdef>
+                  ^ca_objects.idno<ifdef code="ca_objects.date"><br/></ifdef>
+                  ^ca_objects.date<ifdef code="ca_objects.work_type"><br/></ifdef>
+                  ^ca_objects.work_type<ifdef code="ca_objects.edition"><br/></ifdef>
+                  ^ca_objects.edition 
+                ]]></setting>
+                <setting name="list_format">list</setting>
               </settings>
             </placement>
              <placement code="ca_attribute_date">
@@ -5225,6 +5342,74 @@
     </relationshipTable>
   </relationshipTypes>
   <displays>
+    <display code="export" type="ca_objects" system="1" typeRestrictions="art,archival,book,equipment,prep" includeSubtypes="0">
+      <labels>
+        <label locale="en_US">
+          <name>Export </name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values"><![CDATA[0]]></setting>
+        <setting name="bottom_line"><![CDATA[]]></setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="ca_objects_preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="ca_objects_idno">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Identifier</setting>
+          </settings>
+        </placement>
+        <placement code="ca_objects_description">
+          <bundle>ca_objects.description</bundle>
+        </placement>
+        <placement code="ca_objects_date">
+          <bundle>ca_objects.date</bundle>
+        </placement>
+        <placement code="ca_objects_work_type">
+          <bundle>ca_objects.work_type</bundle>
+        </placement>
+        <placement code="ca_objects_edition">
+          <bundle>ca_objects.edition</bundle>
+        </placement>
+        <placement code="ca_objects_model_number">
+          <bundle>ca_objects.model_number</bundle>
+        </placement>
+        <placement code="ca_objects_related">
+          <bundle>ca_objects.related</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Original Use</setting>
+            <setting name="format"><![CDATA[]]></setting>
+            <setting name="delimiter"><![CDATA[]]></setting>
+            <setting name="sort"><![CDATA[]]></setting>
+            <setting name="show_hierarchy"><![CDATA[0]]></setting>
+            <setting name="remove_first_items"><![CDATA[0]]></setting>
+            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
+            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
+            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
+          </settings>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Entities</setting>
+            <setting name="format"><![CDATA[^ca_entities.preferred_labels.displayname]]></setting>
+            <setting name="delimiter"><![CDATA[; ]]></setting>
+            <setting name="sort"><![CDATA[]]></setting>
+            <setting name="show_hierarchy"><![CDATA[0]]></setting>
+            <setting name="remove_first_items"><![CDATA[0]]></setting>
+            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
+            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
+            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
     <display code="artwork" type="ca_objects" system="1" typeRestrictions="art">
       <labels>
         <label locale="en_US">
@@ -5257,14 +5442,12 @@
           <bundle>ca_objects.dimensions</bundle>
           <settings>
             <setting name="format"><![CDATA[
-                  <unit relativeTo="ca_objects.dimensions">^ca_objects.dimensions.dimensions_height<ifdef code="dimensions_width"> x </ifdef>^ca_objects.dimensions.dimensions_width<ifdef code="dimensions_depth"> x </ifdef>^ca_objects.dimensions.dimensions_depth</unit>
-]]></setting>
-            <setting name="dependentValueTemplate"><![CDATA[^dimensions_height~units:infrac<ifdef code="dimensions_width"> x </ifdef>^dimensions_width~units:infrac<ifdef code="dimensions_depth"> x </ifdef>^dimensions_depth~units:infrac <ifdef code="dimensions_height">(</ifdef>^dimensions_height~units:cm<ifdef code="dimensions_width"> x </ifdef>^dimensions_width~units:cm<ifdef code="dimensions_depth"> x </ifdef>^dimensions_depth~units:cm<ifdef code="dimensions_height">)</ifdef>]]></setting>
-            
+                  <unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.dimensions_height<ifdef code="ca_objects.dimensions.dimensions_width"> x </ifdef>^ca_objects.dimensions.dimensions_width<ifdef code="ca_objects.dimensions.dimensions_depth"> x </ifdef>^ca_objects.dimensions.dimensions_depth ^ca_objects.dimensions.dimensions_type</unit>
+]]></setting> 
           </settings>
         </placement>
         <placement code="ca_attribute_materials">
-          <bundle>ca_objects.v</bundle>
+          <bundle>ca_objects.materials</bundle>
         </placement>
         <placement code="ca_attribute_work_type">
           <bundle>ca_objects.work_type</bundle>
@@ -5273,6 +5456,7 @@
           <bundle>ca_entities</bundle>
           <settings>
             <setting name="label" locale="en_US">Related Entities</setting>
+            <setting name="format"><![CDATA[^ca_entities.preferred_labels.displayname]]></setting>
             <setting name="delimiter">; </setting>
           </settings>
         </placement>
@@ -5304,16 +5488,85 @@
           <bundle>ca_objects.serial_number</bundle>
         </placement>
         <placement code="ca_attribute_equipment_date">
-          <bundle>ca_objects.equipment_date.equipment_date_value</bundle>
+          <bundle>ca_objects.equipment_date</bundle>
+          <settings>
+            <setting name="format"><![CDATA[
+                  <unit relativeTo="ca_objects.equipment_date" delimiter="; ">^ca_objects.equipment_date.equipment_date_value ^ca_objects.equipment_date.equipment_date_type</unit>
+                  ]]></setting>
+          </settings>
+        </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Original Use</setting>
+            <setting name="format"><![CDATA[^ca_objects.preferred_labels]]></setting>
+            <setting name="delimiter">; </setting>
+          </settings>
         </placement>
         <placement code="ca_attribute_dimensions">
           <bundle>ca_objects.dimensions</bundle>
           <settings>
             <setting name="format"><![CDATA[
-                  <unit relativeTo="ca_objects.dimensions">^ca_objects.dimensions.dimensions_height<ifdef code="dimensions_width"> x </ifdef>^ca_objects.dimensions.dimensions_width<ifdef code="dimensions_depth"> x </ifdef>^ca_objects.dimensions.dimensions_depth</unit>
+                  <unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.dimensions_height<ifdef code="ca_objects.dimensions.dimensions_width"> x </ifdef>^ca_objects.dimensions.dimensions_width<ifdef code="ca_objects.dimensions.dimensions_depth"> x </ifdef>^ca_objects.dimensions.dimensions_depth ^ca_objects.dimensions.dimensions_type</unit>
 ]]></setting>
-            <setting name="dependentValueTemplate"><![CDATA[^dimensions_height~units:infrac<ifdef code="dimensions_width"> x </ifdef>^dimensions_width~units:infrac<ifdef code="dimensions_depth"> x </ifdef>^dimensions_depth~units:infrac <ifdef code="dimensions_height">(</ifdef>^dimensions_height~units:cm<ifdef code="dimensions_width"> x </ifdef>^dimensions_width~units:cm<ifdef code="dimensions_depth"> x </ifdef>^dimensions_depth~units:cm<ifdef code="dimensions_height">)</ifdef>]]></setting>
-            
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="book" type="ca_objects" system="1" typeRestrictions="book">
+      <labels>
+        <label locale="en_US">
+          <name>Bibliographic Entry Summary</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_chapter_title">
+          <bundle>ca_objects.chapter_title</bundle>
+        </placement>
+        <placement code="ca_attribute_date">
+          <bundle>ca_objects.date</bundle>
+        </placement>
+        <placement code="ca_attribute_pubType">
+          <bundle>ca_objects.pubType</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Entities</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="exhibition" type="ca_occurrences" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Exhibition Summary</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_occurrences.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_showType">
+          <bundle>ca_occurrences.showType</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Venues</setting>
+            <setting name="delimter">; </setting>
+            <setting name="format"><![CDATA[
+                  <unit relativeTo="ca_entities" delimiter="; ">^ca_entities.preferred_labels.displayname ^ca_entities_x_occurrences.venue_date</unit>
+]]></setting> 
           </settings>
         </placement>
       </bundlePlacements>
