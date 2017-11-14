@@ -945,10 +945,14 @@
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
-								} elseif(file_exists($vs_path = ($vs_batch_media_directory.'/'.str_replace("\\", "/", $va_val['media']['media'])))) {	// try to located file in import directory
-									$va_val['media']['media'] = $vs_path;
+								} elseif(file_exists($va_val['media']['media'])) {
+								    $va_val['media']['media'] = $va_val['media']['media'];
+								} elseif(file_exists($vs_item)) {
+								    $va_val['media']['media'] = $vs_item;
+								} elseif(isset($va_val['media']['media']) && $va_val['media']['media']) {// try to locate file in import directory
+									$va_val['media']['media'] = $vs_batch_media_directory.'/'.str_replace("\\", "/", $va_val['media']['media']);
 								} else {
-									$va_val['media']['media'] = $vs_item;
+									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
