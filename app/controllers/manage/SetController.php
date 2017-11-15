@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -175,6 +175,100 @@
 			$this->view->setVar('set_list', $va_set_list_sorted);
 				
  			$this->render('set_list_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function Algebra() {
+ 			global $g_ui_locale_id;
+ 			
+ 			$ps_set_name = $this->request->getParameter('algebra_set_name', pString);
+ 			$ps_op = $this->request->getParameter('algebra_set_operation', pString);
+ 			$pa_set_ids = $this->request->getParameter('algebra_set_id', pArray);
+ 			
+ 			$t_set = new ca_sets();
+ 			$vn_user_id = $this->request->getUserID();
+ 			$pa_set_ids = array_filter($pa_set_ids, function($vn_set_id) use ($t_set, $vn_user_id) {
+ 				return $t_set->haveAccessToSet($vn_user_id, __CA_SET_READ_ACCESS__, $vn_set_id);
+ 			});
+ 			
+ 			if (sizeof($pa_set_ids) > 1) {
+				$va_set_list = [];
+				$vn_table_num = $vn_type_id = null;
+				switch($ps_op) {
+					case 'UNION':
+						foreach($pa_set_ids as $vn_set_id) {
+							$t_set->load($vn_set_id);
+							if (!$vn_table_num) { $vn_table_num = $t_set->get('table_num'); $vn_type_id = $t_set->get('type_id'); }
+							$va_set_list = array_merge($va_set_list, array_keys($t_set->getItems(['returnRowIdsOnly' => true, 'user_id' => $vn_user_id])));
+						}
+						$va_set_list = array_unique($va_set_list);
+						break;
+					case 'INTERSECTION':
+						foreach($pa_set_ids as $i => $vn_set_id) {
+							$t_set->load($vn_set_id);
+							if (!$vn_table_num) { $vn_table_num = $t_set->get('table_num'); $vn_type_id = $t_set->get('type_id'); }
+							
+							$va_items = array_keys($t_set->getItems(['returnRowIdsOnly' => true, 'user_id' => $vn_user_id]));
+							$va_set_list = ($i == 0) ? $va_items : array_intersect($va_set_list, $va_items);
+						}
+						$va_set_list = array_unique($va_set_list);
+						break;
+					case 'DIFFERENCE':
+						$va_sets = [];
+						foreach($pa_set_ids as $i => $vn_set_id) {
+							$t_set->load($vn_set_id);
+							if (!$vn_table_num) { $vn_table_num = $t_set->get('table_num'); $vn_type_id = $t_set->get('type_id'); }
+							$va_set_list = array_merge($va_set_list, $va_sets[$i] = array_keys($t_set->getItems(['returnRowIdsOnly' => true, 'user_id' => $vn_user_id])));
+						}
+						$va_set_list = array_unique($va_set_list);
+						
+						$va_acc = [];
+						foreach($pa_set_ids as $i => $vn_set_id) {
+							$va_acc = ($i == 0) ? $va_sets[$i] : array_intersect($va_acc, $va_sets[$i]);
+						}
+						$va_set_list = array_diff($va_set_list, $va_acc);
+						break;
+					default:
+						$this->notification->addNotification(_t("Invalid operation"), __NOTIFICATION_TYPE_ERROR__);
+						break;
+				}
+			
+				if (!$ps_set_name) { 
+					$t_set->load($pa_set_ids[0]);
+					$ps_set_name = _t("%1 et. al.", $t_set->get('set_code')); 
+				}
+				
+				if (sizeof($va_set_list) > 0) {
+					// create new set
+					$t_set->clear();
+					$t_set->setMode(ACCESS_WRITE);
+					$t_set->set('set_code', $ps_set_name);
+					$t_set->set('table_num', $vn_table_num);
+					$t_set->set('user_id', $vn_user_id);
+					$t_set->set('type_id', $vn_type_id);
+					$t_set->insert();
+					if ($t_set->numErrors() > 0) {
+						$this->notification->addNotification(_t("Could not create new set: %1", join("; ", $t_set->getErrors()), __NOTIFICATION_TYPE_ERROR__));
+					} else {
+						$t_set->addLabel(['name' => $ps_set_name], $g_ui_locale_id, null, true);
+						if ($t_set->numErrors() > 0) {
+							$this->notification->addNotification(_t("Could not add label to new set: %1", join("; ", $t_set->getErrors()), __NOTIFICATION_TYPE_ERROR__));
+						} elseif (!$t_set->addItems($va_set_list)) {
+							$this->notification->addNotification(_t("Could not add items to new set: %1", join("; ", $t_set->getErrors()), __NOTIFICATION_TYPE_ERROR__));
+						} else {
+							$this->notification->addNotification(_t("Created new set <em>%1</em>", $ps_set_name), __NOTIFICATION_TYPE_INFO__);
+						}
+					}
+				} else {
+					$this->notification->addNotification(_t("Set was not created because it has no contents"), __NOTIFICATION_TYPE_WARNING__);
+				}
+			} else {
+				$this->notification->addNotification(_t("At least two sets must be selected"), __NOTIFICATION_TYPE_ERROR__);
+			}
+ 			
+ 			$this->ListSets();
  		}
  		# -------------------------------------------------------
 		private function UserCanDeleteSet($user_id) {
