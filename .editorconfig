@@ -1,0 +1,25 @@
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs
+# http://editorconfig.org
+
+root = true
+
+[*]
+indent_style = tab
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# This matches the output format for the CA installation profile
+[install/profiles/xml/*.xml]
+indent_style = space
+indent_size = 2
+max_line_length = 2048
+
+# Match composer's default indentation
+[composer.*]
+indent_style = space
+indent_size = 4
+
