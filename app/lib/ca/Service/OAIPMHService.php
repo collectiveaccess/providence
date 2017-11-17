@@ -34,9 +34,9 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
 require_once(__CA_LIB_DIR__."/ca/Export/OAIPMH/OaiIdentifier.php");
@@ -204,7 +204,7 @@ class OAIPMHService extends BaseService {
 				case "ListIdentifiers":
 					$va_required_parameters = array("metadataPrefix");
 					$va_optional_parameters = array("from", "until", "set");
-					break;                
+					break;
 				case "ListSets":
 					// no parameters
 					break;
@@ -228,12 +228,12 @@ class OAIPMHService extends BaseService {
 					break;
 				case "ListRecords":
 				case "ListIdentifiers":
-					if ($vs_resumption_tok) { 
+					if ($vs_resumption_tok) {
 						$this->resumeListResponse($this->oaiData, $vs_resumption_tok); 
 					} else {
 						$this->initListResponse($this->oaiData);
 					}
-					break;                
+					break;
 				case "ListSets":
 					$this->listSets($this->oaiData);
 					break;
@@ -488,7 +488,7 @@ class OAIPMHService extends BaseService {
 		$vb_dont_cache = (bool)$this->opa_provider_info['dont_cache'];
 		$vs_table = $t_instance->tableName();
 	
-		if(!($o_search = caGetSearchInstance($vs_table))) { 
+		if(!($o_search = caGetSearchInstance($vs_table))) {
 			$this->throwError(self::OAI_ERR_BAD_ARGUMENT);
 			return;
 		}
@@ -498,7 +498,7 @@ class OAIPMHService extends BaseService {
 		$o_lang_settings = $o_tep->getLanguageSettings();
 		$vs_conj = array_shift($o_lang_settings->getList("rangeConjunctions"));
 		$vs_range = ($from && $until) ? "{$from} {$vs_conj} {$until}" : '';
-   
+		
 		if ($set && $this->opa_provider_info['setFacet']) {
 			$o_browse = caGetBrowseInstance($this->table);
 		
@@ -615,7 +615,7 @@ class OAIPMHService extends BaseService {
 			}
 		}
 	}
-	# -------------------------------------------------------   
+	# -------------------------------------------------------
 	/**
 	 * Stores a new resumption token record in the database
 	 *
@@ -699,7 +699,7 @@ class OAIPMHService extends BaseService {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Creates a parent element with the given name, with text as given.  
+	 * Creates a parent element with the given name, with text as given.
 	 *
 	 * Adds the resulting element as a child of the given parent node.
 	 *
@@ -823,7 +823,7 @@ class OAIPMHService extends BaseService {
 	 * @return string Time in Omeka DB format
 	 */
 	static function unixToDb($ps_timestamp) {
-	   return date(self::DB_DATE_FORMAT, $ps_timestamp);
+		return date(self::DB_DATE_FORMAT, $ps_timestamp);
 	}
 	# -------------------------------------------------------
 	/**
@@ -834,7 +834,7 @@ class OAIPMHService extends BaseService {
 	 * @uses unixToDb()
 	 */
 	static function utcToDb($ps_utc_datetime) {
-	   return self::unixToDb(strtotime($ps_utc_datetime));
+		return self::unixToDb(strtotime($ps_utc_datetime));
 	}
 	# -------------------------------------------------------
 	/**
@@ -864,7 +864,7 @@ class OAIPMHService extends BaseService {
 		if(!$ps_metadata_prefix && isset($this->opa_provider_info['default_format'])) {
 			$ps_metadata_prefix = $this->opa_provider_info['default_format'];
 		}
-			
+		
 		if(is_array($this->opa_provider_info['formats'][$ps_metadata_prefix])){
 			if(isset($this->opa_provider_info['formats'][$ps_metadata_prefix]['mapping'])){
 				return $this->opa_provider_info['formats'][$ps_metadata_prefix]['mapping'];
@@ -872,7 +872,7 @@ class OAIPMHService extends BaseService {
 		}
 
 		return false;
-	}	
-	# -------------------------------------------------------	
+	}
+	# -------------------------------------------------------
 }
 ?>

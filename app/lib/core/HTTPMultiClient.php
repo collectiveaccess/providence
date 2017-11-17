@@ -29,14 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-  
-  include_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
-  include_once(__CA_LIB_DIR__.'/core/HTTPMultiClientResult.php');
-	
+
+/**
+ *
+ */
+
+include_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+include_once(__CA_LIB_DIR__.'/core/HTTPMultiClientResult.php');
+
 class HTTPMultiClient {
 	# -------------------------------------------------------------------
 	/**
@@ -46,7 +46,7 @@ class HTTPMultiClient {
 	# -------------------------------------------------------------------
 	# Constructor
 	# -------------------------------------------------------------------
-	public function __construct($pa_requests=null) {	
+	public function __construct($pa_requests=null) {
 		$this->reset();
 		
 		if (is_array($pa_requests)) {
@@ -124,8 +124,8 @@ class HTTPMultiClient {
 					curl_setopt($pa_requests[$vn_i]['handle'], CURLOPT_POSTFIELDS, $va_request_params['data']);
 				}
 			}
-		
-		// extra options?
+			
+			// extra options?
 			if (!empty($pa_options)) {
 				curl_setopt_array($pa_requests[$vn_i]['handle'], $pa_options);
 			}
@@ -142,9 +142,9 @@ class HTTPMultiClient {
 	 *
 	 * @return bool True if cURL is available, false if not
 	 */
-	 public function _curlIsInstalled() {
-	 	return (bool)(function_exists("curl_setopt"));
-	 }
-	 # -------------------------------------------------------------------
+	public function _curlIsInstalled() {
+		return (bool)(function_exists("curl_setopt"));
+	}
+	# -------------------------------------------------------------------
 }
-	?>
+?>

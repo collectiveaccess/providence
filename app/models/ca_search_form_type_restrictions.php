@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -40,13 +40,13 @@ global $_ca_search_form_type_restriction_settings;
 $_ca_search_form_type_restriction_settings = array(
 
 );		// global
- 
+
 
 BaseModel::$s_ca_models_definitions['ca_search_form_type_restrictions'] = array(
- 	'NAME_SINGULAR' 	=> _t('search form type restriction'),
- 	'NAME_PLURAL' 		=> _t('search form type restrictions'),
- 	'FIELDS' 			=> array(
- 		'restriction_id' => array(
+	'NAME_SINGULAR' 	=> _t('search form type restriction'),
+	'NAME_PLURAL' 		=> _t('search form type restrictions'),
+	'FIELDS' 			=> array(
+		'restriction_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -96,7 +96,7 @@ BaseModel::$s_ca_models_definitions['ca_search_form_type_restrictions'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the restriction when displayed in a list with other restrictions. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 	
 class ca_search_form_type_restrictions extends BaseModel {
@@ -112,7 +112,7 @@ class ca_search_form_type_restrictions extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_search_form_type_restrictions';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'restriction_id';
 

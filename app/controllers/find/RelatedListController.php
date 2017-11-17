@@ -107,7 +107,7 @@ class RelatedListController extends BaseSearchController {
 
 		$va_access_values = caGetUserAccessValues($this->getRequest());
 
-		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
+		if (!($vs_sort = $this->opo_result_context->getCurrentSort())) {
 			$va_tmp = array_keys($this->opa_sorts);
 			$vs_sort = array_shift($va_tmp);
 		}
@@ -184,7 +184,7 @@ class RelatedListController extends BaseSearchController {
 	# -------------------------------------------------------
 	public function SaveUserSort() {
 		$vs_related_rel_table = $this->getRequest()->getParameter('related_rel_table', pString);
-		$va_ids  = $this->getRequest()->getParameter('ids', pArray);
+		$va_ids = $this->getRequest()->getParameter('ids', pArray);
 
 		$t_related_rel_instance = $this->getAppDatamodel()->getInstance($vs_related_rel_table);
 

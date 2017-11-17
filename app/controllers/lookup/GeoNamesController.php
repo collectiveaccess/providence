@@ -30,13 +30,13 @@ require_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 
 class GeoNamesController extends ActionController {
- 	# -------------------------------------------------------
- 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 		parent::__construct($po_request, $po_response, $pa_view_paths);
- 	}
- 	# -------------------------------------------------------
- 	# AJAX handlers
- 	# -------------------------------------------------------
+# -------------------------------------------------------
+public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+	parent::__construct($po_request, $po_response, $pa_view_paths);
+}
+# -------------------------------------------------------
+# AJAX handlers
+# -------------------------------------------------------
 	public function Get($pa_additional_query_params=null, $pa_options=null) {
 		global $g_ui_locale_id;
 
@@ -117,7 +117,7 @@ class GeoNamesController extends ActionController {
 				$va_items[0]['label'] = $va_items[0]['displayname'];
 			}
 		}
-
+		
 		$this->view->setVar('geonames_list', $va_items);
 		return $this->render('ajax_geonames_list_html.php');
 	}

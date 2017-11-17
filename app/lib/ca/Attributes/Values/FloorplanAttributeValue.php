@@ -29,23 +29,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  define("__CA_ATTRIBUTE_VALUE_FLOORPLAN__", 31);
-  
- require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
- require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+/**
+ *
+ */
+define("__CA_ATTRIBUTE_VALUE_FLOORPLAN__", 31);
+
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+
+require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
 
  global $_ca_attribute_settings;
- 
- $_ca_attribute_settings['FloorPlanAttributeValue'] = array(		// global
+
+$_ca_attribute_settings['FloorPlanAttributeValue'] = array(		// global
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
@@ -98,21 +98,21 @@
 
 class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
- 	private $ops_text_value;
- 	# ------------------------------------------------------------------
- 	public function __construct($pa_value_array=null) {
- 		parent::__construct($pa_value_array);
- 	}
- 	# ------------------------------------------------------------------
- 	public function loadTypeSpecificValueFromRow($pa_value_array) {
- 		$this->ops_text_value = $pa_value_array['value_blob'];
- 	}
- 	# ------------------------------------------------------------------
- 	/**
- 	 * @param array $pa_options Options are:
- 	 *		forDuplication = returns full text + FloorPlan URL suitable for setting a duplicate attribute. Used in BaseModelWithAttributes::copyAttributesTo()
- 	 * @return string FloorPlan value
- 	 */
+	private $ops_text_value;
+	# ------------------------------------------------------------------
+	public function __construct($pa_value_array=null) {
+		parent::__construct($pa_value_array);
+	}
+	# ------------------------------------------------------------------
+	public function loadTypeSpecificValueFromRow($pa_value_array) {
+		$this->ops_text_value = $pa_value_array['value_blob'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * @param array $pa_options Options are:
+	 *		forDuplication = returns full text + FloorPlan URL suitable for setting a duplicate attribute. Used in BaseModelWithAttributes::copyAttributesTo()
+	 * @return string FloorPlan value
+	 */
 	public function getDisplayValue($pa_options=null) {
 		if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
 			if (preg_match("!\[([^\]]+)!", $this->ops_text_value, $va_matches)) {
@@ -138,19 +138,19 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 	 *
 	 */
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
- 		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
- 		
+		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
+		
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("FloorPlan_user"));
 
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
 		if (!$ps_value) {
- 			if(!$va_settings["canBeEmpty"]){
+			if(!$va_settings["canBeEmpty"]){
 				$this->postError(1970, _t('Entry was blank.'), 'FloorPlanAttributeValue->parseValue()');
 				return false;
 			}
 			return array();
- 		} elseif (is_array($va_data = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', preg_replace("/[\\\\]{2}/", "\\", $ps_value))))) {
+		} elseif (is_array($va_data = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', preg_replace("/[\\\\]{2}/", "\\", $ps_value))))) {
 			return array(
 				'value_blob' => $ps_value
 			);
@@ -168,17 +168,17 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 	 */
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$o_config = Configuration::load();
- 		
- 		if (!($po_request = caGetOption('request', $pa_options, null))) { return _t('Floor plan is not supported outside of a request context'); }
- 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-
-
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
 		
- 		if (!(isset($pa_options['t_subject']) && is_object($pa_options['t_subject']))) {
- 			return _t('Floor plan is not supported');
- 		}
- 		
+		if (!($po_request = caGetOption('request', $pa_options, null))) { return _t('Floor plan is not supported outside of a request context'); }
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+
+
+		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
+		
+		if (!(isset($pa_options['t_subject']) && is_object($pa_options['t_subject']))) {
+			return _t('Floor plan is not supported');
+		}
+		
 		$t_subject = $pa_options['t_subject'];
 		
 		if (!(
@@ -204,9 +204,9 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		
 		$vs_element = "<div style='width: 850px;'><a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger\">".$t_instance->getMediaTag('floorplan', 'preview')."</a>";
 		$vs_element .= caHTMLHiddenInput(
- 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				['value' => '{{'.$pa_element_info['element_id'].'}}', 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}']
- 			);
+				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
+				['value' => '{{'.$pa_element_info['element_id'].'}}', 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}']
+			);
 		
 		$vs_element .= "<textarea style=\"display: none;\" id=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_viewer\">
 		".$o_view->render('floorplan_viewer.php')."
@@ -236,32 +236,32 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		});
 	});
 </script>
-		"; 
- 		return $vs_element;
- 	}
- 	# ------------------------------------------------------------------
- 	public function getAvailableSettings($pa_element_info=null) {
- 		global $_ca_attribute_settings;
-
- 		return $_ca_attribute_settings['FloorPlanAttributeValue'];
- 	}
- 	# ------------------------------------------------------------------
-		/**
-		 * Returns name of field in ca_attribute_values to use for sort operations
-		 * 
-		 * @return string Name of sort field
-		 */
-		public function sortField() {
-			return 'value_blob';
-		}
- 	# ------------------------------------------------------------------
-		/**
-		 * Returns constant for FloorPlan attribute value
-		 * 
-		 * @return int Attribute value type code
-		 */
-		public function getType() {
-			return __CA_ATTRIBUTE_VALUE_FLOORPLAN__;
-		}
- 		# ------------------------------------------------------------------
+		";
+		return $vs_element;
+	}
+	# ------------------------------------------------------------------
+	public function getAvailableSettings($pa_element_info=null) {
+		global $_ca_attribute_settings;
+		
+		return $_ca_attribute_settings['FloorPlanAttributeValue'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for sort operations
+	 * 
+	 * @return string Name of sort field
+	 */
+	public function sortField() {
+		return 'value_blob';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns constant for FloorPlan attribute value
+	 * 
+	 * @return int Attribute value type code
+	 */
+	public function getType() {
+		return __CA_ATTRIBUTE_VALUE_FLOORPLAN__;
+	}
+	# ------------------------------------------------------------------
 }

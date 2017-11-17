@@ -25,25 +25,25 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	
- 	$va_importer_list = $this->getVar('importer_list');
- 	$vb_importers_available = (is_array($va_importer_list) && sizeof($va_importer_list));
- 	
- 	print $vs_control_box = caFormControlBox(
+
+	
+	$va_importer_list = $this->getVar('importer_list');
+	$vb_importers_available = (is_array($va_importer_list) && sizeof($va_importer_list));
+	
+	print $vs_control_box = caFormControlBox(
 		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Import"), 'caWorldCatResultsForm')) : '').' '.
 		(caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
 		'',
 		''
 	);
- ?>
- <form action="#" id="caWorldCatSearchForm">
- 	<div class="formLabel">
- 		<?php print _t('Find in WorldCat').': '.caHTMLTextInput("term", array('value' => '', 'id' => 'caWorldCatTerm'), array('width' => '250px')); ?>
- 		<a href="#" id="caWorldCatTermLookup" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
- 	</div>
- </form>
- 
+?>
+<form action="#" id="caWorldCatSearchForm">
+	<div class="formLabel">
+		<?php print _t('Find in WorldCat').': '.caHTMLTextInput("term", array('value' => '', 'id' => 'caWorldCatTerm'), array('width' => '250px')); ?>
+		<a href="#" id="caWorldCatTermLookup" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+	</div>
+</form>
+
 <?php
 	print caFormTag($this->request, 'Run', 'caWorldCatResultsForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
@@ -55,16 +55,16 @@
 		print _t('You must load at least one WorldCat mapping before you can import');
 	}
 ?>
- 	</div>
- 	
- 	<div class="caWorldCatResultsPagination">
- 		<a href='#' id='caWorldCatResultsPreviousLink' class='button'>&lsaquo; <?php print _t('Previous'); ?></a>
- 		<a href='#' id='caWorldCatResultsNextLink' class='button'><?php print _t('Next'); ?> &rsaquo;</a>
- 	</div>
- 	
- 	<br style="clear"/>
- 	
- 	<div class="caWorldCatResultsContainer">
+	</div>
+	
+	<div class="caWorldCatResultsPagination">
+		<a href='#' id='caWorldCatResultsPreviousLink' class='button'>&lsaquo; <?php print _t('Previous'); ?></a>
+		<a href='#' id='caWorldCatResultsNextLink' class='button'><?php print _t('Next'); ?> &rsaquo;</a>
+	</div>
+	
+	<br style="clear"/>
+	
+	<div class="caWorldCatResultsContainer">
 		<div id="caWorldCatResults" class="bundleContainer">
 			<div class="caWorldCatResultsMessage">
 				<?php print _t('Enter a WorldCat search above to begin'); ?>
@@ -85,25 +85,25 @@
 </form>
 
 <div class="editorBottomPadding"><!-- empty --></div>
- 
- <script type="text/javascript">
- 	var caWorldCatStartIndex = 0;
- 	var caWorldCatLastSearchTerm = '';
- 	var caWorldCatNumResultsPerLoad = 25;
- 	
- 	jQuery(document).ready(function() {
- 		jQuery("#caWorldCatTermLookup").on("click", function(e) {
- 			caWorldCatStartIndex = 0;
- 			caWorldCatLastSearchTerm = jQuery("#caWorldCatTerm").val();
- 			caSearchWorldCat(caWorldCatLastSearchTerm, 0);
- 		});
- 		
- 		// Import click triggers start of import
- 		jQuery("#caWorldCatImport").on("click", function(e) {
- 			jQuery('#caWorldCatResultsForm').submit();
- 		});
- 		
- 		// Return triggers search
+
+<script type="text/javascript">
+	var caWorldCatStartIndex = 0;
+	var caWorldCatLastSearchTerm = '';
+	var caWorldCatNumResultsPerLoad = 25;
+	
+	jQuery(document).ready(function() {
+		jQuery("#caWorldCatTermLookup").on("click", function(e) {
+			caWorldCatStartIndex = 0;
+			caWorldCatLastSearchTerm = jQuery("#caWorldCatTerm").val();
+			caSearchWorldCat(caWorldCatLastSearchTerm, 0);
+		});
+		
+		// Import click triggers start of import
+		jQuery("#caWorldCatImport").on("click", function(e) {
+			jQuery('#caWorldCatResultsForm').submit();
+		});
+		
+		// Return triggers search
 		jQuery("#caWorldCatTerm").on('keydown', function(e){
 			if(e.keyCode == 13) {
 				jQuery("#caWorldCatTermLookup").click();
@@ -132,13 +132,13 @@
 		jQuery(document).on('click', '#caWorldCatResultsPreviousLink', {}, function(e) {
 			caGetPreviousWorldCatResults();
 		});
- 	});
- 	
- 	function caSearchWorldCat(term, start, c, msg) {
- 		if (!msg) { msg = "<?php print addslashes(_t('Searching WorldCat...')); ?>"; }
- 		if (start <= 0) { start = 0; }
- 		if (c <= 0) { c = 10; }
- 		jQuery("#caWorldCatResults").html("<div class='caWorldCatResultsMessage'><?php print caBusyIndicatorIcon($this->request).' '; ?>" + msg + "</div>");
+	});
+	
+	function caSearchWorldCat(term, start, c, msg) {
+		if (!msg) { msg = "<?php print addslashes(_t('Searching WorldCat...')); ?>"; }
+		if (start <= 0) { start = 0; }
+		if (c <= 0) { c = 10; }
+		jQuery("#caWorldCatResults").html("<div class='caWorldCatResultsMessage'><?php print caBusyIndicatorIcon($this->request).' '; ?>" + msg + "</div>");
 		jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'Lookup'); ?>', {term: term, start: start, count: c }, function(data) {
 			if (data['count'] >= 25) {
 				jQuery('#caWorldCatResultsNextLink').show();
@@ -168,23 +168,23 @@
 			
 			jQuery("#caWorldCatResults").html(html);
 		});
- 	}
- 	
- 	function caGetNextWorldCatResults() {
- 		if (caWorldCatLastSearchTerm) {
- 			caWorldCatStartIndex += caWorldCatNumResultsPerLoad;
- 			caSearchWorldCat(caWorldCatLastSearchTerm, caWorldCatStartIndex, caWorldCatNumResultsPerLoad, "<?php print addslashes(_t('Loading next page...')); ?>");
- 			jQuery('#caWorldCatResultsPreviousLink').show();
- 		}
- 	}
- 	function caGetPreviousWorldCatResults() {
- 		if (caWorldCatLastSearchTerm && (caWorldCatStartIndex > 0)) {
- 			caWorldCatStartIndex -= caWorldCatNumResultsPerLoad;
- 			if (caWorldCatStartIndex <= 0) { 
- 				caWorldCatStartIndex = 0; 
- 				jQuery('#caWorldCatResultsPreviousLink').hide();
- 			}
- 			caSearchWorldCat(caWorldCatLastSearchTerm, caWorldCatStartIndex, caWorldCatNumResultsPerLoad, "<?php print addslashes(_t('Loading previous page...')); ?>");
- 		}
- 	}
+	}
+	
+	function caGetNextWorldCatResults() {
+		if (caWorldCatLastSearchTerm) {
+			caWorldCatStartIndex += caWorldCatNumResultsPerLoad;
+			caSearchWorldCat(caWorldCatLastSearchTerm, caWorldCatStartIndex, caWorldCatNumResultsPerLoad, "<?php print addslashes(_t('Loading next page...')); ?>");
+			jQuery('#caWorldCatResultsPreviousLink').show();
+		}
+	}
+	function caGetPreviousWorldCatResults() {
+		if (caWorldCatLastSearchTerm && (caWorldCatStartIndex > 0)) {
+			caWorldCatStartIndex -= caWorldCatNumResultsPerLoad;
+			if (caWorldCatStartIndex <= 0) {
+				caWorldCatStartIndex = 0;
+				jQuery('#caWorldCatResultsPreviousLink').hide();
+			}
+			caSearchWorldCat(caWorldCatLastSearchTerm, caWorldCatStartIndex, caWorldCatNumResultsPerLoad, "<?php print addslashes(_t('Loading previous page...')); ?>");
+		}
+	}
  </script>

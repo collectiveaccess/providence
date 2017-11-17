@@ -29,29 +29,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/TourBrowseResult.php');
- 
-	class TourBrowse extends BaseBrowse {
-		# ------------------------------------------------------
-		/**
-		 * Which table does this class represent?
-		 */
-		protected $ops_tablename = "ca_tours";
-		protected $ops_primary_key = "tour_id";
-		# ----------------------------------------------------------------------
-		public function __construct($pn_browse_id=null, $ps_context='') {
-			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
-		}
-		# ------------------------------------------------------
-		public function getResults($pa_options=null) {
-			return parent::doGetResults(new TourBrowseResult(), $pa_options);
-		}
-		# ----------------------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
+require_once(__CA_LIB_DIR__.'/ca/Browse/TourBrowseResult.php');
+
+class TourBrowse extends BaseBrowse {
+	# ------------------------------------------------------
+	/**
+	 * Which table does this class represent?
+	 */
+	protected $ops_tablename = "ca_tours";
+	protected $ops_primary_key = "tour_id";
+	# ----------------------------------------------------------------------
+	public function __construct($pn_browse_id=null, $ps_context='') {
+		parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
 	}
+	# ------------------------------------------------------
+	public function getResults($pa_options=null) {
+		return parent::doGetResults(new TourBrowseResult(), $pa_options);
+	}
+	# ----------------------------------------------------------------------
+}
 ?>

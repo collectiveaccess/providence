@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_set_item_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('set item caption'),
- 	'NAME_PLURAL' 		=> _t('set item captions'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('set item caption'),
+	'NAME_PLURAL' 		=> _t('set item captions'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -70,7 +70,7 @@ BaseModel::$s_ca_models_definitions['ca_set_item_labels'] = array(
 				'LABEL' => _t('Caption'), 'DESCRIPTION' => _t('Caption for the set item.'),
 				'BOUNDS_LENGTH' => array(1,1024)
 		)
- 	)
+	)
 );
 
 class ca_set_item_labels extends BaseLabel {
@@ -86,7 +86,7 @@ class ca_set_item_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_set_item_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

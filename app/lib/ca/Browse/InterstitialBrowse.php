@@ -29,34 +29,34 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/InterstitialBrowseResult.php');
- 
-	class InterstitialBrowse extends BaseBrowse {
-		# ------------------------------------------------------
-		/**
-		 * Which table does this class represent?
-		 */
-		protected $ops_tablename;
-		protected $ops_tablenum;
-		protected $ops_primary_key;
-		# ----------------------------------------------------------------------
-		public function __construct($pn_browse_id=null, $ps_context='', $ps_table) {
-			$o_dm = Datamodel::load();
-			$this->ops_tablename = $ps_table;
-			$this->opn_tablenum = $o_dm->getTableNum($ps_table);
-		
-			$this->ops_primary_key = $o_dm->getTablePrimaryKeyName($ps_table);
-			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
-		}
-		# ------------------------------------------------------
-		public function getResults($pa_options=null) {
-			return parent::doGetResults(new InterstitialBrowseResult($this->ops_tablename), $pa_options);
-		}
-		# ----------------------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
+require_once(__CA_LIB_DIR__.'/ca/Browse/InterstitialBrowseResult.php');
+
+class InterstitialBrowse extends BaseBrowse {
+	# ------------------------------------------------------
+	/**
+	 * Which table does this class represent?
+	 */
+	protected $ops_tablename;
+	protected $ops_tablenum;
+	protected $ops_primary_key;
+	# ----------------------------------------------------------------------
+	public function __construct($pn_browse_id=null, $ps_context='', $ps_table) {
+		$o_dm = Datamodel::load();
+		$this->ops_tablename = $ps_table;
+		$this->opn_tablenum = $o_dm->getTableNum($ps_table);
+	
+		$this->ops_primary_key = $o_dm->getTablePrimaryKeyName($ps_table);
+		parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
 	}
+	# ------------------------------------------------------
+	public function getResults($pa_options=null) {
+		return parent::doGetResults(new InterstitialBrowseResult($this->ops_tablename), $pa_options);
+	}
+	# ----------------------------------------------------------------------
+}

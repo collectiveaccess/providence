@@ -26,10 +26,10 @@
  * ----------------------------------------------------------------------
  */
  
- 	$po_request 			= $this->getVar('request');
+	$po_request 			= $this->getVar('request');
 	$vs_widget_id 			= $this->getVar('widget_id');
 	$vn_table_num			= $this->getVar('table_num');
- 	
+	
 	$t_log 						= $this->getVar('change_log');
 	
 	$vn_threshold_in_seconds = ($this->getVar('threshold_in_hours') * 3600);

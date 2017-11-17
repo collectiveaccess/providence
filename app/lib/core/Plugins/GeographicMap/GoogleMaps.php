@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */ 
-    
+/**
+ *
+ */
+
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugGeographicMap.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/GeographicMap/BaseGeographicMapPlugin.php");
 
@@ -257,10 +257,10 @@ jQuery(document).ready(function() {
 					$vn_latitude = round($va_coord['latitude'], 3).'0000';
 					$vn_longitude = round($va_coord['longitude'], 3).'0000';
 					$va_locs[$vn_latitude][$vn_longitude][] = array('label' => '', 'content' => '', 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID());
- 					$va_extents = array("north" => $vn_latitude, "south" => $vn_latitude, "east" => $vn_longitude, "west" => $vn_longitude);
+					$va_extents = array("north" => $vn_latitude, "south" => $vn_latitude, "east" => $vn_longitude, "west" => $vn_longitude);
 				}else{
 					$va_locs[$va_coord['latitude']][$va_coord['longitude']][] = array('label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID());
- 				}
+				}
 			}
 		}
 		
@@ -360,8 +360,8 @@ $vs_buf .= "
 	 *
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
- 		AssetLoadManager::register('maps');
- 		
+		AssetLoadManager::register('maps');
+		
 		$o_config = Configuration::load();
 		
 		if (!in_array($vs_map_type = $o_config->get('google_maps_default_type'), array('ROADMAP', 'SATELLITE', 'HYBRID', 'TERRAIN'))) {
@@ -380,8 +380,8 @@ $vs_buf .= "
 		$vs_element .=		'</div>';
 		$vs_element .=		'<div class="map" style="width:695px; height:300px;"></div>';
 		$vs_element .= 		'<script type="text/javascript">';
-				$vs_element .= 		"jQuery(document).ready(function() {
-				var mID_{n} = ".$pa_element_info['element_id'].";
+		$vs_element .= 		"jQuery(document).ready(function() {
+									var mID_{n} = ".$pa_element_info['element_id'].";
 										var mapdata = {
 											mapID : mID_{n},
 											mapholder : jQuery('#mapholder_' + mID_{n} + '_{n}'),
@@ -425,7 +425,7 @@ $vs_buf .= "
 		$vs_element .= 		'</script>';
 		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="text" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="80"/>';
 		$vs_element .=	'</div>';
-	
+		
 		return $vs_element;
 	}
 	# ------------------------------------------------

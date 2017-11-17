@@ -46,7 +46,7 @@ function caCLIUseNcurses() {
  * Log message through global Zend_Log facilities (usually set up in caSetupCLIScript())
  * @param string $ps_message the log message
  * @param int $pn_level log level as Zend_Log level integer:
- *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
+ *		one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
  * @return bool success state
  */
 function caCLILog($ps_message, $pn_level) {

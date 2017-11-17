@@ -29,71 +29,71 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
+
+/**
+  *
+  */
+
 require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_site_templates'] = array(
- 	'NAME_SINGULAR' 	=> _t('site template'),
- 	'NAME_PLURAL' 		=> _t('site templates'),
- 	'FIELDS' 			=> array(
- 		'template_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('site template'),
+	'NAME_PLURAL' 		=> _t('site templates'),
+	'FIELDS' 			=> array(
+		'template_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Template id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this item')
 		),
 		'template_code' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Template code'), 'DESCRIPTION' => _t('Unique alphanumeric code for this template.'),
 				'BOUNDS_LENGTH' => array(1,100)
 		),
 		'title' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Short description'), 'DESCRIPTION' => _t('Short descriptive title for this template.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'description' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 4,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Full description'), 'DESCRIPTION' => _t('Full usage description for this template.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'template' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 4,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Template'), 'DESCRIPTION' => _t('Full template text.')
 		),
 		'tags' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 4,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Extracted template tags'), 'DESCRIPTION' => _t('List of tags extracted from template.')
 		),
 		'deleted' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		)
- 	)
+	)
 );
 
 class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
@@ -109,7 +109,7 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_site_templates';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'template_id';
 
@@ -135,12 +135,12 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('title');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -237,7 +237,7 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 		$vs_cktoolbar = caGetOption('cktoolbar', $pa_options, 'wysiwyg_content_editor_toolbar');
 		
 		$vs_tagname_prefix = caGetOption('tagnamePrefix', $pa_options, 'page_field');
-	
+		
 		if (!is_array($va_tags = $this->get('tags'))) { return []; }
 		$va_form_elements = [];
 		foreach($va_tags as $vs_tag => $va_tag_info) {

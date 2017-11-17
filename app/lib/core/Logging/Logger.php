@@ -28,18 +28,18 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  * 
  * ----------------------------------------------------------------------
- */ 
- 
-  /**
-   *
-   */
-   
+ */
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Stream.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Syslog.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Log/Formatter/Simple.php");
 require_once(__CA_LIB_DIR__."/ca/Utils/CLIUtils.php");
- 
+
  # ----------------------------------------------------------------------
 class Logger {
 	# ----------------------------------------

@@ -29,17 +29,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/core/IRelationshipModel.php');
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');
- 
+
 class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes implements IRelationshipModel {
 	# ------------------------------------------------------
 	
@@ -110,23 +110,23 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		}
 		return $vn_rc;
 	}
-    # ------------------------------------------------------------------
-    /**
-     * 
-     *
-     */
-    public function set($pa_fields, $pm_value="", $pa_options=null) {
-        if($pa_fields && $pm_value && !is_array($pa_fields)) { $pa_fields = [$pa_fields => $pm_value]; }
-        if(is_array($pa_fields)) {
-            if (isset($pa_fields['type_id']) && !is_numeric($pa_fields['type_id'])) {
-                $t_rel_type = new ca_relationship_types();
-                if ($vn_type_id = $t_rel_type->getRelationshipTypeID($this->tableNum(), $pa_fields['type_id'])) {
-                    $pa_fields['type_id'] = $vn_type_id;
-                }
-            }
-        } 
-        return parent::set($pa_fields, $pm_value, $pa_options);
-    }
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if($pa_fields && $pm_value && !is_array($pa_fields)) { $pa_fields = [$pa_fields => $pm_value]; }
+		if(is_array($pa_fields)) {
+			if (isset($pa_fields['type_id']) && !is_numeric($pa_fields['type_id'])) {
+				$t_rel_type = new ca_relationship_types();
+				if ($vn_type_id = $t_rel_type->getRelationshipTypeID($this->tableNum(), $pa_fields['type_id'])) {
+					$pa_fields['type_id'] = $vn_type_id;
+				}
+			}
+		}
+		return parent::set($pa_fields, $pm_value, $pa_options);
+	}
 	# ------------------------------------------------------
 	/**
 	 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
@@ -344,7 +344,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$vn_l = 0;
 		foreach($va_types as $va_type) {
 			if (($vn_i = array_search($va_type['parent_id'], $va_parent_ids)) === false) {
-				$va_parent_ids[] = $va_type['parent_id']; 
+				$va_parent_ids[] = $va_type['parent_id'];
 				$vn_l++;
 			} else {
 				if ($vn_i < sizeof($va_parent_ids) - 1) {
@@ -417,7 +417,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			WHERE
 				(crt.table_num = ?)
 				{$vs_restrict_to_relationship_type_sql}
-		", $this->tableNum());		
+		", $this->tableNum());
 		
 		// Support hierarchical subtypes - if the subtype restriction is a type with parents then include those as well
 		// Allows subtypes to "inherit" bindings from parent types
@@ -438,7 +438,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$va_types = [];
 		$va_parent_ids = [];
 		$vn_l = 0;
-						
+		
 		$vn_root_id = ($t_rel_type->load(array('parent_id' => null, 'table_num' =>  $this->tableNum()))) ? $t_rel_type->getPrimaryKey() : null;
 		$va_hier = [];
 		
@@ -460,7 +460,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					if (!$va_row['sub_type_left_id'] || ($va_row['sub_type_left_id'] && in_array($va_row['sub_type_left_id'], $va_left_subtype_candidates))) {
 						// is left
 						$vs_subtype_orientation = "right";
-						$vs_subtype = $va_row['sub_type_right_id'];	
+						$vs_subtype = $va_row['sub_type_right_id'];
 						$va_right_subtype_candidates = $va_row['sub_type_right_id'] ? [$va_row['sub_type_right_id']] : null;
 					}
 					if (!$va_row['sub_type_left_id'] || ($va_row['sub_type_right_id'] && in_array($va_row['sub_type_right_id'], $va_right_subtype_candidates))) {
@@ -471,8 +471,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							$vs_subtype_orientation = 'none';
 						} else {
 							$vs_subtype_orientation = "left";
-							$vs_subtype = $va_row['sub_type_left_id'];	
-						    $va_left_subtype_candidates = $vs_subtype ? [$va_row['sub_type_left_id']] : null;
+							$vs_subtype = $va_row['sub_type_left_id'];
+							$va_left_subtype_candidates = $vs_subtype ? [$va_row['sub_type_left_id']] : null;
 						}
 					}
 					if (($va_row['sub_type_left_id'] || $va_row['sub_type_right_id']) && !$vs_subtype_orientation) {
@@ -488,13 +488,13 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						$va_tmp['typename'] = $va_tmp['typename_reverse'];
 						unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
-                        if(!$va_left_subtype_candidates) {
-                             $va_types[$vn_parent_id]['NULL'][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-                        } else {
-                            foreach($va_left_subtype_candidates as $vs_left_subtype) {
-                                $va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
-                            }
-                        }
+						if(!$va_left_subtype_candidates) {
+							 $va_types[$vn_parent_id]['NULL'][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+						} else {
+							foreach($va_left_subtype_candidates as $vs_left_subtype) {
+								$va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
+							}
+						}
 						break;
 					case 'right':
 						$va_tmp = $va_row;
@@ -503,13 +503,13 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					
 						unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
-                        if (!$va_right_subtype_candidates) { 
-                            $va_types[$vn_parent_id]['NULL'][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-                        } else {
-                            foreach($va_right_subtype_candidates as $vs_right_subtype) {
-                                $va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-                            }
-                        }
+						if (!$va_right_subtype_candidates) {
+							$va_types[$vn_parent_id]['NULL'][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+						} else {
+							foreach($va_right_subtype_candidates as $vs_right_subtype) {
+								$va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+							}
+						}
 						break;
 					default:
 						$va_tmp = $va_row;
@@ -524,16 +524,16 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							
 							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							
-							if(is_array($va_left_subtype_candidates)) { 
-                                foreach($va_left_subtype_candidates as $vs_left_subtype) {
-                                    $va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-                                }
-                            }
+							if(is_array($va_left_subtype_candidates)) {
+								foreach($va_left_subtype_candidates as $vs_left_subtype) {
+									$va_types[$vn_parent_id][$vs_left_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+								}
+							}
 							if (is_array($va_right_subtype_candidates)) {
-                                foreach($va_right_subtype_candidates as $vs_right_subtype) {
-                                    $va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-                                }
-                            }
+								foreach($va_right_subtype_candidates as $vs_right_subtype) {
+									$va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+								}
+							}
 							
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
@@ -550,10 +550,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							$va_tmp['direction'] = 'ltor';
 							
 							if(is_array($va_left_subtype_candidates)) {
-                                foreach($va_left_subtype_candidates as $vs_left_subtype) {
-                                    $va_types[$vn_parent_id][$vs_left_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-                                }
-                            }
+								foreach($va_left_subtype_candidates as $vs_left_subtype) {
+									$va_types[$vn_parent_id][$vs_left_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+								}
+							}
 							
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
@@ -562,15 +562,15 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 							$va_tmp = $va_row;
 							$va_tmp['typename'] =  $va_tmp['typename_reverse'];
 							unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
-	
+
 							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							$va_tmp['direction'] = 'rtol';
 							
 							if(is_array($va_right_subtype_candidates)) {
-                                foreach($va_right_subtype_candidates as $vs_right_subtype) {
-                                    $va_types[$vn_parent_id][$vs_right_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
-                                }
-                            }
+								foreach($va_right_subtype_candidates as $vs_right_subtype) {
+									$va_types[$vn_parent_id][$vs_right_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
+								}
+							}
 							
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
@@ -594,7 +594,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						}
 					}
 				}
-			
+				
 				if (!$vb_dont_include_subtypes_in_type_restriction) {
 					// include mapping from parent type used in restriction to child types that inherit the binding
 					if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
@@ -608,7 +608,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
 			}
 		
-			
+		
 		} else {
 			// ----------------------------------------------------------------------------------------
 			// regular relationship
@@ -640,7 +640,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					
 					// skip type if record type is set, it has a subtype set and it's not in our list
 					if ($pn_type_id && ($va_subtypes_to_check && !sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids)))) { continue; }
-					$vs_subtype = $va_row['sub_type_left_id'];	
+					$vs_subtype = $va_row['sub_type_left_id'];
 					
 					$va_row['typename'] = $va_row['typename_reverse'];
 					
@@ -655,10 +655,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			}
 			
 			$va_types = $this->_processRelationshipHierarchy($vn_root_id, $va_hier, $va_types, 1);
-		
+			
 			$va_processed_types = array('_type_map' => []);
 			$va_subtype_lookups = [];
-		
+			
 			foreach($va_types as $vs_subtype => $va_types_by_subtype) {
 				$va_types_by_locale = [];
 				foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
@@ -694,7 +694,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			foreach($va_list as $vs_key => $va_list_by_type_id) {
 				foreach($va_list_by_type_id as $vn_type_id => $va_item) {
 					$va_types_to_return[$vs_sub_types][$vs_key][$vn_type_id] = $va_item;		// output item
-				
+					
 					// look for sub items
 					if (is_array($pa_hier[$vn_type_id])) {
 						if (is_array($va_tmp = $this->_processRelationshipHierarchy($vn_type_id, $pa_hier, $pa_types, $pn_level + 1))) {
@@ -826,7 +826,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		
 		if (!is_array($pa_primary_ids)) { $pa_primary_ids = []; }
 		
-		if (!is_array($pa_relationship_ids) || !sizeof($pa_relationship_ids)) { 
+		if (!is_array($pa_relationship_ids) || !sizeof($pa_relationship_ids)) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			$pa_relationship_ids = array($vn_id);
 		}
@@ -844,7 +844,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			if (!in_array($vn_id = $qr_res->get($vs_left_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
 			if (!in_array($vn_id = $qr_res->get($vs_right_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
 		}
-	
+		
 		return array_keys($va_ids);
 	}
 	# ------------------------------------------------------

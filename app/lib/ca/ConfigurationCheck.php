@@ -30,18 +30,18 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
 require_once(__CA_LIB_DIR__.'/ca/GenericVersionUpdater.php');
 
 
- 	define('__CA_SCHEMA_UPDATE_ERROR__', 0);
- 	define('__CA_SCHEMA_UPDATE_WARNING__', 1);
- 	define('__CA_SCHEMA_UPDATE_INFO__', 2);
+define('__CA_SCHEMA_UPDATE_ERROR__', 0);
+define('__CA_SCHEMA_UPDATE_WARNING__', 1);
+define('__CA_SCHEMA_UPDATE_INFO__', 2);
 
 final class ConfigurationCheck {
 	# -------------------------------------------------------
@@ -95,7 +95,7 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Invokes an explicit list of tests to be executed before 
+	 * Invokes an explicit list of tests to be executed before
 	 * CollectiveAccess installation
 	 */
 	public static function performInstall() {
@@ -157,7 +157,7 @@ final class ConfigurationCheck {
 		// Check media
 		//
 		$vs_media_root = self::$opo_config->get('ca_media_root_dir');
-                $vs_base_dir = self::$opo_config->get('ca_base_dir');
+		$vs_base_dir = self::$opo_config->get('ca_base_dir');
 		$va_tmp = explode('/', $vs_media_root);
 		$vb_perm_media_error = false;
 		$vs_perm_media_path = null;

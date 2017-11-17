@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__."/core/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
@@ -426,7 +426,7 @@ class Db_mysqli extends DbDriverBase {
 		
 		$pn_limit = isset($pa_options['limit']) ? (int)$pa_options['limit'] : null;
 		$c = 0;
-			
+		
 		if (is_array($pa_fields)) {
 			$va_row = @mysqli_fetch_assoc($pr_res);
 			foreach($pa_fields as $vs_field) {
@@ -477,7 +477,7 @@ class Db_mysqli extends DbDriverBase {
 		if ($pn_offset < 0) { return false; }
 		if ($pn_offset > (mysqli_num_rows($pr_res) - 1)) { return false; }
 		if (!@mysqli_data_seek($pr_res, $pn_offset)) {
-    		$po_caller->postError(260, _t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)),"Db->mysqli->seek()");
+			$po_caller->postError(260, _t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)),"Db->mysqli->seek()");
 			throw new DatabaseException(_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)), 260, "Db->mysqli->seek()");
 			return false;
 		};
@@ -542,7 +542,7 @@ class Db_mysqli extends DbDriverBase {
 	/**
 	 * Get database connection handle
 	 *
-	 * @return resource 
+	 * @return resource
 	 */
 	public function getHandle() {
 		return $this->opr_db;
@@ -553,7 +553,7 @@ class Db_mysqli extends DbDriverBase {
 	 */
 	public function __destruct() {
 		// Disconnecting here can affect other classes that need
-		// to clean up by writing to the database so we disabled 
+		// to clean up by writing to the database so we disabled
 		// disconnect-on-destruct
 		//$this->disconnect();
 	}

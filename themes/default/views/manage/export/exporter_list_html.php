@@ -29,7 +29,7 @@
 $va_exporter_list = $this->getVar('exporter_list');
 
 if (!$this->request->isAjax()) {
-    if(sizeof($va_exporter_list)>0){
+	if(sizeof($va_exporter_list)>0){
 ?>
 <script language="JavaScript" type="text/javascript">
 	jQuery(document).ready(function(){
@@ -37,7 +37,7 @@ if (!$this->request->isAjax()) {
 	});
 </script>
 <?php
-    }
+	}
 ?>
 <div class="sectionBox">
 	<?php

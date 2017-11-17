@@ -29,52 +29,52 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- 	define('__NOTIFICATION_TYPE_ERROR__', 0);
- 	define('__NOTIFICATION_TYPE_WARNING__', 1);
- 	define('__NOTIFICATION_TYPE_INFO__', 2);
- 
-	class NotificationManager {
-		# -------------------------------------------------------
-		private $opo_request;
-		# -------------------------------------------------------
-		public function __construct($po_request) {
-			$this->setRequest($po_request);
-		}
-		# -------------------------------------------------------
-		public function setRequest($po_request) {
-			$this->opo_request = $po_request;
-		}
-		# -------------------------------------------------------
-		public function addNotification($ps_message, $pn_type=0) {
-			if (!trim($ps_message)) { return false; }
-			
-			$va_tmp = $this->getNotifications(true);
-			array_push($va_tmp, array('message' => $ps_message, 'type' => $pn_type));
-			 $this->opo_request->session->setVar('_user_notifications', $va_tmp);
-			return true;
-		}
-		# -------------------------------------------------------
-		public function numNotifications() {
-			return sizeof($this->getNotifications(true));
-		}
-		# -------------------------------------------------------
-		public function &getNotifications($pb_dont_remove=false) {
-			$va_tmp = $this->opo_request->session->getVar('_user_notifications');
-			if (!is_array($va_tmp)) { $va_tmp = array(); }
-			if (!$pb_dont_remove) {
-				$this->clearNotifications();
-			}
-			return $va_tmp;
-		}
-		# -------------------------------------------------------
-		public function clearNotifications() {
-			 $this->opo_request->session->setVar('_user_notifications', array());
-		}
-		# -------------------------------------------------------
+
+/**
+ *
+ */
+
+define('__NOTIFICATION_TYPE_ERROR__', 0);
+define('__NOTIFICATION_TYPE_WARNING__', 1);
+define('__NOTIFICATION_TYPE_INFO__', 2);
+
+class NotificationManager {
+	# -------------------------------------------------------
+	private $opo_request;
+	# -------------------------------------------------------
+	public function __construct($po_request) {
+		$this->setRequest($po_request);
 	}
+	# -------------------------------------------------------
+	public function setRequest($po_request) {
+		$this->opo_request = $po_request;
+	}
+	# -------------------------------------------------------
+	public function addNotification($ps_message, $pn_type=0) {
+		if (!trim($ps_message)) { return false; }
+		
+		$va_tmp = $this->getNotifications(true);
+		array_push($va_tmp, array('message' => $ps_message, 'type' => $pn_type));
+		$this->opo_request->session->setVar('_user_notifications', $va_tmp);
+		return true;
+	}
+	# -------------------------------------------------------
+	public function numNotifications() {
+		return sizeof($this->getNotifications(true));
+	}
+	# -------------------------------------------------------
+	public function &getNotifications($pb_dont_remove=false) {
+		$va_tmp = $this->opo_request->session->getVar('_user_notifications');
+		if (!is_array($va_tmp)) { $va_tmp = array(); }
+		if (!$pb_dont_remove) {
+			$this->clearNotifications();
+		}
+		return $va_tmp;
+	}
+	# -------------------------------------------------------
+	public function clearNotifications() {
+		$this->opo_request->session->setVar('_user_notifications', array());
+	}
+	# -------------------------------------------------------
+}
 ?>

@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	$vs_type_id_form_element = '';
+	
+	$vs_type_id_form_element = '';
 	if ($vn_type_id = intval($this->getVar('type_id'))) {
 		$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
 	}

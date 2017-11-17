@@ -29,11 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
+
+/**
+  *
+  */
+
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
@@ -42,10 +42,10 @@ require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
- 	'NAME_SINGULAR' 	=> _t('list item'),
- 	'NAME_PLURAL' 		=> _t('list items'),
- 	'FIELDS' 			=> array(
- 		'item_id' => array(
+	'NAME_SINGULAR' 	=> _t('list item'),
+	'NAME_PLURAL' 		=> _t('list items'),
+	'FIELDS' 			=> array(
+		'item_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -193,11 +193,11 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the list item.')
 		),
 		'deleted' => array(
- 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
- 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
- 				'IS_NULL' => false, 
- 				'DEFAULT' => 0,
- 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		),
 		'source_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -215,7 +215,7 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for list item information retrieved via web services [NOT IMPLEMENTED YET].'
 		)
- 	)
+	)
 );
 
 global $_ca_list_items_settings;
@@ -401,7 +401,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_list_items';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'item_id';
 
@@ -589,7 +589,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
 		}
 	}
- 	# ------------------------------------------------------
+	# ------------------------------------------------------
 	public function insert($pa_options=null) {
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
@@ -744,11 +744,11 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	/**
 	 * Return array containing information about all lists, including their root_id's
 	 */
-	 public function getHierarchyList($pb_vocabularies=false) {
-	 	$t_list = new ca_lists();
-	 	
-	 	$va_hierarchies = caExtractValuesByUserLocale($t_list->getListOfLists());
-	 	$vs_template = $this->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
+	public function getHierarchyList($pb_vocabularies=false) {
+		$t_list = new ca_lists();
+		
+		$va_hierarchies = caExtractValuesByUserLocale($t_list->getListOfLists());
+		$vs_template = $this->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
 		
 		$o_db = $this->getDb();
 		
@@ -806,8 +806,8 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			}
 		}
 		return $va_sorted_hierarchies;
-	 }
-	 # ------------------------------------------------------------------
+	}
+	# ------------------------------------------------------------------
 	/**
 	 * Set field value(s) for the table row represented by this object
 	 *
@@ -825,21 +825,21 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 		return parent::set($pa_fields, null, $pa_options);
 	}
-	 # ------------------------------------------------------
-	 /**
+	# ------------------------------------------------------
+	/**
 	 * Returns name of hierarchy for currently loaded item or, if specified, item with item_id = to optional $pn_id parameter
 	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	if ($pn_id) {
-	 		$t_item = new ca_list_items($pn_id);
-	 		$vn_hierarchy_id = $t_item->get('list_id');
-	 	} else {
-	 		$vn_hierarchy_id = $this->get('list_id');
-	 	}
-	 	$t_list = new ca_lists($vn_hierarchy_id);
-	 	
-	 	return $t_list->getLabelForDisplay(false);
-	 }
+	public function getHierarchyName($pn_id=null) {
+		if ($pn_id) {
+			$t_item = new ca_list_items($pn_id);
+			$vn_hierarchy_id = $t_item->get('list_id');
+		} else {
+			$vn_hierarchy_id = $this->get('list_id');
+		}
+		$t_list = new ca_lists($vn_hierarchy_id);
+		
+		return $t_list->getLabelForDisplay(false);
+	}
 	# ------------------------------------------------------
 	/**
 	 * Override standard implementation to insert list_code for current list_id into returned data. The list_code is required for consumers of export data
@@ -857,43 +857,43 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		return $va_data;	
 	}
 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is save-able
- 	 *
- 	 * @param RequestHTTP $po_request
- 	 * @return bool True if record can be saved, false if not
- 	 */
- 	public function isSaveable($po_request, $ps_bundle_name=null) {
- 		// Is row loaded?
- 		if (!($vn_list_id = $this->get('list_id')) && $po_request) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
- 			$vn_list_id = $this->_getListIDFromRequest($po_request);
- 		}
+	/**
+	 * Check if currently loaded row is save-able
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return bool True if record can be saved, false if not
+	 */
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		// Is row loaded?
+		if (!($vn_list_id = $this->get('list_id')) && $po_request) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+			$vn_list_id = $this->_getListIDFromRequest($po_request);
+		}
 
- 		if(!$vn_list_id) { return false; }
- 		
- 		$t_list = new ca_lists($vn_list_id);
- 		if (!$t_list->getPrimaryKey()) { return false; }
- 		return $t_list->isSaveable($po_request, $ps_bundle_name);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is deletable
- 	 */
- 	public function isDeletable($po_request) {
- 		// Is row loaded?
- 		if (!$this->getPrimaryKey()) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
- 			$vn_list_id = $this->_getListIDFromRequest($po_request);
- 		} else {
- 			$vn_list_id = $this->get('list_id');
- 		}
+		if(!$vn_list_id) { return false; }
+		
+		$t_list = new ca_lists($vn_list_id);
+		if (!$t_list->getPrimaryKey()) { return false; }
+		return $t_list->isSaveable($po_request, $ps_bundle_name);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded row is deletable
+	 */
+	public function isDeletable($po_request) {
+		// Is row loaded?
+		if (!$this->getPrimaryKey()) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+			$vn_list_id = $this->_getListIDFromRequest($po_request);
+		} else {
+			$vn_list_id = $this->get('list_id');
+		}
 
- 		if(!$vn_list_id) { return false; }
- 		
- 		$t_list = new ca_lists($vn_list_id);
- 		if (!$t_list->getPrimaryKey()) { return false; }
- 		
- 		return $t_list->isDeletable($po_request);
- 	}
+		if(!$vn_list_id) { return false; }
+		
+		$t_list = new ca_lists($vn_list_id);
+		if (!$t_list->getPrimaryKey()) { return false; }
+		
+		return $t_list->isDeletable($po_request);
+	}
 	# ------------------------------------------------------
 	/**
 	 * Helper to extract the list a new item is about to be inserted in from the request.
@@ -905,7 +905,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		if($vn_parent_id = $po_request->getParameter('parent_id',pInteger)){
 			$t_item = new ca_list_items($vn_parent_id);
 			if($t_item->getPrimaryKey()){
-				return $t_item->get('list_id');	
+				return $t_item->get('list_id');
 			}
 		}
 

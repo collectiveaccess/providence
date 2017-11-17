@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,10 +38,10 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_representation_annotation_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('representation annotation title'),
- 	'NAME_PLURAL' 		=> _t('representation annotation titles'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('representation annotation title'),
+	'NAME_PLURAL' 		=> _t('representation annotation titles'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -102,7 +102,7 @@ BaseModel::$s_ca_models_definitions['ca_representation_annotation_labels'] = arr
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
 		)
- 	)
+	)
 );
 
 class ca_representation_annotation_labels extends BaseLabel {
@@ -118,7 +118,7 @@ class ca_representation_annotation_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_representation_annotation_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

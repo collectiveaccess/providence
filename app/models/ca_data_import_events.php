@@ -29,14 +29,14 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	require_once(__CA_MODELS_DIR__.'/ca_data_import_event_log.php');
-	require_once(__CA_MODELS_DIR__.'/ca_data_import_items.php');
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_import_event_log.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_import_items.php');
 
 /**
   * Constants for data import items (ca_data_import_items) "success" flag
@@ -46,10 +46,10 @@ define("__CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__", 1);
 define("__CA_DATA_IMPORT_ITEM_SUCCESS__", 2);
 
 BaseModel::$s_ca_models_definitions['ca_data_import_events'] = array(
- 	'NAME_SINGULAR' 	=> _t('data import event'),
- 	'NAME_PLURAL' 		=> _t('data import events'),
- 	'FIELDS' 			=> array(
- 		'event_id' => array(
+	'NAME_SINGULAR' 	=> _t('data import event'),
+	'NAME_PLURAL' 		=> _t('data import events'),
+	'FIELDS' 			=> array(
+		'event_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -94,7 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_data_import_events'] = array(
 				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Text indicating source of data imported. For OAI and other web service imports, this will be the URL used to access the service.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		)
- 	)
+	)
 );
 
 class ca_data_import_events extends BaseModel {
@@ -110,7 +110,7 @@ class ca_data_import_events extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_import_events';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'event_id';
 
@@ -373,26 +373,26 @@ class ca_data_import_events extends BaseModel {
 	 * @param string $ps_source Text indicating the source of the log message
 	 * @param int $pn_item_id Optional item_id of ca_data_import_items row that corresponds to the imported item this log entry is concerned with. Leave null for general event-scope log messages.
 	 */
-	 public function log($ps_type_code, $ps_message, $ps_source=null, $pn_item_id=null) {
-	 	if (!($vn_event_id = $this->getPrimaryKey())) { return null; } 
-	 	
+	public function log($ps_type_code, $ps_message, $ps_source=null, $pn_item_id=null) {
+		if (!($vn_event_id = $this->getPrimaryKey())) { return null; } 
+		
 		$t_log = new ca_data_import_event_log();
-	 	$t_log->setMode(ACCESS_WRITE);
-	 	$t_log->set('event_id', $vn_event_id);
-	 	$t_log->set('item_id', $pn_item_id);
-	 	$t_log->set('message', $ps_message);
-	 	$t_log->set('source', $ps_source);
-	 	$t_log->set('type_code', $ps_type_code);
-	 	$t_log->insert();
-	 	
-	 	if ($t_log->numErrors()) {
+		$t_log->setMode(ACCESS_WRITE);
+		$t_log->set('event_id', $vn_event_id);
+		$t_log->set('item_id', $pn_item_id);
+		$t_log->set('message', $ps_message);
+		$t_log->set('source', $ps_source);
+		$t_log->set('type_code', $ps_type_code);
+		$t_log->insert();
+		
+		if ($t_log->numErrors()) {
 			$this->errors = $t_log->errors;
 			return false;
 		} 
 		
 		return true;
-	 }
-	 # ------------------------------------------------------
+	}
+	# ------------------------------------------------------
 	/**
 	 * Returns a list of long entries associated with the currently loaded import event and, optionally, the specified imported item
 	 *

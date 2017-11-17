@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 global $g_mimetypes_to_info;
 $g_mimetypes_to_info= array(
 	'x-world/x-3dmf'	=>				array('name' => '3DMF'),
@@ -166,8 +166,8 @@ $g_mimetypes_to_info= array(
 	'application/x-shockwave-flash2-preview'	=>	array('name' => 'Adobe Flash'),
 	'application/futuresplash'	=>	array('name' => 'Adobe Flash'),
 	'application/windows-media' => array('name' => 'Windows Media')
- );
- 
+);
+
  global $g_file_extensions_to_mimetypes;
  $g_file_extensions_to_mimetypes = array(
 	'3dm'    => 'x-world/x-3dmf',
@@ -865,33 +865,33 @@ $g_mimetypes_to_info= array(
 	'swf'    => 'application/futuresplash',
 	'swf'    => 'image/vnd.rn-realflash',
 	'wmv'	 => 'application/windows-media'
- );
- 
- 
- class FileMimeTypes {
- 	# ------------------------------------------------
- 	/**
- 	 * Convert file extension into mimetype. If extension is not known 'application/octet-stream' is returned.
- 	 */
- 	static function mimeTypeForFileExtension($ps_extension) {
- 		global $g_file_extensions_to_mimetypes;
- 		return isset($g_file_extensions_to_mimetypes[$ps_extension]) ? $g_file_extensions_to_mimetypes[$ps_extension] : 'application/octet-stream';
- 	}
- 	# ------------------------------------------------
- 	/**
- 	 * Convert mimetype into human-readable name for display. If mimetype is not known the mimetype is returned unchanged.
- 	 */
- 	static function nameForMimeType($ps_mimetype) {
- 		global $g_mimetypes_to_info;
- 		return isset($g_mimetypes_to_info[$ps_mimetype]) ? $g_mimetypes_to_info[$ps_mimetype]['name'] : $ps_mimetype;
- 	}
- 	# ------------------------------------------------
- 	/**
- 	 * Converts file extension into human-readable name for display. Generic 'application/octet-stream' mimetype is returned if
- 	 * extension is unknown.
- 	 */
- 	static function nameForFileExtension($ps_extension) {
- 		return FileMimeTypes::nameForMimeType(FileMimeTypes::mimeTypeForFileExtension($ps_extension));
- 	}
- 	# ------------------------------------------------
- }
+);
+
+
+class FileMimeTypes {
+	# ------------------------------------------------
+	/**
+	 * Convert file extension into mimetype. If extension is not known 'application/octet-stream' is returned.
+	 */
+	static function mimeTypeForFileExtension($ps_extension) {
+		global $g_file_extensions_to_mimetypes;
+		return isset($g_file_extensions_to_mimetypes[$ps_extension]) ? $g_file_extensions_to_mimetypes[$ps_extension] : 'application/octet-stream';
+	}
+	# ------------------------------------------------
+	/**
+	 * Convert mimetype into human-readable name for display. If mimetype is not known the mimetype is returned unchanged.
+	 */
+	static function nameForMimeType($ps_mimetype) {
+		global $g_mimetypes_to_info;
+		return isset($g_mimetypes_to_info[$ps_mimetype]) ? $g_mimetypes_to_info[$ps_mimetype]['name'] : $ps_mimetype;
+	}
+	# ------------------------------------------------
+	/**
+	 * Converts file extension into human-readable name for display. Generic 'application/octet-stream' mimetype is returned if
+	 * extension is unknown.
+	 */
+	static function nameForFileExtension($ps_extension) {
+		return FileMimeTypes::nameForMimeType(FileMimeTypes::mimeTypeForFileExtension($ps_extension));
+	}
+	# ------------------------------------------------
+}

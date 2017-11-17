@@ -60,39 +60,39 @@
 		
 		$vn_line_count = 0;
 		while($vo_result->nextHit()) {
-			$vn_object_id = $vo_result->get('ca_objects.object_id');		
+			$vn_object_id = $vo_result->get('ca_objects.object_id');
 ?>
 			<div class="row">
 			<table>
 			<tr>
 				<td style="width:250px;">
-<?php	
+<?php
 					if ($va_rep = $vo_result->get('ca_object_representations.media.small', array('scaleCSSWidthTo' => '250px', 'scaleCSSHeightTo' => '200px'))) {
 						print "<div class='objThumb'>".$va_rep."</div>";
 					} else {
 						print "<div class='imageTinyPlaceholder'></div> ";
 						$va_rep = null;
 					}
-?>				
+?>
 				</td>
 				<td>
 					<div class="metaBlock">
-<?php				
+<?php
 					#print "<div class='title'>".$vo_result->getWithTemplate('^ca_occurrences.preferred_labels.name (^ca_occurrences.idno)')."</div>"; 
 					if (is_array($va_display_list)) {
-                        foreach($va_display_list as $vn_placement_id => $va_display_item) {
-                            if (!strlen($vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true)))) {
-                                if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-                                $vs_display_value = "&lt;"._t('not defined')."&gt;";
-                            } 
-                            print "<div class='metadata'><span class='displayHeader'>".$va_display_item['display']."</span>: <span class='displayValue' >".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</span></div>";		
-                        }	
-                    }						
+						foreach($va_display_list as $vn_placement_id => $va_display_item) {
+							if (!strlen($vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true)))) {
+								if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
+								$vs_display_value = "&lt;"._t('not defined')."&gt;";
+							}
+							print "<div class='metadata'><span class='displayHeader'>".$va_display_item['display']."</span>: <span class='displayValue' >".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</span></div>";		
+						}
+					}
 ?>
-					</div>				
-				</td>	
+					</div>
+				</td>
 			</tr>
-			</table>	
+			</table>
 			</div>
 <?php
 		}

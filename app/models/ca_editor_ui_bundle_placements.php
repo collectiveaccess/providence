@@ -29,11 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
- 
+
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 
 global $_ca_editor_ui_bundle_placement_settings;
@@ -122,10 +122,10 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 );
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_bundle_placements'] = array(
- 	'NAME_SINGULAR' 	=> _t('UI bundle placement'),
- 	'NAME_PLURAL' 		=> _t('UI bundle placements'),
- 	'FIELDS' 			=> array(
- 		'placement_id' => array(
+	'NAME_SINGULAR' 	=> _t('UI bundle placement'),
+	'NAME_PLURAL' 		=> _t('UI bundle placements'),
+	'FIELDS' 			=> array(
+		'placement_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -169,7 +169,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_bundle_placements'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order')
 		)
- 	)
+	)
 );
 
 
@@ -187,7 +187,7 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_editor_ui_bundle_placements';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'placement_id';
 

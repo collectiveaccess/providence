@@ -66,7 +66,7 @@ class OaiIdentifier {
 			'repositoryIdentifier' => self::$namespaceId,
 			'delimiter'            => ':',
 			'sampleIdentifier'     => self::itemtoOaiId(1)
-        );
+		);
 		$oaiIdentifier = $parentElement->ownerDocument->createElement('oai-identifier');
 		foreach($elements as $tag => $value) {
 			$oaiIdentifier->appendChild($parentElement->ownerDocument->createElement($tag, $value));

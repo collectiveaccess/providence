@@ -45,7 +45,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
 	private $opo_handle = null;
 	private $opa_row_buf = array();
 	private $opn_current_row = -1;
-    protected $opa_row_ids = null;
+	protected $opa_row_ids = null;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -59,18 +59,18 @@ class ResourceSpaceDataReader extends BaseDataReader {
 
 		$this->opa_formats = array('resourcespace');	// must be all lowercase to allow for case-insensitive matching
 
-        $o_config = Configuration::load();
+		$o_config = Configuration::load();
 
-        if (!$va_api_credentials = caGetOption('resourceSpaceAPIs', $pa_options, null)) {
+		if (!$va_api_credentials = caGetOption('resourceSpaceAPIs', $pa_options, null)) {
 			$va_api_credentials= $o_config->get('resourcespace_apis');
-        }
+		}
 
-        $this->opa_api_credentials = array();
-        foreach($va_api_credentials as $vs_instance => $va_instance_api){
-            $rs_api = array('rsInstance' => $vs_instance, 'apiURL' => $va_instance_api['resourcespace_base_api_url'], 'apiKey' => $va_instance_api['resourcespace_api_key'], 'user' => $va_instance_api['resourcespace_user']);
-            array_push($this->opa_api_credentials, $rs_api);
-        }
-    }
+		$this->opa_api_credentials = array();
+		foreach($va_api_credentials as $vs_instance => $va_instance_api){
+			$rs_api = array('rsInstance' => $vs_instance, 'apiURL' => $va_instance_api['resourcespace_base_api_url'], 'apiKey' => $va_instance_api['resourcespace_api_key'], 'user' => $va_instance_api['resourcespace_user']);
+			array_push($this->opa_api_credentials, $rs_api);
+		}
+	}
 	# -------------------------------------------------------
 	/**
 	 *
@@ -80,15 +80,15 @@ class ResourceSpaceDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
-        parent::read($ps_source, $pa_options);
+		parent::read($ps_source, $pa_options);
 		$this->opa_row_ids = array();
 		$va_source_ids = explode(",", $ps_source);
 		foreach($va_source_ids as $vs_source_id){
 			array_push($this->opa_row_ids, $vs_source_id);
 		}
-        $this->opn_current_row = 0;
+		$this->opn_current_row = 0;
 
-        return true;
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -99,7 +99,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function nextRow() {
-        if (!$this->opa_row_ids || !is_array($this->opa_row_ids) || !sizeof($this->opa_row_ids)) { return false; }
+		if (!$this->opa_row_ids || !is_array($this->opa_row_ids) || !sizeof($this->opa_row_ids)) { return false; }
 
 		if(isset($this->opa_row_ids[$this->opn_current_row]) && ($vs_resourcespace_string = $this->opa_row_ids[$this->opn_current_row])) {
 			$va_rs_temp = explode(':', $vs_resourcespace_string);
@@ -116,37 +116,37 @@ class ResourceSpaceDataReader extends BaseDataReader {
 				if($vs_resourcespace_instance != $va_api['rsInstance']){
 					continue;
 				}
-                $o_client = new Client($va_api['apiURL']);
+				$o_client = new Client($va_api['apiURL']);
 				$o_temp = array();
 				try{
-                    $vs_query = 'user='.$va_api['user'].'&function=get_resource_field_data&param1='.$vn_resourcespace_id;
+					$vs_query = 'user='.$va_api['user'].'&function=get_resource_field_data&param1='.$vn_resourcespace_id;
 					$vs_hash = hash('sha256', $va_api['apiKey'].$vs_query);
 
-                    $vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
-                    $va_response = $vs_data_request->send();
-                    $va_data_fields = $va_response->json();
+					$vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
+					$va_response = $vs_data_request->send();
+					$va_data_fields = $va_response->json();
 
 
-                    $vs_file_extension = '';
-                    for($i = 0; $i < count($va_data_fields); $i++){
-                        $va_field = $va_data_fields[$i];
-                        if($va_field['value']){
-                            #array_push($o_temp, array($va_field['name'] => $va_field['value']));
+					$vs_file_extension = '';
+					for($i = 0; $i < count($va_data_fields); $i++){
+						$va_field = $va_data_fields[$i];
+						if($va_field['value']){
+							#array_push($o_temp, array($va_field['name'] => $va_field['value']));
 							$o_temp[$va_field['name']] = $va_field['value'];
 						}
-                    }
+					}
 					$vs_res_query = 'user='.$va_api['user'].'&function=get_resource_data&param1='.$vn_resourcespace_id;
-        			$vs_hash = hash('sha256', $va_api['apiKey'].$vs_res_query);
-                    $vs_res_request = $o_client->get('?'.$vs_res_query.'&sign='.$vs_hash);
-                    $va_res_response = $vs_res_request->send();
-                    $va_res_data = $va_res_response->json();
-                    $vs_file_extension = $va_res_data['file_extension'];
+					$vs_hash = hash('sha256', $va_api['apiKey'].$vs_res_query);
+					$vs_res_request = $o_client->get('?'.$vs_res_query.'&sign='.$vs_hash);
+					$va_res_response = $vs_res_request->send();
+					$va_res_data = $va_res_response->json();
+					$vs_file_extension = $va_res_data['file_extension'];
 
 					$vs_path_query = 'user='.$va_api['user'].'&function=get_resource_path&param1='.$vn_resourcespace_id.'&param2=&param3=&param4=1&param5='.$vs_file_extension.'&param6=&param7=&param8=';
 					$vs_path_hash = hash('sha256', $va_api['apiKey'].$vs_path_query);
-                    $vs_path_request = $o_client->get('?'.$vs_path_query.'&sign='.$vs_path_hash);
-                    $va_path_response = $vs_path_request->send();
-                    $vs_path = $va_path_response->json();
+					$vs_path_request = $o_client->get('?'.$vs_path_query.'&sign='.$vs_path_hash);
+					$va_path_response = $vs_path_request->send();
+					$vs_path = $va_path_response->json();
 					$o_temp['path'] = $vs_path;
 					if($vn_rs_collection_id > 0){
 						$vs_coll_query = 'user='.$va_api['user'].'&function=search_public_collections&param1='.$vn_rs_collection_id.'&param2=name&param3=ASC&param4=0&param5=0';
@@ -168,20 +168,20 @@ class ResourceSpaceDataReader extends BaseDataReader {
 
 
 					#array_push($o_temp, array('path' => $vs_path));
-                    $o_row = $o_temp;
+					$o_row = $o_temp;
 					print_r($o_row);
-                    $this->opa_row_buf = $o_row;
-                    #break;
-                } catch (Exception $e){
-                    print_r($e);
-                    continue;
-                }
+					$this->opa_row_buf = $o_row;
+					#break;
+				} catch (Exception $e){
+					print_r($e);
+					continue;
+				}
 
-            }
-            $this->opn_current_row++;
-    		if ($this->opn_current_row > $this->numRows()) { return false; }
-    		return true;
-        }
+			}
+			$this->opn_current_row++;
+			if ($this->opn_current_row > $this->numRows()) { return false; }
+			return true;
+		}
 
 		return false;
 	}

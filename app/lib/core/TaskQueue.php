@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
@@ -61,15 +61,15 @@ class TaskQueue extends BaseObject {
 		parent::__construct();
 		$this->opo_config = Configuration::load();
 		if ($vs_default_dir = trim($this->opo_config->get("taskqueue_handler_plugins"))) {
- 			$this->opa_handler_plugin_dirs[] = $vs_default_dir;
+			$this->opa_handler_plugin_dirs[] = $vs_default_dir;
 		}
 		
 		$this->opo_eventlog = new Eventlog();
 		$this->opo_processes = new ProcessStatus();
- 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
- 		
- 		// Let application plugins add their own task queue plugin directories
- 		$va_tmp = $this->opo_app_plugin_manager->hookRegisterTaskQueuePluginDirectories(array('handler_plugin_directories' => $this->opa_handler_plugin_dirs, 'instance' => $this));
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
+		
+		// Let application plugins add their own task queue plugin directories
+		$va_tmp = $this->opo_app_plugin_manager->hookRegisterTaskQueuePluginDirectories(array('handler_plugin_directories' => $this->opa_handler_plugin_dirs, 'instance' => $this));
 		$this->opa_handler_plugin_dirs = $va_tmp['handler_plugin_directories'];
 	}
 	# ---------------------------------------------------------------------------
@@ -182,7 +182,7 @@ class TaskQueue extends BaseObject {
 	function copyFileToQueueTmp($ps_handler, $ps_source) {
 		if ($tmpdir = $this->opo_config->get("taskqueue_tmp_directory")) {
 			if (!file_exists($tmpdir.'/'.$ps_handler)) {
-				if(!mkdir($tmpdir.'/'.$ps_handler)) {		
+				if(!mkdir($tmpdir.'/'.$ps_handler)) {
 					$this->postError(100, _t("Could not create tmp directory for handler '%1'", $ps_handler), "TaskQueue->copyFileToQueueTmp()");
 					return "";
 				}
@@ -258,7 +258,7 @@ class TaskQueue extends BaseObject {
 				"CODE" => "ERR", 
 				"SOURCE" => "TaskQueue->processQueue()", 
 				"MESSAGE" => "Queue processing failed because no handler directories are configured; queue was halted")
-			);		
+			);
 			$this->postError(510, _t("No handler directories are configured!"), "TaskQueue->processQueue()");
 			$this->unregisterProcess($vn_proc_id);
 			return false;
@@ -476,7 +476,7 @@ class TaskQueue extends BaseObject {
 		}
 		
 		return true;
-	} 
+	}
 	# --------------------------------------------------------------------------- 
 	/**
 	 * Cancels any pending tasks for given row (row key is set by caller)
@@ -583,7 +583,7 @@ class TaskQueue extends BaseObject {
 		if ($vn_max_opo_processes < 1) { $vn_max_opo_processes = 1; }
 		$o_appvars = new ApplicationVars();
 		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
-	
+		
 		if (!is_array($va_opo_processes)) { $va_opo_processes = array(); }
 		$va_opo_processes = $this->verifyProcesses($va_opo_processes);
 		
@@ -636,7 +636,7 @@ class TaskQueue extends BaseObject {
 			foreach($va_opo_processes as $va_proc_info) {
 				if ($va_proc_info['row_key'] == $ps_row_key) {
 					return true;
-				} 
+				}
 			}
 		}
 		return false;
@@ -653,7 +653,7 @@ class TaskQueue extends BaseObject {
 			foreach($va_opo_processes as $va_proc_info) {
 				if ($va_proc_info['entity_key'] == $ps_row_key) {
 					return true;
-				} 
+				}
 			}
 		}
 		return false;
@@ -693,7 +693,7 @@ class TaskQueue extends BaseObject {
 				}
 			}
 		}
-		return $va_verified_opo_processes;	
+		return $va_verified_opo_processes;
 	}
 	# ---------------------------------------------------------------------------
 	# Utilities

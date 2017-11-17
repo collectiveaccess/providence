@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_list_items_x_list_items'] = array(
- 	'NAME_SINGULAR' 	=> _t('list item ⇔ list item relationship'),
- 	'NAME_PLURAL' 		=> _t('list item ⇔ list item relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('list item ⇔ list item relationship'),
+	'NAME_PLURAL' 		=> _t('list item ⇔ list item relationships'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -90,7 +90,7 @@ BaseModel::$s_ca_models_definitions['ca_list_items_x_list_items'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship when displayed in a list with other relationships. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 
 class ca_list_items_x_list_items extends BaseRelationshipModel {
@@ -106,7 +106,7 @@ class ca_list_items_x_list_items extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_list_items_x_list_items';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

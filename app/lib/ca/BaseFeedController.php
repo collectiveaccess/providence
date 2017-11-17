@@ -29,29 +29,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-  
-	require_once(__CA_LIB_DIR__."/core/Zend/Feed.php");
- 	
-	class BaseFeedController extends ActionController {
-		# -------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__."/core/Zend/Feed.php");
+
+class BaseFeedController extends ActionController {
+	# -------------------------------------------------------
+	
+	# -------------------------------------------------------
+	#
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
 		
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 			
- 			// we don't want headers or footers output for feeds
- 			$app = AppController::getInstance();
- 			$app->removeAllPlugins();	// kills the pageFormat plugin added in /index.php
- 			
- 			// set http content-type header to XML
- 			$this->response->addHeader('Content-type', 'text/xml', true);
- 		}
- 		# -------------------------------------------------------
+		// we don't want headers or footers output for feeds
+		$app = AppController::getInstance();
+		$app->removeAllPlugins();	// kills the pageFormat plugin added in /index.php
+		
+		// set http content-type header to XML
+		$this->response->addHeader('Content-type', 'text/xml', true);
 	}
+	# -------------------------------------------------------
+}
 ?>

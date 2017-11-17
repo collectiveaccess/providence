@@ -29,16 +29,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- interface IApplicationTool {
- 	
- 	/**
- 	 * Settings
- 	 */ 
+
+/**
+ *
+ */
+
+interface IApplicationTool {
+	
+	/**
+	 * Settings
+	 */
 	public function getToolSettings();
 	
 	/**
@@ -47,7 +47,7 @@
 	public function getAppConfig();
 	public function getToolConfig();
 	public function getAppDatamodel();
-	 
+	
 	 /**
 	  * Logging
 	  */
@@ -56,7 +56,7 @@
 	public function setLogLevel($pn_log_level);
 	public function getLogPath();
 	public function setLogPath($ps_log_path);
-	 
+	
 	/**
 	 * Help
 	 */
@@ -65,15 +65,15 @@
 	
 	/**
 	 * Progress bar
- 	 */
+	 */
 	public function getProgressBar($pn_total=null);
 	public function setMode($ps_mode);
 	public function getMode();
-	 
+	
 	/**
- 	 * Execution
- 	 */ 
+	 * Execution
+	 */
 	public function getCommands();
 	public function run($ps_command);
- }
+}
 ?>

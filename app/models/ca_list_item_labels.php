@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('list item name'),
- 	'NAME_PLURAL' 		=> _t('list item names'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('list item name'),
+	'NAME_PLURAL' 		=> _t('list item names'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -118,7 +118,7 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 				'LABEL' => _t('Is preferred?'), 'DESCRIPTION' => _t('Set this if this label is the preferred label for the current locale.'),
 				'BOUNDS_VALUE' => array(0,1)
 		)
- 	)
+	)
 );
 
 class ca_list_item_labels extends BaseLabel {
@@ -134,7 +134,7 @@ class ca_list_item_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_list_item_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

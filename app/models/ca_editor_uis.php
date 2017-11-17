@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -39,10 +39,10 @@ require_once(__CA_MODELS_DIR__.'/ca_editor_ui_type_restrictions.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor UI'),
- 	'NAME_PLURAL' 		=> _t('editor UIs'),
- 	'FIELDS' 			=> array(
- 		'ui_id' => array(
+	'NAME_SINGULAR' 	=> _t('editor UI'),
+	'NAME_PLURAL' 		=> _t('editor UIs'),
+	'FIELDS' 			=> array(
+		'ui_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -121,7 +121,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 				"MEDIA_PROCESSING_SETTING" => 'ca_icons',
 				'LABEL' => _t('Icon'), 'DESCRIPTION' => _t('Optional icon to identify the editor UI with')
 		)
- 	)
+	)
 );
 
 class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
@@ -137,7 +137,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_editor_uis';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'ui_id';
 
@@ -967,7 +967,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
- 	 * Returns a list of row_ids for the current set with ranks for each, in rank order
+	 * Returns a list of row_ids for the current set with ranks for each, in rank order
 	 *
 	 * @param array $pa_options An optional array of options. Supported options are:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to

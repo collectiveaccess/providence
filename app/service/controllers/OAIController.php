@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Service/OAIPMHService.php');
+	require_once(__CA_LIB_DIR__.'/ca/Service/OAIPMHService.php');
 	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
 
 	class OAIController extends BaseServiceController {
@@ -36,8 +36,8 @@
 		
 		# -------------------------------------------------------
 		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
+			parent::__construct($po_request, $po_response, $pa_view_paths);
+		}
 		# -------------------------------------------------------
 		/**
 		 * Dispatch the request to the OAI-PMH service object

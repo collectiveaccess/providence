@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 require_once(__CA_LIB_DIR__."/core/Controller/Request.php");
 
 # ----------------------------------------
@@ -45,7 +45,7 @@ define("__AUTH_NO_ACCESS__", 2);
 class RequestHTTP extends Request {
 	# -------------------------------------------------------
 	private $opb_is_dispatched;
- 		
+	
 	/**
 	 * Current session object. If you need to set session variables you may
 	 * do so using Session object method calls on the object referenced by this property
@@ -74,22 +74,22 @@ class RequestHTTP extends Request {
 
 	private $opa_params;
 	
-/**
- * Parsed request info: controller path, controller and action
- */
- 	private $ops_parsed_module_path;
- 	private $ops_parsed_controller;
- 	private $ops_parsed_action;
- 	private $ops_parsed_action_extra;
- 	private $ops_parsed_controller_url;
- 	private $ops_parsed_is_app_plugin = false;
- 	
- 	
- 	/**
- 	 * 
- 	 */
- 	static $html_purifier;
- 		
+	/**
+	 * Parsed request info: controller path, controller and action
+	 */
+	private $ops_parsed_module_path;
+	private $ops_parsed_controller;
+	private $ops_parsed_action;
+	private $ops_parsed_action_extra;
+	private $ops_parsed_controller_url;
+	private $ops_parsed_is_app_plugin = false;
+	
+	
+	/**
+	 * 
+	 */
+	static $html_purifier;
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -198,13 +198,13 @@ class RequestHTTP extends Request {
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
-	/** 
+	/**
 		Returns a list of locale_ids to use for UI presentation in priority order
 		This will include the user's selected locale if one in logged in, as well as
 		the default locale_id(s) as configured in app.conf or global.conf
 		using the 'locale_defaults' directive. If no locales are set then a full list
 		of locale_ids is returned.
-	 */
+	*/
 	public function getUILocales() {
 		$va_locale_codes = array();
 		$va_locale_ids = array();
@@ -344,19 +344,19 @@ class RequestHTTP extends Request {
 	public function getViewsDirectoryPath($pb_use_default=false) {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		switch($this->getScriptName()){
-			case "service.php":
-				return $this->getServiceViewPath();
-				break;
-			case "index.php":
-			default:
-				return $this->getThemeDirectoryPath($pb_use_default).'/views';
-				break;
+		case "service.php":
+			return $this->getServiceViewPath();
+			break;
+		case "index.php":
+		default:
+			return $this->getThemeDirectoryPath($pb_use_default).'/views';
+			break;
 		}
 	}
 	# -------------------------------------------------------
 	/**
 	 * Search for and return file path on server for a theme file. The selected theme will be searched followed
-	 * by the default theme, ceasing when the file is found. 
+	 * by the default theme, ceasing when the file is found.
 	 *
 	 * @param string $ps_relative_file_path Path to theme file relative to the theme root directory. To find the file path of the base.css file "css/base.css" would be passed.
 	 * @return Path to file on server
@@ -368,13 +368,13 @@ class RequestHTTP extends Request {
 			file_exists($vs_path = $this->getDefaultThemeDirectoryPath()."/{$ps_relative_file_path}")
 		) {
 			return $vs_path;
-		} 
+		}
 		return null;
 	}
 	# -------------------------------------------------------
 	/**
 	 * Search for and return URL path for a theme file. The selected theme will be searched followed
-	 * by the default theme, ceasing when the file is found. 
+	 * by the default theme, ceasing when the file is found.
 	 *
 	 * @param string $ps_relative_file_path Path to theme file relative to the theme root directory. To find the URL path of the base.css file "css/base.css" would be passed.
 	 * @return URL to file
@@ -386,7 +386,7 @@ class RequestHTTP extends Request {
 			return $this->getThemeUrlPath()."/{$ps_relative_file_path}";
 		} elseif(file_exists($this->getDefaultThemeDirectoryPath()."/{$ps_relative_file_path}")) {
 			return $this->getDefaultThemeUrlPath()."/{$ps_relative_file_path}";
-		} 
+		}
 		return null;
 	}
 	# -------------------------------------------------------
@@ -538,46 +538,46 @@ class RequestHTTP extends Request {
 		
 		$vm_val = str_replace("\0", '', $vm_val);
 		if(caGetOption('purify', $pa_options, true) && $this->config->get('purify_all_text_input')) {
-		    if(is_array($vm_val)) {
-		        $vm_val = array_map(function($v) { return is_array($v) ? $v : RequestHTTP::getPurifier()->purify(rawurldecode($v)); }, $vm_val);
-		    } else {
-		        $vm_val = RequestHTTP::getPurifier()->purify(rawurldecode($vm_val));
-		    }
+			if(is_array($vm_val)) {
+				$vm_val = array_map(function($v) { return is_array($v) ? $v : RequestHTTP::getPurifier()->purify(rawurldecode($v)); }, $vm_val);
+			} else {
+				$vm_val = RequestHTTP::getPurifier()->purify(rawurldecode($vm_val));
+			}
 		}
 		
 		if ($vm_val == "") { return ""; }
 		
 		switch($pn_type) {
 			# -----------------------------------------
-			case pInteger:
-				if (is_numeric($vm_val)) {
-					if ($vm_val == intval($vm_val)) {
-						return (int)$vm_val;
-					}
+		case pInteger:
+			if (is_numeric($vm_val)) {
+				if ($vm_val == intval($vm_val)) {
+					return (int)$vm_val;
 				}
-				break;
+			}
+			break;
 			# -----------------------------------------
-			case pFloat:
-				if (is_numeric($vm_val)) {
-					return (float)$vm_val;
-				}
-				break;
+		case pFloat:
+			if (is_numeric($vm_val)) {
+				return (float)$vm_val;
+			}
+			break;
 			# -----------------------------------------
-			case pString:
-				if (is_string($vm_val)) {
-					if(caGetOption('retainBackslashes', $pa_options, true)) {
-						$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
-					}
-					$vm_val = rawurldecode($vm_val);
-					return $vm_val;
+		case pString:
+			if (is_string($vm_val)) {
+				if(caGetOption('retainBackslashes', $pa_options, true)) {
+					$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
 				}
-				break;
+				$vm_val = rawurldecode($vm_val);
+				return $vm_val;
+			}
+			break;
 			# -----------------------------------------
-			case pArray:
-				if (is_array($vm_val)) {
-					return $vm_val;
-				}
-				break;
+		case pArray:
+			if (is_array($vm_val)) {
+				return $vm_val;
+			}
+			break;
 			# -----------------------------------------
 		}
 		
@@ -608,7 +608,7 @@ class RequestHTTP extends Request {
 		return false;
 	}
 	# -------------------------------------------------------
- 	/**
+	/**
 	 *
 	 * Saves changes to session, user objects and sends asynchronous request for search indexing
 	 * You should call this at the end of every request to ensure that user and session variables are saved.
@@ -649,47 +649,47 @@ class RequestHTTP extends Request {
 		}
 	}
 	# ----------------------------------------
-/**
- * 
- * Determines if a user is currently logged in. If a user is logged in you
- * can safely access the user object via the user property. If this returns
- * false, the user property will be unset and any method calls on it will (of course)
- * result in an error.
- *
- * @access public 
- * @return bool True if a user is logged in, false if not.
- */	
+	/**
+	 * 
+	 * Determines if a user is currently logged in. If a user is logged in you
+	 * can safely access the user object via the user property. If this returns
+	 * false, the user property will be unset and any method calls on it will (of course)
+	 * result in an error.
+	 *
+	 * @access public
+	 * @return bool True if a user is logged in, false if not.
+	 */
 	public function isLoggedIn() {
 		if (is_object($this->user) && ($this->user->getUserID())) {
 			return true;
 		} else {
-			return false; 
+			return false;
 		}
 	}
 	# ----------------------------------------
-/**
- * 
- * Returns true if the currently logged in user has the specified role. You may specify the
- * role as either an integer role_id, the role name or the role short name.
- *
- * @access public 
- * @return bool True if user has role, false if not.
- */	
+	/**
+	 * 
+	 * Returns true if the currently logged in user has the specified role. You may specify the
+	 * role as either an integer role_id, the role name or the role short name.
+	 *
+	 * @access public
+	 * @return bool True if user has role, false if not.
+	 */
 	public function hasRole($pm_role) {
 		if ($this->isLoggedIn()) {
 			return $this->user->hasRole($pm_role);
 		}
-		return false; 
+		return false;
 	}
 	# ----------------------------------------
-/**
- * 
- * Returns the user_id of the currently logged in user. This is the integer user_id,
- * *NOT* the user name.
- *
- * @access public 
- * @return integer User_id of currently logged in user or null if user is not logged in.
- */	
+	/**
+	 * 
+	 * Returns the user_id of the currently logged in user. This is the integer user_id,
+	 * *NOT* the user name.
+	 *
+	 * @access public
+	 * @return integer User_id of currently logged in user or null if user is not logged in.
+	 */
 	public function getUserID() {
 		if ($this->isLoggedIn()) {
 			return $this->user->getUserID();
@@ -699,19 +699,19 @@ class RequestHTTP extends Request {
 	# ----------------------------------------
 	# Authentication
 	# ----------------------------------------
-/**
- * 
- * Implements standard username/password and IP-address based user authentication. Applications
- * requiring completely custom authentication methods should override this method. However, most of
- * the time if you need custom authentication you can just create a custom user auth handler class ("username/password" authentication).
- *
- * One clean way to extend Auth is create a sub-class whose constructor calls addUserHandler() and delegates
- * everything else to Auth.
- *
- * @access private 
- * @param array of login options (same as the associative option array in the class constructor)
- */	
-	public function doAuthentication($pa_options) {	
+	/**
+	 * 
+	 * Implements standard username/password and IP-address based user authentication. Applications
+	 * requiring completely custom authentication methods should override this method. However, most of
+	 * the time if you need custom authentication you can just create a custom user auth handler class ("username/password" authentication).
+	 *
+	 * One clean way to extend Auth is create a sub-class whose constructor calls addUserHandler() and delegates
+	 * everything else to Auth.
+	 *
+	 * @access private
+	 * @param array of login options (same as the associative option array in the class constructor)
+	 */
+	public function doAuthentication($pa_options) {
 		global $AUTH_CURRENT_USER_ID;
 
 		$o_event_log = new Eventlog();
@@ -753,9 +753,9 @@ class RequestHTTP extends Request {
 				}
 				
 				if ($vb_login_successful) {
-																								// Login was successful
+					// Login was successful
 					$this->session->setVar($vs_app_name."_lastping",time());					// set last time we heard from client in session
-					$this->user->setLastPing(time());	
+					$this->user->setLastPing(time());
 					$AUTH_CURRENT_USER_ID = $vn_user_id;
 					//$this->user->close(); ** will be called externally **
 					return $vb_login_successful;
@@ -791,7 +791,7 @@ class RequestHTTP extends Request {
 					return false;
 				}
 			}
-		} 
+		}
 		
 		//
 		// incoming login
@@ -809,10 +809,10 @@ class RequestHTTP extends Request {
 				}
 			}
 		}
-	
-		if (!$vb_login_successful) {	
+		
+		if (!$vb_login_successful) {
 			$this->user = null;																	// auth failed
-																								// throw user to login screen
+			// throw user to login screen
 			if ($pa_options["user_name"]) {
 				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
 			}
@@ -821,9 +821,9 @@ class RequestHTTP extends Request {
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
 			}
 			return false;
-		} else {		
+		} else {
 			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".$_SERVER["HTTP_USER_AGENT"]));
-		
+			
 			$this->session->setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
 			$this->session->setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
 			$this->session->setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session

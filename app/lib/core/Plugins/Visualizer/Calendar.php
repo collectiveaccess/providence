@@ -82,16 +82,16 @@ class WLPlugVisualizerCalendar Extends BaseVisualizerPlugIn Implements IWLPlugVi
 		$vs_buf = "
 			<div id='calendar-embed' style='width: {$vs_width}; background:white;'></div><!-- {$vs_height} -->
 			<div id='eventContent' title='Event Details'>
-			    <span id='eventDate'></span>
-			    <div id='eventInfo'></div>
-			    <p><strong><a id='eventLink' href='#' target='_blank'>"._t("Open")."</a></strong></p>
+				<span id='eventDate'></span>
+				<div id='eventInfo'></div>
+				<p><strong><a id='eventLink' href='#' target='_blank'>"._t("Open")."</a></strong></p>
 			</div>
-		    <script type='text/javascript'>
+			<script type='text/javascript'>
 				function openModalA(title, info, url, start, end) {
-				    alert('modal');
+					alert('modal');
 				}
 				function openModal(title, info, url, date) {
-				    jQuery('#eventDate').html('Date: ' + date + '<br />')
+					jQuery('#eventDate').html('Date: ' + date + '<br />')
 					jQuery('#eventInfo').html(info);
 					jQuery('#eventLink').attr('href', url);
 					jQuery('#eventContent').dialog({ modal:true, title: title, width:350, stack:false });
@@ -110,10 +110,10 @@ class WLPlugVisualizerCalendar Extends BaseVisualizerPlugIn Implements IWLPlugVi
 						lang: 'fr',
 						events: '".caNavUrl($po_request, '*', '*', '*', array('renderData' => '1', 'viz' => $pa_viz_settings['code']))."',
 						eventRender: function (event, element) {
-				            element.attr('href', 'javascript:void(0);');
-				            element.attr('onclick', 'openModal(\"' + event.title + '\",\"' + event.description + '\",\"' + event.url + '\",\"' + event.display_date + '\",\"' + event.end + '\");');
-				            // element.attr('onclick', 'alert(\'' + event.title + '\');');
-				        },
+							element.attr('href', 'javascript:void(0);');
+							element.attr('onclick', 'openModal(\"' + event.title + '\",\"' + event.description + '\",\"' + event.url + '\",\"' + event.display_date + '\",\"' + event.end + '\");');
+							// element.attr('onclick', 'alert(\'' + event.title + '\');');
+						},
 						windowResize: function(view) { // refresh height on windowResize
 							jQuery('#calendar-embed').fullCalendar('option', 'height', jQuery(window).height() - $('.caMediaOverlayControls').outerHeight(true));
 						}

@@ -99,8 +99,8 @@
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_objects', $vn_object_id, array(), array())."</td>";
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
-                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</span></td>";
-                    }
+						print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</span></td>";
+					}
 ?>	
 				</tr>
 <?php

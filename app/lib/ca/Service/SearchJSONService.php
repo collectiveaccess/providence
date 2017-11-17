@@ -110,12 +110,12 @@ class SearchJSONService extends BaseJSONService {
 		$va_return = ['total' => $vo_result->numHits()];
 		
 		if ($vn_start = $this->opo_request->getParameter('start', pInteger)) {
-		    $vo_result->seek($vn_start);
-		    $va_return['start'] = $vn_start;
+			$vo_result->seek($vn_start);
+			$va_return['start'] = $vn_start;
 		}
 		
 		if (($vn_limit = $this->opo_request->getParameter('limit', pInteger)) > 0) {
-		    $va_return['limit'] = $vn_limit;
+			$va_return['limit'] = $vn_limit;
 		}
 
 		$vs_template = $this->opo_request->getParameter('template', pString);		// allow user-defined template to be passed; allows flexible formatting of returned label

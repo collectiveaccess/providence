@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$vs_widget_id = $this->getVar('widget_id');
+	$vs_widget_id = $this->getVar('widget_id');
 	$vn_jobs_done = $this->getVar('jobs_done');
 	$va_jobs_done = $this->getVar('jobs_done_data');
 	$vn_jobs_queued_processing = $this->getVar('jobs_queued_processing');

@@ -420,7 +420,7 @@ final class ConfigurationExporter {
 				$vn_num_labels++;
 			}
 			if (!$vn_num_labels) {
-			    $vo_label = $this->opo_dom->createElement("label");
+				$vo_label = $this->opo_dom->createElement("label");
 				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode(ca_locales::getDefaultCataloguingLocaleID()));
 				$vo_label->appendChild($this->opo_dom->createElement("name", "BLANK"));
 				$vo_labels->appendChild($vo_label);

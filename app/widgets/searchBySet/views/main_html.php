@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$po_request			= $this->getVar('request');
+	$po_request			= $this->getVar('request');
 	$vs_widget_id			= $this->getVar('widget_id');
 	$va_sets_by_table = $this->getVar("sets_by_table");
 

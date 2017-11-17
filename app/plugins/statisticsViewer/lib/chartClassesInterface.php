@@ -7,7 +7,7 @@ interface chartClass
 	 */
 	public function checkResultType();
 	
-	// 
+	//
 	/**
 	 * Load the values to display inside the current object
 	 * Please note that the values must be passed as a DbResult object

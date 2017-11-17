@@ -29,18 +29,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 	
-	interface IErrorSetter {
-		public function &errors();
-		public function &getErrors($source=null);
-		public function &getErrorDescriptions($source=null);
-		public function numErrors($source=null);
-		public function clearErrors();
-		public function setErrorOutput($error_output);
-		public function postError($num, $message, $context, $source='');
-	}
- ?>
+
+/**
+ *
+ */
+
+interface IErrorSetter {
+	public function &errors();
+	public function &getErrors($source=null);
+	public function &getErrorDescriptions($source=null);
+	public function numErrors($source=null);
+	public function clearErrors();
+	public function setErrorOutput($error_output);
+	public function postError($num, $message, $context, $source='');
+}
+?>

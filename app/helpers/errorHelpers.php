@@ -28,14 +28,14 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */	
+ */
 # --------------------------------------------------------------------------------------------
 /**
  * Display exception error screen
  * @param Exception $e
  */
 function caDisplayException(Exception $e) {
-    if (defined("__CA_LIB_DIR__")) { require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php'); }
+	if (defined("__CA_LIB_DIR__")) { require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php'); }
 	if(!is_a($e, "DatabaseException") && class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
 
 	$pn_errno = 0;
@@ -140,4 +140,4 @@ function caExtractRequestParams() {
 	return $pa_params;
 }
 # --------------------------------------------------------------------------------------------
-		
+

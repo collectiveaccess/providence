@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,20 +38,20 @@ require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
- 	'NAME_SINGULAR' 	=> _t('data exporter item'),
- 	'NAME_PLURAL' 		=> _t('data exporter items'),
+	'NAME_SINGULAR' 	=> _t('data exporter item'),
+	'NAME_PLURAL' 		=> _t('data exporter items'),
 	'FIELDS' 			=> array(
 		'item_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this exporter item')
 		),
 		'parent_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Parent id', 'DESCRIPTION' => 'Identifier of parent object; is null if object is root of hierarchy.'
 		),
@@ -63,7 +63,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'LABEL' => 'exporter id', 'DESCRIPTION' => 'Identifier for exporter'
 		),
 		'element' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false,
 				'DEFAULT' => '',
@@ -71,7 +71,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'context' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false,
 				'DEFAULT' => '',
@@ -79,52 +79,52 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'source' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Data source'), 'DESCRIPTION' => _t('Determines where the exported data is taken from. This will typically be a bundle name.'),
 				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'settings' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('exporter item settings')
 		),
 		'hier_item_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Exporter item hierarchy', 'DESCRIPTION' => 'Identifier of exporter item that is root of the item hierarchy.'
 		),
 		'hier_left' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - left bound', 'DESCRIPTION' => 'Left-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'hier_right' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'DONT_ALLOW_IN_UI' => true,
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 	)
 );
-	
+
 class ca_data_exporter_items extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
@@ -138,7 +138,7 @@ class ca_data_exporter_items extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_exporter_items';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'item_id';
 
@@ -209,7 +209,7 @@ class ca_data_exporter_items extends BaseModel {
 	public $SETTINGS;
 	
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {		
+	public function __construct($pn_id=null) {
 		global $_ca_data_exporter_items_settings;
 		parent::__construct($pn_id);
 		
@@ -577,7 +577,7 @@ class ca_data_exporter_items extends BaseModel {
 				}
 			}
 			if (!sizeof($va_fields_proc)) { $va_fields_proc = null; }
-			$vn_rc = parent::set($va_fields_proc, null, $pa_options);	
+			$vn_rc = parent::set($va_fields_proc, null, $pa_options);
 			
 			$this->initSettings();
 			return $vn_rc;

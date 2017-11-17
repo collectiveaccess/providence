@@ -29,18 +29,18 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_display_type_restrictions.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php'); 
+require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
+require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php');
+require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php');
+require_once(__CA_MODELS_DIR__.'/ca_bundle_display_type_restrictions.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 define('__CA_BUNDLE_DISPLAY_NO_ACCESS__', 0);
@@ -48,28 +48,28 @@ define('__CA_BUNDLE_DISPLAY_READ_ACCESS__', 1);
 define('__CA_BUNDLE_DISPLAY_EDIT_ACCESS__', 2);
 
 BaseModel::$s_ca_models_definitions['ca_bundle_displays'] = array(
- 	'NAME_SINGULAR' 	=> _t('display list'),
- 	'NAME_PLURAL' 		=> _t('display lists'),
+	'NAME_SINGULAR' 	=> _t('display list'),
+	'NAME_PLURAL' 		=> _t('display lists'),
 	'FIELDS' 			=> array(
 		'display_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this display')
 		),
 		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'DONT_ALLOW_IN_UI' => true,
 				'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for User'
 		),
 		'is_system' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Is system display?'), 'DESCRIPTION' => _t('If set, display will be available to all users as part of the system-wide display list.'),
 				'REQUIRES' => array('is_administrator')
@@ -78,7 +78,7 @@ BaseModel::$s_ca_models_definitions['ca_bundle_displays'] = array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'DONT_USE_AS_BUNDLE' => true,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Display type'), 'DESCRIPTION' => _t('Indicates type of item display is used for.'),
 				'BOUNDS_CHOICE_LIST' => array(
@@ -100,25 +100,25 @@ BaseModel::$s_ca_models_definitions['ca_bundle_displays'] = array(
 				)
 		),
 		'display_code' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('Display code'), 'DESCRIPTION' => _t('Unique alphanumeric identifier for this display.'),
 				'UNIQUE_WITHIN' => []
 				//'REQUIRES' => array('is_administrator')
 		),
 		'settings' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Display settings')
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
@@ -158,12 +158,12 @@ $_ca_bundle_displays_settings = array(		// global
 		'width' => 100, 'height' => 4,
 		'takesLocale' => false,
 		'options' => [
-		    'Search/browse (thumbnail view)' => 'search_browse_thumbnail',
-		    'Search/browse (full view)' => 'search_browse_full',
-		    'Search/browse (list view)' => 'search_browse_list',
-		    'Editor summaries' => 'editor_summary',
-		    'Editor relationship bundles' => 'editor_relationship_bundle',
-		    'Set items bundles' => 'set_item_bundle'
+			'Search/browse (thumbnail view)' => 'search_browse_thumbnail',
+			'Search/browse (full view)' => 'search_browse_full',
+			'Search/browse (list view)' => 'search_browse_list',
+			'Editor summaries' => 'editor_summary',
+			'Editor relationship bundles' => 'editor_relationship_bundle',
+			'Set items bundles' => 'set_item_bundle'
 		],
 		'default' => '',
 		'label' => _t('Show display in'),
@@ -184,7 +184,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_bundle_displays';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'display_id';
 
@@ -210,7 +210,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('display_id');
 
@@ -241,7 +241,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		"RELATED_TABLES" => array(
 		
 		)
-	);	
+	);
 	
 	# ------------------------------------------------------
 	# Group-based access control
@@ -308,7 +308,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($t_dupe = parent::duplicate($pa_options)) {
 			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $pa_options, false);
 		
-			if ($vb_duplicate_subitems) { 
+			if ($vb_duplicate_subitems) {
 				// Try to dupe related ca_bundle_display_placements rows
 				$o_db = $this->getDb();
 				
@@ -526,7 +526,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($pb_return_all_available_if_empty && $ps_table) {
 				return ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $this->getAvailableBundles($ps_table);
 			}
-			return []; 
+			return [];
 		}
 		
 		$vs_cache_key = $vn_display_id.'/'.($pb_settings_only ? 1 : 0);
@@ -567,7 +567,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
 				$va_placements[$vn_placement_id]['allowEditing'] = $vb_user_can_edit;
-							
+				
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
@@ -576,53 +576,53 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					$t_instance = $o_dm->getInstanceByTableName($va_bundle_name[0], true);
 					$va_placements[$vn_placement_id]['display'] = ($t_instance ? $t_instance->getDisplayLabel($vs_bundle_name) : "???");
 				}
-if (!$pb_omit_editing_info) {
-				if ($va_bundle_name[0] == $vs_subject_table) {
-					// Only primary fields are inline-editable
-				
-					// Check if it is one of the types of fields that is inline editable
-					if ($va_bundle_name[1] === 'preferred_labels') {
-						//
-						// Preferred labels are always inline editable
-						//
-						$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
-						$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
-					} elseif(in_array($va_bundle_name[1], ['created', 'modified'])) {
-						//
-						// created and modified dates are not editable
-						//
-						$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-						$va_placements[$vn_placement_id]['allowEditing'] = false;
-						$va_placements[$vn_placement_id]['inlineEditingType'] = null;
-					} elseif ($t_subject->hasField($va_bundle_name[1])) {
-						//
-						// Intrinsics are always editable, except for primary key and type_id
-						//
-						if (in_array($va_bundle_name[1], [$t_subject->getTypeFieldName(), $t_subject->primaryKey()])) {
+				if (!$pb_omit_editing_info) {
+					if ($va_bundle_name[0] == $vs_subject_table) {
+						// Only primary fields are inline-editable
+						
+						// Check if it is one of the types of fields that is inline editable
+						if ($va_bundle_name[1] === 'preferred_labels') {
+							//
+							// Preferred labels are always inline editable
+							//
+							$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+							$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
+						} elseif(in_array($va_bundle_name[1], ['created', 'modified'])) {
+							//
+							// created and modified dates are not editable
+							//
 							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 							$va_placements[$vn_placement_id]['allowEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
-						} elseif ($vs_edit_bundle = $t_subject->getFieldInfo($va_bundle_name[1], 'RESULTS_EDITOR_BUNDLE')) {
-							$va_placements[$vn_placement_id]['allowEditing'] = $vb_user_can_edit;
-							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
-						} else {
-							if(isset($va_bundle_name[1])){
-								// Do not allow in-line editing if the intrinsic element is identifier and
-								// a). is not editable (editable = 0 in multipart_id_numbering.conf)
-								// b). consists of multiple elements
-								if($va_bundle_name[1] == $t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
-									// check if identifier is editable
-									$vb_id_editable = $t_subject->opo_idno_plugin_instance->isFormatEditable($vs_subject_table);
+						} elseif ($t_subject->hasField($va_bundle_name[1])) {
+							//
+							// Intrinsics are always editable, except for primary key and type_id
+							//
+							if (in_array($va_bundle_name[1], [$t_subject->getTypeFieldName(), $t_subject->primaryKey()])) {
+								$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+								$va_placements[$vn_placement_id]['allowEditing'] = false;
+								$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+							} elseif ($vs_edit_bundle = $t_subject->getFieldInfo($va_bundle_name[1], 'RESULTS_EDITOR_BUNDLE')) {
+								$va_placements[$vn_placement_id]['allowEditing'] = $vb_user_can_edit;
+								$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+								$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+							} else {
+								if(isset($va_bundle_name[1])){
+									// Do not allow in-line editing if the intrinsic element is identifier and
+									// a). is not editable (editable = 0 in multipart_id_numbering.conf)
+									// b). consists of multiple elements
+									if($va_bundle_name[1] == $t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
+										// check if identifier is editable
+										$vb_id_editable = $t_subject->opo_idno_plugin_instance->isFormatEditable($vs_subject_table);
 									
-									$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-									$va_placements[$vn_placement_id]['allowEditing'] = $vb_id_editable && $vb_user_can_edit;
-								} else {
-									$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+										$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+										$va_placements[$vn_placement_id]['allowEditing'] = $vb_id_editable && $vb_user_can_edit;
+									} else {
+										$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+									}
 								}
-							}
-
-							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
+								
+								switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
 								case 'DT_SELECT':
 									if ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) {
 										$vb_use_item_values = true;
@@ -650,76 +650,76 @@ if (!$pb_omit_editing_info) {
 								default:
 									$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 									break;
+								}
 							}
-						}
-					} elseif ($t_subject->hasElement($va_bundle_name[1])) {
-						// Attributes are editable for certain types
-						$vn_data_type = ca_metadata_elements::getElementDatatype($va_bundle_name[1]);
-						if (ca_bundle_displays::attributeTypeSupportsInlineEditing($vn_data_type)) {
-							switch($vn_data_type) {
+						} elseif ($t_subject->hasElement($va_bundle_name[1])) {
+							// Attributes are editable for certain types
+							$vn_data_type = ca_metadata_elements::getElementDatatype($va_bundle_name[1]);
+							if (ca_bundle_displays::attributeTypeSupportsInlineEditing($vn_data_type)) {
+								switch($vn_data_type) {
 								default:
 									$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 									$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 									break;
-								case __CA_ATTRIBUTE_VALUE_LIST__:	
+								case __CA_ATTRIBUTE_VALUE_LIST__:
 									if ($t_element = ca_metadata_elements::getInstance($va_bundle_name[1])) {
 										switch($t_element->getSetting('render')) {
-											case 'select':
-											case 'yes_no_checkboxes':
-											case 'radio_buttons':
-											case 'checklist':
-											case 'lookup':
-											case 'horiz_hierbrowser':
-											case 'horiz_hierbrowser_with_search':
-											case 'vert_hierbrowser':
-											    if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
-											        // don't send very large lists
-											        $va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-												    $va_placements[$vn_placement_id]['inlineEditingType'] = null;
-											    } else {
-                                                    $va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
-                                                    $va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
-                                                
-                                                    $va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
-                                                
-                                                    $qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
-                                                    $va_list_item_labels = [];
-                                        
-                                                    while($qr_list_items->nextHit()) {
-                                                        $va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
-                                                    }
-                                                    asort($va_list_item_labels);
-                                                    $va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
-                                                    $va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
-                                                }
-												break;
-											default: // if it's a render setting we don't know about it's not editable
+										case 'select':
+										case 'yes_no_checkboxes':
+										case 'radio_buttons':
+										case 'checklist':
+										case 'lookup':
+										case 'horiz_hierbrowser':
+										case 'horiz_hierbrowser_with_search':
+										case 'vert_hierbrowser':
+											if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
+												// don't send very large lists
 												$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 												$va_placements[$vn_placement_id]['inlineEditingType'] = null;
-												break;
+											} else {
+												$va_placements[$vn_placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+												$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
+												
+												$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
+												
+												$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
+												$va_list_item_labels = [];
+										
+												while($qr_list_items->nextHit()) {
+													$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
+												}
+												asort($va_list_item_labels);
+												$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
+												$va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
+											}
+											break;
+										default: // if it's a render setting we don't know about it's not editable
+											$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+											$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+											break;
 										}
 									}
 									break;
+								}
+							} else {
+								$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+								$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 							}
 						} else {
 							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 						}
 					} else {
+						// Related bundles are never inline-editable (for now)
 						$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 						$va_placements[$vn_placement_id]['inlineEditingType'] = null;
-					}
-				} else {
-					// Related bundles are never inline-editable (for now)
-					$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-					$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 					
-					// representation media bundles aren't editable at all
-					if (($va_bundle_name[0] == 'ca_object_representations') && ($va_bundle_name[1] == 'media')) {
-						$va_placements[$vn_placement_id]['allowEditing'] = false;
+						// representation media bundles aren't editable at all
+						if (($va_bundle_name[0] == 'ca_object_representations') && ($va_bundle_name[1] == 'media')) {
+							$va_placements[$vn_placement_id]['allowEditing'] = false;
+						}
 					}
 				}
-}
 			}
 		} else {
 			if ($pb_return_all_available_if_empty) {
@@ -739,7 +739,7 @@ if (!$pb_omit_editing_info) {
 	 *			access = Restricts returned displays to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then displays where the user has at least read access will be returned. 
 	 * @return array Array of displays keyed on display_id and then locale_id. Keys for the per-locale value array include: display_id,  display_code, user_id, table_num,  label_id, name (display name of display), locale_id (locale of display name), bundle_display_content_type (display name of content this display pertains to)
 	 */
-	 public function getBundleDisplays($pa_options=null) {
+	public function getBundleDisplays($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
 		$pm_table_name_or_num = 							caGetOption('table', $pa_options, null);
 		$pn_user_id = 										caGetOption('user_id', $pa_options, null);
@@ -750,8 +750,8 @@ if (!$pb_omit_editing_info) {
 		
 		$pb_system_only = 									caGetOption('systemOnly', $pa_options, false);
 		
-	 	$o_dm = $this->getAppDatamodel();
-	 	if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return []; }
+		$o_dm = $this->getAppDatamodel();
+		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return []; }
 		
 		$o_db = $this->getDb();
 		
@@ -851,14 +851,14 @@ if (!$pb_omit_editing_info) {
 	/**
 	 * Return available displays as HTML <select> drop-down menu
 	 *
-	 * @param string $ps_select_name Name attribute for <select> form element 
+	 * @param string $ps_select_name Name attribute for <select> form element
 	 * @param array $pa_attributes Optional array of attributes to embed in HTML <select> tag. Keys are attribute names and values are attribute values.
 	 * @param array $pa_options Optional array of options. Supported options include:
 	 * 		Supports all options supported by caHTMLSelect() and ca_bundle_displays::getBundleDisplays() + the following:
 	 *			addDefaultDisplay = if true, the "default" display is included at the head of the list; this is simply a display called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
 	 *			addDefaultDisplayIfEmpty = same as 'addDefaultDisplay' except that the default value is only added if the display list is empty
 	 *			dontIncludeSubtypesInTypeRestriction = don't automatically include subtypes of a type when calculating type restrictions. [Default is true]
-	 *          context = context to filter display list for. [Default is null – no filtering performed]
+	 *			context = context to filter display list for. [Default is null – no filtering performed]
 	 * @return string HTML code defining <select> drop-down
 	 */
 	public function getBundleDisplaysAsHTMLSelect($ps_select_name, $pa_attributes=null, $pa_options=null) {
@@ -871,7 +871,7 @@ if (!$pb_omit_editing_info) {
 		
 		if (
 			(isset($pa_options['addDefaultDisplay']) && $pa_options['addDefaultDisplay'])
-			|| 
+			||
 			(isset($pa_options['addDefaultDisplayIfEmpty']) &&  ($pa_options['addDefaultDisplayIfEmpty']) && (!sizeof($va_available_displays)))
 		) {
 			$va_content[_t('Default')] = 0;
@@ -879,7 +879,7 @@ if (!$pb_omit_editing_info) {
 		
 		$ps_context = caGetOption('context', $pa_options, null);
 		foreach($va_available_displays as $vn_display_id => $va_info) {
-		    if ($ps_context && is_array($va_info['settings']['show_only_in']) && sizeof($va_info['settings']['show_only_in']) && !in_array($ps_context, $va_info['settings']['show_only_in'])) { continue; }
+			if ($ps_context && is_array($va_info['settings']['show_only_in']) && sizeof($va_info['settings']['show_only_in']) && !in_array($ps_context, $va_info['settings']['show_only_in'])) { continue; }
 			$va_content[$va_info['name']] = $vn_display_id;
 		}
 		
@@ -898,7 +898,7 @@ if (!$pb_omit_editing_info) {
 	public function getBundleDisplayTypeName($pm_table_name_or_num=null, $pa_options=null) {
 		$o_dm = $this->getAppDatamodel();
 		if (!$pm_table_name_or_num && !($pm_table_name_or_num = $this->get('table_num'))) { return null; }
-	 	if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
+		if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
 		
 		$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
 		if (!$t_instance) { return null; }
@@ -924,7 +924,7 @@ if (!$pb_omit_editing_info) {
 			$vn_display_user_id = $this->get('user_id');
 			$t_disp = $this;
 		}
-		if(!$vn_display_id && !($vn_display_id = $t_disp->getPrimaryKey())) { 
+		if(!$vn_display_id && !($vn_display_id = $t_disp->getPrimaryKey())) {
 			return true; // new display
 		}
 		if (isset(ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access])) {
@@ -995,8 +995,8 @@ if (!$pb_omit_editing_info) {
 		
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, $this->getAppDatamodel()->getTableName($this->get('table_num'))));
 		$o_view->setVar('t_display', $this);
-		$o_view->setVar('placement_code', $ps_placement_code);	
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('placement_code', $ps_placement_code);
+		$o_view->setVar('id_prefix', $ps_form_name);
 		
 		return $o_view->render('ca_bundle_display_placements.php');
 	}
@@ -1144,7 +1144,7 @@ if (!$pb_omit_editing_info) {
 							),
 							'label' => _t('Sense'),
 							'description' => _t('Determines if value used is singular or plural version.')
-						)		
+						)
 					);
 					break;
 				case __CA_ATTRIBUTE_VALUE_CONTAINER__:	// (allows sub-elements to be summarized)
@@ -1163,7 +1163,7 @@ if (!$pb_omit_editing_info) {
 							'default' => '',
 							'label' => _t('Bottom line format'),
 							'description' => _t('Template to format aggregate data for display under this column. The template can include these aggregate data tags: ^PAGEAVG, ^AVG, ^PAGESUM, ^SUM, ^PAGEMin, ^MIN, ^PAGEMAX, ^MAX. For containers follow the tag with the element code of the subelement to aggregate. Ex. ^SUM:dimensions_width')
-						)		
+						)
 					);
 					
 					if ($va_all_elements[$vn_element_id]['datatype'] == 6) {
@@ -1278,7 +1278,7 @@ if (!$pb_omit_editing_info) {
 				'settings' => $va_additional_settings
 			);
 				
-			if ($vb_show_tooltips) {	
+			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_nonpreferred_labels",
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
@@ -1366,7 +1366,7 @@ if (!$pb_omit_editing_info) {
 						),
 						'label' => _t('Output mode'),
 						'description' => _t('Determines if value used is URL of media or the media itself.')
-					)		
+					)
 				);
 			
 				$o_media_settings = new MediaProcessingSettings('ca_object_representations', 'media');
@@ -1375,7 +1375,7 @@ if (!$pb_omit_editing_info) {
 				foreach($va_versions as $vs_version => $va_version_info) {
 					$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-		
+					
 					$vs_bundle = 'ca_object_representations.media.'.$vs_version;
 					$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 					$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
@@ -1422,7 +1422,7 @@ if (!$pb_omit_editing_info) {
 			if ($this->getAppConfig()->get($vs_related_table.'_disable') && !(($vs_related_table == 'ca_object_representations') && (!$this->getAppConfig()->get('ca_objects_disable')))) { continue; }			
 			if (caGetBundleAccessLevel($vs_table, $vs_related_table) == __CA_BUNDLE_ACCESS_NONE__) { continue; }
 			
-			if ($vs_related_table === $vs_table) { 
+			if ($vs_related_table === $vs_table) {
 				$vs_bundle = $vs_related_table.'.related';
 			} else {
 				$vs_bundle = $vs_related_table;
@@ -1580,7 +1580,7 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
-		
+			
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
@@ -1734,7 +1734,7 @@ if (!$pb_omit_editing_info) {
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 *		noCache = if set to true, no caching of placement values is performed.
 	 *		user_id = if specified then placements are only returned if the user has at least read access to the display
-	 * @return int Number of placements. 
+	 * @return int Number of placements.
 	 */
 	public function getPlacementCount($pa_options=null) {
 		return sizeof($this->getPlacementsInDisplay($pa_options));
@@ -1750,9 +1750,9 @@ if (!$pb_omit_editing_info) {
 	 * @return array - list of placeholders as keys; values are text description of value; will return null if bundle name is invalid
 	 */
 	public function getTemplatePlaceholderListForBundle($ps_bundle_name) {
-	 	$o_dm = $this->getAppDatamodel();
-	 	$t_instance = null;
-	 	
+		$o_dm = $this->getAppDatamodel();
+		$t_instance = null;
+		
 		$va_tmp = explode('.', $ps_bundle_name);
 		switch(sizeof($va_tmp)) {
 			case 2:
@@ -1889,18 +1889,18 @@ if (!$pb_omit_editing_info) {
 	# ------------------------------------------------------
 	# Display of values
 	# ------------------------------------------------------
-	/** 
+	/**
 	 * Get display value(s) out of result $po_result for specified bundle and format it using the configured value template
 	 *
 	 * @param object $po_result A sub-class of SearchResult or BaseModel to extract data out of
-	 * @param int $pn_placement_id 
+	 * @param int $pn_placement_id
 	 * @param array Optional array of options. Supported options include:
 	 *		request = The current RequestHTTP object
 	 *		convertCodesToDisplayText = If true numeric list id's and value lists are converted to display text. Default is true. If false then all such values are returned as the original integer codes.
 	 *		forReport = If true then certain values are transformed for display in a report. Namely, all media output is forced to use the version specified by the app.conf 'representation_version_for_report' directive, no matter the setting in the display.
 	 *		purify = if true then value is run through HTMLPurifier (http://htmlpurifier.org) before being returned; this is useful when you want to make sure any HTML in the value is valid, particularly when converting HTML to a PDF as invalid markup will cause an exception. Default is false as HTMLPurify can significantly slow down things if used everywhere.
 	 *		delimiter = character(s) to place between repeating values
-	 *		showHierarchy = 
+	 *		showHierarchy =
 	 *		returnInfo = Include information about the underlying display bundle in an array. Information includes the display value, the number of discrete values in the bundle for the current row, type of bundle, minumum and maximum number of repeating values allowed and where applicable a list of related ids (attribute ids for attributes, label_ids for labels, row_ids for related) [Default is false]
 	 * @return mixed The processed value ready for display, unless returnInfo option is set in which case an array is returned
 	 */
@@ -1962,7 +1962,7 @@ if (!$pb_omit_editing_info) {
 		}
 		
 		if ((!$vs_template) && ($t_element = ca_metadata_elements::getInstance($va_bundle_bits[sizeof($va_bundle_bits)-1]))) { 
-			$vs_template = $t_element->getSetting('displayTemplate'); 
+			$vs_template = $t_element->getSetting('displayTemplate');
 		}
 		
 		if(!$pb_show_hierarchy && $vs_template) {
@@ -1994,7 +1994,7 @@ if (!$pb_omit_editing_info) {
 						
 						$vs_sort_dir_attr = '';
 						if ($vs_sort_attr = ($vs_sort = caGetOption('sort', $pa_options, null, ['castTo' => 'string'])) ? "sort=\"{$vs_sort}\"" : "") {
-						    $vs_sort_dir_attr = ($vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string'])) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
+							$vs_sort_dir_attr = ($vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string'])) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
 						}
 						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
 
@@ -2034,7 +2034,7 @@ if (!$pb_omit_editing_info) {
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {
-    		$vs_val = ca_bundle_displays::getPurifier()->purify($vs_val);
+			$vs_val = ca_bundle_displays::getPurifier()->purify($vs_val);
 		}
 		
 		if ($vb_return_info) {
@@ -2084,7 +2084,7 @@ if (!$pb_omit_editing_info) {
 				$vb_editable = true;
 				$vs_bundle_name = join('.', $va_bundle_bits);
 				if ($t_instance->getProperty('ID_NUMBERING_ID_FIELD') === $va_bundle_bits[1]) {
-					// ... except for idno's 
+					// ... except for idno's
 					$vb_editable = false;
 				} elseif(in_array($va_bundle_bits[1], [$t_instance->getTypeFieldName(), $t_instance->primaryKey(), 'is_deaccessioned'])) {
 					// ... and type_id fields, which are never inline editable
@@ -2114,7 +2114,7 @@ if (!$pb_omit_editing_info) {
 					if ($t_restriction = $t_element->getTypeRestrictionInstanceForElement($t_instance->tableNum(), $po_result->get($t_instance->tableName().'.'.$t_instance->getTypeFieldName()))) { 
 						$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 						$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
-					} 
+					}
 				}
 				
 				$vn_data_type = $t_element ? $t_element->get('datatype') : null;
@@ -2237,7 +2237,7 @@ if (!$pb_omit_editing_info) {
 					}
 				}
 			}
-		} 
+		}
 		return true;
 	}
 	# ----------------------------------------
@@ -2314,8 +2314,8 @@ if (!$pb_omit_editing_info) {
 	public function setTypeRestrictions($pa_type_ids, $pa_options=null) {
 		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
 		if (!is_array($pa_type_ids)) {
-			if (is_numeric($pa_type_ids)) { 
-				$pa_type_ids = array($pa_type_ids); 
+			if (is_numeric($pa_type_ids)) {
+				$pa_type_ids = array($pa_type_ids);
 			} else {
 				$pa_type_ids = [];
 			}
@@ -2338,7 +2338,7 @@ if (!$pb_omit_editing_info) {
 				} else {
 					$this->editTypeRestriction($va_current_type_ids[$vn_type_id], $pa_options);
 				}
-			} elseif(isset($va_current_type_ids[$vn_type_id])) {	
+			} elseif(isset($va_current_type_ids[$vn_type_id])) {
 				// need to unset
 				$this->removeTypeRestriction($vn_type_id);
 			}
@@ -2406,9 +2406,9 @@ if (!$pb_omit_editing_info) {
 	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
-		$o_view->setVar('t_display', $this);			
-		$o_view->setVar('id_prefix', $ps_form_name);	
-		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('t_display', $this);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
 		$o_view->setVar('request', $po_request);
 		
 		$va_type_restrictions = $this->getTypeRestrictions();
@@ -2444,15 +2444,15 @@ if (!$pb_omit_editing_info) {
 	 * editing. Other factors, such as repeatibility, may prevent inline editing for some values.
 	 *
 	 * @param int $pn_type The attribute type
-	 * @return bool 
+	 * @return bool
 	 */
 	public static function attributeTypeSupportsInlineEditing($pn_type) {
 		return in_array($pn_type, array(
 			__CA_ATTRIBUTE_VALUE_TEXT__,
 			__CA_ATTRIBUTE_VALUE_DATERANGE__,
-		  	__CA_ATTRIBUTE_VALUE_URL__,
-		 	__CA_ATTRIBUTE_VALUE_CURRENCY__,
-		 	__CA_ATTRIBUTE_VALUE_LENGTH__,
+			__CA_ATTRIBUTE_VALUE_URL__,
+			__CA_ATTRIBUTE_VALUE_CURRENCY__,
+			__CA_ATTRIBUTE_VALUE_LENGTH__,
 			__CA_ATTRIBUTE_VALUE_WEIGHT__,
 			__CA_ATTRIBUTE_VALUE_TIMECODE__,
 			__CA_ATTRIBUTE_VALUE_INTEGER__,
@@ -2608,7 +2608,7 @@ if (!$pb_omit_editing_info) {
 		$o_dm = Datamodel::load();
 		
 		$va_placements = [];
-
+		
 		$vn_i = 1;
 		foreach($pa_bundles as $vn_i => $vs_field) {
 			$vs_bundle = str_replace(",", ".", $vs_field);
@@ -2642,9 +2642,9 @@ if (!$pb_omit_editing_info) {
 	 * @param array $pa_options Options include:
 	 *		request = The current request, used to calculate service urls. [Default is null]
 	 * @return array
-	 */ 
+	 */
 	static public function getColumnsForResultsEditor($pa_display_list, $pa_options=null) {
-		$po_request = caGetOption('request', $pa_options, null); 
+		$po_request = caGetOption('request', $pa_options, null);
 		$va_bundle_names = caExtractValuesFromArrayList($pa_display_list, 'bundle_name', array('preserveKeys' => true));
 		$va_column_spec = [];
 
@@ -2652,7 +2652,7 @@ if (!$pb_omit_editing_info) {
 			if (!(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']) {
 				// Read only
 				$va_column_spec[] = array(
-					'data' => str_replace(".", ",", $vs_bundle_name), 
+					'data' => str_replace(".", ",", $vs_bundle_name),
 					'readOnly' => !(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing'],
 					'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing'],
 					'placement_id' => $vn_placement_id
@@ -2662,7 +2662,7 @@ if (!$pb_omit_editing_info) {
 			switch($pa_display_list[$vn_placement_id]['inlineEditingType']) {
 				case DT_SELECT:
 					$va_column_spec[] = array(
-						'data' => str_replace(".", ",", $vs_bundle_name), 
+						'data' => str_replace(".", ",", $vs_bundle_name),
 						'readOnly' => false,
 						'type' => 'DT_SELECT',
 						'source' => $pa_display_list[$vn_placement_id]['inlineEditingListValues'],
@@ -2676,7 +2676,7 @@ if (!$pb_omit_editing_info) {
 					if ($po_request) {
 						$va_urls = caJSONLookupServiceUrl($po_request, 'ca_list_items');
 						$va_column_spec[] = array(
-							'data' => str_replace(".", ",", $vs_bundle_name), 
+							'data' => str_replace(".", ",", $vs_bundle_name),
 							'readOnly' => false,
 							'type' => 'DT_LOOKUP',
 							'list' => caGetListCode($pa_display_list[$vn_placement_id]['inlineEditingList']),
@@ -2690,7 +2690,7 @@ if (!$pb_omit_editing_info) {
 					break;
 				default:
 					$va_column_spec[] = array(
-						'data' => str_replace(".", ",", $vs_bundle_name), 
+						'data' => str_replace(".", ",", $vs_bundle_name),
 						'readOnly' => false,
 						'type' => 'DT_FIELD',
 						'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing'],
@@ -2703,7 +2703,7 @@ if (!$pb_omit_editing_info) {
 		return $va_column_spec;
 	}
 	# ------------------------------------------------------------------
-	/** 
+	/**
 	 * Save data from results editor. Data may be saved in two ways
 	 *	(1) "inline" from the spreadsheet view. Data in a changed cell will be submitted here in a "changes" array.
 	 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
@@ -2734,7 +2734,7 @@ if (!$pb_omit_editing_info) {
 					foreach($va_bundles as $va_bundle) {
 						if (!$t_subject->isSaveable($po_request, $va_bundle['bundle_name'])) { 
 							$va_error_list[$va_bundle['bundle_name']] = _t('Could not save change');
-							continue; 
+							continue;
 						}
 						
 						$va_bundle_info = $t_subject->getBundleInfo($va_bundle['bundle_name']);
@@ -2753,7 +2753,7 @@ if (!$pb_omit_editing_info) {
 									is_array($va_vals = array_shift($va_tmp))
 									&&
 									is_array($va_label_ids = array_keys($va_vals))
-									&& 
+									&&
 									(sizeof($va_label_ids) > 0)
 								) {
 									$vs_label_id = array_shift($va_label_ids);
@@ -2777,7 +2777,7 @@ if (!$pb_omit_editing_info) {
 									is_array($va_vals = array_shift($va_tmp))
 									&&
 									is_array($va_attr_ids = array_keys($va_vals))
-									&& 
+									&&
 									(sizeof($va_attr_ids) > 0)
 								) {
 									$vs_attribute_id = array_shift($va_attr_ids);
@@ -2796,12 +2796,12 @@ if (!$pb_omit_editing_info) {
 						$po_request->setParameter($vs_key, $_REQUEST[$vs_key] = $va_change['change'][3]);
 					}
 					
-					if($vb_set_value) { 
+					if($vb_set_value) {
 						$t_subject->saveBundlesForScreen(null, $po_request, $va_options = array(
 							'bundles' => $va_bundles, 'formName' => '_resultsEditor'
 						));
 					}
-					if ($po_request->numActionErrors()) { 
+					if ($po_request->numActionErrors()) {
 						$va_bundles = $po_request->getActionErrorSources();
 						foreach($va_bundles as $vs_bundle) {
 							$va_errors_for_bundle = [];
@@ -2900,7 +2900,7 @@ if (!$pb_omit_editing_info) {
 				) {
 					$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $po_request)));
 				}
-		
+				
 				if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
 					return [
 						'status' => 30,
@@ -2954,7 +2954,7 @@ if (!$pb_omit_editing_info) {
 		
 		$o_app_plugin_manager = new ApplicationPluginManager();
 		
-		# trigger "BeforeSaveItem" hook 
+		# trigger "BeforeSaveItem" hook
 		$o_app_plugin_manager->hookBeforeSaveItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
 
 		$vb_save_rc = $t_subject->saveBundlesForScreen(null, $po_request, $va_options = array('bundles' => ca_bundle_displays::makeBundlesForResultsEditor(array($ps_bundle)), 'formName' => 'complex'));
@@ -2980,7 +2980,7 @@ if (!$pb_omit_editing_info) {
 			}
 		}
 		
-		# trigger "SaveItem" hook 
+		# trigger "SaveItem" hook
 		$o_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
 		
 		$vn_id = $t_subject->getPrimaryKey();

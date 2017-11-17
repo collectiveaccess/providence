@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$po_request			= $this->getVar('request');
+	$po_request			= $this->getVar('request');
 	$va_tags			= $this->getVar('tags_list');
 	$vs_widget_id			= $this->getVar('widget_id');
 	$vb_unmoderated = 0;

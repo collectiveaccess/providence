@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
@@ -47,84 +47,84 @@ require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects'] = array(
- 	'NAME_SINGULAR' 	=> _t('object'),
- 	'NAME_PLURAL' 		=> _t('objects'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('object'),
+	'NAME_PLURAL' 		=> _t('objects'),
+	'FIELDS' 			=> array(
 		'object_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this object')
 		),
 		'parent_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Parent id', 'DESCRIPTION' => 'Identifier of parent object; is null if object is root of hierarchy.'
 		),
 		'hier_object_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Object hierarchy', 'DESCRIPTION' => 'Identifier of object that is root of the object hierarchy.'
 		),
 		'lot_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true, 'DONT_ALLOW_IN_UI' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('Lot'), 'DESCRIPTION' => _t('Lot this object belongs to; is null if object is not part of a lot.')
 		),
 		'locale_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DISPLAY_FIELD' => array('ca_locales.name'),
 				'DEFAULT' => '',
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('The locale from which the object originates.')
 		),
 		'source_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LIST_CODE' => 'object_sources',
 				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of object. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LIST_CODE' => 'object_types',
 				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object. In CollectiveAccess every object has a single "instrinsic" type that determines the set of descriptive, technical and administrative metadata that can be applied to it. As such this type is "low-level" and directly tied to the form of the object - eg. photograph, book, analog video recording, etc.')
 		),
 		'idno' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LABEL' => _t('Object identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this object. This is usually equivalent to the "accession number" in museum settings.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'idno_sort' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'is_deaccessioned' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'OPTIONS' => array(
 					_t('Yes') => 1,
@@ -136,9 +136,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Is deaccessioned'), 'DESCRIPTION' => _t('Check if object is deaccessioned')
 		),
 		'deaccession_date' => array(
-				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
@@ -146,9 +146,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the object was deaccessioned.')
 		),
 		'deaccession_disposal_date' => array(
-				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
@@ -156,9 +156,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Date of disposal'), 'DESCRIPTION' => _t('Enter the date the deaccessioned object was disposed of.')
 		),
 		'deaccession_notes' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 6,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
@@ -166,9 +166,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'BOUNDS_LENGTH' => array(0,65535)
 		),
 		'deaccession_type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
@@ -176,9 +176,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
 		),
 		'current_loc_class' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DONT_ALLOW_IN_UI' => true,
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('occurrences') => 67,
@@ -190,78 +190,78 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Current location class'), 'DESCRIPTION' => _t('Indicates classification of last location for objects (eg. storage location, occurrence, loan, movement)')
 		),
 		'current_loc_subclass' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DONT_ALLOW_IN_UI' => true,
 				'LABEL' => _t('Current location sub-class'), 'DESCRIPTION' => _t('Indicates sub-classification of last location for objects (eg. storage location relationship type, occurrence type, loan type, movement)')
 		),
 		'current_loc_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DONT_ALLOW_IN_UI' => true,
 				'LABEL' => _t('Current location'), 'DESCRIPTION' => _t('Reference to record recording details of current object location.')
 		),
 		'item_status_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LIST_CODE' => 'object_statuses',
 				'LABEL' => _t('Accession status'), 'DESCRIPTION' => _t('Indicates accession/collection status of object. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)')
 		),
 		'acquisition_type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LIST_CODE' => 'object_acq_types',
 				'LABEL' => _t('Acquisition method'), 'DESCRIPTION' => _t('Indicates method employed to acquire the object.')
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object information retrieved via web services [NOT IMPLEMENTED YET].'
 		),
 		'hier_left' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - left bound', 'DESCRIPTION' => 'Left-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'hier_right' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'extent' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LABEL' => _t('Extent'), 'DESCRIPTION' => _t('The extent of the object. This is typically the number of discrete items that compose the object represented by this record. It is stored as a whole number (eg. 1, 2, 3...).')
 		),
 		'extent_units' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LABEL' => _t('Extent units'), 'DESCRIPTION' => _t('Units of extent value. (eg. pieces, items, components, reels, etc.)'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
@@ -272,9 +272,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if object is accessible to the public or not.')
 		),
 		'status' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
@@ -288,24 +288,24 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the object record.')
 		),
 		'deleted' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object is deleted or not.'),
 				'BOUNDS_VALUE' => array(0,1)
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 		'acl_inherit_from_ca_collections' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
@@ -315,9 +315,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Inherit access settings from collections?'), 'DESCRIPTION' => _t('Determines whether access settings set for related collections are applied to this object.')
 		),
 		'acl_inherit_from_parent' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 				'BOUNDS_CHOICE_LIST' => array(
@@ -327,9 +327,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Inherit item-level access control settings from parent?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for parent object is applied to this object.')
 		),
 		'access_inherit_from_parent' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 				'DONT_ALLOW_IN_UI' => true,
@@ -340,9 +340,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether front-end access settings set for parent object is applied to this object.')
 		),
 		'view_count' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		),
@@ -371,13 +371,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_objects';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'object_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
-	# 
+	#
 	# These class properties allow generic scripts to properly display
 	# records from the table represented by this class
 	#
@@ -397,12 +397,12 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('idno');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -577,7 +577,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	/**
 	 * Override insert() to add child records to the same lot as parent
-	 */ 
+	 */
 	public function insert($pa_options=null) {
 		if ($vn_parent_id = $this->get('parent_id')) {
 			if(!$this->getAppConfig()->get('ca_objects_dont_inherit_lot_id_from_parent')) {
@@ -596,7 +596,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	/**
 	 * Override update() to set child records to the same lot as parent
-	 */ 
+	 */
 	public function update($pa_options=null) {
 		if ($vn_parent_id = $this->get('parent_id')) {
 			if(!$this->getAppConfig()->get('ca_objects_dont_inherit_lot_id_from_parent')) {
@@ -618,7 +618,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 * @param array $pa_options Most options are handled by subclasses. Options defined here include:
 	 *		assumeIdnoStubForLotID = set to force lookup of lot_id values as ca_object_lots.idno_stub values first not matter what, before consideration as a numeric lot_id. The default is false, in which case integer values are considered lot_ids and non-numeric values possible idno_stubs.
 	 *		
-	 * @return int 
+	 * @return int
 	 */
 	public function set($pm_fields, $pm_value="", $pa_options=null) {
 		if (!is_array($pm_fields)) {
@@ -671,7 +671,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		if ($t_dupe = parent::duplicate($pa_options)) {
 			$vb_duplicate_media = isset($pa_options['duplicate_media']) && $pa_options['duplicate_media'];
 		
-			if ($vb_duplicate_media) { 
+			if ($vb_duplicate_media) {
 				// Try to link representations
 				$o_db = $this->getDb();
 				
@@ -710,17 +710,17 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		if ($vb_we_set_transaction) { $o_t->commit();}
 		return $t_dupe;
 	}
- 	# ------------------------------------------------------
- 	# HTML form bundles
 	# ------------------------------------------------------
-	/** 
+	# HTML form bundles
+	# ------------------------------------------------------
+	/**
 	 * Returns HTML form bundle for object deaccession information
 	 *
 	 * @param HTTPRequest $po_request The current request
 	 * @param string $ps_form_name
 	 * @param string $ps_placement_code
 	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Supported options are 
+	 * @param array $pa_options Array of options. Supported options are
 	 *			noCache = If set to true then label cache is bypassed; default is true
 	 *
 	 * @return string Rendered HTML bundle
@@ -743,14 +743,14 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		return $o_view->render('ca_objects_deaccession.php');
 	}
 	# ------------------------------------------------------
-	/** 
+	/**
 	 * Returns HTML form bundle for object checkout information
 	 *
 	 * @param HTTPRequest $po_request The current request
 	 * @param string $ps_form_name
 	 * @param string $ps_placement_code
 	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Supported options are 
+	 * @param array $pa_options Array of options. Supported options are
 	 *			noCache = If set to true then label cache is bypassed; default is true
 	 *
 	 * @return string Rendered HTML bundle
@@ -778,10 +778,10 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		return $o_view->render('ca_object_checkouts.php');
 	}
 	# ------------------------------------------------------
- 	# Object location tracking
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns HTML form bundle for location tracking
+	# Object location tracking
+	# ------------------------------------------------------
+	/**
+	 * Returns HTML form bundle for location tracking
 	 *
 	 * @param HTTPRequest $po_request The current request
 	 * @param string $ps_form_name
@@ -791,19 +791,19 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 *			None yet.
 	 *
 	 * @return string Rendered HTML bundle
- 	 */
- 	public function getObjectLocationHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
- 		global $g_ui_locale;
+	 */
+	public function getObjectLocationHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
 		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		if (is_array($vs_display_template = caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined')))) {
-		    $vs_display_template = caExtractSettingValueByLocale($pa_bundle_settings, 'displayTemplate', $g_ui_locale);
+			$vs_display_template = caExtractSettingValueByLocale($pa_bundle_settings, 'displayTemplate', $g_ui_locale);
 		}
 		if (is_array($vs_history_template = caGetOption('historyTemplate', $pa_bundle_settings, $vs_display_template))) {
-		     $vs_history_template = caExtractSettingValueByLocale($pa_bundle_settings, 'historyTemplate', $g_ui_locale);
+			$vs_history_template = caExtractSettingValueByLocale($pa_bundle_settings, 'historyTemplate', $g_ui_locale);
 		}
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
@@ -846,11 +846,11 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		
 		return $o_view->render('ca_objects_location.php');
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Return array with list of significant events in object life cycle as configured for 
- 	 * a ca_objects_history editor bundle.
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array with list of significant events in object life cycle as configured for
+	 * a ca_objects_history editor bundle.
 	 *
 	 * @param array $pa_bundle_settings The settings for a ca_objects_history editing BUNDLES
 	 * @param array $pa_options Array of options. Options include:
@@ -861,11 +861,11 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 * @return array A list of life cycle events, indexed by historic timestamp for date of occurrrence. Each list value is an array of history entries.
 	 *
 	 * @used-by ca_objects::getObjectHistoryHTMLFormBundle
- 	 */
- 	public function getObjectHistory($pa_bundle_settings=null, $pa_options=null) {
- 		global $g_ui_locale;
- 		$o_dm = Datamodel::load();
- 		
+	 */
+	public function getObjectHistory($pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		$o_dm = Datamodel::load();
+		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 
@@ -896,7 +896,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null)) && ($vn_lot_id = $this->get('lot_id'))) {
 			$t_lot = new ca_object_lots($vn_lot_id);
 			if (!$t_lot->get('ca_object_lots.deleted')) {
-				$va_lot_type_info = $t_lot->getTypeList(); 
+				$va_lot_type_info = $t_lot->getTypeList();
 				$vn_type_id = $t_lot->get('ca_object_lots.type_id');
 			
 				$vs_color = $va_lot_type_info[$vn_type_id]['color'];
@@ -938,7 +938,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$vs_default_display_template = '^ca_object_lots.preferred_labels.name (^ca_object_lots.idno_stub)';
 					$vs_display_template = $pb_display_label_only ? "" : caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
 				
-				    $o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
+					$o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_object_lots',
 						'id' => $vn_lot_id,
@@ -961,7 +961,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$qr_loans = caMakeSearchResult('ca_loans_x_objects', $va_loans);
 			
 			$t_loan = new ca_loans();
-			$va_loan_type_info = $t_loan->getTypeList(); 
+			$va_loan_type_info = $t_loan->getTypeList();
 			
 			$va_date_elements_by_type = array();
 			foreach($va_loan_types as $vn_type_id) {
@@ -1034,7 +1034,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$qr_movements = caMakeSearchResult('ca_movements_x_objects', $va_movements);
 			
 			$t_movement = new ca_movements();
-			$va_movement_type_info = $t_movement->getTypeList(); 
+			$va_movement_type_info = $t_movement->getTypeList();
 			
 			$va_date_elements_by_type = array();
 			foreach($va_movement_types as $vn_type_id) {
@@ -1109,7 +1109,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$qr_occurrences = caMakeSearchResult('ca_objects_x_occurrences', $va_occurrences);
 			
 			$t_occurrence = new ca_occurrences();
-			$va_occurrence_type_info = $t_occurrence->getTypeList(); 
+			$va_occurrence_type_info = $t_occurrence->getTypeList();
 			
 			$va_date_elements_by_type = array();
 			foreach($va_occurrence_types as $vn_type_id) {
@@ -1128,7 +1128,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$va_dates = array();
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
-						$va_date_bits = explode('.', $vs_date_element);	
+						$va_date_bits = explode('.', $vs_date_element);
 						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_occurrences.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_occurrences->get($vs_date_spec, array('sortable' => true)),
@@ -1182,7 +1182,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$qr_collections = caMakeSearchResult('ca_objects_x_collections', $va_collections);
 			
 			$t_collection = new ca_collections();
-			$va_collection_type_info = $t_collection->getTypeList(); 
+			$va_collection_type_info = $t_collection->getTypeList();
 			
 			$va_date_elements_by_type = array();
 			foreach($va_collection_types as $vn_type_id) {
@@ -1255,7 +1255,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		if(is_array($va_location_types = caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)) && is_array($va_locations) && sizeof($va_locations)) {	
 			$t_location = new ca_storage_locations();
 			if ($this->inTransaction()) { $t_location->setTransaction($this->getTransaction()); }
-			$va_location_type_info = $t_location->getTypeList(); 
+			$va_location_type_info = $t_location->getTypeList();
 			
 			$vs_name_singular = $t_location->getProperty('NAME_SINGULAR');
 			$vs_name_plural = $t_location->getProperty('NAME_PLURAL');
@@ -1323,8 +1323,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					'display' => $this->getWithTemplate($vs_display_template),
 					'color' => $vs_color,
 					'icon_url' => '',
-					'typename_singular' => $vs_name_singular = _t('deaccession'), 
-					'typename_plural' => $vs_name_plural = _t('deaccessions'), 
+					'typename_singular' => $vs_name_singular = _t('deaccession'),
+					'typename_plural' => $vs_name_plural = _t('deaccessions'),
 					'type_id' => null,
 					'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon"><div class="caUseHistoryIconText">'.$vs_name_singular.'</div>'.'</div></div>',
 					'date' => $this->get('deaccession_date')
@@ -1340,14 +1340,14 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		if(sizeof(ca_objects::$s_object_use_cache[$vs_cache_key]) > 100) {
-			 ca_objects::$s_object_use_cache[$vs_cache_key] = array_slice(ca_objects::$s_object_use_cache[$vs_cache_key], 0, 50);
-		} 
+			ca_objects::$s_object_use_cache[$vs_cache_key] = array_slice(ca_objects::$s_object_use_cache[$vs_cache_key], 0, 50);
+		}
 		
 		return ca_objects::$s_object_use_cache[$vs_cache_key] = $va_history;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns HTML editor form bundle for ca_objects_history (object use history bundle)
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns HTML editor form bundle for ca_objects_history (object use history bundle)
 	 *
 	 * @param HTTPRequest $po_request The current request
 	 * @param string $ps_form_name
@@ -1361,13 +1361,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 * @return string Rendered HTML bundle
 	 *
 	 * @uses ca_objects::getObjectHistory()
- 	 */
- 	public function getObjectHistoryHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+	 */
+	public function getObjectHistoryHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
 		require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
 		require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 		
- 		global $g_ui_locale;
+		global $g_ui_locale;
 		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
@@ -1451,8 +1451,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$o_view->setVar('history', $va_history);
 		
 		return $o_view->render('ca_objects_history.php');
- 	}
- 	# ------------------------------------------------------
+	}
+	# ------------------------------------------------------
 	private function _processObjectHistoryBundleSettings($pa_bundle_settings) {
 
 		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_criteria = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_criteria)) {
@@ -1528,82 +1528,82 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		return $pa_bundle_settings;
 	}
 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getLastMovement($pa_options=null) {
- 		$pn_object = caGetOption('object_id', $pa_options, null);
- 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
- 		
- 		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
- 		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
- 		
- 		$vn_current_date = TimeExpressionParser::now();
- 		
- 		$o_db = $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT cmo.relation_id
- 			FROM ca_movements_x_objects cmo
- 			INNER JOIN ca_movements AS m ON m.movement_id = cmo.movement_id
- 			INNER JOIN ca_attributes AS a ON a.row_id = m.movement_id
- 			INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
- 			WHERE
- 				(cmo.object_id = ?) AND 
- 				(av.element_id = ?) AND (a.table_num = 137) AND 
- 				(m.deleted = 0) AND (av.value_decimal1 <= ?)
- 			ORDER BY
- 				av.value_decimal1 DESC, cmo.relation_id DESC
- 			LIMIT 1
- 		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_current_date));
- 		if($qr_res->nextRow()) {
- 			return new ca_movements_x_objects($qr_res->get('relation_id'));
- 		}
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 *
- 	 * @param array $pa_options Array of options:
- 	 *		template =
- 	 *		dateElement = 
- 	 */
- 	public function getMovementHistory($pa_options=null) {
- 		$pn_object = caGetOption('object_id', $pa_options, null);
- 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
- 		
- 		$ps_display_template = caGetOption('template', $pa_options, '^ca_movements_x_objects.relation_id');
- 		
- 		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
- 		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
- 		
- 		$vn_current_date = TimeExpressionParser::now();
- 		
- 		//
- 		// Directly query the date attribute for performance
- 		// 
- 		$o_dm = Datamodel::load();
- 		$vn_movements_table_num = (int)$o_dm->getTableNum("ca_movements");
- 		
- 		$o_db = $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT cmo.relation_id, cmo.movement_id, cmo.object_id, av.value_decimal1
- 			FROM ca_movements_x_objects cmo
- 			INNER JOIN ca_movements AS m ON m.movement_id = cmo.movement_id
- 			INNER JOIN ca_attributes AS a ON a.row_id = m.movement_id
- 			INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
- 			WHERE
- 				(cmo.object_id = ?) AND 
- 				(av.element_id = ?) AND (a.table_num = ?) AND 
- 				(m.deleted = 0)
- 			ORDER BY
- 				av.value_decimal1 DESC, cmo.relation_id DESC
- 		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_movements_table_num));
- 		
- 		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
- 	
+	/**
+	 *
+	 */
+	public function getLastMovement($pa_options=null) {
+		$pn_object = caGetOption('object_id', $pa_options, null);
+		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+		
+		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
+		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
+		
+		$vn_current_date = TimeExpressionParser::now();
+		
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT cmo.relation_id
+			FROM ca_movements_x_objects cmo
+			INNER JOIN ca_movements AS m ON m.movement_id = cmo.movement_id
+			INNER JOIN ca_attributes AS a ON a.row_id = m.movement_id
+			INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
+			WHERE
+				(cmo.object_id = ?) AND 
+				(av.element_id = ?) AND (a.table_num = 137) AND 
+				(m.deleted = 0) AND (av.value_decimal1 <= ?)
+			ORDER BY
+				av.value_decimal1 DESC, cmo.relation_id DESC
+			LIMIT 1
+		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_current_date));
+		if($qr_res->nextRow()) {
+			return new ca_movements_x_objects($qr_res->get('relation_id'));
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param array $pa_options Array of options:
+	 *		template =
+	 *		dateElement =
+	 */
+	public function getMovementHistory($pa_options=null) {
+		$pn_object = caGetOption('object_id', $pa_options, null);
+		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+		
+		$ps_display_template = caGetOption('template', $pa_options, '^ca_movements_x_objects.relation_id');
+		
+		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
+		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
+		
+		$vn_current_date = TimeExpressionParser::now();
+		
+		//
+		// Directly query the date attribute for performance
+		// 
+		$o_dm = Datamodel::load();
+		$vn_movements_table_num = (int)$o_dm->getTableNum("ca_movements");
+		
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT cmo.relation_id, cmo.movement_id, cmo.object_id, av.value_decimal1
+			FROM ca_movements_x_objects cmo
+			INNER JOIN ca_movements AS m ON m.movement_id = cmo.movement_id
+			INNER JOIN ca_attributes AS a ON a.row_id = m.movement_id
+			INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
+			WHERE
+				(cmo.object_id = ?) AND 
+				(av.element_id = ?) AND (a.table_num = ?) AND 
+				(m.deleted = 0)
+			ORDER BY
+				av.value_decimal1 DESC, cmo.relation_id DESC
+		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_movements_table_num));
+		
+		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
+	
 		$va_paths = $va_location_ids = array();
- 		if(sizeof($va_relation_ids)) {
+		if(sizeof($va_relation_ids)) {
 			// get location paths
 			$qr_paths = $o_db->query("
 				SELECT cmo.relation_id, cmo.movement_id, cxsl.source_info
@@ -1618,135 +1618,135 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$va_paths[$qr_paths->get('movement_id')] = is_array($va_data['path']) ? join(" ➜ ", $va_data['path']) : $qr_paths->get('ca_storage_locations.hierarchy.preferred_labels.name', array('delimiter' => ' ➜ '));
 				$va_location_ids[$qr_paths->get('movement_id')] = $va_data['ids'];
 			}
- 		}
- 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_movements_x_objects', $va_relation_ids, array('returnAsArray' => true, 'forceValues' => array('ca_storage_locations.hierarchy.preferred_labels.name' => $va_paths)));
- 
+		}
+		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_movements_x_objects', $va_relation_ids, array('returnAsArray' => true, 'forceValues' => array('ca_storage_locations.hierarchy.preferred_labels.name' => $va_paths)));
+
 		$qr_res->seek(0);
- 		$va_items = array();
- 		
- 		$vb_have_seen_the_present = false;
- 		while($qr_res->nextRow()) {
- 			$va_row = $qr_res->getRow();
- 			$vn_relation_id = $va_row['relation_id'];
- 			
- 			if ($va_row['value_decimal1'] > $vn_current_date) { 
- 				$vs_status = 'FUTURE';
- 			} else {
- 				$vs_status = $vb_have_seen_the_present ? 'PAST' : 'PRESENT';
- 				$vb_have_seen_the_present = true;
- 			}
- 			
- 			$va_items[$vn_relation_id] = array(
- 				'object_id' => $va_row['object_id'],
- 				'movement_id' => $va_row['movement_id'],
- 				'display' => array_shift($va_displays),
- 				'status' => $vs_status
- 			);
- 		}
- 		return $va_items;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Return last storage location as an ca_objects_x_storage_locations instance
- 	 */
- 	public function getLastLocation($pa_options=null) {
- 		$pn_object_id = caGetOption('object_id', $pa_options, null);
- 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
- 		
- 		$vn_current_date = TimeExpressionParser::now();
- 		
- 		$o_db = $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT csl.relation_id
- 			FROM ca_objects_x_storage_locations csl
- 			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
- 			WHERE
- 				(csl.object_id = ?) AND 
- 				(sl.deleted = 0) AND ((csl.sdatetime <= ?) || (csl.sdatetime IS NULL))
- 			ORDER BY
- 				csl.sdatetime DESC, csl.relation_id DESC
- 			LIMIT 1
- 		", array($vn_object_id, $vn_current_date));
- 		
- 		if($qr_res->nextRow()) {
- 			$t_loc =  new ca_objects_x_storage_locations($qr_res->get('relation_id'));
- 			if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
- 			return $t_loc;
- 		}
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Return last storage location formatted using provided template
- 	 */
- 	public function getLastLocationForDisplay($ps_template, $pa_options=null) {
- 		if ($t_last_loc = $this->getLastLocation($pa_options)) {
- 			return $t_last_loc->getWithTemplate($ps_template, $pa_options);
- 		}
- 		return null;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 *
- 	 * @param array $pa_options Array of options:
- 	 *		template =
- 	 */
- 	public function getLocationHistory($pa_options=null) {
- 		$pn_object_id = caGetOption('object_id', $pa_options, null);
- 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
- 		
- 		$ps_display_template = caGetOption('template', $pa_options, '^ca_objects_x_storage_locations.relation_id');
- 		
- 		$vn_current_date = TimeExpressionParser::now();
- 		
- 		//
- 		// Directly query the date field for performance
- 		// 
- 		
- 		$o_db = $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT csl.relation_id, csl.location_id, csl.object_id, csl.sdatetime, csl.edatetime, csl.source_info
- 			FROM ca_objects_x_storage_locations csl
- 			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
- 			WHERE
- 				(csl.object_id = ?) AND 
- 				(sl.deleted = 0)
- 			ORDER BY
- 				 csl.sdatetime DESC, csl.relation_id DESC
- 		", array($vn_object_id));
- 		
- 		
- 		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
- 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_objects_x_storage_locations', $va_relation_ids, array('returnAsArray' => true));
- 
+		$va_items = array();
+		
+		$vb_have_seen_the_present = false;
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			$vn_relation_id = $va_row['relation_id'];
+			
+			if ($va_row['value_decimal1'] > $vn_current_date) {
+				$vs_status = 'FUTURE';
+			} else {
+				$vs_status = $vb_have_seen_the_present ? 'PAST' : 'PRESENT';
+				$vb_have_seen_the_present = true;
+			}
+			
+			$va_items[$vn_relation_id] = array(
+				'object_id' => $va_row['object_id'],
+				'movement_id' => $va_row['movement_id'],
+				'display' => array_shift($va_displays),
+				'status' => $vs_status
+			);
+		}
+		return $va_items;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return last storage location as an ca_objects_x_storage_locations instance
+	 */
+	public function getLastLocation($pa_options=null) {
+		$pn_object_id = caGetOption('object_id', $pa_options, null);
+		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+		
+		$vn_current_date = TimeExpressionParser::now();
+		
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT csl.relation_id
+			FROM ca_objects_x_storage_locations csl
+			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
+			WHERE
+				(csl.object_id = ?) AND 
+				(sl.deleted = 0) AND ((csl.sdatetime <= ?) || (csl.sdatetime IS NULL))
+			ORDER BY
+				csl.sdatetime DESC, csl.relation_id DESC
+			LIMIT 1
+		", array($vn_object_id, $vn_current_date));
+		
+		if($qr_res->nextRow()) {
+			$t_loc =  new ca_objects_x_storage_locations($qr_res->get('relation_id'));
+			if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+			return $t_loc;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return last storage location formatted using provided template
+	 */
+	public function getLastLocationForDisplay($ps_template, $pa_options=null) {
+		if ($t_last_loc = $this->getLastLocation($pa_options)) {
+			return $t_last_loc->getWithTemplate($ps_template, $pa_options);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param array $pa_options Array of options:
+	 *		template =
+	 */
+	public function getLocationHistory($pa_options=null) {
+		$pn_object_id = caGetOption('object_id', $pa_options, null);
+		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+		
+		$ps_display_template = caGetOption('template', $pa_options, '^ca_objects_x_storage_locations.relation_id');
+		
+		$vn_current_date = TimeExpressionParser::now();
+		
+		//
+		// Directly query the date field for performance
+		//
+		
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT csl.relation_id, csl.location_id, csl.object_id, csl.sdatetime, csl.edatetime, csl.source_info
+			FROM ca_objects_x_storage_locations csl
+			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
+			WHERE
+				(csl.object_id = ?) AND 
+				(sl.deleted = 0)
+			ORDER BY
+				csl.sdatetime DESC, csl.relation_id DESC
+		", array($vn_object_id));
+		
+		
+		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
+		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_objects_x_storage_locations', $va_relation_ids, array('returnAsArray' => true));
+
 		$qr_res->seek(0);
- 		$va_items = array();
- 		
- 		while($qr_res->nextRow()) {
- 			$va_row = $qr_res->getRow();
- 			$vn_relation_id = $va_row['relation_id'];
- 			
- 			if ($va_row['sdatetime'] > $vn_current_date) { 
- 				$vs_status = 'FUTURE';
- 			} elseif ($va_row['source_info'] == 'current') {
- 				$vs_status = 'PRESENT';
- 			} else {
- 				$vs_status = 'PAST';
- 			}
- 			
- 			$va_items[$vn_relation_id] = array(
- 				'object_id' => $va_row['object_id'],
- 				'location_id' => $va_row['location_id'],
- 				'display' => array_shift($va_displays),
- 				'status' => $vs_status
- 			);
- 		}
- 		return $va_items;
- 	}
- 	# ------------------------------------------------------
- 	# Components
- 	# ------------------------------------------------------
+		$va_items = array();
+		
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			$vn_relation_id = $va_row['relation_id'];
+			
+			if ($va_row['sdatetime'] > $vn_current_date) {
+				$vs_status = 'FUTURE';
+			} elseif ($va_row['source_info'] == 'current') {
+				$vs_status = 'PRESENT';
+			} else {
+				$vs_status = 'PAST';
+			}
+			
+			$va_items[$vn_relation_id] = array(
+				'object_id' => $va_row['object_id'],
+				'location_id' => $va_row['location_id'],
+				'display' => array_shift($va_displays),
+				'status' => $vs_status
+			);
+		}
+		return $va_items;
+	}
+	# ------------------------------------------------------
+	# Components
+	# ------------------------------------------------------
 	/** 
 	 * Returns HTML form bundle for component listing
 	 *
@@ -1779,13 +1779,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		return $o_view->render('ca_objects_components_list.php');
 	}
 	# ------------------------------------------------------
-	/** 
+	/**
 	 * Return number of components directly linked to this container
 	 *
 	 * @param array $pa_options Array of options:
 	 *			object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
 	 *	
-	 * @return int 
+	 * @return int
 	 */
 	public function getComponentCount($pa_options=null) {
 		$pn_object_id = caGetOption('object_id', $pa_options, null);
@@ -1801,23 +1801,23 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 	
 		if (!is_array($va_ids)) { return 0; }
-		return sizeof($va_ids);	
+		return sizeof($va_ids);
 	}
 	# ------------------------------------------------------
-	/** 
+	/**
 	 * Return number of components directly linked to this container
 	 *
 	 * @param array $pa_options Array of options:
 	 *		object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
 	 *		returnAs = what to return; possible values are:
-	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined)
 	 *			ids						= an array of ids (aka. primary keys)
-	 *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel
 	 *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
 	 *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
 	 *			info					= an array, keyed on object_id with label, type and idno of each component
 	 *			
-	 * @return int 
+	 * @return int
 	 */
 	public function getComponents($pa_options=null) {
 		$pn_object_id = caGetOption('object_id', $pa_options, null);
@@ -1851,13 +1851,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			
 			return caSortArrayByKeyInValue($va_data, array('idno'));
 		}
-		return $vm_res;	
+		return $vm_res;
 	}
 	# ------------------------------------------------------
-	/** 
+	/**
 	 * Check if currently loaded object is a component container
 	 *	
-	 * @return bool 
+	 * @return bool
 	 */
 	public function canTakeComponents() {
 		$va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
@@ -1866,10 +1866,10 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		return in_array($this->getTypeCode(), $va_container_types);
 	}
 	# ------------------------------------------------------
-	/** 
-	 * Check if currently loaded object is a component 
+	/**
+	 * Check if currently loaded object is a component
 	 *	
-	 * @return bool 
+	 * @return bool
 	 */
 	public function isComponent() {
 		$va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
@@ -1885,138 +1885,138 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		return true;
 	}
- 	# ------------------------------------------------------
- 	# Current location browse support
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::addRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_rel_id
- 	 * @param mixed $pm_type_id
- 	 * @param string $ps_effective_date
- 	 * @param string $ps_source_info
- 	 * @param string $ps_direction
- 	 * @param int $pn_rank
- 	 * @param array $pa_options
- 	 *
- 	 * @return BaseRelationshipModel
- 	 */
- 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 		if ($vn_rc = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
- 			
- 			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
- 				$this->deriveCurrentLocationForBrowse();
- 			}
- 		}
- 		
- 		return $vn_rc;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::editRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_relation_id
- 	 * @param mixed $pm_type_id
- 	 * @param string $ps_effective_date
- 	 * @param string $ps_source_info
- 	 * @param string $ps_direction
- 	 * @param int $pn_rank
- 	 * @param array $pa_array
- 	 *
- 	 * @return int
- 	 */
- 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 		if ($vn_rc = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
- 			
- 		//	if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
- 		//		$this->deriveCurrentLocationForBrowse();
- 		//	}
- 		}
- 		
- 		return $vn_rc;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::removeRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_relation_id
- 	 *
- 	 * @return int
- 	 */
- 	public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
- 		if ($vn_rc = parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id)) {
- 			
- 			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, null)) {
- 				$this->deriveCurrentLocationForBrowse();
- 			}
- 		}
- 		
- 		return $vn_rc;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::removeRelationships() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param mixed $pm_type_id
- 	 *
- 	 * @return int
- 	 */
- 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
- 		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options)) {
- 			
- 			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
- 				$this->deriveCurrentLocationForBrowse();
- 			}
- 		}
- 		
- 		return $vn_rc;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Determines is a change being made to the object's relationships maight affect current location. I
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num Table bame or number of the related table
- 	 * @param int $pn_rel_id Primary key of the record being related to the object
- 	 * @param mixed $pm_type_id Type_id or type code for relationship
- 	 * @param array $pa_options No options are currently supported.
- 	 *
- 	 * @return bool
- 	 */
- 	private function relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $pa_options=null) {
- 		if(!$pn_rel_id) { return true; }	// null record means we are batch deleting so go ahead and recalculate
- 		
- 		if (!($t_instance = $this->getAppDatamodel()->getInstance($pm_rel_table_name_or_num, true))) { return null; }
- 		if (($vs_table_name = $t_instance->tableName()) !== 'ca_storage_locations') {
- 			$pm_type_id = $t_instance->getTypeID($pn_rel_id);
- 		}
- 		
- 		if (ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id)) { return true; }
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Calculates the current location of the currently loaded object and stores them in the ca_objects.current_loc_class,
- 	 * ca_objects.current_loc_subclass and ca_objects.current_loc_id fields.
- 	 *
- 	 * @param array $pa_options
- 	 *
- 	 * @return bool
- 	 */
- 	public function deriveCurrentLocationForBrowse($pa_options=null) {
- 		$va_bundle_settings = array();
- 		$t_rel_type = new ca_relationship_types();
- 		$va_map = $this->getAppConfig()->getAssoc('current_location_criteria');
- 		if(!is_array($va_map)){
-		    $va_map = array();
-	    }
-	 
- 		foreach($va_map as $vs_table => $va_types) {
- 			$va_bundle_settings["{$vs_table}_showTypes"] = array();
- 			if(is_array($va_types)) {
+	# ------------------------------------------------------
+	# Current location browse support
+	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::addRelationship() to update current location fields in ca_objects
+	 *
+	 * @param mixed $pm_rel_table_name_or_num
+	 * @param int $pn_rel_id
+	 * @param mixed $pm_type_id
+	 * @param string $ps_effective_date
+	 * @param string $ps_source_info
+	 * @param string $ps_direction
+	 * @param int $pn_rank
+	 * @param array $pa_options
+	 *
+	 * @return BaseRelationshipModel
+	 */
+	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+		if ($vn_rc = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+			
+			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
+				$this->deriveCurrentLocationForBrowse();
+			}
+		}
+		
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::editRelationship() to update current location fields in ca_objects
+	 *
+	 * @param mixed $pm_rel_table_name_or_num
+	 * @param int $pn_relation_id
+	 * @param mixed $pm_type_id
+	 * @param string $ps_effective_date
+	 * @param string $ps_source_info
+	 * @param string $ps_direction
+	 * @param int $pn_rank
+	 * @param array $pa_array
+	 *
+	 * @return int
+	 */
+	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+		if ($vn_rc = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+			
+		//	if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
+		//		$this->deriveCurrentLocationForBrowse();
+		//	}
+		}
+		
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::removeRelationship() to update current location fields in ca_objects
+	 *
+	 * @param mixed $pm_rel_table_name_or_num
+	 * @param int $pn_relation_id
+	 *
+	 * @return int
+	 */
+	public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
+		if ($vn_rc = parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id)) {
+			
+			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, null)) {
+				$this->deriveCurrentLocationForBrowse();
+			}
+		}
+		
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::removeRelationships() to update current location fields in ca_objects
+	 *
+	 * @param mixed $pm_rel_table_name_or_num
+	 * @param mixed $pm_type_id
+	 *
+	 * @return int
+	 */
+	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
+		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options)) {
+			
+			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
+				$this->deriveCurrentLocationForBrowse();
+			}
+		}
+		
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Determines is a change being made to the object's relationships maight affect current location. I
+	 *
+	 * @param mixed $pm_rel_table_name_or_num Table bame or number of the related table
+	 * @param int $pn_rel_id Primary key of the record being related to the object
+	 * @param mixed $pm_type_id Type_id or type code for relationship
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return bool
+	 */
+	private function relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $pa_options=null) {
+		if(!$pn_rel_id) { return true; }	// null record means we are batch deleting so go ahead and recalculate
+		
+		if (!($t_instance = $this->getAppDatamodel()->getInstance($pm_rel_table_name_or_num, true))) { return null; }
+		if (($vs_table_name = $t_instance->tableName()) !== 'ca_storage_locations') {
+			$pm_type_id = $t_instance->getTypeID($pn_rel_id);
+		}
+		
+		if (ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id)) { return true; }
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Calculates the current location of the currently loaded object and stores them in the ca_objects.current_loc_class,
+	 * ca_objects.current_loc_subclass and ca_objects.current_loc_id fields.
+	 *
+	 * @param array $pa_options
+	 *
+	 * @return bool
+	 */
+	public function deriveCurrentLocationForBrowse($pa_options=null) {
+		$va_bundle_settings = array();
+		$t_rel_type = new ca_relationship_types();
+		$va_map = $this->getAppConfig()->getAssoc('current_location_criteria');
+		if(!is_array($va_map)){
+			$va_map = array();
+		}
+	
+		foreach($va_map as $vs_table => $va_types) {
+			$va_bundle_settings["{$vs_table}_showTypes"] = array();
+			if(is_array($va_types)) {
 				foreach($va_types as $vs_type => $va_config) {
 					switch($vs_table) {
 						case 'ca_storage_locations':
@@ -2031,8 +2031,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					}
 				}
 			}
- 		}
- 		
+		}
+		
 		if (is_array($va_history = $this->getObjectHistory($va_bundle_settings, array('displayLabelOnly' => true, 'limit' => 1, 'currentOnly' => true, 'noCache' => true))) && (sizeof($va_history) > 0)) {
 			$va_current_location = array_shift(array_shift($va_history));
 			
@@ -2044,34 +2044,34 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		return $this->setCurrentLocationForBrowse(null, null, array('dontCheckID' => true));
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Sets the ca_objects.current_loc_class, ca_objects.current_loc_subclass and ca_objects.current_loc_id
- 	 * fields in the currently loaded object row with information about the current location. These fields are used 
- 	 * by BrowseEngine to browse objects on current location
- 	 *
- 	 * @param mixed $pm_loc_class
- 	 * @param mixed $pm_current_loc_subclass
- 	 * @param int $pn_current_loc_id
- 	 * @param array $pa_options Options include:
- 	 *		dontCheckID = Don't verify that the referenced row exists. This can save time if you're updating many object rows. [Default=false]
- 	 *
- 	 * @see BrowseEngine
- 	 *
- 	 * @return bool
- 	 */
- 	private function setCurrentLocationForBrowse($pm_current_loc_class, $pm_current_loc_subclass, $pn_current_loc_id, $pa_options=null) {
- 		if (!$this->getPrimaryKey()) { return null; }
- 		if ($vn_table_num = $this->getAppDatamodel()->getTableNum($pm_current_loc_class)) {
- 			$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
- 			if (!caGetOption('dontCheckID', $pa_options, false)) {
- 				if (!$t_instance->load(array($t_instance->primaryKey() => $pn_current_loc_id, 'deleted' => 0))) {
- 					return false;
- 				}
- 			}
- 			
- 			if(!is_numeric($vn_type_id = $pm_current_loc_subclass)) {
+	}
+	# ------------------------------------------------------
+	/**
+	 * Sets the ca_objects.current_loc_class, ca_objects.current_loc_subclass and ca_objects.current_loc_id
+	 * fields in the currently loaded object row with information about the current location. These fields are used
+	 * by BrowseEngine to browse objects on current location
+	 *
+	 * @param mixed $pm_loc_class
+	 * @param mixed $pm_current_loc_subclass
+	 * @param int $pn_current_loc_id
+	 * @param array $pa_options Options include:
+	 *		dontCheckID = Don't verify that the referenced row exists. This can save time if you're updating many object rows. [Default=false]
+	 *
+	 * @see BrowseEngine
+	 *
+	 * @return bool
+	 */
+	private function setCurrentLocationForBrowse($pm_current_loc_class, $pm_current_loc_subclass, $pn_current_loc_id, $pa_options=null) {
+		if (!$this->getPrimaryKey()) { return null; }
+		if ($vn_table_num = $this->getAppDatamodel()->getTableNum($pm_current_loc_class)) {
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
+			if (!caGetOption('dontCheckID', $pa_options, false)) {
+				if (!$t_instance->load(array($t_instance->primaryKey() => $pn_current_loc_id, 'deleted' => 0))) {
+					return false;
+				}
+			}
+			
+			if(!is_numeric($vn_type_id = $pm_current_loc_subclass)) {
 				switch($vs_table_name) {
 					case 'ca_storage_locations':
 						$t_rel_type = new ca_relationship_types();
@@ -2083,117 +2083,117 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 			}
 			
- 			$this->setMode(ACCESS_WRITE);
- 			$this->set('current_loc_class', $vn_table_num);
- 			$this->set('current_loc_subclass', $vn_type_id);
- 			$this->set('current_loc_id', $pn_current_loc_id);
- 			$this->update();
- 			
- 			if ($this->numErrors()) {
- 				return false;
- 			} 
- 			
- 			return true;
- 		} else {
- 			$this->setMode(ACCESS_WRITE);
- 			$this->set('current_loc_class', null);
- 			$this->set('current_loc_subclass', null);
- 			$this->set('current_loc_id', null);
- 			$this->update();
- 			
- 			
- 			if ($this->numErrors()) {
- 				return false;
- 			} 
- 			return true;
- 		}
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Fetches configuration for the specified location class/subclass
- 	 *
- 	 * @param mixed $pm_current_loc_class Table name or number (aka. class)
- 	 * @param mixed $pm_current_loc_subclass Type_id or code (aka. subclass)
- 	 * 
- 	 * @return array
- 	 */
- 	public static function getConfigurationForCurrentLocationType($pm_current_loc_class, $pm_current_loc_subclass=null, $pa_options=null) {
- 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_current_loc_class}/{$pm_current_loc_subclass}");
- 		
- 		if (isset(ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key])) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key]; }
- 		$o_config = Configuration::load();
- 		$o_dm = Datamodel::load();
- 		
- 		$va_map = $o_config->getAssoc('current_location_criteria');
- 		
- 		if (isset($va_map['ca_storage_locations'])) { 
- 			$va_map['ca_objects_x_storage_locations'] = $va_map['ca_storage_locations'];
- 			unset($va_map['ca_storage_locations']);
- 		}
- 		
- 		if (!($t_instance = $o_dm->getInstance($pm_current_loc_class, true))) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null; }
- 		$vs_table_name = $t_instance->tableName();
- 		
- 		if (isset($va_map[$vs_table_name])) {
- 			if ((!$pm_current_loc_subclass) && isset($va_map[$vs_table_name]['*'])) { return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_type_id}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = $va_map[$vs_table_name]['*']; }	// return default config if no type is specified
- 			
- 			if ($pm_current_loc_subclass) { 
- 				switch($vs_table_name) {
- 					case 'ca_objects_x_storage_locations':
- 						$va_types = ca_relationship_types::relationshipTypeIDsToTypeCodes(array($pm_current_loc_subclass));
- 						$vs_type = array_shift($va_types);
- 						break;
- 					default:
- 						$vs_type = $t_instance->getTypeCode($pm_current_loc_subclass);
- 						break;
- 				}
- 				
- 				$va_facet_display_config = caGetOption('facet', $pa_options, null); 
- 				if ($vs_type && isset($va_map[$vs_table_name][$vs_type])) {
- 					if (is_array($va_facet_display_config) && isset($va_facet_display_config[$vs_table_name][$vs_type])) {
- 						$va_map[$vs_table_name][$vs_type] = array_merge($va_map[$vs_table_name][$vs_type], $va_facet_display_config[$vs_table_name][$vs_type]);
- 					}
+			$this->setMode(ACCESS_WRITE);
+			$this->set('current_loc_class', $vn_table_num);
+			$this->set('current_loc_subclass', $vn_type_id);
+			$this->set('current_loc_id', $pn_current_loc_id);
+			$this->update();
+			
+			if ($this->numErrors()) {
+				return false;
+			}
+			
+			return true;
+		} else {
+			$this->setMode(ACCESS_WRITE);
+			$this->set('current_loc_class', null);
+			$this->set('current_loc_subclass', null);
+			$this->set('current_loc_id', null);
+			$this->update();
+			
+			
+			if ($this->numErrors()) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Fetches configuration for the specified location class/subclass
+	 *
+	 * @param mixed $pm_current_loc_class Table name or number (aka. class)
+	 * @param mixed $pm_current_loc_subclass Type_id or code (aka. subclass)
+	 * 
+	 * @return array
+	 */
+	public static function getConfigurationForCurrentLocationType($pm_current_loc_class, $pm_current_loc_subclass=null, $pa_options=null) {
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_current_loc_class}/{$pm_current_loc_subclass}");
+		
+		if (isset(ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key])) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key]; }
+		$o_config = Configuration::load();
+		$o_dm = Datamodel::load();
+		
+		$va_map = $o_config->getAssoc('current_location_criteria');
+		
+		if (isset($va_map['ca_storage_locations'])) {
+			$va_map['ca_objects_x_storage_locations'] = $va_map['ca_storage_locations'];
+			unset($va_map['ca_storage_locations']);
+		}
+		
+		if (!($t_instance = $o_dm->getInstance($pm_current_loc_class, true))) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null; }
+		$vs_table_name = $t_instance->tableName();
+		
+		if (isset($va_map[$vs_table_name])) {
+			if ((!$pm_current_loc_subclass) && isset($va_map[$vs_table_name]['*'])) { return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_type_id}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = $va_map[$vs_table_name]['*']; }	// return default config if no type is specified
+			
+			if ($pm_current_loc_subclass) {
+				switch($vs_table_name) {
+					case 'ca_objects_x_storage_locations':
+						$va_types = ca_relationship_types::relationshipTypeIDsToTypeCodes(array($pm_current_loc_subclass));
+						$vs_type = array_shift($va_types);
+						break;
+					default:
+						$vs_type = $t_instance->getTypeCode($pm_current_loc_subclass);
+						break;
+				}
+				
+				$va_facet_display_config = caGetOption('facet', $pa_options, null);
+				if ($vs_type && isset($va_map[$vs_table_name][$vs_type])) {
+					if (is_array($va_facet_display_config) && isset($va_facet_display_config[$vs_table_name][$vs_type])) {
+						$va_map[$vs_table_name][$vs_type] = array_merge($va_map[$vs_table_name][$vs_type], $va_facet_display_config[$vs_table_name][$vs_type]);
+					}
 					return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = $va_map[$vs_table_name][$vs_type];
 				} elseif (isset($va_map[$vs_table_name]['*'])) {
 					if (is_array($va_facet_display_config) && isset($va_facet_display_config[$vs_table_name]['*'])) {
- 						$va_map[$vs_table_name][$vs_type] = array_merge($va_map[$vs_table_name]['*'], $va_facet_display_config[$vs_table_name]['*']);
- 					}
+						$va_map[$vs_table_name][$vs_type] = array_merge($va_map[$vs_table_name]['*'], $va_facet_display_config[$vs_table_name]['*']);
+					}
 					return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = $va_map[$vs_table_name]['*'];
 				}
- 			} 
- 			
- 		}
- 		return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null;
- 	}
- 	# ------------------------------------------------------
- 	# Object checkout 
- 	# ------------------------------------------------------
- 	/**
+			}
+			
+		}
+		return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null;
+	}
+	# ------------------------------------------------------
+	# Object checkout
+	# ------------------------------------------------------
+	/**
 	 * Determine if the currently loaded object may be marked as loaned out using the library checkout system.
 	 * Only object types configured for checkout in the object_checkout.conf configuration file may be used with the checkout system
 	 *
-	 * @return bool 
+	 * @return bool
 	 */
- 	public function canBeCheckedOut() {
- 		if (!$this->getPrimaryKey()) { return false; }
- 		return ca_object_checkouts::getObjectCheckoutConfigForType($this->getTypeCode()) ? true : false;
- 	}
+	public function canBeCheckedOut() {
+		if (!$this->getPrimaryKey()) { return false; }
+		return ca_object_checkouts::getObjectCheckoutConfigForType($this->getTypeCode()) ? true : false;
+	}
 	# ------------------------------------------------------
 	/**
 	 * Return checkout status for currently loaded object. By default a numeric constant is returned. Possible values are:
 	 *		__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__ (0)
 	 *		__CA_OBJECTS_CHECKOUT_STATUS_OUT__ (1)
-	 *		__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ (2)	
-	 *		__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__ (3)	
-	 * 
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ (2)
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__ (3)
+	 *
 	 * If the returnAsText option is set then a text status value suitable for display is returned. For detailed information
 	 * about the current status use the returnAsArray option, which returns an array with the following elements:
 	 *
 	 *		status = numeric status code
 	 *		status_display = status display text
 	 *		user_id = The user_id of the user who checked out the object (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__)
-	 *		user_name = Displayable user name and email 
+	 *		user_name = Displayable user name and email
 	 *		checkout_date = Date of checkout (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__) as printable text
 	 *
 	 * @param array $pa_options Options include:

@@ -30,46 +30,46 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */ 
-    
+/**
+ *
+ */
+
 include_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 class WLPlugPDFRendererPhantomJS Extends BasePDFRendererPlugIn Implements IWLPlugPDFRenderer {
 	# ------------------------------------------------
-	/** 
+	/**
 	 *
 	 */
 	private $ops_phantom_path;
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_page_size="letter";
 
-	/** 
+	/**
 	 *
 	 */
 	private $ops_page_orientation="portrait";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_top="0mm";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_right="0mm";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_bottom="0mm";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_left="0mm";
@@ -109,7 +109,7 @@ class WLPlugPDFRendererPhantomJS Extends BasePDFRendererPlugIn Implements IWLPlu
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $pa_options, false)) {
 			header("Cache-Control: private");
-   			header("Content-type: application/pdf");
+			header("Content-type: application/pdf");
 			header("Content-Disposition: attachment; filename=".caGetOption('filename', $pa_options, 'output.pdf'));
 			print $vs_pdf_content;
 		}

@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-	
+
+/**
+ *
+ */
+
 class HTTPMultiClientResult {
 	# -------------------------------------------------------------------
 	/**
@@ -62,7 +62,7 @@ class HTTPMultiClientResult {
 	 * @param Resource $po_multi_handle a multi-HTTP request resource of some kind (eg. multi-cURL or HTTPRequestPool)
 	 * @param array $pa_requests A list of service requests being processed by the multi-request
 	 */
-	public function __construct($po_multi_handle, $pa_requests) {	
+	public function __construct($po_multi_handle, $pa_requests) {
 		$this->opo_multi_handle = $po_multi_handle;
 		$this->opa_requests = $pa_requests;
 		
@@ -130,7 +130,7 @@ class HTTPMultiClientResult {
 		
 		
 		do {
-    		curl_multi_exec($this->opo_multi_handle ,$vb_running);
+			curl_multi_exec($this->opo_multi_handle ,$vb_running);
 		} while ($vb_running > 0);
 		
 		

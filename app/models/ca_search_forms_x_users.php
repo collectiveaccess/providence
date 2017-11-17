@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,9 +37,9 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_search_forms_x_users'] = array(
- 	'NAME_SINGULAR' 	=> _t('search forms ⇔ user association'),
- 	'NAME_PLURAL' 		=> _t('search forms ⇔ user associations'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('search forms ⇔ user association'),
+	'NAME_PLURAL' 		=> _t('search forms ⇔ user associations'),
+	'FIELDS' 			=> array(
 		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -88,7 +88,7 @@ class ca_search_forms_x_users extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_search_forms_x_users';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

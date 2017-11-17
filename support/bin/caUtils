@@ -30,7 +30,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
 	if (!_caUtilsLoadSetupPHP()) {
 		die("Could not find your CollectiveAccess setup.php file! Please set the COLLECTIVEACCESS_HOME environment variable to the location of your CollectiveAccess installation, or run this command from a sub-directory of your CollectiveAccess installation.\n");
 	}
@@ -57,7 +57,7 @@
 
 	initializeLocale($g_ui_locale);
 	
- 	$o_app_plugin_manager = new ApplicationPluginManager();
+	$o_app_plugin_manager = new ApplicationPluginManager();
 
 	$vs_cmd = $argv[1];
 	$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
@@ -101,7 +101,7 @@
 	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2017 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 	
 	print $vs_app_heading;
-			
+	
 	if (method_exists("CLIUtils", $vs_cmd_proc) || ($vb_is_plugin_command) || (($vs_cmd_proc === 'help') && (sizeof($va_args) > 1))) {
 		if ((sizeof($va_args) > 1) && ((strtolower($va_args[1]) === 'help') || ($vs_cmd_proc === 'help'))) {
 			//
@@ -187,7 +187,7 @@
 		} else {
 			print CLIUtils::textWithColor("You must specify a valid command. Valid commands are:", "bold_red")."\n\n";
 		}
-	
+		
 		$va_by_class = array();
 		foreach($va_methods as $vs_method) {
 			if (!CLIUtils::isCommand($vs_method)) { continue; }
@@ -221,7 +221,7 @@
 	# --------------------------------------------------------
 	/**
 	 * Try to locate and load setup.php bootstrap file. If load fails return false and 
-	 * let the caller handle telling the user. 
+	 * let the caller handle telling the user.
 	 *
 	 * @return bool True if setup.php is located and loaded, false if setup.php could not be found.
 	 */
@@ -256,9 +256,9 @@
 			$vs_setup_path_fallback = "/".join("/", $va_cwd)."/".$vs_setup_path;
 			if (file_exists($vs_setup_path_fallback)) {
 				// Guess paths based upon location of setup.php (*should* work)
-                if (!isset($_SERVER['DOCUMENT_ROOT']) || !$_SERVER['DOCUMENT_ROOT']) { $_SERVER['DOCUMENT_ROOT'] = '/'.join("/", $va_cwd); }
-                $_SERVER['SCRIPT_FILENAME'] = __FILE__;
-                if (!isset($_SERVER['HTTP_HOST']) || !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
+				if (!isset($_SERVER['DOCUMENT_ROOT']) || !$_SERVER['DOCUMENT_ROOT']) { $_SERVER['DOCUMENT_ROOT'] = '/'.join("/", $va_cwd); }
+				$_SERVER['SCRIPT_FILENAME'] = __FILE__;
+				if (!isset($_SERVER['HTTP_HOST']) || !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
 				
 				require_once($vs_setup_path_fallback);
 				return true;

@@ -52,10 +52,10 @@
 	# ----------------------------------------------------------------------
 	# --- Properties
 	# ----------------------------------------------------------------------
-    
-    /**
-     * List of files to add to archive
-     */
+	
+	/**
+	 * List of files to add to archive
+	 */
 	private $opa_file_list = array();
 	
 	
@@ -73,7 +73,7 @@
 	 * Initialize instance
 	 */
 	public function init() {
-		$this->opa_file_list = array();	
+		$this->opa_file_list = array();
 	}
 	# ----------------------------------------------------------------------
 	/**
@@ -83,88 +83,88 @@
 		$this->init();
 	}
 	# ----------------------------------------------------------------------
-    /**
-     * Converts a Unix timestamp to a four byte DOS date and time format (date
-     * in high two bytes, time in low two bytes allowing magnitude comparison).
-     *
-     * @param  integer  the current Unix timestamp
-     * @return integer  the current date in a four byte DOS format
-     *
-     * @access private
-     */
-    private function unix2DosTime($unixtime = 0) {
-        $timearray = ($unixtime == 0) ? getdate() : getdate($unixtime);
+	/**
+	 * Converts a Unix timestamp to a four byte DOS date and time format (date
+	 * in high two bytes, time in low two bytes allowing magnitude comparison).
+	 *
+	 * @param  integer  the current Unix timestamp
+	 * @return integer  the current date in a four byte DOS format
+	 *
+	 * @access private
+	 */
+	private function unix2DosTime($unixtime = 0) {
+		$timearray = ($unixtime == 0) ? getdate() : getdate($unixtime);
 
-        if ($timearray['year'] < 1980) {
-        	$timearray['year']    = 1980;
-        	$timearray['mon']     = 1;
-        	$timearray['mday']    = 1;
-        	$timearray['hours']   = 0;
-        	$timearray['minutes'] = 0;
-        	$timearray['seconds'] = 0;
-        } // end if
+		if ($timearray['year'] < 1980) {
+			$timearray['year']    = 1980;
+			$timearray['mon']     = 1;
+			$timearray['mday']    = 1;
+			$timearray['hours']   = 0;
+			$timearray['minutes'] = 0;
+			$timearray['seconds'] = 0;
+		} // end if
 
-        return (($timearray['year'] - 1980) << 25) | ($timearray['mon'] << 21) | ($timearray['mday'] << 16) |
-                ($timearray['hours'] << 11) | ($timearray['minutes'] << 5) | ($timearray['seconds'] >> 1);
-    }
+		return (($timearray['year'] - 1980) << 25) | ($timearray['mon'] << 21) | ($timearray['mday'] << 16) |
+				($timearray['hours'] << 11) | ($timearray['minutes'] << 5) | ($timearray['seconds'] >> 1);
+	}
 	# ----------------------------------------------------------------------
-    /**
-     * Adds a file to the archive
-     *
-     * @param string $data file path
-     * @param string $name name of the file in the archive (may contains the path)
-     * @param array $pa_options An array of options. Supported options are:
-     *		crc = Precomputed CRC to use for file. This can save time as the costliest operation for very large files in calculation of the CRC. CRC should be numeric. [Default is null]
-     *		
-     * @access public
-     */
-    public function addFile($ps_filepath, $ps_name=null, $pa_options=null) {
+	/**
+	 * Adds a file to the archive
+	 *
+	 * @param string $data file path
+	 * @param string $name name of the file in the archive (may contains the path)
+	 * @param array $pa_options An array of options. Supported options are:
+	 *		crc = Precomputed CRC to use for file. This can save time as the costliest operation for very large files in calculation of the CRC. CRC should be numeric. [Default is null]
+	 * 
+	 * @access public
+	 */
+	public function addFile($ps_filepath, $ps_name=null, $pa_options=null) {
 		if (!file_exists($ps_filepath)) { return null; }
 		if (!$ps_name) { $ps_name = basename($ps_filepath); }
-        $ps_name     = str_replace('\\', '/', $ps_name);
+		$ps_name     = str_replace('\\', '/', $ps_name);
 		
-        $vs_dtime    = dechex($this->unix2DosTime(time()));
-        
-        $this->opa_file_list[$ps_name] = array(
-        	'path' => $ps_filepath,
-        	'name' => $ps_name,
-        	'time' => $vs_dtime,
-        	'size' => filesize($ps_filepath),
-        	'crc' => isset($pa_options['crc']) ? $pa_options['crc'] : null
-        ); 
-        return sizeof($this->opa_file_list);
-    }
-    # ----------------------------------------------------------------------
-    /**
-     *
-     */
-    private function _stream($pa_options=null) {
-    
-    	$vb_dont_write = $pa_options['dontWrite'];
-    	
-    	$vb_need_zip64 = false;
-    	if (isset($pa_options['useZIP64'])) {
-    		$vb_need_zip64 = (bool)$pa_options['useZIP64'];
-    	} else {
-    		// Default is to use ZIP64 only if any single file or the archive
-    		// as a whole is over ~4gigs (less a 100meg "ceiling")
-    		$vn_total_size = 100*1024*1024;	// give some room for overhead
+		$vs_dtime    = dechex($this->unix2DosTime(time()));
+		
+		$this->opa_file_list[$ps_name] = array(
+			'path' => $ps_filepath,
+			'name' => $ps_name,
+			'time' => $vs_dtime,
+			'size' => filesize($ps_filepath),
+			'crc' => isset($pa_options['crc']) ? $pa_options['crc'] : null
+		);
+		return sizeof($this->opa_file_list);
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _stream($pa_options=null) {
+		
+		$vb_dont_write = $pa_options['dontWrite'];
+		
+		$vb_need_zip64 = false;
+		if (isset($pa_options['useZIP64'])) {
+			$vb_need_zip64 = (bool)$pa_options['useZIP64'];
+		} else {
+			// Default is to use ZIP64 only if any single file or the archive
+			// as a whole is over ~4gigs (less a 100meg "ceiling")
+			$vn_total_size = 100*1024*1024;	// give some room for overhead
 			$vn_size_limit = pow(2,32);
 			foreach($this->opa_file_list as $vs_name => $va_file) {
 				if ($va_file['size'] > $vn_size_limit) {
-					$vb_need_zip64 = true; 
+					$vb_need_zip64 = true;
 					break;
 				}
 				$vn_total_size += $va_file['size'];
 				if ($vn_total_size > $vn_size_limit) {
-					$vb_need_zip64 = true; 
+					$vb_need_zip64 = true;
 					break;
 				}
 			}
 		}
 		
-    	$r_out = $vb_dont_write ? fopen("/dev/null", "wb") : fopen("php://output", "wb");
-    	
+		$r_out = $vb_dont_write ? fopen("/dev/null", "wb") : fopen("php://output", "wb");
+		
 		if ($r_out === FALSE) {
 			return null;
 		}
@@ -176,19 +176,19 @@
 		$vs_create_version = "\x00\x00";
 		$vs_extract_version = $vb_need_zip64 ? "\x2d\x00" : "\x14\x00";
 		
-    	foreach($this->opa_file_list as $vs_name => $va_file) {
-    		$vs_filepath 	= $va_file['path'];
-    		$vs_dtime 		= $va_file['time'];
-    		$vn_i++;
-    		
-    		$r_in = fopen($vs_filepath, "rb");
+		foreach($this->opa_file_list as $vs_name => $va_file) {
+			$vs_filepath 	= $va_file['path'];
+			$vs_dtime 		= $va_file['time'];
+			$vn_i++;
+			
+			$r_in = fopen($vs_filepath, "rb");
 			if ($r_in !== FALSE) {
 				$vs_hex      = $vs_dtime[6] . $vs_dtime[7] . $vs_dtime[4] . $vs_dtime[5] . $vs_dtime[2] . $vs_dtime[3] . $vs_dtime[0] . $vs_dtime[1];
-	
+				
 				if(function_exists('hex2bin')) { // this is only available in PHP 5.4+
 					$vn_hexdtime = hex2bin($vs_hex);
 				} else {
-					$vn_hexdtime = pack("H*", $vs_hex);    
+					$vn_hexdtime = pack("H*", $vs_hex);
 				}
 
 				
@@ -220,8 +220,8 @@
 				$vs_header      .= pack('v', strlen($vs_name));    					// length of filename
 				$vs_header      .= pack('v', strlen($vs_extended_info));     		// extra field length
 				$vs_header      .= $vs_name;
-				$vs_header 		.= $vs_extended_info;
-		
+				$vs_header      .= $vs_extended_info;
+				
 				fwrite($r_out, $vs_header);			// write local file header
 				
 				$vn_segsize = strlen($vs_header);
@@ -255,7 +255,7 @@
 				stream_filter_remove($r_fltr);
 				
 				//
-				// Data descriptor segment 
+				// Data descriptor segment
 				//
 				$vs_header  = "\x50\x4b\x07\x08";
 				$vs_header .= pack('V', $vs_crc);							// crc32
@@ -264,14 +264,14 @@
 					$vs_header .= pack('P', $va_file['size']);				// uncompressed filesize
 				} else {
 					$vs_header .= pack('V', $vn_compressed_filesize);		// compressed filesize
-					$vs_header .= pack('V', $va_file['size']);     			// uncompressed filesize
+					$vs_header .= pack('V', $va_file['size']);				// uncompressed filesize
 				}
 				fwrite($r_out, $vs_header);
 				$vn_segsize += strlen($vs_header);
 				
-			
+				
 				$vn_datasize += $vn_segsize;
-	
+				
 				$vn_new_offset = $vn_datasize;
 				
 				$vs_extended_info = '';
@@ -280,7 +280,7 @@
 					$vs_extended_info = "\x01\x00".pack("v", 28);
 					$vs_extended_info .= pack("P", $va_file['size']).pack("P", $vn_compressed_filesize).pack("P", $vn_old_offset).pack("V", 0);	
 				}
-	
+				
 				//
 				// Add to central directory record
 				//
@@ -328,10 +328,10 @@
 		// Add Zip64 end of central directory if required
 		// 
 		$vn_zip64_ctrl_dir_offset = $vn_current_offset;
-		if ($vb_need_zip64) { 
+		if ($vb_need_zip64) {
 			fwrite($r_out, $vs_zip64_ctrl_dir = "\x50\x4b\x06\x06" .
 			pack('P', 44) .              // size of record (8)
-		
+			
 			pack('v', "\x00\x00") .              // version created by (2)
 			pack('v', $vs_extract_version) .              // version needed to extract (2)
 			
@@ -342,8 +342,8 @@
 			pack('P', strlen($vs_ctrl_dir)) .  			// size of central dir
 			pack('P', $vn_new_offset) .		// offset
 			"");
-		
-		
+			
+			
 			$vn_current_offset += strlen($vs_zip64_ctrl_dir);
 		}
 		
@@ -371,7 +371,7 @@
 		ob_flush();
 		flush();
 		fclose($r_out);
-    } 
+	}
 	# ----------------------------------------------------------------------
 	/**
 	 * Output ZIP archive to client. Output is always directed to php://output. If you need the output in a file
@@ -384,7 +384,7 @@
 	 *		dontWrite = send output to /dev/null. Used for debugging purposes [Default is false]
 	 */
 	public function stream($pa_options=null) {
-		$this->_stream($pa_options);	
+		$this->_stream($pa_options);
 		$this->init();
 	}
 	# ----------------------------------------------------------------------

@@ -29,23 +29,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
-  
- require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
- require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+ /**
+ *
+ */
+ define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
 
- global $_ca_attribute_settings;
- 
- $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+
+require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+
+global $_ca_attribute_settings;
+
+$_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
@@ -172,23 +172,23 @@
 
 class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
- 	private $ops_text_value;
- 	private $ops_uri_value;
- 	# ------------------------------------------------------------------
- 	public function __construct($pa_value_array=null) {
- 		parent::__construct($pa_value_array);
- 	}
- 	# ------------------------------------------------------------------
- 	public function loadTypeSpecificValueFromRow($pa_value_array) {
- 		$this->ops_text_value = $pa_value_array['value_longtext1'];
- 		$this->ops_uri_value =  $pa_value_array['value_longtext2'];
- 	}
- 	# ------------------------------------------------------------------
- 	/**
- 	 * @param array $pa_options Options are:
- 	 *		forDuplication = returns full text + Geonames URL suitable for setting a duplicate attribute. Used in BaseModelWithAttributes::copyAttributesTo()
- 	 * @return string GeoNames value
- 	 */
+	private $ops_text_value;
+	private $ops_uri_value;
+	# ------------------------------------------------------------------
+	public function __construct($pa_value_array=null) {
+		parent::__construct($pa_value_array);
+	}
+	# ------------------------------------------------------------------
+	public function loadTypeSpecificValueFromRow($pa_value_array) {
+		$this->ops_text_value = $pa_value_array['value_longtext1'];
+		$this->ops_uri_value =  $pa_value_array['value_longtext2'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * @param array $pa_options Options are:
+	 *		forDuplication = returns full text + Geonames URL suitable for setting a duplicate attribute. Used in BaseModelWithAttributes::copyAttributesTo()
+	 * @return string GeoNames value
+	 */
 	public function getDisplayValue($pa_options=null) {
 		if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
 			if (preg_match("!\[([^\]]+)!", $this->ops_text_value, $va_matches)) {
@@ -206,14 +206,14 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		if(isset($pa_options['forDuplication']) && $pa_options['forDuplication']) {
 			return $this->ops_text_value.'|'.$this->ops_uri_value;
 		}
-
+		
 		return $this->ops_text_value.' [id:'.$this->ops_uri_value.']';
 	}
 	# ------------------------------------------------------------------
 	public function getTextValue(){
 		return $this->ops_text_value;
 	}
- 	# ------------------------------------------------------------------
+	# ------------------------------------------------------------------
 	public function getUri(){
 		return $this->ops_uri_value;
 	}
@@ -222,20 +222,20 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 */
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
- 		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
+		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("geonames_user"));
-
+		
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
 		if (!$ps_value) {
- 			if(!$va_settings["canBeEmpty"]){
+			if(!$va_settings["canBeEmpty"]){
 				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
 				return false;
 			}
 			return array();
- 		} else {
- 			$vs_text = $ps_value;
- 			$vs_id = null;
+		} else {
+			$vs_text = $ps_value;
+			$vs_id = null;
 			if (preg_match("! \[id:([0-9]+)\]$!", $vs_text, $va_matches)) {
 				$vs_id = $va_matches[1];
 				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $ps_value);
@@ -247,7 +247,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				}
 				return array();
 			}
-
+			
 			return array(
 				'value_longtext1' => $vs_text,
 				'value_longtext2' => $vs_id,
@@ -274,21 +274,21 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
 			return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
 		}
- 		$o_config = Configuration::load();
+		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
+		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
 		
- 		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
- 		$vs_gn_elements = $va_settings['gnElements'];
- 		$vs_gn_delimiter = $va_settings['gnDelimiter'];
+		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
+		$vs_gn_elements = $va_settings['gnElements'];
+		$vs_gn_delimiter = $va_settings['gnDelimiter'];
 
- 		if ($pa_options['request']) {
+		if ($pa_options['request']) {
 			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results, 'gnElements' => urlencode($vs_gn_elements), 'gnDelimiter' => urlencode($vs_gn_delimiter)));
 		}
 
- 		$vs_element = '<div id="geonames_'.$pa_element_info['element_id'].'_input{n}">'.
- 			caHTMLTextInput(
- 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
+		$vs_element = '<div id="geonames_'.$pa_element_info['element_id'].'_input{n}">'.
+			caHTMLTextInput(
+				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
 				array(
 					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
@@ -312,7 +312,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
 					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
-						{ 
+						{
 							source: '{$vs_url}',
 							minLength: 3, delay: 800,
 							select: function(event, ui) {
@@ -367,31 +367,31 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				</script>";
 		}
 
- 		return $vs_element;
- 	}
- 	# ------------------------------------------------------------------
- 	public function getAvailableSettings($pa_element_info=null) {
- 		global $_ca_attribute_settings;
+		return $vs_element;
+	}
+	# ------------------------------------------------------------------
+	public function getAvailableSettings($pa_element_info=null) {
+		global $_ca_attribute_settings;
 
- 		return $_ca_attribute_settings['GeoNamesAttributeValue'];
- 	}
- 	# ------------------------------------------------------------------
-		/**
-		 * Returns name of field in ca_attribute_values to use for sort operations
-		 * 
-		 * @return string Name of sort field
-		 */
-		public function sortField() {
-			return 'value_longtext1';
-		}
- 	# ------------------------------------------------------------------
-		/**
-		 * Returns constant for geonames attribute value
-		 * 
-		 * @return int Attribute value type code
-		 */
-		public function getType() {
-			return __CA_ATTRIBUTE_VALUE_GEONAMES__;
-		}
- 		# ------------------------------------------------------------------
+		return $_ca_attribute_settings['GeoNamesAttributeValue'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for sort operations
+	 * 
+	 * @return string Name of sort field
+	 */
+	public function sortField() {
+		return 'value_longtext1';
+	}
+		# ------------------------------------------------------------------
+	/**
+	 * Returns constant for geonames attribute value
+	 * 
+	 * @return int Attribute value type code
+	 */
+	public function getType() {
+		return __CA_ATTRIBUTE_VALUE_GEONAMES__;
+	}
+	# ------------------------------------------------------------------
 }

@@ -216,15 +216,15 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				$vs_content = preg_replace("![\n\r]+!", " ", addslashes(join($vs_delimiter, $va_buf)));
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
 				
-        		$vs_buf .= "
-        		features_{$vs_id}.push(new OpenLayers.Feature.Vector(
+				$vs_buf .= "
+				features_{$vs_id}.push(new OpenLayers.Feature.Vector(
 					new OpenLayers.Geometry.Point({$vn_longitude},{$vn_latitude}).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()), {
 						label: '{$vs_label}',
 						content: '{$vs_content}',
 						ajaxUrl: '{$vs_ajax_url}'
 					}
 				));\n";
-        
+		
 			}
 			$vn_c++;
 		}
@@ -300,13 +300,13 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			};
 			
 			var selectControl_{$vs_id} = new OpenLayers.Control.SelectFeature(points_{$vs_id}, {hover: false, onSelect: markerClick_{$vs_id}});
-            map_{$vs_id}.addControl(selectControl_{$vs_id});
-            selectControl_{$vs_id}.activate();
-            
+			map_{$vs_id}.addControl(selectControl_{$vs_id});
+			selectControl_{$vs_id}.activate();
+			
 			function onPopupClose(evt) {
-          	  selectControl_{$vs_id}.unselect(selectedFeature_{$vs_id});
-          	  popup_{$vs_id}.hide();
-        	}
+		  	  selectControl_{$vs_id}.unselect(selectedFeature_{$vs_id});
+		  	  popup_{$vs_id}.hide();
+			}
 			
 			map_{$vs_id}.addLayer(points_{$vs_id});
 			map_{$vs_id}.zoomToExtent(points_{$vs_id}.getDataExtent());
@@ -436,7 +436,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	var points_{$vs_id};
 	jQuery(document).ready(function() {
 		OpenLayers.Util.onImageLoadError = function(){
-    		this.src = 'images/blank.png';
+			this.src = 'images/blank.png';
 		};
 
 		// Styles

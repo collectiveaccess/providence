@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$po_request				= $this->getVar('request');
+	$po_request				= $this->getVar('request');
 	$va_settings 			= $this->getVar('settings');
 	$vs_widget_id 			= $this->getVar('widget_id');
 	$va_login_list			= $this->getVar('login_list');

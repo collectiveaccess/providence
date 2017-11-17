@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,10 +38,10 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor UI name'),
- 	'NAME_PLURAL' 		=> _t('editor UI names'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('editor UI name'),
+	'NAME_PLURAL' 		=> _t('editor UI names'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -79,7 +79,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_labels'] = array(
 				'DISPLAY_FIELD' => array('ca_locales.name'),
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale editor name'),
 		)
- 	)
+	)
 );
 
 class ca_editor_ui_labels extends BaseLabel {
@@ -95,7 +95,7 @@ class ca_editor_ui_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_editor_ui_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

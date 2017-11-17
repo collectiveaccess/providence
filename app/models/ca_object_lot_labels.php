@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,10 +38,10 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_object_lot_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('lot title'),
- 	'NAME_PLURAL' 		=> _t('lot titles'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('lot title'),
+	'NAME_PLURAL' 		=> _t('lot titles'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -103,7 +103,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lot_labels'] = array(
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred'),
 				'BOUNDS_VALUE' => array(0,1)
 		)
- 	)
+	)
 );
 
 class ca_object_lot_labels extends BaseLabel {
@@ -119,7 +119,7 @@ class ca_object_lot_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_object_lot_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

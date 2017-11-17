@@ -29,18 +29,18 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_metadata_element_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('metadata element name'),
- 	'NAME_PLURAL' 		=> _t('metadata element names'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('metadata element name'),
+	'NAME_PLURAL' 		=> _t('metadata element names'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -79,7 +79,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_element_labels'] = array(
 				'LABEL' => _t('Description'), 'DESCRIPTION' => _t('Use for a description of how the element should be used.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		)
- 	)
+	)
 );
 
 class ca_metadata_element_labels extends BaseLabel {
@@ -95,7 +95,7 @@ class ca_metadata_element_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_metadata_element_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

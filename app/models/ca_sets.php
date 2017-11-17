@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
@@ -46,10 +46,10 @@ define('__CA_SET_READ_ACCESS__', 1);
 define('__CA_SET_EDIT_ACCESS__', 2);
 
 BaseModel::$s_ca_models_definitions['ca_sets'] = array(
- 	'NAME_SINGULAR' 	=> _t('set'),
- 	'NAME_PLURAL' 		=> _t('sets'),
- 	'FIELDS' 			=> array(
- 		'set_id' => array(
+	'NAME_SINGULAR' 	=> _t('set'),
+	'NAME_PLURAL' 		=> _t('sets'),
+	'FIELDS' 			=> array(
+		'set_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -175,7 +175,7 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		)
- 	)
+	)
 );
 
 class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
@@ -191,7 +191,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_sets';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'set_id';
 
@@ -994,7 +994,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
 		}
 		
-		if (($t_set->get('access') > 0) && ($pn_access == __CA_SET_READ_ACCESS__)) {	 // public sets are readable by all
+		if (($t_set->get('access') > 0) && ($pn_access == __CA_SET_READ_ACCESS__)) {	// public sets are readable by all
 			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true; 
 		}
 		
@@ -1405,7 +1405,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
- 	 * Returns a list of row_ids for the current set with ranks for each, in rank order
+	 * Returns a list of row_ids for the current set with ranks for each, in rank order
 	 *
 	 * @param array $pa_options An optional array of options. Supported options are:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
@@ -2053,36 +2053,36 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	public function getItemSetMembershipHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_row_id, $pn_user_id=null, $pa_bundle_settings=null, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
- 		$va_cur_sets = caExtractValuesByUserLocale($this->getSetsForItem($pn_table_num, $pn_row_id, array('user_id' => $pn_user_id)));
- 		
+		$va_cur_sets = caExtractValuesByUserLocale($this->getSetsForItem($pn_table_num, $pn_row_id, array('user_id' => $pn_user_id)));
+		
 		$o_view->setVar('t_set', $this);		
 		$o_view->setVar('id_prefix', $ps_form_name);	
 		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
- 		$o_view->setVar('set_ids', array_keys($va_cur_sets));
- 		$o_view->setVar('available_set_ids', $va_available_sets = $this->getAvailableSetsForItem($pn_table_num, $pn_row_id, array('user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));
- 		$o_view->setVar('sets', $va_sets = $this->getSets(array('table' => $pn_table_num, 'user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));
- 		$o_view->setVar('settings', $pa_bundle_settings);
- 		
- 		$va_set_options = array();
- 		foreach($va_sets as $vn_set_id => $va_sets_by_locale) {
- 			foreach($va_sets_by_locale as $vn_locale_id => $va_set) {
- 				$va_set_options[$va_set['name']] = $vn_set_id;
- 			}
- 		}
- 		
- 		$o_view->setVar('set_options', $va_set_options);
- 		
- 		$vn_i=0;
- 		$va_initial_values = array();
- 		foreach($va_cur_sets as $va_set_info) {
- 			$va_initial_values[$va_set_info['item_id'].''] = array('set_id' => $va_set_info['set_id'], 'set_name' => $va_set_info['name']);
- 			$vn_i++;
- 		}
- 		$o_view->setVar('initial_values', $va_initial_values);
- 		
- 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
- 		
+		$o_view->setVar('set_ids', array_keys($va_cur_sets));
+		$o_view->setVar('available_set_ids', $va_available_sets = $this->getAvailableSetsForItem($pn_table_num, $pn_row_id, array('user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));
+		$o_view->setVar('sets', $va_sets = $this->getSets(array('table' => $pn_table_num, 'user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$va_set_options = array();
+		foreach($va_sets as $vn_set_id => $va_sets_by_locale) {
+			foreach($va_sets_by_locale as $vn_locale_id => $va_set) {
+				$va_set_options[$va_set['name']] = $vn_set_id;
+			}
+		}
+		
+		$o_view->setVar('set_options', $va_set_options);
+		
+		$vn_i=0;
+		$va_initial_values = array();
+		foreach($va_cur_sets as $va_set_info) {
+			$va_initial_values[$va_set_info['item_id'].''] = array('set_id' => $va_set_info['set_id'], 'set_name' => $va_set_info['name']);
+			$vn_i++;
+		}
+		$o_view->setVar('initial_values', $va_initial_values);
+		
+		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
+		
 		return $o_view->render('ca_sets_checklist.php');
 	}
 	# ------------------------------------------------------
@@ -2227,7 +2227,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	public function getSetContentTypeName($pm_table_name_or_num=null, $pa_options=null) {
 		$o_dm = $this->getAppDatamodel();
 		if (!$pm_table_name_or_num && !($pm_table_name_or_num = $this->get('table_num'))) { return null; }
-	 	if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
+		if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
 		
 		$o_dm = $this->getAppDatamodel();
 		$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
@@ -2533,8 +2533,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					while($q_change_log->nextRow()){
 						$va_tmp = array();
 						$va_tmp = $q_change_log->getRow();
- 						$va_tmp['snapshot'] = caUnserializeForDatabase($q_change_log->get('snapshot'));
- 						$va_set_change_log[$q_change_log->get('log_datetime')] = $va_tmp;
+						$va_tmp['snapshot'] = caUnserializeForDatabase($q_change_log->get('snapshot'));
+						$va_set_change_log[$q_change_log->get('log_datetime')] = $va_tmp;
 					}
 				}
 				
@@ -2552,8 +2552,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					while($q_set_comments->nextRow()){
 						$va_tmp = array();
 						$va_tmp = $q_set_comments->getRow();
- 						$va_tmp["logged_table_num"] = $o_dm->getTableNum("ca_item_comments");
- 						$va_set_change_log[$q_set_comments->get('log_datetime')] = $va_tmp;
+						$va_tmp["logged_table_num"] = $o_dm->getTableNum("ca_item_comments");
+						$va_set_change_log[$q_set_comments->get('log_datetime')] = $va_tmp;
 					}
 				}
 				
@@ -2571,8 +2571,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					while($q_set_item_comments->nextRow()){
 						$va_tmp = array();
 						$va_tmp = $q_set_item_comments->getRow();
- 						$va_tmp["logged_table_num"] = $o_dm->getTableNum("ca_item_comments");
- 						$va_set_change_log[$q_set_item_comments->get('log_datetime')] = $va_tmp;
+						$va_tmp["logged_table_num"] = $o_dm->getTableNum("ca_item_comments");
+						$va_set_change_log[$q_set_item_comments->get('log_datetime')] = $va_tmp;
 					}
 				}
 				ksort($va_set_change_log);

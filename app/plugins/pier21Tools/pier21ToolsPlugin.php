@@ -25,33 +25,33 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_LIB_DIR__.'/ca/BaseToolsPlugin.php');
- 	require_once(__CA_APP_DIR__.'/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php');
- 
-	class pier21ToolsPlugin extends BaseToolsPlugin {
-		# -------------------------------------------------------
-		public function __construct($ps_plugin_path) {
-			/**
-			 * Title of tool. Should be formatted for display and unique to the tool.
-			 */
-			$this->tool_title = "Pier21 Tools";
-			
-			/**
-			 * Description of tool for display in tools list
-			 */
-			$this->description = _t('Tools for Pier 21.');
-			
-			/**
-			 * Instance of tool
-			 */
-			$this->tool = new pier21OralHistoryImportTool();
-			
-			
-			$this->config = Configuration::load($ps_plugin_path."/conf/pier21Tools.conf");
-			
-			parent::__construct($ps_plugin_path);
-		}
-		# -------------------------------------------------------
+
+require_once(__CA_LIB_DIR__.'/ca/BaseToolsPlugin.php');
+require_once(__CA_APP_DIR__.'/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php');
+
+class pier21ToolsPlugin extends BaseToolsPlugin {
+	# -------------------------------------------------------
+	public function __construct($ps_plugin_path) {
+		/**
+		 * Title of tool. Should be formatted for display and unique to the tool.
+		 */
+		$this->tool_title = "Pier21 Tools";
+		
+		/**
+		 * Description of tool for display in tools list
+		 */
+		$this->description = _t('Tools for Pier 21.');
+		
+		/**
+		 * Instance of tool
+		 */
+		$this->tool = new pier21OralHistoryImportTool();
+		
+		
+		$this->config = Configuration::load($ps_plugin_path."/conf/pier21Tools.conf");
+		
+		parent::__construct($ps_plugin_path);
 	}
+	# -------------------------------------------------------
+}
 ?>

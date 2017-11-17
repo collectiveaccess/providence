@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 require_once (__CA_LIB_DIR__."/core/Configuration.php");
 require_once (__CA_LIB_DIR__."/core/BaseObject.php");
 
@@ -52,7 +52,7 @@ class Media extends BaseObject {
 	private $plugins = array();
 	private $instance;
 	
-	# --- 
+	# ---
 	# Cache loaded plug-ins
 	# ---
 	static $WLMedia_plugin_cache = array();
@@ -61,14 +61,14 @@ class Media extends BaseObject {
 	
 	static $plugin_path = null;
 	
-	static $s_file_extension_to_plugin_map = null; 
+	static $s_file_extension_to_plugin_map = null;
 	
 	static $s_divine_cache = [];
 	
 	# ----------------------------------------------------------
 	# Methods
 	# ----------------------------------------------------------
-	public function __construct($pb_no_cache=false) { 
+	public function __construct($pb_no_cache=false) {
 		if (!Media::$plugin_path) { Media::$plugin_path = __CA_LIB_DIR__.'/core/Plugins/Media'; }
 		
 		if (!(Media::$s_file_extension_to_plugin_map = CompositeCache::contains('media_file_extension_to_plugin_map'))) {
@@ -126,8 +126,8 @@ class Media extends BaseObject {
 		$plugin_dir = Media::$plugin_path;
 		
 		# load the plugin
-		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) { 
-			require_once("{$plugin_dir}/{$ps_plugin_name}.php"); 
+		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) {
+			require_once("{$plugin_dir}/{$ps_plugin_name}.php");
 		}
 		$ps_plugin_class = "WLPlugMedia{$ps_plugin_name}";
 		$p = new $ps_plugin_class();
@@ -145,8 +145,8 @@ class Media extends BaseObject {
 		$plugin_dir = Media::$plugin_path;
 		
 		# load the plugin
-		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) { 
-			require_once("{$plugin_dir}/{$ps_plugin_name}.php"); 
+		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) {
+			require_once("{$plugin_dir}/{$ps_plugin_name}.php");
 		}
 		$vs_classname = "WLPlugMedia{$ps_plugin_name}";
 		$p = new $vs_classname;
@@ -251,19 +251,19 @@ class Media extends BaseObject {
 		if ((!$this->instance) || ($filepath != $this->filepath)) {
 			$this->instance = $this->divineFileFormat($filepath, ['returnPluginInstance' => true]);
 		}
-			
+		
 		if ($this->instance) {
 			$this->instance->init();
 			$vn_res = $this->instance->read($filepath, $mimetype);
-		  if ($this->DEBUG) { print "USING ".$plugin_info["NAME"]."\n"; }
+			if ($this->DEBUG) { print "USING ".$plugin_info["NAME"]."\n"; }
 			if (!$vn_res) {
 				$this->postError(1605, join("; ", $this->instance->getErrors()), "Media->read()");	
-			} 
+			}
 			
 			return $vn_res;
 		} else {
-		  $this->postError(1605, _t("File type is not supported"), "Media->read()");
-		  return false;
+			$this->postError(1605, _t("File type is not supported"), "Media->read()");
+			return false;
 		}
 	}
 	# ----------------------------------------------------------
@@ -288,7 +288,7 @@ class Media extends BaseObject {
 	# ----------------------------------------------------------
 	public function writePreviews($pa_options) {
 		if (!$this->instance) { return false; }
-	
+		
 		if (!method_exists($this->instance, 'writePreviews')) { return false; }
 		$this->instance->set('version', '');
 		return $this->instance->writePreviews($this->filepath, $pa_options);
@@ -296,7 +296,7 @@ class Media extends BaseObject {
 	# ----------------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
 		if (!$this->instance) { return false; }
-	
+		
 		if (!method_exists($this->instance, 'joinArchiveContents')) { return false; }
 		$this->instance->set('version', '');
 		return $this->instance->joinArchiveContents($pa_files, $pa_options);
@@ -349,14 +349,14 @@ class Media extends BaseObject {
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
 		if (!$this->instance) {
-		  	return "";
+			return "";
 		}
 		return $this->instance->extension2mimetype($extension);
 	}
 	# ------------------------------------------------
 	public function mimetype2typename($mimetype) {
 		if (!$this->instance) {
-		  return "";
+			return "";
 		}
 		return $this->instance->mimetype2typename($mimetype);
 	}
@@ -530,7 +530,7 @@ class Media extends BaseObject {
 		return null;
 	}
 	# ------------------------------------------------
-	# --- 
+	# ---
 	# ------------------------------------------------
 	public function htmlTag($ps_mimetype, $ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
 		if (!$ps_mimetype) { return _t('No media available'); }

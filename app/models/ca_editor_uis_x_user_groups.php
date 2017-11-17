@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_editor_uis_x_user_groups'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor UIs ⇔ group association'),
- 	'NAME_PLURAL' 		=> _t('editor UIs ⇔ group associations'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('editor UIs ⇔ group association'),
+	'NAME_PLURAL' 		=> _t('editor UIs ⇔ group associations'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -72,7 +72,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis_x_user_groups'] = array(
 				),
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates user&apos;s level of access to the display. ')
 		)
- 	)
+	)
 );
 
 class ca_editor_uis_x_user_groups extends BaseRelationshipModel {
@@ -88,7 +88,7 @@ class ca_editor_uis_x_user_groups extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_editor_uis_x_user_groups';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

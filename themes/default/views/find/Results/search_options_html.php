@@ -26,10 +26,10 @@
  * ----------------------------------------------------------------------
  */
 
-	$vo_result 				= $this->getVar('result');
- 	$vo_result_context 		= $this->getVar('result_context');
- 	$t_subject 				= $this->getVar('t_subject');
- 	$vs_table 				= $t_subject->tableName();
+$vo_result 				= $this->getVar('result');
+$vo_result_context 		= $this->getVar('result_context');
+$t_subject 				= $this->getVar('t_subject');
+$vs_table 				= $t_subject->tableName();
 
 
 if($vo_result->numHits() > 0) {
@@ -147,19 +147,19 @@ if($vo_result->numHits() > 0) {
 	TooltipManager::add('#showResultsEditor', _t("Edit in Spreadsheet"));
 ?>
 <script type="text/javascript">
-    var caDisplayShowMap = <?php print json_encode($va_display_show_only_for_views); ?>;
-    function caUpdateDisplayList() {
-        var view = jQuery('#view_select').val();
-        var opts = jQuery('#display_select').data('fullOpts');
-        var filteredOpts = [];
-        for(var i in opts) {
-            var display_id = opts[i].value;
-            if(!(caDisplayShowMap[display_id] && (caDisplayShowMap[display_id] instanceof Array) && (caDisplayShowMap[display_id].length > 0) && caDisplayShowMap[display_id].indexOf(view) == -1)) {
-                filteredOpts.push("<option value='" + opts[i].value + "'>" + opts[i].text + "</option>");   // show
-            }
-        }
-        jQuery('#display_select').html(filteredOpts.join("\n"));
-    }
+	var caDisplayShowMap = <?php print json_encode($va_display_show_only_for_views); ?>;
+	function caUpdateDisplayList() {
+		var view = jQuery('#view_select').val();
+		var opts = jQuery('#display_select').data('fullOpts');
+		var filteredOpts = [];
+		for(var i in opts) {
+			var display_id = opts[i].value;
+			if(!(caDisplayShowMap[display_id] && (caDisplayShowMap[display_id] instanceof Array) && (caDisplayShowMap[display_id].length > 0) && caDisplayShowMap[display_id].indexOf(view) == -1)) {
+				filteredOpts.push("<option value='" + opts[i].value + "'>" + opts[i].text + "</option>");   // show
+			}
+		}
+		jQuery('#display_select').html(filteredOpts.join("\n"));
+	}
 	function caHandleResultsUIBoxes(mode, action) {
 		var boxes = ['searchOptionsBox', 'searchRefineBox', 'searchToolsBox', 'searchSetsBox'];
 		var showButtons = ['showOptions', 'showRefine', 'showTools', 'showSets'];
@@ -213,11 +213,11 @@ if($vo_result->numHits() > 0) {
 	}
 	
 	jQuery(document).ready(function() { 
-	    var options = [];
-	    jQuery('#display_select').find('option').each(function() {
-            options.push({value: jQuery(this).val(), text: jQuery(this).text()});
-        });
-	    jQuery('#display_select').data('fullOpts', options);
-	    caUpdateDisplayList(); 
+		var options = [];
+		jQuery('#display_select').find('option').each(function() {
+			options.push({value: jQuery(this).val(), text: jQuery(this).text()});
+		});
+		jQuery('#display_select').data('fullOpts', options);
+		caUpdateDisplayList(); 
 	});
 </script>

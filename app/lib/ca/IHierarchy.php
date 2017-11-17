@@ -30,20 +30,20 @@
  * ----------------------------------------------------------------------
  */
  
- /**
-  *
-  */
- 
- interface IHierarchy {
- 	
- 	/**
+/**
+ *
+ */
+
+interface IHierarchy {
+	
+	/**
 	 * Return array containing information about all lists, including their root_id's
 	 */
-	 public function getHierarchyList($pb_vocabularies=false);
-	 
+	public function getHierarchyList($pb_vocabularies=false);
+	
 	/**
 	 * Returns name of the hierarchy the currently loaded row belongs to in the users current locale
 	 */
-	 public function getHierarchyName();
+	public function getHierarchyName();
 	
- }
+}

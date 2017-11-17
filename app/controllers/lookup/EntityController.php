@@ -25,14 +25,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
- 
- 	class EntityController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_entities';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'entity';
- 		protected $ops_search_class = 'EntitySearch';
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
+
+class EntityController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = false;
+	protected $ops_table_name = 'ca_entities';		// name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'entity';
+	protected $ops_search_class = 'EntitySearch';
+	# -------------------------------------------------------
+}
+?>

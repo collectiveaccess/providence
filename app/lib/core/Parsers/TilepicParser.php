@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__."/core/Utils/Timer.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
@@ -212,7 +212,7 @@ class TilepicParser {
 			if (preg_match("/TPC\n/", $sig)) {
 				$buf = fread($fh, 4);
 				$x = unpack("Nheader_size", $buf);
-				if ($x['header_size'] <= 8) { 
+				if ($x['header_size'] <= 8) {
 					$this->error = "Tilepic header length is invalid";
 					return false;
 				}
@@ -237,7 +237,7 @@ class TilepicParser {
 				# --- get tile offsets (start of each tile)
 				$tile_offsets = array();
 				for ($i=0; $i < $header_values['tiles']; $i++) {
-					$x = unpack("Noffset", fread($fh, 4)); 
+					$x = unpack("Noffset", fread($fh, 4));
 					$tile_offsets[] = $x['offset'];
 				}
 				$this->properties['tile_offsets'] = $tile_offsets;
@@ -495,7 +495,7 @@ class TilepicParser {
 	private function _imageMagickImageFromTiles($ps_dest_filepath, $pa_tiles, $pn_tile_width, $pn_tile_height) {
 		
 		exec($this->ops_imagemagick_path.'/montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
-	
+		
 		return true;
 	}
 	# ------------------------------------------------
@@ -535,23 +535,23 @@ class TilepicParser {
 		# Open image
 		#
 		$h = $this->_imageMagickRead($ps_filepath);
-        if (!$h) {
+		if (!$h) {
 			$this->error = "Couldn't open image $ps_filepath";
 			return false;
-        }
-        
-        $vs_filepath = $ps_filepath;
+		}
 		
-        $image_width = 	$h['width'];
-        $image_height = $h['height'];
-        if (($image_width < 10) || ($image_height < 10)) {
-        	$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
+		$vs_filepath = $ps_filepath;
+		
+		$image_width =  $h['width'];
+		$image_height = $h['height'];
+		if (($image_width < 10) || ($image_height < 10)) {
+			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
 			return false;
-        }
-        
-        if ($pa_options["scale_factor"] != 1) {
-        	$image_width *= $pa_options["scale_factor"];
-        	$image_height *= $pa_options["scale_factor"];
+		}
+		
+		if ($pa_options["scale_factor"] != 1) {
+			$image_width *= $pa_options["scale_factor"];
+			$image_height *= $pa_options["scale_factor"];
 			
 			$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_scale_');
 			$vs_tmp_fname = $vs_tmp_basename.'.jpg';
@@ -568,9 +568,9 @@ class TilepicParser {
 				return false;
 			}
 			$vs_filepath = $vs_tmp_fname;
-        }
-        
-         if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
+		}
+		
+		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
@@ -612,7 +612,7 @@ class TilepicParser {
 				}
 			}
 		}
-        
+		
 		#
 		# How many layers to make?
 		#
@@ -752,7 +752,7 @@ class TilepicParser {
 						return false;
 					}
 					$offset += strlen($layer_list[$i][$j]);
-				}   
+				}
 			}
 			if ($this->debug) { print "offset table OK;"; }
 			
@@ -768,7 +768,7 @@ class TilepicParser {
 						$this->error = "Could not write Tilepic tile data";
 						return false;
 					}
-				}   
+				}
 			}
 			if ($this->debug) { print "tiles OK;"; }
 			unset($layer_list);
@@ -835,7 +835,7 @@ class TilepicParser {
 				$vs_filepath = $vs_tmp_fname;
 		}
 
-		 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
+		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
@@ -877,7 +877,7 @@ class TilepicParser {
 				}
 			}
 		}
-        
+		
 		#
 		# How many layers to make?
 		#
@@ -1017,7 +1017,7 @@ class TilepicParser {
 						return false;
 					}
 					$offset += strlen($layer_list[$i][$j]);
-				}   
+				}
 			}
 			if ($this->debug) { print "offset table OK;"; }
 			
@@ -1033,7 +1033,7 @@ class TilepicParser {
 						$this->error = "Could not write Tilepic tile data";
 						return false;
 					}
-				}   
+				}
 			}
 			if ($this->debug) { print "tiles OK;"; }
 			unset($layer_list);
@@ -1073,13 +1073,13 @@ class TilepicParser {
 		$h = new Imagick();
 		$this->setResourceLimits_imagick($h);
 		
-        if (!$h->readImage($ps_filepath)) {
+		if (!$h->readImage($ps_filepath)) {
 			$this->error = "Couldn't open image $ps_filepath";
 			return false;
-        }
-        $h->profileImage('*', null);
-        
-        if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
+		}
+		$h->profileImage('*', null);
+		
+		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1097,8 +1097,8 @@ class TilepicParser {
 				}
 			}
 		}
-        
-        $h->setImageType(imagick::IMGTYPE_TRUECOLOR);
+		
+		$h->setImageType(imagick::IMGTYPE_TRUECOLOR);
 
 		if (!$h->setImageColorspace(imagick::COLORSPACE_RGB)) {
 			$this->error = "Error during RGB colorspace transformation operation";
@@ -1106,23 +1106,23 @@ class TilepicParser {
 		}
 		
 		$va_tmp = $h->getImageGeometry();
-        $image_width = 	$va_tmp['width'];
-        $image_height = $va_tmp['height'];
-        if (($image_width < 10) || ($image_height < 10)) {
-        	$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
+		$image_width =  $va_tmp['width'];
+		$image_height = $va_tmp['height'];
+		if (($image_width < 10) || ($image_height < 10)) {
+			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
 			return false;
-        }
-        
-        if ($pa_options["scale_factor"] != 1) {
-        	$image_width *= $pa_options["scale_factor"];
-        	$image_height *= $pa_options["scale_factor"];
+		}
+		
+		if ($pa_options["scale_factor"] != 1) {
+			$image_width *= $pa_options["scale_factor"];
+			$image_height *= $pa_options["scale_factor"];
 			
 			if (!$h->resizeImage($image_width, $image_height, imagick::FILTER_CUBIC, $pa_options["antialiasing"])) {
 				$this->error = "Couldn't scale image";
 				return false;
 			}
-        }
-        
+		}
+		
 		#
 		# How many layers to make?
 		#
@@ -1237,7 +1237,7 @@ class TilepicParser {
 						return false;
 					}
 					$offset += strlen($layer_list[$i][$j]);
-				}   
+				}
 			}
 			if ($this->debug) { print "offset table OK;"; }
 			
@@ -1253,7 +1253,7 @@ class TilepicParser {
 						$this->error = "Could not write Tilepic tile data";
 						return false;
 					}
-				}   
+				}
 			}
 			if ($this->debug) { print "tiles OK;"; }
 			unset($layer_list);
@@ -1318,7 +1318,7 @@ class TilepicParser {
 				}
 			}
 		}
-        
+		
 		$h->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
 
 		if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
@@ -1327,7 +1327,7 @@ class TilepicParser {
 		}
 		
 		$va_tmp = $h->getimagegeometry();
-		$image_width = 	$va_tmp['width'];
+		$image_width =  $va_tmp['width'];
 		$image_height = $va_tmp['height'];
 		if (($image_width < 10) || ($image_height < 10)) {
 			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
@@ -1343,7 +1343,7 @@ class TilepicParser {
 					return false;
 				}
 		}
-        
+		
 		#
 		# How many layers to make?
 		#
@@ -1458,7 +1458,7 @@ class TilepicParser {
 						return false;
 					}
 					$offset += strlen($layer_list[$i][$j]);
-				}   
+				}
 			}
 			if ($this->debug) { print "offset table OK;"; }
 			
@@ -1474,7 +1474,7 @@ class TilepicParser {
 						$this->error = "Could not write Tilepic tile data";
 						return false;
 					}
-				}   
+				}
 			}
 			if ($this->debug) { print "tiles OK;"; }
 			unset($layer_list);
@@ -1515,7 +1515,7 @@ class TilepicParser {
 					break;
 				case IMAGETYPE_JPEG:
 					$r_image = imagecreatefromjpeg($ps_filepath);
-					 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
+					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1557,16 +1557,16 @@ class TilepicParser {
 			$this->error = "Couldn't open image $ps_filepath: unsupported file type";
 			return false;
 		}
-        $image_width = $va_info[0];
-        $image_height = $va_info[1];
-        if (($image_width < 10) || ($image_height < 10)) {
-        	$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
+		$image_width = $va_info[0];
+		$image_height = $va_info[1];
+		if (($image_width < 10) || ($image_height < 10)) {
+			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
 			return false;
-        }
-        
-        if ($pa_options["scale_factor"] != 1) {
-        	$image_width *= $pa_options["scale_factor"];
-        	$image_height *= $pa_options["scale_factor"];
+		}
+		
+		if ($pa_options["scale_factor"] != 1) {
+			$image_width *= $pa_options["scale_factor"];
+			$image_height *= $pa_options["scale_factor"];
 			
 			$r_new_image = imagecreatetruecolor($image_width, $image_height);
 			$r_color = ImageColorAllocate( $r_new_image, 255, 255, 255 );
@@ -1577,8 +1577,8 @@ class TilepicParser {
 			}
 			imagedestroy($r_image);
 			$r_image = $r_new_image;
-        }
-        
+		}
+		
 		#
 		# How many layers to make?
 		#
@@ -1620,7 +1620,7 @@ class TilepicParser {
 				imagedestroy($r_image);
 				$r_image = $r_new_image;
 			}
-		
+			
 			$i = 0;
 			//$slices = array();
 			$layer_list[] = array();
@@ -1710,7 +1710,7 @@ class TilepicParser {
 						return false;
 					}
 					$offset += strlen($layer_list[$i][$j]);
-				}   
+				}
 			}
 			
 			if (!fwrite($fh, pack("N", $offset))) {
@@ -1725,7 +1725,7 @@ class TilepicParser {
 						$this->error = "Could not write Tilepic tile data";
 						return false;
 					}
-				}   
+				}
 			}
 			unset($layer_list);
 			# --- attributes
@@ -1861,7 +1861,7 @@ class TilepicParser {
 			for($x=0; $x<$layer_tiles[$layer_number]['horizontal_tiles']; $x++) {
 				$cx = ($x*$tile_width);
 				$tile = $this->getTile($tile_number);
-				if ($tile) { 
+				if ($tile) {
 					$vs_tile_file = tempnam($vs_tilepic_tmpdir, "tpcl_");
 					file_put_contents($vs_tile_file, $tile);
 					$va_tile_files[] = $vs_tile_file;
@@ -1916,7 +1916,7 @@ class TilepicParser {
 			for($x=0; $x<$layer_tiles[$layer_number]['horizontal_tiles']; $x++) {
 				$cx = ($x*$tile_width);
 				$tile = $this->getTile($tile_number);
-				if ($tile) { 
+				if ($tile) {
 					$t = new Imagick();
 					$this->setResourceLimits_imagick($t);
 					$t->readImageBlob($tile);
@@ -1963,7 +1963,7 @@ class TilepicParser {
 			for($x=0; $x<$layer_tiles[$layer_number]['horizontal_tiles']; $x++) {
 				$cx = ($x*$tile_width);
 				$tile = $this->getTile($tile_number);
-				if ($tile) { 
+				if ($tile) {
 					$t = imagecreatefromstring($tile);
 					if (!$t) {
 						$this->error = "Invalid tile format";
@@ -1990,7 +1990,7 @@ class TilepicParser {
 			
 			$effective_tile_width = $this->properties['tile_width'] * $scale_factor;
 			$effective_tile_height = $this->properties['tile_height'] * $scale_factor;
-		
+			
 			$width_tiles = $this->properties['width']/$effective_tile_width;
 			$height_tiles = $this->properties['height']/$effective_tile_height;
 			$tiles = ceil($width_tiles) * ceil($height_tiles);
@@ -2029,15 +2029,15 @@ class TilepicParser {
 				$buf = fread($fh, 4);
 				$x = unpack("Nheader_size", $buf);
 				
-				if ($x['header_size'] <= 8) { 
+				if ($x['header_size'] <= 8) {
 					if ($pb_print_errors) { print "Tilepic header length is invalid"; }
 					fclose($fh);
 					return false;
 				}
 				# --- get tile offsets (start of each tile)
 				if (!fseek($fh, ($x['header_size']) + (($pn_tile_number - 1) * 4))) {
-					$x = unpack("Noffset", fread($fh, 4)); 
-					$y = unpack("Noffset", fread($fh, 4)); 
+					$x = unpack("Noffset", fread($fh, 4));
+					$y = unpack("Noffset", fread($fh, 4));
 					
 					$x["offset"] = TilepicParser::unpackLargeInt($x["offset"]);
 					$y["offset"] = TilepicParser::unpackLargeInt($y["offset"]);

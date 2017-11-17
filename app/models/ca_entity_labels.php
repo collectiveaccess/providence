@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -40,10 +40,10 @@ require_once(__CA_MODELS_DIR__.'/ca_entities.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('entity name'),
- 	'NAME_PLURAL' 		=> _t('entity names'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('entity name'),
+	'NAME_PLURAL' 		=> _t('entity names'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -152,7 +152,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
 		)
- 	)
+	)
 );
 
 class ca_entity_labels extends BaseLabel {
@@ -168,7 +168,7 @@ class ca_entity_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_entity_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

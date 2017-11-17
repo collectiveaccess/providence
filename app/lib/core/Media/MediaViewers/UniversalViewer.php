@@ -37,7 +37,7 @@
 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 	require_once(__CA_LIB_DIR__.'/core/Media/IMediaViewer.php');
 	require_once(__CA_LIB_DIR__.'/core/Media/BaseMediaViewer.php');
-    require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
+	require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 	require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
  
 	class UniversalViewer extends BaseMediaViewer implements IMediaViewer {
@@ -141,36 +141,36 @@
 		 * @throws ApplicationException
 		 */
 		public static function searchViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
-		    if ($o_view = BaseMediaViewer::getView($po_request)) {
-		        $ps_q = $po_request->getParameter('q', pString);
-		        
-                $va_identifier = caParseMediaIdentifier($ps_identifier);
-                $t_rep = new ca_object_representations();
-                if (!is_array($va_pages = $t_rep->getFileList($va_identifier['id'], 0, 1, ['original'])) || !sizeof($va_pages)) {
-                    $pa_data['width'] = $pa_data['height'] = 0;
-                    $va_locs = [];
-                } else {
-                    $va_page = array_shift($va_pages);
-                    $pa_data['width'] = $va_page['original_width'];
-                    $pa_data['height'] = $va_page['original_height'];
-                    
-                    switch($va_identifier['type']) {
-                        case 'representation':
-                        default:
-                            $va_locs = MediaContentLocationIndexer::SearchWithinMedia($ps_q, 'ca_object_representations', $va_identifier['id'], 'media');
-                            break;
-                        case 'attribute':
-                            $va_locs = MediaContentLocationIndexer::SearchWithinMedia($ps_q, 'ca_attribute_values', $va_identifier['id'], 'value_blob');
-                            break;
-                    }
-                }
-                
-                $o_view->setVar('request', $po_request);
-                $o_view->setVar('identifier', $ps_identifier);
-                $o_view->setVar('data', $pa_data);
-                
-                $o_view->setVar('locations', $va_locs);
-			    return $o_view->render("UniversalViewerSearchManifest.php");
+			if ($o_view = BaseMediaViewer::getView($po_request)) {
+				$ps_q = $po_request->getParameter('q', pString);
+				
+				$va_identifier = caParseMediaIdentifier($ps_identifier);
+				$t_rep = new ca_object_representations();
+				if (!is_array($va_pages = $t_rep->getFileList($va_identifier['id'], 0, 1, ['original'])) || !sizeof($va_pages)) {
+					$pa_data['width'] = $pa_data['height'] = 0;
+					$va_locs = [];
+				} else {
+					$va_page = array_shift($va_pages);
+					$pa_data['width'] = $va_page['original_width'];
+					$pa_data['height'] = $va_page['original_height'];
+					
+					switch($va_identifier['type']) {
+						case 'representation':
+						default:
+							$va_locs = MediaContentLocationIndexer::SearchWithinMedia($ps_q, 'ca_object_representations', $va_identifier['id'], 'media');
+							break;
+						case 'attribute':
+							$va_locs = MediaContentLocationIndexer::SearchWithinMedia($ps_q, 'ca_attribute_values', $va_identifier['id'], 'value_blob');
+							break;
+					}
+				}
+				
+				$o_view->setVar('request', $po_request);
+				$o_view->setVar('identifier', $ps_identifier);
+				$o_view->setVar('data', $pa_data);
+				
+				$o_view->setVar('locations', $va_locs);
+				return $o_view->render("UniversalViewerSearchManifest.php");
 			}
 			
 			throw new ApplicationException(_t('Media search is not available'));
@@ -188,25 +188,25 @@
 		 * @throws ApplicationException
 		 */
 		public static function autocomplete($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
-		    if ($o_view = BaseMediaViewer::getView($po_request)) {
-		        $ps_q = $po_request->getParameter('q', pString);
-		        
-                $va_identifier = caParseMediaIdentifier($ps_identifier);
-                switch($va_identifier['type']) {
-                    case 'representation':
-                    default:
-                        $va_matches = MediaContentLocationIndexer::autocomplete($ps_q, 'ca_object_representations', $va_identifier['id']);
-                        break;
-                    case 'attribute':
-                        $va_matches = MediaContentLocationIndexer::autocomplete($ps_q, 'ca_attribute_values', $va_identifier['id']);
-                        break;
-                }
-               
-                $o_view->setVar('request', $po_request);
-                $o_view->setVar('identifier', $ps_identifier);
-                
-                $o_view->setVar('matches', $va_matches);
-			    return $o_view->render("UniversalViewerAutocomplete.php");
+			if ($o_view = BaseMediaViewer::getView($po_request)) {
+				$ps_q = $po_request->getParameter('q', pString);
+				
+				$va_identifier = caParseMediaIdentifier($ps_identifier);
+				switch($va_identifier['type']) {
+					case 'representation':
+					default:
+						$va_matches = MediaContentLocationIndexer::autocomplete($ps_q, 'ca_object_representations', $va_identifier['id']);
+						break;
+					case 'attribute':
+						$va_matches = MediaContentLocationIndexer::autocomplete($ps_q, 'ca_attribute_values', $va_identifier['id']);
+						break;
+				}
+			   
+				$o_view->setVar('request', $po_request);
+				$o_view->setVar('identifier', $ps_identifier);
+				
+				$o_view->setVar('matches', $va_matches);
+				return $o_view->render("UniversalViewerAutocomplete.php");
 			}
 			
 			throw new ApplicationException(_t('Media search autocomplete is not available'));

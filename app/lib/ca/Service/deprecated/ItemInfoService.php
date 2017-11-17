@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
 require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
@@ -383,30 +383,30 @@ class ItemInfoService extends BaseService {
 	 * @param int $item_id primary key
 	 * @param string $related_type can be one of: ["ca_objects", "ca_entities", "ca_places", "ca_occurrences", "ca_collections", "ca_list_items", "ca_object_representations", "ca_storage_locations", "ca_movements", "ca_loans", "ca_tours", "ca_tour_stops"]
 	 * @param array options Supported options:
- 	 * 		restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
- 	 *		restrictToType = synonym for restrict_to_type
- 	 *		restrict_to_types = restricts returned items to those of the specified types; pass an array of list item_codes or item_ids
- 	 *		restrictToTypes = synonym for restrict_to_types
- 	 *		dont_include_subtypes_in_type_restriction = if set subtypes are not included when enforcing restrict_to_types. Note that restrict_to_relationship_types always includes subtypes in its restriction.
- 	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
- 	 *		restrict_to_relationship_types = restricts returned items to those related to the current row by the specified relationship type(s). You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
- 	 *		restrictToRelationshipTypes = synonym for restrict_to_relationship_types
- 	 *
- 	 *		exclude_relationship_types - omits any items related to the current row with any of the specified types from the returned set of its. You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
- 	 *		excludeRelationshipTypes = synonym for exclude_relationship_types
- 	 * 		exclude_type = excludes returned items of the specified type; only supports a single type which can be specified as a list item_code or item_id
- 	 *		excludeType = synonym for exclude_type
- 	 *		exclude_types = omits any items related to the current row that are of any of the specified types from the returned set of ids. You can pass either an array of types or a single type. The types can be type_code's or type_id's.
- 	 *		excludeTypes = synonym for exclude_types
- 	 *
- 	 *		fields - array of fields (in table.fieldname format) to include in returned data
- 	 *		return_non_preferred_labels - if set to true, non-preferred labels are included in returned data
- 	 *		checkAccess - array of access values to filter results by; if defined only items with the specified access code(s) are returned
- 	 *		returnLabelsAsArray - if set to true then all labels associated with row are returned in an array, otherwise only a text value in the current locale is returned; default is false - return single label in current locale
- 	 * 		row_ids - array of primary key values to use when fetching related items; if omitted or set to a null value the 'row_id' option (single value) will be used; if row_id is also not set then the currently loaded primary key value will be used
- 	 *		row_id - primary key value to use when fetching related items; if omitted or set to a false value (eg. null, false, 0) then the currently loaded primary key value is used [default]
- 	 *		limit - number of items to limit return set to; default is 1000
- 	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, label fields and attributes) are sortable.
+	 * 		restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
+	 *		restrictToType = synonym for restrict_to_type
+	 *		restrict_to_types = restricts returned items to those of the specified types; pass an array of list item_codes or item_ids
+	 *		restrictToTypes = synonym for restrict_to_types
+	 *		dont_include_subtypes_in_type_restriction = if set subtypes are not included when enforcing restrict_to_types. Note that restrict_to_relationship_types always includes subtypes in its restriction.
+	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+	 *		restrict_to_relationship_types = restricts returned items to those related to the current row by the specified relationship type(s). You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
+	 *		restrictToRelationshipTypes = synonym for restrict_to_relationship_types
+	 *
+	 *		exclude_relationship_types - omits any items related to the current row with any of the specified types from the returned set of its. You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
+	 *		excludeRelationshipTypes = synonym for exclude_relationship_types
+	 * 		exclude_type = excludes returned items of the specified type; only supports a single type which can be specified as a list item_code or item_id
+	 *		excludeType = synonym for exclude_type
+	 *		exclude_types = omits any items related to the current row that are of any of the specified types from the returned set of ids. You can pass either an array of types or a single type. The types can be type_code's or type_id's.
+	 *		excludeTypes = synonym for exclude_types
+	 *
+	 *		fields - array of fields (in table.fieldname format) to include in returned data
+	 *		return_non_preferred_labels - if set to true, non-preferred labels are included in returned data
+	 *		checkAccess - array of access values to filter results by; if defined only items with the specified access code(s) are returned
+	 *		returnLabelsAsArray - if set to true then all labels associated with row are returned in an array, otherwise only a text value in the current locale is returned; default is false - return single label in current locale
+	 * 		row_ids - array of primary key values to use when fetching related items; if omitted or set to a null value the 'row_id' option (single value) will be used; if row_id is also not set then the currently loaded primary key value will be used
+	 *		row_id - primary key value to use when fetching related items; if omitted or set to a false value (eg. null, false, 0) then the currently loaded primary key value is used [default]
+	 *		limit - number of items to limit return set to; default is 1000
+	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, label fields and attributes) are sortable.
 	 *		bundles = associative array of bundle => bundle_options pairs in @see BaseModel::get() notation to retrieve for each related item
 	 * @return array
 	 * @throws SoapFault
@@ -667,7 +667,7 @@ class ItemInfoService extends BaseService {
 					if(!$t_instance->load(array("idno" => $pn_type_id_to_load))){
 						return false;
 					}
-				} 
+				}
 				if($pb_check_bm_with_attributes){
 					if($t_instance instanceof BaseModelWithAttributes){
 						return $t_instance;

@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -39,83 +39,83 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
- 	'NAME_SINGULAR' 	=> _t('comment'),
- 	'NAME_PLURAL' 		=> _t('comments'),
- 	'FIELDS' 			=> array(
- 		'comment_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('comment'),
+	'NAME_PLURAL' 		=> _t('comments'),
+	'FIELDS' 			=> array(
+		'comment_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this comment')
 		),
 		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Table comment applies to', 'DESCRIPTION' => 'The table number of the table this comment is applied to.',
 				'BOUNDS_VALUE' => array(1,255)
 		),
 		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DISPLAY_FIELD' => array('ca_users.lname', 'ca_users.fname'),
 				'DEFAULT' => '',
 				'LABEL' => _t('User'), 'DESCRIPTION' => _t('The user who created the comment.')
 		),
 		'row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Row ID', 'DESCRIPTION' => 'Primary key value of the row in the table specified by table_num that this comment applies to.'
 		),
 		'locale_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DISPLAY_FIELD' => array('ca_locales.name'),
 				'DEFAULT' => '',
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('The locale of the comment.')
 		),
 		'comment' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 4,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('Comment'), 'DESCRIPTION' => _t('Text of comment.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		),
 		'email' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('E-mail address'), 'DESCRIPTION' => _t('E-mail address of commentor.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'name' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of commenter.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'location' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('Location'), 'DESCRIPTION' => _t('Location of commenter.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'rating' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'BOUNDS_CHOICE_LIST' => array(
 					'-' => null,
@@ -128,9 +128,9 @@ BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
 				'LABEL' => _t('Rating'), 'DESCRIPTION' => _t('User-provided rating for item.')
 		),
 		'media1' => array(
-				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				
 				"MEDIA_PROCESSING_SETTING" => 'ca_item_comments_media',
@@ -138,9 +138,9 @@ BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
 				'LABEL' => _t('Media to upload'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
 		),
 		'media2' => array(
-				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				
 				"MEDIA_PROCESSING_SETTING" => 'ca_item_comments_media',
@@ -148,9 +148,9 @@ BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
 				'LABEL' => _t('Media to upload'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
 		),
 		'media3' => array(
-				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				
 				"MEDIA_PROCESSING_SETTING" => 'ca_item_comments_media',
@@ -158,9 +158,9 @@ BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
 				'LABEL' => _t('Media to upload'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
 		),
 		'media4' => array(
-				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				
 				"MEDIA_PROCESSING_SETTING" => 'ca_item_comments_media',
@@ -168,9 +168,9 @@ BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
 				'LABEL' => _t('Media to upload'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('Not accessible to public') => 0,
@@ -179,36 +179,36 @@ BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if the comment is accessible to the public or not.')
 		),
 		'created_on' => array(
-				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Comment creation date'), 'DESCRIPTION' => _t('The date and time the comment was created.')
 		),
 		'ip_addr' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('IP address of commenter'), 'DESCRIPTION' => _t('The IP address of the commenter.'),
 				'BOUNDS_LENGTH' => array(0,39)
 		),
 		'moderated_by_user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DISPLAY_FIELD' => array('ca_users.lname', 'ca_users.fname'),
 				'DEFAULT' => null,
 				'LABEL' => _t('Moderator'), 'DESCRIPTION' => _t('The user who examined the comment for validity and applicability.')
 		),
 		'moderated_on' => array(
-				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => null,
 				'LABEL' => _t('Moderation date'), 'DESCRIPTION' => _t('The date and time the comment was examined for validity and applicability.')
 		)
- 	)
+	)
 );
 
 class ca_item_comments extends BaseModel {
@@ -224,7 +224,7 @@ class ca_item_comments extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_item_comments';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'comment_id';
 
@@ -251,12 +251,12 @@ class ca_item_comments extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('name');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -418,7 +418,7 @@ class ca_item_comments extends BaseModel {
 		
 		$vs_where = '';
 		$va_wheres = array();
-		switch($ps_mode){ 
+		switch($ps_mode){
 			case 'moderated':
 				$va_wheres[] = "cic.moderated_on IS NOT NULL";
 				break;
@@ -434,7 +434,7 @@ class ca_item_comments extends BaseModel {
 		}
 		if(sizeof($va_wheres)){
 			$vs_where = "WHERE ".join(" AND ", $va_wheres);
-		}	
+		}
 		
 		$o_tep = new TimeExpressionParser();
 		$qr_res = $o_db->query("
@@ -480,20 +480,20 @@ class ca_item_comments extends BaseModel {
 		
 	}
 	# ------------------------------------------------------
-    /**
-     * Returns instance with item to which the comment is attached
-     *
-     * @return BaseModel instance of model for item associated with comment; null if no comment is loaded; or false if the associated item cannot be fetched.
-     */
-    public function getItem() {
-        if (!$this->getPrimaryKey()) { return null; }
+	/**
+	 * Returns instance with item to which the comment is attached
+	 *
+	 * @return BaseModel instance of model for item associated with comment; null if no comment is loaded; or false if the associated item cannot be fetched.
+	 */
+	public function getItem() {
+		if (!$this->getPrimaryKey()) { return null; }
 
-        if (!($t_item = $this->getAppDatamodel()->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if (!($t_item = $this->getAppDatamodel()->getInstanceByTableNum($this->get('table_num')))) { return false; }
 
-        if ($t_item->load($this->get('row_id'))) {
-            return $t_item;
-        }
-        return false;
-    }
-    # ------------------------------------------------------
+		if ($t_item->load($this->get('row_id'))) {
+			return $t_item;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
 }

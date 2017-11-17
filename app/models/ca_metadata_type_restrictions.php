@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -63,14 +63,14 @@ $_ca_metadata_type_restriction_settings = array(		// global
 		'description' => _t('If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in leu of a null value, because no data selection will be saved when the element is collapsed.  Note: "Minimum number of attributes of this kind that must be associated with an item" must also be saved as 0 to set the element to the collapsed position.')
 	)
 );
- 
+
 	
 
 BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions'] = array(
- 	'NAME_SINGULAR' 	=> _t('metadata type restriction'),
- 	'NAME_PLURAL' 		=> _t('metadata type restrictions'),
- 	'FIELDS' 			=> array(
- 		'restriction_id' => array(
+	'NAME_SINGULAR' 	=> _t('metadata type restriction'),
+	'NAME_PLURAL' 		=> _t('metadata type restrictions'),
+	'FIELDS' 			=> array(
+		'restriction_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -142,7 +142,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the restriction when displayed in a list with other restrictions. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 
 class ca_metadata_type_restrictions extends BaseModel {
@@ -158,7 +158,7 @@ class ca_metadata_type_restrictions extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_metadata_type_restrictions';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'restriction_id';
 

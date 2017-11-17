@@ -40,7 +40,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$t_item = $this->getVar('t_subject');
+	$t_item = $this->getVar('t_subject');
 	
 	$va_bundle_displays = $this->getVar('bundle_displays');
 	$t_display = $this->getVar('t_display');

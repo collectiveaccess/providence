@@ -660,21 +660,21 @@ class MultipartIDNumber extends IDNumber {
 		if ((bool)$va_element_info['sequence_by_type']) {
 			$vs_type = $this->getType();
 			if ($vs_type == '__default__') {
-			    $va_types = $this->getTypes(); 
-			    
-			    $va_exclude_type_ids = [];
-			    foreach($va_types as $vs_type) {
-			        if ($vs_type == '__default__') { continue; }
-			        if ($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
-			            $va_exclude_type_ids[] = $vn_type_id;
-			        }
-			    }
-			    if (sizeof($va_exclude_type_ids) > 0) {
-			        $vs_type_limit_sql = " AND type_id NOT IN (".join(", ", $va_exclude_type_ids).")";
-			    }
+				$va_types = $this->getTypes(); 
+				
+				$va_exclude_type_ids = [];
+				foreach($va_types as $vs_type) {
+					if ($vs_type == '__default__') { continue; }
+					if ($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
+						$va_exclude_type_ids[] = $vn_type_id;
+					}
+				}
+				if (sizeof($va_exclude_type_ids) > 0) {
+					$vs_type_limit_sql = " AND type_id NOT IN (".join(", ", $va_exclude_type_ids).")";
+				}
 			} elseif($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
-		        $vs_type_limit_sql = " AND type_id = {$vn_type_id}";
-		    }
+				$vs_type_limit_sql = " AND type_id = {$vn_type_id}";
+			}
 		}
 		
 		

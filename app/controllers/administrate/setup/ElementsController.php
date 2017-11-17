@@ -27,13 +27,13 @@
  */
 
 
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_element_labels.php');
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	require_once(__CA_LIB_DIR__.'/ca/BaseEditorController.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_element_labels.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
+require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/ca/BaseEditorController.php');
+require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
 
 class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
@@ -135,7 +135,7 @@ class ElementsController extends BaseEditorController {
 					$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
 				}
 			}
- 		}
+		}
 
 		if($vn_parent_id = $this->request->getParameter('parent_id', pInteger)){
 			$t_element->set('parent_id',$vn_parent_id);
@@ -332,7 +332,7 @@ class ElementsController extends BaseEditorController {
 		
 		$this->Edit();
 		return;
- 	}
+	}
 	# -------------------------------------------------------
 	public function Delete($pa_values=null) {
 		$t_element = $this->getElementObject();
@@ -346,15 +346,15 @@ class ElementsController extends BaseEditorController {
 					$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
 				}
 			} else {
- 				$this->notification->addNotification(_t("Deleted metadata element"), __NOTIFICATION_TYPE_INFO__);
- 			}
+				$this->notification->addNotification(_t("Deleted metadata element"), __NOTIFICATION_TYPE_INFO__);
+			}
 
- 			$this->Index();
- 			return;
- 		} else {
- 			$this->render('elements_delete_html.php');
- 		}
- 	}
+			$this->Index();
+			return;
+		} else {
+			$this->render('elements_delete_html.php');
+		}
+	}
 	# -------------------------------------------------------
 	public function MoveElementUp() {
 		$t_element = $this->getElementObject();
@@ -393,7 +393,7 @@ class ElementsController extends BaseEditorController {
 		}
 		$this->request->setParameter('element_id',$this->request->getParameter('parent_id',pInteger));
 		$this->Edit();
- 	}
+	}
 	# -------------------------------------------------------
 	public function MoveElementDown() {
 		$t_element = $this->getElementObject();
@@ -432,24 +432,24 @@ class ElementsController extends BaseEditorController {
 		}
 		$this->request->setParameter('element_id',$this->request->getParameter('parent_id',pInteger));
 		$this->Edit();
- 	}
+	}
 	# -------------------------------------------------------
 
 	# -------------------------------------------------------
 	# Utilities
- 	# -------------------------------------------------------
- 	private function getElementObject($pb_set_view_vars=true, $pn_element_id=null) {
+	# -------------------------------------------------------
+	private function getElementObject($pb_set_view_vars=true, $pn_element_id=null) {
 		if (!($vn_element_id = $this->request->getParameter('element_id', pInteger))) {
 			$vn_element_id = $pn_element_id;
 		}
 		$t_element = new ca_metadata_elements();
 		$t_element->load($vn_element_id, false);
- 		if ($pb_set_view_vars){
- 			$this->view->setVar('element_id', $vn_element_id);
- 			$this->view->setVar('t_element', $t_element);
- 		}
- 		return $t_element;
- 	}
+		if ($pb_set_view_vars){
+			$this->view->setVar('element_id', $vn_element_id);
+			$this->view->setVar('t_element', $t_element);
+		}
+		return $t_element;
+	}
 	# -------------------------------------------------------
 	private function swapRanks(&$t_first,&$t_second){
 		$vn_first_rank = $t_first->get('rank');
@@ -535,7 +535,7 @@ class ElementsController extends BaseEditorController {
 		$t_element = $this->getElementObject();
 		$pn_datatype = $this->request->getParameter('datatype', pInteger);
 		
-		$t_element->set('datatype', $pn_datatype); 
+		$t_element->set('datatype', $pn_datatype);
 		
 		foreach($_REQUEST as $vs_k => $vs_v) {
 			if (substr($vs_k, 0, 8) == 'setting_') {

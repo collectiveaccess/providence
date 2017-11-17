@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
+	
 	$pa_worldcat_ids = 		$this->getVar('worldcat_ids');
 	$pn_importer_id = 		$this->getVar('importer_id');
 	$ps_job_id = 			$this->getVar('job_id');

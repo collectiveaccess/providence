@@ -43,7 +43,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$vo_result = $this->getVar('result');	
+	$vo_result = $this->getVar('result');	
  ?>
  <div class="smallText" style="position: absolute; left: 0.1in; top: 0.1in; width: 1.5in; height: 0.35in; overflow: hidden;">
  <?php print $vo_result->getWithTemplate('(^ca_objects.idno) ^ca_objects.preferred_labels.name'); ?>

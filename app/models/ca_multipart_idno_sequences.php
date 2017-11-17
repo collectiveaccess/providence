@@ -29,17 +29,17 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
 
 BaseModel::$s_ca_models_definitions['ca_multipart_idno_sequences'] = array(
- 	'NAME_SINGULAR' 	=> _t('multipart ID numbering sequence'),
- 	'NAME_PLURAL' 		=> _t('multipart ID numbering sequences'),
- 	'FIELDS' 			=> array(
- 		'idno_stub' => array(
+	'NAME_SINGULAR' 	=> _t('multipart ID numbering sequence'),
+	'NAME_PLURAL' 		=> _t('multipart ID numbering sequences'),
+	'FIELDS' 			=> array(
+		'idno_stub' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 255, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -70,7 +70,7 @@ BaseModel::$s_ca_models_definitions['ca_multipart_idno_sequences'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Sequence number', 'DESCRIPTION' => 'The next sequence number to use'
 		)
- 	)
+	)
 );
 
 class ca_multipart_idno_sequences extends BaseModel {
@@ -86,7 +86,7 @@ class ca_multipart_idno_sequences extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_multipart_idno_sequences';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'element';
 

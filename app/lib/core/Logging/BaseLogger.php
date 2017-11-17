@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_LIB_DIR__."/core/Datamodel.php");
@@ -43,7 +43,7 @@ include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
 
 class BaseLogger {
 	# ----------------------------------------
-  	protected $o_db;
+	protected $o_db;
 	# ----------------------------------------
 	public function __construct($pa_entry=null) {
 		$this->clearTransaction();

@@ -53,15 +53,15 @@ class ExportJSON extends BaseExportFormat {
 	public function processExport($pa_data,$pa_options=array()){
 		$va_json = array();
 
-        //TODO
-        // Add ability for nested arrays?
+		//TODO
+		// Add ability for nested arrays?
 		foreach($pa_data as $pa_item){
 			$vs_column = $pa_item['element'];
 			$va_json[$vs_column] = $pa_item['text'];
 		}
 
 		if(!sizeof($va_json)) { return ''; }
-        # print json_encode($va_json)."\n";
+		# print json_encode($va_json)."\n";
 		return json_encode($va_json);
 	}
 	# ------------------------------------------------------
@@ -70,7 +70,7 @@ class ExportJSON extends BaseExportFormat {
 		$va_top = $t_mapping->getTopLevelItems();
 
 		foreach($va_top as $va_item){
-            // No errors at this time
+			// No errors at this time
 		}
 
 		return $va_errors;

@@ -403,7 +403,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 
 				if ($t_item->tableName() == 'ca_collections') {
-					$va_object_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
+					$va_object_sorts = $o_config->getList('ca_objects_hierarchy_browser_sort_values');
 					if (!is_array($va_object_sorts) || !sizeof($va_object_sorts)) {
 						$va_object_sorts = [];
 					}
@@ -576,8 +576,8 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 * 
 	 */
 	public function SetSortOrder() {
-		$ps_after_id 	=  $this->getRequest()->getParameter('after_id', pString);
-		$ps_id 			=  $this->getRequest()->getParameter('id', pString);
+		$ps_after_id 	= $this->getRequest()->getParameter('after_id', pString);
+		$ps_id 			= $this->getRequest()->getParameter('id', pString);
 		
 		$va_tmp = explode('-', $ps_id);
 		if (in_array($va_tmp[0], ['ca_objects', 'ca_collections'])) {

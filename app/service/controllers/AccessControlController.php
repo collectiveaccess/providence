@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Service/deprecated/AccessControlService.php');
+	require_once(__CA_LIB_DIR__.'/ca/Service/deprecated/AccessControlService.php');
 	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
 	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/Server.php');
 	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/AutoDiscover.php');
@@ -40,8 +40,8 @@
 			$this->opo_services_conf = Configuration::load($vo_conf->get("services_config"));
 			
 			$this->opb_disable = !$this->opo_services_conf->get("enable_access_control");
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
+			parent::__construct($po_request, $po_response, $pa_view_paths);
+		}
 		# -------------------------------------------------------
 		public function soap(){
 			if($this->opb_disable) return "";

@@ -24,47 +24,47 @@ class Highcharts implements chartClass {
 	}
 	
 	public function loadValues($values) {
-    	$this->values=$values;
-    	return true;
-    }
-    
-    public function loadParameter($parameter, $parameter_value) {
-    	$this->parameters[$parameter]=$parameter_value;
-    	return true;
-    }
+		$this->values=$values;
+		return true;
+	}
+	
+	public function loadParameter($parameter, $parameter_value) {
+		$this->parameters[$parameter]=$parameter_value;
+		return true;
+	}
 
-    public function checkRequiredParameters() {
-    	foreach ($this->requiredParameters as $requiredParameter) {
-    		if (!isset($this->parameters[$requiredParameter])) {
-    			return false;	
-    		}
-    	}
-    	return true;
-    }
-    
-    public function returnRequiredParameters(){
-    	return $this->requiredParameters;
-    }
-    
-    public function getHtml() {
-    	$qr_result=$this->values;
-	    $va_columns=$this->parameters["columns"];
-	    $width=$this->parameters["width"];
-	    $format=$this->parameters["format"];
-	    $va_charting_columns=$this->parameters["charting_columns"];
-	    $va_chart_types=$this->parameters["chart_types"];
-	    $va_title=$this->parameters["title"];
+	public function checkRequiredParameters() {
+		foreach ($this->requiredParameters as $requiredParameter) {
+			if (!isset($this->parameters[$requiredParameter])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public function returnRequiredParameters(){
+		return $this->requiredParameters;
+	}
+	
+	public function getHtml() {
+		$qr_result=$this->values;
+		$va_columns=$this->parameters["columns"];
+		$width=$this->parameters["width"];
+		$format=$this->parameters["format"];
+		$va_charting_columns=$this->parameters["charting_columns"];
+		$va_chart_types=$this->parameters["chart_types"];
+		$va_title=$this->parameters["title"];
 
-	    $qr_result->seek();
+		$qr_result->seek();
 		
 		// Initializing the result variable
 		$htmlResult = "";
- 
+
 		if ($qr_result->numRows() ==0) {
 			//if no result nothing to do
 			return false;
-		} 
-			
+		}
+		
 		// Loading chart format specifications
 		// TODO : this coding part should be out of this function, sending values in 1 parameter 
 		if(is_array($va_chart_types)) {
@@ -72,7 +72,7 @@ class Highcharts implements chartClass {
 				if ($type == $format) {
 					$google_chart_type = $settings["googletype"];
 					$message = $settings["message"];
-				}	
+				}
 			}
 		}
 
@@ -101,8 +101,8 @@ $(document).ready(function() {
 			text: '".$va_title."'
 		},
 		credits: {
-            enabled: false
-        },
+			enabled: false
+		},
 		tooltip: {
 			formatter: function() {
 				^TOOLTIP
@@ -132,20 +132,20 @@ $(document).ready(function() {
 </script>";
 		// Inserting the result rows
 		$va_row_no=0;
-		$data=""; 
-		while($qr_result->nextRow()) {			
+		$data="";
+		while($qr_result->nextRow()) {
 			$va_column_no=0;
 			$data .= "[";
-			foreach ($va_columns as $va_column => $va_column_label) { 
-				// only render columns specified in XML field charting_columns 
+			foreach ($va_columns as $va_column => $va_column_label) {
+				// only render columns specified in XML field charting_columns
 				if (in_array($va_column_label,$va_charting_columns)) {
 					// column no needs to be a string for 0
-					if ($va_column_no == 0) 
+					if ($va_column_no == 0)
 						$data .= "'".$qr_result->get($va_column_label)."',";
-					else 
+					else
 						$data .= $qr_result->get($va_column_label);
 					$va_column_no++;
-				}				
+				}
 			}
 			$data .= "],\n";
 			$va_row_no++;
@@ -153,15 +153,15 @@ $(document).ready(function() {
 
 		switch ($format) {
 			case "bar":
-				$htmlResult = str_ireplace("^TOOLTIP", "return '<b>'+ this.point.name +'</b>: '+ this.y;", $htmlResult); 
+				$htmlResult = str_ireplace("^TOOLTIP", "return '<b>'+ this.point.name +'</b>: '+ this.y;", $htmlResult);
 				$htmlResult = str_ireplace("^TYPE", "bar", $htmlResult);
 				break;
 			case "column":
-				$htmlResult = str_ireplace("^TOOLTIP", "return '<b>'+ this.point.name +'</b>: '+ this.y;", $htmlResult); 
+				$htmlResult = str_ireplace("^TOOLTIP", "return '<b>'+ this.point.name +'</b>: '+ this.y;", $htmlResult);
 				$htmlResult = str_ireplace("^TYPE", "column", $htmlResult);
 				break;
 			case "step":
-				$htmlResult = str_ireplace("^TOOLTIP", "return '<b>'+ this.point.name +'</b>: '+ this.y;", $htmlResult); 
+				$htmlResult = str_ireplace("^TOOLTIP", "return '<b>'+ this.point.name +'</b>: '+ this.y;", $htmlResult);
 				$htmlResult = str_ireplace("^TYPE", "spline", $htmlResult);
 				break;
 			case "area":
@@ -183,7 +183,7 @@ $(document).ready(function() {
 		
 		return $htmlResult;
 	}
-    
+	
 	public function drawImage() {
 		return FALSE;
 	}

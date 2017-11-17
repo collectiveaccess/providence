@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 /** 
   * Plugin for processing QuicktimeVR files
   */
@@ -580,7 +580,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 							<td>
 								<object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"
 									width="<?php print $vn_width; ?>" height="<?php print $vn_height + 16; ?>"
- 									codebase="http://www.apple.com/qtactivex/qtplugin.cab">
+									codebase="http://www.apple.com/qtactivex/qtplugin.cab">
 									<param name="src" VALUE="<?php print $ps_url; ?>">
 									<param name="autoplay" VALUE="true">
 									<param name="controller" VALUE="true">

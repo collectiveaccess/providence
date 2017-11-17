@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,10 +38,10 @@ require_once(__CA_LIB_DIR__."/core/BaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representation_captions'] = array(
- 	'NAME_SINGULAR' 	=> _t('object representation caption file'),
- 	'NAME_PLURAL' 		=> _t('object representation caption files'),
- 	'FIELDS' 			=> array(
- 		'caption_id' => array(
+	'NAME_SINGULAR' 	=> _t('object representation caption file'),
+	'NAME_PLURAL' 		=> _t('object representation caption files'),
+	'FIELDS' 			=> array(
+		'caption_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -78,7 +78,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representation_captions'] = array
 				'DEFAULT' => '',
 				'LABEL' => _t('Caption content'), 'DESCRIPTION' => _t('Caption content')
 		)
- 	)
+	)
 );
 
 class ca_object_representation_captions extends BaseModel {
@@ -94,7 +94,7 @@ class ca_object_representation_captions extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_object_representation_captions';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'caption_id';
 

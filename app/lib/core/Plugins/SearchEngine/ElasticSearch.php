@@ -161,7 +161,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						'type' => $vs_table_name,
 						'id' => $pn_subject_row_id
 				])['_source'];
- 			} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+			} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				$va_record = array(); // record doesn't exist yet --> the update API will create it
 			}
 

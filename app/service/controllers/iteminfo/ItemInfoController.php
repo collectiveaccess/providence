@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Service/deprecated/ItemInfoService.php');
+	require_once(__CA_LIB_DIR__.'/ca/Service/deprecated/ItemInfoService.php');
 	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
 	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/Server.php');
 	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/AutoDiscover.php');
@@ -35,8 +35,8 @@
 	class ItemInfoController extends BaseServiceController {
 		# -------------------------------------------------------
 		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
+			parent::__construct($po_request, $po_response, $pa_view_paths);
+		}
 		# -------------------------------------------------------
 		public function soap(){
 			$vs_wsdl =

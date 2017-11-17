@@ -29,46 +29,46 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  * Implements reindexing of search indices invoked via the web UI
-  * This application dispatcher plugin ensures that the indexing starts
-  * after the web UI page has been sent to the client
-  */
- 
- 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
- 	require_once(__CA_LIB_DIR__.'/ca/BatchProcessor.php');
- 
-	class BatchMediaImportProgress extends AppControllerPlugin {
-		# -------------------------------------------------------
-		private $request;
-		private $opa_options;
-		# -------------------------------------------------------
-		public function __construct($po_request, $pa_options=null) {
-			$this->request = $po_request;
-			$this->opa_options = is_array($pa_options) ? $pa_options : array();
-		}
-		# -------------------------------------------------------
-		public function dispatchLoopShutdown() {	
-			//
-			// Force output to be sent - we need the client to have the page before
-			// we start flushing progress bar updates
-			//	
-			$app = AppController::getInstance();
-			$req = $app->getRequest();
-			$resp = $app->getResponse();
-			$resp->sendResponse();
-			$resp->clearContent();
-			
-			//
-			// Do batch processing
-			//
-			if ($req->isLoggedIn()) {
-				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
-			
-				$va_errors = BatchProcessor::importMediaFromDirectory($this->request, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMediaImportProgress', 'reportCallback' => 'caCreateBatchMediaImportResultsReport')));
-			}
-		}	
-		# -------------------------------------------------------
+
+/**
+ * Implements reindexing of search indices invoked via the web UI
+ * This application dispatcher plugin ensures that the indexing starts
+ * after the web UI page has been sent to the client
+ */
+
+require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
+require_once(__CA_LIB_DIR__.'/ca/BatchProcessor.php');
+
+class BatchMediaImportProgress extends AppControllerPlugin {
+	# -------------------------------------------------------
+	private $request;
+	private $opa_options;
+	# -------------------------------------------------------
+	public function __construct($po_request, $pa_options=null) {
+		$this->request = $po_request;
+		$this->opa_options = is_array($pa_options) ? $pa_options : array();
 	}
+	# -------------------------------------------------------
+	public function dispatchLoopShutdown() {
+		//
+		// Force output to be sent - we need the client to have the page before
+		// we start flushing progress bar updates
+		//
+		$app = AppController::getInstance();
+		$req = $app->getRequest();
+		$resp = $app->getResponse();
+		$resp->sendResponse();
+		$resp->clearContent();
+		
+		//
+		// Do batch processing
+		//
+		if ($req->isLoggedIn()) {
+			set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
+		
+			$va_errors = BatchProcessor::importMediaFromDirectory($this->request, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMediaImportProgress', 'reportCallback' => 'caCreateBatchMediaImportResultsReport')));
+		}
+	}
+	# -------------------------------------------------------
+}
 ?>

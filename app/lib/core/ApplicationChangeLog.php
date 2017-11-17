@@ -29,61 +29,61 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
- 
- class ApplicationChangeLog {
- 	# ----------------------------------------------------------------------
- 	private $ops_change_log_database = '';
+
+class ApplicationChangeLog {
+	# ----------------------------------------------------------------------
+	private $ops_change_log_database = '';
 	private $opb_dont_show_timestamp_in_change_log = false;
- 	# ----------------------------------------------------------------------
- 	public function __construct() {
- 		$o_config = Configuration::load();
+	# ----------------------------------------------------------------------
+	public function __construct() {
+		$o_config = Configuration::load();
 		if ($this->ops_change_log_database = $o_config->get("change_log_database")) {
 			$this->ops_change_log_database .= ".";
 		}
 
 		$this->opb_dont_show_timestamp_in_change_log = (bool) $o_config->get('dont_show_timestamp_in_change_log');
- 	}
- 	# ----------------------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getRecentChangesForDisplay($pn_table_num, $pn_num_seconds=604800, $pn_limit=0, $po_request=null, $ps_css_id=null) {	// 604800 = number of seconds in one week
- 		return $this->_getLogDisplayOutput($this->_getChangeLogFromRawData($this->getRecentChanges($pn_table_num, $pn_num_seconds, $pn_limit), $pn_table_num, array('return_item_names' => true)), array('id' => $ps_css_id, 'request' => $po_request));
- 	}
- 	# ----------------------------------------
- 	/**
- 	 *
- 	 */
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getRecentChangesForDisplay($pn_table_num, $pn_num_seconds=604800, $pn_limit=0, $po_request=null, $ps_css_id=null) {	// 604800 = number of seconds in one week
+		return $this->_getLogDisplayOutput($this->_getChangeLogFromRawData($this->getRecentChanges($pn_table_num, $pn_num_seconds, $pn_limit), $pn_table_num, array('return_item_names' => true)), array('id' => $ps_css_id, 'request' => $po_request));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
 	public function getChangeLogForRowForDisplay($t_item, $ps_css_id=null, $pn_user_id=null) {
 		return $this->_getLogDisplayOutputForRow($this->getChangeLogForRow($t_item, array('user_id' => $pn_user_id)), array('id' => $ps_css_id));
 	}
 	# ----------------------------------------
 	/**
- 	 *
- 	 */
+	 *
+	 */
 	public function getChangeLogForRow($t_item, $pa_options=null) {
 		return $this->_getChangeLogFromRawData($t_item->getChangeLog($t_item->getPrimaryKey(), $pa_options), $t_item->tableNum(), $pa_options);
 	}
 	# ----------------------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	 public function getRecentChanges($pn_table_num, $pn_num_seconds=604800, $pn_limit=0) {	
-		return $this->_getChangeLogFromRawData($this->getRecentChangesAsRawData($pn_table_num, $pn_num_seconds, $pn_limit), $pn_table_num,  array('return_item_names' => true));
+	/**
+	 *
+	 */
+	public function getRecentChanges($pn_table_num, $pn_num_seconds=604800, $pn_limit=0) {	
+		return $this->_getChangeLogFromRawData($this->getRecentChangesAsRawData($pn_table_num, $pn_num_seconds, $pn_limit), $pn_table_num, array('return_item_names' => true));
 	}
- 	# ----------------------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getRecentChangesAsRawData($pn_table_num, $pn_num_seconds=604800, $pn_limit=0) {	// 604800 = number of seconds in one week
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getRecentChangesAsRawData($pn_table_num, $pn_num_seconds=604800, $pn_limit=0) {	// 604800 = number of seconds in one week
 		$o_db = new Db();
 		$qs_log = $o_db->prepare("
 			SELECT DISTINCT
@@ -117,17 +117,17 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		}
 		
 		return array();
- 	}
+	}
 	# ----------------------------------------
- 	/**
- 	 *
- 	 */
- 	private function _getLogDisplayOutputForRow($pa_log, $pa_options=null) {
- 		$ps_id = (isset($pa_options['id']) && $pa_options['id']) ? $pa_options['id'] : '';
- 		$vs_output = '';
- 		
- 		if ($ps_id) {
- 		$vs_output .= '<script language="JavaScript" type="text/javascript">
+	/**
+	 *
+	 */
+	private function _getLogDisplayOutputForRow($pa_log, $pa_options=null) {
+		$ps_id = (isset($pa_options['id']) && $pa_options['id']) ? $pa_options['id'] : '';
+		$vs_output = '';
+		
+		if ($ps_id) {
+			$vs_output .= '<script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	$(document).ready(function(){
 		$("#'.$ps_id.'").caFormatListTable();
@@ -135,7 +135,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 /* ]]> */
 </script>';
 		}
- 		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable">
+		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -150,8 +150,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			</tr>
 		</thead>
 		<tbody>';
- 		
-	
+		
+		
 		if (!sizeof($pa_log)) {
 			$vs_output .= "<tr><td colspan='3'><div class='contentError' align='center'>"._t('No change log available')."</div></td></tr>\n";
 		} else {
@@ -187,17 +187,17 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		$vs_output .= "</table>\n";
 		
 		return $vs_output;
- 	}
- 	# ----------------------------------------
- 	/**
- 	 *
- 	 */
- 	private function _getLogDisplayOutput($pa_log, $pa_options=null) {
- 		$ps_id = (isset($pa_options['id']) && $pa_options['id']) ? $pa_options['id'] : '';
- 		$vs_output = '';
- 		
- 		if ($ps_id) {
- 		$vs_output .= '<script language="JavaScript" type="text/javascript">
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	private function _getLogDisplayOutput($pa_log, $pa_options=null) {
+		$ps_id = (isset($pa_options['id']) && $pa_options['id']) ? $pa_options['id'] : '';
+		$vs_output = '';
+		
+		if ($ps_id) {
+			$vs_output .= '<script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	$(document).ready(function(){
 		$("#'.$ps_id.'").caFormatListTable();
@@ -205,7 +205,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 /* ]]> */
 </script>';
 		}
- 		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable">
+		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -223,8 +223,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			</tr>
 		</thead>
 		<tbody>';
- 		
-	
+		
+		
 		if (!sizeof($pa_log)) {
 			$vs_output .= "<tr><td colspan='4'><div class='contentError' align='center'>"._t('No change log available')."</div></td></tr>\n";
 		} else {
@@ -242,9 +242,9 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						}
 						
 						$vs_output .= "</td>";
-					} else {
-						$vs_output .= "<td> </td>";
-					}
+						} else {
+							$vs_output .= "<td> </td>";
+						}
 					
 					if (isset($pa_options['request']) && $pa_options['request']) {
 						$vs_output .= "<td><a href='".caEditorUrl($pa_options['request'], $va_log_entries[0]['subject_table_num'] , $va_log_entries[0]['subject_id'])."'>".$va_log_entries[0]['subject']."</a></td>";
@@ -266,13 +266,13 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		$vs_output .= "</table>\n";
 		
 		return $vs_output;
- 	}
- 	# ----------------------------------------
+	}
+	# ----------------------------------------
 	/**
- 	 *
- 	 */
+	 *
+	 */
 	private function _getChangeLogFromRawData($pa_data, $pn_table_num, $pa_options=null) {
-		//print "<pre>".print_r($pa_data, true)."</pre>\n";	
+		//print "<pre>".print_r($pa_data, true)."</pre>\n";
 		$va_log_output = array();
 		$vs_blank_placeholder = '&lt;'._t('BLANK').'&gt;';
 		$o_tep = new TimeExpressionParser();
@@ -344,7 +344,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						// For example: if an entity is related to an object, strictly speaking the logging occurs on the ca_objects_x_entities
 						// row (ca_objects_x_entities is the "logged" table), but the subject is ca_objects since it's only in the context of the
 						// object (and probably the ca_entities row as well) that you can about the change.
-						//		
+						//
 						$t_obj = $o_datamodel->getInstanceByTableNum($va_log_entry['logged_table_num'], true);	// get instance for logged table
 						if (!$t_obj) { continue; }
 						
@@ -395,7 +395,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 									if (sizeof($va_disp_fields)) {
 										$va_rel = $o_datamodel->getManyToOneRelations($t_obj->tableName(), $vs_field);
 										$va_rel_values = array();
-											
+										
 										if ($t_rel_obj = $o_datamodel->getTableInstance($va_rel['one_table'], true)) {
 											$t_rel_obj->load($vs_value);
 											
@@ -403,7 +403,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 												$va_tmp = explode('.', $vs_display_field);
 												if (($vs_tmp = $t_rel_obj->get($va_tmp[1])) !== '') { $va_rel_values[] = $vs_tmp; }
 											}
-										}	
+										}
 										$vs_proc_val = join(', ', $va_rel_values);
 									}
 								} else {
@@ -414,7 +414,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 										$va_rel_values = array();
 										
 										if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $va_keys['one_table'])) { continue; }	// does user have access to this bundle?
-								
+										
 										if ($t_rel_obj = $o_datamodel->getTableInstance($va_keys['one_table'], true)) {
 											if ($t_rel_obj->load($vs_value)) {
 												if (method_exists($t_rel_obj, 'getLabelForDisplay')) {
@@ -434,15 +434,15 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 											$vs_proc_val = _t('Non-existent');
 										}
 									} else {
-							
+										
 										// Adjust display of value for different field types
 										switch($va_field_info['FIELD_TYPE']) {
-											case FT_BIT:
-												$vs_proc_val = $vs_value ? 'Yes' : 'No';
-												break;
-											default:
-												$vs_proc_val = $vs_value;
-												break;
+										case FT_BIT:
+											$vs_proc_val = $vs_value ? 'Yes' : 'No';
+											break;
+										default:
+											$vs_proc_val = $vs_value;
+											break;
 										}
 										
 										if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_field)) { continue; }	// does user have access to this bundle?
@@ -472,7 +472,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								);
 							}
 						}
-													
+						
 						// ---------------------------------------------------------------
 						// is this a label row?
 						if ($va_log_entry['logged_table_num'] == $vn_label_table_num) {
@@ -497,7 +497,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								}
 								
 								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_element_code)) { continue; }	// does user have access to this bundle?
-							
+								
 								if ($o_attr_val = Attribute::getValueInstance($t_element->get('datatype'))) {
 									$o_attr_val->loadValueFromRow($va_log_entry['snapshot']);
 									$vs_attr_val = $o_attr_val->getDisplayValue();
@@ -511,7 +511,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 									$vs_attr_val = $t_list->getItemFromListForDisplayByItemID($vn_list_id, $vs_attr_val, true);
 								}
 								
-								if (!$vs_attr_val) { 
+								if (!$vs_attr_val) {
 									$vs_attr_val = $vs_blank_placeholder;
 								}
 								$vs_label = $t_element->getLabelForDisplay();
@@ -543,7 +543,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								$t_rel = $o_datamodel->getInstanceByTableNum($t_obj->tableNum(), true);
 								
 								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $t_related_table->tableName())) { continue; }	// does user have access to this bundle?
-							
+								
 								$va_changes[] = array(
 									'label' => caUcFirstUTF8Safe($t_related_table->getProperty('NAME_SINGULAR')),
 									'idno' => ($vs_idno_field = $t_related_table->getProperty('ID_NUMBERING_ID_FIELD')) ? $t_related_table->get($vs_idno_field) : null,
@@ -557,16 +557,16 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 							}
 						}
 						// ---------------------------------------------------------------	
-			
+						
 						// record log line
 						if (sizeof($va_changes)) {
-						    if ($vn_unit_id == '') {
-						        $vs_unit_identifier = "U{$vn_pseudo_unit_counter}";
-						        $vn_pseudo_unit_counter++;
-						    } else {
-						        $vs_unit_identifier = $vn_unit_id;
-						    }
-						
+							if ($vn_unit_id == '') {
+								$vs_unit_identifier = "U{$vn_pseudo_unit_counter}";
+								$vn_pseudo_unit_counter++;
+							} else {
+								$vs_unit_identifier = $vn_unit_id;
+							}
+							
 							$va_log_output[$vs_unit_identifier][] = array(
 								'datetime' => $vs_datetime,
 								'timestamp' => $va_log_entry['log_datetime'],
@@ -585,7 +585,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								'logged_row_id' => $va_log_entry['logged_row_id']
 							);
 						}
-					}	
+					}
 				}
 			}
 		}
@@ -593,19 +593,19 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		return $va_log_output;
 	}
 	# ----------------------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getCreatedOnTimestampsForIDs($pm_table_name_or_num, $pa_row_ids) {
- 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
- 		
- 		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
- 		} else {
- 			$pn_table_num = (int)$pm_table_name_or_num;
- 		}
- 		
+	/**
+	 *
+	 */
+	public function getCreatedOnTimestampsForIDs($pm_table_name_or_num, $pa_row_ids) {
+		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
+		
+		if (!is_numeric($pm_table_name_or_num)) {
+			$o_dm = Datamodel::load();
+			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+		} else {
+			$pn_table_num = (int)$pm_table_name_or_num;
+		}
+		
 		$o_db = new Db();
 		$qr_res = $o_db->query("
 				SELECT wcl.log_datetime, wu.user_id, wu.fname, wu.lname, wu.email, wcl.logged_row_id
@@ -613,7 +613,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
 				WHERE
 					(wcl.logged_table_num = ?) AND (wcl.logged_row_id IN (?)) AND(wcl.changetype = 'I')",
-		$pn_table_num, $pa_row_ids);
+							   $pn_table_num, $pa_row_ids);
 		
 		$va_timestamps = array();
 		while ($qr_res->nextRow()) {
@@ -625,23 +625,23 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				'timestamp' => $qr_res->get('log_datetime')
 			);
 		}
- 		
- 		return $va_timestamps;
-  	}
-  	# ----------------------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getLastChangeTimestampsForIDs($pm_table_name_or_num, $pa_row_ids) {
- 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
- 		
- 		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
- 		} else {
- 			$pn_table_num = (int)$pm_table_name_or_num;
- 		}
- 		
+		
+		return $va_timestamps;
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getLastChangeTimestampsForIDs($pm_table_name_or_num, $pa_row_ids) {
+		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
+		
+		if (!is_numeric($pm_table_name_or_num)) {
+			$o_dm = Datamodel::load();
+			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+		} else {
+			$pn_table_num = (int)$pm_table_name_or_num;
+		}
+		
 		$o_db = new Db();
 		$va_timestamps = array();
 		
@@ -665,7 +665,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
 					
 				",
-		$pn_table_num, $pa_row_ids);
+							   $pn_table_num, $pa_row_ids);
 		
 		while ($qr_res->nextRow()) {
 			$va_timestamps[(int)$qr_res->get('subject_row_id')] = array(
@@ -693,13 +693,13 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						GROUP BY ch.logged_row_id
 					) AS s ON s.logged_row_id = wcl.logged_row_id AND s.log_datetime = wcl.log_datetime
 				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id",
-		$pn_table_num, $pa_row_ids);
+							   $pn_table_num, $pa_row_ids);
 		
 		while ($qr_res->nextRow()) {
 			$vn_timestamp = (int)$qr_res->get('log_datetime');
 			$vn_row_id = (int)$qr_res->get('logged_row_id');
 			if ($vn_timestamp > $va_timestamps[$vn_row_id]) {
-				 $va_timestamps[$vn_row_id] = array(
+				$va_timestamps[$vn_row_id] = array(
 					'user_id' => $qr_res->get('user_id'),
 					'fname' => $qr_res->get('fname'),
 					'lname' => $qr_res->get('lname'),
@@ -709,23 +709,23 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			}
 		}
 		
- 		
- 		return $va_timestamps;
-  	}
-  	# ----------------------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getDeleteOnTimestampsForIDs($pm_table_name_or_num, $pa_row_ids) {
- 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
- 		
- 		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
- 		} else {
- 			$pn_table_num = (int)$pm_table_name_or_num;
- 		}
- 		
+		
+		return $va_timestamps;
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getDeleteOnTimestampsForIDs($pm_table_name_or_num, $pa_row_ids) {
+		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
+		
+		if (!is_numeric($pm_table_name_or_num)) {
+			$o_dm = Datamodel::load();
+			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+		} else {
+			$pn_table_num = (int)$pm_table_name_or_num;
+		}
+		
 		$o_db = new Db();
 		$qr_res = $o_db->query("
 				SELECT wcl.log_datetime, wu.user_id, wu.fname, wu.lname, wu.email, wcl.logged_row_id
@@ -733,7 +733,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
 				WHERE
 					(wcl.logged_table_num = ?) AND (wcl.logged_row_id IN (?)) AND(wcl.changetype = 'D')",
-		$pn_table_num, $pa_row_ids);
+							   $pn_table_num, $pa_row_ids);
 		
 		$va_timestamps = array();
 		while ($qr_res->nextRow()) {
@@ -745,22 +745,22 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				'timestamp' => $qr_res->get('log_datetime')
 			);
 		}
- 		
- 		return $va_timestamps;
-  	}
-  	# ----------------------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getEarliestTimestampForIDs($pm_table_name_or_num, $pa_row_ids=null) {
- 		
- 		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
- 		} else {
- 			$pn_table_num = (int)$pm_table_name_or_num;
- 		}
- 		
+		
+		return $va_timestamps;
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getEarliestTimestampForIDs($pm_table_name_or_num, $pa_row_ids=null) {
+		
+		if (!is_numeric($pm_table_name_or_num)) {
+			$o_dm = Datamodel::load();
+			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+		} else {
+			$pn_table_num = (int)$pm_table_name_or_num;
+		}
+		
 		$o_db = new Db();
 		
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) {
@@ -770,7 +770,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
 					WHERE
 						(wcl.logged_table_num = ?) AND (wcl.changetype = 'I')",
-			$pn_table_num);
+								   $pn_table_num);
 		} else {
 			$qr_res = $o_db->query("
 					SELECT MIN(wcl.log_datetime) log_datetime
@@ -778,31 +778,31 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
 					WHERE
 						(wcl.logged_table_num = ?) AND (wcl.logged_row_id IN (?)) AND(wcl.changetype = 'I')",
-			$pn_table_num, $pa_row_ids);
+								   $pn_table_num, $pa_row_ids);
 		}
 		
 		if ($qr_res->nextRow()) {
 			return (int)$qr_res->get('log_datetime');
 		}
- 		
- 		return null;
-  	}
-  	# ----------------------------------------------------------------------
- 	/**
- 	 * 
- 	 *
- 	 * @param mixed $pm_table_name_or_num
- 	 * @param array $pa_options An array of options:
- 	 * 		range = optional range to restrict returned entries to. Should be array with 0th key set to start and 1st key set to end of range. Both values should be Unix timestamps. You can also use 'start' and 'end' as keys if desired. 
+		
+		return null;
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param mixed $pm_table_name_or_num
+	 * @param array $pa_options An array of options:
+	 * 		range = optional range to restrict returned entries to. Should be array with 0th key set to start and 1st key set to end of range. Both values should be Unix timestamps. You can also use 'start' and 'end' as keys if desired. 
 	 * 		limit = maximum number of entries returned. Omit or set to zero for no limit. [default=all]
 	 * @return array Change log data
- 	 */
- 	public function getDeletions($pm_table_name_or_num, $pa_options=null) {
- 		$o_dm = Datamodel::load();
- 		$vn_table_num = $o_dm->getTableNum($pm_table_name_or_num);
- 		$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
- 		$t_subject = $o_dm->getInstanceByTableNum($vn_table_num, true);
- 		
+	 */
+	public function getDeletions($pm_table_name_or_num, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		$vn_table_num = $o_dm->getTableNum($pm_table_name_or_num);
+		$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+		$t_subject = $o_dm->getInstanceByTableNum($vn_table_num, true);
+		
 		$pa_datetime_range = (isset($pa_options['range']) && is_array($pa_options['range'])) ? $pa_options['range'] : null;
 		$pn_max_num_entries_returned = (isset($pa_options['limit']) && (int)$pa_options['limit']) ? (int)$pa_options['limit'] : 0;
 		
@@ -833,7 +833,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			$vn_start = $vn_end - (24 * 60 * 60);
 		}
 		$o_db = new Db();
-  		if (!($qr_res = $o_db->query("
+		if (!($qr_res = $o_db->query("
 			SELECT DISTINCT
 				wcl.log_id, wcl.log_datetime log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
 				wclsnap.snapshot, wcl.unit_id, wu.email, wu.fname, wu.lname
@@ -871,6 +871,6 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		}
 		return $va_log;
 	}
- 	# ----------------------------------------------------------------------
- }
+	# ----------------------------------------------------------------------
+}
 ?>

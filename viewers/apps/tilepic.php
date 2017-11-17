@@ -35,7 +35,7 @@ require_once(__CA_LIB_DIR__."/core/Configuration.php");
 
 $vo_conf = Configuration::load();
 
-$ps_filepath = 	$_REQUEST["p"];
+$ps_filepath = $_REQUEST["p"];
 $pn_tile = $_REQUEST["t"];
 
 $ps_filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", $ps_filepath);

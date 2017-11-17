@@ -41,32 +41,32 @@
 
 	// Every element you want to append to the word document is placed in a section.
 
-    // New portrait section
+	// New portrait section
 	$sectionStyle = array(
-	    'orientation' => 'portrait',
-	    'marginTop' => 2 * $cmToTwips,
-	    'marginBottom' => 2 * $cmToTwips,
-	    'marginLeft' => 2 * $cmToTwips,
-	    'marginRight' => 2 * $cmToTwips,
-	    'headerHeight' => 1 * $cmToTwips,
-	    'footerHeight' => 1 * $cmToTwips,
-	    'colsNum' => 1,
+		'orientation' => 'portrait',
+		'marginTop' => 2 * $cmToTwips,
+		'marginBottom' => 2 * $cmToTwips,
+		'marginLeft' => 2 * $cmToTwips,
+		'marginRight' => 2 * $cmToTwips,
+		'headerHeight' => 1 * $cmToTwips,
+		'footerHeight' => 1 * $cmToTwips,
+		'colsNum' => 1,
 	);
 	$section = $phpWord->addSection($sectionStyle);
 
 
-    // Add header for all pages
-    $header = $section->addHeader();
-    //$header->addText("Header");
-    
-    $headerimage = $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img');
+	// Add header for all pages
+	$header = $section->addHeader();
+	//$header->addText("Header");
+	
+	$headerimage = $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img');
 	if(file_exists($headerimage)){
 		$header->addImage($headerimage,array('height' => 30,'wrappingStyle' => 'inline'));
 	}
 
-    // Add footer
-    $footer = $section->addFooter();
-    $footer->addPreserveText('{PAGE}/{NUMPAGES}', null, array('align' => 'right'));
+	// Add footer
+	$footer = $section->addFooter();
+	$footer->addPreserveText('{PAGE}/{NUMPAGES}', null, array('align' => 'right'));
 
 	// Defining font style for headers
 	$phpWord->addFontStyle('headerStyle',array(
@@ -82,8 +82,8 @@
 		'size'=>14, 
 		'color'=>'000000'
 	));
-    $styleHeaderFont = array('bold'=>true, 'size'=>13, 'name'=>'Calibri');
-    $styleBundleNameFont = array('bold'=>false, 'underline'=>'single', 'color'=>'666666', 'size'=>11, 'name'=>'Calibri');
+	$styleHeaderFont = array('bold'=>true, 'size'=>13, 'name'=>'Calibri');
+	$styleBundleNameFont = array('bold'=>false, 'underline'=>'single', 'color'=>'666666', 'size'=>11, 'name'=>'Calibri');
 	$styleContentFont = array('bold'=>false, 'size'=>11, 'name'=>'Calibri');
 	
 // Define table style arrays
@@ -104,7 +104,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 	while($vo_result->nextHit()) {
 		$table = $section->addTable('myOwnTableStyle');
 		$table->addRow();
-    	$list = $va_display_list;
+		$list = $va_display_list;
 
 		// First column : media
 		$mediaCell = $table->addCell( 5 * $cmToTwips);
@@ -152,7 +152,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 					$vs_path = $vo_result->getMediaPath('ca_object_representations.media',$vs_version);
 					if (is_file($vs_path)) {
 						$contentCell->addImage(
-    						$vs_path
+							$vs_path
 						);
 					}
 				}
@@ -160,7 +160,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
 
 
-                $textrun = $contentCell->createTextRun();
+				$textrun = $contentCell->createTextRun();
 				$textrun->addText($va_display_item['display'].' :', $styleBundleNameFont);
 				$textrun->addText(
 					html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5),

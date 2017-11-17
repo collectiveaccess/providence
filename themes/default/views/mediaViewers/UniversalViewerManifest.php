@@ -108,16 +108,16 @@
 	}
 	
     $va_services[] = [
-        "@context" => "http://iiif.io/api/search/0/context.json",
-        "@id" => caNavUrl($vo_request, '*', '*', 'SearchMediaData', ['identifier' => $vs_identifier, $t_subject->primaryKey() => $t_subject->getPrimaryKey()]),
-        "profile" => "http://iiif.io/api/search/0/search",
-        "label" => _t("Search within this manifest"),
-        "service" => [
-            "@id" => caNavUrl($vo_request, '*', '*', 'MediaDataAutocomplete', ['identifier' => $vs_identifier, $t_subject->primaryKey() => $t_subject->getPrimaryKey()]),
-            "profile" => "http://iiif.io/api/search/0/autocomplete",
-            "label" => _t("Get suggested words in this manifest")
-        ]
-    ];
+		"@context" => "http://iiif.io/api/search/0/context.json",
+		"@id" => caNavUrl($vo_request, '*', '*', 'SearchMediaData', ['identifier' => $vs_identifier, $t_subject->primaryKey() => $t_subject->getPrimaryKey()]),
+		"profile" => "http://iiif.io/api/search/0/search",
+		"label" => _t("Search within this manifest"),
+		"service" => [
+			"@id" => caNavUrl($vo_request, '*', '*', 'MediaDataAutocomplete', ['identifier' => $vs_identifier, $t_subject->primaryKey() => $t_subject->getPrimaryKey()]),
+			"profile" => "http://iiif.io/api/search/0/autocomplete",
+			"label" => _t("Get suggested words in this manifest")
+		]
+	];
 		
 	
 	$va_manifest = [
@@ -131,7 +131,7 @@
 		"related" => [],
 		"seeAlso" => [],
 		"service" => $va_services,
-        "sequences" => [
+		"sequences" => [
 			[
 				"@id" => "{$vs_identifier}/sequence/s0",
 				"@type" => "sc:Sequence",

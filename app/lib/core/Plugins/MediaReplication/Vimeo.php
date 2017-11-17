@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */ 
-    
+/**
+  *
+  */
+
 include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMediaReplication.php");
@@ -83,7 +83,7 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	 */
 	public function setTargetInfo($pa_target_info) {
 		$this->opa_target_info = $pa_target_info;
-		return $this->getClient(array('reset')); 
+		return $this->getClient(array('reset'));
 	}
 	# ------------------------------------------------
 	/**
@@ -232,17 +232,17 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 		if ($this->opo_client) { return $this->opo_client; }
 
 		if(file_exists(__CA_APP_DIR__.'/tmp/vimeo.token')){
- 			$va_token = unserialize(file_get_contents(__CA_APP_DIR__.'/tmp/vimeo.token'));
- 			if($va_token['type'] == 'access'){
- 				$this->opo_client = new phpVimeo(
+			$va_token = unserialize(file_get_contents(__CA_APP_DIR__.'/tmp/vimeo.token'));
+			if($va_token['type'] == 'access'){
+				$this->opo_client = new phpVimeo(
 					$this->ops_client_id,
 					$this->ops_client_secret
 				);
 
- 				$this->opo_client->setToken($va_token['oauth_token'], $va_token['oauth_token_secret']);
- 				return $this->opo_client;
- 			}
- 		}
+				$this->opo_client->setToken($va_token['oauth_token'], $va_token['oauth_token_secret']);
+				return $this->opo_client;
+			}
+		}
 
 		return false;
 	}

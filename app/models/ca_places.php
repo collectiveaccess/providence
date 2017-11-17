@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -41,10 +41,10 @@ require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_places'] = array(
- 	'NAME_SINGULAR' 	=> _t('place'),
- 	'NAME_PLURAL' 		=> _t('places'),
- 	'FIELDS' 			=> array(
- 		'place_id' => array(
+	'NAME_SINGULAR' 	=> _t('place'),
+	'NAME_PLURAL' 		=> _t('places'),
+	'FIELDS' 			=> array(
+		'place_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -196,7 +196,7 @@ BaseModel::$s_ca_models_definitions['ca_places'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_places extends RepresentableBaseModel implements IBundleProvider, IHierarchy {
@@ -212,7 +212,7 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_places';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'place_id';
 
@@ -253,7 +253,7 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = 'rank';
-	 
+	
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
@@ -380,9 +380,9 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	/**
 	 * Return array containing information about all place hierarchies, including their root_id's
 	 */
-	 public function getHierarchyList($pb_dummy=false) {
-	 	$t_list = new ca_lists();
-	 	$va_place_hierarchies = caExtractValuesByUserLocale($t_list->getItemsForList('place_hierarchies'));
+	public function getHierarchyList($pb_dummy=false) {
+		$t_list = new ca_lists();
+		$va_place_hierarchies = caExtractValuesByUserLocale($t_list->getItemsForList('place_hierarchies'));
 		
 		$o_db = $this->getDb();
 		
@@ -411,22 +411,22 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 			$va_place_hierarchies[$vn_hierarchy_id]['children'] = $qr_res->get('children');
 		}
 		return $va_place_hierarchies;
-	 }
+	}
 	# ------------------------------------------------------
 	/**
 	 * Returns name of hierarchy for currently loaded place or, if specified, place with place_id = to optional $pn_id parameter
 	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	$t_list = new ca_list_items();
-	 	if ($pn_id) {
-	 		$t_place = new ca_places($pn_id);
-	 		$vn_hierarchy_id = $t_place->get('hierarchy_id');
-	 	} else {
-	 		$vn_hierarchy_id = $this->get('hierarchy_id');
-	 	}
-	 	$t_list->load($vn_hierarchy_id);
-	 	return $t_list->getLabelForDisplay(false);
-	 }
+	public function getHierarchyName($pn_id=null) {
+		$t_list = new ca_list_items();
+		if ($pn_id) {
+			$t_place = new ca_places($pn_id);
+			$vn_hierarchy_id = $t_place->get('hierarchy_id');
+		} else {
+			$vn_hierarchy_id = $this->get('hierarchy_id');
+		}
+		$t_list->load($vn_hierarchy_id);
+		return $t_list->getLabelForDisplay(false);
+	}
 	# ------------------------------------------------------
 	/**
 	 * Returns the place_id in ca_places table for root of specified hierarchy. Place hierarchies are enumerated in the "place_hierarchies" list,
@@ -436,7 +436,7 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	 * @param mixed $pm_hierarchy_code_or_id The numeric id or alphanumeric code for the hierarchy. Since hierarchies are represented with list items these are the item_id or idno values of the hierarchy's list item.
 	 * @return int Place ID of the place hierarchy root
 	 */
-	public function getRootIDForHierarchy($pm_hierarchy_code_or_id) {	
+	public function getRootIDForHierarchy($pm_hierarchy_code_or_id) {
 		$o_db = $this->getDb();
 		
 		if (!is_numeric($pm_hierarchy_code_or_id)) {

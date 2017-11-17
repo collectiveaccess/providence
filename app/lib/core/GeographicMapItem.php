@@ -29,229 +29,229 @@
  *
  * ----------------------------------------------------------------------
  */
-  
- /**
-  *
-  */
- 
- class GeographicMapItem {
- 	# -------------------------------------------------------------------
- 	private $opa_coordinate_list = array();
- 	private $ops_label = '';							// the overall "title" for the item (used for tooltips)
- 	private $ops_content = '';						// content to dispay for item
- 	private $ops_ajax_content_url = '';		// the URL to use when loading content via Ajax call
- 	private $ops_ajax_content_id = null;		// the id to pin onto the end of the Ajax URL
- 	private $ops_color = null;
- 	# -------------------------------------------------------------------
- 	/**
- 	 * @param $pa_item_info - optional array of settings to initialize map item with. Supported settings are:
- 	 *		latitude = the latitude in decimal degrees of the item
- 	 *		longitude = the longitude in decimal degrees of the item
- 	 *		coordinates = an array or coordinate pairs as would be passed to setCoordinates(); if this setting is passed latitude and longitude settings will be ignored.
- 	 *		label = the text label to use for the item; this is typically used for the item tooltip
- 	 *		content = text content to use in the on-click info window; if you leave this blank no info window will appear
- 	 *		color = hex color to use for marker
- 	 */
- 	public function __construct($pa_item_info=null) {
- 		if (is_array($pa_item_info)) {
- 			if (isset($pa_item_info['coordinates']) && is_array($pa_item_info['coordinates']) && sizeof($pa_item_info['coordinates'])) {
- 				$this->setCoordinates($pa_item_info['coordinates']);
- 			} else {
+
+/**
+ *
+ */
+
+class GeographicMapItem {
+	# -------------------------------------------------------------------
+	private $opa_coordinate_list = array();
+	private $ops_label = '';							// the overall "title" for the item (used for tooltips)
+	private $ops_content = '';						// content to dispay for item
+	private $ops_ajax_content_url = '';		// the URL to use when loading content via Ajax call
+	private $ops_ajax_content_id = null;		// the id to pin onto the end of the Ajax URL
+	private $ops_color = null;
+	# -------------------------------------------------------------------
+	/**
+	 * @param $pa_item_info - optional array of settings to initialize map item with. Supported settings are:
+	 *		latitude = the latitude in decimal degrees of the item
+	 *		longitude = the longitude in decimal degrees of the item
+	 *		coordinates = an array or coordinate pairs as would be passed to setCoordinates(); if this setting is passed latitude and longitude settings will be ignored.
+	 *		label = the text label to use for the item; this is typically used for the item tooltip
+	 *		content = text content to use in the on-click info window; if you leave this blank no info window will appear
+	 *		color = hex color to use for marker
+	 */
+	public function __construct($pa_item_info=null) {
+		if (is_array($pa_item_info)) {
+			if (isset($pa_item_info['coordinates']) && is_array($pa_item_info['coordinates']) && sizeof($pa_item_info['coordinates'])) {
+				$this->setCoordinates($pa_item_info['coordinates']);
+			} else {
 				if (isset($pa_item_info['latitude']) && isset($pa_item_info['longitude'])) {
 					$this->addCoordinate($pa_item_info['latitude'], $pa_item_info['longitude']);
 				}
 			}
- 			
- 			if (isset($pa_item_info['label'])) {
- 				$this->setLabel($pa_item_info['label']);
- 			}
- 			
- 			if (isset($pa_item_info['content'])) {
- 				$this->setContent($pa_item_info['content'], $pa_item_info['content']);
- 			}
- 			
- 			if (isset($pa_item_info['ajaxContentUrl'])) {
- 				$this->setAjaxContentUrl($pa_item_info['ajaxContentUrl']);
- 			}
- 			
- 			if (isset($pa_item_info['ajaxContentID'])) {
- 				$this->setAjaxContentID($pa_item_info['ajaxContentID']);
- 			}
- 			
- 			if (isset($pa_item_info['color'])) {
- 				$this->setColor($pa_item_info['color']);
- 			}
- 		}
- 	}
- 	# -------------------------------------------------------------------
- 	/**
- 	 * Sets coordinates for item to this in the provided array, overwriting any existing coordinates. The
- 	 * coordinate list is an array of arrays, each of which contains 'latitude' and 'longitude' keys with 
- 	 * values in decimal degrees.
- 	 *
- 	 * @param $pa_coordinate_pairs - array of coordinate pairs; each pair is an array with 'latitude' and 'longitude' keys
- 	 * @return boolean - returns true if successful false if not
- 	 */
- 	public function setCoordinates($pa_coordinate_pairs) {
- 		if (is_array($pa_coordinate_pairs)) {
- 			$this->opa_coordinate_list = $pa_coordinate_pairs;
- 			return true;
- 		}
- 		return false;
- 	}
- 	# -------------------------------------------------------------------
- 	/**
- 	 * Returns the number of coordinate pairs defined for this item
- 	 *
- 	 * @return int - number of coordinate pairs
- 	 */
+			
+			if (isset($pa_item_info['label'])) {
+				$this->setLabel($pa_item_info['label']);
+			}
+			
+			if (isset($pa_item_info['content'])) {
+				$this->setContent($pa_item_info['content'], $pa_item_info['content']);
+			}
+			
+			if (isset($pa_item_info['ajaxContentUrl'])) {
+				$this->setAjaxContentUrl($pa_item_info['ajaxContentUrl']);
+			}
+			
+			if (isset($pa_item_info['ajaxContentID'])) {
+				$this->setAjaxContentID($pa_item_info['ajaxContentID']);
+			}
+			
+			if (isset($pa_item_info['color'])) {
+				$this->setColor($pa_item_info['color']);
+			}
+		}
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Sets coordinates for item to this in the provided array, overwriting any existing coordinates. The
+	 * coordinate list is an array of arrays, each of which contains 'latitude' and 'longitude' keys with 
+	 * values in decimal degrees.
+	 *
+	 * @param $pa_coordinate_pairs - array of coordinate pairs; each pair is an array with 'latitude' and 'longitude' keys
+	 * @return boolean - returns true if successful false if not
+	 */
+	public function setCoordinates($pa_coordinate_pairs) {
+		if (is_array($pa_coordinate_pairs)) {
+			$this->opa_coordinate_list = $pa_coordinate_pairs;
+			return true;
+		}
+		return false;
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Returns the number of coordinate pairs defined for this item
+	 *
+	 * @return int - number of coordinate pairs
+	 */
 	public function numCoordinates() {
 		return sizeof($this->opa_coordinate_list);
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Returns coordinate in list at specified index; coordinates are indexed from zero (eg. index 0 is the first coordinate pair)
- 	 *
- 	 * @param $pn_i - index of coordinate pair to return
- 	 * @return array - array with coordinate data in keys 'latitude' and 'longitude'; or null if index is invalid
- 	 */
+	/**
+	 * Returns coordinate in list at specified index; coordinates are indexed from zero (eg. index 0 is the first coordinate pair)
+	 *
+	 * @param $pn_i - index of coordinate pair to return
+	 * @return array - array with coordinate data in keys 'latitude' and 'longitude'; or null if index is invalid
+	 */
 	public function getCoordinatesAtIndex($pn_i) {
 		return isset($this->opa_coordinate_list[$pn_i]) ? $this->opa_coordinate_list[$pn_i] : null;
 	}
- 	# -------------------------------------------------------------------
- 	/**
- 	 * Returns current list of coordinates
- 	 *
- 	 * @return array - list of coordinate pairs currently associated with this item
- 	 */
+	# -------------------------------------------------------------------
+	/**
+	 * Returns current list of coordinates
+	 *
+	 * @return array - list of coordinate pairs currently associated with this item
+	 */
 	public function getCoordinates() {
 		return $this->opa_coordinate_list;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Add coordinate to map item; latitude and longitude should be in decimal format
- 	 */
+	/**
+	 * Add coordinate to map item; latitude and longitude should be in decimal format
+	 */
 	public function addCoordinate($pn_latitude, $pn_longitude) {
 		$this->opa_coordinate_list[] = array('latitude' => $pn_latitude, 'longitude' => $pn_longitude);
 		
 		return sizeof($this->opa_coordinate_list);
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Clears the item's coordinate list
- 	 *
- 	 * @return boolean - always returns true
- 	 */
+	/**
+	 * Clears the item's coordinate list
+	 *
+	 * @return boolean - always returns true
+	 */
 	public function clearCoordinates() {
 		$this->opa_coordinate_list = array();
 		
 		return true;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Sets label of item; label is used in cases where short descriptive text is needed; in tooltips for example
- 	 *
- 	 * @param $ps_text - label text
- 	 * @return boolean - always returns true
- 	 */
+	/**
+	 * Sets label of item; label is used in cases where short descriptive text is needed; in tooltips for example
+	 *
+	 * @param $ps_text - label text
+	 * @return boolean - always returns true
+	 */
 	public function setLabel($ps_text) {
 		$this->ops_label = $ps_text;
 		return true;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Get currently set label for item
- 	 *
- 	 * @return string - the current label
- 	 */
+	/**
+	 * Get currently set label for item
+	 *
+	 * @return string - the current label
+	 */
 	public function getLabel() {
 		return $this->ops_label;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Sets content for this item. Content is typically used to fill an "info window" attached to the item when it is displayed on a map.
- 	 *
- 	 * @param $ps_content - content text; can contain HTML code if needed
- 	 * @return boolean - always returns true
- 	 */
+	/**
+	 * Sets content for this item. Content is typically used to fill an "info window" attached to the item when it is displayed on a map.
+	 *
+	 * @param $ps_content - content text; can contain HTML code if needed
+	 * @return boolean - always returns true
+	 */
 	public function setContent($ps_content) {
 		$this->ops_content = $ps_content;
 		
 		return true;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Gets the currently set content for the item
- 	 *
- 	 * @return string - the currently set content text
- 	 */
+	/**
+	 * Gets the currently set content for the item
+	 *
+	 * @return string - the currently set content text
+	 */
 	public function getContent() {
 		return $this->ops_content;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 *
- 	 *
- 	 * @param $ps_url - url to Ajax handler 
- 	 * @return boolean - always returns true
- 	 */
+	/**
+	 *
+	 *
+	 * @param $ps_url - url to Ajax handler
+	 * @return boolean - always returns true
+	 */
 	public function setAjaxContentUrl($ps_url) {
 		$this->ops_ajax_content_url = $ps_url;
 		
 		return true;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Gets the currently set Ajax content URL for the item
- 	 *
- 	 * @return string - the currently set Ajax URL
- 	 */
+	/**
+	 * Gets the currently set Ajax content URL for the item
+	 *
+	 * @return string - the currently set Ajax URL
+	 */
 	public function getAjaxContentUrl() {
 		return $this->ops_ajax_content_url;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 *
- 	 *
- 	 * @param $ps_id - unique id for map item; pinned onto end of Ajax URL when fetching info 
- 	 * @return boolean - always returns true
- 	 */
+	/**
+	 *
+	 *
+	 * @param $ps_id - unique id for map item; pinned onto end of Ajax URL when fetching info 
+	 * @return boolean - always returns true
+	 */
 	public function setAjaxContentID($ps_id) {
 		$this->ops_ajax_content_id = $ps_id;
 		
 		return true;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Gets the currently set Ajax content ID for the item
- 	 *
- 	 * @return string - the currently set ID
- 	 */
+	/**
+	 * Gets the currently set Ajax content ID for the item
+	 *
+	 * @return string - the currently set ID
+	 */
 	public function getAjaxContentID() {
 		return $this->ops_ajax_content_id;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Sets label of item; label is used in cases where short descriptive text is needed; in tooltips for example
- 	 *
- 	 * @param $ps_text - label text
- 	 * @return boolean - always returns true
- 	 */
+	/**
+	 * Sets label of item; label is used in cases where short descriptive text is needed; in tooltips for example
+	 *
+	 * @param $ps_text - label text
+	 * @return boolean - always returns true
+	 */
 	public function setColor($ps_color) {
 		$this->ops_color = $ps_color;
 		return true;
 	}
 	# -------------------------------------------------------------------
- 	/**
- 	 * Get currently set label for item
- 	 *
- 	 * @return string - the current label
- 	 */
+	/**
+	 * Get currently set label for item
+	 *
+	 * @return string - the current label
+	 */
 	public function getColor() {
 		return $this->ops_color;
 	}
 	# -------------------------------------------------------------------
- 	/**
+	/**
 	 * Return extents of map item - a bounding box for the item in other words.
 	 *
 	 * @param $pa_options - options to use when fitting map extents to current mapped items. Options are:
@@ -273,7 +273,7 @@
 			foreach($va_coordinate_pairs as $va_pair) {
 				$vn_cur_lat = $va_pair['latitude'] + 90;
 				$vn_cur_long = $va_pair['longitude'] + 180;
-			
+				
 				
 				if(($vn_east <= $vn_cur_long) || (is_null($vn_east))) {
 					$vn_east = $vn_cur_long;
@@ -327,6 +327,6 @@
 
 		return array("east" => $vn_east, "west" => $vn_west, "north" => $vn_north, "south" => $vn_south);
 	}
- 	# -------------------------------------------------------------------
- }
- ?>
+	# -------------------------------------------------------------------
+}
+?>

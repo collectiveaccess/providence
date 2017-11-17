@@ -29,14 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
-	
+
 # ----------------------------------------------------------------------
 
 class Graph {
@@ -62,7 +62,7 @@ class Graph {
 	}
 	# --------------------------------------------------------------------------------------------
 	public function addNode($ps_node) {
-		if (!isset($this->opa_graph["NODES"][$ps_node])) {	
+		if (!isset($this->opa_graph["NODES"][$ps_node])) {
 			$this->opa_graph["NODES"][$ps_node] = [];
 		}
 	}
@@ -77,7 +77,7 @@ class Graph {
 					$this->addAttribute($vs_key, $vs_val, $vs_node);
 				}
 			}
-		}	
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	public function removeNode($ps_node) {
@@ -98,7 +98,7 @@ class Graph {
 	# --------------------------------------------------------------------------------------------
 	public function hasNode ($ps_node) {
 		if (isset($this->opa_graph["NODES"][$ps_node]) && is_array($this->opa_graph["NODES"][$ps_node])) {
-			return true;	
+			return true;
 		} else {
 			return false;
 		}
@@ -143,7 +143,7 @@ class Graph {
 						$this->addAttribute($vs_key, $vs_val, $ps_node2, $ps_node1, $pb_directed);
 					}
 				}
-			}	
+			}
 		}
 	}
 	# --------------------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ class Graph {
 		} else {
 			return false;
 		}
-	}	
+	}
 	# --------------------------------------------------------------------------------------------
 	public function removeRelationship($ps_node1, $ps_node2, $pb_remove_reciprocal=false) {
 		if($this->opa_graph["NODES"][$ps_node1][$ps_node2]) {
@@ -195,7 +195,7 @@ class Graph {
 			}
 		} else {						# add attribute to node
 			$this->opa_graph["NODES"][$ps_node1][$ps_attribute] = $pm_value;
-		}	
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	public function setAttributes ($pa_attributes, $ps_node1, $ps_node2=null, $pb_directed=false) {
@@ -219,7 +219,7 @@ class Graph {
 		return $this->setAttributes($va_attributes, $ps_node1, $ps_node2, $pb_directed);
 	}
 	# --------------------------------------------------------------------------------------------
-	public function getAttributes ($ps_node1, $ps_node2=null) { 
+	public function getAttributes ($ps_node1, $ps_node2=null) {
 		if ($ps_node2) {
 			if (!isset($this->opa_graph["EDGES"][$ps_node1][$ps_node2])) { return null; }
 			return $this->opa_graph["EDGES"][$ps_node1][$ps_node2];
@@ -242,7 +242,7 @@ class Graph {
 			return $vs_attr;
 		} else {				# get attribute from node
 			return isset($this->opa_graph["NODES"][$ps_node1][$ps_attribute]) ? $this->opa_graph["NODES"][$ps_node1][$ps_attribute] : "";
-		}	
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	# --- Paths
@@ -253,13 +253,13 @@ class Graph {
 	# Don't set WEIGHT less than 0.
 	#
 	# Implements dijkstra SSSP algorithm
-	public function getPath($ps_start_node, $ps_end_node) { 
+	public function getPath($ps_start_node, $ps_end_node) {
 		$va_edges =& $this->opa_graph["EDGES"];
 		
-		$vs_closest_node = $ps_start_node; 
+		$vs_closest_node = $ps_start_node;
 		$va_paths = [];
-		while (isset($vs_closest_node)) { 
-			$va_marked[$vs_closest_node] = true; 
+		while (isset($vs_closest_node)) {
+			$va_marked[$vs_closest_node] = true;
 			
 			if (is_array($va_edges[$vs_closest_node])) {
 				foreach($va_edges[$vs_closest_node] as $vs_vertex => $va_attr) {
@@ -270,25 +270,25 @@ class Graph {
 					$vn_length = isset($va_paths[$vs_closest_node][0]) ? $va_paths[$vs_closest_node][0] : 0;
 					
 					$vn_distance += $vn_length;
-					if (!isset($va_paths[$vs_vertex]) || ($vn_distance < $va_paths[$vs_vertex][0])) { 
-						$va_paths[$vs_vertex] = isset($va_paths[$vs_closest_node]) ? $va_paths[$vs_closest_node] : []; 
-						$va_paths[$vs_vertex][] = $vs_closest_node; 
-						$va_paths[$vs_vertex][0] = $vn_distance; 
-					} 
-				} 
+					if (!isset($va_paths[$vs_vertex]) || ($vn_distance < $va_paths[$vs_vertex][0])) {
+						$va_paths[$vs_vertex] = isset($va_paths[$vs_closest_node]) ? $va_paths[$vs_closest_node] : [];
+						$va_paths[$vs_vertex][] = $vs_closest_node;
+						$va_paths[$vs_vertex][0] = $vn_distance;
+					}
+				}
 			}
-			unset($vs_closest_node); 
+			unset($vs_closest_node);
 
 			if (is_array($va_paths)) {
 				foreach($va_paths as $vs_vertex => $va_path) {
 					if (!isset($vn_min)) $vn_min = $va_path[0];
-					if (isset($va_marked[$vs_vertex]) && $va_marked[$vs_vertex]) continue; 
-					$vn_distance = $va_path[0]; 
-					if (($vn_distance < $vn_min) || !isset($vs_closest_node)) { 
-						$vn_min = $vn_distance; 
-						$vs_closest_node = $vs_vertex; 
-					} 
-				} 
+					if (isset($va_marked[$vs_vertex]) && $va_marked[$vs_vertex]) continue;
+					$vn_distance = $va_path[0];
+					if (($vn_distance < $vn_min) || !isset($vs_closest_node)) {
+						$vn_min = $vn_distance;
+						$vs_closest_node = $vs_vertex;
+					}
+				}
 			}
 		}
 		
@@ -298,15 +298,15 @@ class Graph {
 		if (isset($va_paths[$ps_end_node]) && is_array($va_paths[$ps_end_node])) {    # no path exists is $va_paths[$ps_end_node] is not set
 			$va_return_path[$ps_start_node] = $this->getNode($ps_start_node);
 			
-			reset ($va_paths[$ps_end_node]); 
+			reset ($va_paths[$ps_end_node]);
 			next ($va_paths[$ps_end_node]);  # skip first element - length of path
 			while (list(,$vs_vertex) = each($va_paths[$ps_end_node])) {
 				$va_return_path[$vs_vertex] = $this->getNode($vs_vertex);
-			}	
+			}
 			$va_return_path[$ps_end_node] = $this->getNode($ps_end_node);
 		}
 		return $va_return_path;
-	} 
+	}
 	# --------------------------------------------------------------------------------------------
 	public function getNeighbors($ps_node) {
 		if (isset($this->opa_graph["EDGES"][$ps_node]) && is_array($this->opa_graph["EDGES"][$ps_node])) {
@@ -317,78 +317,78 @@ class Graph {
 	}
 	# --------------------------------------------------------------------------------------------
 	# Topological sort
-    # --------------------------------------------------------------------------------------------
-    public function getTopologicalSort() {
-    	if (!$this->_doTopoSort()) {
-    		return [];	// cycle?
-    	}
-    	
-    	$va_tmp = [];
-    	foreach(array_keys($this->getNodes()) as $vs_key) {
-    		$vn_level = $this->getAttribute('topo_level', $vs_key);
-    		$va_tmp[$vn_level][] = $vs_key;
-    	}
-    	
-    	$va_results = [];
-    	ksort($va_tmp, SORT_NUMERIC);
-    	foreach($va_tmp as $vs_i => $va_list) {
-    		$va_results = array_merge($va_results, $va_list);
-    	}
-    	
-    	return $va_results;
-    }
+	# --------------------------------------------------------------------------------------------
+	public function getTopologicalSort() {
+		if (!$this->_doTopoSort()) {
+			return [];	// cycle?
+		}
+		
+		$va_tmp = [];
+		foreach(array_keys($this->getNodes()) as $vs_key) {
+			$vn_level = $this->getAttribute('topo_level', $vs_key);
+			$va_tmp[$vn_level][] = $vs_key;
+		}
+		
+		$va_results = [];
+		ksort($va_tmp, SORT_NUMERIC);
+		foreach($va_tmp as $vs_i => $va_list) {
+			$va_results = array_merge($va_results, $va_list);
+		}
+		
+		return $va_results;
+	}
 	# --------------------------------------------------------------------------------------------
 	private function _getTopoInDegree($ps_node) {
-        $vn_result = 0;
-        $va_graph_nodes = $this->getNodes();
-        foreach ($va_graph_nodes as $vs_key => $va_node) {
-        	if ($ps_node == $vs_key) { continue; }
-        	if (!$this->getAttribute('topo_visited', $vs_key) && $this->hasRelationship($ps_node, $vs_key)) { $vn_result++; }
-        }
-        return $vn_result;
-        
-    }
-    # --------------------------------------------------------------------------------------------
-    private function _clearVisitedFlags() {
-    	 $va_graph_nodes = $this->getNodes();
-        foreach ($va_graph_nodes as $vs_key => $va_node) {
-        	$this->setAttribute('topo_visited', null, $vs_key);
-        	$this->setAttribute('topo_level', null, $vs_key);
-        }
-    }
-    # --------------------------------------------------------------------------------------------
-    private function _doTopoSort() {
-        // mark all nodes as un-visited
-        $this->_clearVisitedFlags();
-       
-        // Iteratively peel off leaf nodes
-        $vn_topo_level = 0;
-        do {
-           	// get unvisited leaf nodes
-            $va_leaves = [];
-            foreach(array_keys($this->getNodes()) as $vs_key) {
-            	if (!$this->getAttribute('topo_visited', $vs_key) && (($vn_in_degree = $this->_getTopoInDegree($vs_key)) == 0)) {
-            		$va_leaves[] = $vs_key;
-            	}
-            }
-            // mark leaves as visited
-            foreach($va_leaves as $vs_key) {
-            	$this->setAttribute('topo_visited', 1, $vs_key);
-            	$this->setAttribute('topo_level', $vn_topo_level, $vs_key);
-            }
-            
-            $vn_topo_level++;
-            if ($vn_topo_level > 100) { return false; }	// Just a sanity check...
-        } while (sizeof($va_leaves) > 0);
-        
-        // if all nodes were *not* visited then this graph wasn't a DAG and we want to know about it
-         foreach(array_keys($this->getNodes()) as $vs_key) {
+		$vn_result = 0;
+		$va_graph_nodes = $this->getNodes();
+		foreach ($va_graph_nodes as $vs_key => $va_node) {
+			if ($ps_node == $vs_key) { continue; }
+			if (!$this->getAttribute('topo_visited', $vs_key) && $this->hasRelationship($ps_node, $vs_key)) { $vn_result++; }
+		}
+		return $vn_result;
+		
+	}
+	# --------------------------------------------------------------------------------------------
+	private function _clearVisitedFlags() {
+		 $va_graph_nodes = $this->getNodes();
+		foreach ($va_graph_nodes as $vs_key => $va_node) {
+			$this->setAttribute('topo_visited', null, $vs_key);
+			$this->setAttribute('topo_level', null, $vs_key);
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	private function _doTopoSort() {
+		// mark all nodes as un-visited
+		$this->_clearVisitedFlags();
+		
+		// Iteratively peel off leaf nodes
+		$vn_topo_level = 0;
+		do {
+			// get unvisited leaf nodes
+			$va_leaves = [];
+			foreach(array_keys($this->getNodes()) as $vs_key) {
+				if (!$this->getAttribute('topo_visited', $vs_key) && (($vn_in_degree = $this->_getTopoInDegree($vs_key)) == 0)) {
+					$va_leaves[] = $vs_key;
+				}
+			}
+			// mark leaves as visited
+			foreach($va_leaves as $vs_key) {
+				$this->setAttribute('topo_visited', 1, $vs_key);
+				$this->setAttribute('topo_level', $vn_topo_level, $vs_key);
+			}
+			
+			$vn_topo_level++;
+			if ($vn_topo_level > 100) { return false; }	// Just a sanity check...
+		} while (sizeof($va_leaves) > 0);
+		
+		// if all nodes were *not* visited then this graph wasn't a DAG and we want to know about it
+		 foreach(array_keys($this->getNodes()) as $vs_key) {
 			if (!$this->getAttribute('topo_visited', $vs_key)) {
 				return false;
 			}
 		}
-        return true;
-    }
+		return true;
+	}
 	# --------------------------------------------------------------------------------------------
 }
 ?>

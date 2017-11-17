@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
@@ -43,7 +43,7 @@ class Session {
 	# ----------------------------------------
 	# --- Properties
 	# ----------------------------------------
-	private $domain = ""; 	# domain session is registered to (eg. "www.whirl-i-gig.com"); blank means domain cookie was set from
+	private $domain = "";	# domain session is registered to (eg. "www.whirl-i-gig.com"); blank means domain cookie was set from
 	private $lifetime = 0;	# session lives for $lifetime minutes; session exists for entire browser session if 0
 	private $name = "";		# application name
 
@@ -69,7 +69,7 @@ class Session {
 	 * @param bool $pb_dont_create_new_session No new session will be created if set to true. Default is false.
 	 */
 	public function __construct($ps_app_name=null, $pb_dont_create_new_session=false) {
- 		$o_config = Configuration::load();
+		$o_config = Configuration::load();
 		# --- Init
 		if (defined("__CA_MICROTIME_START_OF_REQUEST__")) {
 			$this->start_time = __CA_MICROTIME_START_OF_REQUEST__;
@@ -91,7 +91,7 @@ class Session {
 			if (!($vs_session_id = $this->getSessionID())) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = caGenerateGUID(), $this->lifetime ? time() + $this->lifetime : null, $vs_cookiepath); }
-		 	}
+			}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
 			if($this->getSessionID() && ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
@@ -122,7 +122,7 @@ class Session {
 	 */
 	public function __destruct() {
 		if($this->getSessionID() && is_array($this->opa_session_vars) && (sizeof($this->opa_session_vars) > 0)) {
-			$this->save();	
+			$this->save();
 		}
 	}
 	# ----------------------------------------
@@ -181,7 +181,7 @@ class Session {
 	# --- Methods
 	# ----------------------------------------
 	/**
-	 * Returns client's session_id. 
+	 * Returns client's session_id.
 	 */
 	public function getSessionID() {
 		return isset($_COOKIE[$this->name]) ? $_COOKIE[$this->name] : null;

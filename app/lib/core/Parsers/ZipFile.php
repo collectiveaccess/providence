@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 # ----------------------------------------------------------------------
 #
 # Based upon :
@@ -73,37 +73,37 @@ class ZipFile {
 	# ----------------------------------------------------------------------
 	# --- Properties
 	# ----------------------------------------------------------------------
-    /**
-     * Central directory
-     *
-     * @var  array    $ctrl_dir
-     */
-    var $ctrl_dir     = array();
+	/**
+	 * Central directory
+	 *
+	 * @var  array    $ctrl_dir
+	 */
+	var $ctrl_dir     = array();
 
-    /**
-     * End of central directory record
-     *
-     * @var  string   $eof_ctrl_dir
-     */
-    var $eof_ctrl_dir = "\x50\x4b\x05\x06\x00\x00\x00\x00";
+	/**
+	 * End of central directory record
+	 *
+	 * @var  string   $eof_ctrl_dir
+	 */
+	var $eof_ctrl_dir = "\x50\x4b\x05\x06\x00\x00\x00\x00";
 
-    /**
-     * Last offset position
-     *
-     * @var  integer  $old_offset
-     */
-    var $old_offset   = 0;
-    
-    
-    #
-    # total size, in bytes, of compressed data segment
-    #
-    var $datasize = 0;
-    
-    #
-    # output debugging messages
-    #
-    var $debug = 0;
+	/**
+	 * Last offset position
+	 *
+	 * @var  integer  $old_offset
+	 */
+	var $old_offset   = 0;
+	
+	
+	#
+	# total size, in bytes, of compressed data segment
+	#
+	var $datasize = 0;
+	
+	#
+	# output debugging messages
+	#
+	var $debug = 0;
 
 	#
 	# handle to temporary output file
@@ -131,144 +131,144 @@ class ZipFile {
 		$this->_tmp_data = fopen($this->_tmp_data_path, "w+");
 	}
 	# ----------------------------------------------------------------------
-    /**
-     * Converts a Unix timestamp to a four byte DOS date and time format (date
-     * in high two bytes, time in low two bytes allowing magnitude comparison).
-     *
-     * @param  integer  the current Unix timestamp
-     * @return integer  the current date in a four byte DOS format
-     *
-     * @access private
-     */
-    private function unix2DosTime($unixtime = 0) {
-        $timearray = ($unixtime == 0) ? getdate() : getdate($unixtime);
+	/**
+	 * Converts a Unix timestamp to a four byte DOS date and time format (date
+	 * in high two bytes, time in low two bytes allowing magnitude comparison).
+	 *
+	 * @param  integer  the current Unix timestamp
+	 * @return integer  the current date in a four byte DOS format
+	 *
+	 * @access private
+	 */
+	private function unix2DosTime($unixtime = 0) {
+		$timearray = ($unixtime == 0) ? getdate() : getdate($unixtime);
 
-        if ($timearray['year'] < 1980) {
-        	$timearray['year']    = 1980;
-        	$timearray['mon']     = 1;
-        	$timearray['mday']    = 1;
-        	$timearray['hours']   = 0;
-        	$timearray['minutes'] = 0;
-        	$timearray['seconds'] = 0;
-        } // end if
+		if ($timearray['year'] < 1980) {
+			$timearray['year']    = 1980;
+			$timearray['mon']     = 1;
+			$timearray['mday']    = 1;
+			$timearray['hours']   = 0;
+			$timearray['minutes'] = 0;
+			$timearray['seconds'] = 0;
+		} // end if
 
-        return (($timearray['year'] - 1980) << 25) | ($timearray['mon'] << 21) | ($timearray['mday'] << 16) |
-                ($timearray['hours'] << 11) | ($timearray['minutes'] << 5) | ($timearray['seconds'] >> 1);
-    } // end of the 'unix2DosTime()' method
+		return (($timearray['year'] - 1980) << 25) | ($timearray['mon'] << 21) | ($timearray['mday'] << 16) |
+				($timearray['hours'] << 11) | ($timearray['minutes'] << 5) | ($timearray['seconds'] >> 1);
+	} // end of the 'unix2DosTime()' method
 
 	# ----------------------------------------------------------------------
-    /**
-     * Adds "file" to archive
-     *
-     * @param string $data file contents (or file path)
-     * @param string $name name of the file in the archive (may contains the path)
-     * @param integer $time the current timestamp
-     * @param array $pa_options An array of options. Supported options are:
-     *		compression = a number between 0 and 9 where zero is no compression (fastest) and 9 is most compression (slowest). Default is to use PHP default compression level.
-     *
-     * @access public
-     */
-    public function addFile($data, $name, $time=0, $pa_options=null) {
-    	if ($this->finished) {
-    		return 0;	
-    	}
-    
-    	if ($this->debug) { print "DEBUG (ZipFile.php); addFile() START: ".memory_get_usage()."<br>\n"; }
-    	# PATCH - 14 November 2003
-    	#
-    	# Allows file paths to be added directly
-    	# If $data parameter begins with a forward slash and ends
-    	# with a letter, number or underscore and is 255 characters
-    	# or less, it is treated as a file path
-    	if ((strlen($data) <= 255) && ((preg_match("/^\/.*[A-Za-z0-9_]{1}$/", $data)) || (preg_match("/^[A-Za-z]{1}:.*[A-Za-z0-9_]{1}$/", $data)))) {
-    		$path = $data;
-    		if ($fp = fopen($path,"r")) {
-    			$l = filesize($path);
-    			$data = fread($fp,$l);
-    		}
-    	}
-    	if ($this->debug) { print "DEBUG (ZipFile.php); addFile() AFTER LOAD FILE: ".memory_get_usage()."<br>\n"; }
+	/**
+	 * Adds "file" to archive
+	 *
+	 * @param string $data file contents (or file path)
+	 * @param string $name name of the file in the archive (may contains the path)
+	 * @param integer $time the current timestamp
+	 * @param array $pa_options An array of options. Supported options are:
+	 *		compression = a number between 0 and 9 where zero is no compression (fastest) and 9 is most compression (slowest). Default is to use PHP default compression level.
+	 *
+	 * @access public
+	 */
+	public function addFile($data, $name, $time=0, $pa_options=null) {
+		if ($this->finished) {
+			return 0;
+		}
+		
+		if ($this->debug) { print "DEBUG (ZipFile.php); addFile() START: ".memory_get_usage()."<br>\n"; }
+		# PATCH - 14 November 2003
+		#
+		# Allows file paths to be added directly
+		# If $data parameter begins with a forward slash and ends
+		# with a letter, number or underscore and is 255 characters
+		# or less, it is treated as a file path
+		if ((strlen($data) <= 255) && ((preg_match("/^\/.*[A-Za-z0-9_]{1}$/", $data)) || (preg_match("/^[A-Za-z]{1}:.*[A-Za-z0-9_]{1}$/", $data)))) {
+			$path = $data;
+			if ($fp = fopen($path,"r")) {
+				$l = filesize($path);
+				$data = fread($fp,$l);
+			}
+		}
+		if ($this->debug) { print "DEBUG (ZipFile.php); addFile() AFTER LOAD FILE: ".memory_get_usage()."<br>\n"; }
 
-        $name     = str_replace('\\', '/', $name);
+		$name     = str_replace('\\', '/', $name);
 
-        $dtime    = dechex($this->unix2DosTime($time));
-        $hex      = $dtime[6] . $dtime[7] . $dtime[4] . $dtime[5] . $dtime[2] . $dtime[3] . $dtime[0] . $dtime[1];
-        
-        if(function_exists('hex2bin')) { // this is only available in PHP 5.4+
-            $hexdtime = hex2bin($hex);
-        } else {
-            $hexdtime = pack("H*" , $hex);    
-        }
+		$dtime    = dechex($this->unix2DosTime($time));
+		$hex      = $dtime[6] . $dtime[7] . $dtime[4] . $dtime[5] . $dtime[2] . $dtime[3] . $dtime[0] . $dtime[1];
+		
+		if(function_exists('hex2bin')) { // this is only available in PHP 5.4+
+			$hexdtime = hex2bin($hex);
+		} else {
+			$hexdtime = pack("H*" , $hex);
+		}
 
-        $fr   = "\x50\x4b\x03\x04";
-        $fr   .= "\x14\x00";            // ver needed to extract
-        $fr   .= "\x00\x00";            // gen purpose bit flag
-        $fr   .= "\x08\x00";            // compression method
-        $fr   .= $hexdtime;             // last mod time and date
+		$fr   = "\x50\x4b\x03\x04";
+		$fr   .= "\x14\x00";            // ver needed to extract
+		$fr   .= "\x00\x00";            // gen purpose bit flag
+		$fr   .= "\x08\x00";            // compression method
+		$fr   .= $hexdtime;             // last mod time and date
 
-        // "local file header" segment
-        $unc_len = strlen($data);
-        $crc     = crc32($data);
-        $zdata   = gzcompress($data,(isset($pa_options['compression']) && ((int)$pa_options['compression'] >= 0)) ? (int)$pa_options['compression'] : -1);
+		// "local file header" segment
+		$unc_len = strlen($data);
+		$crc     = crc32($data);
+		$zdata   = gzcompress($data,(isset($pa_options['compression']) && ((int)$pa_options['compression'] >= 0)) ? (int)$pa_options['compression'] : -1);
 
-        $data = "";  
+		$data = "";
 
-        $c_len   = strlen($zdata) - 6; // fix crc bug by triming first two chars and last four (actual trimming is done below)
-        $fr      .= pack('V', $crc);             // crc32
-        $fr      .= pack('V', $c_len);           // compressed filesize
-        $fr      .= pack('V', $unc_len);         // uncompressed filesize
-        $fr      .= pack('v', strlen($name));    // length of filename
-        $fr      .= pack('v', 0);                // extra field length
-        $fr      .= $name;
-        
-        fwrite($this->_tmp_data, $fr);
-        $segsize = strlen($fr);
+		$c_len   = strlen($zdata) - 6; // fix crc bug by triming first two chars and last four (actual trimming is done below)
+		$fr      .= pack('V', $crc);             // crc32
+		$fr      .= pack('V', $c_len);           // compressed filesize
+		$fr      .= pack('V', $unc_len);         // uncompressed filesize
+		$fr      .= pack('v', strlen($name));    // length of filename
+		$fr      .= pack('v', 0);                // extra field length
+		$fr      .= $name;
+		
+		fwrite($this->_tmp_data, $fr);
+		$segsize = strlen($fr);
 
-        // "file data" segment
-        fwrite($this->_tmp_data, substr($zdata, 2, $c_len));
-        $segsize += $c_len;
+		// "file data" segment
+		fwrite($this->_tmp_data, substr($zdata, 2, $c_len));
+		$segsize += $c_len;
 		$zdata = "";
 		
-        // "data descriptor" segment (optional but necessary if archive is not
-        // served as file)
-        #$fr = pack('V', $crc);                  // crc32
-        #$fr .= pack('V', $c_len);               // compressed filesize
-        #$fr .= pack('V', $unc_len);             // uncompressed filesize
+		// "data descriptor" segment (optional but necessary if archive is not
+		// served as file)
+		#$fr = pack('V', $crc);                  // crc32
+		#$fr .= pack('V', $c_len);               // compressed filesize
+		#$fr .= pack('V', $unc_len);             // uncompressed filesize
 
-        #fwrite($this->_tmp_data, $fr);
-        #$segsize += strlen($fr);
-        $this->datasize += $segsize;
-        
-        $new_offset = $this->datasize;
+		#fwrite($this->_tmp_data, $fr);
+		#$segsize += strlen($fr);
+		$this->datasize += $segsize;
 		
-        // now add to central directory record
-        $cdrec = "\x50\x4b\x01\x02";
-        $cdrec .= "\x00\x00";                // version made by
-        $cdrec .= "\x14\x00";                // version needed to extract
-        $cdrec .= "\x00\x00";                // gen purpose bit flag
-        $cdrec .= "\x08\x00";                // compression method
-        $cdrec .= $hexdtime;                 // last mod time & date
-        $cdrec .= pack('V', $crc);           // crc32
-        $cdrec .= pack('V', $c_len);         // compressed filesize
-        $cdrec .= pack('V', $unc_len);       // uncompressed filesize
-        $cdrec .= pack('v', strlen($name) ); // length of filename
-        $cdrec .= pack('v', 0 );             // extra field length
-        $cdrec .= pack('v', 0 );             // file comment length
-        $cdrec .= pack('v', 0 );             // disk number start
-        $cdrec .= pack('v', 0 );             // internal file attributes
-        $cdrec .= pack('V', 32 );            // external file attributes - 'archive' bit set
+		$new_offset = $this->datasize;
+		
+		// now add to central directory record
+		$cdrec = "\x50\x4b\x01\x02";
+		$cdrec .= "\x00\x00";                // version made by
+		$cdrec .= "\x14\x00";                // version needed to extract
+		$cdrec .= "\x00\x00";                // gen purpose bit flag
+		$cdrec .= "\x08\x00";                // compression method
+		$cdrec .= $hexdtime;                 // last mod time & date
+		$cdrec .= pack('V', $crc);           // crc32
+		$cdrec .= pack('V', $c_len);         // compressed filesize
+		$cdrec .= pack('V', $unc_len);       // uncompressed filesize
+		$cdrec .= pack('v', strlen($name) ); // length of filename
+		$cdrec .= pack('v', 0 );             // extra field length
+		$cdrec .= pack('v', 0 );             // file comment length
+		$cdrec .= pack('v', 0 );             // disk number start
+		$cdrec .= pack('v', 0 );             // internal file attributes
+		$cdrec .= pack('V', 32 );            // external file attributes - 'archive' bit set
 
-        $cdrec .= pack('V', $this -> old_offset ); // relative offset of local header
-        $this -> old_offset = $new_offset;
+		$cdrec .= pack('V', $this -> old_offset ); // relative offset of local header
+		$this -> old_offset = $new_offset;
 
-        $cdrec .= $name;
+		$cdrec .= $name;
 
-        // optional extra field, file comment goes here
-        // save to central directory
-        $this -> ctrl_dir[] = $cdrec;
-        
-        return 1;
-    } // end of the 'addFile()' method
+		// optional extra field, file comment goes here
+		// save to central directory
+		$this -> ctrl_dir[] = $cdrec;
+		
+		return 1;
+	} // end of the 'addFile()' method
 
 	# ----------------------------------------------------------------------
 	/**

@@ -29,18 +29,18 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_LIB_DIR__.'/ca/ObjectRelationshipBaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_movements_x_objects'] = array(
- 	'NAME_SINGULAR' 	=> _t('movements ⇔ objects relationship'),
- 	'NAME_PLURAL' 		=> _t('movements ⇔ objects relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('movements ⇔ objects relationship'),
+	'NAME_PLURAL' 		=> _t('movements ⇔ objects relationships'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -91,7 +91,7 @@ BaseModel::$s_ca_models_definitions['ca_movements_x_objects'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship when displayed in a list with other relationships. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 
 class ca_movements_x_objects extends ObjectRelationshipBaseModel {
@@ -107,7 +107,7 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_movements_x_objects';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 
@@ -210,8 +210,8 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	 *
 	 */
 	public function insert($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) {  
-			$this->set('effective_date', $this->_getMovementDate()); 
+		if (!$this->get('effective_date', array('getDirectDate' => true))) {
+			$this->set('effective_date', $this->_getMovementDate());
 		}
 		return parent::insert($pa_options);
 	}
@@ -220,8 +220,8 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	 *
 	 */
 	public function update($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) { 
-			$this->set('effective_date',  $this->_getMovementDate()); 
+		if (!$this->get('effective_date', array('getDirectDate' => true))) {
+			$this->set('effective_date',  $this->_getMovementDate());
 		}
 		return parent::update($pa_options);
 	}
@@ -230,8 +230,8 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	 *
 	 */
 	private function _getMovementDate() {
-	 	$vs_date = null;
-	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
+		$vs_date = null;
+		if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
 			$t_movement = new ca_movements($this->get('movement_id'));
 			if ($t_movement->getPrimaryKey()) {
 				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");

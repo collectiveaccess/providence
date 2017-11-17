@@ -79,14 +79,14 @@ a.content {
 	color: #333333;
 }
 
-.title { 
+.title {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size:24px;
 	color: #333333;
 	font-weight: bold;
 }
 
-.subtitle { 
+.subtitle {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size:18px;
 	color: #333333;
@@ -95,7 +95,7 @@ a.content {
 	margin: 20px;
 }
 
-.subsubtitle { 
+.subsubtitle {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size:12px;
 	color: #333333;
@@ -184,15 +184,15 @@ select  {
 
 .formTab {
 	background-color: #D4DDDC;
-    border-color: #333333;
-    border-style: solid;
-    border-width: 1px 1px 1px 1px;
-    line-height: auto;
-    color: Black;
-    padding: 3px 1em 0 1em;
-    margin: 0;
-    text-align: left;
-    text-transform: lowercase;
+	border-color: #333333;
+	border-style: solid;
+	border-width: 1px 1px 1px 1px;
+	line-height: auto;
+	color: Black;
+	padding: 3px 1em 0 1em;
+	margin: 0;
+	text-align: left;
+	text-transform: lowercase;
 }
 
 .boxHeader {
@@ -208,16 +208,16 @@ select  {
 
 .formOutline {
 	background-color: #FFFFFF;
-    border: 1px solid #333333;
-    color: #333333;
-    padding: 5px;
-    line-height: auto;
+	border: 1px solid #333333;
+	color: #333333;
+	padding: 5px;
+	line-height: auto;
 }
 
 .relatedList {
-	margin: 10px; 
+	margin: 10px;
 	border-bottom: dashed 1px #DDDDDD;
-    line-height: auto;
+	line-height: auto;
 }
 
 .relatedButtons {
@@ -227,7 +227,7 @@ select  {
 }
 
 .tableList {
-	margin: 10px; 
+	margin: 10px;
 	border-bottom: dashed 1px #DDDDDD;
 	position: relative;
 }

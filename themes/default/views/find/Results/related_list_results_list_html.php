@@ -116,7 +116,7 @@
 <?php
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
-                        print "<td><span class=\"read-more\">";
+						print "<td><span class=\"read-more\">";
 
 						// if there's a template, evaluate template against relationship
 						if($vs_template = $va_info['settings']['format']) {
@@ -133,7 +133,7 @@
 						}
 
 						print "</span></td>";
-                    }
+					}
 ?>	
 				</tr>
 <?php

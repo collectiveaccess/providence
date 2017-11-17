@@ -29,101 +29,101 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- 	require_once(__CA_LIB_DIR__.'/core/Error/IErrorSetter.php');
- 
-	class BaseObject implements IErrorSetter {
-		# ------------------------------------------------------------------
-		
-		public $errors;
-		private $error_output = false;
-		# ------------------------------------------------------------------
-		# --- Error handling
-		# ------------------------------------------------------------------
-		public function __construct() {
-			$this->errors = array();
-		}
-		# ------------------------------------------------------------------
-		public function &errors($ps_source=null) {
-			if (is_null($ps_source)) { return $this->errors; }
-			
-			$va_errors = array();
-			if (sizeof($this->errors)) {
-				foreach ($this->errors as $e) {
-					if ((is_null($ps_source)) || ((!is_null($ps_source) && ($e->getErrorSource() === $ps_source)))) {
-						array_push($va_errors, $e);
-					}
-				}
-			}
-			return $va_errors;
-		}
-		# ------------------------------------------------------------------
-		public function &getErrors($ps_source=null) {
-			$error_descs = array();
-			if (sizeof($this->errors)) {
-				foreach ($this->errors as $e) {
-					if ((is_null($ps_source)) || ((!is_null($ps_source) && ($e->getErrorSource() === $ps_source)))) {
-						if(is_string($e)) {
-							array_push($error_descs,$e);
-						} else {
-							array_push($error_descs,$e->getErrorDescription());
-						}
-					}
-				}
-			}
-			return $error_descs;
-		} 
-		# ------------------------------------------------------------------
-		public function &getErrorDescriptions($ps_source=null) {
-			$va_errors = array();
-			foreach($this->getErrors($ps_source) as $vs_e) {
-				$va_errors[] = $vs_e;
-			}
-			return $va_errors;
-		}
-		# ------------------------------------------------------------------
-		public function numErrors($ps_source=null) {
-			return sizeof($this->errors($ps_source));
-		}
-		# ------------------------------------------------------------------
-		public function clearErrors() {
-			$this->errors = array();
-			return true;
-		}
-		# ------------------------------------------------------------------
-		public function setErrorOutput($error_output) {
-			$this->error_output = $error_output;
-			return true;
-		}
-		# ------------------------------------------------------------------
-		public function postError($pn_num, $ps_message, $ps_context, $ps_source='') {
-			$o_error = new ApplicationError();
-			$o_error->setErrorOutput($this->error_output);
-			$o_error->setError($pn_num,$ps_message,$ps_context, $ps_source);
-			
-			if (!$this->errors) { $this->errors = array(); }
-			array_push($this->errors, $o_error);
-			
-			if (($app = AppController::getInstance()) && ($o_request = $app->getRequest()) && defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-				$va_trace = debug_backtrace();
-				array_shift($va_trace);
-				$vs_stacktrace = '';
-				while($va_source = array_shift($va_trace)) {
-					$vs_stacktrace .= " [{$va_source['file']}:{$va_source['line']}]";
-				}
-				
-				$o_notification = new NotificationManager($o_request);
-				$o_notification->addNotification("[{$pn_num}] {$ps_message} ({$ps_context}".($ps_source ? "; {$ps_source}" : '').$vs_stacktrace);
-			}
-			return true;
-		}
-		# ------------------------------------------------------------------
-		public function __destruct() {
-			unset($this->errors);
-		}
-		# ------------------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/core/Error/IErrorSetter.php');
+
+class BaseObject implements IErrorSetter {
+	# ------------------------------------------------------------------
+	
+	public $errors;
+	private $error_output = false;
+	# ------------------------------------------------------------------
+	# --- Error handling
+	# ------------------------------------------------------------------
+	public function __construct() {
+		$this->errors = array();
 	}
+	# ------------------------------------------------------------------
+	public function &errors($ps_source=null) {
+		if (is_null($ps_source)) { return $this->errors; }
+		
+		$va_errors = array();
+		if (sizeof($this->errors)) {
+			foreach ($this->errors as $e) {
+				if ((is_null($ps_source)) || ((!is_null($ps_source) && ($e->getErrorSource() === $ps_source)))) {
+					array_push($va_errors, $e);
+				}
+			}
+		}
+		return $va_errors;
+	}
+	# ------------------------------------------------------------------
+	public function &getErrors($ps_source=null) {
+		$error_descs = array();
+		if (sizeof($this->errors)) {
+			foreach ($this->errors as $e) {
+				if ((is_null($ps_source)) || ((!is_null($ps_source) && ($e->getErrorSource() === $ps_source)))) {
+					if(is_string($e)) {
+						array_push($error_descs,$e);
+					} else {
+						array_push($error_descs,$e->getErrorDescription());
+					}
+				}
+			}
+		}
+		return $error_descs;
+	}
+	# ------------------------------------------------------------------
+	public function &getErrorDescriptions($ps_source=null) {
+		$va_errors = array();
+		foreach($this->getErrors($ps_source) as $vs_e) {
+			$va_errors[] = $vs_e;
+		}
+		return $va_errors;
+	}
+	# ------------------------------------------------------------------
+	public function numErrors($ps_source=null) {
+		return sizeof($this->errors($ps_source));
+	}
+	# ------------------------------------------------------------------
+	public function clearErrors() {
+		$this->errors = array();
+		return true;
+	}
+	# ------------------------------------------------------------------
+	public function setErrorOutput($error_output) {
+		$this->error_output = $error_output;
+		return true;
+	}
+	# ------------------------------------------------------------------
+	public function postError($pn_num, $ps_message, $ps_context, $ps_source='') {
+		$o_error = new ApplicationError();
+		$o_error->setErrorOutput($this->error_output);
+		$o_error->setError($pn_num,$ps_message,$ps_context, $ps_source);
+		
+		if (!$this->errors) { $this->errors = array(); }
+		array_push($this->errors, $o_error);
+		
+		if (($app = AppController::getInstance()) && ($o_request = $app->getRequest()) && defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			$va_trace = debug_backtrace();
+			array_shift($va_trace);
+			$vs_stacktrace = '';
+			while($va_source = array_shift($va_trace)) {
+				$vs_stacktrace .= " [{$va_source['file']}:{$va_source['line']}]";
+			}
+			
+			$o_notification = new NotificationManager($o_request);
+			$o_notification->addNotification("[{$pn_num}] {$ps_message} ({$ps_context}".($ps_source ? "; {$ps_source}" : '').$vs_stacktrace);
+		}
+		return true;
+	}
+	# ------------------------------------------------------------------
+	public function __destruct() {
+		unset($this->errors);
+	}
+	# ------------------------------------------------------------------
+}

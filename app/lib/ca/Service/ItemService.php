@@ -841,17 +841,17 @@ class ItemService extends BaseJSONService {
 			}
 		}
 		
-        if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
-            $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
-                $vs_set_table = $t_set_table->tableName();
-                foreach($pa_data["set_content"] as $vs_idno) {
-                    if ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId'])) {
-                        $t_instance->addItem($vn_set_item_id);
-                    }
-                }
-            }
-        }
+		if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
+			$vn_table_num = $t_instance->get('table_num');
+			if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
+				$vs_set_table = $t_set_table->tableName();
+				foreach($pa_data["set_content"] as $vs_idno) {
+					if ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId'])) {
+						$t_instance->addItem($vn_set_item_id);
+					}
+				}
+			}
+		}
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {
@@ -997,27 +997,27 @@ class ItemService extends BaseJSONService {
 		}
 		
 		if(($ps_table == 'ca_sets') && is_array($va_post["set_content"]) && sizeof($va_post["set_content"])>0) {
-            $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
-                $vs_set_table = $t_set_table->tableName();
-                
-               $va_current_set_item_ids = $t_instance->getItems(['returnRowIdsOnly' => true]);
-                foreach($va_post["set_content"] as $vs_idno) {
-                    if (
-                        ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId']))
-                        &&
-                        (!$t_instance->isInSet($vs_set_table, $vn_set_item_id, $t_instance->getPrimaryKey()))
-                    ) {
-                        $t_instance->addItem($vn_set_item_id);
-                    }
-                    if ($vn_set_item_id) { unset($va_current_set_item_ids[$vn_set_item_id]); }
-                }
-                
-                foreach(array_keys($va_current_set_item_ids) as $vn_item_id) {
-                    $t_instance->removeItem($vn_item_id);
-                }
-            }
-        }
+			$vn_table_num = $t_instance->get('table_num');
+			if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
+				$vs_set_table = $t_set_table->tableName();
+				
+				$va_current_set_item_ids = $t_instance->getItems(['returnRowIdsOnly' => true]);
+				foreach($va_post["set_content"] as $vs_idno) {
+					if (
+						($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId']))
+						&&
+						(!$t_instance->isInSet($vs_set_table, $vn_set_item_id, $t_instance->getPrimaryKey()))
+					) {
+						$t_instance->addItem($vn_set_item_id);
+					}
+					if ($vn_set_item_id) { unset($va_current_set_item_ids[$vn_set_item_id]); }
+				}
+				
+				foreach(array_keys($va_current_set_item_ids) as $vn_item_id) {
+					$t_instance->removeItem($vn_item_id);
+				}
+			}
+		}
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {

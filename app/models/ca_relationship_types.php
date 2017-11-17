@@ -29,19 +29,19 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
- 	'NAME_SINGULAR' 	=> _t('relationship type'),
- 	'NAME_PLURAL' 		=> _t('relationship types'),
- 	'FIELDS' 			=> array(
- 		'type_id' => array(
+	'NAME_SINGULAR' 	=> _t('relationship type'),
+	'NAME_PLURAL' 		=> _t('relationship types'),
+	'FIELDS' 			=> array(
+		'type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -141,7 +141,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.',
 				'DONT_USE_AS_BUNDLE' => true
 		)
- 	)
+	)
 );
 
 class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
@@ -157,7 +157,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_relationship_types';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'type_id';
 
@@ -188,7 +188,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	protected $ORDER_BY = array('typename');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -405,7 +405,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (is_numeric($pm_type_code_or_id)) {
 			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num)) {
-				if (isset($va_relationships[$pm_type_code_or_id])) { 
+				if (isset($va_relationships[$pm_type_code_or_id])) {
 					return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $pm_type_code_or_id; 
 				}
 			}
@@ -467,18 +467,18 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array List of tables that use relationship types
 	 */ 
 	public function getRelationshipsUsingTypes() {
-	 	$va_tables = $this->_DATAMODEL->getTableNames();
+		$va_tables = $this->_DATAMODEL->getTableNames();
 		$va_relationship_tables = array();
-	 	foreach($va_tables as $vs_table) {
-	 		if (preg_match('!_x_!', $vs_table)) {
-	 			$t_instance = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
-	 			if (!$t_instance || !$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
-	 			$vs_name = $t_instance->getProperty('NAME_PLURAL');
-	 			$va_relationship_tables[$t_instance->tableNum()] = array('name' => $vs_name);
-	 		}
-	 	}
-	 	return $va_relationship_tables;
-	 }
+		foreach($va_tables as $vs_table) {
+			if (preg_match('!_x_!', $vs_table)) {
+				$t_instance = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
+				if (!$t_instance || !$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
+				$vs_name = $t_instance->getProperty('NAME_PLURAL');
+				$va_relationship_tables[$t_instance->tableNum()] = array('name' => $vs_name);
+			}
+		}
+		return $va_relationship_tables;
+	}
 	# ------------------------------------------------------
 	/**
 	 * Returns name of many-to-many table using relationship types between two tables
@@ -487,19 +487,19 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_table2 A valid table name
 	 * @return string The name of a table relating the specified tables 
 	 */
-	 public function getRelationshipTypeTable($ps_table1, $ps_table2) {
-	 	if (isset(ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2])) { return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2]; }
-	 	$va_path = array_keys($this->getAppDatamodel()->getPath($ps_table1, $ps_table2));
-	 	switch(sizeof($va_path)) {
-	 		case 2:
+	public function getRelationshipTypeTable($ps_table1, $ps_table2) {
+		if (isset(ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2])) { return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2]; }
+		$va_path = array_keys($this->getAppDatamodel()->getPath($ps_table1, $ps_table2));
+		switch(sizeof($va_path)) {
+			case 2:
 			case 3:
 				return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2] = $va_path[1];
 				break;
 		}
 		
 		return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2] = null;
-	 }
-	 # ------------------------------------------------------
+	}
+	# ------------------------------------------------------
 	/**
 	 * Returns instance of many-to-many table using relationship types between two tables
 	 *
@@ -507,14 +507,14 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_table2 A valid table name
 	 * @return BaseRelationshipModel An model instance for the table relating the specified tables 
 	 */
-	 static public function getRelationshipTypeInstance($ps_table1, $ps_table2) {
-	 	$t_rel = new ca_relationship_types();
-	 	if ($vs_table = $t_rel->getRelationshipTypeTable($ps_table1, $ps_table2)) {
-	 		return $t_rel->getAppDatamodel()->getInstanceByTableName($vs_table);
-	 	}
-	 	return null;
-	 }
-	 # ------------------------------------------------------
+	static public function getRelationshipTypeInstance($ps_table1, $ps_table2) {
+		$t_rel = new ca_relationship_types();
+		if ($vs_table = $t_rel->getRelationshipTypeTable($ps_table1, $ps_table2)) {
+			return $t_rel->getAppDatamodel()->getInstanceByTableName($vs_table);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
 	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of numeric type_ids
 	 *
@@ -524,8 +524,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_ids 
 	 */
-	 public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
-	 	$va_rel_ids = array();
+	public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
+		$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
 			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type)) {
 				$va_rel_ids[] = $vn_type_id;
@@ -553,29 +553,29 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_codes 
 	 */
-	 public function relationshipTypeListToTypeCodes($pm_table_name_or_num, $pa_list, $pa_options=null) {
-	 	if (!is_numeric($pm_table_name_or_num)) {
+	public function relationshipTypeListToTypeCodes($pm_table_name_or_num, $pa_list, $pa_options=null) {
+		if (!is_numeric($pm_table_name_or_num)) {
 			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
 		} else {
 			$vn_table_num = $pm_table_name_or_num;
 		}
 		
 		if (!is_array($pa_list)) { $pa_list = array($pa_list); }
-	 	$o_db = $this->getDb();
-	 	$qr_res = $o_db->query("
-	 		SELECT type_id, type_code 
-	 		FROM ca_relationship_types
-	 		WHERE
-	 			table_num = ?
-	 	", (int)$vn_table_num);
-	 	
-	 	$va_type_ids_to_codes = array();
-	 	while($qr_res->nextRow()) {
-	 		$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
-	 	}
-	 	
-	 	$va_rel_type_codes = array();
-	 	$va_rel_ids = array();
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT type_id, type_code 
+			FROM ca_relationship_types
+			WHERE
+				table_num = ?
+		", (int)$vn_table_num);
+		
+		$va_type_ids_to_codes = array();
+		while($qr_res->nextRow()) {
+			$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
+		}
+		
+		$va_rel_type_codes = array();
+		$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
 			if (isset($va_type_ids_to_codes[$vm_type])) {
 				$va_rel_type_codes[$va_type_ids_to_codes[$vm_type]] = true;
@@ -609,42 +609,42 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 *			NONE YET
 	 * @return array A list of corresponding type_codes 
 	 */
-	 static public function relationshipTypeIDsToTypeCodes($pa_ids, $pa_options=null) {
-	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-	 	
-	 	$vs_key = md5(print_r($pa_ids, true));
-	 	if (isset(ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key])) {
-	 		return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key];
-	 	}
-	 	
-	 	$va_ids = $va_non_numerics = array();
-	 	foreach($pa_ids as $pn_id) {
-	 		if (!is_numeric($pn_id)) {
-	 			$va_non_numerics[] = $pn_id;
-	 		} else {
-	 			$va_ids = (int)$pn_id;
-	 		}
-	 	}
-	 	if (!sizeof($va_ids)) { return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $pa_ids; }
-	 	
-	 	$o_db = new Db();
-	 	$qr_res = $o_db->query("
-	 		SELECT type_id, type_code 
-	 		FROM ca_relationship_types
-	 		WHERE
-	 			type_id IN (?)
-	 	", array($va_ids));
-	 	
-	 	$va_type_ids_to_codes = array();
-	 	while($qr_res->nextRow()) {
-	 		$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
-	 	}
-	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $va_type_ids_to_codes + $va_non_numerics;
+	static public function relationshipTypeIDsToTypeCodes($pa_ids, $pa_options=null) {
+		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		
+		$vs_key = md5(print_r($pa_ids, true));
+		if (isset(ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key])) {
+			return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key];
+		}
+		
+		$va_ids = $va_non_numerics = array();
+		foreach($pa_ids as $pn_id) {
+			if (!is_numeric($pn_id)) {
+				$va_non_numerics[] = $pn_id;
+			} else {
+				$va_ids = (int)$pn_id;
+			}
+		}
+		if (!sizeof($va_ids)) { return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $pa_ids; }
+		
+		$o_db = new Db();
+		$qr_res = $o_db->query("
+			SELECT type_id, type_code 
+			FROM ca_relationship_types
+			WHERE
+				type_id IN (?)
+		", array($va_ids));
+		
+		$va_type_ids_to_codes = array();
+		while($qr_res->nextRow()) {
+			$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
+		}
+		return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $va_type_ids_to_codes + $va_non_numerics;
 	}
 	# ------------------------------------------------------
-	 public function getHierarchyList($pb_vocabularies=false) {
-	 	$va_relationship_tables = $this->getRelationshipsUsingTypes();
-		if (!sizeof($va_relationship_tables)) { return array(); }
+	public function getHierarchyList($pb_vocabularies=false) {
+		$va_relationship_tables = $this->getRelationshipsUsingTypes();
+	if (!sizeof($va_relationship_tables)) { return array(); }
 		
 		$o_db = $this->getDb();
 		
@@ -689,14 +689,14 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		return $va_sorted_hierarchies;
-	 }
-	 # ------------------------------------------------------
-	 /**
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns name of hierarchy for currently loaded item or, if specified, item with item_id = to optional $pn_id parameter
 	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	return _t('Relationship types');
-	 }
+	public function getHierarchyName($pn_id=null) {
+		return _t('Relationship types');
+	}
 	# ------------------------------------------------------
 	/**
 	 * Override insert() to set table_num to whatever the parent is
@@ -704,7 +704,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	public function insert($pa_options=null) {
 		if ($vn_parent_id = $this->get('parent_id')) {
 			$t_root_rel_type = new ca_relationship_types($vn_parent_id);
-		
+			
 			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
 				$this->set('table_num', $vn_table_num);
 			}
@@ -840,34 +840,34 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		return $vn_num_rows;
 	}
 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is save-able
- 	 *
- 	 * @param RequestHTTP $po_request
- 	 * @return bool True if record can be saved, false if not
- 	 */
- 	public function isSaveable($po_request, $ps_bundle_name=null) {
- 		// Check actions
- 		if ($po_request->user->canDoAction('is_administrator')) {
- 			return true;
- 		}
- 		
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is deletable
- 	 */
- 	public function isDeletable($po_request) {
- 		// Is row loaded?
- 		if (!$this->getPrimaryKey()) { return false; }
- 			
- 		// Check actions
- 		if ($this->getPrimaryKey() && $po_request->user->canDoAction('is_administrator')) {
- 			return true;
- 		}
- 		
- 		return false;
- 	}
+	/**
+	 * Check if currently loaded row is save-able
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return bool True if record can be saved, false if not
+	 */
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		// Check actions
+		if ($po_request->user->canDoAction('is_administrator')) {
+			return true;
+		}
+		
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded row is deletable
+	 */
+	public function isDeletable($po_request) {
+		// Is row loaded?
+		if (!$this->getPrimaryKey()) { return false; }
+			
+		// Check actions
+		if ($this->getPrimaryKey() && $po_request->user->canDoAction('is_administrator')) {
+			return true;
+		}
+		
+		return false;
+	}
 	# ------------------------------------------------------
 }

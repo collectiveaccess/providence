@@ -29,62 +29,62 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 BaseModel::$s_ca_models_definitions['ca_locales'] = array(
- 	'NAME_SINGULAR' 	=> _t('locale'),
- 	'NAME_PLURAL' 		=> _t('locales'),
- 	'FIELDS' 			=> array(
- 		'locale_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('locale'),
+	'NAME_PLURAL' 		=> _t('locales'),
+	'FIELDS' 			=> array(
+		'locale_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this locale')
 		),
 		'name' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of locale. The chosen name should be descriptive and must be unique.'),
 				'BOUNDS_LENGTH' => array(1,255)
 		),
 		'language' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 3, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('ISO 639 language code'), 'DESCRIPTION' => _t('2 or 3 character language code for locale; use the ISO 639-1 standard for two letter codes or ISO 639-2 for three letter codes.'),
 				'BOUNDS_LENGTH' => array(2,3)
 		),
 		'country' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 2, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('ISO 3166-1 alpha-2 country code'), 'DESCRIPTION' => _t('2 characer country code for locale; use the ISO 3166-1 alpha-2 standard.'),
 				'BOUNDS_LENGTH' => array(0,2)
 		),
 		'dialect' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 8, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('Dialect'), 'DESCRIPTION' => _t('Optional dialect specifier for locale. Up to 8 characters, this code is usually one defined by the language lists at http://www.ethnologue.com.'),
 				'BOUNDS_LENGTH' => array(0,8)
 		),
 		'dont_use_for_cataloguing' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES,
 				'DISPLAY_WIDTH' => 2, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Do not use for cataloguing'), 'DESCRIPTION' => _t('If checked then locale cannot be used to tag content.')
 		),
- 	)
+	)
 );
 
 class ca_locales extends BaseModel {
@@ -100,7 +100,7 @@ class ca_locales extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_locales';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'locale_id';
 
@@ -311,13 +311,13 @@ class ca_locales extends BaseModel {
 			if ($vb_index_by_code) {
 				$va_locales[$vs_code] = $vm_val;
 			} else {
- 				$va_locales[$vn_id] = $vm_val;
- 			}
+				$va_locales[$vn_id] = $vm_val;
+			}
 
 			MemoryCache::save($vs_code, $vn_id, 'LocaleCodeToId');
 			MemoryCache::save($vn_id, $vs_code, 'LocaleIdToCode');
 			MemoryCache::save($vn_id, $vs_name, 'LocaleIdToName');
- 		}
+		}
 
 		CompositeCache::save($vs_cache_key, $va_locales, 'LocaleList');
 		return $va_locales;
@@ -488,14 +488,14 @@ class ca_locales extends BaseModel {
 		$pb_codes_only = caGetOption('codesOnly', $pa_options, false);
 		//$va_locales =  array_filter(ca_locales::getLocaleList(['index_by_code' => true]), function($v, $k) use ($ps_language) { return ($ps_language == array_shift(explode('_', $k))); }, ARRAY_FILTER_USE_BOTH);
 	
-	    $va_locales = [];
-	    $va_list = ca_locales::getLocaleList(['index_by_code' => true]);
-	    foreach($va_list as $k => $v) {
-	        if ($ps_language == array_shift(explode('_', $k))) { 
-	            $va_locales[$k] = $v;
-	        }
-	    }
-	    
+		$va_locales = [];
+		$va_list = ca_locales::getLocaleList(['index_by_code' => true]);
+		foreach($va_list as $k => $v) {
+			if ($ps_language == array_shift(explode('_', $k))) {
+				$va_locales[$k] = $v;
+			}
+		}
+		
 		return $pb_codes_only ? array_keys($va_locales) : $va_locales;
 	}
 	# ------------------------------------------------------

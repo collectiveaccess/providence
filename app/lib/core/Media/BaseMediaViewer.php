@@ -73,15 +73,15 @@
 			if ($t_subject) {
 				$vs_media_overlay_titlebar_text = null;
 				if (($vs_media_overlay_titlebar_template = $po_request->config->get('media_overlay_titlebar_template')) && (is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes'))) { 
-				    // for everything except ca_site_page_media when a template is defined
-				    $vs_media_overlay_titlebar_text = caProcessTemplateForIDs($vs_media_overlay_titlebar_template, $t_subject->tableName(), [$t_subject->getPrimaryKey()], $pa_options);
+					// for everything except ca_site_page_media when a template is defined
+					$vs_media_overlay_titlebar_text = caProcessTemplateForIDs($vs_media_overlay_titlebar_template, $t_subject->tableName(), [$t_subject->getPrimaryKey()], $pa_options);
 				} elseif(is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes')) {
-				    // for everything except ca_site_page_media
-				    $vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_subject->get($t_subject->tableName().'.preferred_labels'), 80)." (".$t_subject->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
-			    } else {
-			        // for ca_site_page_media 
-			        $vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_instance->get($t_instance->tableName().'.'.array_shift($t_instance->getProperty('LIST_FIELDS'))), 80)." (".$t_instance->get($t_instance->tableName().'.'.$t_instance->getProperty('ID_NUMBERING_ID_FIELD')).")";
-			    }
+					// for everything except ca_site_page_media
+					$vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_subject->get($t_subject->tableName().'.preferred_labels'), 80)." (".$t_subject->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
+				} else {
+					// for ca_site_page_media 
+					$vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_instance->get($t_instance->tableName().'.'.array_shift($t_instance->getProperty('LIST_FIELDS'))), 80)." (".$t_instance->get($t_instance->tableName().'.'.$t_instance->getProperty('ID_NUMBERING_ID_FIELD')).")";
+				}
 				$vs_controls .= "<div class='objectInfo'>{$vs_media_overlay_titlebar_text}</div>";
 			}
 			if ($t_subject && $t_instance && is_a($t_instance, 'ca_object_representations')) {
@@ -108,8 +108,8 @@
 			}
 			if ($t_subject && $t_instance && $po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations')) {
 					if (is_array($va_versions = $po_request->config->getList('ca_object_representation_download_versions'))) {
-					    $va_editor_url = caEditorUrl($po_request, $t_media->tableName(), $t_media->getPrimaryKey(), true);
-					    $vs_download_path = $va_editor_url['module'].'/'.$va_editor_url['controller'];
+						$va_editor_url = caEditorUrl($po_request, $t_media->tableName(), $t_media->getPrimaryKey(), true);
+						$vs_download_path = $va_editor_url['module'].'/'.$va_editor_url['controller'];
 					
 						$vs_controls .= "<div class='download'>";
 						// -- provide user with a choice of versions to download
@@ -141,14 +141,14 @@
 		 *
 		 */
 		public static function searchViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
-		    throw new ApplicationException(_t('Media search is not available'));
+			throw new ApplicationException(_t('Media search is not available'));
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function autocomplete($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
-		    throw new ApplicationException(_t('Media search autocomplete is not available'));
+			throw new ApplicationException(_t('Media search autocomplete is not available'));
 		}
 		# -------------------------------------------------------
 	}

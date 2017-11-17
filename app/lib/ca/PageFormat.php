@@ -29,56 +29,56 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
- 	require_once(__CA_LIB_DIR__.'/core/View.php');
- 	require_once(__CA_LIB_DIR__."/core/Controller/Request/NotificationManager.php");
- 	require_once(__CA_LIB_DIR__.'/ca/AppNavigation.php');
- 
-	class PageFormat extends AppControllerPlugin {
-		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
-		public function routeStartup() {
-			//$this->getResponse()->addContent("<p>routeStartup() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function routeShutdown() {
-			//$this->getResponse()->addContent("<p>routeShutdown() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function dispatchLoopStartup() {
-			//$this->getResponse()->addContent("<p>dispatchLoopStartup() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function preDispatch() {
-			//$this->getResponse()->addContent("<p>preDispatch() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function postDispatch() {
-			$o_view = new View($this->getRequest(), $this->getRequest()->getViewsDirectoryPath());
-			
-			$o_notification = new NotificationManager($this->getRequest());
-			if($o_notification->numNotifications()) {
-				$o_view->setVar('notifications', $o_notification->getNotifications($this->getResponse()->isRedirect()));
-				$this->getResponse()->prependContent($o_view->render('pageFormat/notifications.php'), 'notifications');
-			}
-			
-			$nav = new AppNavigation($this->getRequest(), $this->getResponse());
-			$o_view->setVar('nav', $nav);
-			$this->getResponse()->prependContent($o_view->render('pageFormat/sideBar.php'), 'sideBar');
-			$this->getResponse()->prependContent($o_view->render('pageFormat/menuBar.php'), 'menubar');
-			$this->getResponse()->prependContent($o_view->render('pageFormat/pageHeader.php'), 'head');
-			$this->getResponse()->appendContent($o_view->render('pageFormat/pageFooter.php'), 'footer');
-		}
-		# -------------------------------------------------------
-		public function dispatchLoopShutdown() {
-			//$this->getResponse()->addContent("<p>dispatchLoopShutdown() called</p>\n");
-		}
-		# -------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
+require_once(__CA_LIB_DIR__.'/core/View.php');
+require_once(__CA_LIB_DIR__."/core/Controller/Request/NotificationManager.php");
+require_once(__CA_LIB_DIR__.'/ca/AppNavigation.php');
+
+class PageFormat extends AppControllerPlugin {
+	# -------------------------------------------------------
+	
+	# -------------------------------------------------------
+	public function routeStartup() {
+		//$this->getResponse()->addContent("<p>routeStartup() called</p>\n");
 	}
+	# -------------------------------------------------------
+	public function routeShutdown() {
+		//$this->getResponse()->addContent("<p>routeShutdown() called</p>\n");
+	}
+	# -------------------------------------------------------
+	public function dispatchLoopStartup() {
+		//$this->getResponse()->addContent("<p>dispatchLoopStartup() called</p>\n");
+	}
+	# -------------------------------------------------------
+	public function preDispatch() {
+		//$this->getResponse()->addContent("<p>preDispatch() called</p>\n");
+	}
+	# -------------------------------------------------------
+	public function postDispatch() {
+		$o_view = new View($this->getRequest(), $this->getRequest()->getViewsDirectoryPath());
+		
+		$o_notification = new NotificationManager($this->getRequest());
+		if($o_notification->numNotifications()) {
+			$o_view->setVar('notifications', $o_notification->getNotifications($this->getResponse()->isRedirect()));
+			$this->getResponse()->prependContent($o_view->render('pageFormat/notifications.php'), 'notifications');
+		}
+		
+		$nav = new AppNavigation($this->getRequest(), $this->getResponse());
+		$o_view->setVar('nav', $nav);
+		$this->getResponse()->prependContent($o_view->render('pageFormat/sideBar.php'), 'sideBar');
+		$this->getResponse()->prependContent($o_view->render('pageFormat/menuBar.php'), 'menubar');
+		$this->getResponse()->prependContent($o_view->render('pageFormat/pageHeader.php'), 'head');
+		$this->getResponse()->appendContent($o_view->render('pageFormat/pageFooter.php'), 'footer');
+	}
+	# -------------------------------------------------------
+	public function dispatchLoopShutdown() {
+		//$this->getResponse()->addContent("<p>dispatchLoopShutdown() called</p>\n");
+	}
+	# -------------------------------------------------------
+}
 ?>

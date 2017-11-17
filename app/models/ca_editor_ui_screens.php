@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -42,10 +42,10 @@ require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_type_restrictions.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_screens'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor UI screen'),
- 	'NAME_PLURAL' 		=> _t('editor UI screens'),
- 	'FIELDS' 			=> array(
- 		'screen_id' => array(
+	'NAME_SINGULAR' 	=> _t('editor UI screen'),
+	'NAME_PLURAL' 		=> _t('editor UI screens'),
+	'FIELDS' 			=> array(
+		'screen_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -119,7 +119,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_screens'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		)
- 	)
+	)
 );
 
 class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
@@ -135,7 +135,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_editor_ui_screens';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'screen_id';
 

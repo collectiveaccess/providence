@@ -29,19 +29,19 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_watch_list'] = array(
- 	'NAME_SINGULAR' 	=> _t('watched item'),
- 	'NAME_PLURAL' 		=> _t('watched items'),
- 	'FIELDS' 			=> array(
- 		'watch_id' => array(
+	'NAME_SINGULAR' 	=> _t('watched item'),
+	'NAME_PLURAL' 		=> _t('watched items'),
+	'FIELDS' 			=> array(
+		'watch_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -70,7 +70,7 @@ BaseModel::$s_ca_models_definitions['ca_watch_list'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('User'), 'DESCRIPTION' => _t('The user who is watching the specified record.')
 		)
- 	)
+	)
 );
 
 class ca_watch_list extends BaseModel {
@@ -86,7 +86,7 @@ class ca_watch_list extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_watch_list';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'watch_id';
 

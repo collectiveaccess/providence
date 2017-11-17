@@ -44,7 +44,7 @@ class ConfigurationCheckController extends ActionController {
 		// Search engine
 		$vo_search_config_settings = SearchEngine::checkPluginConfiguration();
 		$this->view->setVar('search_config_settings',$vo_search_config_settings);
-		$this->view->setVar('search_config_engine_name',  SearchEngine::getPluginEngineName());
+		$this->view->setVar('search_config_engine_name', SearchEngine::getPluginEngineName());
 		
 		// Media
 		$t_media = new Media();
@@ -56,7 +56,7 @@ class ConfigurationCheckController extends ActionController {
 			}
 		}
 		
-		$this->view->setVar('media_config_plugin_list',  $va_plugins);
+		$this->view->setVar('media_config_plugin_list', $va_plugins);
 		
 		// PDF Rendering
 		$t_pdf_renderer = new PDFRenderer();
@@ -68,7 +68,7 @@ class ConfigurationCheckController extends ActionController {
 			}
 		}
 		
-		$this->view->setVar('pdf_renderer_config_plugin_list',  $va_plugins);
+		$this->view->setVar('pdf_renderer_config_plugin_list', $va_plugins);
 		
 		// Application plugins
 		$va_plugin_names = ApplicationPluginManager::getPluginNames();
@@ -78,7 +78,7 @@ class ConfigurationCheckController extends ActionController {
 				$va_plugins[$vs_plugin_name] = $va_plugin_status;
 			}
 		}
-		$this->view->setVar('application_config_plugin_list',  $va_plugins);
+		$this->view->setVar('application_config_plugin_list', $va_plugins);
 		
 		// Barcode generation
 		$vb_gd_is_available = caMediaPluginGDInstalled(true);
@@ -89,7 +89,7 @@ class ConfigurationCheckController extends ActionController {
 		}
 		$va_gd['available'] = $vb_gd_is_available;
 		$va_barcode_components['GD'] = $va_gd;
-		$this->view->setVar('barcode_config_component_list',  $va_barcode_components);
+		$this->view->setVar('barcode_config_component_list', $va_barcode_components);
 
 		// General system configuration issues
 		if (!(bool)$this->request->config->get('dont_do_expensive_configuration_checks_in_web_ui')) {
