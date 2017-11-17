@@ -29,80 +29,80 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
-   *
-   */
+  *
+  */
 require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_storage_location_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('storage location name'),
- 	'NAME_PLURAL' 		=> _t('storage location names'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('storage location name'),
+	'NAME_PLURAL' 		=> _t('storage location names'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Label id', 'DESCRIPTION' => 'Identifier for Label'
 		),
 		'location_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Location id', 'DESCRIPTION' => 'Identifier for Location'
 		),
 		'locale_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'DISPLAY_FIELD' => array('ca_locales.name'),
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale of label'),
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				
 				'LIST_CODE' => 'storage_location_label_types',
 				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Indicates the type of label and how it should be employed.')
 		),
 		'name' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of storage location'),
 				'BOUNDS_LENGTH' => array(1,255)
 		),
 		'name_sort' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 255, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
 		),
 		'is_preferred' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred'),
 				'BOUNDS_VALUE' => array(0,1)
 		)
- 	)
+	)
 );
 
 class ca_storage_location_labels extends BaseLabel {
@@ -118,7 +118,7 @@ class ca_storage_location_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_storage_location_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 
@@ -144,12 +144,12 @@ class ca_storage_location_labels extends BaseLabel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('name');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first

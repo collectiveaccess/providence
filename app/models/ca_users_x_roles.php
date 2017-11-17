@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_users_x_roles'] = array(
- 	'NAME_SINGULAR' 	=> _t('user-role assocation'),
- 	'NAME_PLURAL' 		=> _t('user-role assocations'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('user-role assocation'),
+	'NAME_PLURAL' 		=> _t('user-role assocations'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_users_x_roles'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship when displayed in a list with other relationships. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 
 class ca_users_x_roles extends BaseRelationshipModel {
@@ -85,7 +85,7 @@ class ca_users_x_roles extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_users_x_roles';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

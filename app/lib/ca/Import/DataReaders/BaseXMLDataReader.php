@@ -99,7 +99,7 @@ class BaseXMLDataReader extends BaseDataReader {
 	
 	/**
 	 * Per-row XML handle
-	 */ 
+	 */
 	protected $opo_handle_xml = null;
 	
 	/**
@@ -181,27 +181,27 @@ class BaseXMLDataReader extends BaseDataReader {
 			}
 		}
 
-		 if ($o_row->hasAttributes()) {
-		 	$o_attributes = $o_row->attributes;
-		 	$vn_l = $o_attributes->length;
-		 	
+		if ($o_row->hasAttributes()) {
+			$o_attributes = $o_row->attributes;
+			$vn_l = $o_attributes->length;
+			
 			for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
 				$o_node = $o_attributes->item($vn_i);
 				$vs_key = $ps_base_key.'/@'.$o_node->nodeName;
- 				$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
- 				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
- 					$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
- 				}
- 				
- 				if ($this->opb_use_row_tag_attributes_as_row_level_values) {
- 					$vs_key = $ps_base_key.'/'.$o_node->nodeName;
+				$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
+				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
+					$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
+				}
+				
+				if ($this->opb_use_row_tag_attributes_as_row_level_values) {
+					$vs_key = $ps_base_key.'/'.$o_node->nodeName;
 					$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
 					if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
 						$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
 					}
- 				}
- 			}
- 		}
+				}
+			}
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -280,24 +280,24 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * 
 	 * @return string
 	 */
-	private function getInnerXML($po_node) { 
-		$vs_buf = ''; 
-		$vo_children = $po_node->childNodes; 
+	private function getInnerXML($po_node) {
+		$vs_buf = '';
+		$vo_children = $po_node->childNodes;
 		if($vo_children) {
-			foreach ($vo_children as $vo_child) { 
-				$vs_val = $vo_child->ownerDocument->saveXML( $vo_child ); 
+			foreach ($vo_children as $vo_child) {
+				$vs_val = $vo_child->ownerDocument->saveXML( $vo_child );
 				
 				if (strpos($vs_val, "<![CDATA[") === 0) {
-				    $vs_val = substr($vs_val, 9);
-				    $vs_val = substr($vs_val, 0, strlen($vs_val) - 3);
+					$vs_val = substr($vs_val, 9);
+					$vs_val = substr($vs_val, 0, strlen($vs_val) - 3);
 				}
 				
 				$vs_buf .= $vs_val;
-			} 
+			}
 		}
 
-		return $vs_buf;  
-    }
+		return $vs_buf;
+	}
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -314,7 +314,7 @@ class BaseXMLDataReader extends BaseDataReader {
 			return $va_row;
 		}
 		
-		return null;	
+		return null;
 	}
 	# -------------------------------------------------------
 	/**
@@ -370,7 +370,7 @@ class BaseXMLDataReader extends BaseDataReader {
 			if ($this->ops_xml_namespace_prefix && !preg_match("!^".$this->ops_xml_namespace_prefix.":!", $vs_tag_tmp)) {
 				$vs_tag_tmp = $this->ops_xml_namespace_prefix.":{$vs_tag_tmp}";
 			}
-			array_unshift($va_tmp, $vs_tag_tmp); 
+			array_unshift($va_tmp, $vs_tag_tmp);
 		}
 		foreach($va_tmp as $vn_i => $vs_spec_element) {
 			if(!$vs_spec_element) { continue; }

@@ -38,9 +38,9 @@
 ?>
 	<div id="printButton">
 		<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->PrimaryKey() => $t_item->getPrimaryKey()))?>">
-		    <?php print caNavIcon(__CA_NAV_ICON_PDF__, 2); ?>
+			<?php print caNavIcon(__CA_NAV_ICON_PDF__, 2); ?>
 		</a>
-    </div>
+	</div>
 <?php
 		print caFormTag($this->request, 'Summary', 'caSummaryDisplaySelectorForm');
 ?>

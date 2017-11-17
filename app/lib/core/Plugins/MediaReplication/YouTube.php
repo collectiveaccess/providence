@@ -272,7 +272,7 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin {
 				 null,
 				 $this->ops_developer_key);
 		
-    	return $this->opo_client;
+		return $this->opo_client;
 	}
 	# ------------------------------------------------
 	/**

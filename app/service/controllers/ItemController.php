@@ -31,8 +31,8 @@
 	class ItemController extends BaseServiceController {
 		# -------------------------------------------------------
 		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
+			parent::__construct($po_request, $po_response, $pa_view_paths);
+		}
 		# -------------------------------------------------------
 		public function __call($ps_table, $pa_args){
 			$vo_service = new ItemService($this->request,$ps_table);

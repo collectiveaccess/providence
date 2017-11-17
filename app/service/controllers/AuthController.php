@@ -31,8 +31,8 @@
 	class AuthController extends BaseServiceController {
 		# -------------------------------------------------------
 		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
+			parent::__construct($po_request, $po_response, $pa_view_paths);
+		}
 		# -------------------------------------------------------
 		public function login() {
 			$o_session = $this->getRequest()->getSession();

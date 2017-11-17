@@ -29,11 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
- 
+
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -99,10 +99,10 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 );
 
 BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
- 	'NAME_SINGULAR' 	=> _t('Metadata dictionary entry'),
- 	'NAME_PLURAL' 		=> _t('Metadata dictionary entries'),
- 	'FIELDS' 			=> array(
- 		'entry_id' => array(
+	'NAME_SINGULAR' 	=> _t('Metadata dictionary entry'),
+	'NAME_PLURAL' 		=> _t('Metadata dictionary entries'),
+	'FIELDS' 			=> array(
+		'entry_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -124,7 +124,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Settings')
 		)
- 	)
+	)
 );
 
 
@@ -141,7 +141,7 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_metadata_dictionary_entries';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'entry_id';
 

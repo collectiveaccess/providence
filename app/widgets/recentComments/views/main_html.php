@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request			= $this->getVar('request');
+
+	$po_request			= $this->getVar('request');
 	$va_comments			= $this->getVar('comment_list');
 	$vs_widget_id			= $this->getVar('widget_id');
 	$vb_unmoderated			= 0;
@@ -68,8 +68,8 @@ if(sizeof($va_comments) > 0){
 	if($vb_unmoderated):
 	?>
 			<div style="padding-top:10px; text-align:center; padding-right:20px;">
-    <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button'><?php print(_t("Approve")); ?></span></a>
-    <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'><?php print(_t("Delete")); ?></span></a>
+	<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button'><?php print(_t("Approve")); ?></span></a>
+	<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($po_request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'><?php print(_t("Delete")); ?></span></a>
 			</div>
 			<input type="hidden" name="mode" value="dashboard">
 	<?php

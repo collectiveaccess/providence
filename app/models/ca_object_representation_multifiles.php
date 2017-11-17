@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,10 +38,10 @@ require_once(__CA_LIB_DIR__."/core/BaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representation_multifiles'] = array(
- 	'NAME_SINGULAR' 	=> _t('object representation multifile'),
- 	'NAME_PLURAL' 		=> _t('object representation multifiles'),
- 	'FIELDS' 			=> array(
- 		'multifile_id' => array(
+	'NAME_SINGULAR' 	=> _t('object representation multifile'),
+	'NAME_PLURAL' 		=> _t('object representation multifiles'),
+	'FIELDS' 			=> array(
+		'multifile_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -93,7 +93,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representation_multifiles'] = arr
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Indicates how multifiles should be ordered in a list. Higher ranks are lower in the list. That is, rank is used to sort in ascending order.')
 		)
- 	)
+	)
 );
 
 class ca_object_representation_multifiles extends BaseModel {
@@ -109,7 +109,7 @@ class ca_object_representation_multifiles extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_object_representation_multifiles';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'multifile_id';
 
@@ -210,17 +210,17 @@ class ca_object_representation_multifiles extends BaseModel {
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
- 	 * Check if currently loaded row is readable
- 	 *
- 	 * @param RequestHTTP $po_request
- 	 * @param string $ps_bundle_name Optional bundle name to test readability on. If omitted readability is considered for the item as a whole.
- 	 * @return bool True if record can be read by the current user, false if not
- 	 */
+	 * Check if currently loaded row is readable
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_bundle_name Optional bundle name to test readability on. If omitted readability is considered for the item as a whole.
+	 * @return bool True if record can be read by the current user, false if not
+	 */
 	function isReadable($po_request, $ps_bundle_name=null) {
 		$t_rep = new ca_object_representations($this->get('representation_id'));
 		
 		// Check type restrictions
- 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
 			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
 				return false;
@@ -246,19 +246,19 @@ class ca_object_representation_multifiles extends BaseModel {
 		
 		return true;
 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is save-able
- 	 *
- 	 * @param RequestHTTP $po_request
- 	 * @param string $ps_bundle_name Optional bundle name to test write-ability on. If omitted write-ability is considered for the item as a whole.
- 	 * @return bool True if record can be saved, false if not
- 	 */
- 	public function isSaveable($po_request, $ps_bundle_name=null) {
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded row is save-able
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_bundle_name Optional bundle name to test write-ability on. If omitted write-ability is considered for the item as a whole.
+	 * @return bool True if record can be saved, false if not
+	 */
+	public function isSaveable($po_request, $ps_bundle_name=null) {
 		$t_rep = new ca_object_representations($this->get('representation_id'));
 		
- 		// Check type restrictions
- 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+		// Check type restrictions
+		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
 			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
@@ -273,32 +273,32 @@ class ca_object_representation_multifiles extends BaseModel {
 			}
 		}
 		
- 		// Check actions
- 		if (!$t_rep->getPrimaryKey() && !$po_request->user->canDoAction('can_create_ca_object_representations')) {
- 			return false;
- 		}
- 		if ($t_rep->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_ca_object_representations')) {
- 			return false;
- 		}
- 		
+		// Check actions
+		if (!$t_rep->getPrimaryKey() && !$po_request->user->canDoAction('can_create_ca_object_representations')) {
+			return false;
+		}
+		if ($t_rep->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_ca_object_representations')) {
+			return false;
+		}
+		
 		if ($ps_bundle_name) {
 			if ($po_request->user->getBundleAccessLevel('ca_object_representations', $ps_bundle_name) < __CA_BUNDLE_ACCESS_EDIT__) { return false; }
 		}
- 		
- 		return true;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is deletable
- 	 */
- 	public function isDeletable($po_request) {
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded row is deletable
+	 */
+	public function isDeletable($po_request) {
 		$t_rep = new ca_object_representations($this->get('representation_id'));
 		
- 		// Is row loaded?
- 		if (!$t_rep->getPrimaryKey()) { return false; }
- 		
- 		// Check type restrictions
- 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+		// Is row loaded?
+		if (!$t_rep->getPrimaryKey()) { return false; }
+		
+		// Check type restrictions
+		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
 			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
@@ -313,12 +313,12 @@ class ca_object_representation_multifiles extends BaseModel {
 			}
 		}
 		
- 		// Check actions
- 		if (!$t_rep->getPrimaryKey() || !$po_request->user->canDoAction('can_delete_ca_object_representations')) {
- 			return false;
- 		}
- 		
- 		return true;
- 	}
+		// Check actions
+		if (!$t_rep->getPrimaryKey() || !$po_request->user->canDoAction('can_delete_ca_object_representations')) {
+			return false;
+		}
+		
+		return true;
+	}
 	# ------------------------------------------------------
 }

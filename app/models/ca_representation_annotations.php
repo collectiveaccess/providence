@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
@@ -40,10 +40,10 @@ require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_representation_annotations'] = array(
- 	'NAME_SINGULAR' 	=> _t('representation annotation'),
- 	'NAME_PLURAL' 		=> _t('representation annotations'),
- 	'FIELDS' 			=> array(
- 		'annotation_id' => array(
+	'NAME_SINGULAR' 	=> _t('representation annotation'),
+	'NAME_PLURAL' 		=> _t('representation annotations'),
+	'FIELDS' 			=> array(
+		'annotation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -141,7 +141,7 @@ BaseModel::$s_ca_models_definitions['ca_representation_annotations'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_representation_annotations extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
@@ -157,7 +157,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_representation_annotations';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'annotation_id';
 
@@ -280,8 +280,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
 		
- 		$o_config = $this->getAppConfig();
- 		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
+		$o_config = $this->getAppConfig();
+		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
@@ -349,7 +349,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		}
 		return parent::set($pm_fields, null, $pa_options);
 	}
- 	# ------------------------------------------------------
+	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache=true) {
 		$vn_rc = parent::load($pm_id, $pb_use_cache);
 		
@@ -490,16 +490,16 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
- 	public function getPropertyList() {
- 		return is_object($this->opo_annotations_properties) ? $this->opo_annotations_properties->getPropertyList() : array();
- 	}
- 	# ------------------------------------------------------
- 	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null, $pa_options=null) {
- 		return $this->opo_annotations_properties->htmlFormElement($ps_property, $pa_attributes);
- 	}
- 	# ------------------------------------------------------
- 	public function getPropertyHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $ps_property, $pa_attributes=null, $pa_options=null) {
- 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
+	public function getPropertyList() {
+		return is_object($this->opo_annotations_properties) ? $this->opo_annotations_properties->getPropertyList() : array();
+	}
+	# ------------------------------------------------------
+	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null, $pa_options=null) {
+		return $this->opo_annotations_properties->htmlFormElement($ps_property, $pa_attributes);
+	}
+	# ------------------------------------------------------
+	public function getPropertyHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $ps_property, $pa_attributes=null, $pa_options=null) {
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
 		$o_view->setVar('property', $ps_property);
@@ -508,159 +508,159 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		
 		$pa_attributes['name'] = "{$ps_placement_code}{$ps_form_name}{$ps_property}";
 		$pa_attributes['id'] = $ps_property;
- 		$o_view->setVar('form_element', $this->getPropertyHTMLFormElement($ps_property, $pa_attributes));
- 		
-		return $o_view->render('ca_representation_annotation_properties.php');
- 	}
- 	# ------------------------------------------------------
- 	public function getPropertyValue($ps_property) {
- 		return $this->opo_annotations_properties->getProperty($ps_property);
- 	}
- 	# ------------------------------------------------------
- 	public function getPropertyValues() {
- 		return $this->opo_annotations_properties->getPropertyValues();
- 	}
- 	# ------------------------------------------------------
- 	public function getPropertiesForDisplay($pa_options=null) {
- 		if($this->opo_annotations_properties instanceof IRepresentationAnnotationPropertyCoder) {
- 			return $this->opo_annotations_properties->getPropertiesForDisplay($pa_options);	
- 		} else {
- 			return '';
- 		}
- 	}
- 	# ------------------------------------------------------
- 	public function setPropertyValue($ps_property, $pm_value) {
- 		return $this->opo_annotations_properties->setProperty($ps_property, $pm_value);
- 	}
- 	# ------------------------------------------------------
- 	public function getAnnotationType($pn_representation_id=null) {
- 		if (!$pn_representation_id) {
+		$o_view->setVar('form_element', $this->getPropertyHTMLFormElement($ps_property, $pa_attributes));
+		
+	return $o_view->render('ca_representation_annotation_properties.php');
+	}
+	# ------------------------------------------------------
+	public function getPropertyValue($ps_property) {
+		return $this->opo_annotations_properties->getProperty($ps_property);
+	}
+	# ------------------------------------------------------
+	public function getPropertyValues() {
+		return $this->opo_annotations_properties->getPropertyValues();
+	}
+	# ------------------------------------------------------
+	public function getPropertiesForDisplay($pa_options=null) {
+		if($this->opo_annotations_properties instanceof IRepresentationAnnotationPropertyCoder) {
+			return $this->opo_annotations_properties->getPropertiesForDisplay($pa_options);	
+		} else {
+			return '';
+		}
+	}
+	# ------------------------------------------------------
+	public function setPropertyValue($ps_property, $pm_value) {
+		return $this->opo_annotations_properties->setProperty($ps_property, $pm_value);
+	}
+	# ------------------------------------------------------
+	public function getAnnotationType($pn_representation_id=null) {
+		if (!$pn_representation_id) {
 			if (!$vn_representation_id = $this->get('representation_id')) {
 				return false;
 			}
 		} else {
 			$vn_representation_id = $pn_representation_id;
 		}
- 		$t_rep = new ca_object_representations();
- 		
- 		return $t_rep->getAnnotationType($vn_representation_id);
- 	}
- 	# ------------------------------------------------------
- 	public function getPropertiesForType($ps_type) {
- 		$va_types = $this->opo_type_config->getAssoc('types');
- 		return array_keys($va_types[$ps_type]['properties']);
- 	}
- 	# ------------------------------------------------------
- 	public function loadProperties($ps_type, $pa_parameters=null) {
- 		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
- 			return false;
- 		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
- 		
- 		$this->opo_annotations_properties = new $vs_classname;
- 		$this->opo_annotations_properties->setPropertyValues(is_array($pa_parameters) ? $pa_parameters : $this->get('props'));
- 		return $this->opo_annotations_properties;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
- 	 */
- 	public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
- 		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
- 		if (!is_array($pa_options)) { $pa_options = array(); }
- 		
- 		if (!is_array($pa_versions)) { 
- 			$pa_versions = array('preview170');
- 		}
- 		
- 		$o_db = $this->getDb();
- 		
- 		$qr_reps = $o_db->query("
- 			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
- 			FROM ca_object_representations caor
- 			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
- 			WHERE
- 				caor.representation_id = ? 
- 				{$vs_access_sql}
- 			ORDER BY
- 				l.name ASC 
- 		", (int)$this->get('representation_id'));
- 		
- 		$va_reps = array();
- 		while($qr_reps->nextRow()) {
- 			$va_tmp = $qr_reps->getRow();
- 			$va_tmp['tags'] = array();
- 			$va_tmp['urls'] = array();
- 			
- 			$va_info = $qr_reps->getMediaInfo('media');
- 			$va_tmp['info'] = array('original_filename' => $va_info['ORIGINAL_FILENAME']);
- 			foreach ($pa_versions as $vs_version) {
- 				if (is_array($pa_version_sizes) && isset($pa_version_sizes[$vs_version])) {
- 					$vn_width = $pa_version_sizes[$vs_version]['width'];
- 					$vn_height = $pa_version_sizes[$vs_version]['height'];
- 				} else {
- 					$vn_width = $vn_height = 0;
- 				}
- 				
- 				if ($vn_width && $vn_height) {
- 					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, array_merge($pa_options, array('viewer_width' => $vn_width, 'viewer_height' => $vn_height)));
- 				} else {
- 					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, $pa_options);
- 				}
- 				$va_tmp['urls'][$vs_version] = $qr_reps->getMediaUrl('media', $vs_version);
- 				$va_tmp['paths'][$vs_version] = $qr_reps->getMediaPath('media', $vs_version);
- 				$va_tmp['info'][$vs_version] = $qr_reps->getMediaInfo('media', $vs_version);
- 				
- 				$va_dimensions = array();
- 				if (isset($va_tmp['info'][$vs_version]['WIDTH']) && isset($va_tmp['info'][$vs_version]['HEIGHT'])) {
+		$t_rep = new ca_object_representations();
+		
+		return $t_rep->getAnnotationType($vn_representation_id);
+	}
+	# ------------------------------------------------------
+	public function getPropertiesForType($ps_type) {
+		$va_types = $this->opo_type_config->getAssoc('types');
+		return array_keys($va_types[$ps_type]['properties']);
+	}
+	# ------------------------------------------------------
+	public function loadProperties($ps_type, $pa_parameters=null) {
+		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
+		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+			return false;
+		}
+		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+		
+		$this->opo_annotations_properties = new $vs_classname;
+		$this->opo_annotations_properties->setPropertyValues(is_array($pa_parameters) ? $pa_parameters : $this->get('props'));
+		return $this->opo_annotations_properties;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
+	 */
+	public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		if (!is_array($pa_versions)) { 
+			$pa_versions = array('preview170');
+		}
+		
+		$o_db = $this->getDb();
+		
+		$qr_reps = $o_db->query("
+			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
+			FROM ca_object_representations caor
+			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
+			WHERE
+				caor.representation_id = ? 
+				{$vs_access_sql}
+			ORDER BY
+				l.name ASC 
+		", (int)$this->get('representation_id'));
+		
+		$va_reps = array();
+		while($qr_reps->nextRow()) {
+			$va_tmp = $qr_reps->getRow();
+			$va_tmp['tags'] = array();
+			$va_tmp['urls'] = array();
+			
+			$va_info = $qr_reps->getMediaInfo('media');
+			$va_tmp['info'] = array('original_filename' => $va_info['ORIGINAL_FILENAME']);
+			foreach ($pa_versions as $vs_version) {
+				if (is_array($pa_version_sizes) && isset($pa_version_sizes[$vs_version])) {
+					$vn_width = $pa_version_sizes[$vs_version]['width'];
+					$vn_height = $pa_version_sizes[$vs_version]['height'];
+				} else {
+					$vn_width = $vn_height = 0;
+				}
+				
+				if ($vn_width && $vn_height) {
+					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, array_merge($pa_options, array('viewer_width' => $vn_width, 'viewer_height' => $vn_height)));
+				} else {
+					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, $pa_options);
+				}
+				$va_tmp['urls'][$vs_version] = $qr_reps->getMediaUrl('media', $vs_version);
+				$va_tmp['paths'][$vs_version] = $qr_reps->getMediaPath('media', $vs_version);
+				$va_tmp['info'][$vs_version] = $qr_reps->getMediaInfo('media', $vs_version);
+				
+				$va_dimensions = array();
+				if (isset($va_tmp['info'][$vs_version]['WIDTH']) && isset($va_tmp['info'][$vs_version]['HEIGHT'])) {
 					if (($vn_w = $va_tmp['info'][$vs_version]['WIDTH']) && ($vn_h = $va_tmp['info'][$vs_version]['WIDTH'])) {
 						$va_dimensions[] = $va_tmp['info'][$vs_version]['WIDTH'].'p x '.$va_tmp['info'][$vs_version]['HEIGHT'].'p';
 					}
 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth'])) {
- 					$va_dimensions[] = intval($vn_depth).' bpp';
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_tmp['info'][$vs_version]['PROPERTIES']['colorspace'])) {
- 					$va_dimensions[] = $vs_colorspace;
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_tmp['info'][$vs_version]['PROPERTIES']['resolution'])) {
- 					if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
- 						// TODO: units for resolution? right now assume pixels per inch
- 						if ($va_resolution['x'] == $va_resolution['y']) {
- 							$va_dimensions[] = $va_resolution['x'].'ppi';
- 						} else {
- 							$va_dimensions[] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
- 						}
- 					}
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['duration']) && ($vn_duration = $va_tmp['info'][$vs_version]['PROPERTIES']['duration'])) {
- 					$va_dimensions[] = sprintf("%4.1f", $vn_duration).'s';
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['pages']) && ($vn_pages = $va_tmp['info'][$vs_version]['PROPERTIES']['pages'])) {
- 					$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
- 				}
- 				if (!isset($va_tmp['info'][$vs_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_tmp['info'][$vs_version]['PROPERTIES']['filesize'])) {
- 					$vn_filesize = @filesize($qr_reps->getMediaPath('media', $vs_version));
- 				}
- 				if ($vn_filesize) {
- 					$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
- 				}
- 				$va_tmp['dimensions'][$vs_version] = join('; ', $va_dimensions);
- 			}
- 			
- 				
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth'])) {
+					$va_dimensions[] = intval($vn_depth).' bpp';
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_tmp['info'][$vs_version]['PROPERTIES']['colorspace'])) {
+					$va_dimensions[] = $vs_colorspace;
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_tmp['info'][$vs_version]['PROPERTIES']['resolution'])) {
+					if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
+						// TODO: units for resolution? right now assume pixels per inch
+						if ($va_resolution['x'] == $va_resolution['y']) {
+							$va_dimensions[] = $va_resolution['x'].'ppi';
+						} else {
+							$va_dimensions[] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
+						}
+					}
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['duration']) && ($vn_duration = $va_tmp['info'][$vs_version]['PROPERTIES']['duration'])) {
+					$va_dimensions[] = sprintf("%4.1f", $vn_duration).'s';
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['pages']) && ($vn_pages = $va_tmp['info'][$vs_version]['PROPERTIES']['pages'])) {
+					$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
+				}
+				if (!isset($va_tmp['info'][$vs_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_tmp['info'][$vs_version]['PROPERTIES']['filesize'])) {
+					$vn_filesize = @filesize($qr_reps->getMediaPath('media', $vs_version));
+				}
+				if ($vn_filesize) {
+					$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
+				}
+				$va_tmp['dimensions'][$vs_version] = join('; ', $va_dimensions);
+			}
+			
+				
 			if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 				$va_tmp['fetched_from'] = $vs_fetched_from_url;
 				$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
 			}
- 			
- 			//$va_tmp['num_multifiles'] = $t_rep->numFiles($this->get('representation_id'));
- 			$va_reps[] = $va_tmp;
- 		}
- 		return $va_reps;
- 	}
- 	# ------------------------------------------------------------------
+			
+			//$va_tmp['num_multifiles'] = $t_rep->numFiles($this->get('representation_id'));
+			$va_reps[] = $va_tmp;
+		}
+		return $va_reps;
+	}
+	# ------------------------------------------------------------------
 	/**
 	 *
 	 */
@@ -688,18 +688,18 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 
 		return null;
 	}
- 	# ------------------------------------------------------
- 	# STATIC
- 	# ------------------------------------------------------
- 	static public function getPropertiesCoderInstance($ps_type) {
- 		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
- 			return false;
- 		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
- 		
- 		return new $vs_classname;
- 	}
- 	# ------------------------------------------------------
+	# ------------------------------------------------------
+	# STATIC
+	# ------------------------------------------------------
+	static public function getPropertiesCoderInstance($ps_type) {
+		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
+		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+			return false;
+		}
+		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+		
+		return new $vs_classname;
+	}
+	# ------------------------------------------------------
 }
 ?>

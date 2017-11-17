@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
@@ -41,82 +41,82 @@ require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
- 	'NAME_SINGULAR' 	=> _t('storage location'),
- 	'NAME_PLURAL' 		=> _t('storage locations'),
- 	'FIELDS' 			=> array(
- 		'location_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('storage location'),
+	'NAME_PLURAL' 		=> _t('storage locations'),
+	'FIELDS' 			=> array(
+		'location_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this storage location')
 		),
 		'parent_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Parent id', 'DESCRIPTION' => 'Parent id'
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LIST_CODE' => 'storage_location_types',
 				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the storage location. In CollectiveAccess every storage location has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'idno' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LABEL' => _t('Location identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this location.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'idno_sort' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable location identifier', 'DESCRIPTION' => 'Value used for sorting locations on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'source_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LIST_CODE' => 'storage_location_sources',
 				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of storage location. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for storage location information retrieved via web services [NOT IMPLEMENTED YET].'
 		),
 		'hier_left' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - left bound', 'DESCRIPTION' => 'Left-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'hier_right' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
@@ -127,9 +127,9 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if location information is accessible to the public or not. ')
 		),
 		'status' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
@@ -143,31 +143,31 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the storage location record.')
 		),
 		'deleted' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the storage location is deleted or not.'),
 				'BOUNDS_VALUE' => array(0,1)
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 		'color' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_COLORPICKER, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_COLORPICKER,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Color'), 'DESCRIPTION' => _t('Color to identify the editor UI with')
 		),
 		'icon' => array(
-				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				"MEDIA_PROCESSING_SETTING" => 'ca_icons',
 				'LABEL' => _t('Icon'), 'DESCRIPTION' => _t('Optional icon to identify the editor UI with')
@@ -181,13 +181,13 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'BOUNDS_VALUE' => array(0,1)
 		),
 		'view_count' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_storage_locations extends BaseObjectLocationModel implements IBundleProvider, IHierarchy {
@@ -203,7 +203,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_storage_locations';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'location_id';
 
@@ -229,12 +229,12 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('location_id');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -389,7 +389,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 	/**
 	 * Return array containing information about all storage location hierarchies, including their root_id's
 	 */
-	 public function getHierarchyList($pb_dummy=false) {
+	public function getHierarchyList($pb_dummy=false) {
 		$vn_root_id = $this->getHierarchyRootID();
 		$t_root = new ca_storage_locations($vn_root_id);
 		$qr_children = $t_root->getHierarchyChildrenAsQuery();
@@ -402,16 +402,16 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 			'children' => $qr_children->numRows(),
 			'has_children' => $qr_children->numRows() ? true : false
 		));
-	 }
+	}
 	# ------------------------------------------------------
 	/**
 	 * Returns name of hierarchy for currently loaded storage location, which is *always* "Storage locations"
 	 * $pn_id is always ignored and is optional. The parameter is included for consistency with getHierarchyName() implementations
 	 * in other models (ca_objects, ca_places, ca_list_items, etc.)
 	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	return _t('Storage locations');
-	 }
+	public function getHierarchyName($pn_id=null) {
+		return _t('Storage locations');
+	}
 	# ------------------------------------------------------
 	/**
 	 *
@@ -430,12 +430,12 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 				// get list of objects on these movements...
 				$t_movement = new ca_movements();
 				$va_object_ids = $t_movement->getRelatedItems('ca_objects', array('idsOnly' => true, 'showCurrentOnly' => true, 'row_ids' => $va_movement_ids));
-	
+				
 				// ... then get the list of objects for which the *current* movement is one of ours
 				$t_object = new ca_objects();
 				$va_current_movement_ids = $t_object->getRelatedItems('ca_movements', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
 				
-				$va_movement_rels = array(); 
+				$va_movement_rels = array();
 				foreach($va_current_movement_ids as $vn_relation_id => $va_movement_info) {
 					if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $vn_relation_id; }
 				}
@@ -463,13 +463,13 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 	 * related movement record when storage location is moved
 	 */
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
-		$vb_parent_changed = (parent::saveBundlesForScreenWillChangeParent($pm_screen, $po_request, $pa_options) == __CA_PARENT_CHANGED__); 
+		$vb_parent_changed = (parent::saveBundlesForScreenWillChangeParent($pm_screen, $po_request, $pa_options) == __CA_PARENT_CHANGED__);
 		if (($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) && $vb_parent_changed) {
 			unset($pa_options['ui_instance']);
-	
+			
 			// get list of objects currently associated with this storage location
 			$va_object_ids = $this->getCurrentObjectIDs();
-
+			
 			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type');
 			$vs_movement_object_relationship_type = $this->getAppConfig()->get('movement_object_tracking_relationship_type');
 			
@@ -503,8 +503,8 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
- 	/**
- 	 * Returns HTML form bundle for location contents
+	/**
+	 * Returns HTML form bundle for location contents
 	 *
 	 * @param HTTPRequest $po_request The current request
 	 * @param string $ps_form_name
@@ -514,12 +514,12 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 	 *			None yet.
 	 *
 	 * @return string Rendered HTML bundle
- 	 */
- 	public function getLocationContentsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
- 		require_once(__CA_MODELS_DIR__."/ca_movements.php");
- 		require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
- 		require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
- 		global $g_ui_locale;
+	 */
+	public function getLocationContentsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__."/ca_movements.php");
+		require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+		require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
+		global $g_ui_locale;
 		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
@@ -549,7 +549,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 		}
 		
 		return $o_view->render('ca_storage_locations_contents.php');
- 	}
+	}
 	# ------------------------------------------------------
 	/**
 	 * Return search result containing objects currently resident in this location
@@ -571,7 +571,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 					$t_object = new ca_objects();
 					$va_current_locations_ids = $t_object->getRelatedItems('ca_storage_locations', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
 					
-					$va_object_rels = array(); 
+					$va_object_rels = array();
 					foreach($va_current_locations_ids as $vn_relation_id => $va_location_info) {
 						if ($va_location_info['location_id'] == $this->getPrimaryKey()) { $va_object_rels[] = $vn_relation_id; }
 					}
@@ -594,7 +594,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 					$t_object = new ca_objects();
 					$va_current_movement_ids = $t_object->getRelatedItems('ca_movements', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
 					
-					$va_movement_rels = array(); 
+					$va_movement_rels = array();
 					foreach($va_current_movement_ids as $vn_i => $va_movement_info) {
 						if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $va_movement_info['relation_id']; }
 					}

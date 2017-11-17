@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 
@@ -40,65 +40,65 @@ global $_ca_bundle_display_type_restriction_settings;
 $_ca_bundle_display_type_restriction_settings = array(
 
 );		// global
- 
+
 
 BaseModel::$s_ca_models_definitions['ca_bundle_display_type_restrictions'] = array(
- 	'NAME_SINGULAR' 	=> _t('bundle display type restriction'),
- 	'NAME_PLURAL' 		=> _t('bundle display type restrictions'),
- 	'FIELDS' 			=> array(
- 		'restriction_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('bundle display type restriction'),
+	'NAME_PLURAL' 		=> _t('bundle display type restrictions'),
+	'FIELDS' 			=> array(
+		'restriction_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Restriction id', 'DESCRIPTION' => 'Identifier for Restriction'
 		),
 		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Table'), 'DESCRIPTION' => _t('Table this restriction binds the UI screen to'),
 				'BOUNDS_VALUE' => array(0,255)
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Type id', 'DESCRIPTION' => 'Identifier for Type'
 		),
 		'display_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Display id', 'DESCRIPTION' => 'Identifier for display'
 		),
 		'include_subtypes' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '0',
 				'LABEL' => _t('Include subtypes in restriction?'), 'DESCRIPTION' => _t('???')
 		),
 		'settings' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Restriction settings')
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the restriction when displayed in a list with other restrictions. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
-	
+
 class ca_bundle_display_type_restrictions extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
@@ -112,7 +112,7 @@ class ca_bundle_display_type_restrictions extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_bundle_display_type_restrictions';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'restriction_id';
 
@@ -139,12 +139,12 @@ class ca_bundle_display_type_restrictions extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('restriction_id');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first

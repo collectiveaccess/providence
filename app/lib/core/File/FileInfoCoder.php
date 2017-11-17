@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/File/FileVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
@@ -80,11 +80,11 @@ class FileInfoCoder {
 		}
 		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_file_info["VOLUME"]);
-    
+		
 		if (!is_array($va_volume_info)) {
-		  return false;
-	
-		}    
+			return false;
+			
+		}
 		return join("/",array($va_volume_info["absolutePath"], $va_file_info["HASH"], $va_file_info["MAGIC"]."_".$va_file_info["FILENAME"]));
 	}
 	# ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ class FileInfoCoder {
 		
 		if (!is_array($va_volume_info)) {
 			return false;
-		} 
+		}
 		
 		$va_conversions = $this->getFileConversions($va_file_info);
 		
@@ -152,12 +152,12 @@ class FileInfoCoder {
 		if (!($va_file_info = $this->getFileArray($ps_data))) {
 			return false;
 		}
-	
+		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_file_info["VOLUME"]);
 		
 		if (!is_array($va_volume_info)) {
 			return false;
-		}   
+		}
 		$va_conversions = $this->getFileConversions($va_file_info);
 		
 		

@@ -29,17 +29,17 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
 
 BaseModel::$s_ca_models_definitions['ca_relationship_relationships'] = array(
- 	'NAME_SINGULAR' 	=> _t('relationship relationship'),
- 	'NAME_PLURAL' 		=> _t('relationship relationships'),
- 	'FIELDS' 			=> array(
- 		'reification_id' => array(
+	'NAME_SINGULAR' 	=> _t('relationship relationship'),
+	'NAME_PLURAL' 		=> _t('relationship relationships'),
+	'FIELDS' 			=> array(
+		'reification_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -98,7 +98,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_relationships'] = array(
 				'START' => 'sdatetime', 'END' => 'edatetime',
 				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
 		)
- 	)
+	)
 );
 
 class ca_relationship_relationships extends BaseModel {
@@ -114,7 +114,7 @@ class ca_relationship_relationships extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_relationship_relationships';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'reification_id';
 

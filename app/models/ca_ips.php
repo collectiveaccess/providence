@@ -29,17 +29,17 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
 
 BaseModel::$s_ca_models_definitions['ca_ips'] = array(
- 	'NAME_SINGULAR' 	=> _t('IP-based authentication block'),
- 	'NAME_PLURAL' 		=> _t('IP-based authentication blocks'),
- 	'FIELDS' 			=> array(
- 		'ip_id' => array(
+	'NAME_SINGULAR' 	=> _t('IP-based authentication block'),
+	'NAME_PLURAL' 		=> _t('IP-based authentication blocks'),
+	'FIELDS' 			=> array(
+		'ip_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -100,7 +100,7 @@ BaseModel::$s_ca_models_definitions['ca_ips'] = array(
 				'LABEL' => _t('Notes'), 'DESCRIPTION' => _t('Notes'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		)
- 	)
+	)
 );
 
 class ca_ips extends BaseModel {
@@ -116,7 +116,7 @@ class ca_ips extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_ips';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'ip_id';
 

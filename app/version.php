@@ -1,5 +1,5 @@
 <?php
- 	# CollectiveAccess version number; don't change
+	# CollectiveAccess version number; don't change
 	define('__CollectiveAccess__', '1.7.6');
 
 	# Schema revision

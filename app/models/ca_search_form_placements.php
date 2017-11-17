@@ -29,11 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
- 
+
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 
 global $_ca_editor_search_form_placement_settings;
@@ -51,9 +51,9 @@ $_ca_editor_search_form_placement_settings = array(		// global
 
 
 BaseModel::$s_ca_models_definitions['ca_search_form_placements'] = array(
- 	'NAME_SINGULAR' 	=> _t('search form placement'),
- 	'NAME_PLURAL' 		=> _t('search form placements'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('search form placement'),
+	'NAME_PLURAL' 		=> _t('search form placements'),
+	'FIELDS' 			=> array(
 		'placement_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -107,7 +107,7 @@ class ca_search_form_placements extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_search_form_placements';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'placement_id';
 

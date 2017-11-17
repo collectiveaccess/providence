@@ -152,8 +152,8 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 				jQuery("#profileSelect").empty();
 				jQuery.each(data.result.profiles, function(k, v) {
 					if (typeof v !== 'string') { return; }
-				  var s = (data.result.added && data.result.added.indexOf(v) >= 0) ? 'SELECTED="1"' : '';
-				  jQuery("#profileSelect").append(jQuery("<option " + s + "></option>")
+					var s = (data.result.added && data.result.added.indexOf(v) >= 0) ? 'SELECTED="1"' : '';
+					jQuery("#profileSelect").append(jQuery("<option " + s + "></option>")
 					 .attr("value", v).text(k));
 				});
 				

@@ -29,14 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- interface IApplicationPlugin {
- 	
- 	// Returns current request object
+
+/**
+ *
+ */
+
+interface IApplicationPlugin {
+	
+	// Returns current request object
 	public function getRequest();
 	
 	// Returns textual description of plugin
@@ -47,5 +47,5 @@
 	
 	// Returns list of user actions defined by the plugin
 	static function getRoleActionList();
- }
+}
 ?>

@@ -29,42 +29,42 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_bundle_displays_x_user_groups'] = array(
- 	'NAME_SINGULAR' 	=> _t('bundle displays ⇔ group association'),
- 	'NAME_PLURAL' 		=> _t('bundle displays ⇔ group associations'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('bundle displays ⇔ group association'),
+	'NAME_PLURAL' 		=> _t('bundle displays ⇔ group associations'),
+	'FIELDS' 			=> array(
 		'relation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
 		),
 		'display_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Display id', 'DESCRIPTION' => 'Identifier for Display'
 		),
 		'group_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Group id', 'DESCRIPTION' => 'Identifier for Group'
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 0,
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('has no access') => __CA_BUNDLE_ACCESS_NONE__,
@@ -89,7 +89,7 @@ class ca_bundle_displays_x_user_groups extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_bundle_displays_x_user_groups';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

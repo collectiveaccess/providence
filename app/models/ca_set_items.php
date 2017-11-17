@@ -29,19 +29,19 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_set_items'] = array(
- 	'NAME_SINGULAR' 	=> _t('set item'),
- 	'NAME_PLURAL' 		=> _t('set items'),
- 	'FIELDS' 			=> array(
- 		'item_id' => array(
+	'NAME_SINGULAR' 	=> _t('set item'),
+	'NAME_PLURAL' 		=> _t('set items'),
+	'FIELDS' 			=> array(
+		'item_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -106,7 +106,7 @@ BaseModel::$s_ca_models_definitions['ca_set_items'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Set item variable storage', 'DESCRIPTION' => 'Storage area for set item variables'
 		)
- 	)
+	)
 );
 
 class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
@@ -122,7 +122,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_set_items';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'item_id';
 
@@ -219,7 +219,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	protected $FIELDS;
 	
 	
-	/** 
+	/**
 	 * Container for persistent set item-specific variables
 	 */
 	private $opa_set_item_vars;
@@ -244,9 +244,9 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 * Loads record.
 	 *
 	 * @access public
-	 * @param int $pn_set_item_id Set item id to load. 
+	 * @param int $pn_set_item_id Set item id to load.
 	 * @return bool Returns true if no error, false if error occurred
-	 */	
+	 */
 	public function load($pn_set_item_id=null, $pb_use_cache=true) {
 		$vn_rc = parent::load($pn_set_item_id, $pb_use_cache);
 		
@@ -264,9 +264,9 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 * Creates new set item record. You must set all required fields before calling this method. 
 	 * If errors occur you can use the standard BaseModel class error handling methods to figure out what went wrong.
 	 *
-	 * @access public 
+	 * @access public
 	 * @return bool Returns true if no error, false if error occurred
-	 */	
+	 */
 	public function insert($pa_options=null) {
 		
 		# set vars (the set() method automatically serializes the vars array)
@@ -284,7 +284,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @access public
 	 * @return bool Returns true if no error, false if error occurred
-	 */	
+	 */
 	public function update($pa_options=null) {
 		$this->clearErrors();
 		
@@ -300,111 +300,111 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 		$this->BUNDLES['preferred_labels'] = array('type' => 'preferred_label', 'repeating' => true, 'label' => _t("Item captions"));
 	}
 	# ------------------------------------------------------
- 	/**
- 	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
- 	 */
- 	public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
- 		if (!($this->getPrimaryKey())) { return null; }
- 		if ($this->get('table_num') != 57) { return array(); } 	// 57=ca_objects
- 		if (!is_array($pa_options)) { $pa_options = array(); }
- 		
- 		if (!is_array($pa_versions)) { 
- 			$pa_versions = array('preview170');
- 		}
- 		if (is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
- 			$vs_access_sql = ' AND (caor.access IN ('.join(", ", $pa_options['return_with_access']).'))';
- 		} else {
- 			$vs_access_sql = '';
- 		}
- 		$o_db = $this->getDb();
- 		
- 		$qr_reps = $o_db->query("
- 			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
- 			FROM ca_object_representations caor
- 			INNER JOIN ca_objects_x_object_representations AS coxor ON coxor.representation_id = caor.representation_id
- 			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
- 			INNER JOIN ca_set_items AS csi ON csi.row_id = coxor.object_id
- 			WHERE
- 				(csi.item_id = ?) AND (csi.table_num = 57)
- 				{$vs_is_primary_sql}
- 				{$vs_access_sql}
- 			ORDER BY
- 				l.name ASC 
- 		", (int)$this->getPrimaryKey());
- 		$va_reps = array();
- 		while($qr_reps->nextRow()) {
- 			$va_tmp = $qr_reps->getRow();
- 			$va_tmp['tags'] = array();
- 			$va_tmp['urls'] = array();
- 			
- 			$va_info = $qr_reps->getMediaInfo('media');
- 			$va_tmp['info'] = array('original_filename' => $va_info['ORIGINAL_FILENAME']);
- 			foreach ($pa_versions as $vs_version) {
- 				if (is_array($pa_version_sizes) && isset($pa_version_sizes[$vs_version])) {
- 					$vn_width = $pa_version_sizes[$vs_version]['width'];
- 					$vn_height = $pa_version_sizes[$vs_version]['height'];
- 				} else {
- 					$vn_width = $vn_height = 0;
- 				}
- 				
- 				if ($vn_width && $vn_height) {
- 					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, array_merge($pa_options, array('viewer_width' => $vn_width, 'viewer_height' => $vn_height)));
- 				} else {
- 					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, $pa_options);
- 				}
- 				$va_tmp['urls'][$vs_version] = $qr_reps->getMediaUrl('media', $vs_version);
- 				$va_tmp['paths'][$vs_version] = $qr_reps->getMediaPath('media', $vs_version);
- 				$va_tmp['info'][$vs_version] = $qr_reps->getMediaInfo('media', $vs_version);
- 				
- 				$va_dimensions = array();
- 				if (isset($va_tmp['info'][$vs_version]['WIDTH']) && isset($va_tmp['info'][$vs_version]['HEIGHT'])) {
+	/**
+	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
+	 */
+	public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
+		if (!($this->getPrimaryKey())) { return null; }
+		if ($this->get('table_num') != 57) { return array(); } 	// 57=ca_objects
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		if (!is_array($pa_versions)) {
+			$pa_versions = array('preview170');
+		}
+		if (is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
+			$vs_access_sql = ' AND (caor.access IN ('.join(", ", $pa_options['return_with_access']).'))';
+		} else {
+			$vs_access_sql = '';
+		}
+		$o_db = $this->getDb();
+		
+		$qr_reps = $o_db->query("
+			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
+			FROM ca_object_representations caor
+			INNER JOIN ca_objects_x_object_representations AS coxor ON coxor.representation_id = caor.representation_id
+			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
+			INNER JOIN ca_set_items AS csi ON csi.row_id = coxor.object_id
+			WHERE
+				(csi.item_id = ?) AND (csi.table_num = 57)
+				{$vs_is_primary_sql}
+				{$vs_access_sql}
+			ORDER BY
+				l.name ASC 
+		", (int)$this->getPrimaryKey());
+		$va_reps = array();
+		while($qr_reps->nextRow()) {
+			$va_tmp = $qr_reps->getRow();
+			$va_tmp['tags'] = array();
+			$va_tmp['urls'] = array();
+			
+			$va_info = $qr_reps->getMediaInfo('media');
+			$va_tmp['info'] = array('original_filename' => $va_info['ORIGINAL_FILENAME']);
+			foreach ($pa_versions as $vs_version) {
+				if (is_array($pa_version_sizes) && isset($pa_version_sizes[$vs_version])) {
+					$vn_width = $pa_version_sizes[$vs_version]['width'];
+					$vn_height = $pa_version_sizes[$vs_version]['height'];
+				} else {
+					$vn_width = $vn_height = 0;
+				}
+				
+				if ($vn_width && $vn_height) {
+					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, array_merge($pa_options, array('viewer_width' => $vn_width, 'viewer_height' => $vn_height)));
+				} else {
+					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, $pa_options);
+				}
+				$va_tmp['urls'][$vs_version] = $qr_reps->getMediaUrl('media', $vs_version);
+				$va_tmp['paths'][$vs_version] = $qr_reps->getMediaPath('media', $vs_version);
+				$va_tmp['info'][$vs_version] = $qr_reps->getMediaInfo('media', $vs_version);
+				
+				$va_dimensions = array();
+				if (isset($va_tmp['info'][$vs_version]['WIDTH']) && isset($va_tmp['info'][$vs_version]['HEIGHT'])) {
 					if (($vn_w = $va_tmp['info'][$vs_version]['WIDTH']) && ($vn_h = $va_tmp['info'][$vs_version]['WIDTH'])) {
 						$va_dimensions[] = $va_tmp['info'][$vs_version]['WIDTH'].'p x '.$va_tmp['info'][$vs_version]['HEIGHT'].'p';
 					}
 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth'])) {
- 					$va_dimensions[] = intval($vn_depth).' bpp';
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_tmp['info'][$vs_version]['PROPERTIES']['colorspace'])) {
- 					$va_dimensions[] = $vs_colorspace;
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_tmp['info'][$vs_version]['PROPERTIES']['resolution'])) {
- 					if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
- 						// TODO: units for resolution? right now assume pixels per inch
- 						if ($va_resolution['x'] == $va_resolution['y']) {
- 							$va_dimensions[] = $va_resolution['x'].'ppi';
- 						} else {
- 							$va_dimensions[] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
- 						}
- 					}
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['duration']) && ($vn_duration = $va_tmp['info'][$vs_version]['PROPERTIES']['duration'])) {
- 					$va_dimensions[] = sprintf("%4.1f", $vn_duration).'s';
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['pages']) && ($vn_pages = $va_tmp['info'][$vs_version]['PROPERTIES']['pages'])) {
- 					$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
- 				}
- 				if (!isset($va_tmp['info'][$vs_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_tmp['info'][$vs_version]['PROPERTIES']['filesize'])) {
- 					$vn_filesize = @filesize($qr_reps->getMediaPath('media', $vs_version));
- 				}
- 				if ($vn_filesize) {
- 					$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
- 				}
- 				$va_tmp['dimensions'][$vs_version] = join('; ', $va_dimensions);
- 			}
- 			
- 				
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth'])) {
+					$va_dimensions[] = intval($vn_depth).' bpp';
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_tmp['info'][$vs_version]['PROPERTIES']['colorspace'])) {
+					$va_dimensions[] = $vs_colorspace;
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_tmp['info'][$vs_version]['PROPERTIES']['resolution'])) {
+					if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
+						// TODO: units for resolution? right now assume pixels per inch
+						if ($va_resolution['x'] == $va_resolution['y']) {
+							$va_dimensions[] = $va_resolution['x'].'ppi';
+						} else {
+							$va_dimensions[] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
+						}
+					}
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['duration']) && ($vn_duration = $va_tmp['info'][$vs_version]['PROPERTIES']['duration'])) {
+					$va_dimensions[] = sprintf("%4.1f", $vn_duration).'s';
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['pages']) && ($vn_pages = $va_tmp['info'][$vs_version]['PROPERTIES']['pages'])) {
+					$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
+				}
+				if (!isset($va_tmp['info'][$vs_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_tmp['info'][$vs_version]['PROPERTIES']['filesize'])) {
+					$vn_filesize = @filesize($qr_reps->getMediaPath('media', $vs_version));
+				}
+				if ($vn_filesize) {
+					$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
+				}
+				$va_tmp['dimensions'][$vs_version] = join('; ', $va_dimensions);
+			}
+			
+			
 			if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 				$va_tmp['fetched_from'] = $vs_fetched_from_url;
 				$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
 			}
- 			
- 			$va_reps[] = $va_tmp;
- 		}
- 		
- 		return $va_reps;
- 	}
- 	# ----------------------------------------
+			
+			$va_reps[] = $va_tmp;
+		}
+		
+		return $va_reps;
+	}
+	# ----------------------------------------
 	# --- Set item variables
 	# ----------------------------------------
 	/**
@@ -421,17 +421,17 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 *		- ENTITY_ENCODE_INPUT = Convert all "special" HTML characters in variable value to entities; default is true
 	 *		- URL_ENCODE_INPUT = Url encodes variable value; default is  false
 	 * @return bool Returns true on successful save, false if the variable name or value was invalid
-	 */	
+	 */
 	public function setVar ($ps_key, $pm_val, $pa_options=null) {
 		if (is_object($pm_val)) { return false; }
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$this->clearErrors();
-		if ($ps_key) {			
+		if ($ps_key) {
 			
 			$va_vars =& $this->opa_set_item_vars;
-			$vb_has_changed =& $this->opa_set_item_vars_have_changed;	
+			$vb_has_changed =& $this->opa_set_item_vars_have_changed;
 			
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
 				if (is_string($pm_val)) {
@@ -478,7 +478,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 * @access public
 	 * @param string $ps_key Name of set item variable
 	 * @return bool Returns true if variable was defined, false if it didn't exist
-	 */	
+	 */
 	public function deleteVar ($ps_key) {
 		$this->clearErrors();
 		
@@ -496,7 +496,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 * @access public
 	 * @param string $ps_key Name of set item variable
 	 * @return mixed Value of variable (string, number or array); null is variable is not defined.
-	 */	
+	 */
 	public function getVar ($ps_key) {
 		$this->clearErrors();
 		if (isset($this->opa_set_item_vars[$ps_key])) {
@@ -510,7 +510,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @access public
 	 * @return array Array of set item names, or empty array if none are defined
-	 */	
+	 */
 	public function getVarKeys() {
 		$va_keys = array();
 		if (isset($this->opa_set_item_vars) && is_array($this->opa_set_item_vars)) {
@@ -522,7 +522,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# ----------------------------------------
 	/**
 	 * 
-	 */	
+	 */
 	public function getSelectedRepresentationIDs() {
 		if ($this->get('table_num') != 57) { return null; }
 		
@@ -531,7 +531,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# ----------------------------------------
 	/**
 	 * 
-	 */	
+	 */
 	public function getRepresentationCount() {
 		if ($this->get('table_num') != 57) { return null; }
 		
@@ -541,7 +541,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# ----------------------------------------
 	/**
 	 * 
-	 */	
+	 */
 	public function getSelectedRepresentationCount() {
 		if ($this->get('table_num') != 57) { return null; }
 		
@@ -550,7 +550,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# ----------------------------------------
 	/**
 	 * 
-	 */	
+	 */
 	public function addSelectedRepresentation($pn_representation_id) {
 		if ($this->get('table_num') != 57) { return null; }
 		
@@ -562,7 +562,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# ----------------------------------------
 	/**
 	 * 
-	 */	
+	 */
 	public function removeSelectedRepresentation($pn_representation_id) {
 		if ($this->get('table_num') != 57) { return null; }
 		
@@ -575,7 +575,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# ----------------------------------------
 	/**
 	 * 
-	 */	
+	 */
 	public function getItemInstance() {
 		if (!$this->getPrimaryKey()) { return null; }
 		

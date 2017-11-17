@@ -58,17 +58,17 @@ class MediaInfoCoder {
 	 *
 	 */
 	public function setMedia($pm_media_info) {
-	    if ($va_d = $this->getMediaArray($pm_media_info)) {
-	        return $this->opa_media_info = $va_d;
-	    }
-	    return false;
+		if ($va_d = $this->getMediaArray($pm_media_info)) {
+			return $this->opa_media_info = $va_d;
+		}
+		return false;
 	}
 	# ---------------------------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getMedia() {
-	    return $this->opa_media_info ? $this->opa_media_info : null;
+		return $this->opa_media_info ? $this->opa_media_info : null;
 	}
 	# ---------------------------------------------------------------------------
 	# Support for field types

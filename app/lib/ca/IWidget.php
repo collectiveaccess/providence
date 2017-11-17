@@ -29,14 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
  interface IWidget {
- 	
- 	// Returns current request object
+	
+	// Returns current request object
 	public function getRequest();
 	
 	// Returns textual description of plugin
@@ -47,5 +47,5 @@
 	
 	// Returns list of user actions defined by the widget
 	static function getRoleActionList();
- }
+}
 ?>

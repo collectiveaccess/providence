@@ -29,18 +29,18 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations_x_occurrences'] = array(
- 	'NAME_SINGULAR' 	=> _t('object representation ⇔ occurrence relationship'),
- 	'NAME_PLURAL' 		=> _t('object representation ⇔ occurrence relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('object representation ⇔ occurrence relationship'),
+	'NAME_PLURAL' 		=> _t('object representation ⇔ occurrence relationships'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -98,7 +98,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_occurrences'] =
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship when displayed in a list with other relationships. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 
 class ca_object_representations_x_occurrences extends BaseRepresentationRelationship {
@@ -114,7 +114,7 @@ class ca_object_representations_x_occurrences extends BaseRepresentationRelation
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_object_representations_x_occurrences';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

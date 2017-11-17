@@ -29,18 +29,18 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 require_once(__CA_MODELS_DIR__.'/ca_tour_stops.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_tours'] = array(
- 	'NAME_SINGULAR' 	=> _t('tour'),
- 	'NAME_PLURAL' 		=> _t('tours'),
- 	'FIELDS' 			=> array(
- 		'tour_id' => array(
+	'NAME_SINGULAR' 	=> _t('tour'),
+	'NAME_PLURAL' 		=> _t('tours'),
+	'FIELDS' 			=> array(
+		'tour_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -145,7 +145,7 @@ BaseModel::$s_ca_models_definitions['ca_tours'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_tours extends BundlableLabelableBaseModelWithAttributes {
@@ -161,7 +161,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_tours';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'tour_id';
 
@@ -442,7 +442,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
- 	 * Returns a list of stops for the current tour with ranks for each, in rank order
+	 * Returns a list of stops for the current tour with ranks for each, in rank order
 	 *
 	 * @param array $pa_options An optional array of options. Supported options are:
 	 *			NONE yet

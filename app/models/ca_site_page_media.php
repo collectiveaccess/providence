@@ -29,19 +29,19 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
- 
+
 require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
- 	'NAME_SINGULAR' 	=> _t('site page media'),
- 	'NAME_PLURAL' 		=> _t('site page media'),
- 	'FIELDS' 			=> array(
- 		'media_id' => array(
+	'NAME_SINGULAR' 	=> _t('site page media'),
+	'NAME_PLURAL' 		=> _t('site page media'),
+	'FIELDS' 			=> array(
+		'media_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -179,7 +179,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 				'DEFAULT' => 0,
 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if media is deleted or not.')
 		)
- 	)
+	)
 );
 
 class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
@@ -195,7 +195,7 @@ class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_site_page_media';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'media_id';
 

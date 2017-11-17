@@ -29,29 +29,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/MovementBrowseResult.php');
- 
-	class MovementBrowse extends BaseBrowse {
-		# ------------------------------------------------------
-		/**
-		 * Which table does this class represent?
-		 */
-		protected $ops_tablename = "ca_movements";
-		protected $ops_primary_key = "movement_id";
-		# ----------------------------------------------------------------------
-		public function __construct($pn_browse_id=null, $ps_context='') {
-			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
-		}
-		# ------------------------------------------------------
-		public function getResults($pa_options=null) {
-			return parent::doGetResults(new MovementBrowseResult(), $pa_options);
-		}
-		# ----------------------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
+require_once(__CA_LIB_DIR__.'/ca/Browse/MovementBrowseResult.php');
+
+class MovementBrowse extends BaseBrowse {
+	# ------------------------------------------------------
+	/**
+	 * Which table does this class represent?
+	 */
+	protected $ops_tablename = "ca_movements";
+	protected $ops_primary_key = "movement_id";
+	# ----------------------------------------------------------------------
+	public function __construct($pn_browse_id=null, $ps_context='') {
+		parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
 	}
+	# ------------------------------------------------------
+	public function getResults($pa_options=null) {
+		return parent::doGetResults(new MovementBrowseResult(), $pa_options);
+	}
+	# ----------------------------------------------------------------------
+}
 ?>

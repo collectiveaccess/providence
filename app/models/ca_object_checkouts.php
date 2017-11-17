@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -47,10 +47,10 @@ define("__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__", 3);
 define("__CA_OBJECTS_CHECKOUT_STATUS_UNAVAILABLE__", 4);
 
 BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
- 	'NAME_SINGULAR' 	=> _t('object checkout'),
- 	'NAME_PLURAL' 		=> _t('object checkouts'),
- 	'FIELDS' 			=> array(
- 		'checkout_id' => array(
+	'NAME_SINGULAR' 	=> _t('object checkout'),
+	'NAME_PLURAL' 		=> _t('object checkouts'),
+	'FIELDS' 			=> array(
+		'checkout_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -152,7 +152,7 @@ BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the order is deleted or not.'),
 				'BOUNDS_VALUE' => array(0,1)
 		),
- 	)
+	)
 );
 
 class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
@@ -168,7 +168,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_object_checkouts';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'checkout_id';
 

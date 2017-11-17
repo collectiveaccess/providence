@@ -29,11 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
+
+/**
+ *
+  */
+
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_tours.php');
@@ -42,10 +42,10 @@ require_once(__CA_APP_DIR__.'/helpers/tourHelpers.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_tour_stops'] = array(
- 	'NAME_SINGULAR' 	=> _t('tour stop'),
- 	'NAME_PLURAL' 		=> _t('tour stops'),
- 	'FIELDS' 			=> array(
- 		'stop_id' => array(
+	'NAME_SINGULAR' 	=> _t('tour stop'),
+	'NAME_PLURAL' 		=> _t('tour stops'),
+	'FIELDS' 			=> array(
+		'stop_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -176,7 +176,7 @@ BaseModel::$s_ca_models_definitions['ca_tour_stops'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
@@ -192,7 +192,7 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_tour_stops';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'stop_id';
 
@@ -360,40 +360,40 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 		}
 		return parent::set($pa_fields, null, $pa_options);
 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is save-able
- 	 *
- 	 * @param RequestHTTP $po_request
- 	 * @return bool True if record can be saved, false if not
- 	 */
- 	public function isSaveable($po_request, $ps_bundle_name=null) {
- 		// Check actions
- 		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_ca_tours')) {
- 			return false;
- 		}
- 		if ($this->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_ca_tours')) {
- 			return false;
- 		}
- 		
- 		return true;
- 	}
- 	
- 	# ------------------------------------------------------
- 	/**
- 	 * Check if currently loaded row is deletable
- 	 */
- 	public function isDeletable($po_request) {
- 		// Is row loaded?
- 		if (!$this->getPrimaryKey()) { return false; }
- 		
- 		// Check actions
- 		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_delete_ca_tours')) {
- 			return false;
- 		}
- 		
- 		return true;
- 	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded row is save-able
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return bool True if record can be saved, false if not
+	 */
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		// Check actions
+		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_ca_tours')) {
+			return false;
+		}
+		if ($this->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_ca_tours')) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded row is deletable
+	 */
+	public function isDeletable($po_request) {
+		// Is row loaded?
+		if (!$this->getPrimaryKey()) { return false; }
+		
+		// Check actions
+		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_delete_ca_tours')) {
+			return false;
+		}
+		
+		return true;
+	}
 	# ------------------------------------------------------
 }
 ?>

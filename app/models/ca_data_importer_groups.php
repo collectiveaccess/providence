@@ -29,18 +29,18 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_importer_groups'] = array(
- 	'NAME_SINGULAR' 	=> _t('data importer group'),
- 	'NAME_PLURAL' 		=> _t('data importer groups'),
+	'NAME_SINGULAR' 	=> _t('data importer group'),
+	'NAME_PLURAL' 		=> _t('data importer groups'),
 	'FIELDS' 			=> array(
 		'group_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -96,7 +96,7 @@ class ca_data_importer_groups extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_importer_groups';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'group_id';
 

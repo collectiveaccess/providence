@@ -54,51 +54,51 @@ class statisticsSQLHandler {
 				$this->sql = str_ireplace($parameters[$i]["string"], $constantValue." ", $this->sql);
 				// As the constant queryparamter is no more required, destroying it
 				unset($this->queryparameters[$i]);
-			} 
+			}
 		}
-		return true;	
+		return true;
 	}
 	
-    /**
-     * Load SQL into the object and do the first treatements 
-     * (cleaning with additionnal space, extracting parameters if needed, calling treatConstants)
-     * @param string $sqlquery
-     * @return boolean
-     */
-    public function loadSQL($sqlquery) {
-    	// load the SQL
-    	$this->sql=" ".str_replace(";", " ; ", $sqlquery)." ";
-    	$this->sql=str_replace("\n"," \n ",$this->sql);
-    	// extract the parameters
-    	$this->queryparameters=$this->extractQueryParameters();
-    	// treat the queryparameters available as constants
-    	$this->treatConstants();
-    	return true;
-    }
-       
-    /**
-     * Recognizes parameters inside a SQL query, fetching them back in an array
-     * @return unknown
-     */
-    private function extractQueryParameters() {
-    	// Basic string treatment : add spaces at start and end, before ; to allow detection of parameters not space-followed at these places
+	/**
+	 * Load SQL into the object and do the first treatements
+	 * (cleaning with additionnal space, extracting parameters if needed, calling treatConstants)
+	 * @param string $sqlquery
+	 * @return boolean
+	 */
+	public function loadSQL($sqlquery) {
+		// load the SQL
+		$this->sql=" ".str_replace(";", " ; ", $sqlquery)." ";
+		$this->sql=str_replace("\n"," \n ",$this->sql);
+		// extract the parameters
+		$this->queryparameters=$this->extractQueryParameters();
+		// treat the queryparameters available as constants
+		$this->treatConstants();
+		return true;
+	}
+	
+	/**
+	 * Recognizes parameters inside a SQL query, fetching them back in an array
+	 * @return unknown
+	 */
+	private function extractQueryParameters() {
+		// Basic string treatment : add spaces at start and end, before ; to allow detection of parameters not space-followed at these places
 		// Extraction of the parameters through a regexp
 		preg_match_all("/\^(?P<name>\w*)(\((?P<arguments>\w*)\)|) /", $this->sql, $matches);		
-    	for ($i = 0; $i < count($matches[0]); $i++) {
+		for ($i = 0; $i < count($matches[0]); $i++) {
 			$queryparameters[$i]["string"] = $matches[0][$i];
 			$queryparameters[$i]["name"] = $matches["name"][$i];
 			if ($matches["arguments"][$i]) $queryparameters[$i]["arguments"] = $matches["arguments"][$i];
 		}
 		return $queryparameters;
-    }
-    
-    /**
-     * Replaces a query parameter with a given value inside the query
-     * @param unknown_type $va_parameter
-     * @param unknown_type $va_value
-     * @return boolean
-     */
-    public function treatQueryParameter ($va_parameter, $va_value=NULL) {
+	}
+	
+	/**
+	 * Replaces a query parameter with a given value inside the query
+	 * @param unknown_type $va_parameter
+	 * @param unknown_type $va_value
+	 * @return boolean
+	 */
+	public function treatQueryParameter ($va_parameter, $va_value=NULL) {
 		if ($va_value)  {
 			// Doing a scan on the object queryparameters to find corresponding one
 			foreach ($this->queryparameters as $num => $queryparameter) {				
@@ -108,40 +108,40 @@ class statisticsSQLHandler {
 					unset($this->queryparameters[$num]);
 					return TRUE;
 				}
- 			}
+			}
 		}
 		return FALSE;
-    }
-    
-    /**
-     * Check if user interaction is required for query parameters
-     * @return boolean
-     */
-    public function checkQueryParametersPresence() {
-    	// If parameters have already been detected then there are some
-    	if (count($this->queryparameters)) return TRUE;
-    	// If the SQL still contains ^STRING then there are some even if not treated
-    	if (strpos($this->sql,"^")) return TRUE; 
-    	return FALSE;
-    }
-    
+	}
+	
+	/**
+	 * Check if user interaction is required for query parameters
+	 * @return boolean
+	 */
+	public function checkQueryParametersPresence() {
+		// If parameters have already been detected then there are some
+		if (count($this->queryparameters)) return TRUE;
+		// If the SQL still contains ^STRING then there are some even if not treated
+		if (strpos($this->sql,"^")) return TRUE;
+		return FALSE;
+	}
+	
 
-    /**
-     * Returns query parameters requiring a user interaction
-     * @return unknown
-     */
-    public function getInputParameters() {
-    	return $this->queryparameters;
-    }
-    
-    /**
-     * Returns the SQL query content
-     * @return boolean|string
-     */
-    public function getRequest() {
-    	if (!isset($this->sql) || ($this->sql == "")) return FALSE; else return $this->sql;
-    }
-    
+	/**
+	 * Returns query parameters requiring a user interaction
+	 * @return unknown
+	 */
+	public function getInputParameters() {
+		return $this->queryparameters;
+	}
+	
+	/**
+	 * Returns the SQL query content
+	 * @return boolean|string
+	 */
+	public function getRequest() {
+		if (!isset($this->sql) || ($this->sql == "")) return FALSE; else return $this->sql;
+	}
+	
 	/**
 	 * Runs each query inside the SQL string, returns the last SQL query result
 	 * @return DbResult
@@ -163,9 +163,9 @@ class statisticsSQLHandler {
 		// Separation of the distinct sql queries, execution
 		$sql_requests = explode(";",$sql);
 		foreach ($sql_requests as $sql_request) {
-			$qr_result = $o_data->query($sql_request);	
+			$qr_result = $o_data->query($sql_request);
 		}
 		// Returning last query result for printing
-		return $qr_result; 		
+		return $qr_result;
 	}
 }

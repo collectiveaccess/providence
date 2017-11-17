@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");
@@ -55,9 +55,9 @@ class RepresentationAnnotationSearchResult extends BaseSearchResult {
 	 * Constructor
 	 */
 	public function __construct() {
- 		$o_config = Configuration::load();
- 		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
- 		
+		$o_config = Configuration::load();
+		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
+		
 		parent::__construct();
 	}
 	# -------------------------------------
@@ -74,67 +74,67 @@ class RepresentationAnnotationSearchResult extends BaseSearchResult {
 	/**
 	 *
 	 */
- 	public function getPropertyValue($ps_property, $pb_return_raw_value=false) {
- 		return $this->opo_annotations_properties->getProperty($ps_property, $pb_return_raw_value);
- 	}
+	public function getPropertyValue($ps_property, $pb_return_raw_value=false) {
+		return $this->opo_annotations_properties->getProperty($ps_property, $pb_return_raw_value);
+	}
 	# -------------------------------------
 	/**
 	 *
 	 */
- 	public function getPropertyValues() {
- 		return $this->opo_annotations_properties->getPropertyValues();
- 	}
+	public function getPropertyValues() {
+		return $this->opo_annotations_properties->getPropertyValues();
+	}
 	# -------------------------------------
 	/**
 	 *
 	 */
- 	public function getPropertiesForDisplay($pa_options=null) {
- 		if($this->opo_annotations_properties instanceof IRepresentationAnnotationPropertyCoder) {
- 			return $this->opo_annotations_properties->getPropertiesForDisplay($pa_options);	
- 		} else {
- 			return '';
- 		}
- 	}
+	public function getPropertiesForDisplay($pa_options=null) {
+		if($this->opo_annotations_properties instanceof IRepresentationAnnotationPropertyCoder) {
+			return $this->opo_annotations_properties->getPropertiesForDisplay($pa_options);	
+		} else {
+			return '';
+		}
+	}
 	# -------------------------------------
 	/**
 	 *
 	 */
- 	public function getAnnotationType($pn_representation_id=null) {
- 		if (!$pn_representation_id) {
+	public function getAnnotationType($pn_representation_id=null) {
+		if (!$pn_representation_id) {
 			if (!$vn_representation_id = $this->get('ca_representation_annotations.representation_id')) {
 				return false;
 			}
 		} else {
 			$vn_representation_id = $pn_representation_id;
 		}
- 		$t_rep = new ca_object_representations();
- 		
- 		return $t_rep->getAnnotationType($vn_representation_id);
- 	}
+		$t_rep = new ca_object_representations();
+		
+		return $t_rep->getAnnotationType($vn_representation_id);
+	}
 	# -------------------------------------
 	/**
 	 *
 	 */
- 	public function getPropertiesForType($ps_type) {
- 		$va_types = $this->opo_type_config->getAssoc('types');
- 		return array_keys($va_types[$ps_type]['properties']);
- 	}
+	public function getPropertiesForType($ps_type) {
+		$va_types = $this->opo_type_config->getAssoc('types');
+		return array_keys($va_types[$ps_type]['properties']);
+	}
 	# -------------------------------------
 	/**
 	 *
 	 */
- 	public function loadProperties($ps_type, $pa_parameters=null) {
- 		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
- 			return false;
- 		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
- 		
- 		$this->opo_annotations_properties = new $vs_classname;
- 		$this->opo_annotations_properties->setPropertyValues(is_array($pa_parameters) ? $pa_parameters : array_shift($this->get('ca_representation_annotations.props', array('unserialize' => true, 'returnWithStructure' => true, 'returnAsArray' => true))));
+	public function loadProperties($ps_type, $pa_parameters=null) {
+		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
+		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+			return false;
+		}
+		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+		
+		$this->opo_annotations_properties = new $vs_classname;
+		$this->opo_annotations_properties->setPropertyValues(is_array($pa_parameters) ? $pa_parameters : array_shift($this->get('ca_representation_annotations.props', array('unserialize' => true, 'returnWithStructure' => true, 'returnAsArray' => true))));
 
- 		return $this->opo_annotations_properties;
- 	}
+		return $this->opo_annotations_properties;
+	}
 	# -------------------------------------
 	/**
 	 *
@@ -171,7 +171,7 @@ class RepresentationAnnotationSearchResult extends BaseSearchResult {
 			
 			$o_tp = new TimecodeParser();
 			$vs_timecode_format = caGetOption('asTimecode', $pa_options, false);
-		
+			
 			switch($va_tmp[1]) {
 				case 'start':
 				case 'end':
@@ -184,13 +184,13 @@ class RepresentationAnnotationSearchResult extends BaseSearchResult {
 					break;
 				case 'duration':
 					$vn_duration_in_seconds = (float)$this->getPropertyValue('endTimecode', true) - (float)$this->getPropertyValue('startTimecode', true);
-				
+					
 					$o_tp->setParsedValueInSeconds($vn_duration_in_seconds);
 					$vm_val = array($o_tp->getText($vs_timecode_format));
 					
 					break;
 			}
-				
+			
 			if (!caGetOption('returnAsArray', $pa_options, false)) { return array_shift($vm_val); }
 			return $vm_val;
 		} else {

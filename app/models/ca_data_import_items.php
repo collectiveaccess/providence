@@ -29,16 +29,16 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
 
 BaseModel::$s_ca_models_definitions['ca_data_import_items'] = array(
- 	'NAME_SINGULAR' 	=> _t('data import item'),
- 	'NAME_PLURAL' 		=> _t('data import items'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('data import item'),
+	'NAME_PLURAL' 		=> _t('data import items'),
+	'FIELDS' 			=> array(
 		'item_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -128,7 +128,7 @@ BaseModel::$s_ca_models_definitions['ca_data_import_items'] = array(
 				'LABEL' => _t('Message'), 'DESCRIPTION' => _t('Log message'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		)
- 	)
+	)
 );
 
 class ca_data_import_items extends BaseModel {
@@ -144,7 +144,7 @@ class ca_data_import_items extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_import_items';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'item_id';
 

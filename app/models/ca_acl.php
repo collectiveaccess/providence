@@ -29,61 +29,61 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
- 
- 
+
+
 define('__CA_ACL_NO_ACCESS__', 0);
 define('__CA_ACL_READONLY_ACCESS__', 1);
 define('__CA_ACL_EDIT_ACCESS__', 2);
 define('__CA_ACL_EDIT_DELETE_ACCESS__', 3);
- 
- BaseModel::$s_ca_models_definitions['ca_acl'] = array(
- 	'NAME_SINGULAR' 	=> _t('access control list'),
- 	'NAME_PLURAL' 		=> _t('access control lists'),
- 	'FIELDS' 			=> array(
+
+BaseModel::$s_ca_models_definitions['ca_acl'] = array(
+	'NAME_SINGULAR' 	=> _t('access control list'),
+	'NAME_PLURAL' 		=> _t('access control lists'),
+	'FIELDS' 			=> array(
 		'acl_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'ACL id', 'DESCRIPTION' => 'Identifier for ACL'
 		),
 		'group_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Group id', 'DESCRIPTION' => 'Identifier for Group'
 		),
 		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for User'
 		),
 		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Table num'), 'DESCRIPTION' => _t('Table num'),
 				'BOUNDS_VALUE' => array(1,255)
 		),
 		'row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier for Row'
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Access'),
 				'BOUNDS_CHOICE_LIST' => array(
@@ -94,9 +94,9 @@ define('__CA_ACL_EDIT_DELETE_ACCESS__', 3);
 				)
 		),
 		'notes' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Notes'), 'DESCRIPTION' => _t('Notes'),
 				'BOUNDS_LENGTH' => array(0,65535)
@@ -117,7 +117,7 @@ class ca_acl extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_acl';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'acl_id';
 
@@ -126,7 +126,7 @@ class ca_acl extends BaseModel {
 	# 
 	# These class properties allow generic scripts to properly display
 	# records from the table represented by this class
-	#
+	# 
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
@@ -143,12 +143,12 @@ class ca_acl extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('notes');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -213,13 +213,13 @@ class ca_acl extends BaseModel {
 	 *
 	 * __CA_ACL_NO_ACCESS__   (0)
 	 * __CA_ACL_READONLY_ACCESS__ (1)
-     * __CA_ACL_EDIT_ACCESS__ (2)
-     * __CA_ACL_EDIT_DELETE_ACCESS__ (3)
+	 * __CA_ACL_EDIT_ACCESS__ (2)
+	 * __CA_ACL_EDIT_DELETE_ACCESS__ (3)
 	 *
 	 * @param ca_users $t_user A ca_users object
 	 * @param int $pn_table_num The table number for the row to check
 	 * @param int $pn_row_id The primary key value for the row to check.
-	 * @return int An access value 
+	 * @return int An access value
 	 */
 	public static function accessForRow($t_user, $pn_table_num, $pn_row_id) {
 		if (!is_object($t_user)) { $t_user = new ca_users(); }
@@ -269,7 +269,7 @@ class ca_acl extends BaseModel {
 						if (strlen($vs_access = $qr_res->get('a'))) {
 							$vn_acl_access = (int)$vs_access;
 							if ($vn_acl_access >= $vn_access) { $vn_access = $vn_acl_access; }
-							if ($vn_access >= __CA_ACL_EDIT_DELETE_ACCESS__) { 
+							if ($vn_access >= __CA_ACL_EDIT_DELETE_ACCESS__) {
 								return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = $vn_access; 
 							} // max access found so just return
 						}
@@ -297,7 +297,7 @@ class ca_acl extends BaseModel {
 				return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = (int)$vs_access;
 			}
 		}
-		if (!is_null($vn_access)) { 
+		if (!is_null($vn_access)) {
 			return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = $vn_access; 
 		}
 		

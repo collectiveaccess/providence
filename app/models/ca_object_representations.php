@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_labels.php");
@@ -46,10 +46,10 @@ require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
- 	'NAME_SINGULAR' 	=> _t('object representation'),
- 	'NAME_PLURAL' 		=> _t('object representations'),
- 	'FIELDS' 			=> array(
- 		'representation_id' => array(
+	'NAME_SINGULAR' 	=> _t('object representation'),
+	'NAME_PLURAL' 		=> _t('object representations'),
+	'FIELDS' 			=> array(
+		'representation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -224,7 +224,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_object_representations extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
@@ -240,7 +240,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_object_representations';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'representation_id';
 
@@ -566,260 +566,260 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * If you pass the options $pn_representation_id parameter then the returned type is for the specified representation rather
 	 * than the currently loaded one.
 	 */
- 	public function getAnnotationType($pn_representation_id=null) {
- 		if (!$pn_representation_id) {
+	public function getAnnotationType($pn_representation_id=null) {
+		if (!$pn_representation_id) {
 			$t_rep = $this;
 		} else {
 			$t_rep = new ca_object_representations($pn_representation_id);
 			if($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 		}
- 		
- 		$va_media_info = $t_rep->getMediaInfo('media');
- 		if (!isset($va_media_info['INPUT'])) { return null; }
- 		if (!isset($va_media_info['INPUT']['MIMETYPE'])) { return null; }
- 		
- 		$vs_mimetype = $va_media_info['INPUT']['MIMETYPE'];
- 		
- 		$o_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
- 		$va_mappings = $o_type_config->getAssoc('mappings');
- 		
- 		return $va_mappings[$vs_mimetype];
- 	}
- 	# ------------------------------------------------------
- 	public function getAnnotationPropertyCoderInstance($ps_type) {
- 		return ca_representation_annotations::getPropertiesCoderInstance($ps_type);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function annotationMode($ps_mode=null) {
- 		if ($ps_mode) { $this->ANNOTATION_MODE = (strtolower($ps_mode) == 'user') ? 'user' : 'cataloguer'; }
- 		return $this->ANNOTATION_MODE;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	protected function annotationTable() {
- 		return ($this->ANNOTATION_MODE == 'user') ? 'ca_user_representation_annotations' : 'ca_representation_annotations';
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	protected function annotationLabelTable() {
- 		return ($this->ANNOTATION_MODE == 'user') ? 'ca_user_representation_annotation_labels' : 'ca_representation_annotation_labels';
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns number of annotations attached to current representation
- 	 *
- 	 * @param array $pa_options Optional array of options. Supported options are:
- 	 *			checkAccess - array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be counted.
- 	 * @return int Number of annotations
- 	 */
- 	public function getAnnotationCount($pa_options=null) {
- 		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
- 		
- 		if (!is_array($pa_options)) { $pa_options = array(); }
- 		
- 		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
- 			// does not support annotations
- 			return null;
- 		}
- 		
- 		$vs_access_sql = '';
- 		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
+		
+		$va_media_info = $t_rep->getMediaInfo('media');
+		if (!isset($va_media_info['INPUT'])) { return null; }
+		if (!isset($va_media_info['INPUT']['MIMETYPE'])) { return null; }
+		
+		$vs_mimetype = $va_media_info['INPUT']['MIMETYPE'];
+		
+		$o_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
+		$va_mappings = $o_type_config->getAssoc('mappings');
+		
+		return $va_mappings[$vs_mimetype];
+	}
+	# ------------------------------------------------------
+	public function getAnnotationPropertyCoderInstance($ps_type) {
+		return ca_representation_annotations::getPropertiesCoderInstance($ps_type);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function annotationMode($ps_mode=null) {
+		if ($ps_mode) { $this->ANNOTATION_MODE = (strtolower($ps_mode) == 'user') ? 'user' : 'cataloguer'; }
+		return $this->ANNOTATION_MODE;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function annotationTable() {
+		return ($this->ANNOTATION_MODE == 'user') ? 'ca_user_representation_annotations' : 'ca_representation_annotations';
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function annotationLabelTable() {
+		return ($this->ANNOTATION_MODE == 'user') ? 'ca_user_representation_annotation_labels' : 'ca_representation_annotation_labels';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns number of annotations attached to current representation
+	 *
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *			checkAccess - array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be counted.
+	 * @return int Number of annotations
+	 */
+	public function getAnnotationCount($pa_options=null) {
+		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
+		
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
+			// does not support annotations
+			return null;
+		}
+		
+		$vs_access_sql = '';
+		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
 			$vs_access_sql = ' AND cra.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
 		
- 		$o_db = $this->getDb();
- 		
- 		$qr_annotations = $o_db->query("
- 			SELECT 	cra.annotation_id, cra.locale_id, cra.props, cra.representation_id, cra.user_id, cra.type_code, cra.access, cra.status
- 			FROM ".$this->annotationTable()." cra
- 			WHERE
- 				cra.representation_id = ? {$vs_access_sql}
- 		", (int)$vn_representation_id);
- 		
- 		return (int)$qr_annotations->numRows();
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns data for annotations attached to current representation
- 	 *
- 	 * @param array $pa_options Optional array of options. Supported options are:
- 	 *			checkAccess = array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be returned
- 	 *			start =
- 	 *			max = 
- 	 *			labelsOnly =
- 	 *			idsOnly = 
- 	 *			user_id = 
- 	 *			item_id =
- 	 * @return array List of annotations attached to the current representation, key'ed on annotation_id. Value is an array will all values; annotation labels are returned in the current locale.
- 	 */
- 	public function getAnnotations($pa_options=null) {
- 		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
- 		
- 		if (!is_array($pa_options)) { $pa_options = array(); }
- 		
- 		$pn_user_id = caGetOption('user_id', $pa_options, null);
- 		$pn_item_id = caGetOption('item_id', $pa_options, null);
- 		$pb_ids_only = caGetOption('idsOnly', $pa_options, false);
- 		$pb_labels_only = caGetOption('labelsOnly', $pa_options, false);
- 		
- 		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
- 			// does not support annotations
- 			return null;
- 		}
- 		
- 		$va_params = array((int)$vn_representation_id);
- 		
- 		$o_db = $this->getDb();
- 		
- 		$vs_annotation_table = $this->annotationTable(); 		
- 		$vs_annotation_label_table = $this->annotationLabelTable();
- 		
- 		$vs_access_sql = '';
- 		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
+		$o_db = $this->getDb();
+		
+		$qr_annotations = $o_db->query("
+			SELECT 	cra.annotation_id, cra.locale_id, cra.props, cra.representation_id, cra.user_id, cra.type_code, cra.access, cra.status
+			FROM ".$this->annotationTable()." cra
+			WHERE
+				cra.representation_id = ? {$vs_access_sql}
+		", (int)$vn_representation_id);
+		
+		return (int)$qr_annotations->numRows();
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns data for annotations attached to current representation
+	 *
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *			checkAccess = array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be returned
+	 *			start =
+	 *			max = 
+	 *			labelsOnly =
+	 *			idsOnly = 
+	 *			user_id = 
+	 *			item_id =
+	 * @return array List of annotations attached to the current representation, key'ed on annotation_id. Value is an array will all values; annotation labels are returned in the current locale.
+	 */
+	public function getAnnotations($pa_options=null) {
+		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
+		
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$pn_user_id = caGetOption('user_id', $pa_options, null);
+		$pn_item_id = caGetOption('item_id', $pa_options, null);
+		$pb_ids_only = caGetOption('idsOnly', $pa_options, false);
+		$pb_labels_only = caGetOption('labelsOnly', $pa_options, false);
+		
+		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
+			// does not support annotations
+			return null;
+		}
+		
+		$va_params = array((int)$vn_representation_id);
+		
+		$o_db = $this->getDb();
+		
+		$vs_annotation_table = $this->annotationTable(); 		
+		$vs_annotation_label_table = $this->annotationLabelTable();
+		
+		$vs_access_sql = '';
+		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
 			$vs_access_sql = ' AND cra.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
 		
 		$vs_limit_sql = '';
- 		if ($pn_user_id) {
+		if ($pn_user_id) {
 			$vs_limit_sql = ' AND cra.user_id = ?';
 			$va_params[] = $pn_user_id;
 		}
 		
- 		if ($pn_item_id) {
+		if ($pn_item_id) {
 			$vs_limit_sql .= ' AND cra.item_id = ?';
 			$va_params[] = $pn_item_id;
 		}
- 		
- 		$qr_annotations = $o_db->query("
- 			SELECT 	cra.annotation_id, cra.locale_id, cra.props, cra.representation_id, cra.user_id, cra.type_code, cra.access, cra.status
- 			FROM {$vs_annotation_table} cra
- 			WHERE
- 				cra.representation_id = ? {$vs_access_sql} {$vs_limit_sql}
- 		", $va_params);
- 		
- 		$vs_sort_by_property = $this->getAnnotationSortProperty();
- 		$va_annotations = array();
- 		
- 		$vn_start = caGetOption('start', $pa_options, 0, array('castTo' => 'int'));
- 		$vn_max = caGetOption('max', $pa_options, 100, array('castTo' => 'int'));
- 		
- 		$va_rep_props = $this->getMediaInfo('media', 'original');
- 		$vn_timecode_offset = isset($va_rep_props['PROPERTIES']['timecode_offset']) ? (float)$va_rep_props['PROPERTIES']['timecode_offset'] : 0;
- 		
- 		while($qr_annotations->nextRow()) {
- 			$va_tmp = $qr_annotations->getRow();
- 			$va_annotation_ids[] = $va_tmp['annotation_id'];
- 			
- 			unset($va_tmp['props']);
- 			$o_coder->setPropertyValues($qr_annotations->getVars('props'));
- 			foreach($o_coder->getPropertyList() as $vs_property) {
- 				$va_tmp[$vs_property] = $o_coder->getProperty($vs_property);
- 				$va_tmp[$vs_property.'_raw'] = $o_coder->getProperty($vs_property, true);
- 			}
- 			
- 			$va_tmp['timecodeOffset'] = $vn_timecode_offset;
- 			
- 			if (!($vs_sort_key = $va_tmp[$vs_sort_by_property])) {
- 				$vs_sort_key = '_default_';
- 			}
- 			
- 			$va_annotations[$vs_sort_key][$va_tmp['annotation_id']] = $va_tmp;
- 		}
- 		if (!sizeof($va_annotation_ids)) { return array(); }
- 		
- 		ksort($va_annotations, SORT_NUMERIC);
- 		
- 		// get annotation labels
- 		$qr_annotations = caMakeSearchResult($vs_annotation_table, $va_annotation_ids);
- 		$va_labels = $va_annotation_classes = array();
- 		
- 		// Check if "class" element is configured, exists and is a list element
- 		if ($vs_class_element = $this->getAppConfig()->get('annotation_class_element')) {
- 			$t_anno = new ca_representation_annotations();
- 			if (!$t_anno->hasElement($vs_class_element)) { 
- 				$vs_class_element = null; 
- 			} elseif(ca_metadata_elements::getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
- 				// not a list element
- 				$vs_class_element = null; 
- 			}
- 		}
- 		
- 		while($qr_annotations->nextHit()) {
- 			$va_labels[$vn_annotation_id = $qr_annotations->get("{$vs_annotation_table}.annotation_id")][$qr_annotations->get("{$vs_annotation_label_table}.locale_id")][] = $qr_annotations->get("{$vs_annotation_table}.preferred_labels.name");
- 			
- 			if ($vs_class_element) { 
- 				$va_annotation_classes[$vn_annotation_id] = $qr_annotations->get("{$vs_annotation_table}.{$vs_class_element}", array('returnAsArray' => true));
- 			}
- 		}
- 		$va_labels_for_locale = caExtractValuesByUserLocale($va_labels);
- 		if ($pb_labels_only) { return $va_labels_for_locale; }
- 		
- 		$va_annotation_classes_flattened = array();
- 		foreach($va_annotation_classes as $vn_annotation_id => $va_classes) {
- 			$va_annotation_classes_flattened[$vn_annotation_id] = array_shift($va_classes);
- 		}
- 		
- 		$va_key = array();
- 		if ($qr_list_items = caMakeSearchResult('ca_list_items', array_values($va_annotation_classes_flattened))) {
- 			while($qr_list_items->nextHit()) {
- 				$va_key[$qr_list_items->get('item_id')] = array(
- 					'name' => $qr_list_items->get('ca_list_items.preferred_labels.name_plural'),
- 					'idno' => $qr_list_items->get('ca_list_items.idno'),
- 					'color' => $qr_list_items->get('ca_list_items.color'),
- 				);
- 			}
- 		}
- 
- 		$va_sorted_annotations = array();
- 		foreach($va_annotations as $vs_key => $va_values) {
- 			foreach($va_values as $va_val) {
- 				$vn_annotation_id = $va_val['annotation_id'];	
- 				$vs_label = is_array($va_labels_for_locale[$va_val['annotation_id']]) ? array_shift($va_labels_for_locale[$va_val['annotation_id']]) : '';
- 				
- 				if ($pb_ids_only) {
- 					$va_val = $vn_annotation_id;
- 				} elseif ($pb_labels_only) { 
- 					$va_val = $vs_label;
- 				} else {
+		
+		$qr_annotations = $o_db->query("
+			SELECT 	cra.annotation_id, cra.locale_id, cra.props, cra.representation_id, cra.user_id, cra.type_code, cra.access, cra.status
+			FROM {$vs_annotation_table} cra
+			WHERE
+				cra.representation_id = ? {$vs_access_sql} {$vs_limit_sql}
+		", $va_params);
+		
+		$vs_sort_by_property = $this->getAnnotationSortProperty();
+		$va_annotations = array();
+		
+		$vn_start = caGetOption('start', $pa_options, 0, array('castTo' => 'int'));
+		$vn_max = caGetOption('max', $pa_options, 100, array('castTo' => 'int'));
+		
+		$va_rep_props = $this->getMediaInfo('media', 'original');
+		$vn_timecode_offset = isset($va_rep_props['PROPERTIES']['timecode_offset']) ? (float)$va_rep_props['PROPERTIES']['timecode_offset'] : 0;
+		
+		while($qr_annotations->nextRow()) {
+			$va_tmp = $qr_annotations->getRow();
+			$va_annotation_ids[] = $va_tmp['annotation_id'];
+			
+			unset($va_tmp['props']);
+			$o_coder->setPropertyValues($qr_annotations->getVars('props'));
+			foreach($o_coder->getPropertyList() as $vs_property) {
+				$va_tmp[$vs_property] = $o_coder->getProperty($vs_property);
+				$va_tmp[$vs_property.'_raw'] = $o_coder->getProperty($vs_property, true);
+			}
+			
+			$va_tmp['timecodeOffset'] = $vn_timecode_offset;
+			
+			if (!($vs_sort_key = $va_tmp[$vs_sort_by_property])) {
+				$vs_sort_key = '_default_';
+			}
+			
+			$va_annotations[$vs_sort_key][$va_tmp['annotation_id']] = $va_tmp;
+		}
+		if (!sizeof($va_annotation_ids)) { return array(); }
+		
+		ksort($va_annotations, SORT_NUMERIC);
+		
+		// get annotation labels
+		$qr_annotations = caMakeSearchResult($vs_annotation_table, $va_annotation_ids);
+		$va_labels = $va_annotation_classes = array();
+		
+		// Check if "class" element is configured, exists and is a list element
+		if ($vs_class_element = $this->getAppConfig()->get('annotation_class_element')) {
+			$t_anno = new ca_representation_annotations();
+			if (!$t_anno->hasElement($vs_class_element)) { 
+				$vs_class_element = null; 
+			} elseif(ca_metadata_elements::getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
+				// not a list element
+				$vs_class_element = null; 
+			}
+		}
+		
+		while($qr_annotations->nextHit()) {
+			$va_labels[$vn_annotation_id = $qr_annotations->get("{$vs_annotation_table}.annotation_id")][$qr_annotations->get("{$vs_annotation_label_table}.locale_id")][] = $qr_annotations->get("{$vs_annotation_table}.preferred_labels.name");
+			
+			if ($vs_class_element) { 
+				$va_annotation_classes[$vn_annotation_id] = $qr_annotations->get("{$vs_annotation_table}.{$vs_class_element}", array('returnAsArray' => true));
+			}
+		}
+		$va_labels_for_locale = caExtractValuesByUserLocale($va_labels);
+		if ($pb_labels_only) { return $va_labels_for_locale; }
+		
+		$va_annotation_classes_flattened = array();
+		foreach($va_annotation_classes as $vn_annotation_id => $va_classes) {
+			$va_annotation_classes_flattened[$vn_annotation_id] = array_shift($va_classes);
+		}
+		
+		$va_key = array();
+		if ($qr_list_items = caMakeSearchResult('ca_list_items', array_values($va_annotation_classes_flattened))) {
+			while($qr_list_items->nextHit()) {
+				$va_key[$qr_list_items->get('item_id')] = array(
+					'name' => $qr_list_items->get('ca_list_items.preferred_labels.name_plural'),
+					'idno' => $qr_list_items->get('ca_list_items.idno'),
+					'color' => $qr_list_items->get('ca_list_items.color'),
+				);
+			}
+		}
+
+		$va_sorted_annotations = array();
+		foreach($va_annotations as $vs_key => $va_values) {
+			foreach($va_values as $va_val) {
+				$vn_annotation_id = $va_val['annotation_id'];	
+				$vs_label = is_array($va_labels_for_locale[$va_val['annotation_id']]) ? array_shift($va_labels_for_locale[$va_val['annotation_id']]) : '';
+				
+				if ($pb_ids_only) {
+					$va_val = $vn_annotation_id;
+				} elseif ($pb_labels_only) { 
+					$va_val = $vs_label;
+				} else {
 					$va_val['labels'] = $va_labels[$vn_annotation_id] ? $va_labels[$vn_annotation_id] : array();
 					$va_val['label'] = $vs_label;
 					$va_val['key'] = $va_key[$va_annotation_classes_flattened[$vn_annotation_id]];
 				}
- 				$va_sorted_annotations[$vn_annotation_id] = $va_val;
- 			}
- 		}
- 		if ($pb_ids_only || $pb_labels_only) { return array_values($va_sorted_annotations); }
- 		
- 		
- 		if (($vn_start > 0) || ($vn_max > 0)) {
- 			if ($vn_max > 0) {
- 				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start, $vn_max);
- 			} else {
- 				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start);
- 			}
- 		}
- 		return $va_sorted_annotations;
- 	} 
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function addAnnotation($ps_title, $pn_locale_id, $pn_user_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
- 		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
- 		
- 		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
- 			// does not support annotations
- 			return null;
- 		}
- 		
- 		foreach($o_coder->getPropertyList() as $vs_property) {
+				$va_sorted_annotations[$vn_annotation_id] = $va_val;
+			}
+		}
+		if ($pb_ids_only || $pb_labels_only) { return array_values($va_sorted_annotations); }
+		
+		
+		if (($vn_start > 0) || ($vn_max > 0)) {
+			if ($vn_max > 0) {
+				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start, $vn_max);
+			} else {
+				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start);
+			}
+		}
+		return $va_sorted_annotations;
+	} 
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function addAnnotation($ps_title, $pn_locale_id, $pn_user_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
+		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
+		
+		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
+			// does not support annotations
+			return null;
+		}
+		
+		foreach($o_coder->getPropertyList() as $vs_property) {
 			if (!$o_coder->setProperty($vs_property, $pa_properties[$vs_property])) {
 				// error setting values
 				$this->errors = $o_coder->errors;
@@ -832,25 +832,25 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
- 		$vs_annotation_table = $this->annotationTable(); 		
- 		
- 		$t_annotation = new $vs_annotation_table();
- 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
- 		$t_annotation->setMode(ACCESS_WRITE);
- 		
- 		$t_annotation->set('representation_id', $vn_representation_id);
- 		$t_annotation->set('type_code', $o_coder->getType());
- 		$t_annotation->set('locale_id', $pn_locale_id);
- 		$t_annotation->set('user_id', $pn_user_id);
- 		
- 		// TODO: verify that item_id exists and is accessible by user
- 		$t_annotation->set('item_id', caGetOption('item_id', $pa_options, null));
- 		$t_annotation->set('status', $pn_status);
- 		$t_annotation->set('access', $pn_access);
- 		
- 		$t_annotation->insert();
- 		
- 		if ($t_annotation->numErrors()) {
+		$vs_annotation_table = $this->annotationTable(); 		
+		
+		$t_annotation = new $vs_annotation_table();
+		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
+		$t_annotation->setMode(ACCESS_WRITE);
+		
+		$t_annotation->set('representation_id', $vn_representation_id);
+		$t_annotation->set('type_code', $o_coder->getType());
+		$t_annotation->set('locale_id', $pn_locale_id);
+		$t_annotation->set('user_id', $pn_user_id);
+		
+		// TODO: verify that item_id exists and is accessible by user
+		$t_annotation->set('item_id', caGetOption('item_id', $pa_options, null));
+		$t_annotation->set('status', $pn_status);
+		$t_annotation->set('access', $pn_access);
+		
+		$t_annotation->insert();
+		
+		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
 			return false;
 		}
@@ -867,8 +867,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		$t_annotation->update();
- 		
- 		if ($t_annotation->numErrors()) {
+		
+		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
 			return false;
 		}
@@ -894,29 +894,29 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		$t_annotation->update();
- 		
- 		if ($t_annotation->numErrors()) {
+		
+		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
 			return false;
 		}
- 		
- 		if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
- 			return $t_annotation;
- 		}
- 		return $t_annotation->getPrimaryKey();
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function editAnnotation($pn_annotation_id, $pn_locale_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
- 		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
- 	
- 		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
- 			// does not support annotations
- 			return null;
- 		}
- 		foreach($o_coder->getPropertyList() as $vs_property) {
+		
+		if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
+			return $t_annotation;
+		}
+		return $t_annotation->getPrimaryKey();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function editAnnotation($pn_annotation_id, $pn_locale_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
+		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
+	
+		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
+			// does not support annotations
+			return null;
+		}
+		foreach($o_coder->getPropertyList() as $vs_property) {
 			if (!$o_coder->setProperty($vs_property, $pa_properties[$vs_property])) {
 				// error setting values
 				$this->errors = $o_coder->errors;
@@ -929,24 +929,24 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
- 		$vs_annotation_table = $this->annotationTable(); 		
- 		
- 		$t_annotation = new $vs_annotation_table($pn_annotation_id);
- 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
- 		if ($t_annotation->getPrimaryKey() && ($t_annotation->get('representation_id') == $vn_representation_id)) {
- 			foreach($o_coder->getPropertyList() as $vs_property) {
- 				$t_annotation->setPropertyValue($vs_property, $o_coder->getProperty($vs_property));
- 			}
- 		
- 			$t_annotation->setMode(ACCESS_WRITE);
- 		
+		$vs_annotation_table = $this->annotationTable(); 		
+		
+		$t_annotation = new $vs_annotation_table($pn_annotation_id);
+		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
+		if ($t_annotation->getPrimaryKey() && ($t_annotation->get('representation_id') == $vn_representation_id)) {
+			foreach($o_coder->getPropertyList() as $vs_property) {
+				$t_annotation->setPropertyValue($vs_property, $o_coder->getProperty($vs_property));
+			}
+		
+			$t_annotation->setMode(ACCESS_WRITE);
+		
 			$t_annotation->set('type_code', $o_coder->getType());
 			$t_annotation->set('locale_id', $pn_locale_id);
 			
 			// TODO: verify that item_id exists and is accessible by user
 			if (isset($pa_options['item_id'])) {
- 				$t_annotation->set('item_id', caGetOption('item_id', $pa_options, null));
- 			}
+				$t_annotation->set('item_id', caGetOption('item_id', $pa_options, null));
+			}
 			$t_annotation->set('status', $pn_status);
 			$t_annotation->set('access', $pn_access);
 			
@@ -989,78 +989,78 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				return $t_annotation;
 			}
 			return true;
- 		}
- 		
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function removeAnnotation($pn_annotation_id) {
- 		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
- 		
- 		$vs_annotation_table = $this->annotationTable(); 		
- 		
- 		$t_annotation = new $vs_annotation_table($pn_annotation_id);
- 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
- 		if ($t_annotation->get('representation_id') == $vn_representation_id) {
- 			$t_annotation->setMode(ACCESS_WRITE);
- 			$t_annotation->delete(true);
- 			
- 			if ($t_annotation->numErrors()) {
- 				$this->errors = $t_annotation->errors;
- 				return false;
- 			}
- 			return true;
- 		}
- 		
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	#
- 	# ------------------------------------------------------
- 	/**
- 	 * Return list of representations that are related to the object(s) this representation is related to
- 	 */ 
- 	public function getOtherRepresentationsInRelatedObjects() {
- 		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
- 		
- 		$o_db = $this->getDb();
- 		
- 		$qr_res = $o_db->query("
- 			SELECT *
- 			FROM ca_object_representations cor
- 			INNER JOIN ca_objects_x_object_representations AS coxor ON cor.representation_id = coxor.representation_id
- 			WHERE
- 				coxor.object_id IN (
- 					SELECT object_id
- 					FROM ca_objects_x_object_representations 
- 					WHERE 
- 						representation_id = ?
- 				)
- 				AND cor.deleted = 0
- 		", (int)$vn_representation_id);
- 		
- 		$va_reps = array();
- 		while($qr_res->nextRow()) {
- 			$va_reps[$qr_res->get('representation_id')] = $qr_res->getRow();
- 		}
- 		
- 		return $va_reps;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Bundle generator - called from BundlableLabelableBaseModelWithAttributes::getBundleFormHTML()
- 	 */
+		}
+		
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeAnnotation($pn_annotation_id) {
+		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
+		
+		$vs_annotation_table = $this->annotationTable(); 		
+		
+		$t_annotation = new $vs_annotation_table($pn_annotation_id);
+		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
+		if ($t_annotation->get('representation_id') == $vn_representation_id) {
+			$t_annotation->setMode(ACCESS_WRITE);
+			$t_annotation->delete(true);
+			
+			if ($t_annotation->numErrors()) {
+				$this->errors = $t_annotation->errors;
+				return false;
+			}
+			return true;
+		}
+		
+		return false;
+	}
+	# ------------------------------------------------------
+	#
+	# ------------------------------------------------------
+	/**
+	 * Return list of representations that are related to the object(s) this representation is related to
+	 */ 
+	public function getOtherRepresentationsInRelatedObjects() {
+		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_representations cor
+			INNER JOIN ca_objects_x_object_representations AS coxor ON cor.representation_id = coxor.representation_id
+			WHERE
+				coxor.object_id IN (
+					SELECT object_id
+					FROM ca_objects_x_object_representations 
+					WHERE 
+						representation_id = ?
+				)
+				AND cor.deleted = 0
+		", (int)$vn_representation_id);
+		
+		$va_reps = array();
+		while($qr_res->nextRow()) {
+			$va_reps[$qr_res->get('representation_id')] = $qr_res->getRow();
+		}
+		
+		return $va_reps;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Bundle generator - called from BundlableLabelableBaseModelWithAttributes::getBundleFormHTML()
+	 */
 	protected function getRepresentationAnnotationHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
 		//if (!$this->getAnnotationType()) { return; }	// don't show bundle if this representation doesn't support annotations
 		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
- 		$vs_annotation_table = $this->annotationTable(); 		
- 		$vs_annotation_label_table = $this->annotationLabelTable();
- 		
+		$vs_annotation_table = $this->annotationTable(); 		
+		$vs_annotation_label_table = $this->annotationLabelTable();
+		
 		$t_item = new $vs_annotation_table();
 		if($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		$t_item_label = new $vs_annotation_label_table();
@@ -1089,16 +1089,16 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		return $o_view->render("{$vs_annotation_table}.php");
 	}	
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
- 		$va_rel_items = $this->getAnnotations();
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
+		$va_rel_items = $this->getAnnotations();
 		$o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType());
 		
- 		$vs_annotation_table = $this->annotationTable(); 	
- 		
+		$vs_annotation_table = $this->annotationTable(); 	
+		
 		$vn_c = 0;
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
@@ -1157,9 +1157,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}
 			}
 		}
- 		
- 		// check for new annotations to add
- 		foreach($_REQUEST as $vs_key => $vs_value ) {
+		
+		// check for new annotations to add
+		foreach($_REQUEST as $vs_key => $vs_value ) {
 			if (!preg_match('/^'.$ps_placement_code.$ps_form_prefix.'_status_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
 			$vn_c = intval($va_matches[1]);
 			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_status_new_'.$vn_c, pString)) > 0) {
@@ -1182,88 +1182,88 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		return true;
- 	}
- 	# ------------------------------------------------------
- 	public function useBundleBasedAnnotationEditor() {
- 		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
- 			// does not support annotations
- 			return false;
- 		}
- 		
- 		return $o_coder->useBundleBasedAnnotationEditor();
- 	}
- 	# ------------------------------------------------------
- 	public function getAnnotationSortProperty() {
- 		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
- 			// does not support annotations
- 			return false;
- 		}
- 		
- 		return $o_coder->getAnnotationSortProperty();
- 	}
- 	# ------------------------------------------------------
- 	# Annotation display
- 	# ------------------------------------------------------
- 	public function getDisplayMediaWithAnnotationsHTMLBundle($po_request, $ps_version, $pa_options=null) {
- 		if (!is_array($pa_options)) { $pa_options = array(); }
- 		$pa_options['poster_frame_url'] = $this->getMediaUrl('media', 'medium');
- 		
- 		if (!($vs_tag = $this->getMediaTag('media', $ps_version, $pa_options))) {
- 			return '';
- 		}
- 		
- 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+	}
+	# ------------------------------------------------------
+	public function useBundleBasedAnnotationEditor() {
+		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
+			// does not support annotations
+			return false;
+		}
+		
+		return $o_coder->useBundleBasedAnnotationEditor();
+	}
+	# ------------------------------------------------------
+	public function getAnnotationSortProperty() {
+		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
+			// does not support annotations
+			return false;
+		}
+		
+		return $o_coder->getAnnotationSortProperty();
+	}
+	# ------------------------------------------------------
+	# Annotation display
+	# ------------------------------------------------------
+	public function getDisplayMediaWithAnnotationsHTMLBundle($po_request, $ps_version, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$pa_options['poster_frame_url'] = $this->getMediaUrl('media', 'medium');
+		
+		if (!($vs_tag = $this->getMediaTag('media', $ps_version, $pa_options))) {
+			return '';
+		}
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('viewer_tag', $vs_tag);
 		$o_view->setVar('annotations', $this->getAnnotations($pa_options));
 		
 		return $o_view->render('ca_object_representations_display_with_annotations.php', false);
- 	}
- 	# ------------------------------------------------------
- 	# Multifiles
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function addFile($ps_filepath, $ps_resource_path='/', $pb_allow_duplicates=true) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		if (!trim($ps_resource_path)) { $ps_resource_path = '/'; }
- 		
- 		$t_multifile = new ca_object_representation_multifiles();
- 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
- 		if (!$pb_allow_duplicates) {
- 			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'representation_id' => $this->getPrimaryKey()))) {
- 				return null;
- 			}
- 		}
- 		$t_multifile->setMode(ACCESS_WRITE);
- 		$t_multifile->set('representation_id', $this->getPrimaryKey());
- 		$t_multifile->set('media', $ps_filepath);
- 		$t_multifile->set('resource_path', $ps_resource_path);
- 		
- 		$t_multifile->insert();
- 		
- 		if ($t_multifile->numErrors()) {
- 			$this->errors = array_merge($this->errors, $t_multifile->errors);
- 			return false;
- 		}
- 		
- 		return $t_multifile;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function removeFile($pn_multifile_id) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		
- 		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
- 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
- 		
- 		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
- 			$t_multifile->setMode(ACCESS_WRITE);
- 			$t_multifile->delete();
- 			
+	}
+	# ------------------------------------------------------
+	# Multifiles
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function addFile($ps_filepath, $ps_resource_path='/', $pb_allow_duplicates=true) {
+		if(!$this->getPrimaryKey()) { return null; }
+		if (!trim($ps_resource_path)) { $ps_resource_path = '/'; }
+		
+		$t_multifile = new ca_object_representation_multifiles();
+		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
+		if (!$pb_allow_duplicates) {
+			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'representation_id' => $this->getPrimaryKey()))) {
+				return null;
+			}
+		}
+		$t_multifile->setMode(ACCESS_WRITE);
+		$t_multifile->set('representation_id', $this->getPrimaryKey());
+		$t_multifile->set('media', $ps_filepath);
+		$t_multifile->set('resource_path', $ps_resource_path);
+		
+		$t_multifile->insert();
+		
+		if ($t_multifile->numErrors()) {
+			$this->errors = array_merge($this->errors, $t_multifile->errors);
+			return false;
+		}
+		
+		return $t_multifile;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeFile($pn_multifile_id) {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
+		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
+		
+		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
+			$t_multifile->setMode(ACCESS_WRITE);
+			$t_multifile->delete();
+			
 			if ($t_multifile->numErrors()) {
 				$this->errors = array_merge($this->errors, $t_multifile->errors);
 				return false;
@@ -1273,173 +1273,173 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		return true;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function removeAllFiles() {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		
- 		$va_file_ids = array_keys($this->getFileList());
- 		
- 		foreach($va_file_ids as $vn_id) {
- 			$this->removeFile($vn_id);
- 			
- 			if($this->numErrors()) {
- 				return false;
- 			}
- 		}
- 		
- 		return true;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns list of additional files (page or frame previews for documents or videos, typically) attached to a representation
- 	 * The return value is an array key'ed on the multifile_id (a unique identifier for each attached file); array values are arrays
- 	 * with keys set to values for each file version returned. They keys are:
- 	 *		<version name>_path = The absolute file path to the file
- 	 *		<version name>_tag = An HTML tag that will display the file
- 	 *		<version name>_url = The URL for the file
- 	 *		<version name>_width = The pixel width of the file when displayed
- 	 *		<version name>_height = The pixel height of the file when displayed
- 	 * The available versions are set in media_processing.conf
- 	 *
- 	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
- 	 * @param int $pn_start The index of the first file to return. Files are numbered from zero. If omitted the first file found is returned.
- 	 * @param int $pn_num_files The maximum number of files to return. If omitted all files are returned.
- 	 * @param array $pa_versions A list of file versions to return. If omitted only the "preview" version is returned.
- 	 * @return array A list of files attached to the representations. If no files are associated an empty array is returned.
- 	 */
- 	public function getFileList($pn_representation_id=null, $pn_start=null, $pn_num_files=null, $pa_versions=null) {
- 		if(!($vn_representation_id = $pn_representation_id)) { 
- 			if (!($vn_representation_id = $this->getPrimaryKey())) {
- 				return null; 
- 			}
- 		}
- 		
- 		if (!is_array($pa_versions)) {
- 			$pa_versions = array('preview');
- 		}
- 		
- 		$vs_limit_sql = '';
- 		if (!is_null($pn_start) && !is_null($pn_num_files)) {
- 			if (($pn_start >= 0) && ($pn_num_files >= 1)) {
- 				$vs_limit_sql = "LIMIT {$pn_start}, {$pn_num_files}";
- 			}
- 		}
- 		
- 		$o_db= $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT *
- 			FROM ca_object_representation_multifiles
- 			WHERE
- 				representation_id = ?
- 			{$vs_limit_sql}
- 		", (int)$vn_representation_id);
- 		
- 		$va_files = array();
- 		while($qr_res->nextRow()) {
- 			$vn_multifile_id = $qr_res->get('multifile_id');
- 			$va_files[$vn_multifile_id] = $qr_res->getRow();
- 			unset($va_files[$vn_multifile_id]['media']);
- 			
- 			foreach($pa_versions as $vn_i => $vs_version) {
- 				$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
- 				
- 				$va_info = $qr_res->getMediaInfo('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
- 				$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
- 				$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
- 			}
- 		}
- 		return $va_files;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getFileInstance($pn_multifile_id) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 	
- 		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
- 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
- 		
- 		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
- 			return $t_multifile;
- 		}
- 		return null;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function numFiles($pn_representation_id=null) { 		
- 		if(!($vn_representation_id = $pn_representation_id)) { 
- 			if (!($vn_representation_id = $this->getPrimaryKey())) {
- 				return null; 
- 			}
- 		}
- 		
- 		$o_db= $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT count(*) c
- 			FROM ca_object_representation_multifiles
- 			WHERE
- 				representation_id = ?
- 		", (int)$vn_representation_id);
- 		
- 		if($qr_res->nextRow()) {
- 			return intval($qr_res->get('c'));
- 		}
- 		return 0;
- 	}
- 	# ------------------------------------------------------
- 	# Captions/subtitles
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function addCaptionFile($ps_filepath, $pn_locale_id, $pa_options=null) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		
- 		$t_caption = new ca_object_representation_captions();
- 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
- 		if ($t_caption->load(array('representation_id' => $this->getPrimaryKey(), 'locale_id' => $pn_locale_id))) {
- 			return null;
- 		}
- 		
- 		$t_caption->setMode(ACCESS_WRITE);
- 		$t_caption->set('representation_id', $this->getPrimaryKey());
- 		$va_tmp = explode("/", $ps_filepath);
- 		$t_caption->set('caption_file', $ps_filepath, array('original_filename' => caGetOption('originalFilename', $pa_options, array_pop($va_tmp))));
- 		$t_caption->set('locale_id', $pn_locale_id);
- 		
- 		$t_caption->insert();
- 		
- 		if ($t_caption->numErrors()) {
- 			$this->errors = array_merge($this->errors, $t_caption->errors);
- 			return false;
- 		}
- 		
- 		return $t_caption;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function removeCaptionFile($pn_caption_id) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		
- 		$t_caption = new ca_object_representation_captions($pn_caption_id);
- 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
- 		
- 		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
- 			$t_caption->setMode(ACCESS_WRITE);
- 			$t_caption->delete();
- 			
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeAllFiles() {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$va_file_ids = array_keys($this->getFileList());
+		
+		foreach($va_file_ids as $vn_id) {
+			$this->removeFile($vn_id);
+			
+			if($this->numErrors()) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns list of additional files (page or frame previews for documents or videos, typically) attached to a representation
+	 * The return value is an array key'ed on the multifile_id (a unique identifier for each attached file); array values are arrays
+	 * with keys set to values for each file version returned. They keys are:
+	 *		<version name>_path = The absolute file path to the file
+	 *		<version name>_tag = An HTML tag that will display the file
+	 *		<version name>_url = The URL for the file
+	 *		<version name>_width = The pixel width of the file when displayed
+	 *		<version name>_height = The pixel height of the file when displayed
+	 * The available versions are set in media_processing.conf
+	 *
+	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
+	 * @param int $pn_start The index of the first file to return. Files are numbered from zero. If omitted the first file found is returned.
+	 * @param int $pn_num_files The maximum number of files to return. If omitted all files are returned.
+	 * @param array $pa_versions A list of file versions to return. If omitted only the "preview" version is returned.
+	 * @return array A list of files attached to the representations. If no files are associated an empty array is returned.
+	 */
+	public function getFileList($pn_representation_id=null, $pn_start=null, $pn_num_files=null, $pa_versions=null) {
+		if(!($vn_representation_id = $pn_representation_id)) { 
+			if (!($vn_representation_id = $this->getPrimaryKey())) {
+				return null; 
+			}
+		}
+		
+		if (!is_array($pa_versions)) {
+			$pa_versions = array('preview');
+		}
+		
+		$vs_limit_sql = '';
+		if (!is_null($pn_start) && !is_null($pn_num_files)) {
+			if (($pn_start >= 0) && ($pn_num_files >= 1)) {
+				$vs_limit_sql = "LIMIT {$pn_start}, {$pn_num_files}";
+			}
+		}
+		
+		$o_db= $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_representation_multifiles
+			WHERE
+				representation_id = ?
+			{$vs_limit_sql}
+		", (int)$vn_representation_id);
+		
+		$va_files = array();
+		while($qr_res->nextRow()) {
+			$vn_multifile_id = $qr_res->get('multifile_id');
+			$va_files[$vn_multifile_id] = $qr_res->getRow();
+			unset($va_files[$vn_multifile_id]['media']);
+			
+			foreach($pa_versions as $vn_i => $vs_version) {
+				$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
+				$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
+				$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
+				
+				$va_info = $qr_res->getMediaInfo('media', $vs_version);
+				$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
+				$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
+				$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
+			}
+		}
+		return $va_files;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getFileInstance($pn_multifile_id) {
+		if(!$this->getPrimaryKey()) { return null; }
+	
+		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
+		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
+		
+		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
+			return $t_multifile;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function numFiles($pn_representation_id=null) { 		
+		if(!($vn_representation_id = $pn_representation_id)) { 
+			if (!($vn_representation_id = $this->getPrimaryKey())) {
+				return null; 
+			}
+		}
+		
+		$o_db= $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT count(*) c
+			FROM ca_object_representation_multifiles
+			WHERE
+				representation_id = ?
+		", (int)$vn_representation_id);
+		
+		if($qr_res->nextRow()) {
+			return intval($qr_res->get('c'));
+		}
+		return 0;
+	}
+	# ------------------------------------------------------
+	# Captions/subtitles
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function addCaptionFile($ps_filepath, $pn_locale_id, $pa_options=null) {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$t_caption = new ca_object_representation_captions();
+		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
+		if ($t_caption->load(array('representation_id' => $this->getPrimaryKey(), 'locale_id' => $pn_locale_id))) {
+			return null;
+		}
+		
+		$t_caption->setMode(ACCESS_WRITE);
+		$t_caption->set('representation_id', $this->getPrimaryKey());
+		$va_tmp = explode("/", $ps_filepath);
+		$t_caption->set('caption_file', $ps_filepath, array('original_filename' => caGetOption('originalFilename', $pa_options, array_pop($va_tmp))));
+		$t_caption->set('locale_id', $pn_locale_id);
+		
+		$t_caption->insert();
+		
+		if ($t_caption->numErrors()) {
+			$this->errors = array_merge($this->errors, $t_caption->errors);
+			return false;
+		}
+		
+		return $t_caption;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeCaptionFile($pn_caption_id) {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$t_caption = new ca_object_representation_captions($pn_caption_id);
+		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
+		
+		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
+			$t_caption->setMode(ACCESS_WRITE);
+			$t_caption->delete();
+			
 			if ($t_caption->numErrors()) {
 				$this->errors = array_merge($this->errors, $t_caption->errors);
 				return false;
@@ -1449,251 +1449,251 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		return true;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function removeAllCaptionFiles() {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		
- 		$va_file_ids = array_keys($this->getCaptionFileList());
- 		
- 		foreach($va_file_ids as $vn_id) {
- 			$this->removeCaptionFile($vn_id);
- 			
- 			if($this->numErrors()) {
- 				return false;
- 			}
- 		}
- 		
- 		return true;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns list of caption/subtitle files attached to a representation
- 	 * The return value is an array key'ed on the caption_id; array values are arrays
- 	 * with keys set to values for each file returned. They keys are:
- 	 *		path = The absolute file path to the file
- 	 *		url = The URL for the file
- 	 *		caption_id = a unique identifier for each attached caption file
- 	 *
- 	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
- 	 * @param array $pa_locale_ids 
- 	 * @param array $pa_options
- 	 * @return array A list of caption files attached to the representations. If no files are associated an empty array is returned.
- 	 */
- 	public function getCaptionFileList($pn_representation_id=null, $pa_locale_ids=null, $pa_options=null) {
- 		if(!($vn_representation_id = $pn_representation_id)) { 
- 			if (!($vn_representation_id = $this->getPrimaryKey())) {
- 				return null; 
- 			}
- 		}
- 		
- 		$t_locale = new ca_locales();
- 		$va_locale_ids = array();
- 		if ($pa_locale_ids) {
- 			if (!is_array($pa_locale_ids)) { $pa_locale_ids = array($pa_locale_ids); }
- 			foreach($pa_locale_ids as $vn_i => $vm_locale) {
- 				if (is_numeric($vm_locale) && (int)$vm_locale) {
- 					$va_locale_ids[] = (int)$vm_locale;
- 				} else {
- 					if ($vn_locale_id = $t_locale->localeCodeToID($vm_locale)) {
- 						$va_locale_ids[] = $vn_locale_id;
- 					}
- 				}
- 			}	
- 			
- 		}
- 		
- 		$vs_locale_sql = '';
- 		$va_params = array((int)$vn_representation_id);
- 		if (sizeof($va_locale_ids) > 0) {
- 			$vs_locale_sql = " AND locale_id IN (?)";
- 			$va_params[] = $va_locale_ids;
- 		}
- 		
- 		$o_db= $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT *
- 			FROM ca_object_representation_captions
- 			WHERE
- 				representation_id = ?
- 			{$vs_locale_sql}
- 		", $va_params);
- 		
- 		$va_files = array();
- 		while($qr_res->nextRow()) {
- 			$vn_caption_id = $qr_res->get('caption_id');
- 			$vn_locale_id = $qr_res->get('locale_id');
- 			
- 			$va_files[$vn_caption_id] = $qr_res->getRow();
- 			unset($va_files[$vn_caption_id]['caption_file']);
- 			
- 			$va_files[$vn_caption_id]['path'] = $qr_res->getFilePath('caption_file');
- 			$va_files[$vn_caption_id]['url'] = $qr_res->getFileUrl('caption_file');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeAllCaptionFiles() {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$va_file_ids = array_keys($this->getCaptionFileList());
+		
+		foreach($va_file_ids as $vn_id) {
+			$this->removeCaptionFile($vn_id);
+			
+			if($this->numErrors()) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns list of caption/subtitle files attached to a representation
+	 * The return value is an array key'ed on the caption_id; array values are arrays
+	 * with keys set to values for each file returned. They keys are:
+	 *		path = The absolute file path to the file
+	 *		url = The URL for the file
+	 *		caption_id = a unique identifier for each attached caption file
+	 *
+	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
+	 * @param array $pa_locale_ids 
+	 * @param array $pa_options
+	 * @return array A list of caption files attached to the representations. If no files are associated an empty array is returned.
+	 */
+	public function getCaptionFileList($pn_representation_id=null, $pa_locale_ids=null, $pa_options=null) {
+		if(!($vn_representation_id = $pn_representation_id)) { 
+			if (!($vn_representation_id = $this->getPrimaryKey())) {
+				return null; 
+			}
+		}
+		
+		$t_locale = new ca_locales();
+		$va_locale_ids = array();
+		if ($pa_locale_ids) {
+			if (!is_array($pa_locale_ids)) { $pa_locale_ids = array($pa_locale_ids); }
+			foreach($pa_locale_ids as $vn_i => $vm_locale) {
+				if (is_numeric($vm_locale) && (int)$vm_locale) {
+					$va_locale_ids[] = (int)$vm_locale;
+				} else {
+					if ($vn_locale_id = $t_locale->localeCodeToID($vm_locale)) {
+						$va_locale_ids[] = $vn_locale_id;
+					}
+				}
+			}	
+			
+		}
+		
+		$vs_locale_sql = '';
+		$va_params = array((int)$vn_representation_id);
+		if (sizeof($va_locale_ids) > 0) {
+			$vs_locale_sql = " AND locale_id IN (?)";
+			$va_params[] = $va_locale_ids;
+		}
+		
+		$o_db= $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_representation_captions
+			WHERE
+				representation_id = ?
+			{$vs_locale_sql}
+		", $va_params);
+		
+		$va_files = array();
+		while($qr_res->nextRow()) {
+			$vn_caption_id = $qr_res->get('caption_id');
+			$vn_locale_id = $qr_res->get('locale_id');
+			
+			$va_files[$vn_caption_id] = $qr_res->getRow();
+			unset($va_files[$vn_caption_id]['caption_file']);
+			
+			$va_files[$vn_caption_id]['path'] = $qr_res->getFilePath('caption_file');
+			$va_files[$vn_caption_id]['url'] = $qr_res->getFileUrl('caption_file');
 			if(file_exists($va_files[$vn_caption_id]['path'])) {
 				$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
 			}
- 			$va_files[$vn_caption_id]['caption_id'] = $vn_caption_id;
- 			$va_files[$vn_caption_id]['locale_id'] = $vn_locale_id;
- 			$va_files[$vn_caption_id]['locale'] = $t_locale->localeIDToName($vn_locale_id);
- 			$va_files[$vn_caption_id]['locale_code'] = $t_locale->localeIDToCode($vn_locale_id);
- 		}
- 		return $va_files;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getCaptionFileInstance($pn_caption_id) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 	
- 		$t_caption = new ca_object_representation_captions($pn_caption_id);
- 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
- 		
- 		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
- 			return $t_caption;
- 		}
- 		return null;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function numCaptionFiles($pn_representation_id=null) { 		
- 		if(!($vn_representation_id = $pn_representation_id)) { 
- 			if (!($vn_representation_id = $this->getPrimaryKey())) {
- 				return null; 
- 			}
- 		}
- 		
- 		$o_db= $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT count(*) c
- 			FROM ca_object_representation_captions
- 			WHERE
- 				representation_id = ?
- 		", (int)$vn_representation_id);
- 		
- 		if($qr_res->nextRow()) {
- 			return intval($qr_res->get('c'));
- 		}
- 		return 0;
- 	}
- 	# ------------------------------------------------------
- 	#
- 	# ------------------------------------------------------
- 	/**
- 	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
- 	 *
- 	 * @param array $pa_versions
- 	 * @param array $pa_version_sizes
- 	 * @param array $pa_options
- 	 *
- 	 * @return array
- 	 */
- 	public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
- 		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
- 		if (!is_array($pa_options)) { $pa_options = array(); }
- 		
- 		if (!is_array($pa_versions)) { 
- 			$pa_versions = array('preview170');
- 		}
- 		
- 		$o_db = $this->getDb();
- 		
- 		$va_access_values = caGetOption('checkAccess', $pa_options, null);
- 		$vs_access_where = '';
- 		if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
- 			$vs_access_where = ' AND caor.access IN ('.join(',', $va_access_values).')';
- 		}
- 		
- 		$qr_reps = $o_db->query("
- 			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
- 			FROM ca_object_representations caor
- 			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
- 			WHERE
- 				caor.representation_id = ?  AND caor.deleted = 0
- 				{$vs_access_where}
- 			ORDER BY
- 				l.name ASC 
- 		", (int)$this->getPrimaryKey());
- 		
- 		$va_reps = array();
- 		while($qr_reps->nextRow()) {
- 			$va_tmp = $qr_reps->getRow();
- 			$va_tmp['tags'] = array();
- 			$va_tmp['urls'] = array();
- 			
- 			$va_info = $qr_reps->getMediaInfo('media');
- 			$va_tmp['info'] = array('original_filename' => $va_info['ORIGINAL_FILENAME']);
- 			foreach ($pa_versions as $vs_version) {
- 				if (is_array($pa_version_sizes) && isset($pa_version_sizes[$vs_version])) {
- 					$vn_width = $pa_version_sizes[$vs_version]['width'];
- 					$vn_height = $pa_version_sizes[$vs_version]['height'];
- 				} else {
- 					$vn_width = $vn_height = 0;
- 				}
- 				
- 				if ($vn_width && $vn_height) {
- 					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, array_merge($pa_options, array('viewer_width' => $vn_width, 'viewer_height' => $vn_height)));
- 				} else {
- 					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, $pa_options);
- 				}
- 				$va_tmp['urls'][$vs_version] = $qr_reps->getMediaUrl('media', $vs_version);
- 				$va_tmp['paths'][$vs_version] = $qr_reps->getMediaPath('media', $vs_version);
- 				$va_tmp['info'][$vs_version] = $qr_reps->getMediaInfo('media', $vs_version);
- 				
- 				$va_dimensions = array();
- 				if (isset($va_tmp['info'][$vs_version]['WIDTH']) && isset($va_tmp['info'][$vs_version]['HEIGHT'])) {
+			$va_files[$vn_caption_id]['caption_id'] = $vn_caption_id;
+			$va_files[$vn_caption_id]['locale_id'] = $vn_locale_id;
+			$va_files[$vn_caption_id]['locale'] = $t_locale->localeIDToName($vn_locale_id);
+			$va_files[$vn_caption_id]['locale_code'] = $t_locale->localeIDToCode($vn_locale_id);
+		}
+		return $va_files;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCaptionFileInstance($pn_caption_id) {
+		if(!$this->getPrimaryKey()) { return null; }
+	
+		$t_caption = new ca_object_representation_captions($pn_caption_id);
+		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
+		
+		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
+			return $t_caption;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function numCaptionFiles($pn_representation_id=null) { 		
+		if(!($vn_representation_id = $pn_representation_id)) { 
+			if (!($vn_representation_id = $this->getPrimaryKey())) {
+				return null; 
+			}
+		}
+		
+		$o_db= $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT count(*) c
+			FROM ca_object_representation_captions
+			WHERE
+				representation_id = ?
+		", (int)$vn_representation_id);
+		
+		if($qr_res->nextRow()) {
+			return intval($qr_res->get('c'));
+		}
+		return 0;
+	}
+	# ------------------------------------------------------
+	#
+	# ------------------------------------------------------
+	/**
+	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
+	 *
+	 * @param array $pa_versions
+	 * @param array $pa_version_sizes
+	 * @param array $pa_options
+	 *
+	 * @return array
+	 */
+	public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		if (!is_array($pa_versions)) { 
+			$pa_versions = array('preview170');
+		}
+		
+		$o_db = $this->getDb();
+		
+		$va_access_values = caGetOption('checkAccess', $pa_options, null);
+		$vs_access_where = '';
+		if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
+			$vs_access_where = ' AND caor.access IN ('.join(',', $va_access_values).')';
+		}
+		
+		$qr_reps = $o_db->query("
+			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
+			FROM ca_object_representations caor
+			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
+			WHERE
+				caor.representation_id = ?  AND caor.deleted = 0
+				{$vs_access_where}
+			ORDER BY
+				l.name ASC 
+		", (int)$this->getPrimaryKey());
+		
+		$va_reps = array();
+		while($qr_reps->nextRow()) {
+			$va_tmp = $qr_reps->getRow();
+			$va_tmp['tags'] = array();
+			$va_tmp['urls'] = array();
+			
+			$va_info = $qr_reps->getMediaInfo('media');
+			$va_tmp['info'] = array('original_filename' => $va_info['ORIGINAL_FILENAME']);
+			foreach ($pa_versions as $vs_version) {
+				if (is_array($pa_version_sizes) && isset($pa_version_sizes[$vs_version])) {
+					$vn_width = $pa_version_sizes[$vs_version]['width'];
+					$vn_height = $pa_version_sizes[$vs_version]['height'];
+				} else {
+					$vn_width = $vn_height = 0;
+				}
+				
+				if ($vn_width && $vn_height) {
+					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, array_merge($pa_options, array('viewer_width' => $vn_width, 'viewer_height' => $vn_height)));
+				} else {
+					$va_tmp['tags'][$vs_version] = $qr_reps->getMediaTag('media', $vs_version, $pa_options);
+				}
+				$va_tmp['urls'][$vs_version] = $qr_reps->getMediaUrl('media', $vs_version);
+				$va_tmp['paths'][$vs_version] = $qr_reps->getMediaPath('media', $vs_version);
+				$va_tmp['info'][$vs_version] = $qr_reps->getMediaInfo('media', $vs_version);
+				
+				$va_dimensions = array();
+				if (isset($va_tmp['info'][$vs_version]['WIDTH']) && isset($va_tmp['info'][$vs_version]['HEIGHT'])) {
 					if (($vn_w = $va_tmp['info'][$vs_version]['WIDTH']) && ($vn_h = $va_tmp['info'][$vs_version]['WIDTH'])) {
 						$va_dimensions[] = $va_tmp['info'][$vs_version]['WIDTH'].'p x '.$va_tmp['info'][$vs_version]['HEIGHT'].'p';
 					}
 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth'])) {
- 					$va_dimensions[] = intval($vn_depth).' bpp';
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_tmp['info'][$vs_version]['PROPERTIES']['colorspace'])) {
- 					$va_dimensions[] = $vs_colorspace;
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_tmp['info'][$vs_version]['PROPERTIES']['resolution'])) {
- 					if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
- 						// TODO: units for resolution? right now assume pixels per inch
- 						if ($va_resolution['x'] == $va_resolution['y']) {
- 							$va_dimensions[] = $va_resolution['x'].'ppi';
- 						} else {
- 							$va_dimensions[] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
- 						}
- 					}
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['duration']) && ($vn_duration = $va_tmp['info'][$vs_version]['PROPERTIES']['duration'])) {
- 					$va_dimensions[] = sprintf("%4.1f", $vn_duration).'s';
- 				}
- 				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['pages']) && ($vn_pages = $va_tmp['info'][$vs_version]['PROPERTIES']['pages'])) {
- 					$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
- 				}
- 				if (!isset($va_tmp['info'][$vs_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_tmp['info'][$vs_version]['PROPERTIES']['filesize'])) {
- 					$vn_filesize = @filesize($qr_reps->getMediaPath('media', $vs_version));
- 				}
- 				if ($vn_filesize) {
- 					$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
- 				}
- 				$va_tmp['dimensions'][$vs_version] = join('; ', $va_dimensions);
- 			}
- 			
- 				
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth'])) {
+					$va_dimensions[] = intval($vn_depth).' bpp';
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['colorspace']) && ($vs_colorspace = $va_tmp['info'][$vs_version]['PROPERTIES']['colorspace'])) {
+					$va_dimensions[] = $vs_colorspace;
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['resolution']) && is_array($va_resolution = $va_tmp['info'][$vs_version]['PROPERTIES']['resolution'])) {
+					if (isset($va_resolution['x']) && isset($va_resolution['y']) && $va_resolution['x'] && $va_resolution['y']) {
+						// TODO: units for resolution? right now assume pixels per inch
+						if ($va_resolution['x'] == $va_resolution['y']) {
+							$va_dimensions[] = $va_resolution['x'].'ppi';
+						} else {
+							$va_dimensions[] = $va_resolution['x'].'x'.$va_resolution['y'].'ppi';
+						}
+					}
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['duration']) && ($vn_duration = $va_tmp['info'][$vs_version]['PROPERTIES']['duration'])) {
+					$va_dimensions[] = sprintf("%4.1f", $vn_duration).'s';
+				}
+				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['pages']) && ($vn_pages = $va_tmp['info'][$vs_version]['PROPERTIES']['pages'])) {
+					$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
+				}
+				if (!isset($va_tmp['info'][$vs_version]['PROPERTIES']['filesize']) || !($vn_filesize = $va_tmp['info'][$vs_version]['PROPERTIES']['filesize'])) {
+					$vn_filesize = @filesize($qr_reps->getMediaPath('media', $vs_version));
+				}
+				if ($vn_filesize) {
+					$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
+				}
+				$va_tmp['dimensions'][$vs_version] = join('; ', $va_dimensions);
+			}
+			
+				
 			if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 				$va_tmp['fetched_from'] = $vs_fetched_from_url;
 				$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
 			}
- 			
- 			$va_tmp['num_multifiles'] = $this->numFiles($this->get('representation_id'));
- 			$va_reps[] = $va_tmp;
- 		}
- 		return $va_reps;
- 	}
- 	# ------------------------------------------------------------------
+			
+			$va_tmp['num_multifiles'] = $this->numFiles($this->get('representation_id'));
+			$va_reps[] = $va_tmp;
+		}
+		return $va_reps;
+	}
+	# ------------------------------------------------------------------
 	/**
 	 * Fetches information about media in a list of representations
 	 * 
@@ -1740,7 +1740,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * @return True if representation is of specified class, false if not
 	 */
 	public function representationIsOfClass($ps_class) {
- 		if (!($vs_mimetypes_regex = caGetMimetypesForClass($ps_class, array('returnAsRegex' => true)))) { return array(); }
+		if (!($vs_mimetypes_regex = caGetMimetypesForClass($ps_class, array('returnAsRegex' => true)))) { return array(); }
 		
 		return (preg_match("!{$vs_mimetypes_regex}!", $this->get('mimetype'))) ? true  : false;
 	}
@@ -1754,35 +1754,35 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	public function representationIsWithMimetype($ps_mimetype) {
 		return ($this->get('mimetype') == $ps_mimetype) ? true : false;
 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override export function to do some cleanup in the media_metadata part.
- 	 * XML parsers and wrappers like DOMDocument tend to be rather picky with their input as far as invalid
- 	 * characters go and the return value of this function is usually used for something like that.
- 	 */
- 	public function getValuesForExport($pa_options=null){
- 		$va_export = parent::getValuesForExport($pa_options);
- 		// this section tends to contain wonky chars that are close to impossible to clean up
- 		// if you read through the EXIF specs you know why ...
- 		if(isset($va_export['media_metadata']['EXIF']['IFD0'])){
- 			unset($va_export['media_metadata']['EXIF']['IFD0']);
- 		}
- 		return $va_export;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * 
- 	 *
- 	 * @param RequestHTTP $po_request
- 	 * @param array $pa_options
- 	 * @param array $pa_additional_display_options
- 	 * @return string HTML output
- 	 */
- 	public function getRepresentationViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
- 		return caRepresentationViewerHTMLBundle($this, $po_request, $pa_options, $pa_additional_display_options);
- 	}
- 	# ------------------------------------------------------
-	/** 
+	# ------------------------------------------------------
+	/**
+	 * Override export function to do some cleanup in the media_metadata part.
+	 * XML parsers and wrappers like DOMDocument tend to be rather picky with their input as far as invalid
+	 * characters go and the return value of this function is usually used for something like that.
+	 */
+	public function getValuesForExport($pa_options=null){
+		$va_export = parent::getValuesForExport($pa_options);
+		// this section tends to contain wonky chars that are close to impossible to clean up
+		// if you read through the EXIF specs you know why ...
+		if(isset($va_export['media_metadata']['EXIF']['IFD0'])){
+			unset($va_export['media_metadata']['EXIF']['IFD0']);
+		}
+		return $va_export;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param array $pa_options
+	 * @param array $pa_additional_display_options
+	 * @return string HTML output
+	 */
+	public function getRepresentationViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
+		return caRepresentationViewerHTMLBundle($this, $po_request, $pa_options, $pa_additional_display_options);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns HTML form bundle (for use in a ca_object_representations editor form) for media
 	 *
 	 * @param HTTPRequest $po_request The current request
@@ -1947,7 +1947,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if (!is_array($pa_mimetypes) && $pa_mimetypes) { $pa_mimetypes = array($pa_mimetypes); }
 		
 		$vs_mimetype = $this->getMediaInfo('media', 'MIMETYPE');
-		if (in_array($vs_mimetype, $pa_mimetypes)) {	
+		if (in_array($vs_mimetype, $pa_mimetypes)) {
 			return [$this->getPrimaryKey()];
 		}
 

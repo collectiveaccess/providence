@@ -29,17 +29,17 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
 
 BaseModel::$s_ca_models_definitions['ca_task_queue'] = array(
- 	'NAME_SINGULAR' 	=> _t('task queue entry'),
- 	'NAME_PLURAL' 		=> _t('task queue entries'),
- 	'FIELDS' 			=> array(
- 		'task_id' => array(
+	'NAME_SINGULAR' 	=> _t('task queue entry'),
+	'NAME_PLURAL' 		=> _t('task queue entries'),
+	'FIELDS' 			=> array(
+		'task_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -123,7 +123,7 @@ BaseModel::$s_ca_models_definitions['ca_task_queue'] = array(
 				'LABEL' => _t('Error status'), 'DESCRIPTION' => _t('Numeric error code. A value of zero indicates no error; any non-zero value indicates an error condition that occurred during processing.'),
 				'BOUNDS_VALUE' => array(0,65535)
 		)
- 	)
+	)
 );
 
 class ca_task_queue extends BaseModel {
@@ -139,7 +139,7 @@ class ca_task_queue extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_task_queue';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'task_id';
 

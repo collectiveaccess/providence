@@ -29,16 +29,16 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
 BaseModel::$s_ca_models_definitions['ca_data_importer_log_items'] = array(
- 	'NAME_SINGULAR' 	=> _t('data import log entry'),
- 	'NAME_PLURAL' 		=> _t('data import log entries'),
- 	'FIELDS' 			=> array(
- 		'log_item_id' => array(
+	'NAME_SINGULAR' 	=> _t('data import log entry'),
+	'NAME_PLURAL' 		=> _t('data import log entries'),
+	'FIELDS' 			=> array(
+		'log_item_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -102,7 +102,7 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_log_items'] = array(
 				'LABEL' => _t('Notes'), 'DESCRIPTION' => _t('Notes regarding import of item.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		),
- 	)
+	)
 );
 
 class ca_data_importer_log_items extends BaseModel {
@@ -118,7 +118,7 @@ class ca_data_importer_log_items extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_importer_log_items';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'log_item_id';
 

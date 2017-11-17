@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -45,10 +45,10 @@ require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
- 	'NAME_SINGULAR' 	=> _t('user'),
- 	'NAME_PLURAL' 		=> _t('users'),
- 	'FIELDS' 			=> array(
- 		'user_id' => array(
+	'NAME_SINGULAR' 	=> _t('user'),
+	'NAME_PLURAL' 		=> _t('users'),
+	'FIELDS' 			=> array(
+		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -166,7 +166,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'LABEL' => _t('Confirmation key'), 'DESCRIPTION' => _t('Confirmation key used for email verification.'),
 				'BOUNDS_LENGTH' => array(0,32)
 		)
- 	)
+	)
 );
 
 class ca_users extends BaseModel {
@@ -184,7 +184,7 @@ class ca_users extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_users';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'user_id';
 
@@ -719,8 +719,8 @@ class ca_users extends BaseModel {
 			if (is_array($va_volatile_vars = $qr_users->getVars('volatile_vars'))) {
 				$va_vars = array_merge($va_vars, $va_volatile_vars);
 			}
- 			$va_users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), array('last_login' => $va_vars['last_login']));
- 		}
+			$va_users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), array('last_login' => $va_vars['last_login']));
+		}
 		
 		return $va_users;
 	}
@@ -2501,7 +2501,7 @@ class ca_users extends BaseModel {
 	 * @param mixed $ps_user_name_or_id The user name or numeric user_id of the user
 	 * @return boolean True if user exists, false if not
 	 */
-	 static public function exists($ps_user_name_or_id, $pa_options=null) {
+	static public function exists($ps_user_name_or_id, $pa_options=null) {
 		if (parent::exists($ps_user_name_or_id)) {
 			return true;
 		}

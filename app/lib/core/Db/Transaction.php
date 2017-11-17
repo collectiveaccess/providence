@@ -29,18 +29,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 
 class Transaction {
 	# ----------------------------------------
-  	private $o_db; # database connection
-  	
+	private $o_db; # database connection
+	
 	# ----------------------------------------
 	public function __construct($po_db=null) {
 		$this->o_db = ($po_db) ? $po_db : new Db(null, array('uniqueConnection' => true));

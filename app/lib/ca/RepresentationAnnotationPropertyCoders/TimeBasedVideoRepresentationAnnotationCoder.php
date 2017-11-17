@@ -29,17 +29,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 	require_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/TimeBasedRepresentationAnnotationCoder.php');
 
-	class TimeBasedVideoRepresentationAnnotationCoder extends TimeBasedRepresentationAnnotationCoder implements IRepresentationAnnotationPropertyCoder {
+/**
+ *
+ */
+require_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/TimeBasedRepresentationAnnotationCoder.php');
+
+class TimeBasedVideoRepresentationAnnotationCoder extends TimeBasedRepresentationAnnotationCoder implements IRepresentationAnnotationPropertyCoder {
 	# ------------------------------------------------------------------
-		public function __construct() {
-			parent::__construct();
-			$this->ops_type = 'TimeBasedVideo';
-		}
-		# ------------------------------------------------------------------
+	public function __construct() {
+		parent::__construct();
+		$this->ops_type = 'TimeBasedVideo';
 	}
+	# ------------------------------------------------------------------
+}

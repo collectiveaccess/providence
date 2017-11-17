@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$po_request			= $this->getVar('request');
+	$po_request			= $this->getVar('request');
 ?>
 
 <div class="dashboardWidgetContentContainer">

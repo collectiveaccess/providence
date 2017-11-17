@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-   	$vo_result_context 			= $this->getVar('result_context');
- 	$vo_result					= $this->getVar('result');
+	$vo_result_context 			= $this->getVar('result_context');
+	$vo_result					= $this->getVar('result');
 ?>
 <h3>
 	<?php print _t("Search %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>

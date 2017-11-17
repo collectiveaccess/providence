@@ -31,13 +31,13 @@
  */
 
 
-	# ---------------------------------------
-	/**
-	 * Returns library services configuration
-	 *
-	 * @return Configuration Returns reference to library services configuration
-	 */
-	function caGetLibraryServicesConfiguration() {
- 		return Configuration::load(__CA_CONF_DIR__."/library_services.conf");
-	}
-	# ---------------------------------------
+# ---------------------------------------
+/**
+ * Returns library services configuration
+ *
+ * @return Configuration Returns reference to library services configuration
+ */
+function caGetLibraryServicesConfiguration() {
+	return Configuration::load(__CA_CONF_DIR__."/library_services.conf");
+}
+# ---------------------------------------

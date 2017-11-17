@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
@@ -45,8 +45,8 @@ define("__CA_DATA_IMPORTER_DESTINATION_RELATED__", 2);
 define("__CA_DATA_IMPORTER_DESTINATION_META__", 3);
 
 BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
- 	'NAME_SINGULAR' 	=> _t('data importer item'),
- 	'NAME_PLURAL' 		=> _t('data importer items'),
+	'NAME_SINGULAR' 	=> _t('data importer item'),
+	'NAME_PLURAL' 		=> _t('data importer items'),
 	'FIELDS' 			=> array(
 		'item_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -108,7 +108,7 @@ class ca_data_importer_items extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_importer_items';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'item_id';
 

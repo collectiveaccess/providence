@@ -776,7 +776,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		return $vs_query;
-    }
+	}
 	# ------------------------------------------------------------------
 	# Search parameter accessors
 	# ------------------------------------------------------------------

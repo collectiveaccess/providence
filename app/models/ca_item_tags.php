@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,10 +38,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_item_tags'] = array(
- 	'NAME_SINGULAR' 	=> _t('tag'),
- 	'NAME_PLURAL' 		=> _t('tags'),
- 	'FIELDS' 			=> array(
- 		'tag_id' => array(
+	'NAME_SINGULAR' 	=> _t('tag'),
+	'NAME_PLURAL' 		=> _t('tags'),
+	'FIELDS' 			=> array(
+		'tag_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -64,7 +64,7 @@ BaseModel::$s_ca_models_definitions['ca_item_tags'] = array(
 				'LABEL' => _t('Tag'), 'DESCRIPTION' => _t('Text of the tag.'),
 				'BOUNDS_LENGTH' => array(1,255)
 		)
- 	)
+	)
 );
 
 class ca_item_tags extends BaseModel {
@@ -80,7 +80,7 @@ class ca_item_tags extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_item_tags';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'tag_id';
 

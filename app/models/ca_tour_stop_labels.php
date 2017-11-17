@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_tour_stop_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('tour stop name'),
- 	'NAME_PLURAL' 		=> _t('tour stop names'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('tour stop name'),
+	'NAME_PLURAL' 		=> _t('tour stop names'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -78,7 +78,7 @@ BaseModel::$s_ca_models_definitions['ca_tour_stop_labels'] = array(
 				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
 				'BOUNDS_LENGTH' => array(0,255)
 		)
- 	)
+	)
 );
 
 class ca_tour_stop_labels extends BaseLabel {
@@ -94,7 +94,7 @@ class ca_tour_stop_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_tour_stop_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

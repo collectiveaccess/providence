@@ -29,96 +29,96 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
+
+/**
+  *
+  */
+
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
 require_once(__CA_MODELS_DIR__.'/ca_attribute_value_multifiles.php');
 require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
- 	'NAME_SINGULAR' 	=> _t('attribute value'),
- 	'NAME_PLURAL' 		=> _t('attribute values'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('attribute value'),
+	'NAME_PLURAL' 		=> _t('attribute values'),
+	'FIELDS' 			=> array(
 		'value_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Attribute value id', 'DESCRIPTION' => 'Unique identifier for this attribute value'
 		),
 		'element_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Element id', 'DESCRIPTION' => 'Identifier for Element'
 		),
 		'attribute_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Attribute', 'DESCRIPTION' => 'Attribute value is part of'
 		),
 		'item_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'List', 'DESCRIPTION' => 'List item this value uses (only set for list attributes)'
 		),
 		'value_longtext1' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Longtext value container 1', 'DESCRIPTION' => 'First longtext attribute value container'
 		),
 		'value_longtext2' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Longtext value container 2', 'DESCRIPTION' => 'Second longtext attribute value container'
 		),
 		'value_blob' => array(
-				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				"MEDIA_PROCESSING_SETTING" => 'ca_object_representations',
 				"FILE_VOLUME" => 'workspace',
 				'LABEL' => 'BLOB value container', 'DESCRIPTION' => 'BLOB attribute value container'
 		),
 		'value_decimal1' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Decimal value container 1', 'DESCRIPTION' => 'First decimal attribute value container'
 		),
 		'value_decimal2' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Decimal value container 2', 'DESCRIPTION' => 'Second decimal attribute value container'
 		),
 		'value_integer1' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DEFAULT' => '',
 				'LABEL' => 'Integer value container', 'DESCRIPTION' => 'Integer attribute value container'
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
 		)
@@ -140,7 +140,7 @@ class ca_attribute_values extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_attribute_values';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'value_id';
 
@@ -166,12 +166,12 @@ class ca_attribute_values extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('value_longtext1');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -272,24 +272,24 @@ class ca_attribute_values extends BaseModel {
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
 		
 		if (is_array($va_values)) {
-		    if ((caGetOption('skipExistingValues', $pa_options, false)) && ($t_attr = caGetOption('t_attribute', $pa_options, null)) && ($t_instance = $t_attr->getRowInstance())) {
-                if(is_array($va_attrs = $t_instance->getAttributesByElement($vn_attr_element_id = $t_attr->get('element_id')))){
-                    $o_attr_value->loadTypeSpecificValueFromRow($va_values);
-                    $vs_new_value = (string)$o_attr_value->getDisplayValue($pa_options);
-                    
-                    $vb_already_exists = false;
-                    foreach($va_attrs as $o_attr) {
-                        foreach($o_attr->getValues() as $o_val) {
-                            if ((int)$o_val->getElementID() !== (int)$pa_element_info['element_id']) { continue; }
-                            $vs_old_value = (string)$o_val->getDisplayValue($pa_options);
-                            if (strlen($vs_old_value) && strlen($vs_new_value) && ($vs_old_value === $vs_new_value)) {
-                                return null;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+			if ((caGetOption('skipExistingValues', $pa_options, false)) && ($t_attr = caGetOption('t_attribute', $pa_options, null)) && ($t_instance = $t_attr->getRowInstance())) {
+				if(is_array($va_attrs = $t_instance->getAttributesByElement($vn_attr_element_id = $t_attr->get('element_id')))){
+					$o_attr_value->loadTypeSpecificValueFromRow($va_values);
+					$vs_new_value = (string)$o_attr_value->getDisplayValue($pa_options);
+					
+					$vb_already_exists = false;
+					foreach($va_attrs as $o_attr) {
+						foreach($o_attr->getValues() as $o_val) {
+							if ((int)$o_val->getElementID() !== (int)$pa_element_info['element_id']) { continue; }
+							$vs_old_value = (string)$o_val->getDisplayValue($pa_options);
+							if (strlen($vs_old_value) && strlen($vs_new_value) && ($vs_old_value === $vs_new_value)) {
+								return null;
+								break;
+							}
+						}
+					}
+				}
+			}
 		
 		
 			$this->useBlobAsFileField(false);
@@ -471,48 +471,48 @@ class ca_attribute_values extends BaseModel {
 		return null;
 	}
 	# ------------------------------------------------------
- 	# Multifiles
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function addFile($ps_filepath, $ps_resource_path='/', $pb_allow_duplicates=true) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		if (!trim($ps_resource_path)) { $ps_resource_path = '/'; }
- 		
- 		$t_multifile = new ca_attribute_value_multifiles();
- 		if (!$pb_allow_duplicates) {
- 			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'value_id' => $this->getPrimaryKey()))) {
- 				return null;
- 			}
- 		}
- 		$t_multifile->setMode(ACCESS_WRITE);
- 		$t_multifile->set('value_id', $this->getPrimaryKey());
- 		$t_multifile->set('media', $ps_filepath);
- 		$t_multifile->set('resource_path', $ps_resource_path);
- 		
- 		$t_multifile->insert();
- 		
- 		if ($t_multifile->numErrors()) {
- 			$this->errors = array_merge($this->errors, $t_multifile->errors);
- 			return false;
- 		}
- 		
- 		return $t_multifile;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function removeFile($pn_multifile_id) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		
- 		$t_multifile = new ca_attribute_value_multifiles($pn_multifile_id);
- 		
- 		if ($t_multifile->get('value_id') == $this->getPrimaryKey()) {
- 			$t_multifile->setMode(ACCESS_WRITE);
- 			$t_multifile->delete();
- 			
+	# Multifiles
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function addFile($ps_filepath, $ps_resource_path='/', $pb_allow_duplicates=true) {
+		if(!$this->getPrimaryKey()) { return null; }
+		if (!trim($ps_resource_path)) { $ps_resource_path = '/'; }
+		
+		$t_multifile = new ca_attribute_value_multifiles();
+		if (!$pb_allow_duplicates) {
+			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'value_id' => $this->getPrimaryKey()))) {
+				return null;
+			}
+		}
+		$t_multifile->setMode(ACCESS_WRITE);
+		$t_multifile->set('value_id', $this->getPrimaryKey());
+		$t_multifile->set('media', $ps_filepath);
+		$t_multifile->set('resource_path', $ps_resource_path);
+		
+		$t_multifile->insert();
+		
+		if ($t_multifile->numErrors()) {
+			$this->errors = array_merge($this->errors, $t_multifile->errors);
+			return false;
+		}
+		
+		return $t_multifile;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeFile($pn_multifile_id) {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$t_multifile = new ca_attribute_value_multifiles($pn_multifile_id);
+		
+		if ($t_multifile->get('value_id') == $this->getPrimaryKey()) {
+			$t_multifile->setMode(ACCESS_WRITE);
+			$t_multifile->delete();
+			
 			if ($t_multifile->numErrors()) {
 				$this->errors = array_merge($this->errors, $t_multifile->errors);
 				return false;
@@ -522,127 +522,127 @@ class ca_attribute_values extends BaseModel {
 			return false;
 		}
 		return true;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function removeAllFiles() {
- 		if(!$this->getPrimaryKey()) { return null; }
- 		
- 		$va_file_ids = array_keys($this->getFileList());
- 		
- 		foreach($va_file_ids as $vn_id) {
- 			$this->removeFile($vn_id);
- 			
- 			if($this->numErrors()) {
- 				return false;
- 			}
- 		}
- 		
- 		return true;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns list of additional files (page or frame previews for documents or videos, typically) attached to a value
- 	 * The return value is an array key'ed on the multifile_id (a unique identifier for each attached file); array values are arrays
- 	 * with keys set to values for each file version returned. They keys are:
- 	 *		<version name>_path = The absolute file path to the file
- 	 *		<version name>_tag = An HTML tag that will display the file
- 	 *		<version name>_url = The URL for the file
- 	 *		<version name>_width = The pixel width of the file when displayed
- 	 *		<version name>_height = The pixel height of the file when displayed
- 	 * The available versions are set in media_processing.conf
- 	 *
- 	 * @param int $pn_value_id The value_id of the attribute value to return files for. If omitted the currently loaded attribute value is used. If no value_id is specified and no row is loaded null will be returned.
- 	 * @param int $pn_start The index of the first file to return. Files are numbered from zero. If omitted the first file found is returned.
- 	 * @param int $pn_num_files The maximum number of files to return. If omitted all files are returned.
- 	 * @param array $pa_versions A list of file versions to return. If omitted only the "preview" version is returned.
- 	 * @return array A list of files attached to the attribute value. If no files are associated an empty array is returned.
- 	 */
- 	public function getFileList($pn_value_id=null, $pn_start=null, $pn_num_files=null, $pa_versions=null) {
- 		if(!($vn_value_id = $pn_value_id)) { 
- 			if (!($vn_value_id = $this->getPrimaryKey())) {
- 				return null; 
- 			}
- 		}
- 		
- 		if (!is_array($pa_versions)) {
- 			$pa_versions = array('preview');
- 		}
- 		
- 		$vs_limit_sql = '';
- 		if (!is_null($pn_start) && !is_null($pn_num_files)) {
- 			if (($pn_start >= 0) && ($pn_num_files >= 1)) {
- 				$vs_limit_sql = "LIMIT {$pn_start}, {$pn_num_files}";
- 			}
- 		}
- 		
- 		$o_db= $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT *
- 			FROM ca_attribute_value_multifiles
- 			WHERE
- 				value_id = ?
- 			{$vs_limit_sql}
- 		", (int)$vn_value_id);
- 		
- 		$va_files = array();
- 		while($qr_res->nextRow()) {
- 			$vn_multifile_id = $qr_res->get('multifile_id');
- 			$va_files[$vn_multifile_id] = $qr_res->getRow();
- 			unset($va_files[$vn_multifile_id]['media']);
- 			
- 			foreach($pa_versions as $vn_i => $vs_version) {
- 				$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
- 				
- 				$va_info = $qr_res->getMediaInfo('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
- 				$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
- 				$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
- 			}
- 		}
- 		return $va_files;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function getFileInstance($pn_multifile_id) {
- 		if(!$this->getPrimaryKey()) { return null; }
- 	
- 		$t_multifile = new ca_attribute_value_multifiles($pn_multifile_id);
- 		
- 		if ($t_multifile->get('value_id') == $this->getPrimaryKey()) {
- 			return $t_multifile;
- 		}
- 		return null;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function numFiles($pn_value_id=null) { 		
- 		if(!($vn_value_id = $pn_value_id)) { 
- 			if (!($vn_value_id = $this->getPrimaryKey())) {
- 				return null; 
- 			}
- 		}
- 		
- 		$o_db= $this->getDb();
- 		$qr_res = $o_db->query("
- 			SELECT count(*) c
- 			FROM ca_attribute_value_multifiles
- 			WHERE
- 				value_id = ?
- 		", (int)$vn_value_id);
- 		
- 		if($qr_res->nextRow()) {
- 			return intval($qr_res->get('c'));
- 		}
- 		return 0;
- 	}
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeAllFiles() {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$va_file_ids = array_keys($this->getFileList());
+		
+		foreach($va_file_ids as $vn_id) {
+			$this->removeFile($vn_id);
+			
+			if($this->numErrors()) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns list of additional files (page or frame previews for documents or videos, typically) attached to a value
+	 * The return value is an array key'ed on the multifile_id (a unique identifier for each attached file); array values are arrays
+	 * with keys set to values for each file version returned. They keys are:
+	 *		<version name>_path = The absolute file path to the file
+	 *		<version name>_tag = An HTML tag that will display the file
+	 *		<version name>_url = The URL for the file
+	 *		<version name>_width = The pixel width of the file when displayed
+	 *		<version name>_height = The pixel height of the file when displayed
+	 * The available versions are set in media_processing.conf
+	 *
+	 * @param int $pn_value_id The value_id of the attribute value to return files for. If omitted the currently loaded attribute value is used. If no value_id is specified and no row is loaded null will be returned.
+	 * @param int $pn_start The index of the first file to return. Files are numbered from zero. If omitted the first file found is returned.
+	 * @param int $pn_num_files The maximum number of files to return. If omitted all files are returned.
+	 * @param array $pa_versions A list of file versions to return. If omitted only the "preview" version is returned.
+	 * @return array A list of files attached to the attribute value. If no files are associated an empty array is returned.
+	 */
+	public function getFileList($pn_value_id=null, $pn_start=null, $pn_num_files=null, $pa_versions=null) {
+		if(!($vn_value_id = $pn_value_id)) {
+			if (!($vn_value_id = $this->getPrimaryKey())) {
+				return null;
+			}
+		}
+		
+		if (!is_array($pa_versions)) {
+			$pa_versions = array('preview');
+		}
+		
+		$vs_limit_sql = '';
+		if (!is_null($pn_start) && !is_null($pn_num_files)) {
+			if (($pn_start >= 0) && ($pn_num_files >= 1)) {
+				$vs_limit_sql = "LIMIT {$pn_start}, {$pn_num_files}";
+			}
+		}
+		
+		$o_db= $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_attribute_value_multifiles
+			WHERE
+				value_id = ?
+			{$vs_limit_sql}
+		", (int)$vn_value_id);
+		
+		$va_files = array();
+		while($qr_res->nextRow()) {
+			$vn_multifile_id = $qr_res->get('multifile_id');
+			$va_files[$vn_multifile_id] = $qr_res->getRow();
+			unset($va_files[$vn_multifile_id]['media']);
+			
+			foreach($pa_versions as $vn_i => $vs_version) {
+				$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
+				$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
+				$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
+				
+				$va_info = $qr_res->getMediaInfo('media', $vs_version);
+				$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
+				$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
+				$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
+			}
+		}
+		return $va_files;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getFileInstance($pn_multifile_id) {
+		if(!$this->getPrimaryKey()) { return null; }
+	
+		$t_multifile = new ca_attribute_value_multifiles($pn_multifile_id);
+		
+		if ($t_multifile->get('value_id') == $this->getPrimaryKey()) {
+			return $t_multifile;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function numFiles($pn_value_id=null) {
+		if(!($vn_value_id = $pn_value_id)) {
+			if (!($vn_value_id = $this->getPrimaryKey())) {
+				return null;
+			}
+		}
+		
+		$o_db= $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT count(*) c
+			FROM ca_attribute_value_multifiles
+			WHERE
+				value_id = ?
+		", (int)$vn_value_id);
+		
+		if($qr_res->nextRow()) {
+			return intval($qr_res->get('c'));
+		}
+		return 0;
+	}
 	# ------------------------------------------------------
 }

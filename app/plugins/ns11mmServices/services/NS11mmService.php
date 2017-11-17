@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 
@@ -51,7 +51,7 @@ class NS11mmService extends BaseService {
 	public function  __construct($po_request) {
 		parent::__construct($po_request);
 		$this->opo_dm = Datamodel::load();
-	}	
+	}
 	# -------------------------------------------------------
 	/**
 	 * Handles authentification
@@ -113,25 +113,25 @@ class NS11mmService extends BaseService {
 		return gmdate(self::OAI_DATE_FORMAT, $ps_timestamp);
 	}
 	# -------------------------------------------------------
-    /**
-     * Converts the given Unix timestamp to the Omeka DB's datetime format.
-     *
-     * @param int $ps_timestamp Unix timestamp
-     * @return string Time in Omeka DB format
-     */
-    static function unixToDb($ps_timestamp) {
-       return date(self::DB_DATE_FORMAT, $ps_timestamp);
-    }
-    # -------------------------------------------------------
-    /**
-     * Converts the given time string to MySQL database format
-     *
-     * @param string $databaseTime Database time string
-     * @return string Time in MySQL DB format
-     * @uses unixToDb()
-     */
-    static function utcToDb($ps_utc_datetime) {
-       return self::unixToDb(strtotime($ps_utc_datetime));
-    }
+	/**
+	 * Converts the given Unix timestamp to the Omeka DB's datetime format.
+	 *
+	 * @param int $ps_timestamp Unix timestamp
+	 * @return string Time in Omeka DB format
+	 */
+	static function unixToDb($ps_timestamp) {
+		return date(self::DB_DATE_FORMAT, $ps_timestamp);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Converts the given time string to MySQL database format
+	 *
+	 * @param string $databaseTime Database time string
+	 * @return string Time in MySQL DB format
+	 * @uses unixToDb()
+	 */
+	static function utcToDb($ps_utc_datetime) {
+	   return self::unixToDb(strtotime($ps_utc_datetime));
+	}
 	# -------------------------------------------------------
 }

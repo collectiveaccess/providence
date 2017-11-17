@@ -12,11 +12,11 @@
 		print "\n";
 		while($qr_result->nextRow()) {
 			foreach ($va_columns as $va_column => $va_colum_label) {
-			    print $qr_result->get($va_colum_label).";";
-			    if (in_array($va_colum_label, $va_total_columns)) $va_total_value["$va_colum_label"] = $va_total_value["$va_colum_label"] + $qr_result->get($va_colum_label);
+				print $qr_result->get($va_colum_label).";";
+				if (in_array($va_colum_label, $va_total_columns)) $va_total_value["$va_colum_label"] = $va_total_value["$va_colum_label"] + $qr_result->get($va_colum_label);
 			}
 			print "\n";
-		}		
+		}
 		print "\n";
 	}
 
@@ -30,12 +30,12 @@
 	$va_statistics 	= $this->getVar('informations');
 	$va_columns = $va_statistics->columns;
 	$va_total_columns = $va_statistics->total_columns;
-    $query = $this->getVar('sql');
-    $qr_result = $query['result'];
+	$query = $this->getVar('sql');
+	$qr_result = $query['result'];
 
 	header("Content-Type: application/csv-tab-delimited-table");
-	header("Content-disposition: filename=table.csv");	
+	header("Content-disposition: filename=table.csv");
 
 	renderCSV($qr_result,$va_columns,$va_charting_rows,$va_total_columns);
-	exit();		
+	exit();
 ?>

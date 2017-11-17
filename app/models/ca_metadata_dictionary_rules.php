@@ -29,11 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
- 
+
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
 
@@ -66,10 +66,10 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 );
 
 BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
- 	'NAME_SINGULAR' 	=> _t('Metadata dictionary rule'),
- 	'NAME_PLURAL' 		=> _t('Metadata dictionary rules'),
- 	'FIELDS' 			=> array(
- 		'rule_id' => array(
+	'NAME_SINGULAR' 	=> _t('Metadata dictionary rule'),
+	'NAME_PLURAL' 		=> _t('Metadata dictionary rules'),
+	'FIELDS' 			=> array(
+		'rule_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -121,7 +121,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Settings')
 		)
- 	)
+	)
 );
 
 
@@ -138,7 +138,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_metadata_dictionary_rules';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'rule_id';
 

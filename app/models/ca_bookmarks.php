@@ -29,36 +29,36 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_MODELS_DIR__.'/ca_bookmark_folders.php');
 
 BaseModel::$s_ca_models_definitions['ca_bookmarks'] = array(
- 	'NAME_SINGULAR' 	=> _t('bookmark'),
- 	'NAME_PLURAL' 		=> _t('bookmarks'),
- 	'FIELDS' 			=> array(
- 		'bookmark_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('bookmark'),
+	'NAME_PLURAL' 		=> _t('bookmarks'),
+	'FIELDS' 			=> array(
+		'bookmark_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this bookmark')
 		),
 		'folder_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'DISPLAY_FIELD' => array('ca_bookmark_folders.folder_id'),
 				'DISPLAY_ORDERBY' => array('ca_bookmark_folders.name'),
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Folder'), 'DESCRIPTION' => _t('Indicates the folder to which the bookmark belongs.')
 		),
 		'table_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Bookmark type'), 'DESCRIPTION' => _t('Indicates type of item bookmark represents.'),
 				'BOUNDS_CHOICE_LIST' => array(
@@ -82,21 +82,21 @@ BaseModel::$s_ca_models_definitions['ca_bookmarks'] = array(
 		'row_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier for row included in the bookmark list'
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 		'notes' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 5,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Notes'), 'DESCRIPTION' => _t('Notes pertaining to the bookmark and/or bookmarked item.'),
 				'BOUNDS_LENGTH' => array(0,65535)
@@ -104,11 +104,11 @@ BaseModel::$s_ca_models_definitions['ca_bookmarks'] = array(
 		'created_on' => array(
 				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 'UPDATE_ON_UPDATE' => true,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Bookmark created on'), 'DESCRIPTION' => _t('Date/time the bookmark was created.'),
 		),
- 	)
+	)
 );
 
 class ca_bookmarks extends BaseModel {
@@ -124,7 +124,7 @@ class ca_bookmarks extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_bookmarks';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'bookmark_id';
 
@@ -151,7 +151,7 @@ class ca_bookmarks extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('bookmark_id');
 
@@ -182,7 +182,7 @@ class ca_bookmarks extends BaseModel {
 		"RELATED_TABLES" => array(
 		
 		)
-	);	
+	);
 	
 	
 	# ------------------------------------------------------

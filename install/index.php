@@ -27,48 +27,48 @@
  *
  * ----------------------------------------------------------------------
  */
-	define('__CollectiveAccess_Installer__', 1);
-	error_reporting(E_ALL ^ E_NOTICE);
-	set_time_limit(7200);
-	ini_set("memory_limit", "512M");	
-	
-	// Check existence of setup.php
-	if (!file_exists('../setup.php')) {
-		die("You don't have a setup.php file present in the web root directory of your CollectiveAccess set up. Please copy setup.php-dist to setup.php, customize it and <a href='index.php'>re-run the installer</a>.");
-	}
-	require_once('../setup.php');
-	require_once('../app/helpers/configurationHelpers.php');
-	require_once('../app/helpers/htmlFormHelpers.php');
-	require_once("inc/Installer.php");
-	
-	$ps_instance = 	$_REQUEST['instance'];
-	$ps_action = 	$_REQUEST['action'];
-	$pn_page = 		$_REQUEST['page'];
+define('__CollectiveAccess_Installer__', 1);
+error_reporting(E_ALL ^ E_NOTICE);
+set_time_limit(7200);
+ini_set("memory_limit", "512M");
+
+// Check existence of setup.php
+if (!file_exists('../setup.php')) {
+	die("You don't have a setup.php file present in the web root directory of your CollectiveAccess set up. Please copy setup.php-dist to setup.php, customize it and <a href='index.php'>re-run the installer</a>.");
+}
+require_once('../setup.php');
+require_once('../app/helpers/configurationHelpers.php');
+require_once('../app/helpers/htmlFormHelpers.php');
+require_once("inc/Installer.php");
+
+$ps_instance = 	$_REQUEST['instance'];
+$ps_action = 	$_REQUEST['action'];
+$pn_page = 		$_REQUEST['page'];
 
 if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 	if ($ps_action == 'profileUpload') {
 		$va_response = array('STATUS' => 'OK');
 		
 		$vs_profile_dir = pathinfo(__FILE__, PATHINFO_DIRNAME).'/profiles/xml';
-		if (is_array($_FILES['files']['tmp_name'])) { 
+		if (is_array($_FILES['files']['tmp_name'])) {
 			foreach($_FILES['files']['tmp_name'] as $vn_i => $vs_tmp_name) {
-				if ($_FILES['files']['size'][$vn_i] <= 0) { 
+				if ($_FILES['files']['size'][$vn_i] <= 0) {
 					$va_response['skippedMessage'][] = _t('%1 is empty', $_FILES['files']['name'][$vn_i]);
-					continue; 
+					continue;
 				}
 				// check if file looks like a profile
 				$vs_tmp_dir = pathinfo($vs_tmp_name, PATHINFO_DIRNAME);
-			
+				
 				$vo_profile = new DOMDocument();
 				@$vo_profile->load($vs_tmp_name);
-			
+				
 				if(!(@$vo_profile->schemaValidate($vs_profile_dir."/profile.xsd"))) { 
 					$va_response['skippedMessage'][] = _t('%1 is not a valid profile', $_FILES['files']['name'][$vn_i]);
-					continue; 
+					continue;
 				}
-			
+				
 				$vb_exists = file_exists($vs_profile_dir.'/'.$_FILES['files']['name'][$vn_i]);
-			
+				
 				// attempt to write to profile dir
 				if (@copy($vs_tmp_name, $vs_profile_dir.'/'.$_FILES['files']['name'][$vn_i])) {
 					$va_response['added'][] = pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_FILENAME);
@@ -84,42 +84,42 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 		return;
 	}
 }
-	
-	$ps_email = isset($_REQUEST['email']) ? $_REQUEST['email'] : '';
-	$ps_profile = isset($_REQUEST['profile']) ? $_REQUEST['profile'] : '';
-	$pb_overwrite = (isset($_REQUEST['overwrite']) && defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) ? (bool)$_REQUEST['overwrite'] : false;
-	$pb_debug = (isset($_REQUEST['debug']) && defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) ? (bool)$_REQUEST['debug'] : false;
 
-	$va_errors = array();
-	
-	$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-	array_pop($va_tmp);
-	$vs_url_path = join("/", $va_tmp);
-	
-	// get current locale
-	$locale = 'en_US';
-	
-	// get current theme
-	$theme = 'default';
-	
-	$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/'.$locale.'/messages.mo', $locale);
-	
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/core/Db.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	
-	$o_dm = Datamodel::load();
-	
-	// Check setup.php settings
-	// ...
-	
-	if ($pn_page == 2) {
-		$ps_email = $_REQUEST['email'];
-		if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $ps_email)) {
-			$va_errors[] = 'Administrator e-mail address is invalid';
-			$pn_page = 1;
-		}
+$ps_email = isset($_REQUEST['email']) ? $_REQUEST['email'] : '';
+$ps_profile = isset($_REQUEST['profile']) ? $_REQUEST['profile'] : '';
+$pb_overwrite = (isset($_REQUEST['overwrite']) && defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) ? (bool)$_REQUEST['overwrite'] : false;
+$pb_debug = (isset($_REQUEST['debug']) && defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) ? (bool)$_REQUEST['debug'] : false;
+
+$va_errors = array();
+
+$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
+array_pop($va_tmp);
+$vs_url_path = join("/", $va_tmp);
+
+// get current locale
+$locale = 'en_US';
+
+// get current theme
+$theme = 'default';
+
+$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/'.$locale.'/messages.mo', $locale);
+
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/core/Db.php');
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+
+$o_dm = Datamodel::load();
+
+// Check setup.php settings
+// ...
+
+if ($pn_page == 2) {
+	$ps_email = $_REQUEST['email'];
+	if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $ps_email)) {
+		$va_errors[] = 'Administrator e-mail address is invalid';
+		$pn_page = 1;
 	}
+}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -142,7 +142,7 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 ?>
 <body>
 	<div class='content'>
-<?php 
+<?php
 		switch($pn_page) {
 			case 1:
 			default:

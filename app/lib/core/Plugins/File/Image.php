@@ -58,7 +58,7 @@ class WLPlugFileImage Extends WLPlug Implements IWLPlugFileFormat {
   var $info = array(
   			# properties from the identified file that *may*
   			# be returned; true (1) if *always* returned; false(0) if not
-		    "PROPERTIES" => array(
+			"PROPERTIES" => array(
 					  "version" 			=> 	1,
 					  
 					  # The following properties are common to all plug-ins
@@ -75,12 +75,12 @@ class WLPlugFileImage Extends WLPlug Implements IWLPlugFileFormat {
 												"long_format_name" => "JPEG preview"
 											)
 					  ),
-		    "NAME" => "Image", # name of plug-in
-		    );
+			"NAME" => "Image", # name of plug-in
+			);
 	
 	# ----------------------------------------------------------------------	
 	# Plug-in specific properties
-	# ----------------------------------------------------------------------	    
+	# ----------------------------------------------------------------------		
 	var $backend;
 	
 	# ----------------------------------------------------------------------	

@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,13 +38,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ca/WidgetManager.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
- 	
+	
 
 BaseModel::$s_ca_models_definitions['ca_user_roles'] = array(
- 	'NAME_SINGULAR' 	=> _t('user role'),
- 	'NAME_PLURAL' 		=> _t('user roles'),
- 	'FIELDS' 			=> array(
- 		'role_id' => array(
+	'NAME_SINGULAR' 	=> _t('user role'),
+	'NAME_PLURAL' 		=> _t('user roles'),
+	'FIELDS' 			=> array(
+		'role_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -97,7 +97,7 @@ BaseModel::$s_ca_models_definitions['ca_user_roles'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Field access'), 'DESCRIPTION' => _t('Contains definitions of what table/field combinations users with this role can access.')
 		)
- 	)
+	)
 );
 
 class ca_user_roles extends BaseModel {
@@ -115,7 +115,7 @@ class ca_user_roles extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_user_roles';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'role_id';
 
@@ -207,7 +207,7 @@ class ca_user_roles extends BaseModel {
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
 		
- 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_widget_manager = new WidgetManager();
 
 		ca_user_roles::$s_bundle_list = array();
@@ -231,8 +231,8 @@ class ca_user_roles extends BaseModel {
 		
 		$va_roles = array();
 		while($qr_roles->nextRow()) {
- 			$va_roles[$qr_roles->get('role_id')] = $qr_roles->getRow();
- 		}
+			$va_roles[$qr_roles->get('role_id')] = $qr_roles->getRow();
+		}
 		
 		return $va_roles;
 	}
@@ -283,11 +283,11 @@ class ca_user_roles extends BaseModel {
 		if(!$this->getPrimaryKey()) { return array(); }
 
 		$va_vars = $this->get('vars');
- 		if(isset($va_vars['bundle_access_settings'])){
- 			return $va_vars['bundle_access_settings'];
- 		} else {
- 			return array();
- 		}
+		if(isset($va_vars['bundle_access_settings'])){
+			return $va_vars['bundle_access_settings'];
+		} else {
+			return array();
+		}
 	}
 	# ------------------------------------------------------
 	/**
@@ -401,11 +401,11 @@ class ca_user_roles extends BaseModel {
 		if(!$this->getAppConfig()->get('perform_type_access_checking')) { array(); }
 
 		$va_vars = $this->get('vars');
- 		if(isset($va_vars['type_access_settings'])){
- 			return $va_vars['type_access_settings'];
- 		} else {
- 			return array();
- 		}
+		if(isset($va_vars['type_access_settings'])){
+			return $va_vars['type_access_settings'];
+		} else {
+			return array();
+		}
 	}
 	# ------------------------------------------------------
 	/**
@@ -463,11 +463,11 @@ class ca_user_roles extends BaseModel {
 		if(!$this->getAppConfig()->get('perform_source_access_checking')) { array(); }
 
 		$va_vars = $this->get('vars');
- 		if(isset($va_vars['source_access_settings'])){
- 			return $va_vars['source_access_settings'];
- 		} else {
- 			return array();
- 		}
+		if(isset($va_vars['source_access_settings'])){
+			return $va_vars['source_access_settings'];
+		} else {
+			return array();
+		}
 	}
 	# ------------------------------------------------------
 	/**

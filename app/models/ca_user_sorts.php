@@ -309,7 +309,7 @@ class ca_user_sorts extends BaseModel {
 	public function removeAllBundles() {
 		if(!$this->getPrimaryKey()) { return false; }
 
-		 $this->getDb()->query('DELETE FROM ca_user_sort_items WHERE sort_id=?', $this->getPrimaryKey());
+		$this->getDb()->query('DELETE FROM ca_user_sort_items WHERE sort_id=?', $this->getPrimaryKey());
 		return true;
 	}
 	# ------------------------------------------------------

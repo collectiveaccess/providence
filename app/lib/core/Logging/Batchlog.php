@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 include_once(__CA_LIB_DIR__."/core/Logging/BaseLogger.php");
 
 # ----------------------------------------------------------------------
@@ -42,8 +42,8 @@ class Batchlog extends BaseLogger {
 	/**
 	 *
 	 */
-  	private $opn_last_batch_id = null;
-  	private $opn_start_time = null;
+	private $opn_last_batch_id = null;
+	private $opn_start_time = null;
 	# ----------------------------------------
 	public function __construct($pa_entry=null) {
 		parent::__construct();
@@ -56,7 +56,7 @@ class Batchlog extends BaseLogger {
 	 *
 	 */
 	public function log($pa_entry) {
- 		global $g_change_log_batch_id;
+		global $g_change_log_batch_id;
 		if (is_array($pa_entry)) {
 			if (isset($pa_entry['transaction']) && $pa_entry['transaction']) {
 				$this->o_db = $pa_entry['transaction']->getDb();
@@ -80,7 +80,7 @@ class Batchlog extends BaseLogger {
 	 *
 	 */
 	public function close() {
- 		global $g_change_log_batch_id;
+		global $g_change_log_batch_id;
 		if ($g_change_log_batch_id) {
 			
 			$this->o_db->query("
@@ -112,17 +112,17 @@ class Batchlog extends BaseLogger {
 	 *
 	 */
 	 public function addItem($pn_row_id, $pa_errors=null) {
-	 	if (!$this->opn_last_batch_id) { return false; }
-	 	if (!$pn_row_id) { return false; }
-	 	
-	 	if (!is_array($pa_errors)) { $pa_errors = array(); }
-	 	if (sizeof($pa_errors)) {
-	 		$va_errors = array();
-	 		foreach($pa_errors as $o_error) {
-	 			$va_errors[$o_error->getErrorNumber()] = $o_error->getErrorDescription();
-	 		}
-	 	}
-	 	
+		if (!$this->opn_last_batch_id) { return false; }
+		if (!$pn_row_id) { return false; }
+		
+		if (!is_array($pa_errors)) { $pa_errors = array(); }
+		if (sizeof($pa_errors)) {
+			$va_errors = array();
+			foreach($pa_errors as $o_error) {
+				$va_errors[$o_error->getErrorNumber()] = $o_error->getErrorDescription();
+			}
+		}
+		
 		$this->o_db->query("
 				INSERT INTO ca_batch_log_items
 				(row_id, batch_id, errors)
@@ -138,21 +138,21 @@ class Batchlog extends BaseLogger {
 	 *
 	 */
 	 public function getLastLogBatchID() {
-	 	return $this->opn_last_batch_id;
+		return $this->opn_last_batch_id;
 	}
 	# ----------------------------------------
 	/**
 	 *
 	 */
 	 public static function getLogInfoForBatchID($pn_batch_id) {
-	 	// TODO :implement
+		// TODO :implement
 	}
 	# ----------------------------------------
 	/**
 	 *
 	 */
 	 public static function getLogItemsForBatchID($pn_batch_id) {
-	 	// TODO :implement
+		// TODO :implement
 	}
 	# ----------------------------------------
 }

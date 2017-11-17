@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 include_once(__CA_LIB_DIR__.'/core/Search/Common/Stemmer/SnoballStemmer.php');
 include_once(__CA_LIB_DIR__.'/core/Zend/Search/Lucene/Analysis/TokenFilter.php');
@@ -41,13 +41,13 @@ include_once(__CA_LIB_DIR__.'/core/Search/Common/Language/LanguageDetection.php'
 
 class StemmingFilter extends Zend_Search_Lucene_Analysis_TokenFilter
 {
-    /**
-     * Normalize Token or remove it (if null is returned)
-     *
-     * @param Zend_Search_Lucene_Analysis_Token $srcToken
-     * @return Zend_Search_Lucene_Analysis_Token
-     */
-    public function normalize(Zend_Search_Lucene_Analysis_Token $po_srctoken) {
+	/**
+	 * Normalize Token or remove it (if null is returned)
+	 *
+	 * @param Zend_Search_Lucene_Analysis_Token $srcToken
+	 * @return Zend_Search_Lucene_Analysis_Token
+	 */
+	public function normalize(Zend_Search_Lucene_Analysis_Token $po_srctoken) {
 		
 		$vo_lang_analyzer = new LanguageDetection();
 		$vs_original_string = $po_srctoken->getTermText();
@@ -62,13 +62,13 @@ class StemmingFilter extends Zend_Search_Lucene_Analysis_TokenFilter
 		}
 		/* build new token to return */
 		$vo_new_token = new Zend_Search_Lucene_Analysis_Token(
-                                     $vs_stemmed_string,
-                                     $po_srctoken->getStartOffset(),
-                                     $po_srctoken->getEndOffset());
+									 $vs_stemmed_string,
+									 $po_srctoken->getStartOffset(),
+									 $po_srctoken->getEndOffset());
 
-        $vo_new_token->setPositionIncrement($po_srctoken->getPositionIncrement());
+		$vo_new_token->setPositionIncrement($po_srctoken->getPositionIncrement());
 
-        return $vo_new_token;
-    }
+		return $vo_new_token;
+	}
 }
 

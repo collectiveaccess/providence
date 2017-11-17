@@ -29,7 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
  /**
   *
   */
@@ -73,9 +73,9 @@ class Datamodel {
 		}
 		
 		$o_config = Configuration::load();
- 			
+		
 		if ($vs_data_model_path = __CA_CONF_DIR__."/datamodel.conf") {
-			
+		
 			$o_datamodel = Configuration::load($vs_data_model_path);
 			$this->opo_graph = new Graph();
 			
@@ -97,7 +97,7 @@ class Datamodel {
 				$vn_num_keys = sizeof($va_keys);
 				
 				switch($vn_num_keys) {
-					case 2:					
+					case 2:
 						$vs_key1 = $va_keys[0];
 						$va_tmp = preg_split('/[ ]+/', $va_keys[1]);
 						$vs_key2 = $va_tmp[0];
@@ -113,10 +113,10 @@ class Datamodel {
 				}
 				
 				
-				if (!$this->opo_graph->hasNode($vs_table1)) { 
+				if (!$this->opo_graph->hasNode($vs_table1)) {
 					die("Fatal error: invalid table '$vs_table1' in relationship in datamodel definition\n");
 				}
-				if (!$this->opo_graph->hasNode($vs_table2)) { 
+				if (!$this->opo_graph->hasNode($vs_table2)) {
 					die("Fatal error: invalid table '$vs_table2' in relationship in datamodel definition\n");
 				}
 				
@@ -251,7 +251,7 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Get information for field from model 
+	 * Get information for field from model
 	 *
 	 * @param string $ps_table The table name
 	 * @param string $ps_field The field name
@@ -445,7 +445,7 @@ class Datamodel {
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Returns a list of relations where the specified table is the "many" end. In other words, get
-	 * details for all foreign keys in the specified table 
+	 * details for all foreign keys in the specified table
 	 */
 	public function getManyToOneRelations($ps_table, $ps_field=null) {
 		if(!$ps_table) { return null; }
@@ -605,18 +605,18 @@ class Datamodel {
 		}
 		
 		# handle self relationships as a special case
-       if($ps_left_table == $ps_right_table) {
-             //define rel table
-             $rel_table  = $ps_left_table . "_x_" . str_replace("ca_","",$ps_left_table);
-             if (!$this->getInstanceByTableName($rel_table, true)) {
-             	return array();		// self relation doesn't exist
-             }
-             return array($ps_left_table=>$this->getTableNum($ps_left_table),$rel_table=>$this->getTableNum($rel_table));
-        }
- 		
- 		$vs_path = $this->opo_graph->getPath($ps_left_table, $ps_right_table);
+		if($ps_left_table == $ps_right_table) {
+			 //define rel table
+			 $rel_table  = $ps_left_table . "_x_" . str_replace("ca_","",$ps_left_table);
+			 if (!$this->getInstanceByTableName($rel_table, true)) {
+				return array();		// self relation doesn't exist
+			 }
+			 return array($ps_left_table=>$this->getTableNum($ps_left_table),$rel_table=>$this->getTableNum($rel_table));
+		}
+		
+		$vs_path = $this->opo_graph->getPath($ps_left_table, $ps_right_table);
 		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $vs_path, 'DatamodelPaths');
- 		return $vs_path;
+		return $vs_path;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

@@ -8,15 +8,15 @@
 	//$va_positions = $va_parameters['positions'];
 	//$va_selectedPosition = $va_parameters['selectedPosition'];
 	$va_chart_width = $va_parameters["width"];
-			
+	
 	// Content creation : CHART
-  		
+	
 	// Chart object
 	$charting_class = $va_parameters['ChartingLib'];
 	//$charting_class = "pChart";
 	
 	require_once(__CA_BASE_DIR__."/app/plugins/statisticsViewer/lib/chart".$charting_class."Class.php");
- 		
+	
 	// Create a chart object in the class defined by the config file
 	$chart = new $charting_class;
 	$chart->loadParameter("columns",$va_informations->columns);
@@ -27,9 +27,9 @@
 	// Test if all parameters are OK
 	if($chart->checkRequiredParameters()) {
 		// Render Chart
-  		$chart->loadValues($va_sql['result']);
+		$chart->loadValues($va_sql['result']);
 		$htmlChart = $chart->drawImage();
-		exit();		
+		exit();
 	} else {
 		die("Missing parameters : ".implode(", ",$chart->returnRequiredParameters()));
 	}

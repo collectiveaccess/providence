@@ -29,14 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 /**
  * Plugin for processing images using GraphicsMagick via the Gmagick PECL extension
-*/
+ */
 
 include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
@@ -261,9 +261,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($this->register()) {
 			$va_status['available'] = true;
 		} else {
-			if (!caMediaPluginGmagickInstalled()) {	
+			if (!caMediaPluginGmagickInstalled()) {
 				$va_status['errors'][] = _t("Didn't load because Gmagick is not available");
-			} 
+			}
 		}
 		
 		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
@@ -293,7 +293,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				} else {
 					return '';
 				}
-			} 
+			}
 		} catch (Exception $e) {
 			# is it a tilepic?
 			$tp = new TilepicParser();
@@ -382,7 +382,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 								return "";
 							}
 							$this->properties["layers"] = $value;
-							break;	
+							break;
 						case 'tile_mimetype':
 							if ((!($this->info["EXPORT"][$value])) && ($value != "image/tilepic")) {
 								$this->postError(1650, _t("Tile output type '%1' is invalid", $value), "WLPlugGmagick->set()");
@@ -514,7 +514,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$ch = $this->get("height");
 		
 		if((bool)$this->properties['no_upsampling']) {
-			$w = min($cw, round($w)); 
+			$w = min($cw, round($w));
 			$h = min($ch, round($h));
 		}
 		
@@ -525,7 +525,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				# -----------------------
 				case 'ANNOTATE':
 					$d = new GmagickDraw();
-					if ($parameters['font']) { 
+					if ($parameters['font']) {
 						try {
 							$d->setfont($parameters['font']);
 						} catch (Exception $e) {
@@ -535,7 +535,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
 					$size = ($parameters['size'] > 0) ? $parameters['size']: 18;
 					$d->setfontsize($size);
-				
+					
 					$inset = ($parameters['inset'] > 0) ? $parameters['inset'] : 0;
 					$pw= new GmagickPixel();
 					$pw->setcolor($parameters['color'] ? $parameters['color'] : "black");
@@ -557,7 +557,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					#	$vn_opacity_setting = 0.5;
 					#}
 					
-					if (($vn_watermark_width = $parameters['width']) < 10) { 
+					if (($vn_watermark_width = $parameters['width']) < 10) {
 						$vn_watermark_width = $cw/2;
 					}
 					if (($vn_watermark_height = $parameters['height']) < 10) {
@@ -643,7 +643,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 							break;
 						# ----------------
 					}
-			
+					
 					$w = round($w);
 					$h = round($h);
 					if ($w > 0 && $h > 0) {
@@ -831,7 +831,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				copy($this->filepath, $ps_filepath);
 			} else {
 				$tp = new TilepicParser();
-				if (!($properties = $tp->encode($this->filepath, $ps_filepath, 
+				if (!($properties = $tp->encode($this->filepath, $ps_filepath,
 					array(
 						"tile_width" => $this->properties["tile_width"],
 						"tile_height" => $this->properties["tile_height"],
@@ -840,7 +840,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						"antialiasing" => $this->properties["antialiasing"],
 						"output_mimetype" => $this->properties["tile_mimetype"],
 						"layers" => $this->properties["layers"],
-					)					
+					)
 				))) {
 					$this->postError(1610, $tp->error, "WLPlugTilepic->write()");	
 					return false;
@@ -858,7 +858,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if (!($ext = $this->info["EXPORT"][$mimetype])) {
 				# this plugin can't write this mimetype
 				return false;
-			} 
+			}
 			
 			$this->handle->setimageformat($this->magick_names[$mimetype]);
 			# set quality
@@ -867,7 +867,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 			
 			$this->handle->setimagebackgroundcolor(new GmagickPixel("#CC0000"));
-		
+			
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
 				if (!$this->properties['reference-white']) { $this->properties['reference-white'] = 65535; }
@@ -942,7 +942,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 	}
 	# ------------------------------------------------
-	/** 
+	/**
 	 *
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
@@ -989,7 +989,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		if(is_object($vo_plugin)){
 			$vo_plugin->register();
-			return $vo_plugin->joinArchiveContents($pa_files,$pa_options);	
+			return $vo_plugin->joinArchiveContents($pa_files,$pa_options);
 		} else {
 			return false;
 		}
@@ -1144,7 +1144,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!is_array($pa_properties)) { $pa_properties = array(); }
 		return caHTMLImage($ps_url, array_merge($pa_options, $pa_properties));
-	}	
+	}
 	# ------------------------------------------------
 	private function _dcrawConvertToTiff($ps_filepath) {
 		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
@@ -1187,8 +1187,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			/* EXIF */
 			if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			    $va_exif_data = @exif_read_data($ps_filepath, 'IFD0', true, false);
-			    $vn_exif_size = strlen(print_R($va_exif_data, true));
+				$va_exif_data = @exif_read_data($ps_filepath, 'IFD0', true, false);
+				$vn_exif_size = strlen(print_R($va_exif_data, true));
 				if (($vn_exif_size <= $this->opo_config->get('dont_use_exif_read_data_if_larger_than')) && (is_array($va_exif = caSanitizeArray($va_exif_data)))) { $va_metadata['EXIF'] = $va_exif; }
 			}
 
@@ -1247,59 +1247,59 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			// try to get IPTC and DPX with GraphicsMagick, if available
 			 if(caMediaPluginGraphicsMagickInstalled()) {
- 				/* IPTC metadata */
- 				$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
- 				@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
- 				$vs_iptc_file .= '.iptc';
- 				exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
- 
- 				$vs_iptc_data = file_get_contents($vs_iptc_file);
- 				@unlink($vs_iptc_file);
- 
- 				$va_iptc_raw = iptcparse($vs_iptc_data);
- 
- 				$va_iptc_tags = array(
- 					'2#004'=>'Genre',
- 					'2#005'=>'DocumentTitle',
- 					'2#010'=>'Urgency',
- 					'2#015'=>'Category',
- 					'2#020'=>'Subcategories',
- 					'2#025'=>'Keywords',
- 					'2#040'=>'SpecialInstructions',
- 					'2#055'=>'CreationDate',
- 					'2#060'=>'TimeCreated',
- 					'2#080'=>'AuthorByline',
- 					'2#085'=>'AuthorTitle',
- 					'2#090'=>'City',
- 					'2#095'=>'State',
- 					'2#100'=>'CountryCode',
- 					'2#101'=>'Country',
- 					'2#103'=>'OTR',
- 					'2#105'=>'Headline',
- 					'2#110'=>'Credit',
- 					'2#115'=>'PhotoSource',
- 					'2#116'=>'Copyright',
- 					'2#120'=>'Caption',
- 					'2#122'=>'CaptionWriter'
- 				);
- 
- 				$va_iptc = array();
- 				if (is_array($va_iptc_raw)) {
- 					foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
- 						if(isset($va_iptc_tags[$vs_iptc_tag])) {
- 							$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
- 						}
- 					}
- 				}
- 
- 				if (sizeof($va_iptc)) {
- 					$va_metadata['IPTC'] = $va_iptc;
- 				}
- 
- 				/* DPX metadata */
- 				exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
- 				if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
- 			}
+				/* IPTC metadata */
+				$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
+				@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
+				$vs_iptc_file .= '.iptc';
+				exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+
+				$vs_iptc_data = file_get_contents($vs_iptc_file);
+				@unlink($vs_iptc_file);
+
+				$va_iptc_raw = iptcparse($vs_iptc_data);
+
+				$va_iptc_tags = array(
+					'2#004'=>'Genre',
+					'2#005'=>'DocumentTitle',
+					'2#010'=>'Urgency',
+					'2#015'=>'Category',
+					'2#020'=>'Subcategories',
+					'2#025'=>'Keywords',
+					'2#040'=>'SpecialInstructions',
+					'2#055'=>'CreationDate',
+					'2#060'=>'TimeCreated',
+					'2#080'=>'AuthorByline',
+					'2#085'=>'AuthorTitle',
+					'2#090'=>'City',
+					'2#095'=>'State',
+					'2#100'=>'CountryCode',
+					'2#101'=>'Country',
+					'2#103'=>'OTR',
+					'2#105'=>'Headline',
+					'2#110'=>'Credit',
+					'2#115'=>'PhotoSource',
+					'2#116'=>'Copyright',
+					'2#120'=>'Caption',
+					'2#122'=>'CaptionWriter'
+				);
+
+				$va_iptc = array();
+				if (is_array($va_iptc_raw)) {
+					foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
+						if(isset($va_iptc_tags[$vs_iptc_tag])) {
+							$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
+						}
+					}
+				}
+
+				if (sizeof($va_iptc)) {
+					$va_metadata['IPTC'] = $va_iptc;
+				}
+
+				/* DPX metadata */
+				exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+				if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
+			}
 
 			if (sizeof(WLPlugMediaGmagick::$s_metadata_read_cache) > 100) { WLPlugMediaGmagick::$s_metadata_read_cache = array_slice(WLPlugMediaGmagick::$s_metadata_read_cache, 50); }
 			$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath] = $va_metadata;

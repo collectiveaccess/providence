@@ -31,8 +31,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	
+	
+	
 	$vo_result 				= $this->getVar('result');
 	$vn_num_items			= (int)$vo_result->numHits();
 	

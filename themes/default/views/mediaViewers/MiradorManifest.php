@@ -42,7 +42,7 @@
 	$vs_title = ($t_instance && ($vs_rep_title = str_replace("["._t('BLANK')."]", "", $t_instance->get('preferred_labels')))) ? $vs_rep_title : (($vs_subject_title = str_replace("["._t('BLANK')."]", "", $t_subject->get('preferred_labels'))) ? $vs_subject_title : "???");
 	
 	$va_metadata = [
-    	["label" => "Title", "value" => $vs_title]
+		["label" => "Title", "value" => $vs_title]
   	];
 	
 	if (isset($va_data['resources']) && is_array($va_data['resources']) && sizeof($va_data['resources'])) {

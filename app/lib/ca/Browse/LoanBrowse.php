@@ -29,29 +29,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/LoanBrowseResult.php');
- 
-	class LoanBrowse extends BaseBrowse {
-		# ------------------------------------------------------
-		/**
-		 * Which table does this class represent?
-		 */
-		protected $ops_tablename = "ca_loans";
-		protected $ops_primary_key = "loan_id";
-		# ----------------------------------------------------------------------
-		public function __construct($pn_browse_id=null, $ps_context='') {
-			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
-		}
-		# ------------------------------------------------------
-		public function getResults($pa_options=null) {
-			return parent::doGetResults(new LoanBrowseResult(), $pa_options);
-		}
-		# ----------------------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
+require_once(__CA_LIB_DIR__.'/ca/Browse/LoanBrowseResult.php');
+
+class LoanBrowse extends BaseBrowse {
+	# ------------------------------------------------------
+	/**
+	 * Which table does this class represent?
+	 */
+	protected $ops_tablename = "ca_loans";
+	protected $ops_primary_key = "loan_id";
+	# ----------------------------------------------------------------------
+	public function __construct($pn_browse_id=null, $ps_context='') {
+		parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
 	}
+	# ------------------------------------------------------
+	public function getResults($pa_options=null) {
+		return parent::doGetResults(new LoanBrowseResult(), $pa_options);
+	}
+	# ----------------------------------------------------------------------
+}
 ?>

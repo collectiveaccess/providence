@@ -31,8 +31,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	$t_item = $this->getVar('t_subject');
+	
+	$t_item = $this->getVar('t_subject');
 	
 	if($this->request->config->get('summary_header_enabled')) {
 		$vs_footer = '<table class="footerText" style="width: 100%;"><tr>';

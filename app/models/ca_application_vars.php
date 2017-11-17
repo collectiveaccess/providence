@@ -29,27 +29,27 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
- 
+
 
 BaseModel::$s_ca_models_definitions['ca_application_vars'] = array(
- 	'NAME_SINGULAR' 	=> _t('application variable'),
- 	'NAME_PLURAL' 		=> _t('application variables'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('application variable'),
+	'NAME_PLURAL' 		=> _t('application variables'),
+	'FIELDS' 			=> array(
 		'vars' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Vars', 'DESCRIPTION' => 'Vars'
 		)
 	)
 );
- 
+
 class ca_application_vars extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
@@ -63,7 +63,7 @@ class ca_application_vars extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_application_vars';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = '';
 
@@ -89,12 +89,12 @@ class ca_application_vars extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('vars');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first

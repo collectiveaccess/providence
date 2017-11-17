@@ -309,7 +309,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		$va_vals = array();
 
 		$pn_limit = isset($pa_options['limit']) ? (int)$pa_options['limit'] : null;
-        $c = 0;
+		$c = 0;
 		if (is_array($pm_field)) {
 			$va_rows = $pr_res->fetchAll(PDO::FETCH_ASSOC);
 			foreach($va_rows as $va_row) {

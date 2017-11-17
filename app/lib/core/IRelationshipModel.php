@@ -29,18 +29,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- interface IRelationshipModel {
- 
- 	public function getLeftTableName();
- 	
- 	public function getRightTableName();
- 	
- 	public function getLeftTableNum();
- 	
- 	public function getRightTableNum();
- }
+
+/**
+ *
+ */
+
+interface IRelationshipModel {
+
+	public function getLeftTableName();
+	
+	public function getRightTableName();
+	
+	public function getLeftTableNum();
+	
+	public function getRightTableNum();
+}

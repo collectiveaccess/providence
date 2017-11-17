@@ -29,10 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_APP_DIR__.'/models/ca_list_items.php');
@@ -48,10 +48,10 @@ define('__CA_LISTS_SORT_BY_IDENTIFIER__', 3);
 
 
 BaseModel::$s_ca_models_definitions['ca_lists'] = array(
- 	'NAME_SINGULAR' 	=> _t('list'),
- 	'NAME_PLURAL' 		=> _t('lists'),
- 	'FIELDS' 			=> array(
- 		'list_id' => array(
+	'NAME_SINGULAR' 	=> _t('list'),
+	'NAME_PLURAL' 		=> _t('lists'),
+	'FIELDS' 			=> array(
+		'list_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -107,13 +107,13 @@ BaseModel::$s_ca_models_definitions['ca_lists'] = array(
 				'BOUNDS_VALUE' => array(0,1)
 		),
 		'deleted' => array(
- 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
- 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
- 				'IS_NULL' => false, 
- 				'DEFAULT' => 0,
- 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		)
- 	)
+	)
 );
 
 class ca_lists extends BundlableLabelableBaseModelWithAttributes {
@@ -129,7 +129,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_lists';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'list_id';
 
@@ -900,7 +900,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_items = array();
 			while($qr_res->nextRow()) {
-				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+				$va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
 			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$ps_idno] = $va_items;
 		}
@@ -932,7 +932,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_items = array();
 			while($qr_res->nextRow()) {
-				 $va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+				$va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
 			ca_lists::$s_list_item_display_cache[$pn_item_id] = $va_items;
 		}
@@ -962,7 +962,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_items = array();
 			while($qr_res->nextRow()) {
-				 $va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+				$va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
 			ca_lists::$s_list_item_display_cache[$pn_item_id] = $va_items;
 		}
@@ -994,7 +994,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$va_items = array();
 			while($qr_res->nextRow()) {
 				$pn_item_id = $qr_res->get('item_id');
-				 $va_items[$pn_item_id][$qr_res->get('locale_id')] = $qr_res->getRow();
+				$va_items[$pn_item_id][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
 			ca_lists::$s_list_item_display_cache[$pn_item_id] = ca_lists::$s_list_item_value_display_cache[$pm_list_name_or_id.'/'.$pm_value] =  $va_items;
 		}
@@ -1070,7 +1070,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_items = array();
 		if($qr_res->nextRow()) {
-			 return $qr_res->get('item_id');
+			return $qr_res->get('item_id');
 		}
 		
 		return null;
@@ -1093,7 +1093,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		", (int)$vn_list_id, (int)$pn_item_id);
 		$va_items = array();
 		while($qr_res->nextRow()) {
-			 return $qr_res->getRow();
+			return $qr_res->getRow();
 		}
 		
 		return null;
@@ -1531,8 +1531,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$vs_hidden_value = "{".$pa_options['element_id']."}";
 				}
 				$vs_buf =
- 				caHTMLTextInput(
- 					$ps_name.'_autocomplete', 
+				caHTMLTextInput(
+					$ps_name.'_autocomplete', 
 					array(
 						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
@@ -1830,7 +1830,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getItemIDsFromList($pm_list_name_or_id, $pa_idnos, $pa_options=null) {
 		if(isset($pa_options['dontIncludeSubItems']) && (!isset($pa_options['dont_include_sub_items']) || !$pa_options['dont_include_sub_items'])) { $pa_options['dont_include_sub_items'] = $pa_options['dontIncludeSubItems']; }
-	 	
+		
 		if (isset($pa_options['dont_include_sub_items']) && $pa_options['dont_include_sub_items']) {
 			$pa_options['noChildren'] = true;
 		}
@@ -1902,41 +1902,41 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 		transaction = transaction to perform database operations within. [Default is null]
 	 * @return array A list of corresponding idnos 
 	 */
-	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
-	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-	 	
-	 	$vs_key = md5(print_r($pa_ids, true));
-	 	if (isset(ca_lists::$s_item_id_to_code_cache[$vs_key])) {
-	 		return ca_lists::$s_item_id_to_code_cache[$vs_key];
-	 	}
-	 	
-	 	$va_ids = $va_non_numerics = array();
-	 	foreach($pa_ids as $pn_id) {
-	 		if (!is_numeric($pn_id)) {
-	 			$va_non_numerics[] = $pn_id;
-	 		} else {
-	 			$va_ids[] = (int)$pn_id;
-	 		}
-	 	}
-	 	
-	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+	static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
+		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		
+		$vs_key = md5(print_r($pa_ids, true));
+		if (isset(ca_lists::$s_item_id_to_code_cache[$vs_key])) {
+			return ca_lists::$s_item_id_to_code_cache[$vs_key];
+		}
+		
+		$va_ids = $va_non_numerics = array();
+		foreach($pa_ids as $pn_id) {
+			if (!is_numeric($pn_id)) {
+				$va_non_numerics[] = $pn_id;
+			} else {
+				$va_ids[] = (int)$pn_id;
+			}
+		}
+		
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
 			$o_db = $o_trans->getDb();
 		} else {
 			$o_db = new Db();
 		}
 		
-	 	$qr_res = $o_db->query("
-	 		SELECT item_id, idno 
-	 		FROM ca_list_items
-	 		WHERE
-	 			item_id IN (?)
-	 	", array($va_ids));
-	 	
-	 	$va_item_ids_to_codes = array();
-	 	while($qr_res->nextRow()) {
-	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
-	 	}
-	 	return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
+		$qr_res = $o_db->query("
+			SELECT item_id, idno 
+			FROM ca_list_items
+			WHERE
+				item_id IN (?)
+		", array($va_ids));
+		
+		$va_item_ids_to_codes = array();
+		while($qr_res->nextRow()) {
+			$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
+		}
+		return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1947,41 +1947,41 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 		transaction = transaction to perform database operations within. [Default is null]
 	 * @return array A list of corresponding item values 
 	 */
-	 static public function itemIDsToItemValues($pa_ids, $pa_options=null) {
-	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-	 	
-	 	$vs_key = md5(print_r($pa_ids, true));
-	 	if (isset(ca_lists::$s_item_id_to_value_cache[$vs_key])) {
-	 		return ca_lists::$s_item_id_to_value_cache[$vs_key];
-	 	}
-	 	
-	 	$va_ids = $va_non_numerics = array();
-	 	foreach($pa_ids as $pn_id) {
-	 		if (!is_numeric($pn_id)) {
-	 			$va_non_numerics[] = $pn_id;
-	 		} else {
-	 			$va_ids[] = (int)$pn_id;
-	 		}
-	 	}
-	 	
-	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+	static public function itemIDsToItemValues($pa_ids, $pa_options=null) {
+		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		
+		$vs_key = md5(print_r($pa_ids, true));
+		if (isset(ca_lists::$s_item_id_to_value_cache[$vs_key])) {
+			return ca_lists::$s_item_id_to_value_cache[$vs_key];
+		}
+		
+		$va_ids = $va_non_numerics = array();
+		foreach($pa_ids as $pn_id) {
+			if (!is_numeric($pn_id)) {
+				$va_non_numerics[] = $pn_id;
+			} else {
+				$va_ids[] = (int)$pn_id;
+			}
+		}
+		
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
 			$o_db = $o_trans->getDb();
 		} else {
 			$o_db = new Db();
 		}
 		
-	 	$qr_res = $o_db->query("
-	 		SELECT item_id, item_value 
-	 		FROM ca_list_items
-	 		WHERE
-	 			item_id IN (?)
-	 	", array($va_ids));
-	 	
-	 	$va_item_ids_to_values = array();
-	 	while($qr_res->nextRow()) {
-	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
-	 	}
-	 	return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
+		$qr_res = $o_db->query("
+			SELECT item_id, item_value 
+			FROM ca_list_items
+			WHERE
+				item_id IN (?)
+		", array($va_ids));
+		
+		$va_item_ids_to_values = array();
+		while($qr_res->nextRow()) {
+			$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
+		}
+		return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 	public function getAdditionalChecksumComponents() {

@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -39,10 +39,10 @@ require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_entities'] = array(
- 	'NAME_SINGULAR' 	=> _t('entity'),
- 	'NAME_PLURAL' 		=> _t('entities'),
- 	'FIELDS' 			=> array(
- 		'entity_id' => array(
+	'NAME_SINGULAR' 	=> _t('entity'),
+	'NAME_PLURAL' 		=> _t('entities'),
+	'FIELDS' 			=> array(
+		'entity_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -186,7 +186,7 @@ BaseModel::$s_ca_models_definitions['ca_entities'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_entities extends RepresentableBaseModel implements IBundleProvider {
@@ -202,7 +202,7 @@ class ca_entities extends RepresentableBaseModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_entities';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'entity_id';
 

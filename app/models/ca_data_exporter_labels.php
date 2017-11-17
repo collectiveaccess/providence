@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -38,9 +38,9 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_exporter_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('exporter name'),
- 	'NAME_PLURAL' 		=> _t('exporter names'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('exporter name'),
+	'NAME_PLURAL' 		=> _t('exporter names'),
+	'FIELDS' 			=> array(
 		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -118,7 +118,7 @@ class ca_data_exporter_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_exporter_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

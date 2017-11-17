@@ -29,42 +29,42 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_bundle_displays_x_users'] = array(
- 	'NAME_SINGULAR' 	=> _t('bundle displays ⇔ user association'),
- 	'NAME_PLURAL' 		=> _t('bundle displays ⇔ user associations'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('bundle displays ⇔ user association'),
+	'NAME_PLURAL' 		=> _t('bundle displays ⇔ user associations'),
+	'FIELDS' 			=> array(
 		'relation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
 		),
 		'display_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Display id', 'DESCRIPTION' => 'Identifier for Display'
 		),
 		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for user'
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => 1,
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
@@ -88,7 +88,7 @@ class ca_bundle_displays_x_users extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_bundle_displays_x_users';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 
@@ -114,7 +114,7 @@ class ca_bundle_displays_x_users extends BaseRelationshipModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('relation_id');
 

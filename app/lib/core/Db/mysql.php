@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__."/core/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
@@ -136,7 +136,7 @@ class Db_mysql extends DbDriverBase {
 			return false;
 		}
 		mysql_query('SET NAMES \'utf8\'', $this->opr_db);
-		mysql_query('SET character_set_results = NULL', $this->opr_db);	
+		mysql_query('SET character_set_results = NULL', $this->opr_db);
 		
 		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
 		return true;
@@ -241,8 +241,8 @@ class Db_mysql extends DbDriverBase {
 			$vn_i++;
 		}
 		
-		while (sizeof($g_mysql_statement_cache) >= 2048) { 
-			array_shift($g_mysql_statement_cache); 
+		while (sizeof($g_mysql_statement_cache) >= 2048) {
+			array_shift($g_mysql_statement_cache);
 		}	// limit statement cache to 2048 entries, otherwise we'll eat up memory in long running processes
 
 		
@@ -494,8 +494,8 @@ class Db_mysql extends DbDriverBase {
 		if ($pn_offset < 0) { return false; }
 		if ($pn_offset > (mysql_num_rows($pr_res) - 1)) { return false; }
 		if (!@mysql_data_seek($pr_res, $pn_offset)) {
-    		$po_caller->postError(260,_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)),"Db->mysql->seek()");
-    		throw new DatabaseException(_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)), 260, "Db->mysql->seek()");
+			$po_caller->postError(260,_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)),"Db->mysql->seek()");
+			throw new DatabaseException(_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)), 260, "Db->mysql->seek()");
 			return false;
 		};
 
@@ -558,7 +558,7 @@ class Db_mysql extends DbDriverBase {
 	/**
 	 * Get database connection handle
 	 *
-	 * @return resource 
+	 * @return resource
 	 */
 	public function getHandle() {
 		return $this->opr_db;
@@ -569,7 +569,7 @@ class Db_mysql extends DbDriverBase {
 	 */
 	public function __destruct() {
 		// Disconnecting here can affect other classes that need
-		// to clean up by writing to the database so we disabled 
+		// to clean up by writing to the database so we disabled
 		// disconnect-on-destruct
 		//$this->disconnect();
 	}

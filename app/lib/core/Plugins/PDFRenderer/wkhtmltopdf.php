@@ -30,46 +30,46 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */ 
-    
+/**
+ *
+ */
+
 include_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLPlugPDFRenderer {
 	# ------------------------------------------------
-	/** 
+	/**
 	 *
 	 */
 	private $ops_wkhtmltopdf_path;
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_page_size="letter";
-		
-	/** 
+	
+	/**
 	 *
 	 */
 	private $ops_page_orientation="portrait";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_top="0mm";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_right="0mm";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_bottom="0mm";
 	
-	/** 
+	/**
 	 *
 	 */
 	private $ops_margin_left="0mm";
@@ -117,7 +117,7 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $pa_options, false)) {
 			header("Cache-Control: private");
-   			header("Content-type: application/pdf");
+			header("Content-type: application/pdf");
 			header("Content-Disposition: attachment; filename=".caGetOption('filename', $pa_options, 'output.pdf'));
 			print $vs_pdf_content;
 		}
@@ -143,7 +143,7 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	 */
 	public function renderFile($ps_file_path, $pa_options=null) {
 		if(!file_exists($ps_file_path)) { return false; }
-		$vs_content = file_get_contents($ps_file_path);	
+		$vs_content = file_get_contents($ps_file_path);
 		return $this->render($vs_content, $pa_options);
 	}
 	# ------------------------------------------------

@@ -29,16 +29,16 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
 
 BaseModel::$s_ca_models_definitions['ca_data_import_event_log'] = array(
- 	'NAME_SINGULAR' 	=> _t('data import event log entry'),
- 	'NAME_PLURAL' 		=> _t('data import event log entries'),
- 	'FIELDS' 			=> array(
- 		'log_id' => array(
+	'NAME_SINGULAR' 	=> _t('data import event log entry'),
+	'NAME_PLURAL' 		=> _t('data import event log entries'),
+	'FIELDS' 			=> array(
+		'log_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -96,7 +96,7 @@ BaseModel::$s_ca_models_definitions['ca_data_import_event_log'] = array(
 				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Text indicating source of log message - eg. what subsystem generated the message.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		)
- 	)
+	)
 );
 
 class ca_data_import_event_log extends BaseModel {
@@ -112,7 +112,7 @@ class ca_data_import_event_log extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_import_event_log';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'log_id';
 

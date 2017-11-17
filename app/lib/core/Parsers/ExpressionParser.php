@@ -48,7 +48,7 @@ class ExpressionParser {
 	 * Variables
 	 * @var array
 	 */
-    private $opa_variables = array();
+	private $opa_variables = array();
 
 
 	private $opo_compiler = null;
@@ -88,9 +88,9 @@ class ExpressionParser {
 	# -------------------------------------------------------------------
 	# External interface
 	# -------------------------------------------------------------------
-    /**
+	/**
 
-     */
+	 */
 
 	/**
 	 * Evaluate an expression, returning the value
@@ -98,8 +98,8 @@ class ExpressionParser {
 	 * @param array|null $pa_variables
 	 * @return mixed
 	 */
-    public function evaluateExpression($ps_expression, $pa_variables=null) {
-        $o_ast = $this->parse($ps_expression, $pa_variables);
+	public function evaluateExpression($ps_expression, $pa_variables=null) {
+		$o_ast = $this->parse($ps_expression, $pa_variables);
 
 		// dump the syntax tree in easy-to-read-format ... useful for debugging
 		//$o_dumper = new Hoa\Compiler\Visitor\Dump();
@@ -108,18 +108,18 @@ class ExpressionParser {
 		self::$s_visitor->setVariables($pa_variables);
 
 		return self::$s_visitor->visit($o_ast);
-    }
-    # -------------------------------------------------------------------
+	}
+	# -------------------------------------------------------------------
 	/**
 	 * Statically evaluate an expression, returning the value
 	 * @param string $ps_expression
 	 * @param null|array $pa_variables
 	 * @return mixed
 	 */
-    static public function evaluate($ps_expression, $pa_variables=null) {
-        $e = new ExpressionParser();
-        return $e->evaluateExpression($ps_expression, $pa_variables);
-    }
+	static public function evaluate($ps_expression, $pa_variables=null) {
+		$e = new ExpressionParser();
+		return $e->evaluateExpression($ps_expression, $pa_variables);
+	}
 	# -------------------------------------------------------------------
 	/**
 	 * Returns list of variables defined in the expression

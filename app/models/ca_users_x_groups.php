@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_users_x_groups'] = array(
- 	'NAME_SINGULAR' 	=> _t('user-group assocation'),
- 	'NAME_PLURAL' 		=> _t('user-group assocations'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('user-group assocation'),
+	'NAME_PLURAL' 		=> _t('user-group assocations'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -61,7 +61,7 @@ BaseModel::$s_ca_models_definitions['ca_users_x_groups'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Group id', 'DESCRIPTION' => 'Identifier for Group'
 		)
- 	)
+	)
 );
 
 class ca_users_x_groups extends BaseRelationshipModel {
@@ -77,7 +77,7 @@ class ca_users_x_groups extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_users_x_groups';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

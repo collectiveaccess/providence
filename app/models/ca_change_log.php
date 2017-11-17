@@ -134,7 +134,7 @@ class ca_change_log extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('user_data');
 
@@ -303,7 +303,7 @@ class ca_change_log extends BaseModel {
 				{$vs_table_filter_sql}
 				{$vs_limit_sql}
 			", [$ps_for_guid]);
-		} elseif ($ps_for_guid) {				
+		} elseif ($ps_for_guid) {
 			if(sizeof($va_only_tables)) {
 				$vs_table_filter_sql = 'AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ')) AND (csub.subject_table_num IN (' . join(',', $va_only_tables) . ') OR csub.subject_table_num IS NULL) ';
 				$vs_table_filter_subject_sql = 'AND csub.subject_table_num IN (' . join(',', $va_only_tables) . ') AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ')) ';
@@ -377,11 +377,11 @@ class ca_change_log extends BaseModel {
 				foreach($va_snapshot as $vs_fld => $vm_val) {
 					switch($vs_fld) {
 						case 'source_info':
-						    if (($vn_s = sizeof($va_snapshot['source_info'])) > 1000) {
-						        ReplicationService::$s_logger->log("[".$qr_results->get('log_id')."] LARGE SOURCE INFO ($vn_s) FOUND IN $vs_table_name");
-						    }
-						    $va_snapshot['source_info'] = '';       // this field should be blank but in older systems may have a ton of junk data
-						    break;
+							if (($vn_s = sizeof($va_snapshot['source_info'])) > 1000) {
+								ReplicationService::$s_logger->log("[".$qr_results->get('log_id')."] LARGE SOURCE INFO ($vn_s) FOUND IN $vs_table_name");
+							}
+							$va_snapshot['source_info'] = '';       // this field should be blank but in older systems may have a ton of junk data
+							break;
 						case 'element_id':
 							if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
 								goto deflabel;
@@ -422,7 +422,7 @@ class ca_change_log extends BaseModel {
 									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { $va_snapshot = ['SKIP' => true]; continue(2); }
 								} elseif($t_instance instanceof BaseModel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
-								} 
+								}
 							} else {
 								$va_snapshot = ['SKIP' => true];
 								continue(2);
@@ -477,13 +477,13 @@ class ca_change_log extends BaseModel {
 								) {
 
 									// we only put the URL/path if it's still the latest file. can figure that out with a simple query
-									 $qr_future_entries = $o_db->query("
+									$qr_future_entries = $o_db->query("
 											SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
 											WHERE cl.log_id = cls.log_id AND cl.log_id>?
 											AND cl.logged_row_id = ? AND cl.logged_table_num = ?
 											ORDER BY cl.log_id
 										", $va_row['log_id'], $va_row['logged_row_id'], $va_row['logged_table_num']);
- 
+
 									$pb_is_latest = true;
 									while($qr_future_entries->nextRow()) {
 										$va_future_snap = caUnserializeForDatabase($qr_future_entries->get('snapshot'));
@@ -523,7 +523,7 @@ class ca_change_log extends BaseModel {
 									}
 
 									// also unset media metadata, because otherwise json_encode is likely to bail
-									unset($va_snapshot['media_metadata']);	
+									unset($va_snapshot['media_metadata']);
 								}
 
 								// handle left and right foreign keys in foo_x_bar table
@@ -655,22 +655,22 @@ class ca_change_log extends BaseModel {
 		$o_dm = Datamodel::load();
 		
 		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num, true))) { return false; }
-		if ($t_instance->hasField('access')) { 
+		if ($t_instance->hasField('access')) {
 			$qr_res = $o_db->query("SELECT access FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_row_id]);
 			if ($qr_res->nextRow()) {
 				if (in_array($vn_access = $qr_res->get('access'), $pa_access)) { return true; }
 			}
 		} elseif(method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) {
-		    $t_left = $t_instance->getLeftTableInstance();
-		    $t_right = $t_instance->getRightTableInstance();
-		    
-		    if ($t_left->hasField('access') && (!$t_left->load($t_instance->get($t_instance->getLeftTableFieldName())) || !in_array($t_left->get('access'), $pa_access))) {
-		        return false;
-		    }
-		    if ($t_right->hasField('access') && (!$t_right->load($t_instance->get($t_instance->getRightTableFieldName())) || !in_array($t_right->get('access'), $pa_access))) {
-		        return false;
-		    }
-		    return true;
+			$t_left = $t_instance->getLeftTableInstance();
+			$t_right = $t_instance->getRightTableInstance();
+			
+			if ($t_left->hasField('access') && (!$t_left->load($t_instance->get($t_instance->getLeftTableFieldName())) || !in_array($t_left->get('access'), $pa_access))) {
+				return false;
+			}
+			if ($t_right->hasField('access') && (!$t_right->load($t_instance->get($t_instance->getRightTableFieldName())) || !in_array($t_right->get('access'), $pa_access))) {
+				return false;
+			}
+			return true;
 		} else {
 			return true;
 		}

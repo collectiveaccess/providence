@@ -365,11 +365,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Get all exporter items items for this exporter
 	 * @param array $pa_options available options are:
-	 *                          onlyTopLevel
-	 *                          includeSettingsForm
-	 *                          id_prefix
-	 *                          orderForDeleteCascade
-	 *							dontIncludeVariables
+	 * 	onlyTopLevel
+	 * 	includeSettingsForm
+	 * 	id_prefix
+	 * 	orderForDeleteCascade
+	 * 	dontIncludeVariables
 	 * @return array array of items, keyed by their primary key
 	 */
 	public function getItems($pa_options=array()) {
@@ -1448,21 +1448,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_exporter_code defines the exporter to use
 	 * @param int $pn_record_id Primary key of the record to export. Record type is determined by the table_num field for this exporter.
 	 * @param array $pa_options
-	 *        singleRecord = Gives a signal to the export format implementation that this is a single record export. For certain formats
-	 *        	this might trigger different behavior, for instance the XML export format prepends the item-level output with <?xml ... ?>
-	 *        	in those cases.
-	 *        rdfMode = Signals the implementation that this is an RDF mode export
-	 *        logDirectory = path to directory where logs should be written
-	 *		  logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
-	 *			KLogger::EMERG = Emergency messages (system is unusable)
-	 *			KLogger::ALERT = Alert messages (action must be taken immediately)
-	 *			KLogger::CRIT = Critical conditions
-	 *			KLogger::ERR = Error conditions
-	 *			KLogger::WARN = Warnings
-	 *			KLogger::NOTICE = Notices (normal but significant conditions)
-	 *			KLogger::INFO = Informational messages
-	 *			KLogger::DEBUG = Debugging messages
-	 *		  logger = Optional ready-to-use instance of KLogger to use for logging/debugging
+	 * 	singleRecord = Gives a signal to the export format implementation that this is a single record export. For certain formats
+	 * 		this might trigger different behavior, for instance the XML export format prepends the item-level output with <?xml ... ?>
+	 * 		in those cases.
+	 * 	rdfMode = Signals the implementation that this is an RDF mode export
+	 * 	logDirectory = path to directory where logs should be written
+	 * 	logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 * 			KLogger::EMERG = Emergency messages (system is unusable)
+	 * 			KLogger::ALERT = Alert messages (action must be taken immediately)
+	 * 			KLogger::CRIT = Critical conditions
+	 * 			KLogger::ERR = Error conditions
+	 * 			KLogger::WARN = Warnings
+	 * 			KLogger::NOTICE = Notices (normal but significant conditions)
+	 * 			KLogger::INFO = Informational messages
+	 * 			KLogger::DEBUG = Debugging messages
+	 * 	logger = Optional ready-to-use instance of KLogger to use for logging/debugging
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()) {

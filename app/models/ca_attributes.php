@@ -29,54 +29,54 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
 require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
-		
+
 
 BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
- 	'NAME_SINGULAR' 	=> _t('attribute'),
- 	'NAME_PLURAL' 		=> _t('attributes'),
- 	'FIELDS' 			=> array(
+	'NAME_SINGULAR' 	=> _t('attribute'),
+	'NAME_PLURAL' 		=> _t('attributes'),
+	'FIELDS' 			=> array(
 		'attribute_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Attribute id', 'DESCRIPTION' => 'Identifier for Attribute'
 		),
 		'element_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Element id', 'DESCRIPTION' => 'Identifier for Element'
 		),
 		'locale_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => true,
 				'DISPLAY_FIELD' => array('ca_locales.name'),
 				'DEFAULT' => '',
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('The locale best describing the origin of this information.')
 		),
 		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Table', 'DESCRIPTION' => 'Table to which this attribute is applied.',
 				'BOUNDS_VALUE' => array(1,255)
 		),
 		'row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which this attibute is applied.'
 		)
@@ -98,7 +98,7 @@ class ca_attributes extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_attributes';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'attribute_id';
 
@@ -124,12 +124,12 @@ class ca_attributes extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array();
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -207,9 +207,9 @@ class ca_attributes extends BaseModel {
 		return $vm_ret;
 	}
 	# -------------------------------------------------------
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$vn_primary_key = $this->getPrimaryKey();
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
@@ -225,7 +225,7 @@ class ca_attributes extends BaseModel {
 	 *
 	 */
 	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
-	    if (!is_array($pa_options)) { $pa_options = []; }
+		if (!is_array($pa_options)) { $pa_options = []; }
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		
 		global $g_ui_locale_id;
@@ -285,7 +285,7 @@ class ca_attributes extends BaseModel {
 			}
 			
 			if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
-			    $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
+				$vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
 			}
 			
 			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, array_merge($pa_options, ['t_attribute' => $this]))) === false) {
@@ -377,16 +377,16 @@ class ca_attributes extends BaseModel {
 		foreach($va_attr_vals as $o_attr_val) {
 			$vn_element_id = intval($o_attr_val->getElementID());
 			if ($t_attr_val->load($o_attr_val->getValueID())) {
-			    $va_element = array_shift(array_filter($va_elements, function($e) use ($vn_element_id) { return $e['element_id'] == $vn_element_id; }));
+				$va_element = array_shift(array_filter($va_elements, function($e) use ($vn_element_id) { return $e['element_id'] == $vn_element_id; }));
 				if(isset($pa_values[$vn_element_id])) {
 					$vm_value = $pa_values[$vn_element_id];
 				} else {
 					$vm_value = $pa_values[$o_attr_val->getElementCode()];
 				}
-                if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
-                    $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
-                }
-                
+				if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
+					$vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
+				}
+				
 				if ($t_attr_val->editValue($vm_value, $pa_options) === false) {
 					$this->postError(1973, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				}
@@ -487,7 +487,7 @@ class ca_attributes extends BaseModel {
 				break;
 			case 'values':
 			default:
-				return $o_attr->getValues();	
+				return $o_attr->getValues();
 				break;
 		}
 	}
@@ -557,7 +557,7 @@ class ca_attributes extends BaseModel {
 		$ps_formatted_element = str_replace("^ELEMENT", $vs_element, $ps_formatted_element);
 		$ps_formatted_element = str_replace("^DESCRIPTION", "", $ps_formatted_element);
 		$ps_formatted_element = str_replace("^EXTRA", "", $ps_formatted_element);
-	
+		
 		if ($vs_description) {
 			// don't use TooltipManager to make sure the tooltip is also displayed when this element is added dynamically (via "add" button)
 			//TooltipManager::add('#_attribute_value_'.$pa_element_info['element_code'], "<h3>".$vs_label."</h3>".$vs_description);
@@ -586,14 +586,14 @@ class ca_attributes extends BaseModel {
 		if (caGetOption('resetCache', $pa_options, false)) {
 			ca_attributes::$s_get_attributes_cache = array();
 		}
-	
+		
 		// Make sure the element_id list looks like element_ids and does not have blanks
 		$va_element_ids = array();
 		foreach($pa_element_ids as $vn_i => $vn_element_id) {
 			if ($vn_element_id) { $va_element_ids[] = $vn_element_id; }
 		}
 		if(!is_array($va_element_ids) || !sizeof($va_element_ids)) { return true; }
-
+		
 		$qr_attrs = $po_db->query("
 			SELECT 
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
@@ -615,7 +615,7 @@ class ca_attributes extends BaseModel {
 		$vn_last_attribute_id = $vn_last_row_id = null;
 		
 		$vn_val_count = 0;
-		$o_attr = $vn_last_element_id = null; 
+		$o_attr = $vn_last_element_id = null;
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			
@@ -906,14 +906,14 @@ class ca_attributes extends BaseModel {
 	 */
 	public function getElementCode() {
 		if(!$this->getPrimaryKey()) { return false; }
-
+		
 		if(MemoryCache::contains($this->getPrimaryKey(), 'AttributeToElementCodeCache')) {
 			return MemoryCache::fetch($this->getPrimaryKey(), 'AttributeToElementCodeCache');
 		}
-
+		
 		$t_element = new ca_metadata_elements($this->get('element_id'));
 		$vs_element_code = $t_element->get('element_code');
-
+		
 		MemoryCache::save($this->getPrimaryKey(), $vs_element_code, 'AttributeToElementCodeCache');
 		return $vs_element_code;
 	}
@@ -923,12 +923,12 @@ class ca_attributes extends BaseModel {
 	 */
 	public function getRowInstance() {
 		if(!$this->getPrimaryKey()) { return false; }
-
-        $o_dm = Datamodel::load();
-        if (($t_instance = $o_dm->getInstanceByTableNum($this->get('table_num'), true)) && ($t_instance->load($this->get('row_id')))) {
-            return $t_instance;
-        }
-        
+		
+		$o_dm = Datamodel::load();
+		if (($t_instance = $o_dm->getInstanceByTableNum($this->get('table_num'), true)) && ($t_instance->load($this->get('row_id')))) {
+			return $t_instance;
+		}
+		
 		return null;
 	}
 	# ------------------------------------------------------
@@ -946,11 +946,11 @@ class ca_attributes extends BaseModel {
 		return null;
 	}
 	# -------------------------------------------------------
-    /**
-     * Return maximum size of attribute cache
-     *
-     * @return int
-     */
+	/**
+	 * Return maximum size of attribute cache
+	 *
+	 * @return int
+	 */
 	public static function attributeCacheSize() {
 		return self::$s_attribute_cache_size;
 	}

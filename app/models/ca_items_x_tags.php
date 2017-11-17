@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_items_x_tags'] = array(
- 	'NAME_SINGULAR' 	=> _t('item ⇔ tag relationship'),
- 	'NAME_PLURAL' 		=> _t('item ⇔ tag relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('item ⇔ tag relationship'),
+	'NAME_PLURAL' 		=> _t('item ⇔ tag relationships'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -118,7 +118,7 @@ BaseModel::$s_ca_models_definitions['ca_items_x_tags'] = array(
 				'DEFAULT' => null,
 				'LABEL' => _t('Moderation date'), 'DESCRIPTION' => _t('The date and time the tag was examined for validity and applicability.')
 		)
- 	)
+	)
 );
 
 class ca_items_x_tags extends BaseModel {
@@ -134,7 +134,7 @@ class ca_items_x_tags extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_items_x_tags';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

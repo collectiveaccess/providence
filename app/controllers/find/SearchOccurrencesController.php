@@ -25,74 +25,74 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/OccurrenceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/OccurrenceBrowse.php");
- 	
- 	class SearchOccurrencesController extends BaseSearchController {
- 		# -------------------------------------------------------
- 		/**
- 		 * Name of subject table (ex. for an object search this is 'ca_objects')
- 		 */
- 		protected $ops_tablename = 'ca_occurrences';
- 		
- 		/** 
- 		 * Number of items per search results page
- 		 */
- 		protected $opa_items_per_page = array(10, 20, 30, 40, 50);
- 		
- 		/**
- 		 * List of search-result views supported for this find
- 		 * Is associative array: keys are view labels, values are view specifier to be incorporated into view name
- 		 */
- 		protected $opa_views;
- 		
- 		/**
- 		 * Name of "find" used to defined result context for ResultContext object
- 		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
- 		 */
- 		protected $ops_find_type = 'basic_search';
- 		
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
+require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
+require_once(__CA_LIB_DIR__."/ca/Search/OccurrenceSearch.php");
+require_once(__CA_LIB_DIR__."/ca/Browse/OccurrenceBrowse.php");
+
+class SearchOccurrencesController extends BaseSearchController {
+	# -------------------------------------------------------
+	/**
+	 * Name of subject table (ex. for an object search this is 'ca_objects')
+	 */
+	protected $ops_tablename = 'ca_occurrences';
+	
+	/**
+	 * Number of items per search results page
+	 */
+	protected $opa_items_per_page = array(10, 20, 30, 40, 50);
+	
+	/**
+	 * List of search-result views supported for this find
+	 * Is associative array: keys are view labels, values are view specifier to be incorporated into view name
+	 */
+	protected $opa_views;
+	
+	/**
+	 * Name of "find" used to defined result context for ResultContext object
+	 * Must be unique for the table and have a corresponding entry in find_navigation.conf
+	 */
+	protected $ops_find_type = 'basic_search';
+	
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
 				'list' => _t('list')
 			);
 			
 			$this->opo_browse = new OccurrenceBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
-			 
- 			AssetLoadManager::register('imageScroller');
- 			AssetLoadManager::register('tabUI');
- 			AssetLoadManager::register('panel');
+			
+		AssetLoadManager::register('imageScroller');
+		AssetLoadManager::register('tabUI');
+		AssetLoadManager::register('panel');
 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Search handler (returns search form and results, if any)
- 		 * Most logic is contained in the BaseSearchController->Search() method; all you usually
- 		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
- 		 * (eg. OccurrenceSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Search() 
- 		 */ 
- 		public function Index($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
- 			return parent::Index($pa_options);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		/**
- 		 * Returns "search tools" widget
- 		 */ 
- 		public function Tools($pa_parameters) {
- 			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of OccurrenceSearch()
- 			return parent::Tools($pa_parameters);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
- 		public function _getSubTypeActionNav($pa_item) {
- 			return [
+	# -------------------------------------------------------
+	/**
+	 * Search handler (returns search form and results, if any)
+	 * Most logic is contained in the BaseSearchController->Search() method; all you usually
+	 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
+	 * (eg. OccurrenceSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Search() 
+	 */
+	public function Index($pa_options=null) {
+		$pa_options['search'] = $this->opo_browse;
+		return parent::Index($pa_options);
+	}
+	# -------------------------------------------------------
+	# Sidebar info handler
+	# -------------------------------------------------------
+	/**
+	 * Returns "search tools" widget
+	 */
+	public function Tools($pa_parameters) {
+		// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of OccurrenceSearch()
+		return parent::Tools($pa_parameters);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function _getSubTypeActionNav($pa_item) {
+		return [
 				[
 					'displayName' => _t('Search'),
 					"default" => ['module' => 'find', 'controller' => 'SearchOccurrences', 'action' => 'Index'],
@@ -121,6 +121,6 @@
 					'is_enabled' => true,
 				]
 			];
- 		}
- 		# -------------------------------------------------------
- 	}
+	}
+	# -------------------------------------------------------
+}

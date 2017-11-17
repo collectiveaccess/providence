@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$po_request				= $this->getVar('request');
+	$po_request				= $this->getVar('request');
 	$va_item_list			= $this->getVar('item_list');
 	$vs_table_num			= $this->getVar('table_num');
 	$vs_table_display		= $this->getVar('table_display');

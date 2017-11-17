@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -39,10 +39,10 @@ require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
- 	'NAME_SINGULAR' 	=> _t('user group'),
- 	'NAME_PLURAL' 		=> _t('user groups'),
- 	'FIELDS' 			=> array(
- 		'group_id' => array(
+	'NAME_SINGULAR' 	=> _t('user group'),
+	'NAME_PLURAL' 		=> _t('user groups'),
+	'FIELDS' 			=> array(
+		'group_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -118,7 +118,7 @@ BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		)
- 	)
+	)
 );
 
 class ca_user_groups extends BaseModel {
@@ -136,7 +136,7 @@ class ca_user_groups extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_user_groups';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'group_id';
 
@@ -325,10 +325,10 @@ class ca_user_groups extends BaseModel {
 				$va_member_list[] = $qr_members->get('fname').' '.$qr_members->get('lname');
 			}
 			
- 			$va_groups[$vn_group_id] = $qr_groups->getRow();
- 			$va_groups[$vn_group_id]['members'] = $va_members;
- 			$va_groups[$vn_group_id]['member_list'] = join(', ', $va_member_list); 
- 		}
+			$va_groups[$vn_group_id] = $qr_groups->getRow();
+			$va_groups[$vn_group_id]['members'] = $va_members;
+			$va_groups[$vn_group_id]['member_list'] = join(', ', $va_member_list); 
+		}
 		
 		return $va_groups;
 	}

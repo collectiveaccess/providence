@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_relationship_type_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('relationship type name'),
- 	'NAME_PLURAL' 		=> _t('relationship type names'),
- 	'FIELDS' 			=> array(
- 		'label_id' => array(
+	'NAME_SINGULAR' 	=> _t('relationship type name'),
+	'NAME_PLURAL' 		=> _t('relationship type names'),
+	'FIELDS' 			=> array(
+		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -94,7 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_type_labels'] = array(
 				'LABEL' => _t('Description (reverse sense)'), 'DESCRIPTION' => _t('Description for relationship type when relation is read right-to-left.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		)
- 	)
+	)
 );
 
 class ca_relationship_type_labels extends BaseLabel {
@@ -110,7 +110,7 @@ class ca_relationship_type_labels extends BaseLabel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_relationship_type_labels';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
 

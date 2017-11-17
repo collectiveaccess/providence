@@ -29,78 +29,78 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
- 
-	abstract class BaseExportRefinery {
-		# -------------------------------------------------------
-		/** 
-		 *
-		 */
-		static $s_refinery_settings = array();
-		
-		/** 
-		 *
-		 */
-		protected $ops_name = null;
-		
-		/** 
-		 *
-		 */
-		protected $ops_title = null;
-		
-		/** 
-		 *
-		 */
-		protected $ops_description = null;
-		# -------------------------------------------------------
-		public function __construct() {
-		
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function getRefinerySettings() {
-			return BaseExportRefinery::$s_refinery_settings[$this->getName()]; 
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function getName() {
-			return $this->ops_name; 
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function getTitle() {
-			return $this->ops_title; 
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function getDescription() {
-			return $this->ops_description; 
-		}
-		# -------------------------------------------------------
-		/**
-		 * Process a mapped value
-		 *
-		 * @param array $pa_source_data Array of data that to be exported. The refinery can make any required additions and modifications to this data; since it's passed by reference those changes will be returned.
-		 * @param mixed $pa_exporter_item Specification and settings for the exporter item being processed. Settings are in an array under the "settings" key
-		 * @param array $t_source BaseModel representation of the current record that is to be exported.
-		 * @param array $pa_options Refinery-specific processing options
-		 *
-		 * @return array The value(s) to add
-		 */
-		abstract function refine(&$pa_source_data, $pa_exporter_item, $t_source, $pa_options=null);
-		# -------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php');
+
+abstract class BaseExportRefinery {
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	static $s_refinery_settings = array();
+	
+	/**
+	 *
+	 */
+	protected $ops_name = null;
+	
+	/**
+	 *
+	 */
+	protected $ops_title = null;
+	
+	/**
+	 *
+	 */
+	protected $ops_description = null;
+	# -------------------------------------------------------
+	public function __construct() {
+	
 	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getRefinerySettings() {
+		return BaseExportRefinery::$s_refinery_settings[$this->getName()];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getName() {
+		return $this->ops_name;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getTitle() {
+		return $this->ops_title;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getDescription() {
+		return $this->ops_description;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Process a mapped value
+	 *
+	 * @param array $pa_source_data Array of data that to be exported. The refinery can make any required additions and modifications to this data; since it's passed by reference those changes will be returned.
+	 * @param mixed $pa_exporter_item Specification and settings for the exporter item being processed. Settings are in an array under the "settings" key
+	 * @param array $t_source BaseModel representation of the current record that is to be exported.
+	 * @param array $pa_options Refinery-specific processing options
+	 *
+	 * @return array The value(s) to add
+	 */
+	abstract function refine(&$pa_source_data, $pa_exporter_item, $t_source, $pa_options=null);
+	# -------------------------------------------------------
+}
 ?>

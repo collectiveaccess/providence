@@ -29,13 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
+
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
- 
+
 class View extends BaseObject {
 	# -------------------------------------------------------
 	private $opa_view_paths;
@@ -86,7 +86,7 @@ class View extends BaseObject {
 	}
 	# -------------------------------------------------------
 	public function setViewPath($pm_path, $pa_options=null) {
-		if (!is_array($pm_path)) { 
+		if (!is_array($pm_path)) {
 			$pm_path = array($pm_path);
 		}
 		foreach($pm_path as $ps_path) {
@@ -147,7 +147,7 @@ class View extends BaseObject {
 	 *
 	 * @param string $ps_filename Filename of view
 	 * @param boolean - return true if view exists, false if not
-	 */ 
+	 */
 	public function viewExists($ps_filename) {
 		foreach(array_reverse($this->opa_view_paths) as $vs_path) {
 			if (file_exists($vs_path.'/'.$ps_filename)) {
@@ -222,24 +222,24 @@ class View extends BaseObject {
 		
 		$va_tags = null;
 		if (caGetOption('string', $pa_options, false)) {
-		    $va_tags = $this->compile($ps_filename, false, $pa_options);
+			$va_tags = $this->compile($ps_filename, false, $pa_options);
 		} else {
-            foreach(array_reverse($this->opa_view_paths) as $vs_path) {
-                if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
-                    // if a l10ed view is at same path than normal but having the locale as last extension, display it (eg. splash_intro_text_html.php.fr_FR)
-                    $va_tags = $this->compile($vs_path.'/'.$ps_filename.".".$g_ui_locale, false, $pa_options);
-                    break;
-                }
-                elseif (file_exists($vs_path.'/'.$ps_filename)) {
-                    // if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
-                    $va_tags = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
-                    break;
-                } elseif (file_exists($ps_filename)) {
-                    $va_tags = $this->compile($ps_filename, false, $pa_options);
-                    break;
-                }
-            }
-        }
+			foreach(array_reverse($this->opa_view_paths) as $vs_path) {
+				if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
+					// if a l10ed view is at same path than normal but having the locale as last extension, display it (eg. splash_intro_text_html.php.fr_FR)
+					$va_tags = $this->compile($vs_path.'/'.$ps_filename.".".$g_ui_locale, false, $pa_options);
+					break;
+				}
+				elseif (file_exists($vs_path.'/'.$ps_filename)) {
+					// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
+					$va_tags = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
+					break;
+				} elseif (file_exists($ps_filename)) {
+					$va_tags = $this->compile($ps_filename, false, $pa_options);
+					break;
+				}
+			}
+		}
 		return $va_tags;
 	}
 	# -------------------------------------------------------
@@ -312,7 +312,7 @@ class View extends BaseObject {
 		ob_start();
 		
 		require($ps_filename);
-			
+		
 		return $this->ops_last_render = ob_get_clean();
 	}
 	# -------------------------------------------------------

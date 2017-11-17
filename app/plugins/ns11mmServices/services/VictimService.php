@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
+/**
+ *
+ */
+
 require_once(__CA_APP_DIR__."/plugins/ns11mmServices/services/NS11mmService.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/ca/Search/EntitySearch.php");
@@ -62,18 +62,18 @@ class VictimService extends NS11mmService {
 	public function listVictims(){
 		$o_search = new EntitySearch();
 		
-        $from = $this->opo_request->getParameter('from', pString);
-        $until = $this->opo_request->getParameter('until', pString);
-        if (!$until) { $until = date('c'); }
-        $vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
-        
+		$from = $this->opo_request->getParameter('from', pString);
+		$until = $this->opo_request->getParameter('until', pString);
+		if (!$until) { $until = date('c'); }
+		$vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
+		
 		$qr_res = $o_search->search("ca_entities.type_id:".$this->opn_victim_type_id, array('limitToModifiedOn' => $vs_range));
 		
-        $skip = $this->opo_request->getParameter('skip', pInteger);
-        $limit = $this->opo_request->getParameter('limit', pInteger);
-        
-        if ($skip > 0) { $qr_res->seek($skip); }
-        if ($skip > $qr_res->numHits()) { return $this->makeResponse(array()); } 
+		$skip = $this->opo_request->getParameter('skip', pInteger);
+		$limit = $this->opo_request->getParameter('limit', pInteger);
+		
+		if ($skip > 0) { $qr_res->seek($skip); }
+		if ($skip > $qr_res->numHits()) { return $this->makeResponse(array()); } 
 		$va_list = array();
 		while($qr_res->nextHit()) {
 			$va_list[$vn_id = $qr_res->get('ca_entities.entity_id')] = array(
@@ -165,7 +165,7 @@ class VictimService extends NS11mmService {
 		$va_entities = $t_entity->getRelatedItems('ca_entities', array('restrict_to_relationship_types' => array('employer', 'affiliation')));
 		$t_rel_entity = new ca_entities();
 
-		$va_units = array();		
+		$va_units = array();
 		foreach($va_entities as $vn_relation_id => $va_rel_info) {
 			if ($t_rel_entity->load($va_rel_info['entity_id'])) {
 				$va_display_names = $t_rel_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true));
@@ -225,28 +225,28 @@ class VictimService extends NS11mmService {
 		$t_object = new ca_objects();
 		$va_data = array('id' => $vn_id);
 		
-        $from = $this->opo_request->getParameter('from', pString);
-        $until = $this->opo_request->getParameter('until', pString);
-        if (!$until) { $until = date('c'); }
-        $vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
-        
-        $o_tep = new TimeExpressionParser();
-        $vb_parsed_date = false;
-        if ($vs_range) { 
-        	if ($vb_parsed_date = $o_tep->parse($vs_range)) {
-        		$va_range = $o_tep->getUnixTimestamps();
-        	}
-        }
-        $t_rep = new ca_object_representations();
+		$from = $this->opo_request->getParameter('from', pString);
+		$until = $this->opo_request->getParameter('until', pString);
+		if (!$until) { $until = date('c'); }
+		$vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
+		
+		$o_tep = new TimeExpressionParser();
+		$vb_parsed_date = false;
+		if ($vs_range) {
+			if ($vb_parsed_date = $o_tep->parse($vs_range)) {
+				$va_range = $o_tep->getUnixTimestamps();
+			}
+		}
+		$t_rep = new ca_object_representations();
 		$t_list = new ca_lists();
 		$va_pub_target_values = $t_list->getItemsForList('object_publication_targets', array('extractValuesByUserLocale' => true));
 		$va_audio_target_values = $t_list->getItemsForList('audio_publication_targets', array('extractValuesByUserLocale' => true));
 		$vn_memorial_exhibition_audio_type_id = $t_list->getItemIDFromList('object_types', 'MemEx_Audio');
 		
 		$vn_publish_annotation_id = $t_list->getItemIDFromList('annotation_publication_targets', 'interactive_tables');
-
+		
 		$vn_publish_rep = $t_list->getItemIDFromList("memex_status", "publish");
-        
+		
 		$va_objects = $t_entity->getRelatedItems('ca_objects');
 		foreach($va_objects as $vn_relation_id => $va_object_info) {
 			$va_timestamp = $t_object->getLastChangeTimestamp($va_object_info['object_id']);
@@ -297,7 +297,7 @@ class VictimService extends NS11mmService {
 					$va_targets = array();
 					foreach($va_pub_targets as $vn_attr_id => $va_value) {
 						$va_targets[] = ($va_pub_target_values[$va_value]['idno']) ? $va_pub_target_values[$va_value]['idno'] : $va_audio_target_values[$va_value]['idno'];
-					} 
+					}
 					
 					
 					
@@ -310,7 +310,7 @@ class VictimService extends NS11mmService {
 					if ($t_object->get('type_id') == $vn_exhibition_audio_type_id) {
 						$va_reps[$vn_i]['transcript'] = $t_object->get('ca_objects.final_text_inner_chamber');
 						$va_reps[$vn_i]['attribution'] = $t_object->get('ca_objects.remembrance_attribution');
-					}	
+					}
 					
 					if ($va_rep['num_multifiles'] > 0) {
 						$va_pages = $t_rep->getFileList($va_rep['representation_id'], null, null, array('page_preview'));
@@ -339,7 +339,7 @@ class VictimService extends NS11mmService {
 							$va_annotation['md5'] = $t_annotation->getMediaInfo('ca_representation_annotations.preview', 'original', 'MD5');
 							
 							$va_reps[$vn_i]['clips'][] = $va_annotation;
-						} 
+						}
 					}
 					
 					$va_filtered_reps[] = $va_reps[$vn_i];
@@ -444,47 +444,47 @@ class VictimService extends NS11mmService {
 		$t_object = new ca_objects();
 		//$va_data = array('id' => $vn_id);
 		
-        $from = $this->opo_request->getParameter('from', pString);
-        $until = $this->opo_request->getParameter('until', pString);
-        if (!$until) { $until = date('c'); }
-        $vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
-     
-        $o_tep = new TimeExpressionParser();
-        $vb_parsed_date = false;
-        if ($vs_range) { 
-        	if ($vb_parsed_date = $o_tep->parse($vs_range)) {
-        		$va_range = $o_tep->getUnixTimestamps();
-        	}
-        }
-        
-        $o_log = new ApplicationChangeLog();
-       // $va_log = $o_log->getChangeLogForRow($t_entity, array('range' => $va_range, 'changeType' => 'D'));
-        $va_log = $o_log->getDeletions('ca_objects', array('range' => $va_range));
-        $va_data['deletions'] = $va_log;
-        // 
-//         foreach($va_log as $vs_key => $va_log_item) {
-//         	foreach($va_log_item as $vn_i => $va_log) {
-//         		if (!is_array($va_log['changes'])) { continue; }
-//         		foreach($va_log['changes'] as $vn_j => $va_change) {
-//         			$va_data[$va_change['table_name']][] = array(
-//         				'datetime' => $va_log['datetime'],
-//         				'row_id' => $va_change['row_id'],
-//         				'description' => $va_change['description'],
-//         				'idno' => $va_change['idno'] 
-//         			);
-//         		}
-//         	}
-//         }
-//      	
-		return $this->makeResponse($va_data);   
-    }
+		$from = $this->opo_request->getParameter('from', pString);
+		$until = $this->opo_request->getParameter('until', pString);
+		if (!$until) { $until = date('c'); }
+		$vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
+		
+		$o_tep = new TimeExpressionParser();
+		$vb_parsed_date = false;
+		if ($vs_range) {
+			if ($vb_parsed_date = $o_tep->parse($vs_range)) {
+				$va_range = $o_tep->getUnixTimestamps();
+			}
+		}
+		
+		$o_log = new ApplicationChangeLog();
+		// $va_log = $o_log->getChangeLogForRow($t_entity, array('range' => $va_range, 'changeType' => 'D'));
+		$va_log = $o_log->getDeletions('ca_objects', array('range' => $va_range));
+		$va_data['deletions'] = $va_log;
+		//
+//		foreach($va_log as $vs_key => $va_log_item) {
+//			foreach($va_log_item as $vn_i => $va_log) {
+//				if (!is_array($va_log['changes'])) { continue; }
+//				foreach($va_log['changes'] as $vn_j => $va_change) {
+//					$va_data[$va_change['table_name']][] = array(
+//						'datetime' => $va_log['datetime'],
+//						'row_id' => $va_change['row_id'],
+//						'description' => $va_change['description'],
+//						'idno' => $va_change['idno']
+//					);
+//				}
+//			}
+//		}
+//		
+		return $this->makeResponse($va_data);
+	}
 	# -------------------------------------------------------
 	/**
 	 * 
 	 */
 	public function getClip(){
 		$pn_id = $this->opo_request->getParameter('id', pInteger);
-	
+		
 		$va_data = array();
 		
 		$t_annotation = new ca_representation_annotations($pn_id);

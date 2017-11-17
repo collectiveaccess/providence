@@ -29,40 +29,40 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 
 BaseModel::$s_ca_models_definitions['ca_attribute_value_multifiles'] = array(
- 	'NAME_SINGULAR' 	=> _t('attribute value multifile'),
- 	'NAME_PLURAL' 		=> _t('attribute value multifiles'),
- 	'FIELDS' 			=> array(
- 		'multifile_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('attribute value multifile'),
+	'NAME_PLURAL' 		=> _t('attribute value multifiles'),
+	'FIELDS' 			=> array(
+		'multifile_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Multifile id', 'DESCRIPTION' => 'Identifier for Multifile'
 		),
 		'value_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => 'Value id', 'DESCRIPTION' => 'The attribute value to which this multifile is attached.'
 		),
 		'resource_path' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 2,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Resource path'), 'DESCRIPTION' => _t('Organizational path into which this file is placed.')
 		),
 		'media' => array(
-				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				
 				"MEDIA_PROCESSING_SETTING" => 'ca_attribute_value_multifiles',
@@ -70,27 +70,27 @@ BaseModel::$s_ca_models_definitions['ca_attribute_value_multifiles'] = array(
 				'LABEL' => _t('Media to upload'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
 		),
 		'media_metadata' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Media metadata'), 'DESCRIPTION' => _t('Media metadata')
 		),
 		'media_content' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Media content'), 'DESCRIPTION' => _t('Media content')
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Indicates how multifiles should be ordered in a list. Higher ranks are lower in the list. That is, rank is used to sort in ascending order.')
 		)
- 	)
+	)
 );
 
 class ca_attribute_value_multifiles extends BaseModel {
@@ -106,7 +106,7 @@ class ca_attribute_value_multifiles extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_attribute_value_multifiles';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'multifile_id';
 
@@ -132,12 +132,12 @@ class ca_attribute_value_multifiles extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('media');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first

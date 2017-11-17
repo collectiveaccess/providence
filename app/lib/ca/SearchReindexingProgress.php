@@ -29,41 +29,41 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  * Implements reindexing of search indices invoked via the web UI
-  * This application dispatcher plugin ensures that the indexing starts
-  * after the web UI page has been sent to the client
-  */
- 
- 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
- 
-	class SearchReindexingProgress extends AppControllerPlugin {
-		# -------------------------------------------------------
+
+/**
+ * Implements reindexing of search indices invoked via the web UI
+ * This application dispatcher plugin ensures that the indexing starts
+ * after the web UI page has been sent to the client
+ */
+
+require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
+
+class SearchReindexingProgress extends AppControllerPlugin {
+	# -------------------------------------------------------
+	
+	# -------------------------------------------------------
+	public function dispatchLoopShutdown() {
+	
+		//
+		// Force output to be sent - we need the client to have the page before
+		// we start flushing progress bar updates
+		//
+		$app = AppController::getInstance();
+		$req = $app->getRequest();
+		$resp = $app->getResponse();
+		$resp->sendResponse();
+		$resp->clearContent();
 		
-		# -------------------------------------------------------
-		public function dispatchLoopShutdown() {	
+		//
+		// Do reindexing
+		//
 		
-			//
-			// Force output to be sent - we need the client to have the page before
-			// we start flushing progress bar updates
-			//	
-			$app = AppController::getInstance();
-			$req = $app->getRequest();
-			$resp = $app->getResponse();
-			$resp->sendResponse();
-			$resp->clearContent();
-			
-			//
-			// Do reindexing
-			//
-			
-			if ($req->isLoggedIn() && $req->user->canDoAction('can_do_search_reindex')) {
-				set_time_limit(3600*8);
-				$o_si = new SearchIndexer();
-				$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false, 'callback' => "caIncrementSearchReindexProgress"));
-			}
-		}	
-		# -------------------------------------------------------
+		if ($req->isLoggedIn() && $req->user->canDoAction('can_do_search_reindex')) {
+			set_time_limit(3600*8);
+			$o_si = new SearchIndexer();
+			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false, 'callback' => "caIncrementSearchReindexProgress"));
+		}
 	}
+	# -------------------------------------------------------
+}
 ?>

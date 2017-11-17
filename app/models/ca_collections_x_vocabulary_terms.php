@@ -29,17 +29,17 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_collections_x_vocabulary_terms'] = array(
 	'NAME_SINGULAR' 	=> _t('collection ⇔ vocabulary term relationship'),
- 	'NAME_PLURAL' 		=> _t('collection ⇔ vocabulary term relationships'),
- 	'FIELDS' 			=> array(
+	'NAME_PLURAL' 		=> _t('collection ⇔ vocabulary term relationships'),
+	'FIELDS' 			=> array(
 		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -107,7 +107,7 @@ class ca_collections_x_vocabulary_terms extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_collections_x_vocabulary_terms';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

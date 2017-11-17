@@ -499,7 +499,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				jQuery('div.bundleLabel').show();
 				{$vs_hide_js}
 			} else {
-			    {$vs_show_js}
+				{$vs_show_js}
 			}
 		});
 

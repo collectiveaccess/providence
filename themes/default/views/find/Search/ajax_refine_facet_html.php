@@ -113,7 +113,7 @@
 			foreach($va_facet as $vn_i => $va_item) {
 ?>
 <?php
-                $vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
+				$vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
 				$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."{$vs_content_count}</td>";
 				
 				if (sizeof($va_row) == 5) {
@@ -162,7 +162,7 @@
 		<table class='browseSelectPanelListTable'>
 <?php
 				foreach($va_items as $va_item) {
-				    $vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
+					$vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
 					$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."{$vs_content_count}</td>";
 					
 					if (sizeof($va_row) == 5) {

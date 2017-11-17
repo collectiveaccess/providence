@@ -84,7 +84,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 
 		$vs_buf = $this->getLocaleJSSrc($po_request)."
 	<div id='timeline-embed' style='width: {$vs_width}; height: {$vs_height};'></div>
-    <script type='text/javascript'>
+	<script type='text/javascript'>
 		jQuery(document).ready(function() {
 			createStoryJS({
 				type:       'timeline',
@@ -125,8 +125,8 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 			],
 			'scale' => 'human'
 		];
-        
-        $po_request = caGetOption('request', $pa_options, null);
+		
+		$po_request = caGetOption('request', $pa_options, null);
 		
 		$qr_res = $this->getData();
 		$vs_table_name = $qr_res->tableName();

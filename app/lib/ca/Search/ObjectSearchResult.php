@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 
@@ -156,41 +156,41 @@ class ObjectSearchResult extends BaseSearchResult {
 		return parent::getMediaInfo($ps_field, $ps_version, $ps_key, $pa_options);
 	}
 	# ------------------------------------------------------
- 	/**
- 	 * Returns number of representations attached to the current row of the specified class. 
- 	 *
- 	 * @param string $ps_class The class of representation to return a count for. Valid classes are "image", "audio", "video" and "document"
- 	 * @param array $pa_options Optional array of options. Options are:
+	/**
+	 * Returns number of representations attached to the current row of the specified class. 
+	 *
+	 * @param string $ps_class The class of representation to return a count for. Valid classes are "image", "audio", "video" and "document"
+	 * @param array $pa_options Optional array of options. Options are:
 	 *						checkAccess = array of access values to restrict returned values to.
 	 *
- 	 * @return int Number of representations
- 	 */
- 	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
- 		return sizeof($this->representationsOfClass($ps_class, $pa_options));
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns number of representations attached to the current row with the specified mimetype. 
- 	 *
- 	 * @param string $ps_mimetype The mimetype to return a count for. 
- 	 * @param array $pa_options Optional array of options. Options are:
+	 * @return int Number of representations
+	 */
+	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
+		return sizeof($this->representationsOfClass($ps_class, $pa_options));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns number of representations attached to the current row with the specified mimetype. 
+	 *
+	 * @param string $ps_mimetype The mimetype to return a count for.
+	 * @param array $pa_options Optional array of options. Options are:
 	 *						checkAccess = array of access values to restrict returned values to.
- 	 *
- 	 * @return int Number of representations
- 	 */
- 	public function numberOfRepresentationsWithMimeType($ps_mimetype, $pa_options=null) {
- 		return sizeof($this->representationsWithMimeType($ps_mimetype, $pa_options));
- 	}
+	 *
+	 * @return int Number of representations
+	 */
+	public function numberOfRepresentationsWithMimeType($ps_mimetype, $pa_options=null) {
+		return sizeof($this->representationsWithMimeType($ps_mimetype, $pa_options));
+	}
 	# -------------------------------------
 	/**
- 	 * Returns representation_ids for representations of the specified row attached to the current object. 
- 	 *
- 	 * @param string $ps_class The class of representation to return information for. Valid classes are "image", "audio", "video" and "document"
- 	 * @param array $pa_options Optional array of options. Options are:
+	 * Returns representation_ids for representations of the specified row attached to the current object. 
+	 *
+	 * @param string $ps_class The class of representation to return information for. Valid classes are "image", "audio", "video" and "document"
+	 * @param array $pa_options Optional array of options. Options are:
 	 *						checkAccess = array of access values to restrict returned values to.
- 	 *
- 	 * @return array A list of representation_ids
- 	 */
+	 *
+	 * @return array A list of representation_ids
+	 */
 	public function representationsOfClass($ps_class, $pa_options=null) {
 		if (!isset($this->opa_class_cache[$this->get('object_id')])) {
 			$this->_prefetchMimeTypes($pa_options);
@@ -200,14 +200,14 @@ class ObjectSearchResult extends BaseSearchResult {
 	}
 	# -------------------------------------
 	/**
- 	 * Returns representation_ids of representations attached to the current row with the specified mimetype. 
- 	 *
- 	 * @param string $ps_mimetype The mimetype to return representations for. 
- 	 * @param array $pa_options Optional array of options. Options are:
+	 * Returns representation_ids of representations attached to the current row with the specified mimetype. 
+	 *
+	 * @param string $ps_mimetype The mimetype to return representations for. 
+	 * @param array $pa_options Optional array of options. Options are:
 	 *						checkAccess = array of access values to restrict returned values to.
- 	 *
- 	 * @return array An array with information about matching representations, in the same format as that returned by ca_objects::getRepresentations()
- 	 */
+	 *
+	 * @return array An array with information about matching representations, in the same format as that returned by ca_objects::getRepresentations()
+	 */
 	public function representationsWithMimeType($ps_mimetype, $pa_options=null) {
 		if (!isset($this->opa_mimetype_cache[$this->get('object_id')])) {
 			$this->_prefetchMimeTypes($pa_options);
@@ -253,7 +253,7 @@ class ObjectSearchResult extends BaseSearchResult {
 	 	if (!is_array($pa_access_values)) { $pa_access_values = array(); }
 	 	if (!sizeof($pa_access_values)) { return true; }
 	 	if (!sizeof(array_intersect($this->get('ca_object_representations.access', array('returnAsArray' => true)), $pa_access_values))) {
-			return false;	
+			return false;
 		}
 		return true;
 	 }

@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -39,10 +39,10 @@ require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_object_representations'] = array(
- 	'NAME_SINGULAR' 	=> _t('object ⇔ object representation relationship'),
- 	'NAME_PLURAL' 		=> _t('object ⇔ object representation relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('object ⇔ object representation relationship'),
+	'NAME_PLURAL' 		=> _t('object ⇔ object representation relationships'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -77,7 +77,7 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_object_representations'] = arr
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the representation when displayed in a list with other representations. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 
 class ca_objects_x_object_representations extends BaseRepresentationRelationship {
@@ -93,7 +93,7 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_objects_x_object_representations';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

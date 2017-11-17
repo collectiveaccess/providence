@@ -1,5 +1,5 @@
 /*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
-html, body { 
+html, body {
 	font: 10px "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, Sans-serif;
 	background-color: #EDEDED;
 	margin:0px;
@@ -27,7 +27,7 @@ h2 { font-size: 13px; color: #666; }
 	clear: both;
 }
 
-.title { 
+.title {
 	font-size: 16px;
 	font-weight: bold;
 	color: #444444;
@@ -50,17 +50,17 @@ h2 { font-size: 13px; color: #666; }
 	font-size: 11px;
 	border: 1px solid #333333;
 	z-index:1;
-	position: fixed; 
-	top: 0px; 
-	left: 0px; 
+	position: fixed;
+	top: 0px;
+	left: 0px;
 	width: 100%;
-	margin-left: auto; 
+	margin-left: auto;
 	margin-right: auto;
 }
 
 #topNavContainer {
-	position: relative; 
-	padding: 0px; 
+	position: relative;
+	padding: 0px;
 	margin: 0px;
 }
 
@@ -85,9 +85,9 @@ h2 { font-size: 13px; color: #666; }
 	margin:0px;
 	float:left;
 	padding: 10px 0 20px;
-	width:100%;	
-	margin-left: 0px; 
-	margin-top: 30px; 
+	width:100%;
+	margin-left: 0px;
+	margin-top: 30px;
 	min-height: 1000px;
 }
 * html #mainContent { width:736px;} /* IE6 only fixes width */
@@ -104,11 +104,11 @@ h2 { font-size: 13px; color: #666; }
 
 /* --- FOOTER STYLES --- */
 #footerContainer {
-	position: fixed; 
-	width: 100%; 
-	bottom: 0px; 
-	left: 0px; 
-	margin-left: auto; 
+	position: fixed;
+	width: 100%;
+	bottom: 0px;
+	left: 0px;
+	margin-left: auto;
 	margin-right: auto;
 }
 
@@ -329,7 +329,7 @@ li.sfHover > a > .sf-sub-indicator {
 }
 
 .sf-menu-search {
-	position: relative; 
+	position: relative;
 }
 
 /*** SKIN FOR "SMALL" MENUS USED WITHIN BUTTONS ***/
@@ -560,8 +560,8 @@ div.hint {
 }
 
 .quick-search-form-container {
-	background-color: #eeeeee; 
-	position: absolute; 
+	background-color: #eeeeee;
+	position: absolute;
 	width: 230px;
 	left: -126px;
 	display: none;
@@ -659,9 +659,9 @@ a.form-button, span.form-button, del.form-button{
 	display:inline-block;
 	cursor:pointer;
 	border:none;
-    font-size:0;
-    line-height:0;
-    
+	font-size:0;
+	line-height:0;
+	
 	/*
 	for Safari, read this first
 	http://creativebits.org/webdev/safari_background_repeat_bug_fix
@@ -673,33 +673,33 @@ a.form-button, span.form-button, del.form-button{
 	color:#2e523b;
 	font-style:normal;
 	margin:0 6px 0px 0;
-	padding:0 10px 0 0;	
-	vertical-align:middle;	
+	padding:0 10px 0 0;
+	vertical-align:middle;
 	
-    padding-top: 0px; /* was -2 */
+	padding-top: 0px; /* was -2 */
 	_position:relative;
-	_width:10px;	
+	_width:10px;
 	_overflow-y:hidden;
 }
 
 a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-    background-image:url('../graphics/backgrounds/form_buttons.png');
+	background-image:url('../graphics/backgrounds/form_buttons.png');
 }
 
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
 	
 	white-space:nowrap;
 	cursor:pointer;
-    color:#222;
+	color:#222;
 	display:-moz-inline-box;
 	display:inline-block;
 	line-height:1;
-    letter-spacing:0 !important;
-    font-family:"Arial" !important;
-    font-size:12px !important;
-    font-style:normal;    
-    background-color:transparent;
+	letter-spacing:0 !important;
+	font-family:"Arial" !important;
+	font-size:12px !important;
+	font-style:normal;
+	background-color:transparent;
 	background-position:100% 0;
 	background-repeat:no-repeat;
 	height:30px;
@@ -707,11 +707,11 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	margin:0 -16px 0 10px;
 	border:none;
 	vertical-align:text-top;
-	zoom: 1;  
+	zoom: 1;
 	_position:relative;
-    _padding-left:0px;
+	_padding-left:0px;
 	_padding-right:12px;
-	_margin-right:-10px;	
+	_margin-right:-10px;
 	_display:block;
 	_top:0;
 	_right:-5px;
@@ -722,7 +722,7 @@ span.form-button button{
    line-height:2.5;/*Opera need this*/
 }
 
-html.safari a.form-button span, 
+html.safari a.form-button span,
 html.safari del.form-button span{
   line-height:1.3;
 }
@@ -733,7 +733,7 @@ html.safari span.form-button button{
 
 html.safari a.form-button:focus,
 html.safari span.form-button button:focus{
-    outline:none;
+	outline:none;
 }
 
 
@@ -746,7 +746,7 @@ del.form-button{
 
 del.form-button span{
 	cursor:default;
-    color:#aaa !important;
+	color:#aaa !important;
 	background-position:100% -180px;
 }
 
@@ -757,22 +757,22 @@ span.form-button button, span.form-button input{
 
 /* Button hover style */
 
-a.form-button:hover, 
+a.form-button:hover,
 span.form-button:hover,
-a.form-button:focus, 
+a.form-button:focus,
 
-a.dom-button-focus, 
+a.dom-button-focus,
 span.form-button-behavior-hover{
 	background-position:0 -60px;
 	color:#222;
 	text-decoration:none;
 }
 
-a.form-button:hover span, 
-span.form-button:hover button, 
-a.form-button:focus span, 
+a.form-button:hover span,
+span.form-button:hover button,
+a.form-button:focus span,
 
-span.form-button-behavior-hover button, 
+span.form-button-behavior-hover button,
 span.form-button-behavior-hover input{
 	background-position:100% -60px;
 }
@@ -807,7 +807,7 @@ a.form-header-button {
 }
 
 img.form-button-left{  /** used to align images to the left **/
-	float: left; 
+	float: left;
 	display: block;
 }
 
@@ -1182,9 +1182,9 @@ table.representationAnnotationListItem {
 }
 
 #objectRepresentationOverlay div.close {
-	background:url(../graphics/buttons/close.png) no-repeat; 
-	position:absolute; 
-	top:10px; 
+	background:url(../graphics/buttons/close.png) no-repeat;
+	position:absolute;
+	top:10px;
 	right:10px;
 	width:36px;
 	height:36px;
@@ -1226,9 +1226,9 @@ select.objectRepresentationOverlayControls {
 }
 
 #objectInfoRepresentationOverlay div.close {
-	background:url(../graphics/buttons/close.png) no-repeat; 
-	position:absolute; 
-	top:10px; 
+	background:url(../graphics/buttons/close.png) no-repeat;
+	position:absolute;
+	top:10px;
 	right:10px;
 	width:36px;
 	height:36px;
@@ -1257,9 +1257,9 @@ select.objectRepresentationOverlayControls {
 }
 
 #quickLookOverlay div.close {
-	background:url(../graphics/buttons/close.png) no-repeat; 
-	position:absolute; 
-	top:10px; 
+	background:url(../graphics/buttons/close.png) no-repeat;
+	position:absolute;
+	top:10px;
 	right:10px;
 	width:36px;
 	height:36px;
@@ -1515,116 +1515,116 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 /******/
 /* Caution! Ensure accessibility in print and other media types... */
 @media projection, screen { /* Use class for showing/hiding tab content, so that visibility can be better controlled in different media types... */
-    .ui-tabs-hide {
-        display: none;
-    }
+	.ui-tabs-hide {
+		display: none;
+	}
 }
 
 /* Hide useless elements in print layouts... */
 @media print {
-    .ui-tabs-nav {
-        display: none;
-    }
+	.ui-tabs-nav {
+		display: none;
+	}
 }
 
 /* Skin */
 .ui-tabs-nav, .ui-tabs-panel {
-    font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, Sans-serif;
-    font-size: 12px;
-    text-align:left;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, Sans-serif;
+	font-size: 12px;
+	text-align:left;
 }
 .ui-tabs-nav {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 0 4px;
+	list-style: none;
+	margin: 0;
+	padding: 0 0 0 4px;
 }
 .ui-tabs-nav:after { /* clearing without presentational markup, IE gets extra treatment */
-    display: block;
-    clear: both;
-    content: " ";
+	display: block;
+	clear: both;
+	content: " ";
 }
 .ui-tabs-nav li {
-    float: left;
-    margin: 0 0 0 1px;
-    min-width: 84px; /* be nice to Opera */
+	float: left;
+	margin: 0 0 0 1px;
+	min-width: 84px; /* be nice to Opera */
 }
 .ui-tabs-nav a, .ui-tabs-nav a span {
-    display: block;
-    padding: 0 10px;
-    background: url(../graphics/backgrounds/tab_bw.png) no-repeat;
+	display: block;
+	padding: 0 10px;
+	background: url(../graphics/backgrounds/tab_bw.png) no-repeat;
 }
 .ui-tabs-nav a {
-    margin: 1px 0 0; /* position: relative makes opacity fail for disabled tab in IE */
-    padding-left: 0;
-    color: #134959;
-    font-weight: bold;
-    line-height: 1.2;
-    text-align: center;
-    text-decoration: none;
-    white-space: nowrap; /* required in IE 6 */    
-    outline: 0; /* prevent dotted border in Firefox */
+	margin: 1px 0 0; /* position: relative makes opacity fail for disabled tab in IE */
+	padding-left: 0;
+	color: #134959;
+	font-weight: bold;
+	line-height: 1.2;
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap; /* required in IE 6 */
+	outline: 0; /* prevent dotted border in Firefox */
 }
 .ui-tabs-nav .ui-tabs-selected a {
-    position: relative;
-    top: 1px;
-    z-index: 2;
-    margin-top: 0;
-    color: #000;
+	position: relative;
+	top: 1px;
+	z-index: 2;
+	margin-top: 0;
+	color: #000;
 }
 .ui-tabs-nav a span {
-    width: 64px; /* IE 6 treats width as min-width */
-    min-width: 64px;
-    height: 18px; /* IE 6 treats height as min-height */
-    min-height: 18px;
-    padding-top: 6px;
-    padding-right: 0;
+	width: 64px; /* IE 6 treats width as min-width */
+	min-width: 64px;
+	height: 18px; /* IE 6 treats height as min-height */
+	min-height: 18px;
+	padding-top: 6px;
+	padding-right: 0;
 }
 *>.ui-tabs-nav a span { /* hide from IE 6 */
-    width: auto;
-    height: auto;
+	width: auto;
+	height: auto;
 }
 .ui-tabs-nav .ui-tabs-selected a span {
-    padding-bottom: 1px;
+	padding-bottom: 1px;
 }
 .ui-tabs-nav .ui-tabs-selected a, .ui-tabs-nav a:hover, .ui-tabs-nav a:focus, .ui-tabs-nav a:active {
-    background-position: 100% -150px;
+	background-position: 100% -150px;
 }
 .ui-tabs-nav a, .ui-tabs-nav .ui-tabs-disabled a:hover, .ui-tabs-nav .ui-tabs-disabled a:focus, .ui-tabs-nav .ui-tabs-disabled a:active {
-    background-position: 100% -100px;
+	background-position: 100% -100px;
 }
 .ui-tabs-nav .ui-tabs-selected a span, .ui-tabs-nav a:hover span, .ui-tabs-nav a:focus span, .ui-tabs-nav a:active span {
-    background-position: 0 -50px;
+	background-position: 0 -50px;
 }
 .ui-tabs-nav a span, .ui-tabs-nav .ui-tabs-disabled a:hover span, .ui-tabs-nav .ui-tabs-disabled a:focus span, .ui-tabs-nav .ui-tabs-disabled a:active span {
-    background-position: 0 0;
+	background-position: 0 0;
 }
 .ui-tabs-nav .ui-tabs-selected a:link, .ui-tabs-nav .ui-tabs-selected a:visited, .ui-tabs-nav .ui-tabs-disabled a:link, .ui-tabs-nav .ui-tabs-disabled a:visited { /* @ Opera, use pseudo classes otherwise it confuses cursor... */
-    cursor: text;
+	cursor: text;
 }
 .ui-tabs-nav a:hover, .ui-tabs-nav a:focus, .ui-tabs-nav a:active,
 .ui-tabs-nav .ui-tabs-deselectable a:hover, .ui-tabs-nav .ui-tabs-deselectable a:focus, .ui-tabs-nav .ui-tabs-deselectable a:active { /* @ Opera, we need to be explicit again here now... */
-    cursor: pointer;
+	cursor: pointer;
 }
 .ui-tabs-disabled {
-    opacity: .4;
-    filter: alpha(opacity=40);
+	opacity: .4;
+	filter: alpha(opacity=40);
 }
 .ui-tabs-panel {
-    border-top: 1px solid #4B4A4A;
-    padding: 1em;
-    background: #fff; /* declare background color for container to avoid distorted fonts in IE while fading */
+	border-top: 1px solid #4B4A4A;
+	padding: 1em;
+	background: #fff; /* declare background color for container to avoid distorted fonts in IE while fading */
 }
 .ui-tabs-loading em {
-    padding: 0 0 0 20px;
-    background: url(loading.gif) no-repeat 0 50%;
+	padding: 0 0 0 20px;
+	background: url(loading.gif) no-repeat 0 50%;
 }
 
 /* Additional IE specific bug fixes... */
 * html .ui-tabs-nav { /* auto clear, @ IE 6 & IE 7 Quirks Mode */
-    display: inline-block;
+	display: inline-block;
 }
 *:first-child+html .ui-tabs-nav  { /* @ IE 7 Standards Mode - do not group selectors, otherwise IE 6 will ignore complete rule (because of the unknown + combinator)... */
-    display: inline-block;
+	display: inline-block;
 }
 
 /*** HIERARCHY BROWSER ***/
@@ -1654,7 +1654,7 @@ div.hierarchyBrowserLevel {
 	height: 100%;
 	padding: 0px;
 	margin: -2px;
-	border: 1px solid #cccccc; 
+	border: 1px solid #cccccc;
 	background: #FFFFFF;
 	overflow: auto;
 }
@@ -1729,41 +1729,41 @@ a.hierarchyBrowserLevelEditButton {
 
 /*** quick search styles ***/
 .quickSearchContentArea {
-	width: 100%; 
+	width: 100%;
 	max-height: 600px;
 	overflow: auto;
 }
 
 .quickSearchFullWidthDisplay {
-	float: left; 
+	float: left;
 	margin: 5px;
 	width: 99%;
 }
 
 .quickSearchFullWidthResults {
-	width: 100%; 
-	height: 200px; 
-	overflow: auto; 
+	width: 100%;
+	height: 200px;
+	overflow: auto;
 	padding: 2px;
 	border: 1px #999999 dotted;
 }
 
 .quickSearchHalfWidthDisplay {
-	float: left; 
+	float: left;
 	margin: 5px;
 	width: 47%;
 }
 
 .quickSearchHalfWidthResults {
-	width: 100%; 
-	height: 200px; 
-	overflow: auto; 
+	width: 100%;
+	height: 200px;
+	overflow: auto;
 	padding: 2px;
 	border: 1px #999999 dotted;
 }
 
 .quickSearchOneThirdWidthDisplay {
-	float: left; 
+	float: left;
 	margin: 5px;
 	width: 31%;
 }
@@ -1773,8 +1773,8 @@ div.quickSearchHeader {
 	font-weight: bold;
 }
 .quickSearchOneThirdWidthResults {
-	width: 100%; 
-	height: 200px; 
+	width: 100%;
+	height: 200px;
 	overflow: auto;
 	padding: 2px;
 	border: 1px #999999 dotted;
@@ -1826,13 +1826,13 @@ div.quickSearchResultHeader {
 }
 
 .browseSelectPanel {
-	position: absolute; 
-	top: 100px; 
-	left: 50%; 
-	border: 1px solid #000000; 
-	background-color: #FFFFFF; 
-	width: 900px; 
-	height: 400px; 
+	position: absolute;
+	top: 100px;
+	left: 50%;
+	border: 1px solid #000000;
+	background-color: #FFFFFF;
+	width: 900px;
+	height: 400px;
 	display: none;
 	margin-left: -450px;
 	padding: 7px;
@@ -1902,17 +1902,17 @@ div.browseHeading {
 }
 
 div.browseCriterion {
-	width:145px; 
-	border: 1px solid #999999; 
-	padding: 5px; 
-	height: 90px; 
+	width:145px;
+	border: 1px solid #999999;
+	padding: 5px;
+	height: 90px;
 	overflow: hide;
 }
 
 .browseCriterionLabel {
-	padding: 5px; 
+	padding: 5px;
 	height: 40px;
-}	
+}
 
 
 /*  SEARCH FORM EDITOR  */

@@ -61,7 +61,7 @@ class Installer {
 	/** @var  string */
 	protected  $ops_base_name;
 	# --------------------------------------------------
-	/** @var array  */
+	/** @var array */
 	protected $opa_locales;
 	# --------------------------------------------------
 	/**
@@ -265,7 +265,7 @@ class Installer {
 	# --------------------------------------------------
 	# UTILITIES
 	# --------------------------------------------------
-	protected  static function getAttribute($po_simplexml, $ps_attr) {
+	protected static function getAttribute($po_simplexml, $ps_attr) {
 		if(isset($po_simplexml[$ps_attr])) {
 			return (string) $po_simplexml[$ps_attr];
 		} else {
@@ -305,7 +305,7 @@ class Installer {
 		/** @var LabelableBaseModelWithAttributes $t_instance */
 		if (!$po_labels || !$po_labels->children()) {
 			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
-			return true; 
+			return true;
 		}
 
 		$va_old_label_ids = array_flip($t_instance->getLabelIDs());
@@ -389,26 +389,26 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
-	    // process metadata element settings that couldn't be processed during install
-	    // (Eg. those for hideIfSelected_*)
-	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
-	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
-	            if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
-	            $t_element->setMode(ACCESS_WRITE);
-	            $va_available_settings = $t_element->getAvailableSettings();
-	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
-	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
-	                
-	                if (isset($va_available_settings[$vs_setting_name]['multiple']) && $va_available_settings[$vs_setting_name]['multiple']) {
-	                    $t_element->setSetting($vs_setting_name, $va_setting_values);
-	                } else {
-	                    $t_element->setSetting($vs_setting_name, array_shift($va_setting_values));
-	                }
-	            }
-	        }
-	        $t_element->update();
-	    } 
-	    
+		// process metadata element settings that couldn't be processed during install
+		// (Eg. those for hideIfSelected_*)
+		if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
+			foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
+				if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
+				$t_element->setMode(ACCESS_WRITE);
+				$va_available_settings = $t_element->getAvailableSettings();
+				foreach($va_settings as $vs_setting_name => $va_setting_values) {
+					if (!isset($va_available_settings[$vs_setting_name])) { continue; }
+					
+					if (isset($va_available_settings[$vs_setting_name]['multiple']) && $va_available_settings[$vs_setting_name]['multiple']) {
+						$t_element->setSetting($vs_setting_name, $va_setting_values);
+					} else {
+						$t_element->setSetting($vs_setting_name, array_shift($va_setting_values));
+					}
+				}
+			}
+			$t_element->update();
+		}
+		
 		// generate system GUID -- used to identify systems in data sync protocol
 		$o_vars = new ApplicationVars();
 		$o_vars->setVar('system_guid', caGenerateGUID());
@@ -640,7 +640,7 @@ class Installer {
 	 * @param $pn_parent_id int
 	 * @return bool
 	 */
-	protected  function processListItems($t_list, $po_items, $pn_parent_id) {
+	protected function processListItems($t_list, $po_items, $pn_parent_id) {
 		foreach($po_items->children() as $vo_item) {
 			$vs_item_value = self::getAttribute($vo_item, "value");
 			$vs_item_idno = self::getAttribute($vo_item, "idno");
@@ -959,7 +959,7 @@ class Installer {
 			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
 
 			// create ui row
-			if(!($t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
+			if(!($t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' => $vn_type), array('returnAs' => 'firstModelInstance')))) {
 				$t_ui = new ca_editor_uis();
 				$this->logStatus(_t('User interface with code %1 is new', $vs_ui_code));
 			} else {
@@ -1024,7 +1024,7 @@ class Installer {
 						}
 						
 						$t_ui->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_restriction, "includeSubtypes")]);
-					
+						
 						$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $vs_restriction_type, $vs_ui_code));
 					}
 				}
@@ -1099,7 +1099,7 @@ class Installer {
 				$this->logStatus(_t('Successfully updated/inserted screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
-			
+				
 				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// nuke previous placements. there shouldn't be any if we're installing from scratch.
@@ -1186,25 +1186,25 @@ class Installer {
 				}
 				
 				if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
-                    $va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-                    if ($t_instance instanceof BaseRelationshipModel) {
-                        $va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
-                    } elseif($t_instance instanceof ca_representation_annotations) {
-                        $va_ids = [];
-                        foreach($va_codes as $vs_annotation_type) {
-                            if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
-                                $va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
-                            }
-                        }
-                    } else {
-                        $va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-                    }
-                
-                    foreach($va_ids as $vn_i => $vn_type_id) {
-                        $t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
-                        $this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
-                    }
-                }
+					$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+					if ($t_instance instanceof BaseRelationshipModel) {
+						$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
+					} elseif($t_instance instanceof ca_representation_annotations) {
+						$va_ids = [];
+						foreach($va_codes as $vs_annotation_type) {
+							if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+								$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+							}
+						}
+					} else {
+						$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
+					}
+					
+					foreach($va_ids as $vn_i => $vn_type_id) {
+						$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
+						$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
+					}
+				}
 			}
 
 			// set user and group access
@@ -2091,9 +2091,9 @@ class Installer {
 			$t_user->setMode(ACCESS_WRITE);
 			$t_user->set('user_name', $vs_user_name = trim((string) self::getAttribute($vo_login, "user_name")));
 			$t_user->set('password', $vs_password);
-			$t_user->set('fname',  trim((string) self::getAttribute($vo_login, "fname")));
-			$t_user->set('lname',  trim((string) self::getAttribute($vo_login, "lname")));
-			$t_user->set('email',  trim((string) self::getAttribute($vo_login, "email")));
+			$t_user->set('fname', trim((string) self::getAttribute($vo_login, "fname")));
+			$t_user->set('lname', trim((string) self::getAttribute($vo_login, "lname")));
+			$t_user->set('email', trim((string) self::getAttribute($vo_login, "email")));
 			$t_user->set('active', 1);
 			$t_user->set('userclass', 0);
 			$t_user->insert();
@@ -2186,10 +2186,10 @@ class Installer {
 				$vs_value = (string) $vo_setting;
 				
 				
-                if (isset($pa_settings_info[$vs_setting_name]) && isset($pa_settings_info[$vs_setting_name]['deferred']) && $pa_settings_info[$vs_setting_name]['deferred']) {
-                    $this->opa_metadata_element_deferred_settings_processing[$pt_instance->get('element_code')][$vs_setting_name][] = $vs_value;
-                    continue;
-                }
+				if (isset($pa_settings_info[$vs_setting_name]) && isset($pa_settings_info[$vs_setting_name]['deferred']) && $pa_settings_info[$vs_setting_name]['deferred']) {
+					$this->opa_metadata_element_deferred_settings_processing[$pt_instance->get('element_code')][$vs_setting_name][] = $vs_value;
+					continue;
+				}
 
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
 					if ($vs_locale) { // settings with locale (those can't repeat)

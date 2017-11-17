@@ -53,7 +53,7 @@ class WLPlugFileZFileExtension Extends WLPlug Implements IWLPlugFileFormat {
   var $info = array(
   			# properties from the identified file that *may*
   			# be returned; true (1) if *always* returned; false(0) if not
-		    "PROPERTIES" => array(
+			"PROPERTIES" => array(
 					  # The following properties are common to all plug-ins
 					  "filepath"			=>  1,
 					  "filesize"			=>	1,
@@ -65,12 +65,12 @@ class WLPlugFileZFileExtension Extends WLPlug Implements IWLPlugFileFormat {
 			"CONVERSIONS" => array(
 			
 					  ),
-		    "NAME" => "FileExtension", # name of plug-in
-		    );
-		    
+			"NAME" => "FileExtension", # name of plug-in
+			);
+			
 	# ----------------------------------------------------------------------	
 	# Plug-in specific properties
-	# ----------------------------------------------------------------------	    
+	# ----------------------------------------------------------------------		
 	var $file_extensions = array(
 		"txt"	=>	array("mimetype" => "text/plain", "format_name" => "Text", "long_format_name" => "Plain text"),
 		"text"	=>	array("mimetype" => "text/plain", "format_name" => "Text", "long_format_name" => "Plain text"),

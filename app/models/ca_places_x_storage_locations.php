@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_places_x_storage_locations'] = array(
- 	'NAME_SINGULAR' 	=> _t('places ⇔ storage locations relationship'),
- 	'NAME_PLURAL' 		=> _t('places ⇔ storage locations relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('places ⇔ storage locations relationship'),
+	'NAME_PLURAL' 		=> _t('places ⇔ storage locations relationships'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -91,7 +91,7 @@ BaseModel::$s_ca_models_definitions['ca_places_x_storage_locations'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship when displayed in a list with other relationships. Lower numbers indicate higher priority.')
 		)
- 	)
+	)
 );
 
 class ca_places_x_storage_locations extends BaseRelationshipModel {
@@ -107,7 +107,7 @@ class ca_places_x_storage_locations extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_places_x_storage_locations';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

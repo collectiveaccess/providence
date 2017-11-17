@@ -37,18 +37,18 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	/**
 	 * @var array
 	 */
-    private $opa_auth_config_framents = [];
+	private $opa_auth_config_framents = [];
 	/**
 	 * @var array
 	 */
-    private $opa_ldaps = [];
-    # --------------------------------------------------------------------------------
-    public function __construct() {
-        if (!function_exists("ldap_connect")){
-            throw new LDAPException(_t("PHP's LDAP module is required for LDAP authentication!"));
-        }
+	private $opa_ldaps = [];
+	# --------------------------------------------------------------------------------
+	public function __construct() {
+		if (!function_exists("ldap_connect")){
+			throw new LDAPException(_t("PHP's LDAP module is required for LDAP authentication!"));
+		}
 
-        $this->opo_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		$this->opo_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 		// "new" config format allows defining multiple directories in an array
 		if($va_directories = $this->opo_auth_config->get('directories')) {
@@ -70,17 +70,17 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 		} else {// else @todo maybe support legacy configs?
 			throw new LDAPException(_t('No directories key found in authentication config. Are you using an old configuration?'));
 		}
-    }
+	}
 	# --------------------------------------------------------------------------------
-    public function __destruct() {
-        if (sizeof($this->opa_ldaps)) {
+	public function __destruct() {
+		if (sizeof($this->opa_ldaps)) {
 			foreach($this->opa_ldaps as $o_ldap) {
 				ldap_close($o_ldap);
 			}
-        }
-    }
-    # --------------------------------------------------------------------------------
-    public function authenticate($ps_username, $ps_password = '', $pa_options=null) {
+		}
+	}
+	# --------------------------------------------------------------------------------
+	public function authenticate($ps_username, $ps_password = '', $pa_options=null) {
 		// try to bind against one of the directories
 		foreach($this->getLinkIdentifiers() as $vs_key => $r_ldap) {
 			$vo_bind = $this->bindToDirectory($r_ldap, $ps_username, $ps_password, $this->opa_auth_config_framents[$vs_key]);
@@ -110,9 +110,9 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
 		// couldn't bind to any of the directories -> bail
 		return false;
-    }
-    # --------------------------------------------------------------------------------
-    public function getUserInfo($ps_username, $ps_password) {
+	}
+	# --------------------------------------------------------------------------------
+	public function getUserInfo($ps_username, $ps_password) {
 		foreach($this->getLinkIdentifiers() as $vs_key => $r_ldap) {
 			// ldap config
 			$vs_base_dn = $this->opa_auth_config_framents[$vs_key]['ldap_base_dn'];
@@ -174,10 +174,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 		}
 
 		throw new LDAPException(_t("User could not be found."));
-    }
-    # --------------------------------------------------------------------------------
-    public function createUserAndGetPassword($ps_username, $ps_password) {
-        // We don't create users in directories, we assume they're already there
+	}
+	# --------------------------------------------------------------------------------
+	public function createUserAndGetPassword($ps_username, $ps_password) {
+		// We don't create users in directories, we assume they're already there
 
 		// set random 32 byte password. as long as LDAP is enabled, this will never be used
 		// and if it's ever disabled, we don't want people to be able to log in with their
@@ -190,21 +190,21 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 			throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
 		}
 
-        return $vs_password;
-    }
-    # --------------------------------------------------------------------------------
-    protected function getLinkIdentifiers() {
-        return $this->opa_ldaps;
-    }
-    # --------------------------------------------------------------------------------
-    protected function getConfigValue($ps_key, $pm_default_value = null) {
-        $vm_result = $this->opo_auth_config->get($ps_key);
-        if ($pm_default_value && !$vm_result) {
-            $vm_result = $pm_default_value;
-        }
-        return $vm_result;
-    }
-    # --------------------------------------------------------------------------------
+		return $vs_password;
+	}
+	# --------------------------------------------------------------------------------
+	protected function getLinkIdentifiers() {
+		return $this->opa_ldaps;
+	}
+	# --------------------------------------------------------------------------------
+	protected function getConfigValue($ps_key, $pm_default_value = null) {
+		$vm_result = $this->opo_auth_config->get($ps_key);
+		if ($pm_default_value && !$vm_result) {
+			$vm_result = $pm_default_value;
+		}
+		return $vm_result;
+	}
+	# --------------------------------------------------------------------------------
 	/**
 	 * @param array $pa_config
 	 * @param string $ps_key
@@ -213,100 +213,100 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	 * @param string $ps_base_dn
 	 * @return mixed
 	 */
-    protected function getProcessedConfigValue($pa_config, $ps_key, $ps_user_group_name, $ps_user_ou, $ps_base_dn) {
-        $result = $pa_config[$ps_key];
-        $result = str_replace('{username}', $ps_user_group_name, $result);
-        $result = str_replace('{groupname}', $ps_user_group_name, $result);
-        $result = str_replace('{user_ou}', $ps_user_ou, $result);
-        $result = str_replace('{base_dn}', $ps_base_dn, $result);
-        return $result;
-    }
-    # --------------------------------------------------------------------------------
-    public function supports($pn_feature) {
-        switch($pn_feature){
-            case __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__:
-                return true;
-            case __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__:
-            case __CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__:
-            default:
-                return false;
-        }
-    }
-    # --------------------------------------------------------------------------------
-    public function deleteUser($ps_username) {
-        return true;
-    }
-    # --------------------------------------------------------------------------------
-    public function getAccountManagementLink() {
-        if($vs_link = $this->opo_auth_config->get('manage_account_url')) {
-            return $vs_link;
-        }
-        return false;
-    }
-    # --------------------------------------------------------------------------------
-    /**
-     * Determine if the user has at least one required group membership.  If no required group list is configured, this
-     * method should always return `true`.  By default, this method always returns `true`.
-     *
+	protected function getProcessedConfigValue($pa_config, $ps_key, $ps_user_group_name, $ps_user_ou, $ps_base_dn) {
+		$result = $pa_config[$ps_key];
+		$result = str_replace('{username}', $ps_user_group_name, $result);
+		$result = str_replace('{groupname}', $ps_user_group_name, $result);
+		$result = str_replace('{user_ou}', $ps_user_ou, $result);
+		$result = str_replace('{base_dn}', $ps_base_dn, $result);
+		return $result;
+	}
+	# --------------------------------------------------------------------------------
+	public function supports($pn_feature) {
+		switch($pn_feature){
+			case __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__:
+				return true;
+			case __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__:
+			case __CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__:
+			default:
+				return false;
+		}
+	}
+	# --------------------------------------------------------------------------------
+	public function deleteUser($ps_username) {
+		return true;
+	}
+	# --------------------------------------------------------------------------------
+	public function getAccountManagementLink() {
+		if($vs_link = $this->opo_auth_config->get('manage_account_url')) {
+			return $vs_link;
+		}
+		return false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Determine if the user has at least one required group membership.  If no required group list is configured, this
+	 * method should always return `true`.  By default, this method always returns `true`.
+	 *
 	 * @param resource $pr_ldap
-     * @param $ps_username string The username
+	 * @param $ps_username string The username
 	 * @param array $pa_config
-     *
-     * @return boolean
-     */
-    protected function hasRequiredGroupMembership($pr_ldap, $ps_username, $pa_config) {
-        $va_group_cn_list = $pa_config["ldap_group_cn_list"];
-        if (!is_array($va_group_cn_list) || sizeof($va_group_cn_list) === 0) {
-            // if no list is configured, all is good
-            return true;
-        }
-        return $this->isUserInAnyGroup($pr_ldap, $ps_username, $va_group_cn_list, $pa_config);
-    }
-    # --------------------------------------------------------------------------------
-    /**
-     * Generate a map of keys and values to pass to `ldap_set_option()`.  As a minimum, this should specify the LDAP
-     * protocol version to use.  By default it specifies an LDAP protocol version of 3 and no other options.
-     *
-     * @return array
-     */
-    protected abstract function getLDAPOptions();
-    # --------------------------------------------------------------------------------
-    /**
-     * Determine whether the given user is in any of the given groups, using the given LDAP connection.
-     *
+	 *
+	 * @return boolean
+	 */
+	protected function hasRequiredGroupMembership($pr_ldap, $ps_username, $pa_config) {
+		$va_group_cn_list = $pa_config["ldap_group_cn_list"];
+		if (!is_array($va_group_cn_list) || sizeof($va_group_cn_list) === 0) {
+			// if no list is configured, all is good
+			return true;
+		}
+		return $this->isUserInAnyGroup($pr_ldap, $ps_username, $va_group_cn_list, $pa_config);
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Generate a map of keys and values to pass to `ldap_set_option()`.  As a minimum, this should specify the LDAP
+	 * protocol version to use.  By default it specifies an LDAP protocol version of 3 and no other options.
+	 *
+	 * @return array
+	 */
+	protected abstract function getLDAPOptions();
+	# --------------------------------------------------------------------------------
+	/**
+	 * Determine whether the given user is in any of the given groups, using the given LDAP connection.
+	 *
 	 * @param $pr_ldap resource
-     * @param $ps_username string
-     * @param $pa_group_cn_list array[string]
+	 * @param $ps_username string
+	 * @param $pa_group_cn_list array[string]
 	 * @param array $pa_config
-     *
-     * @return bool True if the user is in the group, otherwise false.
-     */
-    protected abstract function isUserInAnyGroup($pr_ldap, $ps_username, $pa_group_cn_list, $pa_config);
-    # --------------------------------------------------------------------------------
-    /**
-     * Get an array of CA role names to add to the given user after logging in, based on security group assignments in
-     * the directory.
-     *
-     * @param $ps_username string
+	 *
+	 * @return bool True if the user is in the group, otherwise false.
+	 */
+	protected abstract function isUserInAnyGroup($pr_ldap, $ps_username, $pa_group_cn_list, $pa_config);
+	# --------------------------------------------------------------------------------
+	/**
+	 * Get an array of CA role names to add to the given user after logging in, based on security group assignments in
+	 * the directory.
+	 *
+	 * @param $ps_username string
 	 * @param resource $pr_ldap
 	 * @param array $pa_config
-     *
-     * @return array
-     */
-    protected abstract function getRolesToAddFromDirectory($pr_ldap, $ps_username, $pa_config);
-    # --------------------------------------------------------------------------------
-    /**
-     * Get an array of CA group names to add to the given user after logging in, based on security group assignments
-     * in the directory.
-     *
+	 *
+	 * @return array
+	 */
+	protected abstract function getRolesToAddFromDirectory($pr_ldap, $ps_username, $pa_config);
+	# --------------------------------------------------------------------------------
+	/**
+	 * Get an array of CA group names to add to the given user after logging in, based on security group assignments
+	 * in the directory.
+	 *
 	 * @param resource $pr_ldap
-     * @param $ps_username string
+	 * @param $ps_username string
 	 * @param array $pa_config
-     *
-     * @return array
-     */
-    protected abstract function getGroupsToAddFromDirectory($pr_ldap, $ps_username, $pa_config);
-    # --------------------------------------------------------------------------------
+	 *
+	 * @return array
+	 */
+	protected abstract function getGroupsToAddFromDirectory($pr_ldap, $ps_username, $pa_config);
+	# --------------------------------------------------------------------------------
 	/**
 	 * Bind to directory
 	 * @param resource $po_ldap
@@ -316,85 +316,85 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	 * @return bool
 	 * @throws LDAPException
 	 */
-    private function bindToDirectory($po_ldap, $ps_username, $ps_password, $pa_config) {
-        if (!$ps_username) {
-            return false;
-        }
+	private function bindToDirectory($po_ldap, $ps_username, $ps_password, $pa_config) {
+		if (!$ps_username) {
+			return false;
+		}
 
 		if(strlen($ps_password) == 0) {
 			throw new LDAPException(_t("Password for directory bind cannot be empty!"));
 		}
 
-        // ldap config
-        $vs_user_ou = $pa_config['ldap_user_ou'];
-        $vs_base_dn = $pa_config['ldap_base_dn'];
-        $vs_bind_rdn = $this->getProcessedConfigValue($pa_config, "ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
-        $vs_bind_rdn_filter = $this->getProcessedConfigValue($pa_config, "ldap_bind_rdn_filter", $ps_username, $vs_user_ou, $vs_base_dn);
+		// ldap config
+		$vs_user_ou = $pa_config['ldap_user_ou'];
+		$vs_base_dn = $pa_config['ldap_base_dn'];
+		$vs_bind_rdn = $this->getProcessedConfigValue($pa_config, "ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
+		$vs_bind_rdn_filter = $this->getProcessedConfigValue($pa_config, "ldap_bind_rdn_filter", $ps_username, $vs_user_ou, $vs_base_dn);
 
-        // apply filter to bind, if there is one
-        if (strlen($vs_bind_rdn_filter) > 0) {
+		// apply filter to bind, if there is one
+		if (strlen($vs_bind_rdn_filter) > 0) {
 			$this->bindServiceAccount($po_ldap, $pa_config);
 
-            if(!($vo_dn_search_results = @ldap_search($po_ldap, $vs_base_dn, $vs_bind_rdn_filter))) {
-            	throw new LDAPException(_t("Couldn't apply bind RDN filter for directory. LDAP search failed"));
+			if(!($vo_dn_search_results = @ldap_search($po_ldap, $vs_base_dn, $vs_bind_rdn_filter))) {
+				throw new LDAPException(_t("Couldn't apply bind RDN filter for directory. LDAP search failed"));
 			}
-            $va_dn_search_results = ldap_get_entries($po_ldap, $vo_dn_search_results);
-            if (isset($va_dn_search_results[0]['dn'])) {
-                $vs_bind_rdn = $va_dn_search_results[0]['dn'];
-            }
-        }
+			$va_dn_search_results = ldap_get_entries($po_ldap, $vo_dn_search_results);
+			if (isset($va_dn_search_results[0]['dn'])) {
+				$vs_bind_rdn = $va_dn_search_results[0]['dn'];
+			}
+		}
 
-        // log in
-        return @ldap_bind($po_ldap, $vs_bind_rdn, $ps_password);
-    }
-    # --------------------------------------------------------------------------------
+		// log in
+		return @ldap_bind($po_ldap, $vs_bind_rdn, $ps_password);
+	}
+	# --------------------------------------------------------------------------------
 	/**
 	 * @param resource $pr_ldap
 	 * @param string $ps_username
 	 * @param array $pa_config
 	 */
-    private function syncWithDirectory($pr_ldap, $ps_username, $pa_config) {
-        $va_default_roles = caGetOption("ldap_users_default_roles", $pa_config, array());
-        $va_default_groups = caGetOption("ldap_users_default_groups", $pa_config, array());
-        $t_user = new ca_users();
+	private function syncWithDirectory($pr_ldap, $ps_username, $pa_config) {
+		$va_default_roles = caGetOption("ldap_users_default_roles", $pa_config, array());
+		$va_default_groups = caGetOption("ldap_users_default_groups", $pa_config, array());
+		$t_user = new ca_users();
 
-        // don't try to sync roles for non-existing users (the first auth call is before the user is actually created)
-        if (!$t_user->load($ps_username)) {
-            return;
-        }
+		// don't try to sync roles for non-existing users (the first auth call is before the user is actually created)
+		if (!$t_user->load($ps_username)) {
+			return;
+		}
 
-        if ($pa_config['ldap_sync_user_roles']) {
-            $va_expected_roles = array_merge($va_default_roles, $this->getRolesToAddFromDirectory($pr_ldap, $ps_username, $pa_config));
+		if ($pa_config['ldap_sync_user_roles']) {
+			$va_expected_roles = array_merge($va_default_roles, $this->getRolesToAddFromDirectory($pr_ldap, $ps_username, $pa_config));
 
-            foreach($va_expected_roles as $vs_role) {
-                if(!$t_user->hasUserRole($vs_role)) {
-                    $t_user->addRoles($vs_role);
-                }
-            }
+			foreach($va_expected_roles as $vs_role) {
+				if(!$t_user->hasUserRole($vs_role)) {
+					$t_user->addRoles($vs_role);
+				}
+			}
 
-            foreach($t_user->getUserRoles() as $vn_id => $va_role_info) {
-                if(!in_array($va_role_info['code'], $va_expected_roles)) {
-                    $t_user->removeRoles($vn_id);
-                }
-            }
-        }
+			foreach($t_user->getUserRoles() as $vn_id => $va_role_info) {
+				if(!in_array($va_role_info['code'], $va_expected_roles)) {
+					$t_user->removeRoles($vn_id);
+				}
+			}
+		}
 
-        if ($pa_config['ldap_sync_user_groups']) {
-            $va_expected_groups = array_merge($va_default_groups, $this->getGroupsToAddFromDirectory($pr_ldap, $ps_username, $pa_config));
+		if ($pa_config['ldap_sync_user_groups']) {
+			$va_expected_groups = array_merge($va_default_groups, $this->getGroupsToAddFromDirectory($pr_ldap, $ps_username, $pa_config));
 
-            foreach($va_expected_groups as $vs_group) {
-                if(!$t_user->inGroup($vs_group)) {
-                    $t_user->addToGroups($vs_group);
-                }
-            }
+			foreach($va_expected_groups as $vs_group) {
+				if(!$t_user->inGroup($vs_group)) {
+					$t_user->addToGroups($vs_group);
+				}
+			}
 
-            foreach($t_user->getUserGroups() as $vn_id => $va_group_info) {
-                if(!in_array($va_group_info['code'], $va_expected_groups)) {
-                    $t_user->removeFromGroups($vn_id);
-                }
-            }
-        }
-    }
+			foreach($t_user->getUserGroups() as $vn_id => $va_group_info) {
+				if(!in_array($va_group_info['code'], $va_expected_groups)) {
+					$t_user->removeFromGroups($vn_id);
+				}
+			}
+		}
+	}
 	# --------------------------------------------------------------------------------	
 	/**
 	 * Bind to service account when server does not support search after anonymous bind

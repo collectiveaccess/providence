@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 include_once(__CA_LIB_DIR__."/core/Db/DbBase.php");
 
@@ -255,10 +255,10 @@ class DbResult extends DbBase {
 		if ($this->numErrors()) {
 			$this->opo_db->seek($this, $this->opr_res, 0);
 			$this->opn_current_row = 0;
-    		return false;
+			return false;
 		}
 		$this->opn_current_row = $pn_pos;
-    	return $vm_ret;
+		return $vm_ret;
 	}
 	# ---------------------------------------------------------------------------
 	/**
@@ -349,7 +349,7 @@ class DbResult extends DbBase {
 	 * the version is returned, otherwise all information is returned.
 	 * 
 	 * When only the tablename.fieldname parameter is passed the returned array will contain the following keys:
-	 *	ORIGINAL_FILENAME => original name of uploaded file 
+	 *	ORIGINAL_FILENAME => original name of uploaded file
 	 *  INPUT => an array of information about the originally uploaded file, including the following keys:
 	 *				MIMETYPE => mimetype of uploaded file
 	 *				WIDTH => width in pixels of uploaded file
@@ -384,9 +384,9 @@ class DbResult extends DbBase {
 	 * @return array
 	 */
 	function getMediaInfo($ps_field, $ps_version=null, $ps_key=null) {
-		if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		}  
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, ['data' => $this->opa_media_info_cache[$ps_field]]);
 	}
@@ -404,10 +404,10 @@ class DbResult extends DbBase {
 	 * @return string
 	 */
 	function getMediaPath($ps_field, $ps_version, $pa_options=null) {
-	    if(!is_array($pa_options)) { $pa_options = []; }
-		if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		} 
+		if(!is_array($pa_options)) { $pa_options = []; }
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => $this->opa_media_info_cache[$ps_field]]));
 	}
@@ -425,10 +425,10 @@ class DbResult extends DbBase {
 	 * @return string
 	 */
 	function getMediaUrl($ps_field, $ps_version, $pa_options=null) {
-	    if(!is_array($pa_options)) { $pa_options = []; }
-		if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		} 
+		if(!is_array($pa_options)) { $pa_options = []; }
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($ps_version, array_merge($pa_options, ['data' => $this->opa_media_info_cache[$ps_field]]));
 	}
 	
@@ -442,7 +442,7 @@ class DbResult extends DbBase {
 	 *  style => the HTML style attribute
 	 *  class => the HTML CSS classname to apply to the tag
 	 *  border => for images, the border to apply; default is 0
-	 *  alt => alternate text to attach to an image 
+	 *  alt => alternate text to attach to an image
 	 *  title => title text to attach to an image
 	 *  usemap => specifies imagemap to overlay on an image
 	 *
@@ -454,14 +454,14 @@ class DbResult extends DbBase {
 	 * @access public
 	 * @param string tablename.fieldname, e.g. object_representations.media
 	 * @param string media version, e.g. thumbnail
-	 * @param array options 
+	 * @param array options
 	 * @return string
 	 */
 	function getMediaTag($ps_field, $ps_version, $pa_options=null) {
-	    if(!is_array($pa_options)) { $pa_options = []; }
-		if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		} 
+		if(!is_array($pa_options)) { $pa_options = []; }
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['data' => $this->opa_media_info_cache[$ps_field]]));
 	}
 	
@@ -473,9 +473,9 @@ class DbResult extends DbBase {
 	 * @return array
 	 */
 	function getMediaVersions($ps_field) {
-		if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		} 
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(['data' => $this->opa_media_info_cache[$ps_field]]);
 	}
 	
@@ -502,9 +502,9 @@ class DbResult extends DbBase {
 	 * @return boolean
 	 */
 	function hasMedia($ps_field) {
-		if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		} 
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(['data' => $this->opa_media_info_cache[$ps_field]]);
 	}
 	
@@ -518,9 +518,9 @@ class DbResult extends DbBase {
 	 * @return boolean
 	 */
 	function mediaIsMirrored($ps_field, $ps_version) {
-	    if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		} 
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored($ps_version, ['data' => $this->opa_media_info_cache[$ps_field]]);
 	}
 	
@@ -540,15 +540,15 @@ class DbResult extends DbBase {
 	 * @return boolean
 	 */
 	function getMediaMirrorStatus($ps_field, $ps_version, $ps_mirror=null) {
-	    if (!isset($this->opa_media_info_cache[$ps_field])) { 
-		    $this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
-		} 
+		if (!isset($this->opa_media_info_cache[$ps_field])) {
+			$this->opa_media_info_cache[$ps_field] = $this->get($ps_field, array("unserialize" => true));
+		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus($ps_version, $ps_mirror, ['data' => $this->opa_media_info_cache[$ps_field]]);
 	}
 	
 	/**
 	 * Returns an associative array containing details for the specified file, if the field
-	 * is defined as FT_FILE in the table's class definition. 
+	 * is defined as FT_FILE in the table's class definition.
 	 * The returned array will contain the following keys:
 	 *
 	 * FILE => always set to 1
@@ -739,9 +739,9 @@ class DbResult extends DbBase {
 	 * @access public
 	 * @param string tablename.fieldname, e.g. object_clips.start_time
 	 * @param string optional format specification for timecode; valid formats are:
-	 * 		RAW => integer display of number of seconds [default]
-	 *		COLON_DELIMITED => timecode returned in format hh:mm:ss (hh=hours, mm=minutes, ss=seconds; ex. 2:10:15)
-	 *		HOURS_MINUTES_SECONDS => timecode returned in format Xh Xm Xs (where X=number; ex. 2h 10m 15s)
+	 * 	RAW => integer display of number of seconds [default]
+	 * 	COLON_DELIMITED => timecode returned in format hh:mm:ss (hh=hours, mm=minutes, ss=seconds; ex. 2:10:15)
+	 * 	HOURS_MINUTES_SECONDS => timecode returned in format Xh Xm Xs (where X=number; ex. 2h 10m 15s)
 	 * @return string
 	 */
 	function getTimecode($ps_field, $ps_format=null) {

@@ -29,14 +29,14 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	require_once(__CA_MODELS_DIR__.'/ca_data_import_event_log.php');
-	require_once(__CA_MODELS_DIR__.'/ca_data_import_items.php');
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_import_event_log.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_import_items.php');
 
 /**
   * Constants for data import items (ca_data_import_items) "success" flag
@@ -45,12 +45,12 @@ define("__CA_DATA_IMPORT_ITEM_FAILURE__", 0);
 define("__CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__", 1);
 define("__CA_DATA_IMPORT_ITEM_SUCCESS__", 2);
 
-   
+
 BaseModel::$s_ca_models_definitions['ca_data_importer_log'] = array(
- 	'NAME_SINGULAR' 	=> _t('data import'),
- 	'NAME_PLURAL' 		=> _t('data imports'),
- 	'FIELDS' 			=> array(
- 		'log_id' => array(
+	'NAME_SINGULAR' 	=> _t('data import'),
+	'NAME_PLURAL' 		=> _t('data imports'),
+	'FIELDS' 			=> array(
+		'log_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -100,7 +100,7 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_log'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Data file'), 'DESCRIPTION' => _t('The original data imported.')
 		)
- 	)
+	)
 );
 
 class ca_data_importer_log extends BaseModel {
@@ -116,7 +116,7 @@ class ca_data_importer_log extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_data_importer_log';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'log_id';
 
@@ -262,7 +262,7 @@ class ca_data_importer_log extends BaseModel {
 		if ($this->opo_data_import_item->numErrors()) {
 			$this->errors = $this->opo_data_import_item->errors;
 			return false;
-		} 
+		}
 		
 		$this->opn_start_time = microtime(true);
 		return $this->opo_data_import_item->getPrimaryKey();
@@ -277,13 +277,13 @@ class ca_data_importer_log extends BaseModel {
 	 * @return bool Returns id for newly created item on success, false on error or null if no event is currently loaded.
 	 */
 	public function endItem($pn_row_id, $pb_success, $ps_message) {
-		if (!($vn_log_id = $this->getPrimaryKey())) { return null; } 
+		if (!($vn_log_id = $this->getPrimaryKey())) { return null; }
 		
 		$this->opo_data_import_item->setMode(ACCESS_WRITE);
 		$this->opo_data_import_item->set('log_id', $vn_log_id);
 		$this->opo_data_import_item->set('completed_on', "now");
 		$this->opo_data_import_item->set('elapsed_time', (microtime(true) - $this->opn_start_time));
-	
+		
 		$this->opo_data_import_item->set('success', (bool)$pb_success ? 1 : 0);
 		$this->opo_data_import_item->set('message', $ps_message);
 		$this->opo_data_import_item->set('row_id', $pn_row_id);
@@ -371,26 +371,26 @@ class ca_data_importer_log extends BaseModel {
 	 * @param string $ps_source Text indicating the source of the log message
 	 * @param int $pn_item_id Optional item_id of ca_data_import_items row that corresponds to the imported item this log entry is concerned with. Leave null for general event-scope log messages.
 	 */
-	 public function log($ps_type_code, $ps_message, $ps_source=null, $pn_item_id=null) {
-	 	if (!($vn_log_id = $this->getPrimaryKey())) { return null; } 
-	 	
+	public function log($ps_type_code, $ps_message, $ps_source=null, $pn_item_id=null) {
+		if (!($vn_log_id = $this->getPrimaryKey())) { return null; } 
+		
 		$t_log = new ca_data_import_event_log();
-	 	$t_log->setMode(ACCESS_WRITE);
-	 	$t_log->set('log_id', $vn_log_id);
-	 	$t_log->set('item_id', $pn_item_id);
-	 	$t_log->set('message', $ps_message);
-	 	$t_log->set('source', $ps_source);
-	 	$t_log->set('type_code', $ps_type_code);
-	 	$t_log->insert();
-	 	
-	 	if ($t_log->numErrors()) {
+		$t_log->setMode(ACCESS_WRITE);
+		$t_log->set('log_id', $vn_log_id);
+		$t_log->set('item_id', $pn_item_id);
+		$t_log->set('message', $ps_message);
+		$t_log->set('source', $ps_source);
+		$t_log->set('type_code', $ps_type_code);
+		$t_log->insert();
+		
+		if ($t_log->numErrors()) {
 			$this->errors = $t_log->errors;
 			return false;
 		} 
 		
 		return true;
-	 }
-	 # ------------------------------------------------------
+	}
+	# ------------------------------------------------------
 	/**
 	 * Returns a list of long entries associated with the currently loaded import event and, optionally, the specified imported item
 	 *

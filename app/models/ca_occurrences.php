@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -40,10 +40,10 @@ require_once(__CA_LIB_DIR__."/ca/CurrentLocationCriterionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
- 	'NAME_SINGULAR' 	=> _t('occurrence'),
- 	'NAME_PLURAL' 		=> _t('occurrences'),
- 	'FIELDS' 			=> array(
- 		'occurrence_id' => array(
+	'NAME_SINGULAR' 	=> _t('occurrence'),
+	'NAME_PLURAL' 		=> _t('occurrences'),
+	'FIELDS' 			=> array(
+		'occurrence_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -178,7 +178,7 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
- 	)
+	)
 );
 
 class ca_occurrences extends BaseObjectLocationModel implements IBundleProvider {
@@ -200,7 +200,7 @@ class ca_occurrences extends BaseObjectLocationModel implements IBundleProvider 
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_occurrences';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'occurrence_id';
 

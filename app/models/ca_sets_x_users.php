@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
+
  /**
    *
    */
@@ -37,10 +37,10 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
- 	'NAME_SINGULAR' 	=> _t('user-set assocation'),
- 	'NAME_PLURAL' 		=> _t('user-set assocations'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
+	'NAME_SINGULAR' 	=> _t('user-set assocation'),
+	'NAME_PLURAL' 		=> _t('user-set assocations'),
+	'FIELDS' 			=> array(
+		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -80,7 +80,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 				'START' => 'sdatetime', 'END' => 'edatetime',
 				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
 		)
- 	)
+	)
 );
 
 class ca_sets_x_users extends BaseRelationshipModel {
@@ -96,7 +96,7 @@ class ca_sets_x_users extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_sets_x_users';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 

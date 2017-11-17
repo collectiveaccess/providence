@@ -89,8 +89,8 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		}
 		
 		if (!isset($va_forms[$vn_form_id])) { 
-		    $vn_form_id = array_shift(array_keys($va_forms));
-		    $this->opo_result_context->setParameter('form_id', $vn_form_id);
+			$vn_form_id = array_shift(array_keys($va_forms));
+			$this->opo_result_context->setParameter('form_id', $vn_form_id);
 		}
 
 		$vs_append_to_search = '';

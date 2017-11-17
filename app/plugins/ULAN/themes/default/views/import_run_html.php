@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
+	
 	$pa_ulan_ids = 			$this->getVar('ulan_ids');
 	$pn_importer_id = 		$this->getVar('importer_id');
 	$ps_job_id = 			$this->getVar('job_id');

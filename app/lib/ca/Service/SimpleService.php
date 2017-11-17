@@ -225,7 +225,7 @@ class SimpleService {
 
 		$va_return = [];
 		if (isset($pa_config['includeCount']) && $pa_config['includeCount']) {
-		    $va_return['resultCount'] = $o_res->numHits();
+			$va_return['resultCount'] = $o_res->numHits();
 		}
 		$va_get_options = [];
 		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
@@ -409,14 +409,14 @@ class SimpleService {
 	}
 	# -------------------------------------------------------
 	private static function sanitizeKey($ps_key) {
-	    if(isset(SimpleService::$s_key_cache[$ps_key])) { return SimpleService::$s_key_cache[$ps_key]; }
+		if(isset(SimpleService::$s_key_cache[$ps_key])) { return SimpleService::$s_key_cache[$ps_key]; }
 		return SimpleService::$s_key_cache[$ps_key] = preg_replace('[^A-Za-z0-9\-\_\.\:]', '', $ps_key);
 	}
 	# -------------------------------------------------------
 	private static function isSimpleTemplate($ps_template) {
-	    if(isset(SimpleService::$s_simple_template_cache[$ps_template])) { return SimpleService::$s_simple_template_cache[$ps_template]; }
-	    
-	    return SimpleService::$s_simple_template_cache[$ps_template] = preg_match("!^\^ca_[A-Za-z0-9_\-\.]+$!", $ps_template);
+		if(isset(SimpleService::$s_simple_template_cache[$ps_template])) { return SimpleService::$s_simple_template_cache[$ps_template]; }
+		
+		return SimpleService::$s_simple_template_cache[$ps_template] = preg_match("!^\^ca_[A-Za-z0-9_\-\.]+$!", $ps_template);
 	}
 	# -------------------------------------------------------
 	/**
@@ -430,9 +430,9 @@ class SimpleService {
 			
 			// Get values and break on delimiter
 			if (SimpleService::isSimpleTemplate($vs_template)) {
-		        $vs_v = $pt_instance->get(str_replace("^", "", $vs_template), $pa_options);
+				$vs_v = $pt_instance->get(str_replace("^", "", $vs_template), $pa_options);
 			} else {
-			    $vs_v = $pt_instance->getWithTemplate($vs_template, array_merge($pa_options, ['includeBlankValuesInArray' => true]));
+				$vs_v = $pt_instance->getWithTemplate($vs_template, array_merge($pa_options, ['includeBlankValuesInArray' => true]));
 			}
 			$va_v = explode($vs_delimiter, $vs_v);
 			
@@ -461,9 +461,9 @@ class SimpleService {
 			}
 			return $va_v_decode;
 		} else {
-		    if (SimpleService::isSimpleTemplate($pm_template)) {
-		        return $pt_instance->get(str_replace("^", "", $pm_template), $pa_options);
-		    } 
+			if (SimpleService::isSimpleTemplate($pm_template)) {
+				return $pt_instance->get(str_replace("^", "", $pm_template), $pa_options);
+			} 
 			return $pt_instance->getWithTemplate($pm_template, $pa_options);
 		}
 	}

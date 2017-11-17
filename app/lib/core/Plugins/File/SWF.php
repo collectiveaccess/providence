@@ -53,7 +53,7 @@ class WLPlugFileSWF Extends WLPlug Implements IWLPlugFileFormat {
   var $info = array(
   			# properties from the identified file that *may*
   			# be returned; true (1) if *always* returned; false(0) if not
-		    "PROPERTIES" => array(
+			"PROPERTIES" => array(
 					  "width" 				=> 	0, # we don't get the optional ones yet
 					  "height" 				=> 	0, # because we haven't written the bit-level
 					  "framerate" 			=> 	0, # read functions the would be required to do so
@@ -71,8 +71,8 @@ class WLPlugFileSWF Extends WLPlug Implements IWLPlugFileFormat {
 			"CONVERSIONS" => array(
 			
 					  ),
-		    "NAME" => "SWF", # name of plug-in
-		    );
+			"NAME" => "SWF", # name of plug-in
+			);
 	# ----------------------------------------------------------------------	
 	# Methods all plug-ins implement
 	# ----------------------------------------------------------------------

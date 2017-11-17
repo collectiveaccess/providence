@@ -29,28 +29,28 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+  *
+  */
 require_once(__CA_MODELS_DIR__.'/ca_bookmarks.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_bookmark_folders'] = array(
- 	'NAME_SINGULAR' 	=> _t('bookmark folder'),
- 	'NAME_PLURAL' 		=> _t('bookmark folders'),
- 	'FIELDS' 			=> array(
- 		'folder_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+	'NAME_SINGULAR' 	=> _t('bookmark folder'),
+	'NAME_PLURAL' 		=> _t('bookmark folders'),
+	'FIELDS' 			=> array(
+		'folder_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this bookmark folder')
 		),
 		'name' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Folder name'), 'DESCRIPTION' => _t('A name to display for the folder.'),
 				'BOUNDS_LENGTH' => array(1,255)
@@ -58,20 +58,20 @@ BaseModel::$s_ca_models_definitions['ca_bookmark_folders'] = array(
 		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DISPLAY_FIELD' => array('ca_users.fname', 'ca_users.lname'),
 				'DISPLAY_ORDERBY' => array('ca_users.lname'),
 				'DEFAULT' => '',
 				'LABEL' => 'Owner', 'DESCRIPTION' => 'Identifier for owner of bookmark folder'
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		)
- 	)
+	)
 );
 
 class ca_bookmark_folders extends BaseModel {
@@ -87,7 +87,7 @@ class ca_bookmark_folders extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_bookmark_folders';
-	      
+	
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'folder_id';
 
@@ -114,7 +114,7 @@ class ca_bookmark_folders extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use 
+	# List of fields to sort listing of records by; you can use
 	# SQL 'ASC' and 'DESC' here if you like.
 	protected $ORDER_BY = array('folder_id');
 
@@ -145,7 +145,7 @@ class ca_bookmark_folders extends BaseModel {
 		"RELATED_TABLES" => array(
 		
 		)
-	);	
+	);
 	
 
 	# ------------------------------------------------------
@@ -279,7 +279,7 @@ class ca_bookmark_folders extends BaseModel {
 				}
 				$va_bookmarks[$va_bookmark_list[$vn_row_id]]['controller'] = $vs_controller;
 			
-			}			
+			}
 		}
 		
 		return $va_bookmarks;
@@ -323,7 +323,7 @@ class ca_bookmark_folders extends BaseModel {
 	 */
 	public function removeBookmark($pn_bookmark_id, $pn_folder_id=null, $pn_user_id=null) {
 		if (!($vn_folder_id = $this->_getFolderID($pn_folder_id, $pn_user_id))) { return false; }
-	
+		
 		$t_bookmark = new ca_bookmarks($pn_bookmark_id);
 		if ($t_bookmark->get('folder_id') != $vn_folder_id) { 
 			return false;
@@ -424,7 +424,7 @@ class ca_bookmark_folders extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
- 	 * Returns a list of bookmarks for the current folder with ranks for each, in rank order
+	 * Returns a list of bookmarks for the current folder with ranks for each, in rank order
 	 *
 	 * @param int $pn_folder_id Optional folder_id to set
 	 * @param int $pn_user_id the user_id of the current user; used to determine which folders the user has access to

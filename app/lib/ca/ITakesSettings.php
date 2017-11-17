@@ -30,12 +30,12 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
- interface ITakesSettings {
- 	
+/**
+ *
+ */
+
+interface ITakesSettings {
+	
 	/**
 	 * Returns associative array of setting descriptions (but *not* the setting values)
 	 * The keys of this array are the setting codes, the values associative arrays containing
@@ -50,7 +50,7 @@
 	public function getSettings();
 	
 	/**
-	 * Set setting value 
+	 * Set setting value
 	 * (you must call insert() or update() to write the settings to the database)
 	 */
 	public function setSetting($ps_setting, $pm_value);
@@ -62,11 +62,11 @@
 	
 	/**
 	 * Returns true if setting code exists for the current element's datatype
-	 */ 
+	 */
 	public function isValidSetting($ps_setting);
 	
 	/**
 	 * Returns HTML form element for editing of setting
-	 */ 
+	 */
 	public function settingHTMLFormElement($ps_setting);
- }
+}

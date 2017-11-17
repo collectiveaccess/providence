@@ -29,77 +29,77 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  * Implements reindexing of search indices invoked via the web UI
-  * This application dispatcher plugin ensures that the indexing starts
-  * after the web UI page has been sent to the client
-  */
- 
- 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
- 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
- 
-	class HierarchicalReindexingProgress extends AppControllerPlugin {
-		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
-		public function dispatchLoopShutdown() {	
-		
-			//
-			// Force output to be sent - we need the client to have the page before
-			// we start flushing progress bar updates
-			//	
-			$app = AppController::getInstance();
-			$req = $app->getRequest();
-			$resp = $app->getResponse();
-			$resp->sendResponse();
-			$resp->clearContent();
-			
-			//
-			// Do reindexing
-			//
-			
-			if ($req->isLoggedIn() && $req->user->canDoAction('can_do_search_reindex')) {
-				set_time_limit(3600*8);
-				$o_db = new Db();
-				$t_timer = new Timer();
-				$o_dm = Datamodel::load();
+
+/**
+ * Implements reindexing of search indices invoked via the web UI
+ * This application dispatcher plugin ensures that the indexing starts
+ * after the web UI page has been sent to the client
+ */
+
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
+
+class HierarchicalReindexingProgress extends AppControllerPlugin {
+	# -------------------------------------------------------
 	
-				$va_table_names = $o_dm->getTableNames();
-				
-				$vn_tc = 0;
-				foreach($va_table_names as $vs_table) {
-					if ($o_instance = $o_dm->getInstanceByTableName($vs_table)) {
-						if ($o_instance->isHierarchical()) {
-							if (!$o_instance->rebuildAllHierarchicalIndexes()) {
-								$o_instance->rebuildHierarchicalIndex();
-							}
+	# -------------------------------------------------------
+	public function dispatchLoopShutdown() {
+		
+		//
+		// Force output to be sent - we need the client to have the page before
+		// we start flushing progress bar updates
+		//
+		$app = AppController::getInstance();
+		$req = $app->getRequest();
+		$resp = $app->getResponse();
+		$resp->sendResponse();
+		$resp->clearContent();
+		
+		//
+		// Do reindexing
+		//
+		
+		if ($req->isLoggedIn() && $req->user->canDoAction('can_do_search_reindex')) {
+			set_time_limit(3600*8);
+			$o_db = new Db();
+			$t_timer = new Timer();
+			$o_dm = Datamodel::load();
+
+			$va_table_names = $o_dm->getTableNames();
+			
+			$vn_tc = 0;
+			foreach($va_table_names as $vs_table) {
+				if ($o_instance = $o_dm->getInstanceByTableName($vs_table)) {
+					if ($o_instance->isHierarchical()) {
+						if (!$o_instance->rebuildAllHierarchicalIndexes()) {
+							$o_instance->rebuildHierarchicalIndex();
 						}
-						
-						caIncrementHierachicalReindexProgress( 
-							_t('Rebuilding hierarchical index for %1', $o_instance->getProperty('NAME_PLURAL')),
-							$t_timer->getTime(2),
-							memory_get_usage(true),
-							$va_table_names,
-							$o_instance->tableNum(),
-							$o_instance->getProperty('NAME_PLURAL'),
-							$vn_tc+1
-						);
 					}
-					$vn_tc++;
+					
+					caIncrementHierachicalReindexProgress(
+						_t('Rebuilding hierarchical index for %1', $o_instance->getProperty('NAME_PLURAL')),
+						$t_timer->getTime(2),
+						memory_get_usage(true),
+						$va_table_names,
+						$o_instance->tableNum(),
+						$o_instance->getProperty('NAME_PLURAL'),
+						$vn_tc+1
+					);
 				}
-				
-				caIncrementHierachicalReindexProgress(
-					_t('Index rebuild complete!'),
-					$t_timer->getTime(2),
-					memory_get_usage(true),
-					$va_table_names,
-					null,
-					null,
-					sizeof($va_table_names)
-				);
+				$vn_tc++;
 			}
+			
+			caIncrementHierachicalReindexProgress(
+				_t('Index rebuild complete!'),
+				$t_timer->getTime(2),
+				memory_get_usage(true),
+				$va_table_names,
+				null,
+				null,
+				sizeof($va_table_names)
+			);
 		}
-		# -------------------------------------------------------
 	}
+	# -------------------------------------------------------
+}
 ?>

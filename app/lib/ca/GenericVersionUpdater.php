@@ -29,31 +29,31 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- require_once(__CA_LIB_DIR__.'/ca/BaseVersionUpdater.php');
- 
-	class GenericVersionUpdater extends BaseVersionUpdater {
-		# -------------------------------------------------------
-		/**
-		 *
-		 * @return int The number of the schema update
-		 */
-		public function __construct($pn_version) {
-			$this->setVersion($pn_version);
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 * @return array A list of tasks to execute before performing database update
-		 */
-		public function setVersion($pn_version) {
-			if ($pn_version <= 0) { return null; }
-			return $this->opn_schema_update_to_version_number = $pn_version;
-		}
-		# -------------------------------------------------------
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/ca/BaseVersionUpdater.php');
+
+class GenericVersionUpdater extends BaseVersionUpdater {
+	# -------------------------------------------------------
+	/**
+	 *
+	 * @return int The number of the schema update
+	 */
+	public function __construct($pn_version) {
+		$this->setVersion($pn_version);
 	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 * @return array A list of tasks to execute before performing database update
+	 */
+	public function setVersion($pn_version) {
+		if ($pn_version <= 0) { return null; }
+		return $this->opn_schema_update_to_version_number = $pn_version;
+	}
+	# -------------------------------------------------------
+}
 ?>

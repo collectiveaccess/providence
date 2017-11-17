@@ -29,11 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- require_once(__CA_LIB_DIR__."/core/Media.php");
- require_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
- require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
- require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
+
+require_once(__CA_LIB_DIR__."/core/Media.php");
+require_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
+require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
 
 class IIIFService {
 	# -------------------------------------------------------
@@ -49,16 +49,16 @@ class IIIFService {
 		$vs_key = $ps_identifier."/".join("/", $va_path);
 		
 		if ($vs_tile = CompositeCache::fetch($vs_key, 'IIIFTiles')) {
-		    header("Content-type: ".CompositeCache::fetch($vs_key, 'IIIFTileTypes'));
-		    $po_response->addContent($vs_tile);
-		    return true;
+			header("Content-type: ".CompositeCache::fetch($vs_key, 'IIIFTileTypes'));
+			$po_response->addContent($vs_tile);
+			return true;
 		}
 		
 		// BASEURL:		{scheme}://{server}{/prefix}/{identifier}
 		// INFO: 		{scheme}://{server}{/prefix}/{identifier}/info.json
 		// IMAGE:		{scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
 		
-		if (sizeof($va_path) == 0) { 
+		if (sizeof($va_path) == 0) {
 			$po_response->setRedirect($po_request->getFullUrlPath()."/info.json");
 			return;
 		}
@@ -106,7 +106,7 @@ class IIIFService {
 						$t_media->load(['value_id' => $pn_id, 'resource_path' => $pn_page]);
 						$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
 						$vs_fldname = 'media';
-					} 
+					}
 					if (!$t_media || !$t_media->getPrimaryKey()) {
 						$t_media = new ca_attribute_values($pn_id);
 						$t_media->useBlobAsMediaField(true);
@@ -155,10 +155,10 @@ class IIIFService {
 						// not readable
 						$po_response->setHTTPResponseCode(403, _t('Access denied'));
 						return false;
-					} 
+					}
 					break;
 			}
-			 
+			
 			$vn_width = $t_media->getMediaInfo($vs_fldname, 'original', 'WIDTH');
 			$vn_height = $t_media->getMediaInfo($vs_fldname, 'original', 'HEIGHT');
 			
@@ -198,7 +198,7 @@ class IIIFService {
 				$va_operations[] = ['CROP' => $va_region];
 			}
 			
-			// size	
+			// size
 			$va_dimensions = IIIFService::calculateSize($vn_width, $vn_height, $ps_size);
 			$va_operations[] = ['SCALE' => $va_dimensions];
 			
@@ -323,7 +323,7 @@ class IIIFService {
 	 */
 	private static function processImage($ps_image_path, $ps_mimetype, $pa_operations, $po_request) {
 		$o_media  = new Media();
-		if (!$o_media->read($ps_image_path)) { 
+		if (!$o_media->read($ps_image_path)) {
 			throw new Exception("Cannot open file");
 		}
 		
@@ -351,7 +351,7 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_size IIIF size value 
+	 * @param $ps_size IIIF size value
 	 *
 	 * @return array Array with 'width' and 'height' keys containing calculated width and height
 	 */
@@ -393,7 +393,7 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_region IIIF region value 
+	 * @param $ps_region IIIF region value
 	 *
 	 * @return array Array with 'x', 'y', 'width' and 'height' keys containing calculated offsets, width and height
 	 */
@@ -421,7 +421,7 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_rotation IIIF rotation value 
+	 * @param $ps_rotation IIIF rotation value
 	 *
 	 * @return array Array with 'angle' and 'reflection' values
 	 */
@@ -445,7 +445,7 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_quality IIIF quality value 
+	 * @param $ps_quality IIIF quality value
 	 *
 	 * @return string Quality specifier; one of color, grey, bitonal, default
 	 */
@@ -461,7 +461,7 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_format IIIF format value 
+	 * @param $ps_format IIIF format value
 	 *
 	 * @return string mimetype for format, or null if format is unsupported
 	 */
@@ -492,7 +492,7 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_format IIIF format value 
+	 * @param $ps_format IIIF format value
 	 *
 	 * @return array IIIF image information response
 	 */
@@ -523,8 +523,8 @@ class IIIFService {
 		
 		$va_formats = [];
 		foreach($o_media->getOutputFormats() as $vs_mimetype => $vs_ext) {
-			if (in_array($vs_ext, $va_possible_formats)) { 
-				$va_formats[] = ($vs_ext === 'tiff') ? 'tif' : $vs_ext; 
+			if (in_array($vs_ext, $va_possible_formats)) {
+				$va_formats[] = ($vs_ext === 'tiff') ? 'tif' : $vs_ext;
 			}
 		}
 		
@@ -543,8 +543,8 @@ class IIIFService {
 					'qualities' =>  ['color', 'grey', 'bitonal'],
 					'supports' => [
 						'mirroring', 'rotationArbitrary', 'regionByPct', 'regionByPx', 'rotationBy90s',
-      					'sizeAboveFull', 'sizeByForcedWh', 'sizeByH', 'sizeByPct', 'sizeByW', 'sizeByWh',
-      					'baseUriRedirect'
+						'sizeAboveFull', 'sizeByForcedWh', 'sizeByH', 'sizeByPct', 'sizeByW', 'sizeByWh',
+						'baseUriRedirect'
 					]
 				]
 			],

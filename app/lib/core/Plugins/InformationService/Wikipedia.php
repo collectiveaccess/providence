@@ -30,11 +30,11 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */ 
-    
-    
+/**
+ *
+ */
+
+
 require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -67,7 +67,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		$this->description = _t('Provides access to Wikipedia service');
 	}
 	# ------------------------------------------------
-	/** 
+	/**
 	 * Get all settings settings defined by this plugin as an array
 	 *
 	 * @return array
@@ -78,7 +78,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
-	/** 
+	/**
 	 * Perform lookup on Wikipedia-based data service
 	 *
 	 * @param array $pa_settings Plugin settings values
@@ -96,7 +96,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 			'action' => 'query',
 			'generator' => 'search',	// use search service as generator for page service
 			'gsrsearch' => urlencode($ps_search),
-			'gsrlimit' => 50,	 		// max allowed by mediawiki
+			'gsrlimit' => 50,			// max allowed by mediawiki
 			'gsrwhat' => 'nearmatch',	// search for near matches in titles
 			'prop' => 'info',
 			'inprop' => 'url',
@@ -126,7 +126,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		return $va_return;
 	}
 	# ------------------------------------------------
-	/** 
+	/**
 	 * Fetch details about a specific item from a Wikipedia-based data service for "more info" panel
 	 *
 	 * @param array $pa_settings Plugin settings values
