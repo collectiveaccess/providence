@@ -63,7 +63,7 @@ class Datamodel {
 		
 		// is there an on-disk cache of the internal graph?
 		if(!$pb_dont_cache && ExternalCache::contains('ca_datamodel_graph')) {
-			if ($va_graph = ExternalCache::fetch('ca_datamodel_graph')) {
+			if (is_array($va_graph = ExternalCache::fetch('ca_datamodel_graph')) && isset($va_graph['NODES']) && sizeof($va_graph['NODES'])) {
 				Datamodel::$opo_graph = new Graph($va_graph);
 				return;
 			}
