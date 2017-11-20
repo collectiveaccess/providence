@@ -1468,8 +1468,10 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
-
+		
 		$ps_bundle_name = $this->request->getParameter("bundle", pString);
+		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
 		$pn_start = (int)$this->request->getParameter("start", pInteger);
 		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
@@ -1493,6 +1495,55 @@ class BaseEditorController extends ActionController {
 		$this->view->setVar('processed_template', json_encode(caProcessTemplateForIDs($ps_template, $t_subject->tableNum(), array($vn_subject_id))));
 		$this->render("../generic/ajax_process_template.php");
 
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns formatted list of media in a media attribute or container attribute that includes at least one media attribute.
+	 * Used by CKEditor media reference dialog.
+	 */
+	public function getMediaAttributeList() {
+	    list($vn_subject_id, $t_subject) = $this->_initView();
+
+		if (!$this->_checkAccess($t_subject)) { return false; }
+		
+		$ps_bundle_name = $this->request->getParameter("bundle", pString);
+		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+
+        $va_bundle_name_bits = explode('.', $ps_bundle_name);
+        $va_media_list = array_shift($t_subject->get($t_subject->tableName().".{$va_bundle_name_bits[0]}", ['returnAsArray' => true, 'returnWithStructure' => true]));
+
+        // add additional information about list
+        $va_text_disp_fields = $va_media_fields = [];
+        foreach($va_media_list as $vn_attribute_id => $va_attr) {
+            $o_attr = $t_subject->getAttributeByID($vn_attribute_id);
+            $va_vals = $o_attr->getValues();
+            
+            foreach($va_vals as $o_val) {
+                $vs_element_code = $o_val->getElementCode();
+                switch($o_val->getType()) {
+                     case __CA_ATTRIBUTE_VALUE_MEDIA__:
+                        $va_media_fields[$vs_element_code] = true;
+                        $va_media_list[$vn_attribute_id][$vs_element_code] = [];
+                        foreach($o_val->getVersions() as $vs_version) {
+                            $va_media_list[$vn_attribute_id][$vs_element_code]['urls'][$vs_version] = $o_val->getDisplayValue(['return' => 'url', 'version' => $vs_version]);
+                            $va_media_list[$vn_attribute_id][$vs_element_code]['tags'][$vs_version] = $o_val->getDisplayValue(['return' => 'tag', 'version' => $vs_version]);
+                            $va_media_list[$vn_attribute_id][$vs_element_code]['value_id'] = $o_val->getValueID();
+                        }
+                        break;
+                    case __CA_ATTRIBUTE_VALUE_TEXT__:
+                    case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+                        $va_text_disp_fields[$vs_element_code] = true;
+                        break;
+                }
+            }
+        }
+
+        $this->view->setVar('media_list', $va_media_list);
+        $this->view->setVar('media', array_keys($va_media_fields));
+        $this->view->setVar('text', array_keys($va_text_disp_fields));
+
+	    $this->render("../generic/ajax_media_attribute_list_html.php");
 		return true;
 	}
 	# ------------------------------------------------------------------
