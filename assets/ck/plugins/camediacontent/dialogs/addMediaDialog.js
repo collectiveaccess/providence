@@ -13,7 +13,12 @@ CKEDITOR.dialog.add('addMediaDialog', function( editor ) {
         onShow: function() {
             var document = this.getElement().getDocument(); // document = CKEDITOR.dom.document
             var templateElement = this.getContentElement('tab-basic', 'camediacontentMediaTemplate');
-            templateElement.setValue("^title\n^caption");
+            
+            if(editor.config.insertMediaRefs == true) {
+                templateElement.setValue("");
+            } else {
+                templateElement.setValue("^title\n^caption");
+            }
             camediacontentMediaTemplateId = '#' + templateElement['domId'];
             jQuery(camediacontentMediaTemplateId).hide();
             
@@ -25,6 +30,7 @@ CKEDITOR.dialog.add('addMediaDialog', function( editor ) {
             if (l) {
                 var data = jQuery('#camediacontentMediaList').load(editor.config.contentUrl, function(e) {
                     jQuery('#camediacontentMediaList').find("li.mediaItem").first().click();
+                    templateElement.setValue(jQuery("#camediacontentTextTemplate").html());;
                 });
                  jQuery('#camediacontentMediaList').off('click', 'li.mediaItem').on('click', 'li.mediaItem', {}, function(e) {
                    selectedMedia = this; 
@@ -39,9 +45,18 @@ CKEDITOR.dialog.add('addMediaDialog', function( editor ) {
                 var includeTemplate = this.getContentElement('tab-basic', 'camediacontentMediaTemplateInclude');
                 if (includeTemplate.getValue()) {
                     var templateElement = this.getContentElement('tab-basic', 'camediacontentMediaTemplate');
-                    leditor.insertHtml("[media idno='" + jQuery(selectedMedia).data('idno') + "' version='" + version + "']" + templateElement.getValue() + "[/media]");
+                    
+                    if(editor.config.insertMediaRefs == true) {
+                        leditor.insertHtml("[mediaRef id='" + jQuery(selectedMedia).data('id') + "' version='" + version + "']" + templateElement.getValue() + "[/mediaRef]");
+                    } else {
+                        leditor.insertHtml("[media idno='" + jQuery(selectedMedia).data('idno') + "' version='" + version + "']" + templateElement.getValue() + "[/media]");
+                    }
                 } else {
-                    leditor.insertHtml("[media idno='" + jQuery(selectedMedia).data('idno') + "' version='" + version + "'/]");
+                    if(editor.config.insertMediaRefs == true) {
+                        leditor.insertHtml("[mediaRef id='" + jQuery(selectedMedia).data('id') + "' version='" + version + "'/]");
+                    } else {
+                        leditor.insertHtml("[media idno='" + jQuery(selectedMedia).data('idno') + "' version='" + version + "'/]");
+                    }
                 }
             }
         },
