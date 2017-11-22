@@ -4248,7 +4248,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
         foreach([
             'object' => 'ca_objects', 'entity' => 'ca_entities', 'place' => 'ca_places', 
             'occurrrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans', 
-            'movement' => 'ca_movements', 'location' => 'ca_storage_locations', 'media' => 'ca_site_page_media'] as $vs_ref_tag => $vs_ref_type
+            'movement' => 'ca_movements', 'location' => 'ca_storage_locations', 'media' => 'ca_site_page_media', 'mediaRef' => 'ca_attributes'] as $vs_ref_tag => $vs_ref_type
         ) { 
             if (preg_match_all("!\[{$vs_ref_tag} ([^\]]+)\]([^\[]+)\[/{$vs_ref_tag}\]!", $ps_text, $va_matches)) {
                 foreach($va_matches[1] as $i => $vs_attr_string) {
@@ -4278,7 +4278,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
                             if ($vs_template = $va_tag['content']) {
                             
                                 $t_attr = ca_attributes::getAttributeForValueID($vn_value_id);
-                                $ps_text = caProcessTemplate($vs_template, $t_attr->getAttributeValues(['returnAs' => 'array']), []);
+                                $ps_text = str_replace($vs_tag, caProcessTemplate($vs_template, $t_attr->getAttributeValues(['returnAs' => 'array', 'version' => caGetOption('version', $va_tag, array_shift($t_attr->getMediaVersions('value_blob')))]), []), $ps_text);
                             } else {
                                 $t_val = new ca_attribute_values($vn_value_id);
                                 $ps_text = str_replace($vs_tag, $t_val->getMediaTag('value_blob', caGetOption('version', $va_tag, array_shift($t_val->getMediaVersions('value_blob')))), $ps_text);
