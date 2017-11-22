@@ -1318,7 +1318,6 @@
 			", $pn_table_num, $pn_row_id);
 
 		$va_return = array();
-		if ($po_db->numErrors()) { print_r($po_db->getErrors()); }
 		while($qr_res->nextRow()) {
 			$vs_change_date = caGetISODates(date("c", $qr_res->get('log_datetime')))['start'];
 			if ($qr_res->get('changetype') == 'I') {
