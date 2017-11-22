@@ -1512,7 +1512,8 @@ class BaseEditorController extends ActionController {
 
         $va_bundle_name_bits = explode('.', $ps_bundle_name);
         $va_media_list = array_shift($t_subject->get($t_subject->tableName().".{$va_bundle_name_bits[0]}", ['returnAsArray' => true, 'returnWithStructure' => true]));
-
+        if(!is_array($va_media_list)) { $va_media_list = []; }
+        
         // add additional information about list
         $va_text_disp_fields = $va_media_fields = [];
         foreach($va_media_list as $vn_attribute_id => $va_attr) {
