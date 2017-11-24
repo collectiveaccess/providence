@@ -215,7 +215,9 @@ final class ConfigurationExporter {
 		}
 
 		$va_exclude_lists = $this->opo_config->get('configuration_export_exclude_lists');
+		$va_exclude_list_items = $this->opo_config->get('configuration_export_exclude_list_items');
 		$vn_exclude_lists_larger_than = $this->opo_config->get('configuration_export_exclude_lists_larger_than');
+		$vn_exclude_list_items_larger_than = $this->opo_config->get('configuration_export_exclude_list_items_larger_than');
 
 		while($qr_lists->nextRow()) {
 			// skip excluded lists (in diff exports only)
@@ -224,8 +226,8 @@ final class ConfigurationExporter {
 					continue;
 				}
 			}
-			
-			if (($vn_exclude_lists_larger_than > 0) && ($t_list->numItemsInList($qr_lists->get('list_id')) > $vn_exclude_lists_larger_than)) { continue; }
+			$vn_number_items = $t_list->numItemsInList($qr_lists->get('list_id'));
+			if (($vn_exclude_lists_larger_than > 0) && ($vn_number_items > $vn_exclude_lists_larger_than)) { continue; }
 
 			$vo_list = $this->opo_dom->createElement("list");
 			$vo_list->setAttribute("code", $this->makeIDNOFromInstance($qr_lists, 'list_code'));
@@ -253,8 +255,13 @@ final class ConfigurationExporter {
 			}
 
 			$vo_list->appendChild($vo_labels);
+			if($this->opn_modified_after && is_array($va_exclude_list_items) && (sizeof($va_exclude_list_items) > 0)) {
+				if(in_array($qr_lists->get('list_code'), $va_exclude_list_items)) {
+					continue;
+				}
+			}
 
-			$vo_items = $this->getListItemsAsDOM($t_list->getRootItemIDForList($qr_lists->get("list_code")), $qr_lists->get('list_id'));
+			$vo_items = $vn_exclude_list_items_larger_than && $vn_number_items > $vn_exclude_list_items_larger_than ? null : $this->getListItemsAsDOM($t_list->getRootItemIDForList($qr_lists->get("list_code")), $qr_lists->get('list_id'));
 
 
 			if($this->opn_modified_after) {
