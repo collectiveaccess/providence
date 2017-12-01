@@ -5,6 +5,7 @@ namespace Elasticsearch\Namespaces;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
 use Elasticsearch\Common\Exceptions\RoutingMissingException;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Transport;
 use GuzzleHttp\Ring\Future\FutureArrayInterface;
 
 /**
@@ -12,9 +13,9 @@ use GuzzleHttp\Ring\Future\FutureArrayInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Namespaces
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 trait BooleanRequestWrapper
 {
@@ -25,14 +26,19 @@ trait BooleanRequestWrapper
      *
      * @throws Missing404Exception
      * @throws RoutingMissingException
-     *
-     * @return array|bool|callable
      */
-    public static function performRequest(AbstractEndpoint $endpoint)
+    public static function performRequest(AbstractEndpoint $endpoint, Transport $transport)
     {
         try {
-            $response = $endpoint->performRequest();
-            $response = $endpoint->resultOrFuture($response);
+            $response = $transport->performRequest(
+                $endpoint->getMethod(),
+                $endpoint->getURI(),
+                $endpoint->getParams(),
+                $endpoint->getBody(),
+                $endpoint->getOptions()
+            );
+
+            $response = $transport->resultOrFuture($response, $endpoint->getOptions());
             if (!($response instanceof FutureArrayInterface)) {
                 if ($response['status'] === 200) {
                     return true;

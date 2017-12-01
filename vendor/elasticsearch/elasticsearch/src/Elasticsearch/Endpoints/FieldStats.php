@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class FieldStats extends AbstractEndpoint
 {
@@ -36,10 +36,10 @@ class FieldStats extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $index = $this->index;
-        $uri = "/_field_stats";
+        $uri   = "/_field_stats";
 
         if (isset($index) === true) {
             $uri = "/$index/_field_stats";
@@ -51,21 +51,22 @@ class FieldStats extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'fields',
             'level',
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-        ];
+            'fields'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

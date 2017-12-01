@@ -6,6 +6,7 @@ use Elasticsearch\Common\Exceptions;
 use Elasticsearch\ConnectionPool\AbstractConnectionPool;
 use Elasticsearch\Connections\Connection;
 use Elasticsearch\Connections\ConnectionInterface;
+use GuzzleHttp\Ring\Future\FutureArrayInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -13,9 +14,9 @@ use Psr\Log\LoggerInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Transport
 {
@@ -81,7 +82,7 @@ class Transport
      * @param array $options
      *
      * @throws Common\Exceptions\NoNodesAvailableException|\Exception
-     * @return array
+     * @return FutureArrayInterface
      */
     public function performRequest($method, $uri, $params = null, $body = null, $options = [])
     {
@@ -112,13 +113,37 @@ class Transport
                 // Note, this could be a 4xx or 5xx error
             },
             //onFailure
-            function ($response) {
-                //some kind of real faiure here, like a timeout
-                $this->connectionPool->scheduleCheck();
-                // log stuff
+            function (\Exception $response) {
+                // Ignore 400 level errors, as that means the server responded just fine
+                $code = $response->getCode();
+                if (!(isset($code) && $code >=400 && $code < 500)) {
+                    // Otherwise schedule a check
+                    $this->connectionPool->scheduleCheck();
+                }
             });
 
         return $future;
+    }
+
+    /**
+     * @param FutureArrayInterface $result  Response of a request (promise)
+     * @param array                $options Options for transport
+     *
+     * @return callable|array
+     */
+    public function resultOrFuture($result, $options = [])
+    {
+        $response = null;
+        $async = isset($options['client']['future']) ? $options['client']['future'] : null;
+        if (is_null($async) || $async === false) {
+            do {
+                $result = $result->wait();
+            } while ($result instanceof FutureArrayInterface);
+
+            return $result;
+        } elseif ($async === true || $async === 'lazy') {
+            return $result;
+        }
     }
 
     /**

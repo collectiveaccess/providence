@@ -10,17 +10,16 @@ use Elasticsearch\Transport;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 interface BulkEndpointInterface
 {
     /**
      * Constructor
      *
-     * @param Transport $transport Transport instance
      * @param SerializerInterface $serializer A serializer
      */
-    public function __construct(Transport $transport, SerializerInterface $serializer);
+    public function __construct(SerializerInterface $serializer);
 }

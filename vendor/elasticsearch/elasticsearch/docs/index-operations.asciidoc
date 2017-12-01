@@ -104,28 +104,28 @@ $params = [
             '_default_' => [    <4>
                 'properties' => [
                     'title' => [
-                        'type' => 'string',
+                        'type' => 'text',
                         'analyzer' => 'reuters',
                         'term_vector' => 'yes',
                         'copy_to' => 'combined'
                     ],
                     'body' => [
-                        'type' => 'string',
+                        'type' => 'text',
                         'analyzer' => 'reuters',
                         'term_vector' => 'yes',
                         'copy_to' => 'combined'
                     ],
                     'combined' => [
-                        'type' => 'string',
+                        'type' => 'text',
                         'analyzer' => 'reuters',
                         'term_vector' => 'yes'
                     ],
                     'topics' => [
-                        'type' => 'string',
+                        'type' => 'text',
                         'index' => 'not_analyzed'
                     ],
                     'places' => [
-                        'type' => 'string',
+                        'type' => 'text',
                         'index' => 'not_analyzed'
                     ]
                 ]
@@ -133,7 +133,7 @@ $params = [
             'my_type' => [  <5>
                 'properties' => [
                     'my_field' => [
-                        'type' => 'string'
+                        'type' => 'text'
                     ]
                 ]
             ]
@@ -144,7 +144,7 @@ $client->indices()->create($params);
 ----
 <1> The top level `settings` contains config about the index (# of shards, etc) as well as analyzers
 <2> `analysis` is nested inside of `settings`, and contains tokenizers, filters, char filters and analyzers
-<3> `mappings` is another element nested inside of `body`, and contains the mappings for various types
+<3> `mappings` is another element nested inside of `settings`, and contains the mappings for various types
 <4> The `_default_` type is a dynamic template that is applied to all fields that don't have an explicit mapping
 <5> The `my_type` type is an example of a user-defined type that holds a single field, `my_field`
 
@@ -271,4 +271,4 @@ If you use an IDE with autocompletion, you should be able to easily explore the 
 ----
 $client->indices()->
 ----
-And perusing the list of available methods.  Alternatively, browsing the `\Elasticsearch\Namespaces\IndicesNamespace.php` file will show you the full list of available method calls (as well as parameter lists in the comments for each method).
+And perusing the list of available methods.  Alternatively, browsing the `\Elasticsearch\Namespaces\Indices.php` file will show you the full list of available method calls (as well as parameter lists in the comments for each method).

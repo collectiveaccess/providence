@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Count extends AbstractEndpoint
 {
@@ -35,11 +35,11 @@ class Count extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $index = $this->index;
         $type = $this->type;
-        $uri = "/_count";
+        $uri   = "/_count";
 
         if (isset($index) === true && isset($type) === true) {
             $uri = "/$index/$type/_count";
@@ -55,16 +55,16 @@ class Count extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
             'min_score',
-            'source',
             'preference',
             'routing',
+            'source',
             'q',
             'df',
             'default_operator',
@@ -73,13 +73,14 @@ class Count extends AbstractEndpoint
             'analyze_wildcard',
             'lenient',
             'lowercase_expanded_terms',
-        ];
+            'terminate_after'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

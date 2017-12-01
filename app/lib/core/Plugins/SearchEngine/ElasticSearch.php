@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,6 +60,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 	protected $ops_elasticsearch_index_name = '';
 	protected $ops_elasticsearch_base_url = '';
+	
+	protected $version;
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
 		parent::__construct($po_db);
@@ -71,12 +73,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		} else {
 			$this->ops_elasticsearch_base_url = $this->opo_search_config->get('search_elasticsearch_base_url');
 		}
+		$this->ops_elasticsearch_base_url = trim($this->ops_elasticsearch_base_url, "/");   // strip trailing slashes as they cause errors with ElasticSearch 5.x
 
 		if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
 			$this->ops_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
 		} else {
 			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
+		
+		$this->version = $this->opo_search_config->get('elasticsearch_version');
+		if (!in_array($this->version, [2, 5])) { $this->version = 5; }
 
 		$this->opo_client = Elasticsearch\ClientBuilder::create()
 			->setHosts([$this->ops_elasticsearch_base_url])
@@ -116,13 +122,14 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->setIndexSettings();
 
 				foreach ($o_mapping->get() as $vs_table => $va_config) {
-					$this->getClient()->indices()->putMapping(array(
+				    $params = [
 						'index' => $this->getIndexName(),
 						'type' => $vs_table,
 						'update_all_types' => true,
-						'ignore_conflicts' => true,
 						'body' => array($vs_table => $va_config)
-					));
+					];
+				    if($this->version < 5) {  $params['ignore_conflicts'] = true; }
+					$this->getClient()->indices()->putMapping($params);
 				}
 			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
 				throw new \Exception(_t("Updating the ElasticSearch mapping failed. This is probably because of a type conflict. Try recreating the entire search index. The original error was %1", $e->getMessage()));
@@ -253,7 +260,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				}
 			//}
 		} else {
-			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
+			// use scroll API to find all documents in a particular mapping/table and delete them using the bulk API
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
 
@@ -639,25 +646,28 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		));
 
 		try {
-			$this->getClient()->indices()->putSettings(array(
-					'index' => $this->getIndexName(),
-					'body' => array(
-						'max_result_window' => 2147483647,
-						'analysis' => array(
-							'analyzer' => array(
-								'keyword_lowercase' => array(
-									'tokenizer' => 'keyword',
-									'filter' => 'lowercase'
-								),
-								'whitespace' => array(
-									'tokenizer' => 'whitespace',
-									'filter' => 'lowercase'
-								),
-							)
-						)
-					)
-				)
-			);
+		    $params = array(
+                'index' => $this->getIndexName(),
+                'body' => array(
+                    'max_result_window' => 2147483647,
+                    'analysis' => array(
+                        'analyzer' => array(
+                            'keyword_lowercase' => array(
+                                'tokenizer' => 'keyword',
+                                'filter' => 'lowercase'
+                            ),
+                            'whitespace' => array(
+                                'tokenizer' => 'whitespace',
+                                'filter' => 'lowercase'
+                            ),
+                        )
+                    )
+                )
+            );
+            if ($this->version >= 5) {
+                $params['body']['index.mapping.total_fields.limit'] = 20000;
+            }
+			$this->getClient()->indices()->putSettings($params);
 		} catch(\Exception $e) {
 			// noop
 		}
@@ -668,7 +678,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function optimizeIndex($pn_tablenum) {
-		$this->getClient()->indices()->optimize(array(
+		$this->getClient()->indices()->forceMerge(array(
 			'index' => $this->getIndexName()
 		));
 	}

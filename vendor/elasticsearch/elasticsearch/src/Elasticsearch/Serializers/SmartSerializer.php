@@ -9,12 +9,19 @@ use Elasticsearch\Common\Exceptions\Serializer\JsonErrorException;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Serializers\JSONSerializer
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class SmartSerializer implements SerializerInterface
 {
+    private $PHP_VERSION;
+
+    public function __construct()
+    {
+        $this->PHP_VERSION = phpversion();
+    }
+
     /**
      * Serialize assoc array into JSON string
      *
@@ -27,7 +34,11 @@ class SmartSerializer implements SerializerInterface
         if (is_string($data) === true) {
             return $data;
         } else {
-            $data = json_encode($data);
+            if (version_compare($this->PHP_VERSION, '5.6.6', '<') || ! defined('JSON_PRESERVE_ZERO_FRACTION')) {
+                $data = json_encode($data);
+            } else {
+                $data = json_encode($data, JSON_PRESERVE_ZERO_FRACTION);
+            }
             if ($data === '[]') {
                 return '{}';
             } else {
