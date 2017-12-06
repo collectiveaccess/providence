@@ -5831,6 +5831,13 @@ div.preferencePlacementList {
     text-align: center;
 }
 
+#batchProcessingMessage {
+    display: none;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 .batchProcessingHelpText{
     padding:20px;
     margin:20px;

@@ -335,6 +335,7 @@ return array(
     'PHP_Token_NEW' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
     'PHP_Token_NS_C' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
     'PHP_Token_NS_SEPARATOR' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
+    'PHP_Token_NULLSAFE_OBJECT_OPERATOR' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
     'PHP_Token_NUM_STRING' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
     'PHP_Token_OBJECT_CAST' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
     'PHP_Token_OBJECT_OPERATOR' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',

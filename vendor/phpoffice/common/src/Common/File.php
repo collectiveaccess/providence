@@ -51,6 +51,33 @@ class File
             return file_exists($pFilename);
         }
     }
+    /**
+     * Returns the content of a file
+     *
+     * @param  string $pFilename Filename
+     * @return string
+     */
+    public static function fileGetContents($pFilename)
+    {
+        if (!self::fileExists($pFilename)) {
+            return false;
+        }
+        if (strtolower(substr($pFilename, 0, 3)) == 'zip') {
+            // Open ZIP file and verify if the file exists
+            $zipFile     = substr($pFilename, 6, strpos($pFilename, '#') - 6);
+            $archiveFile = substr($pFilename, strpos($pFilename, '#') + 1);
+
+            $zip = new \ZipArchive();
+            if ($zip->open($zipFile) === true) {
+                $returnValue = $zip->getFromName($archiveFile);
+                $zip->close();
+                return $returnValue;
+            }
+            return false;
+        }
+        // Regular file contents
+        return file_get_contents($pFilename);
+    }
 
     /**
      * Returns canonicalized absolute pathname, also for ZIP archives

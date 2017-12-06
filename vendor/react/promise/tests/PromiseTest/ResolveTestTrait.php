@@ -112,6 +112,55 @@ trait ResolveTestTrait
         $adapter->resolve(2);
     }
 
+    /**
+     * @test
+     */
+    public function resolveShouldRejectWhenResolvedWithItself()
+    {
+        $adapter = $this->getPromiseTestAdapter();
+
+        $mock = $this->createCallableMock();
+        $mock
+            ->expects($this->once())
+            ->method('__invoke')
+            ->with(new \LogicException('Cannot resolve a promise with itself.'));
+
+        $adapter->promise()
+            ->then(
+                $this->expectCallableNever(),
+                $mock
+            );
+
+        $adapter->resolve($adapter->promise());
+    }
+
+    /**
+     * @test
+     */
+    public function resolveShouldRejectWhenResolvedWithAPromiseWhichFollowsItself()
+    {
+        $adapter1 = $this->getPromiseTestAdapter();
+        $adapter2 = $this->getPromiseTestAdapter();
+
+        $mock = $this->createCallableMock();
+        $mock
+            ->expects($this->once())
+            ->method('__invoke')
+            ->with(new \LogicException('Cannot resolve a promise with itself.'));
+
+        $promise1 = $adapter1->promise();
+
+        $promise2 = $adapter2->promise();
+
+        $promise2->then(
+            $this->expectCallableNever(),
+            $mock
+        );
+
+        $adapter1->resolve($promise2);
+        $adapter2->resolve($promise1);
+    }
+
     /** @test */
     public function doneShouldInvokeFulfillmentHandler()
     {

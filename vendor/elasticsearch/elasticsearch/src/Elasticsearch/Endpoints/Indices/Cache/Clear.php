@@ -9,19 +9,19 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices\Cache
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Clear extends AbstractEndpoint
 {
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $index = $this->index;
-        $uri = "/_cache/clear";
+        $uri   = "/_cache/clear";
 
         if (isset($index) === true) {
             $uri = "/$index/_cache/clear";
@@ -33,31 +33,31 @@ class Clear extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'field_data',
+            'fielddata',
+            'fields',
             'filter',
             'filter_cache',
             'filter_keys',
             'id',
             'id_cache',
-            'fielddata',
-            'fields',
-            'query',
+            'index',
+            'recycler',
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-            'index',
-            'recycler',
-            'request',
-        ];
+            'request_cache',
+            'request'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'POST';
     }

@@ -7,20 +7,20 @@ namespace Elasticsearch\Endpoints;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class SearchShards extends AbstractEndpoint
 {
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $index = $this->index;
         $type = $this->type;
-        $uri = "/_search_shards";
+        $uri   = "/_search_shards";
 
         if (isset($index) === true && isset($type) === true) {
             $uri = "/$index/$type/_search_shards";
@@ -36,22 +36,22 @@ class SearchShards extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'preference',
             'routing',
             'local',
             'ignore_unavailable',
             'allow_no_indices',
-            'expand_wildcards',
-        ];
+            'expand_wildcards'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }
