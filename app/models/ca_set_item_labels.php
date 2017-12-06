@@ -188,4 +188,3 @@ class ca_set_item_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>
