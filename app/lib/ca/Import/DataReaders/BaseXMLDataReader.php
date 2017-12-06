@@ -154,7 +154,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
 			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
-		print "XPATH=".$this->ops_xpath." [".$this->opb_register_root_tag."]\n";
+		
 		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
 
 		$this->opn_current_row = 0;
