@@ -3047,7 +3047,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	static public function replaceValue($pm_value, $pa_item, $pa_options=null) {
-	    if(!is_string($pm_value)) { print_R($pm_value); print caPrintStackTrace(); }
 		if (strlen($pm_value) && is_array($pa_item['settings']['original_values'])) {
 			if (($vn_index = array_search(trim(mb_strtolower($pm_value)), $pa_item['settings']['original_values'])) !== false) {
 				$vs_replaced_display_value = $vs_replaced_value = $pa_item['settings']['replacement_values'][$vn_index];
