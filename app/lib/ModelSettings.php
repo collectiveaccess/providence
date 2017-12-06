@@ -113,6 +113,8 @@ class ModelSettings extends BaseSettings {
 					(isset($va_properties['showLists']) && $va_properties['showLists'] && ($va_properties['height'] > 1))
 					||
 					(isset($va_properties['showVocabularies']) && $va_properties['showVocabularies'] && ($va_properties['height'] > 1))
+					||
+					(isset($va_properties['multiple']) && $va_properties['multiple'] && ($va_properties['height'] > 1))
 				) {
 					$va_values[$vs_setting] = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pArray);
 				} else {

@@ -53,6 +53,7 @@ require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BrowseResult.php');
 
 
 
@@ -196,7 +197,7 @@ class BrowseManager {
             $this->setContext($ps_browse_context);
         }
         
-        $this->engine = self::getPlugin("SqlBrowse");
+        $this->engine = self::getPlugin(($browse_plugin = $this->app_config->get('browse_engine_plugin')) ? $browse_plugin : "SqlBrowse");
     }
     # ------------------------------------------------------
     # Criteria
@@ -341,6 +342,16 @@ class BrowseManager {
     
     }
     # ------------------------------------------------------
+    /**
+     *
+     */
+    public function getBrowseID() {
+        return md5(
+            $this->table_name."/".
+            print_r($this->getCriteria(), true)
+        );
+    }
+    # ------------------------------------------------------
     # Facets
     # ------------------------------------------------------
     /**
@@ -354,7 +365,14 @@ class BrowseManager {
      *
      */
     public function getFacetContent($ps_facet_name, $pa_options=null) {
-        return $this->engine->getFacetContent($this->table_name, $ps_facet_name, [], $pa_options);
+        $values =  $this->engine->getFacetContent($this->table_name, $ps_facet_name, [], $pa_options);
+        
+        // group
+        $grouped = [];
+        foreach($values as $value) {
+            $grouped[substr($value['value'], 0, 1)][$value['id']] = $value;
+        }
+        return $grouped;
     }
     # ------------------------------------------------------
     # Results
@@ -382,14 +400,63 @@ class BrowseManager {
 //                print "fOR $facet: ".sizeof($acc)."\n";
 //             }
 //         }
+
+            $this->result_ids = $acc;
         return $acc;
     }
     # ------------------------------------------------------
     /**
      *
      */
-    public function getResults() {
-    
+    public function doGetResults($results, $options=null) {
+        return caMakeSearchResult($this->table_name, $this->result_ids);
+        if (!is_array($this->result_ids)) { return null; }
+
+			$vs_sort = caGetOption('sort', $pa_options, null);
+			$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
+
+			$t_item = Datamodel::getInstanceByTableName($this->table_name, true);
+			$table_num = $t_item->tableNum();
+			$vb_will_sort = false; // ($vs_sort && (($this->getCachedSortSetting() != $vs_sort) || ($this->getCachedSortDirectionSetting() != $vs_sort_direction)));
+
+			$vs_pk = $t_item->primaryKey();
+			$vs_label_display_field = null;
+
+			//if(sizeof($va_results =  $this->opo_ca_browse_cache->getResults())) {
+			if (sizeof($va_results = $this->result_ids)) {
+				if ($vb_will_sort) {
+					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction);
+
+					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
+					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
+					$this->opo_ca_browse_cache->setParameter('sort_direction', $vs_sort_direction);
+
+					$this->opo_ca_browse_cache->setResults($va_results);
+					$this->opo_ca_browse_cache->save();
+				}
+
+				$vn_start = (int) caGetOption('start', $pa_options, 0);
+				$vn_limit = (int) caGetOption('limit', $pa_options, 0);
+				if (($vn_start > 0) || ($vn_limit > 0)) {
+					$va_results = array_slice($va_results, $vn_start, $vn_limit);
+				}
+			}
+			if (!is_array($va_results)) { $va_results = array(); }
+
+			if ($po_result) {
+				$po_result->init(new WLPlugSearchEngineBrowseEngine($va_results, $table_num), array(), $pa_options);
+
+				return $po_result;
+			} else {
+				return new WLPlugSearchEngineBrowseEngine($va_results, $table_num);
+			}
+    }
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    public function numResults() {
+        return sizeof($this->result_ids);
     }
     # ------------------------------------------------------
     # Context

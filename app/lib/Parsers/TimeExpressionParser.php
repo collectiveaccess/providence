@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2016 Whirl-i-Gig
+ * Copyright 2006-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,7 +247,23 @@ class TimeExpressionParser {
 			switch($vn_state) {
 				# -------------------------------------------------------
 				case TEP_STATE_BEGIN:
-					switch($va_token['type']) {
+					switch($va_token['type']) {						
+						# ----------------------
+						case TEP_TOKEN_RANGE_CONJUNCTION:
+							$this->getToken();
+							if ($va_date = $this->_parseDateExpression()) {
+								$va_dates['start'] = array(
+									'month' => null, 'day' => null, 
+									'year' => TEP_START_OF_UNIVERSE,
+									'hours' => null, 'minutes' => null, 'seconds' => null,
+									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+								);
+								$va_dates['end'] = $va_date;
+								$vn_state = TEP_STATE_ACCEPT;
+								$vb_can_accept = true;
+								break(2);
+							}
+							break;
 						# ----------------------
 						case TEP_TOKEN_INTEGER:
 							// is this a quarter century expression?
@@ -1971,6 +1987,12 @@ class TimeExpressionParser {
 				}
 			}
 			
+			if (($pa_dates['start']['year'] === TEP_START_OF_UNIVERSE) && ($pa_dates['end']['year'] !== TEP_END_OF_UNIVERSE)) {
+				if($pa_dates['end']['month'] === null) { $pa_dates['end']['month'] = 12; }
+				if($pa_dates['end']['day'] === null) { $pa_dates['end']['day'] = 31; }
+				if($pa_dates['end']['year'] === null) { $pa_dates['end']['year'] = date("Y"); }
+			}
+			
 
 			if (($pa_dates['start']['month'] === null) && ($pa_dates['end']['month'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE)) { 
 				$pa_dates['start']['month'] = 1; 
@@ -2198,7 +2220,7 @@ class TimeExpressionParser {
 			'circaIndicator', 'beforeQualifier', 'afterQualifier', 
 			'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturies', 
 			'rangePreConjunction', 'rangeConjunction', 'timeRangeConjunction', 'dateTimeConjunction', 'showUndated',
-			'useConjunctionForAfterDates'
+			'useConjunctionForAfterDates', 'showCommaAfterDayForTextDates'
 		) as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
@@ -2654,7 +2676,7 @@ class TimeExpressionParser {
 
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 
-									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.((((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates') || $pa_options['forceCommaAfterDay']) && ($pa_options['dateFormat'] == 'text')) ? ', ' : ' ').$vs_year;
+									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.((((bool)$pa_options['showCommaAfterDayForTextDates'] || $pa_options['forceCommaAfterDay']) && ($pa_options['dateFormat'] == 'text')) ? ', ' : ' ').$vs_year;
 								} else {
 									// days with times
 									$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
@@ -2686,7 +2708,7 @@ class TimeExpressionParser {
 								
 								if(caGetOption('dateFormat', $pa_options, null) == 'text') {
 									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
-									if((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates') || (bool)$this->opo_datetime_settings->get('forceCommaAfterDay')) {
+									if((bool)$pa_options['showCommaAfterDayForTextDates'] || (bool)$this->opo_datetime_settings->get('forceCommaAfterDay')) {
 										$pa_options['forceCommaAfterDay'] = true;
 									}
 									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
@@ -3002,7 +3024,7 @@ class TimeExpressionParser {
 			if ($vs_month) { $va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_month) : $vs_month); }
 			if ($vs_day) { 
 				if (
-					(((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) && ($pa_options['dateFormat'] == 'text') && $vs_year)
+					(((bool)$pa_options['showCommaAfterDayForTextDates']) && ($pa_options['dateFormat'] == 'text') && $vs_year)
 					||
 					(isset($pa_options['forceCommaAfterDay']) && $pa_options['forceCommaAfterDay'])
 				)

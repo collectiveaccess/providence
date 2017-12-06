@@ -644,6 +644,11 @@ function caFileIsIncludable($ps_file) {
 		return $vs_tmp;
 	}
 	# ----------------------------------------
+	function caIsTempFile($ps_file) {
+	    if (preg_match("!^".caGetTempDirPath()."/!", $ps_file)) { return true; }
+	    return false;
+	}
+	# ----------------------------------------
 	/**
 	 *
 	 */

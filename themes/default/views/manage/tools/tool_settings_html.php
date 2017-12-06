@@ -51,7 +51,7 @@
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Command'); ?></span> 
 			<div class="bundleContainer">
-				<div class="caLabelList" >
+				<div class="caLabelList">
 					<p>
 <?php
 					print caHTMLSelect('command', $o_tool->getCommands(), array('id' => 'caToolCommand'));
@@ -71,7 +71,7 @@
 				<div class="caLabelList" >
 					<p>
 <?php
-					print $o_tool->settingHTMLFormElement($vs_setting, array('id' => "{$vs_form_id}_{$vs_setting}", 'name' => "{$vs_form_id}_{$vs_setting}", 'request' => $this->request));
+					print $o_tool->settingHTMLFormElement($vs_setting, array('id' => "{$vs_form_id}_{$vs_setting}", 'name' => "{$vs_form_id}_{$vs_setting}", 'request' => $this->request, 'noContainerDiv' => true));
 ?>	
 					</p>
 				</div>

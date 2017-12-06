@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Browse/ObjectBrowse.php : ca_objects faceted browse
+ * app/lib/Plugins/IWLPlugBrowse.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,28 +30,36 @@
  * ----------------------------------------------------------------------
  */
  
-  /**
+ /**
   *
   */
-  
- 	require_once(__CA_LIB_DIR__.'/Browse/BrowseManager.php');
- 	require_once(__CA_LIB_DIR__.'/Browse/ObjectBrowseResult.php');
- 
-	class ObjectBrowse extends BrowseManager {
-		# ------------------------------------------------------
-		/**
-		 * Which table does this class represent?
-		 */
-		protected $ops_tablename = "ca_objects";
-		protected $ops_primary_key = "object_id";
-		# ----------------------------------------------------------------------
-		public function __construct($pn_browse_id=null, $ps_context='') {
-			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
-		}
-		# ------------------------------------------------------
-		public function getResults($pa_options=null) {
-			return parent::doGetResults(new ObjectBrowseResult(), $pa_options);
-		}
-		# ----------------------------------------------------------------------
+	
+	interface IWLPlugBrowse {
+		# -------------------------------------------------------
+		# Initialization, state and capabilities
+		# -------------------------------------------------------
+		public function __construct();
+		#public function init();
+		#public function can($ps_capability);
+		#public function __destruct();
+		#public function engineName();
+		
+		# -------------------------------------------------------
+		# Options
+		# -------------------------------------------------------
+		#public function setOption($ps_option, $pm_value);
+		#public function getOption($ps_option);
+		#public function getAvailableOptions();
+		#public function isValidOption($ps_option);
+		
+		# -------------------------------------------------------
+		# Browse
+		# -------------------------------------------------------
+		
+		
+		# -------------------------------------------------------
+		# Indexing
+		# -------------------------------------------------------
+		
 	}
 ?>

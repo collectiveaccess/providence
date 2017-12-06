@@ -540,6 +540,28 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 				if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
 				$va_opts = array('id' => $vs_input_name, 'width' => $vn_width, 'height' => $vn_height);
+				
+				
+ 				if($va_properties['showMediaElementBundles']) {
+ 				    $va_restrictions = $this->getTypeRestrictions();
+ 				    
+                    $va_select_opts = ['-' => ''];
+ 				    foreach($va_restrictions as $va_restriction) {
+                        // find metadata elements that are either (a) Media or (b) a container that includes a media element
+                        if (is_array($va_elements = ca_metadata_elements::getElementsAsList(false, $va_restriction['table_num'], null, true, false, false, null))) {
+                            foreach($va_elements as $vn_element_id => $va_element_info) {
+                                if ($va_element_info['datatype'] == __CA_ATTRIBUTE_VALUE_MEDIA__) {
+                                    if ($va_element_info['parent_id'] > 0) {
+                                        $va_select_opts[$va_elements[$va_element_info['hier_element_id']]['display_label']." &gt; ".$va_element_info['display_label']] = $va_elements[$va_element_info['hier_element_id']]['element_code'].".".$va_element_info['element_code'];
+                                    } else {
+                                        $va_select_opts[$va_element_info['display_label']] = $va_element_info['element_code'];
+                                    }
+                                }
+                            }
+                        }
+                        $va_properties['options'] = $va_select_opts;
+                    } 
+                } 
 
 				$vm_value = $this->getSetting($ps_setting);
 

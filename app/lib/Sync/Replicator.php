@@ -359,7 +359,7 @@ print "START REP AT $pn_replicated_log_id\n";
                                                      $va_filtered_log[$va_missing_entry['log_id']] = $va_missing_entry;
                             
                                                     if(is_array($va_missing_entry['snapshot'])) {
-                                                        $va_dependent_guids = array_unique(array_merge($va_dependent_guids, array_values(array_filter($va_missing_entry['snapshot'], function($v, $k) use ($va_missing_entry, $vs_missing_guid) { 
+                                                        $va_dependent_guids = array_unique(array_merge($va_dependent_guids, array_values(array_filter($va_missing_entry['snapshot'], function($v, $k) use ($va_missing_entry, $o_dm, $vs_missing_guid) { 
                                                             if ($v == $vs_missing_guid) { return false; }
                                                             if(preg_match("!([A-Za-z0-9_]+)_guid$!", $k, $matches)) {
                                                                 if(
@@ -603,5 +603,156 @@ print "START REP AT $pn_replicated_log_id\n";
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 */
+	public function compare() {
+		$o_dm = Datamodel::load();
+		
+		if ($qr_res = ca_objects::find(['access' => [">", 0]], ['returnAs' => 'searchResult'])) {
+		//if ($qr_res = ca_objects::find(['idno' => 'C.2007.27.1'], ['returnAs' => 'searchResult'])) {
+			$va_guids = [];
+			while($qr_res->nextHit()) {
+				if ($vs_guid = ca_guids::getForRow(57, $qr_res->get('object_id'))) {
+					$va_guids[] = $vs_guid;
+				}
+			}
+
+			foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
+				$pa_include_metadata = $this->opo_replication_conf->get('sources')[$vs_source_key]['includeMetadata'];
+				$va_elements = [];
+				foreach($pa_include_metadata as $vs_table => $va_fields) {
+					if(in_array($vs_table, ['ca_objects', 'ca_entities'])) {
+						$va_elements["{$vs_table}.preferred_labels"] = 1;
+					}
+					if ($vs_table == 'ca_objects') {
+						$va_elements["{$vs_table}.idno"] = 1;
+					}
+					foreach($va_fields as $vs_field => $va_field_info) {
+						$va_elements["{$vs_table}.{$vs_field}"] = 1;
+					}
+				}
+		
+				$vn_records_with_errors = 0;
+				
+				$vn_count = 0;
+				while(sizeof($va_guids) > 0) {
+					foreach($this->getTargetsAsServiceClients() as $vs_target_key => $o_target) {
+						$va_guids_to_try = [array_shift($va_guids)];
+					
+						$o_data = $o_target->setRequestMethod('POST')->setEndpoint('getDataForGUID')
+													->setRequestBody(['elements' => array_keys($va_elements), 'guids' => $va_guids_to_try])
+													->request();
+						$va_resp = $o_data->getRawData();
+					
+						foreach($va_guids_to_try as $vs_guid) {
+							$vn_count++;
+							if (!isset($va_resp[$vs_guid])) { 
+								$va_info = ca_guids::getInfoForGUID($vs_guid);
+								print "[ERROR] Missing record for {$vs_guid} [".$o_dm->getTableName($va_info['table_num'])."/".$va_info['row_id']."]\n";
+							} else {
+								print "[$vn_count] GOT $vs_guid\n";
+							
+								$va_errors = [];
+								foreach($va_resp[$vs_guid] as $vs_element => $va_value) {
+									if ($vs_element == 'reps') {
+										foreach($va_value as $vs_rep_guid => $vn_access) {
+											if (($t_rep = SyncableBaseModel::GUIDToInstance($vs_rep_guid)) && ($t_rep->get('ca_object_representations.access') != $vn_access)) {
+												print "REP $vs_rep_guid has incorrect access\n";
+												$t_rep->setMode(ACCESS_WRITE);
+												$t_rep->set('access', $vn_access ? 1 : 0);
+												$t_rep->update();
+												$t_rep->set('access',  $vn_access ? 0 : 1);
+												$t_rep->update();
+											
+											}
+										}
+										continue;
+									}
+								
+								
+									$va_tmp = explode('.', $vs_element);
+									
+									if (ca_metadata_elements::getElementID($va_tmp[1]) && (ca_metadata_elements::getElementDatatype($va_tmp[1]) == 0) && (sizeof($va_tmp) == 2)) { continue; }
+									if (ca_metadata_elements::getElementID($va_tmp[1]) && (($vn_hier_id = ca_metadata_elements::getElementHierarchyID($va_tmp[1])) !== ca_metadata_elements::getElementID($va_tmp[1]))) {
+										$vs_element = join(".", [$va_tmp[0], ca_metadata_elements::getElementCodeForId($vn_hier_id), $va_tmp[1]]);
+									}
+						
+									$t_row = SyncableBaseModel::GUIDToInstance($vs_guid);
+									$va_local_val = array_filter($t_row->get($vs_element, ['returnAsArray' => true, 'convertCodesToIdnos' => true]), "strlen");
+					
+									if (($vn_local = sizeof($va_local_val)) !== ($vn_target = sizeof($va_value))) { 
+										$va_errors[] = "\t[ERROR] Number of values for {$vs_element} does not match; local={$vn_local}; target={$vn_target}\n Local values are ".print_R($va_local_val, true)."\n Target values are ".print_R($va_value, true)."\n";
+									} else {
+										$va_local_val = array_map(function($v) { return html_entity_decode(trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $v), " \r\n\t")); }, $va_local_val);
+										
+										foreach($va_local_val as $vs_local_val) {
+											$vs_local_val = trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $vs_local_val), " \r\n\t");
+											
+											$va_value = array_map(function($v) { return html_entity_decode(trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $v), " \r\n\t")); }, $va_value);
+											//if (!in_array(html_entity_decode(trim($vs_local_val)), $va_value)) {
+											;
+											if (!sizeof(array_filter($va_value, function($v) use ($vs_local_val) { return trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $v), " \r\n\t") == $vs_local_val; }))) { 
+												$va_errors[] = "\t[ERROR] Value '{$vs_local_val}' for {$vs_element} is not present on target\n Local values are ".print_R($va_local_val, true)."\n Target values are ".print_R($va_value, true)."\n";
+											}
+										}
+									}
+									
+				if (false) {
+									if(sizeof($va_errors)) {
+										if (ca_metadata_elements::getElementID($va_tmp[1])) {
+											foreach($t_row->get($vs_element, ['returnWithStructure' => true, 'convertCodesToIdnos' => true]) as $vn_row_id => $va_attrs) {
+												foreach($va_attrs as $vn_attr_id => $va_attr) {
+													$t_attr = new ca_attributes($vn_attr_id);
+													$t_attr->setMode(ACCESS_WRITE);
+													print "FORce ATTR $vn_attr_id/".join(".", $va_tmp)."\n";
+													$t_attr->update(['forceLogChange' => true]);
+													//print_R($t_attr->getErrors());
+													
+													foreach($t_attr->getAttributeValues() as $va_vals) {
+														//print_R($va_vals);
+														//foreach($va_vals as $o_val) {
+															$t_attr_val = new ca_attribute_values($va_vals->getValueID());
+															$t_attr_val->setMode(ACCESS_WRITE);
+															$t_attr_val->update(['forceLogChange' => true]);
+															print_R($t_attr_val->getErrors());
+														//}
+													}
+												}
+											}
+										} elseif (($va_tmp[0] == 'ca_objects') && ($va_tmp[1] == 'preferred_labels')) {
+											$va_labels = $t_row->get($vs_element, ['returnWithStructure' => true]);
+											foreach($va_labels as $vn_object_id => $va_label_list) {
+												foreach($va_label_list as $vn_label_id => $va_label) {
+													$t_row->editLabel($vn_label_id, ['name' => $va_label['name'].' '], 1, null, true);
+												}
+											}
+										} elseif (($va_tmp[0] == 'ca_objects') && ($va_tmp[1] == 'idno')) {
+											$t_row->set('idno', $t_row->get('idno').' ');
+											$t_row->setMode(ACCESS_WRITE);
+											$t_row->update(['forceLogChange' => true]);
+										}
+									}
+				}
+								}
+								
+								
+								if (sizeof($va_errors)) {
+									$vn_records_with_errors++;
+									print "[ERRORS] Found errors for  {$vs_guid} [".$t_row->get('ca_objects.idno')." -- ".$t_row->get('ca_objects.object_id')."]\n";
+									print join("\n", $va_errors);
+								}
+								
+							}
+						
+						}
+					}
+				}
+			}
+		}
+		
+		print "{$vn_records_with_errors} WITH ERRORS\n";
 	}
 }

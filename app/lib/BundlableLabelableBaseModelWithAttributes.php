@@ -4234,7 +4234,7 @@ if (!$vb_batch) {
 								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_effective_date_".$va_matches[1], pString);
 								$vn_group_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_id".$va_matches[1], pInteger);
 								$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access_".$va_matches[1], pInteger);
-								if ($vn_access > 0) {
+								if ($vn_access >= 0) {
 									$va_groups_to_set[$vn_group_id] = $vn_access;
 									$va_group_effective_dates[$vn_group_id] = $vs_effective_date;
 								}

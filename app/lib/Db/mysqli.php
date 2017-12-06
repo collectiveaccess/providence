@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -416,11 +416,17 @@ class Db_mysqli extends DbDriverBase {
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @param mixed $pr_res mysql resource
 	 * @param mixed $pm_field the field or an array of fields
+	 * @param array $pa_options Options include:
+	 *      limit = cap number of field values returned. [Default is null]
+	 *
 	 * @return array an array of field values (if $pm_field is a single field name) or an array if field names each of which is an array of values (if $pm_field is an array of field names)
 	 */
-	function getAllFieldValues($po_caller, $pr_res, $pa_fields) {
+	function getAllFieldValues($po_caller, $pr_res, $pa_fields, $pa_options=null) {
 		$va_vals = array();
 		
+		$pn_limit = isset($pa_options['limit']) ? (int)$pa_options['limit'] : null;
+		$c = 0;
+			
 		if (is_array($pa_fields)) {
 			$va_row = @mysqli_fetch_assoc($pr_res);
 			foreach($pa_fields as $vs_field) {
@@ -431,6 +437,8 @@ class Db_mysqli extends DbDriverBase {
 				foreach($pa_fields as $vs_field) {
 					$va_vals[$vs_field][] = $va_row[$vs_field];
 				}
+				$c++;
+				if ($pn_limit && ($c > $pn_limit)) { break; }
 			}
 		} else {
 			$va_row = @mysqli_fetch_assoc($pr_res);
@@ -438,6 +446,9 @@ class Db_mysqli extends DbDriverBase {
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = @mysqli_fetch_assoc($pr_res))) {
 				$va_vals[] = $va_row[$pa_fields];
+				
+				$c++;
+				if ($pn_limit && ($c > $pn_limit)) { break; }
 			}
 		}
 		return $va_vals;
@@ -547,4 +558,3 @@ class Db_mysqli extends DbDriverBase {
 		//$this->disconnect();
 	}
 }
-?>

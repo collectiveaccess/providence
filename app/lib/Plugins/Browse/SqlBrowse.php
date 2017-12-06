@@ -131,6 +131,7 @@ class SqlBrowse extends BaseBrowsePlugin  {
 	    if(strlen($value) > 1024) { $value = mb_substr($value, 0, 1024); }  // truncate values to maximum supported length
 	    
 	    $item_id = isset($pa_options['item_id']) ? $pa_options['item_id'] : null;
+	    $value_id = isset($pa_options['value_id']) ? $pa_options['value_id'] : null;
 	    
 	    if (is_null($facet_id)) { $facet_id = self::getFacetEntry($table, $code); }
 	    $cache_key = md5("{$facet_id}/{$value}");
@@ -138,7 +139,11 @@ class SqlBrowse extends BaseBrowsePlugin  {
 	    if(isset(self::$value_id_cache[$cache_key])) { return self::$value_id_cache[$cache_key] ; }
 	    
 	    
-	    if ($item_id) { 
+	    if ($value_id) {
+	        if (!($r = $this->db->query("SELECT value_id FROM ca_browse_values WHERE facet_id = ? AND value_id = ?", [$facet_id, $value_id]))) { 
+                throw new \ApplicationException("Could not get facet value: ".join("; ", $this->db->getErrors()));
+            }
+	    } elseif ($item_id) { 
 	        if (!($r = $this->db->query("SELECT value_id FROM ca_browse_values WHERE facet_id = ? AND item_id = ?", [$facet_id, $item_id]))) { 
                 throw new \ApplicationException("Could not get facet value: ".join("; ", $this->db->getErrors()));
             }
@@ -195,12 +200,14 @@ class SqlBrowse extends BaseBrowsePlugin  {
         foreach($criteria_by_facet as $facet => $criteria) {
             $value_ids = [];
             foreach(array_keys($criteria) as $value) {
+            print "GET $value<br>\n";
                 \Timer::start("getFacetValue");
-                if (!($value_id = $this->getFacetValue($table, $facet, $value, ['item_id' => ((int)$value > 0) ? (int)$value : null, 'dontCreate' => true]))) { continue; }
+                if (!($value_id = $this->getFacetValue($table, $facet, $value, ['value_id' => ((int)$value > 0) ? (int)$value : null, 'dontCreate' => true]))) { continue; }
                 \Timer::p("getFacetValue");
                 
                 $value_ids[$value_id] = 1;
             }
+            
             $values_for_facet[$facet] = array_keys($value_ids);
             
             $facets_by_count[$this->getResultsForFacet($table, $facet, $values_for_facet[$facet], ['count' => true])][] = $facet;
@@ -485,7 +492,7 @@ class SqlBrowse extends BaseBrowsePlugin  {
 	    }
 	    \Timer::start('db');
 	    $r = $this->db->query("
-	        SELECT DISTINCT cbv.value_id, cbv.value
+	        SELECT DISTINCT cbv.value_id id, cbv.value
 	        FROM ca_browse_values cbv
 	        {$row_join}
 	        WHERE

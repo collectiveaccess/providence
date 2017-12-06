@@ -660,6 +660,17 @@ class ca_change_log extends BaseModel {
 			if ($qr_res->nextRow()) {
 				if (in_array($vn_access = $qr_res->get('access'), $pa_access)) { return true; }
 			}
+		} elseif(method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) {
+		    $t_left = $t_instance->getLeftTableInstance();
+		    $t_right = $t_instance->getRightTableInstance();
+		    
+		    if ($t_left->hasField('access') && (!$t_left->load($t_instance->get($t_instance->getLeftTableFieldName())) || !in_array($t_left->get('access'), $pa_access))) {
+		        return false;
+		    }
+		    if ($t_right->hasField('access') && (!$t_right->load($t_instance->get($t_instance->getRightTableFieldName())) || !in_array($t_right->get('access'), $pa_access))) {
+		        return false;
+		    }
+		    return true;
 		} else {
 			return true;
 		}

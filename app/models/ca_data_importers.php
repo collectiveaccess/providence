@@ -1395,6 +1395,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vs_type_id_fld = $t_subject->getTypeFieldName();
 		$vs_idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
 		
+		$va_subject_type_list = $t_subject->getTypeList();
+		
 		// get mapping rules
 		$va_mapping_rules = $t_mapping->getRules();
 		
@@ -1548,7 +1550,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$vs_key = join('.', $va_tmp);
 				}
 				if(!isset($va_row[$vs_key])) { continue; }
-				$va_row_with_replacements[$vs_key] = ca_data_importers::replaceValue($va_row[$vs_key], $va_item, []);
+				$va_row_with_replacements[$vs_key] = ca_data_importers::replaceValue(is_array($va_row[$vs_key]) ? join("", $va_row[$vs_key]) : $va_row[$vs_key], $va_item, []);
 			}
 			
 			//
@@ -1618,6 +1620,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
 			}
+			
+			// Set default when set type is invalid
+			if (isset($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && strlen($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && (sizeof(array_filter($va_subject_type_list, function($v) use ($vs_type) { return ($vs_type === $v['idno']);  })) == 0)) {
+                $vs_type = $va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default'];
+            }
 			
 			// Get idno
 			$vs_idno = $va_idnos_for_row = null;

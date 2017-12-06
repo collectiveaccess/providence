@@ -138,4 +138,3 @@ require_once(__CA_LIB_DIR__.'/BaseApplicationPlugin.php');
 		}
 		# -------------------------------------------------------
 	}
-?>

@@ -149,10 +149,28 @@ $_ca_bundle_displays_settings = array(		// global
 		'takesLocale' => false,
 		'default' => '',
 		'label' => _t('Bottom line format'),
-		'description' => _t('.')
+		'description' => _t('Format per-page and per-report summary information.')
+	),
+	'show_only_in' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'multiple' => 1,
+		'width' => 100, 'height' => 4,
+		'takesLocale' => false,
+		'options' => [
+		    'Search/browse (thumbnail view)' => 'search_browse_thumbnail',
+		    'Search/browse (full view)' => 'search_browse_full',
+		    'Search/browse (list view)' => 'search_browse_list',
+		    'Editor summaries' => 'editor_summary',
+		    'Editor relationship bundles' => 'editor_relationship_bundle',
+		    'Set items bundles' => 'set_item_bundle'
+		],
+		'default' => '',
+		'label' => _t('Show display in'),
+		'description' => _t('Restrict display to use in specific contexts. If no contexts are selected the display will be shown in all contexts.')
 	)
 );
-	
+
 class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	# ---------------------------------
 	# --- Object attribute properties
@@ -727,7 +745,7 @@ if (!$pb_omit_editing_info) {
 		$pn_user_access = 									caGetOption('access', $pa_options, null); 
 		$pa_access = 										caGetOption('checkAccess', $pa_options, null); 
 		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
-		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
+		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return ($v == '*') ? false : (bool)$v; });
 		
 		$pb_system_only = 									caGetOption('systemOnly', $pa_options, false);
 		
@@ -800,7 +818,7 @@ if (!$pb_omit_editing_info) {
 		// get displays
 		$qr_res = $o_db->query($vs_sql = "
 			SELECT
-				bd.display_id, bd.display_code, bd.user_id, bd.table_num, 
+				bd.display_id, bd.display_code, bd.user_id, bd.table_num, bd.settings,
 				bdl.label_id, bdl.name, bdl.locale_id, u.fname, u.lname, u.email,
 				l.language, l.country
 			FROM ca_bundle_displays bd
@@ -812,7 +830,7 @@ if (!$pb_omit_editing_info) {
 			".join(' AND ', $va_wheres)."
 			ORDER BY -cbdtr.display_id DESC, bdl.name ASC
 		", $va_params);
-		//print "got $vs_sql";
+		
 		$va_displays = [];
 
 		$va_type_name_cache = [];
@@ -822,6 +840,8 @@ if (!$pb_omit_editing_info) {
 				$vs_display_type = $va_type_name_cache[$vn_table_num] = $this->getBundleDisplayTypeName($vn_table_num, array('number' => 'plural'));
 			}
 			$va_displays[$qr_res->get('display_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('bundle_display_content_type' => $vs_display_type));
+			
+			$va_displays[$qr_res->get('display_id')][$qr_res->get('locale_id')]['settings'] = caUnserializeForDatabase($va_displays[$qr_res->get('display_id')][$qr_res->get('locale_id')]['settings']);
 		}
 		return $va_displays;
 	}
@@ -836,6 +856,7 @@ if (!$pb_omit_editing_info) {
 	 *			addDefaultDisplay = if true, the "default" display is included at the head of the list; this is simply a display called "default" that is assumed to be handled by your code; the default is not to add the default value (false)
 	 *			addDefaultDisplayIfEmpty = same as 'addDefaultDisplay' except that the default value is only added if the display list is empty
 	 *			dontIncludeSubtypesInTypeRestriction = don't automatically include subtypes of a type when calculating type restrictions. [Default is true]
+	 *          context = context to filter display list for. [Default is null – no filtering performed]
 	 * @return string HTML code defining <select> drop-down
 	 */
 	public function getBundleDisplaysAsHTMLSelect($ps_select_name, $pa_attributes=null, $pa_options=null) {
@@ -854,7 +875,9 @@ if (!$pb_omit_editing_info) {
 			$va_content[_t('Default')] = 0;
 		}
 		
+		$ps_context = caGetOption('context', $pa_options, null);
 		foreach($va_available_displays as $vn_display_id => $va_info) {
+		    if ($ps_context && is_array($va_info['settings']['show_only_in']) && sizeof($va_info['settings']['show_only_in']) && !in_array($ps_context, $va_info['settings']['show_only_in'])) { continue; }
 			$va_content[$va_info['name']] = $vn_display_id;
 		}
 		
@@ -1961,7 +1984,12 @@ if (!$pb_omit_editing_info) {
 					// resolve template relative to relationship
 					if (is_array($va_path = Datamodel::getPath($po_result->tableName(), $t_instance->tableName()))) {
 						$va_path = array_keys($va_path);
-						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types}>";
+						
+						$vs_sort_dir_attr = '';
+						if ($vs_sort_attr = ($vs_sort = caGetOption('sort', $pa_options, null, ['castTo' => 'string'])) ? "sort=\"{$vs_sort}\"" : "") {
+						    $vs_sort_dir_attr = ($vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string'])) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
+						}
+						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
 
 						switch(sizeof($va_path)) {
 							case 3:

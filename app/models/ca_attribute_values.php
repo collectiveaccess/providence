@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_attribute_values.php : table access class for table ca_attribute_values
+ * app/models/ca_attribute_values.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,7 +42,7 @@ require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
  	'NAME_SINGULAR' 	=> _t('attribute value'),
  	'NAME_PLURAL' 		=> _t('attribute values'),
- 	'FIELDS' 			=> array(
+ 	'FIELDS'  			=> array(
 		'value_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,

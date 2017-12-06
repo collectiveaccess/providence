@@ -153,7 +153,7 @@
  				$va_tmp = array_keys($va_criteria);
   				
  				$va_tmp1 = array_keys($va_criteria[$va_tmp[0]]);
- 				$va_facet_info = $this->opo_browse->getInfoForFacet($va_tmp[0]);
+ 				$va_facet_info = $this->opo_browse->getFacetInfo($va_tmp[0]);
  				
  				if ($this->request->config->get('redirect_to_'.$va_facet_info['table'].'_detail_if_is_first_facet')) {
  					$t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true);
@@ -196,10 +196,10 @@
 			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
 			
 	
-			if (!is_array($va_facets_with_info = $this->opo_browse->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
-				$this->view->setVar('open_refine_controls', false);
-				$this->view->setVar('noRefineControls', true);
-			}
+			// if (!is_array($va_facets_with_info = $this->opo_browse->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
+// 				$this->view->setVar('open_refine_controls', false);
+// 				$this->view->setVar('noRefineControls', true);
+// 			}
  			
  			//
  			// Pass browse info (context + facets + criteria) to view
@@ -210,23 +210,26 @@
 			$this->view->setVar('target', $this->ops_tablename);
 			$this->view->setVar('result_context', $this->opo_result_context);
 			
- 			$this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteriaWithLabels());
- 			$this->view->setVar('available_facets', $this->opo_browse->getInfoForAvailableFacets());
+ 			//$this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteriaWithLabels());
+ 			$this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteria());
+ 			//$this->view->setVar('available_facets', $this->opo_browse->getInfoForAvailableFacets());
+ 			$this->view->setVar('available_facets', $this->opo_browse->getFacetList());
  			
- 			$this->view->setVar('facets_with_content', $this->opo_browse->getInfoForFacetsWithContent());
- 			$this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getInfoForFacets());
+ 			//$this->view->setVar('facets_with_content', $this->opo_browse->getInfoForFacetsWithContent());
+ 			$this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getFacets());
  			
  			$va_single_facet_values = array();
 			foreach($va_facet_info as $vs_facet => $va_facet_settings) {
-				$va_single_facet_values[$vs_facet] = isset($va_facet_settings['single_value']) ? $va_facet_settings['single_value'] : null;
-			}
- 			$this->view->setVar('single_facet_values', $va_single_facet_values);
-		
+ 			//	$va_single_facet_values[$vs_facet] = isset($va_facet_settings['single_value']) ? $va_facet_settings['single_value'] : null;
+ 			}
+  			$this->view->setVar('single_facet_values', $va_single_facet_values);
+ 		
 		
 			// browse criteria in an easy-to-display format
 			$va_browse_criteria = array();
-			foreach($this->opo_browse->getCriteriaWithLabels() as $vs_facet_code => $va_criteria) {
-				$va_facet_info = $this->opo_browse->getInfoForFacet($vs_facet_code);
+			//foreach($this->opo_browse->getCriteriaWithLabels() as $vs_facet_code => $va_criteria) {
+			foreach($this->opo_browse->getCriteria() as $vs_facet_code => $va_criteria) {
+				$va_facet_info = $this->opo_browse->getFacetInfo($vs_facet_code);
 				
 				$va_criteria_list = array();
 				foreach($va_criteria as $vn_criteria_id => $vs_criteria_label) {
@@ -252,7 +255,7 @@
 			}
 			
 			// Only prefetch what we need
-			$vo_result->setOption('prefetch', $vn_items_per_page);
+			//$vo_result->setOption('prefetch', $vn_items_per_page);
 			
 			if ($vo_result) {
 				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
@@ -367,7 +370,7 @@
  			$this->view->setVar('id', $vm_id = $this->request->getParameter('id', pString));
  				
  			$vs_cache_key = md5(join("/", array($ps_facet_name,$vs_show_group,$vs_grouping,$vm_id)));
- 			$va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
+ 			$va_facet_info = $this->opo_browse->getFacetInfo($ps_facet_name);
  			
  			//if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
  			//	$this->response->addContent($vs_content);
@@ -375,7 +378,7 @@
  			//}
  			
  			// Enforce type restriction
- 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
+// 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
  			
  			if ($this->request->getParameter('clear', pInteger)) {
  				$this->opo_browse->removeAllCriteria();
@@ -394,11 +397,11 @@
  			
  			// Using the back-button can cause requests for facets that are no longer available
  			// In these cases we reset the browse.
- 			if (!($va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
+ 			if (!($va_facet = $this->opo_browse->getFacetContent($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
  				 $this->opo_browse->removeAllCriteria();
  				 $this->opo_browse->execute();
  				 $va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
- 				 $va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
+ 				 $va_facet_info = $this->opo_browse->getFacetInfo($ps_facet_name);
  				 
 				$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
 				$this->opo_result_context->saveContext();
@@ -407,7 +410,7 @@
  			$this->view->setVar('browse_last_id', (int)$vm_id ? (int)$vm_id : (int)$this->opo_result_context->getParameter($ps_facet_name.'_browse_last_id'));
  			$this->view->setVar('facet', $va_facet);
  			
- 			$va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
+ 			$va_facet_info = $this->opo_browse->getFacetInfo($ps_facet_name);
  			if ($va_facet_info['type'] == 'attribute') {
  				// set table for authority element so browse can use table-specific services (Eg. entity lookups for attributes of type Entity)
  				if ($t_element = ca_metadata_elements::getInstance($va_facet_info['element_code'])) {
@@ -422,7 +425,7 @@
  			$this->view->setVar('individual_group_display', isset($va_facet_info['individual_group_display']) ? (bool)$va_facet_info['individual_group_display'] : false);
 
  			// this should be 'facet' but we don't want to render all old 'ajax_browse_facet_html' views (pawtucket themes) unusable
- 			$this->view->setVar('grouped_facet',$this->opo_browse->getFacetWithGroups($ps_facet_name, $va_facet_info["group_mode"], $vs_grouping, array('sort' => 'name', 'checkAccess' => $va_access_values)));
+ 			$this->view->setVar('grouped_facet',$this->opo_browse->getFacetContent($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)));
  			
  			// generate type menu and type value list for related authority table facet
  			if ($va_facet_info['type'] === 'authority') {
@@ -446,7 +449,7 @@
 				$vs_content = $this->render('Browse/ajax_browse_facet_html.php');
 			}
 			
-			$this->opo_browse->setCachedFacetHTML($vs_cache_key, $vs_content);
+			//$this->opo_browse->setCachedFacetHTML($vs_cache_key, $vs_content);
  		}
  		# -------------------------------------------------------
  		/**
@@ -458,7 +461,7 @@
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			
  			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
- 			if(!is_array($va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name))) { return null; }
+ 			if(!is_array($va_facet_info = $this->opo_browse->getFacetInfo($ps_facet_name))) { return null; }
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
  			$t_item = Datamodel::getInstanceByTableName($va_facet_info['table']);
@@ -668,7 +671,7 @@
  		public function getFacetHierarchyAncestorList() {
  			$pn_id = $this->request->getParameter('id', pInteger);
  			$ps_facet_name = $this->request->getParameter('facet', pString);
- 			if(!is_array($va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name))) { return null; }
+ 			if(!is_array($va_facet_info = $this->opo_browse->getFacetInfo($ps_facet_name))) { return null; }
  			
  			$va_ancestors = array();
  			switch($va_facet_info['type']) {

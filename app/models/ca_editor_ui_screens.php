@@ -1168,6 +1168,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
+										'takesLocale' => true,
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Object location display template'),
 										'description' => _t('Layout for current location of object when displayed in list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship that is current. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
@@ -1176,6 +1177,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
+										'takesLocale' => true,
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Object location history template'),
 										'description' => _t('Layout for each previous location of object when displayed in history list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')

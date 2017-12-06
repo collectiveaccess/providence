@@ -68,7 +68,7 @@ BaseModel::$s_ca_models_definitions['ca_set_item_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Caption'), 'DESCRIPTION' => _t('Caption for the set item.'),
-				'BOUNDS_LENGTH' => array(1,255)
+				'BOUNDS_LENGTH' => array(1,1024)
 		)
  	)
 );
@@ -188,4 +188,3 @@ class ca_set_item_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

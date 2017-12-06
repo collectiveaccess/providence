@@ -84,7 +84,7 @@
 		 * @return string - expression or null if no expression is defined
 		 */
 		public function getSearchExpression($pb_from_context_only=false) {
-			if(!$pb_from_context_only && ($ps_search = urldecode(htmlspecialchars(strip_tags(html_entity_decode($this->opo_request->getParameter('search', pString)))))) != ''){
+			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags(html_entity_decode($this->opo_request->getParameter('search', pString)))))) != ''){
 				// search specified by request parameter
 				if ($ps_search != $this->getContextValue('expression')) {
 					$this->setContextValue('expression', $ps_search);
@@ -113,7 +113,7 @@
 		public function searchExpressionHasChanged($pb_from_context_only=false) {
 			if (!is_null($this->opb_search_expression_has_changed)) { return $this->opb_search_expression_has_changed; }
 			 
-			if(!$pb_from_context_only && ($ps_search = urldecode(htmlspecialchars(strip_tags($this->opo_request->getParameter('search', pString))))) != ''){
+			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags($this->opo_request->getParameter('search', pString))))) != ''){
 				// search specified by request parameter
 				if ($ps_search != $this->getContextValue('expression')) {
 					return $this->opb_search_expression_has_changed = true;
@@ -1152,4 +1152,3 @@
 		}
 		# ------------------------------------------------------------------
 	}
-?>

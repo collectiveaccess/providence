@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Export/BaseExportFormat.php : 
+ * app/lib/ca/Export/BaseExportFormat.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,7 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
  /**
   *
   */
@@ -49,7 +49,7 @@
 		/**
 		 * The 'element' field in ca_data_exporter_items can have varying syntax and semantics, depending on the
 		 * exporter format used (e.g. for XML, @foo addresses the attribute 'foo' of the current element.
-		 * This string is used to describe that format in detail. 
+		 * This string is used to describe that format in detail.
 		 * @var string
 		 */
 		protected $ops_element_description;
@@ -59,11 +59,11 @@
 		}
 		# -------------------------------------------------------
 		public function getFormatSettings() {
-			return BaseExportFormat::$s_format_settings[$this->getName()]; 
+			return BaseExportFormat::$s_format_settings[$this->getName()];
 		}
 		# -------------------------------------------------------
 		public function getName() {
-			return $this->ops_name; 
+			return $this->ops_name;
 		}
 		# -------------------------------------------------------
 		public function getDescription() {
