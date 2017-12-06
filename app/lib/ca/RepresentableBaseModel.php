@@ -923,7 +923,21 @@
 			$t_oxor->set('representation_id', $pn_representation_id);
 			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
 			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $pn_representation_id);
-			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
+			if ($t_oxor->hasField('type_id') && ($pm_type_id = caGetOption('type_id', $pa_options, null))) {
+			    $pn_type_id = null;
+			    if ($pm_type_id && !is_numeric($pm_type_id)) {
+                    $t_rel_type = new ca_relationship_types();
+                    if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_oxor->tableName())) {
+                        $pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+                    } else {
+                        $this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'RepresentableBaseModel->linkRepresentation()');
+                        return false;
+                    }
+                } else {
+                    $pn_type_id = $pm_type_id;
+                }
+			    $t_oxor->set('type_id', $pn_type_id); 
+			}
 			$t_oxor->insert();
 		
 		
