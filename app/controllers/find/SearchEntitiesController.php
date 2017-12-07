@@ -56,9 +56,17 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
-			$this->opa_views = array(
-				'list' => _t('list')
-			 );
+			if($this->request->config->get('enable_full_thumbnail_result_views_for_ca_entities_search')){
+				$this->opa_views = array(
+					'list' => _t('list'),
+					'thumbnail' => _t('thumbnails'),
+					'full' => _t('full')
+				);
+			}else{
+				$this->opa_views = array(
+					'list' => _t('list')
+				);
+			}
 			 
 			 $this->opo_browse = new EntityBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
 		}

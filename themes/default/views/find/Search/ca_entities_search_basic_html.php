@@ -44,6 +44,12 @@
 			case 'no_results':
 				print $this->render('Results/no_results_html.php');
 				break;
+			case 'thumbnail':
+				print $this->render('Results/ca_entities_results_thumbnail_html.php');
+				break;
+			case 'full':
+				print $this->render('Results/ca_entities_results_full_html.php');
+				break;
 			case 'list':
 			default:
 				print $this->render('Results/ca_entities_results_list_html.php');

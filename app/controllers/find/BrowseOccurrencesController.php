@@ -57,10 +57,18 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_browse = new OccurrenceBrowse($this->opo_result_context->getSearchExpression(), 'providence');
- 
- 			$this->opa_views = array(
-				'list' => _t('list')
-			);
+			
+			if($this->request->config->get('enable_full_thumbnail_result_views_for_ca_occurrences_browse')){
+				$this->opa_views = array(
+					'list' => _t('list'),
+					'thumbnail' => _t('thumbnails'),
+					'full' => _t('full')
+				);
+			}else{
+				$this->opa_views = array(
+					'list' => _t('list')
+				);
+			}
  		}
  		# -------------------------------------------------------
  		/**
