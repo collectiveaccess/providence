@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/Results/ca_objects_results_thumbnail_html.php :
+ * themes/default/views/find/Results/ca_occurrences_results_thumbnail_html.php :
  * 		basic object search form view script 
  * ----------------------------------------------------------------------
  * CollectiveAccess
@@ -42,10 +42,10 @@
 		$vn_col = 0;
 		$vn_item_count = 0;
 		
-		if (!($vs_caption_template = $this->request->config->get('ca_objects_results_thumbnail_caption_template'))) { $vs_caption_template = "^ca_objects.preferred_labels.name%truncate=27&ellipsis=1<br/>^ca_objects.idno"; }
+		if (!($vs_caption_template = $this->request->config->get('ca_occurrences_results_thumbnail_caption_template'))) { $vs_caption_template = "^ca_occurrences.preferred_labels.name%truncate=27&ellipsis=1<br/>^ca_occurrences.idno"; }
 		
 		while(($vn_item_count < $vn_items_per_page) && ($vo_result->nextHit())) {
-			$vn_object_id = $vo_result->get('object_id');
+			$vn_occurrence_id = $vo_result->get('occurrence_id');
 			
 			if (!$vn_col) { 
 				print "<tr>";
@@ -69,11 +69,11 @@
 ?>
 			<td align="center" valign="top" style="padding:2px 2px 2px 2px;">
 				<div class="objectThumbnailsImageContainer" style="padding: <?php print $vn_padding_top_bottom; ?>px 0px <?php print $vn_padding_top_bottom; ?>px 0px;"> 
-					<input type="checkbox" name="add_to_set_ids" value="<?php print (int)$vn_object_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
-					<?php print caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_objects', $vn_object_id, array(), array('data-id' => $vn_object_id)); ?>
-					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?php print $vn_object_id; ?>"><a class='qlButton' data-id="<?php print $vn_object_id; ?>"><?php print _t("Quick Look"); ?></a></div><?php } ?>
+					<input type="checkbox" name="add_to_set_ids" value="<?php print (int)$vn_occurrence_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
+					<?php print caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_occurrences', $vn_occurrence_id, array(), array('data-id' => $vn_occurrence_id)); ?>
+					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?php print $vn_occurrence_id; ?>"><a class='qlButton' data-id="<?php print $vn_occurrence_id; ?>"><?php print _t("Quick Look"); ?></a></div><?php } ?>
 				</div>
-				<div class="thumbCaption"><?php print $vs_caption; ?><br/><?php print caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id); ?></div>
+				<div class="thumbCaption"><?php print $vs_caption; ?><br/><?php print caEditorLink($this->request, $vs_idno, '', 'ca_occurrences', $vn_occurrence_id); ?></div>
 			</td>
 <?php
 			$vn_col++;
@@ -106,7 +106,7 @@
 		jQuery(".qlButton").on("click", function(e) {
 			var id = jQuery(this).data('id');
 			jQuery("#ql_" + id).css("display", "block");
-			caMediaPanel.showPanel("<?php print caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook'); ?>/object_id/" + id);
+			caMediaPanel.showPanel("<?php print caNavUrl($this->request, 'find', 'SearchOccurrences', 'QuickLook'); ?>/occurrence_id/" + id);
 		});
 	});
 </script>
