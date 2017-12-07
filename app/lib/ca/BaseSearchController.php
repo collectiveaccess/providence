@@ -498,7 +498,7 @@
  				$vn_representation_id = $t_subject->getPrimaryRepresentationID();
  			}
  			$t_rep = new ca_object_representations($vn_representation_id);
-print $this->ops_tablename." - ".$t_rep->getMediaInfo('media', 'original', 'MIMETYPE');
+ 			
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
 				// error: no viewer available
 				die("Invalid viewer");
