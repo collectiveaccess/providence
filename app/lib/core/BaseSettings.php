@@ -284,7 +284,9 @@
 				$vs_label_id = "setting_{$ps_setting}_label";
 			}
 			
-			$vs_return = "\n".'<div class="formLabel" id="'.$vs_input_id.'_container">'."\n";
+			$pb_no_container = caGetOption('noContainerDiv', $pa_options, false);
+			
+			$vs_return = $pb_no_container ? '' : "\n".'<div class="formLabel" id="'.$vs_input_id.'_container">'."\n";
 			$vs_return .= '<span id="'.$vs_label_id.'"  class="'.$vs_label_id.'">'.$va_properties['label'].'</span>';
 			
 			
@@ -634,7 +636,7 @@
 			}
 			
 			
-			$vs_return .= '</div>'."\n";
+			$vs_return .= $pb_no_container ? '' : '</div>'."\n";
 			TooltipManager::add('.'.$vs_label_id, "<h3>".$va_properties["label"]."</h3>".$va_properties["description"]);
 	
 			return $vs_return;

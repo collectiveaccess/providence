@@ -1306,6 +1306,7 @@
 	 * @return array
 	 */
 	function caGetChangeLogForElasticSearch($po_db, $pn_table_num, $pn_row_id) {
+	    if(!$po_db->connected()) { $po_db->connect(); }
 		$qr_res = $po_db->query("
 				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, u.user_name
 				FROM ca_change_log ccl

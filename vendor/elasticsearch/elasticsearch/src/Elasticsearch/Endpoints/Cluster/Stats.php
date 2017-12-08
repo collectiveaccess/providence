@@ -9,14 +9,13 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cluster
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Stats extends AbstractEndpoint
 {
-    // A comma-separated list of node IDs or names to limit the returned information; use `_local` to return information
-    // from the node you&#039;re connecting to, leave empty to get information from all nodes
+    // A comma-separated list of node IDs or names to limit the returned information; use `_local` to return information from the node you&#039;re connecting to, leave empty to get information from all nodes
     private $nodeID;
 
     /**
@@ -38,10 +37,10 @@ class Stats extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $node_id = $this->nodeID;
-        $uri = "/_cluster/stats";
+        $uri   = "/_cluster/stats";
 
         if (isset($node_id) === true) {
             $uri = "/_cluster/stats/nodes/$node_id";
@@ -53,19 +52,18 @@ class Stats extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'flat_settings',
             'human',
-            'timeout',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

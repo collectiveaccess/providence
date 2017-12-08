@@ -9,27 +9,27 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class ClearScroll extends AbstractEndpoint
 {
     // A comma-separated list of scroll IDs to clear
-    private $scroll_id;
+    private $scrollId;
 
     /**
      * @param $scroll_id
      *
      * @return $this
      */
-    public function setScrollId($scroll_id)
+    public function setScrollId($scrollId)
     {
-        if (isset($scroll_id) !== true) {
+        if (isset($scrollId) !== true) {
             return $this;
         }
 
-        $this->scroll_id = $scroll_id;
+        $this->scrollId = $scrollId;
 
         return $this;
     }
@@ -38,36 +38,55 @@ class ClearScroll extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        if (isset($this->scroll_id) !== true) {
-            throw new Exceptions\RuntimeException(
-                'scroll_id is required for Clearscroll'
-            );
-        }
-        $scroll_id = $this->scroll_id;
-        $uri = "/_search/scroll/$scroll_id";
+        return "/_search/scroll/";
+    }
 
-        if (isset($scroll_id) === true) {
-            $uri = "/_search/scroll/$scroll_id";
+    /**
+     * @param array $body
+     *
+     * @throws \Elasticsearch\Common\Exceptions\InvalidArgumentException
+     * @return $this
+     */
+    public function setBody($body)
+    {
+        if (isset($body) !== true) {
+            return $this;
         }
 
-        return $uri;
+        $this->body = $body;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBody()
+    {
+        if (isset($this->body)) {
+            return $this->body;
+        }
+        if (is_array($this->scrollId)) {
+            return ['scroll_id' => $this->scrollId];
+        }
+        return ['scroll_id' => [$this->scrollId]];
     }
 
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
-        ];
+        return array(
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'DELETE';
     }

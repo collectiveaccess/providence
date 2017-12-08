@@ -208,7 +208,16 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Must be unique'),
 			'description' => _t('Check this option to enforce uniqueness across all values for this attribute.')
-		)
+		),
+		'referenceMediaIn' => array(
+            'formatType' => FT_TEXT,
+            'displayType' => DT_SELECT,
+            'showMediaElementBundles' => true,
+            'default' => '',
+            'width' => "200px", 'height' => 1,
+            'label' => _t('Reference media in'),
+            'description' => _t('Allow in-line references in text to a media element.')
+        )
 	);
  
 	class TextAttributeValue extends AttributeValue implements IAttributeValue {
@@ -295,7 +304,7 @@
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			global $g_request;
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique'));
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique', 'referenceMediaIn'));
 
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
@@ -323,6 +332,15 @@
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				AssetLoadManager::register("ckeditor");
  				
+ 				$vb_show_media_content_option = false;
+ 				if (
+ 				    (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) 
+ 				    && 
+ 				    ($vb_show_media_content_option = (isset($va_settings['referenceMediaIn']) && (bool)$va_settings['referenceMediaIn']))
+ 				) {
+ 				    $va_toolbar_config['misc'][] = 'Media';
+ 				}
+ 				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
 						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
 						{
@@ -332,6 +350,8 @@
 							toolbarLocation: 'top',
 							enterMode: CKEDITOR.ENTER_BR,
 				            lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
+				            contentUrl: ".($vb_show_media_content_option ? "'".caNavUrl($g_request, '*', '*', 'getMediaAttributeList', ['bundle' => $va_settings['referenceMediaIn'], $pa_options['t_subject']->primaryKey() => $pa_options['t_subject']->getPrimaryKey()])."'" : "null").",
+				            insertMediaRefs: true,
 				            key: '".$pa_element_info['element_id']."_{n}'
 						});
 						

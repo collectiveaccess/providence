@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/ca_objects_full_html.php 
+ * themes/default/views/find/Results/ca_objects_results_full_html.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

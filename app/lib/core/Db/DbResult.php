@@ -280,6 +280,9 @@ class DbResult extends DbBase {
 	  * Returns a list of values for the specified field from all rows in the result set. If you need to extract all values from single field in a result set this method provides a convenient means to do so.
 	  *
 	  * @param mixed $ps_field Array of field names or single name of field to fetch
+	  * @param array $pa_options Options include:
+	  *      limit = cap number of field values returned. [Default is null]
+	  *
 	  * @return array List of values for the specified fields
 	  */
 	public function getAllFieldValues($pm_field, $pa_options=null) {
@@ -298,7 +301,7 @@ class DbResult extends DbBase {
 		}
 		
 		
-		$va_values = $this->opo_db->getAllFieldValues($this, $this->opr_res, $vm_field);
+		$va_values = $this->opo_db->getAllFieldValues($this, $this->opr_res, $vm_field, $pa_options);
 		$this->seek($vn_current_row - 1);
 		
 		return $va_values;

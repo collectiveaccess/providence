@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Script;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Delete
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Script
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Delete extends AbstractEndpoint
 {
@@ -39,7 +39,7 @@ class Delete extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->lang) !== true) {
             throw new Exceptions\RuntimeException(
@@ -51,9 +51,9 @@ class Delete extends AbstractEndpoint
                 'id is required for put'
             );
         }
-        $id = $this->id;
+        $id   = $this->id;
         $lang = $this->lang;
-        $uri = "/_scripts/$lang/$id";
+        $uri  = "/_scripts/$lang/$id";
 
         return $uri;
     }
@@ -61,18 +61,18 @@ class Delete extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'version',
-            'version_type',
-        ];
+            'version_type'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'DELETE';
     }

@@ -9,67 +9,62 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  * Class Cancel
  *
  * @category Elasticsearch
- * @package Elasticsearch\Endpoints\Tasks *
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @package  Elasticsearch\Endpoints\Tasks
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Cancel extends AbstractEndpoint
 {
-    // Cancel the task with specified task id (node_id:task_number)
-    private $task_id;
-
+    private $taskId;
 
     /**
-     * @param $task_id
+     * @param string $taskId
      *
+     * @throws \Elasticsearch\Common\Exceptions\InvalidArgumentException
      * @return $this
      */
-    public function setTaskId($task_id)
+    public function setTaskId($taskId)
     {
-        if (isset($task_id) !== true) {
+        if (isset($taskId) !== true) {
             return $this;
         }
 
-        $this->task_id = $task_id;
+        $this->taskId = $taskId;
 
         return $this;
     }
 
-
     /**
+     * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        $task_id = $this->task_id;
-        $uri = "/_tasks/_cancel";
-        if (isset($task_id) === true) {
-            $uri = "/_tasks/$task_id/_cancel";
+        if (isset($this->id) === true) {
+            return "/_tasks/{$this->taskId}/_cancel";
         }
 
-        return $uri;
+        return "/_tasks/_cancel";
     }
-
 
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'node_id',
             'actions',
             'parent_node',
             'parent_task',
-        ];
+        );
     }
-
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'POST';
     }
