@@ -476,4 +476,3 @@
 			return $va_subtypes_proc;
 		}
  	}
- ?>

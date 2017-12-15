@@ -38,6 +38,7 @@
 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 	require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
+	require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
  	
  	class BaseSearchController extends BaseRefineableSearchController {
  		# -------------------------------------------------------
@@ -485,5 +486,34 @@
  			
  			return $this->render('Search/widget_'.$this->ops_tablename.'_search_tools.php', true);
  		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * QuickLook
+ 		 */
+ 		public function QuickLook() {
+ 			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$vn_id = (int)$this->request->getParameter($t_subject->primaryKey(), pInteger);
+ 			$t_subject->load($vn_id);
+ 			if (!($vn_representation_id = (int)$this->request->getParameter('representation_id', pInteger))) {
+ 				$vn_representation_id = $t_subject->getPrimaryRepresentationID();
+ 			}
+ 			$t_rep = new ca_object_representations($vn_representation_id);
+ 			
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				// error: no viewer available
+				die("Invalid viewer");
+			}
+			
+			if(!$vn_id) {
+				$this->postError(1100, _t('Invalid object/representation'), 'SearchObjectsController->QuickLook');
+				return;
+			}
+
+			$this->response->addContent($vs_viewer_name::getViewerHTML(
+				$this->request, 
+				"representation:{$vn_representation_id}", 
+				['context' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
+			);
+		}
  		# -------------------------------------------------------
  	}
