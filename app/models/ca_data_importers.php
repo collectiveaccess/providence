@@ -1553,7 +1553,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$vs_key = join('.', $va_tmp);
 				}
 				if(!isset($va_row[$vs_key])) { continue; }
-				$va_row_with_replacements[$vs_key] = ca_data_importers::replaceValue(is_array($va_row[$vs_key]) ? join("", $va_row[$vs_key]) : $va_row[$vs_key], $va_item, []);
+				
+				if(is_array($va_row[$vs_key])) {
+				    $va_row_with_replacements[$vs_key] = array_map(function($v) use ($va_item) { return ca_data_importers::replaceValue($v, $va_item, []); }, $va_row[$vs_key]);
+				} else {
+				    $va_row_with_replacements[$vs_key] = ca_data_importers::replaceValue($va_row[$vs_key], $va_item, []);
+			    }
 			}
 			
 			//
@@ -1859,6 +1864,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						// Get location in content tree for addition of new content
 						$va_item_dest = explode(".",  $va_item['destination']);
 						$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
+						
+						if (isset($va_item['settings']['filterEmptyValues']) && (bool)$va_item['settings']['filterEmptyValues'] && is_array($va_vals)) {
+						    $va_vals = array_filter($va_vals, function($v) { return strlen($v); });
+						}
 						
 						// Do value conversions
 						foreach($va_vals as $vn_i => $vm_val) {
@@ -3047,7 +3056,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	static public function replaceValue($pm_value, $pa_item, $pa_options=null) {
-	    if(!is_string($pm_value)) { print_R($pm_value); print caPrintStackTrace(); }
 		if (strlen($pm_value) && is_array($pa_item['settings']['original_values'])) {
 			if (($vn_index = array_search(trim(mb_strtolower($pm_value)), $pa_item['settings']['original_values'])) !== false) {
 				$vs_replaced_display_value = $vs_replaced_value = $pa_item['settings']['replacement_values'][$vn_index];
@@ -3076,6 +3084,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pm_value && isset($pa_item['settings']['default']) && strlen($pa_item['settings']['default'])) {
 			$pm_value = $pa_item['settings']['default'];
 		}
+		
 		return $pm_value;
 	}
 	# ------------------------------------------------------
