@@ -154,7 +154,7 @@ class ItemService extends BaseJSONService {
 		
 		$o_service_config = Configuration::load(__CA_APP_DIR__."/conf/services.conf");
 		$va_versions = $o_service_config->get('item_service_media_versions');
-		if(!is_array($va_versions) || !sizeof($va_versions)) { $va_versions = ['publiclarge', 'preview170','original', 'h264_hi']; }
+		if(!is_array($va_versions) || !sizeof($va_versions)) { $va_versions = ['preview170','original']; }
 
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
