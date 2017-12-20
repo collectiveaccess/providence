@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-04-27 13:59-0400\n"
-"PO-Revision-Date: 2017-10-12 16:34-0400\n"
+"PO-Revision-Date: 2017-12-20 11:23-0500\n"
 "Last-Translator: Seth <Seth@collectiveacess.org>\n"
 "Language-Team: French (France) (http://www.transifex.com/collectiveaccess/"
 "collectiveaccess-providence/language/fr_FR/)\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.0.1\n"
+"X-Generator: Poedit 2.0.5\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -1821,7 +1821,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:3005
 msgid "Sort by %1 %2"
-msgstr ""
+msgstr "Trier par %1 %2"
 
 #: app/helpers/displayHelpers.php:3394
 msgid "No media"
@@ -3342,7 +3342,7 @@ msgstr ""
 
 #: app/helpers/printHelpers.php:508
 msgid "Export as"
-msgstr ""
+msgstr "Exporter"
 
 #: app/helpers/searchHelpers.php:885
 msgid "%1 to %2"
@@ -31390,7 +31390,7 @@ msgstr "Déconnexion"
 #: themes/default/views/pageFormat/pageFooter.php:48
 #: themes/default/views/system/login_html.php:73
 msgid "Login"
-msgstr "Identifiant"
+msgstr "se connecter"
 
 #: themes/default/views/pageFormat/pageFooter.php:51
 msgid "is a trademark of"
