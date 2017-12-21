@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-12-20 18:42-0500\n"
-"PO-Revision-Date: 2017-12-20 19:05-0500\n"
+"PO-Revision-Date: 2017-12-20 19:07-0500\n"
 "Last-Translator: Seth <Seth@collectiveacess.org>\n"
 "Language-Team: French (France) (http://www.transifex.com/collectiveaccess/"
 "collectiveaccess-providence/language/fr_FR/)\n"
@@ -842,7 +842,7 @@ msgstr "États associés"
 
 #: app/conf/local/browse.conf:256
 msgid "Condition ratings"
-msgstr ""
+msgstr "États associés"
 
 #: app/conf/local/browse.conf:264 app/conf/local/browse.conf:265
 msgid "AAT"
