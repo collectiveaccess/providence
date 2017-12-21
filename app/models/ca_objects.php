@@ -2234,7 +2234,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$va_info['user_id'] = $va_is_out['user_id'];
 			$va_info['checkout_date'] = $t_checkout->get('checkout_date', array('timeOmit' => true));
 			$va_info['checkout_notes'] = $t_checkout->get('checkout_notes');
-			$va_info['due_date'] = $t_checkout->get('checkout_date', array('timeOmit' => true));
+			$va_info['due_date'] = $t_checkout->get('due_date', array('timeOmit' => true));
 			$va_info['user_name'] = $t_checkout->get('ca_users.fname').' '.$t_checkout->get('ca_users.lname').(($vs_email = $t_checkout->get('ca_users.email')) ? " ({$vs_email})" : '');
 		} elseif ($vb_is_reserved) {
 			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
