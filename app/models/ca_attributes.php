@@ -331,6 +331,7 @@ class ca_attributes extends BaseModel {
 	 *
 	 */
 	public function editAttribute($pa_values, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 		global $g_ui_locale_id;
 		
 		if (!$this->getPrimaryKey()) { return null; }
