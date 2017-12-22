@@ -7,11 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
-<<<<<<< HEAD
- * Copyright 2008-2015 Whirl-i-Gig
-=======
- * Copyright 2008-2016 Whirl-i-Gig
->>>>>>> dev/iiif
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,7 +89,8 @@
 			}
 			</style>
 			<![endif]-->
-		<!-- super fish end menus -->
+		<!-- super fish end menus -->	
+        <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 	</head>	
 	<body>
 		<div align="center">

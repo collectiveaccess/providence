@@ -222,6 +222,19 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Replacement values'),
 			'description' => _t('Return-separated list of CollectiveAccess list item idnos that correspond to the mapped values from the original data source.  For example sound recording (entered in the Original values column) maps to audio_digital, which is entered here in the Replacement values column.')
 		);
+		$va_settings['filterEmptyValues'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Filter empty values'),
+			'description' => _t('Remove empty values from values before attempting to import.')
+		);
 		$va_settings['skipIfEmpty'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

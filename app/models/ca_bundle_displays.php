@@ -2529,8 +2529,7 @@ if (!$pb_omit_editing_info) {
 				);
 			}
 			
-			if (method_exists($t_model, 'getLabelTableInstance') && !(($ps_tablename === 'ca_objects') && ($this->getAppConfig()->get('ca_objects_dont_use_labels')))) {
-				$t_label = $t_model->getLabelTableInstance();
+			if (method_exists($t_model, 'getLabelTableInstance') && ($t_label = $t_model->getLabelTableInstance()) && !(($ps_tablename === 'ca_objects') && ($this->getAppConfig()->get('ca_objects_dont_use_labels')))) {
 				$va_display_list[$ps_tablename.'.preferred_labels'] = array(
 					'placement_id' => 				$ps_tablename.'.preferred_labels',
 					'bundle_name' => 				$ps_tablename.'.preferred_labels',
@@ -2550,8 +2549,8 @@ if (!$pb_omit_editing_info) {
 			$va_sortable_elements = ca_metadata_elements::getSortableElements($t_model->tableName());
 			$va_attribute_list = array_flip($t_model->getApplicableElementCodes($pn_type_id, false, false));
 			$t_label = $t_model->getLabelTableInstance();
-			$vs_label_table_name = $t_label->tableName();
-			$vs_label_display_field = $t_label->getDisplayField();
+			$vs_label_table_name = $t_label ? $t_label->tableName() : null;
+			$vs_label_display_field = $t_label ? $t_label->getDisplayField() : null;
 			foreach($va_display_list as $vn_i => $va_display_item) {
 				$va_tmp = explode('.', $va_display_item['bundle_name']);
 				
