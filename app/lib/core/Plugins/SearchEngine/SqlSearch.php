@@ -927,8 +927,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vn_direct_sql_target_table_num = $va_access_point_info['table_num'];
 							
 								$vs_raw_term = (string)$o_term->text;
-								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
-								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
+								$va_terms = $this->_tokenize($vs_raw_term, true);
 								
 								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['._t('BLANK').']')) {
 									$t_ap = $this->opo_datamodel->getInstanceByTableNum($va_access_point_info['table_num'], true);
@@ -951,7 +950,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_fld_num = $va_access_point_info['field_num'];
 								}
 							
-								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);
 								$vb_has_wildcard = (bool)(preg_match('!\*$!', $vs_raw_term));
 								$vb_output_term = false;
 								foreach($va_terms as $vs_term) {

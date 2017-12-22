@@ -1488,8 +1488,8 @@
 															(
 																(ca_attribute_values.value_decimal1 <= ?) AND
 																(ca_attribute_values.value_decimal2 >= ?) AND
-																(ca_attribute_values.value_decimal1 <> ".TEP_START_OF_UNIVERSE.") AND
-																(ca_attribute_values.value_decimal2 <> ".TEP_END_OF_UNIVERSE.") 
+																(ca_attribute_values.value_decimal1 <> ".TEP_START_OF_UNIVERSE.".0000000000) AND
+																(ca_attribute_values.value_decimal2 <> ".TEP_END_OF_UNIVERSE.".1231235959) 
 															)
 															OR
 															(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
@@ -3051,21 +3051,24 @@
 							}
 							$vs_sort_label = trim($qr_res->get($vs_label_sort_field));
 							
-							if (isset($va_unique_values[$vs_label])) { continue; }
+							//if (isset($va_unique_values[$vs_label])) { continue; }
 							$va_unique_values[$vs_label] = true;
-
-							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
-								'id' => $qr_res->get($vs_item_pk),
-								'parent_id' => $vn_parent_id,
-								'label' => $vs_label,
-								'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label),
-								'content_count' => $qr_res->get('_count')
-							));
+                            $vs_label_key = strtolower($vs_label);
+                            if (!isset($va_values[$vs_label_key][$qr_res->get('locale_id')])) {
+                                $va_values[$vs_label_key][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
+                                    'id' => $qr_res->get($vs_item_pk),
+                                    'parent_id' => $vn_parent_id,
+                                    'label' => $vs_label,
+                                    'sort_label' =>  mb_strtolower($vs_sort_label ? $vs_sort_label :  $vs_label),
+                                    'content_count' => $qr_res->get('_count')
+                                ));
+                            } else {
+                                $va_values[$vs_label_key][$qr_res->get('locale_id')]['content_count'] += (int)$qr_res->get('_count');
+                            }
 							if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 								$vb_single_value_is_present = true;
 							}
 						}
-
 
 						if ($vs_parent_fld) {
 							foreach($va_values as $vn_id => $va_values_by_locale) {
@@ -3080,7 +3083,7 @@
 						}
 
 						$va_values = caExtractValuesByUserLocale($va_values);
-						return $va_values;
+						return array_values($va_values);
 					}
 					break;
 				# -----------------------------------------------------
@@ -4614,11 +4617,16 @@
 
 
 									if (is_numeric($vs_normalized_value) && (int)$vs_normalized_value === 0) { continue; }		// don't include year=0
-									$va_values[$vn_sort_value][$vs_normalized_value] = array(
-										'id' => $vs_normalized_value,
-										'label' => $vs_normalized_value,
-										'content_count' => $qr_res->get('_count')
-									);
+									
+									if (!isset($va_values[$vn_sort_value][$vs_normalized_value])) {
+                                        $va_values[$vn_sort_value][$vs_normalized_value] = array(
+                                            'id' => $vs_normalized_value,
+                                            'label' => $vs_normalized_value,
+                                            'content_count' => (int)$qr_res->get('_count')
+                                        );
+                                    } else {
+                                         $va_values[$vn_sort_value][$vs_normalized_value]['content_count'] += $qr_res->get('_count');
+                                    }
 									if (!is_null($vs_single_value) && ($vs_normalized_value == $vs_single_value)) {
 										$vb_single_value_is_present = true;
 									}
@@ -4644,11 +4652,15 @@
 								}
 							}
 							if ($vb_unknown_is_set && (sizeof($va_values) > 0)) {
-								$va_values['999999999'][_t('Date unknown')] = array(
-									'id' => 'null',
-									'label' => _t('Date unknown'),
-									'content_count' => $qr_res->numRows()
-								);
+							    if(!isset($va_values['999999999'][_t('Date unknown')])) { 
+                                    $va_values['999999999'][_t('Date unknown')] = array(
+                                        'id' => 'null',
+                                        'label' => _t('Date unknown'),
+                                        'content_count' => $qr_res->numRows()
+                                    );
+                                } else {
+                                     $va_values['999999999'][_t('Date unknown')]['content_count'] += (int)$qr_res->numRows();
+                                }
 							}
 
 							if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
@@ -4730,11 +4742,15 @@
 									if ($va_criteria[$vs_normalized_value]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 
 									if (is_numeric($vs_normalized_value) && (int)$vs_normalized_value === 0) { continue; }		// don't include year=0
-									$va_values[$vn_sort_value][$vs_normalized_value] = array(
-										'id' => $vs_normalized_value,
-										'label' => $vs_normalized_value,
-										'content_count' => $qr_res->get('_count')
-									);
+									if(!isset($va_values[$vn_sort_value][$vs_normalized_value])) {
+                                        $va_values[$vn_sort_value][$vs_normalized_value] = array(
+                                            'id' => $vs_normalized_value,
+                                            'label' => $vs_normalized_value,
+                                            'content_count' => $qr_res->get('_count')
+                                        );
+                                    } else {
+                                        $va_values[$vn_sort_value][$vs_normalized_value]['content_count'] += (int)$qr_res->get('_count');
+                                    }
 									if (!is_null($vs_single_value) && ($vs_normalized_value == $vs_single_value)) {
 										$vb_single_value_is_present = true;
 									}

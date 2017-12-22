@@ -58,6 +58,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$va_default_locales = $o_config->getList('locale_defaults');
 		
 		$va_preferred_locales = array();
+		$va_similar_locales = [];
 		if ($ps_item_locale) {
 			// if item locale is passed as locale_id we need to convert it to a code
 			if (is_numeric($ps_item_locale)) {
@@ -71,6 +72,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			if ($ps_item_locale) {
 				$va_preferred_locales[$ps_item_locale] = true;
 			}
+			$va_similar_locales = ca_locales::localesForLanguage($ps_item_locale, ['codesOnly' => true]);
 		}
 		
 		if (is_array($pa_preferred_locales)) {
@@ -82,17 +84,24 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$va_fallback_locales = array();
 		if (is_array($va_default_locales)) {
 			foreach($va_default_locales as $vs_fallback_locale) {
+			    $va_similar_locales = array_merge($va_similar_locales, ca_locales::localesForLanguage($vs_fallback_locale, ['codesOnly' => true]));
 				if (!isset($va_preferred_locales[$vs_fallback_locale]) || !$va_preferred_locales[$vs_fallback_locale]) {
 					$va_fallback_locales[$vs_fallback_locale] = true;
 				}
 			}
 		}
+		// add locales with same language
+		foreach($va_similar_locales as $vs_similar_locale) {
+		    $va_fallback_locales[$vs_similar_locale] = true;
+		}
+		
 		if ($g_ui_locale) {
 			if (!isset($va_preferred_locales[$g_ui_locale]) || !$va_preferred_locales[$g_ui_locale]) {
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
 		}
-
+		$va_fallback_locales = array_filter($va_fallback_locales, function($v, $k) use ($ps_item_locale, $va_fallback_locales, $va_preferred_locales) { return !isset($va_preferred_locales[$k]) && ($k !== $ps_item_locale); }, ARRAY_FILTER_USE_BOTH);
+		
 		$va_rules = array(
 			'preferred' => $va_preferred_locales,	/* all of these locales will display if available */
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
