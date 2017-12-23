@@ -615,13 +615,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									SELECT mfs.row_id, SUM(mfs.boost), mfs.field_container_id
 									FROM {$ps_dest_table} mfs
 									INNER JOIN ca_sql_search_temp_{$pn_level} AS ftmp1 ON ftmp1.row_id = mfs.row_id
-									GROUP BY mfs.row_id
+									GROUP BY mfs.row_id, mfs.field_container_id
 								";
 								$qr_res = $this->opo_db->query($vs_sql);
 								
 								$qr_res = $this->opo_db->query("TRUNCATE TABLE {$ps_dest_table}");
 								
-								$qr_res = $this->opo_db->query("INSERT INTO {$ps_dest_table} SELECT row_id, boost FROM {$ps_dest_table}_acc");
+								$qr_res = $this->opo_db->query("INSERT INTO {$ps_dest_table} SELECT row_id, boost, field_container_id FROM {$ps_dest_table}_acc");
 								$this->_dropTempTable("{$ps_dest_table}_acc");
 							} 
 							break;
@@ -641,7 +641,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								INSERT IGNORE INTO {$ps_dest_table}
 								SELECT row_id, SUM(boost), field_container_id
 								FROM ca_sql_search_temp_{$pn_level}
-								GROUP BY row_id
+								GROUP BY row_id, field_container_id
 							";
 							$qr_res = $this->opo_db->query($vs_sql);
 							break;
@@ -928,7 +928,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vn_direct_sql_target_table_num = $va_access_point_info['table_num'];
 							
 								$vs_raw_term = (string)$o_term->text;
-								$va_terms = $this->_tokenize($vs_raw_term, true);
+								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
+								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
 								
 								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['._t('BLANK').']')) {
 									$t_ap = $this->opo_datamodel->getInstanceByTableNum($va_access_point_info['table_num'], true);
@@ -951,6 +952,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_fld_num = $va_access_point_info['field_num'];
 								}
 							
+								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);
 								$vb_has_wildcard = (bool)(preg_match('!\*$!', $vs_raw_term));
 								$vb_output_term = false;
 								foreach($va_terms as $vs_term) {
@@ -1107,7 +1109,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	$vs_direct_sql_query = "
-																		SELECT ca.row_id, 1, ca.attribute_id
+																		SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 																		FROM ca_attribute_values cav
 																		INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																		^JOIN
@@ -1133,7 +1135,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	$vs_direct_sql_query = "
-																		SELECT ca.row_id, 1, ca.attribute_id
+																		SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 																		FROM ca_attribute_values cav
 																		INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																		^JOIN
@@ -1156,7 +1158,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	$vs_direct_sql_query = "
-																		SELECT ca.row_id, 1, ca.attribute_id
+																		SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 																		FROM ca_attribute_values cav
 																		INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																		^JOIN
@@ -1174,7 +1176,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	$vs_direct_sql_query = "
-																		SELECT ca.row_id, 1, ca.attribute_id
+																		SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 																		FROM ca_attribute_values cav
 																		INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																		^JOIN
@@ -1206,7 +1208,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														}
 														if ($va_coords = caParseGISSearch(join(' ', $va_gis_terms))) {
 															$vs_direct_sql_query = "
-																SELECT ca.row_id, 1, ca.attribute_id
+																SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 																FROM ca_attribute_values cav
 																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																^JOIN
@@ -1228,7 +1230,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
 													
 														$vs_direct_sql_query = "
-															SELECT ca.row_id, 1, ca.attribute_id
+															SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 															FROM ca_attribute_values cav
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
@@ -1264,7 +1266,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														}
 
 														$vs_direct_sql_query = "
-															SELECT ca.row_id, 1, ca.attribute_id
+															SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 															FROM ca_attribute_values cav
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
@@ -1299,7 +1301,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														}
 
 														$vs_direct_sql_query = "
-															SELECT ca.row_id, 1, ca.attribute_id
+															SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 															FROM ca_attribute_values cav
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
@@ -1317,7 +1319,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														$vn_timecode = $va_parsed_value['value_decimal1'];
 													
 														$vs_direct_sql_query = "
-															SELECT ca.row_id, 1, ca.attribute_id
+															SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 															FROM ca_attribute_values cav
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
@@ -1331,7 +1333,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														break;
 													case __CA_ATTRIBUTE_VALUE_INTEGER__:
 														$vs_direct_sql_query = "
-															SELECT ca.row_id, 1, ca.attribute_id
+															SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 															FROM ca_attribute_values cav
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
@@ -1345,7 +1347,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														break;
 													case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 														$vs_direct_sql_query = "
-															SELECT ca.row_id, 1, ca.attribute_id
+															SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 															FROM ca_attribute_values cav
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
@@ -1600,7 +1602,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									swi.table_num = ?
 									{$vs_rel_type_id_sql}
 									".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-								GROUP BY swi.row_id
+								GROUP BY swi.row_id, swi.field_container_id
 							";
 							$pa_direct_sql_query_params = array((int)$pn_subject_tablenum);
 						}
@@ -1642,7 +1644,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										swi.table_num = ?
 										{$vs_rel_type_id_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-									GROUP BY swi.row_id
+									GROUP BY swi.row_id, swi.field_container_id
 								";
 								
 								if (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) {
@@ -1734,7 +1736,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										{$vs_rel_type_id_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
 									GROUP BY
-										swi.row_id
+										swi.row_id, swi.field_container_id
 								";
 	
 								if ($this->debug) { Debug::msg('OR '.$vs_sql); }
