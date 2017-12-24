@@ -735,6 +735,8 @@
 							$va_query_elements[$vs_element][] = "(".$va_values['_fieldlist_field'][$vn_i].":".$pa_form_values['_fieldlist_value'][$vn_i].")";
 							break;
 						default:
+						    $va_tmp = explode('.', $vs_element);
+						    if ((sizeof($va_tmp) > 2) && ($va_tmp[1] == 'related')) { unset($va_tmp[1]); $vs_element = join('.', $va_tmp); }
 							$va_query_elements[$vs_element][] = "({$vs_element}:{$vs_query_element})";
 							break;
 					}
@@ -788,6 +790,9 @@
 				}
 			}
 			$va_fld = explode(".", $vs_element);
+			if ((sizeof($va_fld) > 2) && ($va_fld[1] == 'related')) {
+			    unset($va_fld[1]); $vs_element = join('.', $va_fld); $va_fld = array_values($va_fld);
+			}
 			$t_table = $o_dm->getInstanceByTableName($va_fld[0], true);
 		
 		// TODO: need universal way to convert item_ids in attributes and intrinsics to display text
@@ -796,6 +801,9 @@
 					case 'type_id':
 						$va_values = array($t_table->getTypeName($pa_form_values[$vs_dotless_element][0]));
 						break;
+					case $t_table->primaryKey():
+					    $va_display_string[] = join(", ", $t_table->getPreferredDisplayLabelsForIDs($pa_form_values[$vs_dotless_element]));
+					    break(2);
 					default:
 						$va_values = $pa_form_values[$vs_dotless_element];
 						break;
