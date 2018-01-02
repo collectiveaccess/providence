@@ -2965,26 +2965,26 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 						$vs_content = str_replace($va_l['directive'], $va_l['content'], $vs_content);
 					}
 				}
-				$va_links[] = $vs_content;
+				$va_links[$vn_i] = $vs_content;
 			} else {
 				if (isset($pa_options['requireLinkTags']) && $pa_options['requireLinkTags']) { 
-					$va_links[] = $vs_text;
+					$va_links[$vn_i] = $vs_text;
 					continue;
 				}
 				if ($vb_can_handle_target) {
 					$va_params = array('request' => $g_request, 'content' => $vs_text, 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
 					$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);
-					$va_links[]  = $va_params['tag'];
+					$va_links[$vn_i]  = $va_params['tag'];
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()))) ? $vs_link : $vs_text;
+							$va_links[$vn_i] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()))) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
-							$va_links[] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
+							$va_links[$vn_i] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
 							break;
 						default:
-							$va_links[] = $vs_text;
+							$va_links[$vn_i] = $vs_text;
 							break;
 					}
 				}

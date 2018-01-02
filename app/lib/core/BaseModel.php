@@ -7817,8 +7817,10 @@ class BaseModel extends BaseObject {
 		
 		$va_hierarchy_data = array();
 		
-		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('includeBlankValuesInArray' => true, 'returnAsArray'=> true)));
+		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('indexWithIDs' => true, 'includeBlankValuesInArray' => true, 'returnAsArray'=> true)));
 		
+		$va_ids = array_keys($va_vals);
+		$va_vals = array_values($va_vals);
 		$pa_sort = caGetOption('sort', $pa_options, null);
 		if (!is_array($pa_sort) && $pa_sort) { $pa_sort = explode(";", $pa_sort); }
 		
@@ -12183,7 +12185,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		parent::__destruct();
 	}
-	# --------------------------------------------------------------------------------------------
+	# ------------------------------------------------s--------------------------------------------
 }
 
 // includes for which BaseModel must already be defined
