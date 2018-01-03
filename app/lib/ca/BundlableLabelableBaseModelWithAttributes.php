@@ -6017,8 +6017,6 @@ if (!$vb_batch) {
 			
 			$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			
-			
-			
 			if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && !$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_disable_object_collection_idno_inheritance') && $pa_options['request'] && ($vn_collection_id = $pa_options['request']->getParameter('collection_id', pInteger))) {
 				// Parent will be set to collection
 				$t_coll = new ca_collections($vn_collection_id);
@@ -6027,7 +6025,7 @@ if (!$vb_batch) {
 					$this->opo_idno_plugin_instance->isChild(true, $t_coll->get('idno'));
 					if (!$this->opo_idno_plugin_instance->formatHas('PARENT')) { $this->set($vs_idno_fld, $t_coll->get('idno')); }
 				}
-			} elseif ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { 
+			} elseif ($vn_parent_id = $this->get($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { 
 				// Parent will be set
 				$t_parent = $this->getAppDatamodel()->getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
@@ -6035,7 +6033,12 @@ if (!$vb_batch) {
 				if ($t_parent->load($vn_parent_id)) {
 					$this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
 					if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
-						$this->set($vs_idno_fld, $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true));
+						$this->set($vs_idno_fld, 
+						    ($t_parent->get($vs_parent_id_fld)) ? 
+						        $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
+						        :
+						        ''
+						);
 					}
 				}
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
