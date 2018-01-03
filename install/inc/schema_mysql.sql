@@ -6288,13 +6288,12 @@ create table ca_sql_search_word_index (
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
   field_num varchar(20) not null default '',
-  field_parent_num varchar(20) not null default '',
+  field_container_id int unsigned null,  
   field_row_id int(10) unsigned not null,
   rel_type_id smallint unsigned not null default 0,
   word_id int(10) unsigned not null,
   boost tinyint unsigned not null default 1,
   access tinyint unsigned not null default 1,
-  
   primary key (index_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -6307,9 +6306,8 @@ create index i_field_num on ca_sql_search_word_index(field_num);
 CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, row_id);
 CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
 CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost);
-CREATE index i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_parent_num, row_id, access, boost);
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
-
+CREATE index i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, row_id, access, boost);
 
 /*==========================================================================*/
 create table ca_sql_search_ngrams (

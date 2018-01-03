@@ -44,9 +44,9 @@
 			$vs_and = "";
 		}
 		if ($vn_count == 1) {
-			$va_counts[] = $vs_and."<b>".$vn_count.'</b> '._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
+			$va_counts[] = $vs_and."<b>".$vn_count.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
 		} else {
-			$va_counts[] = $vs_and."<b>".$vn_count.'</b> '._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
+			$va_counts[] = $vs_and."<b>".$vn_count.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
 		}
 		$i++;
 	}

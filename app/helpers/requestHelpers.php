@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,17 @@
 	function caUseIdentifiersInUrls() {
 		$o_config = Configuration::load();
 		return (bool)$o_config->get('use_identifiers_in_urls');
+	}
+	# --------------------------------------------------------------------------------------------
+	 /**
+	  * Return true if system is configured to alternate identifers (a metadata element) rather than internal numeric CA primary keys
+	  * in urls when referring to a specific record
+	  *
+	  * @return bool
+	  */
+	function caUseAltIdentifierInUrls($ps_table) {
+		$o_config = Configuration::load();
+		return (bool)$o_config->get('use_alternate_identifiers_in_urls_for_'.$ps_table) ? $o_config->get('use_alternate_identifiers_in_urls_for_'.$ps_table) : false;
 	}
 	# --------------------------------------------------------------------------------------------
 	 /**
