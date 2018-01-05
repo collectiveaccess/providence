@@ -2295,7 +2295,14 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					//
 					if (is_array($va_history = $t_object->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
 						$va_current_location = array_shift(array_shift($va_history));
-
+                        
+                        $va_path_components = caGetOption('pathComponents', $pa_options, null);
+                        if (is_array($va_path_components) && $va_path_components['subfield_name']) {
+                            $o_dm = Datamodel::load();
+                            if (($t_loc = $o_dm->getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
+                                return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
+                            }
+                        } 
 						return $va_current_location['display'];
 					}
 				} elseif (method_exists($this, "getLastLocationForDisplay")) {
