@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -305,6 +305,8 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
 				)
 			);
+			
+		$vs_element .= " <a href='#' class='caGeoNamesServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_geonames_details'>"._t("More &rsaquo;")."</a>";
 
 		$vs_element .= '</div>';
 
@@ -320,6 +322,16 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 							}
 						}
 					).click(function() { this.select(); });
+					
+					if ('{{".$pa_element_info['element_id']."}}') {
+                        var re = /\[id:([^\]]+)\]/; 
+                        var r = re.exec('{{".$pa_element_info['element_id']."}}');
+                        var geoname_id = (r) ? r[1] : null;
+                        
+                        if (geoname_id) {
+                            jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').attr('href', 'http://geonames.org/' + geoname_id);
+                        }
+                    }
 				});
 			</script>
 		";
