@@ -2219,8 +2219,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				//print_r($va_content_tree);
-				//die("END\n\n");
+				print_r($va_content_tree);
+				die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -3029,7 +3029,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
 				foreach($vm_value as $vs_k => $vs_v) {
 					if (is_array($vs_v)) { continue; }	// skip odd mappings that return arrays of arrays
-					$vs_v = stripslashes($vs_v);
+					//$vs_v = stripslashes($vs_v);
+					$vs_v = str_replace('\\\\', '\\', $vs_v);
 					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item, $pa_options);
 				}
 				if ($pb_return_as_array) {
