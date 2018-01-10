@@ -1099,14 +1099,18 @@
 				if($t_instance->hasField('media') && ($t_instance->getFieldInfo('media', 'FIELD_TYPE') == FT_MEDIA) && isset($pa_values['media']) && $pa_values['media']) {
 					if(is_array($pa_values['media'])) { $pa_values['media'] = array_shift($pa_values['media']); }
 					if (($pb_match_media_without_ext) && !isURL($pa_values['media']) && !file_exists($pa_values['media'])) {
-						$vs_dirname = pathinfo($pa_values['media'], PATHINFO_DIRNAME);
+						$vs_dirname = trim(pathinfo(escapeshellcmd($pa_values['media']), PATHINFO_DIRNAME));
 						$vs_filename = preg_replace('!\.[A-Za-z0-9]{1,4}$!', '', pathinfo($pa_values['media'], PATHINFO_BASENAME));
 						
 						$vs_original_path = $pa_values['media'];
 						
 						$pa_values['media'] = null;
 						
-						$va_files_in_dir = caGetDirectoryContentsAsList($vs_dirname, true, false, false, false);	
+				        $o_config = Configuration::load();
+						$vs_import_dir = $o_config->get('batch_media_import_root_directory');
+						$vb_allow_any_directory = (bool)$o_config->get('allow_import_of_media_from_any_directory');
+						
+						$va_files_in_dir = caGetDirectoryContentsAsList(($vb_allow_any_directory && $vs_dirname) ? $vs_dirname : $vs_import_dir, true, false, false, false);	
 						foreach($va_files_in_dir as $vs_filepath) {
 							if ($o_log) { $o_log->logDebug(_t("Trying media %1 in place of %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
 							if (pathinfo($vs_filepath, PATHINFO_FILENAME) == $vs_filename) {
