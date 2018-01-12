@@ -36,7 +36,7 @@ if(!$vs_file){
 	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
 	header('Content-Disposition: attachment; filename="'.$vs_filename.'"');
 	header('Content-Transfer-Encoding: binary');
-	print $vs_file."\n";
+	
 	set_time_limit(0);
 	$o_fp = @fopen($vs_file,"rb");
 	while(is_resource($o_fp) && !feof($o_fp)) {

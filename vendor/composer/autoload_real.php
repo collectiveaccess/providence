@@ -25,7 +25,7 @@ class ComposerAutoloaderInit0d4e08d2dc47746bf315094e7407972e
 
         $includePaths = require __DIR__ . '/include_paths.php';
         array_push($includePaths, get_include_path());
-        set_include_path(join(PATH_SEPARATOR, $includePaths));
+        set_include_path(implode(PATH_SEPARATOR, $includePaths));
 
         $useStaticLoader = PHP_VERSION_ID >= 50600 && !defined('HHVM_VERSION') && (!function_exists('zend_loader_file_encoded') || !zend_loader_file_encoded());
         if ($useStaticLoader) {

@@ -84,7 +84,7 @@
 		 * @return string - expression or null if no expression is defined
 		 */
 		public function getSearchExpression($pb_from_context_only=false) {
-			if(!$pb_from_context_only && ($ps_search = urldecode($this->opo_request->getParameter('search', pString))) != ''){
+			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags(html_entity_decode($this->opo_request->getParameter('search', pString)))))) != ''){
 				// search specified by request parameter
 				if ($ps_search != $this->getContextValue('expression')) {
 					$this->setContextValue('expression', $ps_search);
@@ -113,7 +113,7 @@
 		public function searchExpressionHasChanged($pb_from_context_only=false) {
 			if (!is_null($this->opb_search_expression_has_changed)) { return $this->opb_search_expression_has_changed; }
 			 
-			if(!$pb_from_context_only && ($ps_search = urldecode($this->opo_request->getParameter('search', pString))) != ''){
+			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags($this->opo_request->getParameter('search', pString))))) != ''){
 				// search specified by request parameter
 				if ($ps_search != $this->getContextValue('expression')) {
 					return $this->opb_search_expression_has_changed = true;
@@ -296,7 +296,7 @@
 		 * @return string - First letter of results to display on results page, or null if no value is set
 		 */
 		public function getLetterBarPage() {
-			if (!($ps_letter_bar_page = $this->opo_request->getParameter('l', pString))) {
+			if (!($ps_letter_bar_page = htmlspecialchars(strip_tags($this->opo_request->getParameter('l', pString))))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['letter_bar_page'] ? $va_context['letter_bar_page'] : null;
 				}
@@ -331,7 +331,7 @@
 		 * @return string - the view to use
 		 */
 		public function getCurrentView() {
-			if (!($ps_view = $this->opo_request->getParameter('view', pString))) {
+			if (!($ps_view = htmlspecialchars($this->opo_request->getParameter('view', pString)))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['view'] ? $va_context['view'] : null;
 				}
@@ -366,7 +366,7 @@
 		 * @return string - the field (or fields in a comma separated list) to sort by
 		 */
 		public function getCurrentSort() {
-			if (!($ps_sort = $this->opo_request->getParameter('sort', pString))) {
+			if (!($ps_sort = htmlspecialchars($this->opo_request->getParameter('sort', pString)))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['sort'] ? $va_context['sort'] : null;
 				}
@@ -402,7 +402,7 @@
 		 * @return string - the field (or fields in a comma separated list) to refine the primary sort by
 		 */
 		public function getCurrentSecondarySort() {
-			if (!($ps_secondary_sort = $this->opo_request->getParameter('secondarySort', pString))) {
+			if (!($ps_secondary_sort = htmlspecialchars($this->opo_request->getParameter('secondarySort', pString)))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['secondarySort'] ? $va_context['secondarySort'] : null;
 				}
@@ -437,7 +437,7 @@
 		 * @return string - the sort direction
 		 */
 		public function getCurrentSortDirection() {
-			if (!($ps_sort_direction = $this->opo_request->getParameter('direction', pString))) {
+			if (!($ps_sort_direction = htmlspecialchars($this->opo_request->getParameter('direction', pString)))) {
  				if ($va_context = $this->getContext()) {
 					return in_array($va_context['sort_direction'], array('asc', 'desc')) ? $va_context['sort_direction'] : 'asc';
 				}
@@ -476,7 +476,7 @@
 		 */
 		public function getTypeRestriction(&$pb_type_restriction_has_changed) {
 			$pb_type_restriction_has_changed = false;
-			if (!($pn_type_id = $this->opo_request->getParameter('type_id', pString))) {
+			if (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString))))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
@@ -517,7 +517,7 @@
 		 * @return int Display_id of ca_bundle_displays row to use
 		 */
 		public function getCurrentBundleDisplay($pn_type_id=null) {
-			if (!strlen($pn_display_id = $this->opo_request->getParameter('display_id', pString))) { 
+			if (!strlen($pn_display_id = htmlspecialchars($this->opo_request->getParameter('display_id', pString)))) { 
  				if ($va_context = $this->getContext()) {
 					$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
 				}
@@ -1152,4 +1152,3 @@
 		}
 		# ------------------------------------------------------------------
 	}
-?>

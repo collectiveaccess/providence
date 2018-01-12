@@ -134,6 +134,7 @@ class DisplayTemplateParser {
 	 *		aggregateUnique = Remove duplicate values. If set then array of evaluated templates may not correspond one-to-one with the original list of row_ids set in $pa_row_ids. [Default is false]
 	 *      unitStart = Offset to start evaluating templating iterations at (there may be more than one iteration when relativeToContainer is set). [Default is 0]
 	 *      unitLength = Maximum number of templating iteration to evaluate. If null, no limit is enforced (there may be more than one iteration when relativeToContainer is set). [Default is null]
+	 *      indexWithIDs = Return array with indexes set to row_ids. [Default is false; use numeric indices starting with zero]
 	 *
 	 * @return mixed Output of processed templates
 	 *
@@ -162,6 +163,8 @@ class DisplayTemplateParser {
 			
 			$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 			$pb_include_blanks_for_prefetch = caGetOption('includeBlankValuesInTopLevelForPrefetch', $pa_options, false);
+		
+		    $pb_index_with_ids = caGetOption('indexWithIDs', $pa_options, false);
 		
 		// Bail if no rows or template are set
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids) || !$ps_template) {
@@ -238,7 +241,12 @@ class DisplayTemplateParser {
 					    // noop
 					}
 					
-					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
+					$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
+					if ($pb_index_with_ids) {
+				        $va_proc_templates[$qr_res->get($vs_pk)] = $v;
+				    } else {
+				        $va_proc_templates[] = $v;
+				    }
 				}
 			} else {
 			    $va_val_list = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), $pa_options);
@@ -248,7 +256,12 @@ class DisplayTemplateParser {
 			    } catch (Exception $e) {
 			        // noop
 			    }
-				$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
+				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
+				if ($pb_index_with_ids) {
+					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
+				} else {
+					$va_proc_templates[] = $v;
+				}
 			}
 		}
 		
@@ -431,15 +444,17 @@ class DisplayTemplateParser {
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 		
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
+					
+					if (($vn_limit = ($vn_max > 0) ? $vn_max : $vn_min) == 0) { $vn_limit = 1; }
+					$vn_limit++;
 					foreach($va_codes as $vs_code) {
-						$va_vals = $pr_res->get($vs_code, ['checkAccess' => $pa_check_access, 'returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
-						if (is_array($va_vals)) { 
-							if ($vb_bool == 'AND') {
-								$vm_count += sizeof($va_vals); 
-							} else {
-								$vm_count[$vs_code] = sizeof($va_vals);
-							}
-						}
+						$vn_count = (int)$pr_res->get($vs_code, ['limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
+
+                        if ($vb_bool == 'AND') {
+                            $vm_count += $vn_count;
+                        } else {
+                            $vm_count[$vs_code] = $vn_count; 
+                        }
 					}
 					
 					if ($vb_bool == 'AND') {
@@ -1418,6 +1433,35 @@ class DisplayTemplateParser {
 		$o_doc = str_get_dom($ps_template);	
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 		
+		if ((bool)Configuration::load()->get('omit_repeating_units_for_measurements_in_templates')) {
+            // create map of tags with dimension units to support omission of repeating units
+            // (Eg. rather than "2 in x 5 in x 10 in" output "2 x 5 x 10 in"
+            $va_tags = caGetTemplateTags($ps_template, ['stripOptions' => true]);
+
+            $va_unit_map = [];
+            foreach($va_tags as $vs_tag) {
+                $va_tmp = explode('~', $vs_tag);
+                if (sizeof($va_tmp) < 2) { $va_unit_map[] = null; continue; }
+                $va_cmd = explode(':', $va_tmp[1]);
+                if ($va_cmd[0] != 'units') { $va_unit_map[] = null; continue; }
+            
+                $va_unit_map[] = $va_cmd[1];
+            }
+            $va_emit_unit_map = [];
+            $vs_last_seen_unit = null;
+        
+            for($i=sizeof($va_tags) - 1; $i >= 0; $i--) {
+                $vs_tag = $va_tags[$i];
+                $va_tmp = explode('~', $vs_tag);
+                $va_emit_unit_map[$i] = 0;
+                if (!$pa_values[$va_tmp[0]]) {  continue; }
+            
+                if(!$vs_last_seen_unit || ($va_unit_map[$i] != $vs_last_seen_unit)) { $va_emit_unit_map[$i] = 1; }
+                $vs_last_seen_unit = $va_unit_map[$i];
+            }
+            ksort($va_emit_unit_map);
+            $pa_options['emitUnitMap'] = $va_emit_unit_map;
+        }
 		return DisplayTemplateParser::_processTemplateSubTemplates($o_doc->children, $pa_values, $pa_options);
 	}
 	# -------------------------------------------------------------------
@@ -1430,7 +1474,7 @@ class DisplayTemplateParser {
 	 *
 	 * @return string
 	 */
-	static private function _processTemplateSubTemplates($po_nodes, array $pa_values, array $pa_options=null) {
+	static private function _processTemplateSubTemplates($po_nodes, array $pa_values, array &$pa_options=null) {
 		$pb_is_case = caGetOption('isCase', $pa_options, false, ['castTo' => 'boolean']);
 		$pb_mode = caGetOption('mode', $pa_options, 'present');	// value 'present' or 'not_present'
 		
@@ -1511,10 +1555,14 @@ class DisplayTemplateParser {
 	 *
 	 * @return string Output of processed template
 	 */
-	static public function processSimpleTemplate($ps_template, $pa_values, $pa_options=null) {
+	static public function processSimpleTemplate($ps_template, $pa_values, &$pa_options=null) {
+		if(!isset($pa_options['tagIndex'])) { $pa_options['tagIndex'] = 0; }
+		
 		$ps_prefix = caGetOption('prefix', $pa_options, null);
 		$ps_remove_prefix = caGetOption('removePrefix', $pa_options, null);
 		$pb_quote = caGetOption('quote', $pa_options, false);
+		
+		$pa_emit_unit_map = caGetOption('emitUnitMap', $pa_options, []);
 		
 		$va_tags = caGetTemplateTags($ps_template);
 		
@@ -1534,22 +1582,25 @@ class DisplayTemplateParser {
 				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
 			}
 			
-			if ($t_instance && !isset($pa_values[$vs_tag])) {
+			if ($t_instance && !isset($pa_values[$va_tmp[0]])) {
 				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($va_tmp[0], $pa_options), array_slice($va_tmp, 1));
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
-				if (is_array($vs_val = isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '')) {
+				if (
+				    is_array($vs_val = isset($pa_values[$va_tmp[0]]) ? $pa_values[$va_tmp[0]] : '')
+				) {
 					// If value is an array try to make a string of it
 					$vs_val = join(" ", $vs_val);
 				}
 				
-				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
+				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp, ['omitUnits' => (isset($pa_emit_unit_map[$pa_options['tagIndex']]) && ($pa_emit_unit_map[$pa_options['tagIndex']] === 0))]);
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$vs_tag_proc = preg_quote($vs_tag, '/');
 				$ps_template = preg_replace("/\^(?={$vs_tag_proc}[^A-Za-z0-9]+|{$vs_tag_proc}$){$vs_tag_proc}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
+			$pa_options['tagIndex']++;
 		}
 		return $ps_template;
 	}

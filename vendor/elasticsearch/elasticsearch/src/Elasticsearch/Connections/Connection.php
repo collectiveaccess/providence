@@ -30,9 +30,9 @@ use Psr\Log\LoggerInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Connections
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Connection implements ConnectionInterface
 {
@@ -71,6 +71,9 @@ class Connection implements ConnectionInterface
      * @var array
      */
     protected $connectionParams;
+
+    /** @var  array */
+    protected $headers = [];
 
     /** @var bool  */
     protected $isAlive = false;
@@ -112,6 +115,11 @@ class Connection implements ConnectionInterface
             $connectionParams['client']['curl'][CURLOPT_USERPWD] = $hostDetails['user'].':'.$hostDetails['pass'];
         }
 
+        if (isset($connectionParams['client']['headers']) === true) {
+            $this->headers = $connectionParams['client']['headers'];
+            unset($connectionParams['client']['headers']);
+        }
+
         $host = $hostDetails['host'].':'.$hostDetails['port'];
         $path = null;
         if (isset($hostDetails['path']) === true) {
@@ -147,13 +155,17 @@ class Connection implements ConnectionInterface
             'scheme'      => $this->transportSchema,
             'uri'         => $this->getURI($uri, $params),
             'body'        => $body,
-            'headers'     => [
-                'host'  => [$this->host]
-            ]
-
+            'headers'     => array_merge([
+                'Host'  => [$this->host]
+            ], $this->headers)
         ];
-        $request = array_merge_recursive($request, $this->connectionParams, $options);
 
+        $request = array_replace_recursive($request, $this->connectionParams, $options);
+
+        // RingPHP does not like if client is empty
+        if (empty($request['client'])) {
+            unset($request['client']);
+        }
 
         $handler = $this->handler;
         $future = $handler($request, $this, $transport, $options);
@@ -187,7 +199,6 @@ class Connection implements ConnectionInterface
 
                 if (isset($response['error']) === true) {
                     if ($response['error'] instanceof ConnectException || $response['error'] instanceof RingException) {
-
                         $this->log->warning("Curl exception encountered.");
 
                         $exception = $this->getCurlRetryException($request, $response);
@@ -445,7 +456,7 @@ class Connection implements ConnectionInterface
             ]
         ];
 
-        return $this->performRequest('GET', '/_nodes/_all/clear', null, null, $options);
+        return $this->performRequest('GET', '/_nodes/', null, null, $options);
     }
 
     /**
@@ -492,6 +503,25 @@ class Connection implements ConnectionInterface
     public function getHost()
     {
         return $this->host;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getUserPass()
+    {
+        if (isset($this->connectionParams['client']['curl'][CURLOPT_USERPWD]) === true) {
+            return $this->connectionParams['client']['curl'][CURLOPT_USERPWD];
+        }
+        return null;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getPath()
+    {
+        return $this->path;
     }
 
     /**
@@ -574,8 +604,10 @@ class Connection implements ConnectionInterface
             $exception = new Conflict409Exception($responseBody, $statusCode);
         } elseif ($statusCode === 400 && strpos($responseBody, 'script_lang not supported') !== false) {
             $exception = new ScriptLangNotSupportedException($responseBody. $statusCode);
-        } elseif ($statusCode === 408 ) {
+        } elseif ($statusCode === 408) {
             $exception = new RequestTimeout408Exception($responseBody, $statusCode);
+        } else {
+            $exception = new BadRequest400Exception($responseBody, $statusCode);
         }
 
         $this->logRequestFail(
@@ -620,6 +652,8 @@ class Connection implements ConnectionInterface
             $exception = new NoDocumentsToGetException($exception->getMessage(), $statusCode, $exception);
         } elseif ($statusCode === 500 && strpos($responseBody, 'NoShardAvailableActionException') !== false) {
             $exception = new NoShardAvailableException($exception->getMessage(), $statusCode, $exception);
+        } else {
+            $exception = new ServerErrorResponseException($responseBody, $statusCode);
         }
 
         $this->logRequestFail(
@@ -636,19 +670,22 @@ class Connection implements ConnectionInterface
         throw $exception;
     }
 
-    private function tryDeserialize400Error($response) {
+    private function tryDeserialize400Error($response)
+    {
         return $this->tryDeserializeError($response, 'Elasticsearch\Common\Exceptions\BadRequest400Exception');
     }
 
-    private function tryDeserialize500Error($response) {
+    private function tryDeserialize500Error($response)
+    {
         return $this->tryDeserializeError($response, 'Elasticsearch\Common\Exceptions\ServerErrorResponseException');
     }
 
-    private function tryDeserializeError($response, $errorClass) {
+    private function tryDeserializeError($response, $errorClass)
+    {
         $error = $this->serializer->deserialize($response['body'], $response['transfer_stats']);
         if (is_array($error) === true) {
             // 2.0 structured exceptions
-            if (isset($error['error']['root_cause']) === true) {
+            if (isset($error['error']['reason']) === true) {
 
                 // Try to use root cause first (only grabs the first root cause)
                 $root = $error['error']['root_cause'];
@@ -663,7 +700,6 @@ class Connection implements ConnectionInterface
                 $original = new $errorClass($response['body'], $response['status']);
 
                 return new $errorClass("$type: $cause", $response['status'], $original);
-
             } elseif (isset($error['error']) === true) {
                 // <2.0 semi-structured exceptions
                 $original = new $errorClass($response['body'], $response['status']);
@@ -674,10 +710,9 @@ class Connection implements ConnectionInterface
             // <2.0 "i just blew up" nonstructured exception
             // $error is an array but we don't know the format, reuse the response body instead
             return new $errorClass($response['body'], $response['status']);
-
         }
 
         // <2.0 "i just blew up" nonstructured exception
-        return new $errorClass($error, $response['status']);
+        return new $errorClass($response['body']);
     }
 }

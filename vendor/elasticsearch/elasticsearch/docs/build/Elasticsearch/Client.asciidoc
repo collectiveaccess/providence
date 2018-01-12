@@ -17,25 +17,22 @@ The class defines the following methods:
 * <<Elasticsearch_Clientget_get,`get()`>>
 * <<Elasticsearch_ClientgetSource_getSource,`getSource()`>>
 * <<Elasticsearch_Clientdelete_delete,`delete()`>>
-* <<Elasticsearch_ClientdeleteByQuery_deleteByQuery,`deleteByQuery()`>>
 * <<Elasticsearch_Clientcount_count,`count()`>>
 * <<Elasticsearch_ClientcountPercolate_countPercolate,`countPercolate()`>>
 * <<Elasticsearch_Clientpercolate_percolate,`percolate()`>>
 * <<Elasticsearch_Clientmpercolate_mpercolate,`mpercolate()`>>
 * <<Elasticsearch_Clienttermvectors_termvectors,`termvectors()`>>
-* <<Elasticsearch_Clienttermvector_termvector,`termvector()`>>
 * <<Elasticsearch_Clientmtermvectors_mtermvectors,`mtermvectors()`>>
 * <<Elasticsearch_Clientexists_exists,`exists()`>>
-* <<Elasticsearch_Clientmlt_mlt,`mlt()`>>
 * <<Elasticsearch_Clientmget_mget,`mget()`>>
 * <<Elasticsearch_Clientmsearch_msearch,`msearch()`>>
 * <<Elasticsearch_Clientcreate_create,`create()`>>
 * <<Elasticsearch_Clientbulk_bulk,`bulk()`>>
 * <<Elasticsearch_Clientindex_index,`index()`>>
+* <<Elasticsearch_Clientreindex_reindex,`reindex()`>>
 * <<Elasticsearch_Clientsuggest_suggest,`suggest()`>>
 * <<Elasticsearch_Clientexplain_explain,`explain()`>>
 * <<Elasticsearch_Clientsearch_search,`search()`>>
-* <<Elasticsearch_ClientsearchExists_searchExists,`searchExists()`>>
 * <<Elasticsearch_ClientsearchShards_searchShards,`searchShards()`>>
 * <<Elasticsearch_ClientsearchTemplate_searchTemplate,`searchTemplate()`>>
 * <<Elasticsearch_Clientscroll_scroll,`scroll()`>>
@@ -48,15 +45,15 @@ The class defines the following methods:
 * <<Elasticsearch_ClientdeleteTemplate_deleteTemplate,`deleteTemplate()`>>
 * <<Elasticsearch_ClientputTemplate_putTemplate,`putTemplate()`>>
 * <<Elasticsearch_ClientfieldStats_fieldStats,`fieldStats()`>>
-* <<Elasticsearch_ClientreIndex_reIndex,`reIndex()`>>
-* <<Elasticsearch_ClientupdateByQuery_updateByQuery,`updateByQuery()`>>
 * <<Elasticsearch_ClientrenderSearchTemplate_renderSearchTemplate,`renderSearchTemplate()`>>
 * <<Elasticsearch_Clientindices_indices,`indices()`>>
 * <<Elasticsearch_Clientcluster_cluster,`cluster()`>>
 * <<Elasticsearch_Clientnodes_nodes,`nodes()`>>
 * <<Elasticsearch_Clientsnapshot_snapshot,`snapshot()`>>
 * <<Elasticsearch_Clientcat_cat,`cat()`>>
+* <<Elasticsearch_Clientingest_ingest,`ingest()`>>
 * <<Elasticsearch_Clienttasks_tasks,`tasks()`>>
+* <<Elasticsearch_Client-call-_call,`__call()`>>
 * <<Elasticsearch_ClientextractArgument_extractArgument,`extractArgument()`>>
 
 
@@ -108,22 +105,17 @@ $response = $client->ping($params);
 /*
 $params['id']              = (string) The document ID (Required)
        ['index']           = (string) The name of the index (Required)
-       ['type']            = (string) The type of the document (use `_all` to fetch the first document matching
-the ID across all types) (Required)
+       ['type']            = (string) The type of the document (use `_all` to fetch the first document matching the ID across all types) (Required)
        ['ignore_missing']  = ??
        ['fields']          = (list) A comma-separated list of fields to return in the response
        ['parent']          = (string) The ID of the parent document
-       ['preference']      = (string) Specify the node or shard the operation should be performed on (default:
-random)
+       ['preference']      = (string) Specify the node or shard the operation should be performed on (default: random)
        ['realtime']        = (boolean) Specify whether to perform the operation in realtime or search mode
        ['refresh']         = (boolean) Refresh the shard containing the document before performing the operation
        ['routing']         = (string) Specific routing value
-       ['_source']         = (list) True or false to return the _source field or not, or a list of fields to
-return
+       ['_source']         = (list) True or false to return the _source field or not, or a list of fields to return
        ['_source_exclude'] = (list) A list of fields to exclude from the returned _source field
        ['_source_include'] = (list) A list of fields to extract and return from the _source field
-       ['version']         = (number) Explicit version number for concurrency control
-       ['version_type']    = (enum) Specific version type (internal,external,external_gte,force)
        ['body']  = (array) Request body
 */
 
@@ -144,23 +136,15 @@ $response = $client->get($params);
 [source,php]
 ----
 /*
-$params['id']              = (string) The document ID (Required)
-       ['index']           = (string) The name of the index (Required)
-       ['type']            = (string) The type of the document; use `_all` to fetch the first document matching
-the ID across all types (Required)
-       ['parent']          = (string) The ID of the parent document
-       ['preference']      = (string) Specify the node or shard the operation should be performed on (default:
-random)
-       ['realtime']        = (boolean) Specify whether to perform the operation in realtime or search mode
-       ['refresh']         = (boolean) Refresh the shard containing the document before performing the operation
-       ['routing']         = (string) Specific routing value
-       ['ignore_missing']  = ??
-       ['_source']         = (list) True or false to return the _source field or not, or a list of fields to
-return
-       ['_source_exclude'] = (list) A list of fields to exclude from the returned _source field
-       ['_source_include'] = (list) A list of fields to extract and return from the _source field
-       ['version']         = (number) Explicit version number for concurrency control
-       ['version_type']    = (enum) Specific version type (internal,external,external_gte,force)
+$params['id']             = (string) The document ID (Required)
+       ['index']          = (string) The name of the index (Required)
+       ['type']           = (string) The type of the document (use `_all` to fetch the first document matching the ID across all types) (Required)
+       ['ignore_missing'] = ??
+       ['parent']         = (string) The ID of the parent document
+       ['preference']     = (string) Specify the node or shard the operation should be performed on (default: random)
+       ['realtime']       = (boolean) Specify whether to perform the operation in realtime or search mode
+       ['refresh']        = (boolean) Refresh the shard containing the document before performing the operation
+       ['routing']        = (string) Specific routing value
        ['body']  = (array) Request body
 */
 
@@ -184,14 +168,13 @@ $response = $client->getSource($params);
 $params['id']           = (string) The document ID (Required)
        ['index']        = (string) The name of the index (Required)
        ['type']         = (string) The type of the document (Required)
-       ['consistency']  = (enum) Specific write consistency setting for the operation (one,quorum,all)
+       ['consistency']  = (enum) Specific write consistency setting for the operation
        ['parent']       = (string) ID of parent document
-       ['replication']  = (enum) Specific replication type
        ['refresh']      = (boolean) Refresh the index after performing the operation
+       ['replication']  = (enum) Specific replication type
        ['routing']      = (string) Specific routing value
        ['timeout']      = (time) Explicit operation timeout
-       ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
+       ['version_type'] = (enum) Specific version type
        ['body']  = (array) Request body
 */
 
@@ -206,57 +189,22 @@ $response = $client->delete($params);
 
 
 
-[[Elasticsearch_ClientdeleteByQuery_deleteByQuery]]
-.`deleteByQuery()`
-****
-[source,php]
-----
-/*
-*/
-
-$params = [
-    // ...
-];
-
-$client = ClientBuilder::create()->build();
-$response = $client->deleteByQuery($params);
-----
-****
-
-
-
 [[Elasticsearch_Clientcount_count]]
 .`count()`
 ****
 [source,php]
 ----
 /*
-$params['index']                    = (list) A comma-separated list of indices to restrict the results
-       ['type']                     = (list) A comma-separated list of types to restrict the results
-       ['ignore_unavailable']       = (boolean) Whether specified concrete indices should be ignored when
-unavailable (missing or closed)
-       ['allow_no_indices']         = (boolean) Whether to ignore if a wildcard indices expression resolves into
-no concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']         = (enum) Whether to expand wildcard expression to concrete indices that are
-open, closed or both. (open,closed,none,all) (default: open)
-       ['min_score']                = (number) Include only documents with a specific `_score` value in the
-result
-       ['preference']               = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['routing']                  = (string) Specific routing value
-       ['source']                   = (string) The URL-encoded query definition (instead of using the request body)
-       ['q']                        = (string) Query in the Lucene query string syntax
-       ['analyzer']                 = (string) The analyzer to use for the query string
-       ['analyze_wildcard']         = (boolean) Specify whether wildcard and prefix queries should be analyzed
-(default: false)
-       ['default_operator']         = (enum) The default operator for query string query (AND or OR) (AND,OR)
-(default: OR)
-       ['df']                       = (string) The field to use as default where no field prefix is given in the
-query string
-       ['lenient']                  = (boolean) Specify whether format-based query failures (such as providing
-text to a numeric field) should be ignored
-       ['lowercase_expanded_terms'] = (boolean) Specify whether query terms should be lowercased
-       ['body']                     = A query to restrict the results specified with the Query DSL (optional)
+$params['index']              = (list) A comma-separated list of indices to restrict the results
+       ['type']               = (list) A comma-separated list of types to restrict the results
+       ['min_score']          = (number) Include only documents with a specific `_score` value in the result
+       ['preference']         = (string) Specify the node or shard the operation should be performed on (default: random)
+       ['routing']            = (string) Specific routing value
+       ['source']             = (string) The URL-encoded query definition (instead of using the request body)
+       ['body']               = (array) A query to restrict the results (optional)
+       ['ignore_unavailable'] = (bool) Whether specified concrete indices should be ignored when unavailable (missing or closed)
+       ['allow_no_indices']   = (bool) Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
+       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open, closed or both.
        ['body']  = (array) Request body
 */
 
@@ -277,20 +225,15 @@ $response = $client->count($params);
 [source,php]
 ----
 /*
-$params['index']              = (string) The index of the document being count percolated. (Required)
-       ['type']               = (string) The type of the document being count percolated. (Required)
-       ['id']                 = (string) Substitute the document in the request body with a document that is
-known by the specified id. On top of the id, the index and type parameter will be used to retrieve the document
-from within the cluster. (Required)
-       ['routing']            = (list) A comma-separated list of specific routing values
-       ['preference']         = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['ignore_unavailable'] = (boolean) Whether specified concrete indices should be ignored when unavailable
-(missing or closed)
-       ['allow_no_indices']   = (boolean) Whether to ignore if a wildcard indices expression resolves into no
-concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open,
-closed or both. (open,closed,none,all) (default: open)
+$params['index']              = (list) A comma-separated list of indices to restrict the results
+       ['type']               = (list) A comma-separated list of types to restrict the results
+       ['id']                 = (string) ID of document
+       ['ignore_unavailable'] = (boolean) Whether specified concrete indices should be ignored when unavailable (missing or closed)
+       ['preference']         = (string) Specify the node or shard the operation should be performed on (default: random)
+       ['routing']            = (string) Specific routing value
+       ['allow_no_indices']   = (boolean) Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
+       ['body']               = (array) A query to restrict the results (optional)
+       ['ignore_unavailable'] = (bool) Whether specified concrete indices should be ignored when unavailable (missing or closed)
        ['percolate_index']    = (string) The index to count percolate the document into. Defaults to index.
        ['body']  = (array) Request body
 */
@@ -312,21 +255,10 @@ $response = $client->countPercolate($params);
 [source,php]
 ----
 /*
-$params['index']                = (string) The index of the document being percolated. (Required)
-       ['type']                 = (string) The type of the document being percolated. (Required)
-       ['id']                   = (string) Substitute the document in the request body with a document that is
-known by the specified id. On top of the id, the index and type parameter will be used to retrieve the document
-from within the cluster. (Required)
-       ['routing']              = (list) A comma-separated list of specific routing values
-       ['preference']           = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['ignore_unavailable']   = (boolean) Whether specified concrete indices should be ignored when
-unavailable (missing or closed)
-       ['allow_no_indices']     = (boolean) Whether to ignore if a wildcard indices expression resolves into no
-concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']     = (enum) Whether to expand wildcard expression to concrete indices that are
-open, closed or both. (open,closed,none,all) (default: open)
-       ['percolate_index']      = (string) The index to percolate the document into. Defaults to index.
+$params['index']        = (string) The name of the index with a registered percolator query (Required)
+       ['type']         = (string) The document type (Required)
+       ['prefer_local'] = (boolean) With `true`, specify that a local shard should be used if available, with `false`, use a random shard (default: true)
+       ['body']         = (array) The document (`doc`) to percolate against registered queries; optionally also a `query` to limit the percolation to specific registered queries
        ['body']  = (array) Request body
 */
 
@@ -347,8 +279,11 @@ $response = $client->percolate($params);
 [source,php]
 ----
 /*
-$params['index']              = (string) The index of the document being count percolated to use as default
-       ['type']               = (string) The type of the document being percolated to use as default.
+$params['index']              = (string) Default index for items which don't provide one
+       ['type']               = (string) Default document type for items which don't provide one
+       ['ignore_unavailable'] = (boolean) Whether specified concrete indices should be ignored when unavailable (missing or closed)
+       ['allow_no_indices']   = (boolean) Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
+       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open, closed or both.
        ['body']  = (array) Request body
 */
 
@@ -369,10 +304,14 @@ $response = $client->mpercolate($params);
 [source,php]
 ----
 /*
-$params['index']            = (string) The index in which the document resides. (Required)
-       ['type']             = (string) The type of the document. (Required)
-       ['id']               = (string) The id of the document, when not specified a doc param should be
-supplied.
+$params['index']            = (string) Default index for items which don't provide one
+       ['type']             = (string) Default document type for items which don't provide one
+       ['term_statistics']  = (boolean) Specifies if total term frequency and document frequency should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['field_statistics'] = (boolean) Specifies if document count, sum of document frequencies and sum of total term frequencies should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['fields']           = (list) A comma-separated list of fields to return. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['offsets']          = (boolean) Specifies if term offsets should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['positions']        = (boolean) Specifies if term positions should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['payloads']         = (boolean) Specifies if term payloads should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
        ['body']  = (array) Request body
 */
 
@@ -387,41 +326,21 @@ $response = $client->termvectors($params);
 
 
 
-[[Elasticsearch_Clienttermvector_termvector]]
-.`termvector()`
-****
-[source,php]
-----
-/*
-$params['index']            = (string) Default index for items which don't provide one
-       ['type']             = (string) Default document type for items which don't provide one
-       ['term_statistics']  = (boolean) Specifies if total term frequency and document frequency should be returned. Applies to all returned documents unless otherwise specified in body "params" or "docs"."
-       ['field_statistics'] = (boolean) Specifies if document count, sum of document frequencies and sum of total term frequencies should be returned. Applies to all returned documents unless otherwise specified in body "params" or "docs"."
-       ['fields']           = (list) A comma-separated list of fields to return. Applies to all returned documents unless otherwise specified in body "params" or "docs"."
-       ['offsets']          = (boolean) Specifies if term offsets should be returned. Applies to all returned documents unless otherwise specified in body "params" or "docs"."
-       ['positions']        = (boolean) Specifies if term positions should be returned. Applies to all returned documents unless otherwise specified in body "params" or "docs"."
-       ['payloads']         = (boolean) Specifies if term payloads should be returned. Applies to all returned documents unless otherwise specified in body "params" or "docs".
-       ['body']  = (array) Request body
-*/
-
-$params = [
-    // ...
-];
-
-$client = ClientBuilder::create()->build();
-$response = $client->termvector($params);
-----
-****
-
-
-
 [[Elasticsearch_Clientmtermvectors_mtermvectors]]
 .`mtermvectors()`
 ****
 [source,php]
 ----
 /*
-$params['index']            = (string) The index in which the document resides.
+$params['index']            = (string) Default index for items which don't provide one
+       ['type']             = (string) Default document type for items which don't provide one
+       ['ids']              = (list) A comma-separated list of documents ids. You must define ids as parameter or set \"ids\" or \"docs\" in the request body
+       ['term_statistics']  = (boolean) Specifies if total term frequency and document frequency should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['field_statistics'] = (boolean) Specifies if document count, sum of document frequencies and sum of total term frequencies should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['fields']           = (list) A comma-separated list of fields to return. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['offsets']          = (boolean) Specifies if term offsets should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['positions']        = (boolean) Specifies if term positions should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\"."
+       ['payloads']         = (boolean) Specifies if term payloads should be returned. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
        ['body']  = (array) Request body
 */
 
@@ -444,11 +363,9 @@ $response = $client->mtermvectors($params);
 /*
 $params['id']         = (string) The document ID (Required)
        ['index']      = (string) The name of the index (Required)
-       ['type']       = (string) The type of the document (use `_all` to fetch the first document matching the
-ID across all types) (Required)
+       ['type']       = (string) The type of the document (use `_all` to fetch the first document matching the ID across all types) (Required)
        ['parent']     = (string) The ID of the parent document
-       ['preference'] = (string) Specify the node or shard the operation should be performed on (default:
-random)
+       ['preference'] = (string) Specify the node or shard the operation should be performed on (default: random)
        ['realtime']   = (boolean) Specify whether to perform the operation in realtime or search mode
        ['refresh']    = (boolean) Refresh the shard containing the document before performing the operation
        ['routing']    = (string) Specific routing value
@@ -466,25 +383,6 @@ $response = $client->exists($params);
 
 
 
-[[Elasticsearch_Clientmlt_mlt]]
-.`mlt()`
-****
-[source,php]
-----
-/*
-*/
-
-$params = [
-    // ...
-];
-
-$client = ClientBuilder::create()->build();
-$response = $client->mlt($params);
-----
-****
-
-
-
 [[Elasticsearch_Clientmget_mget]]
 .`mget()`
 ****
@@ -494,17 +392,12 @@ $response = $client->mlt($params);
 $params['index']           = (string) The name of the index
        ['type']            = (string) The type of the document
        ['fields']          = (list) A comma-separated list of fields to return in the response
-       ['preference']      = (string) Specify the node or shard the operation should be performed on (default:
-random)
        ['parent']          = (string) The ID of the parent document
+       ['preference']      = (string) Specify the node or shard the operation should be performed on (default: random)
        ['realtime']        = (boolean) Specify whether to perform the operation in realtime or search mode
        ['refresh']         = (boolean) Refresh the shard containing the document before performing the operation
-       ['_source']         = (list) True or false to return the _source field or not, or a list of fields to
-return
-       ['_source_exclude'] = (list) A list of fields to exclude from the returned _source field
-       ['_source_include'] = (list) A list of fields to extract and return from the _source field
-       ['body']            = Document identifiers; can be either `docs` (containing full document information)
-or `ids` (when index and type is provided in the URL.
+       ['routing']         = (string) Specific routing value
+       ['body']            = (array) Document identifiers; can be either `docs` (containing full document information) or `ids` (when index and type is provided in the URL.
        ['body']  = (array) Request body
 */
 
@@ -528,9 +421,7 @@ $response = $client->mget($params);
 $params['index']       = (list) A comma-separated list of index names to use as default
        ['type']        = (list) A comma-separated list of document types to use as default
        ['search_type'] = (enum) Search operation type
-(query_then_fetch,query_and_fetch,dfs_query_then_fetch,dfs_query_and_fetch,count,scan)
-       ['body']        = The request definitions (metadata-search request definition pairs), separated by
-newlines
+       ['body']        = (array|string) The request definitions (metadata-search request definition pairs), separated by newlines
        ['body']  = (array) Request body
 */
 
@@ -551,20 +442,20 @@ $response = $client->msearch($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Document ID
-       ['index']        = (string) The name of the index (Required)
+$params['index']        = (string) The name of the index (Required)
        ['type']         = (string) The type of the document (Required)
-       ['consistency']  = (enum) Explicit write consistency setting for the operation (one,quorum,all)
-       ['op_type']      = (enum) Explicit operation type (index,create) (default: index)
+       ['id']           = (string) Specific document ID (when the POST method is used)
+       ['consistency']  = (enum) Explicit write consistency setting for the operation
        ['parent']       = (string) ID of the parent document
        ['refresh']      = (boolean) Refresh the index after performing the operation
+       ['replication']  = (enum) Specific replication type
        ['routing']      = (string) Specific routing value
        ['timeout']      = (time) Explicit operation timeout
        ['timestamp']    = (time) Explicit timestamp for the document
        ['ttl']          = (duration) Expiration time for the document
        ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
-       ['body']         = The document
+       ['version_type'] = (enum) Specific version type
+       ['body']         = (array) The document
        ['body']  = (array) Request body
 */
 
@@ -587,12 +478,11 @@ $response = $client->create($params);
 /*
 $params['index']       = (string) Default index for items which don't provide one
        ['type']        = (string) Default document type for items which don't provide one
-       ['consistency'] = (enum) Explicit write consistency setting for the operation (one,quorum,all)
+       ['consistency'] = (enum) Explicit write consistency setting for the operation
        ['refresh']     = (boolean) Refresh the index after performing the operation
-       ['routing']     = (string) Specific routing value
-       ['timeout']     = (time) Explicit operation timeout
+       ['replication'] = (enum) Explicitly set the replication type
        ['fields']      = (list) Default comma-separated list of fields to return in the response for updates
-       ['body']        = The operation definition and data (action-data pairs), separated by newlines
+       ['body']        = (array) The document
        ['body']  = (array) Request body
 */
 
@@ -613,22 +503,21 @@ $response = $client->bulk($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Document ID
-       ['index']        = (string) The name of the index (Required)
+$params['index']        = (string) The name of the index (Required)
        ['type']         = (string) The type of the document (Required)
-       ['percolate']    = (string) Percolator queries to execute while indexing the document
-       ['replication']  = (enum) Specific replication type
-       ['consistency']  = (enum) Explicit write consistency setting for the operation (one,quorum,all)
-       ['op_type']      = (enum) Explicit operation type (index,create) (default: index)
+       ['id']           = (string) Specific document ID (when the POST method is used)
+       ['consistency']  = (enum) Explicit write consistency setting for the operation
+       ['op_type']      = (enum) Explicit operation type
        ['parent']       = (string) ID of the parent document
        ['refresh']      = (boolean) Refresh the index after performing the operation
+       ['replication']  = (enum) Specific replication type
        ['routing']      = (string) Specific routing value
        ['timeout']      = (time) Explicit operation timeout
        ['timestamp']    = (time) Explicit timestamp for the document
        ['ttl']          = (duration) Expiration time for the document
        ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
-       ['body']         = The document
+       ['version_type'] = (enum) Specific version type
+       ['body']         = (array) The document
        ['body']  = (array) Request body
 */
 
@@ -643,26 +532,44 @@ $response = $client->index($params);
 
 
 
+[[Elasticsearch_Clientreindex_reindex]]
+.`reindex()`
+****
+[source,php]
+----
+/*
+$params['refresh']             = (boolean) Should the effected indexes be refreshed?
+       ['timeout']             = (time) Time each individual bulk request should wait for shards that are unavailable
+       ['consistency']         = (enum) Explicit write consistency setting for the operation
+       ['wait_for_completion'] = (boolean) Should the request should block until the reindex is complete
+       ['requests_per_second'] = (float) The throttle for this request in sub-requests per second. 0 means set no throttle
+       ['body']                = (array) The search definition using the Query DSL and the prototype for the index request (Required)
+       ['body']  = (array) Request body
+*/
+
+$params = [
+    // ...
+];
+
+$client = ClientBuilder::create()->build();
+$response = $client->reindex($params);
+----
+****
+
+
+
 [[Elasticsearch_Clientsuggest_suggest]]
 .`suggest()`
 ****
 [source,php]
 ----
 /*
-$params['index']              = (list) A comma-separated list of index names to restrict the operation; use
-`_all` or empty string to perform the operation on all indices
-       ['ignore_unavailable'] = (boolean) Whether specified concrete indices should be ignored when unavailable
-(missing or closed)
-       ['ignore_indices']     = (enum) When performed on multiple indices, allows to ignore `missing` ones
-       ['allow_no_indices']   = (boolean) Whether to ignore if a wildcard indices expression resolves into no
-concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open,
-closed or both. (open,closed,none,all) (default: open)
-       ['preference']         = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['routing']            = (string) Specific routing value
-       ['source']             = (string) The URL-encoded request definition (instead of using request body)
-       ['body']               = The request definition
+$params['index']          = (list) A comma-separated list of index names to restrict the operation; use `_all` or empty string to perform the operation on all indices
+       ['ignore_indices'] = (enum) When performed on multiple indices, allows to ignore `missing` ones
+       ['preference']     = (string) Specify the node or shard the operation should be performed on (default: random)
+       ['routing']        = (string) Specific routing value
+       ['source']         = (string) The URL-encoded request definition (instead of using request body)
+       ['body']           = (array) The request definition
        ['body']  = (array) Request body
 */
 
@@ -686,28 +593,22 @@ $response = $client->suggest($params);
 $params['id']                       = (string) The document ID (Required)
        ['index']                    = (string) The name of the index (Required)
        ['type']                     = (string) The type of the document (Required)
-       ['analyze_wildcard']         = (boolean) Specify whether wildcards and prefix queries in the query string
-query should be analyzed (default: false)
+       ['analyze_wildcard']         = (boolean) Specify whether wildcards and prefix queries in the query string query should be analyzed (default: false)
        ['analyzer']                 = (string) The analyzer for the query string query
-       ['default_operator']         = (enum) The default operator for query string query (AND or OR) (AND,OR)
-(default: OR)
+       ['default_operator']         = (enum) The default operator for query string query (AND or OR)
        ['df']                       = (string) The default field for query string query (default: _all)
        ['fields']                   = (list) A comma-separated list of fields to return in the response
-       ['lenient']                  = (boolean) Specify whether format-based query failures (such as providing
-text to a numeric field) should be ignored
+       ['lenient']                  = (boolean) Specify whether format-based query failures (such as providing text to a numeric field) should be ignored
        ['lowercase_expanded_terms'] = (boolean) Specify whether query terms should be lowercased
        ['parent']                   = (string) The ID of the parent document
-       ['preference']               = (string) Specify the node or shard the operation should be performed on
-(default: random)
+       ['preference']               = (string) Specify the node or shard the operation should be performed on (default: random)
        ['q']                        = (string) Query in the Lucene query string syntax
        ['routing']                  = (string) Specific routing value
-       ['source']                   = (string) The URL-encoded query definition (instead of using the request
-body)
-       ['_source']                  = (list) True or false to return the _source field or not, or a list of
-fields to return
+       ['source']                   = (string) The URL-encoded query definition (instead of using the request body)
+       ['_source']                  = (list) True or false to return the _source field or not, or a list of fields to return
        ['_source_exclude']          = (list) A list of fields to exclude from the returned _source field
        ['_source_include']          = (list) A list of fields to extract and return from the _source field
-       ['body']                     = The query definition using the Query DSL
+       ['body']                     = (string) The URL-encoded query definition (instead of using the request body)
        ['body']  = (array) Request body
 */
 
@@ -728,102 +629,24 @@ $response = $client->explain($params);
 [source,php]
 ----
 /*
-$params['index']                    = (list) A comma-separated list of index names to search; use `_all` or
-empty string to perform the operation on all indices
-       ['type']                     = (list) A comma-separated list of document types to search; leave empty to
-perform the operation on all types
+$params['index']                    = (list) A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
+       ['type']                     = (list) A comma-separated list of document types to search; leave empty to perform the operation on all types
        ['analyzer']                 = (string) The analyzer to use for the query string
-       ['analyze_wildcard']         = (boolean) Specify whether wildcard and prefix queries should be analyzed
-(default: false)
-       ['default_operator']         = (enum) The default operator for query string query (AND or OR) (AND,OR)
-(default: OR)
-       ['df']                       = (string) The field to use as default where no field prefix is given in the
-query string
-       ['explain']                  = (boolean) Specify whether to return detailed information about score
-computation as part of a hit
-       ['fields']                   = (list) A comma-separated list of fields to return as part of a hit
-       ['fielddata_fields']         = (list) A comma-separated list of fields to return as the field data
-representation of a field for each hit
-       ['from']                     = (number) Starting offset (default: 0)
-       ['ignore_indices']           = (enum) When performed on multiple indices, allows to ignore `missing` ones
-       ['indices_boost']            = (list) Comma-separated list of index boosts
-       ['query_cache']              = (boolean) Enable query cache for this request
-       ['ignore_unavailable']       = (boolean) Whether specified concrete indices should be ignored when
-unavailable (missing or closed)
-       ['allow_no_indices']         = (boolean) Whether to ignore if a wildcard indices expression resolves into
-no concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']         = (enum) Whether to expand wildcard expression to concrete indices that are
-open, closed or both. (open,closed,none,all) (default: open)
-       ['lenient']                  = (boolean) Specify whether format-based query failures (such as providing
-text to a numeric field) should be ignored
-       ['lowercase_expanded_terms'] = (boolean) Specify whether query terms should be lowercased
-       ['preference']               = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['q']                        = (string) Query in the Lucene query string syntax
-       ['routing']                  = (list) A comma-separated list of specific routing values
-       ['scroll']                   = (duration) Specify how long a consistent view of the index should be
-maintained for scrolled search
-       ['search_type']              = (enum) Search operation type
-(query_then_fetch,dfs_query_then_fetch,count,scan)
-       ['size']                     = (number) Number of hits to return (default: 10)
-       ['sort']                     = (list) A comma-separated list of <field>:<direction> pairs
-       ['source']                   = (string) The URL-encoded request definition using the Query DSL (instead of
-using request body)
-       ['_source']                  = (list) True or false to return the _source field or not, or a list of
-fields to return
-       ['_source_exclude']          = (list) A list of fields to exclude from the returned _source field
-       ['_source_include']          = (list) A list of fields to extract and return from the _source field
-       ['terminate_after']          = (number) The maximum number of documents to collect for each shard, upon
-reaching which the query execution will terminate early.
-       ['body']  = (array) Request body
-*/
-
-$params = [
-    // ...
-];
-
-$client = ClientBuilder::create()->build();
-$response = $client->search($params);
-----
-****
-
-
-
-[[Elasticsearch_ClientsearchExists_searchExists]]
-.`searchExists()`
-****
-[source,php]
-----
-/*
-$params['index']                    = (list) A comma-separated list of indices to restrict the results
-       ['type']                     = (list) A comma-separated list of types to restrict the results
-       ['ignore_unavailable']       = (boolean) Whether specified concrete indices should be ignored when
-unavailable (missing or closed)
-       ['allow_no_indices']         = (boolean) Whether to ignore if a wildcard indices expression resolves into
-no concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']         = (enum) Whether to expand wildcard expression to concrete indices that are
-open, closed or both. (open,closed,none,all) (default: open)
-       ['min_score']                = (number) Include only documents with a specific `_score` value in the
-result
-       ['preference']               = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['routing']                  = (string) Specific routing value
-       ['q']                        = (string) Query in the Lucene query string syntax
-       ['analyzer']                 = (string) The analyzer to use for the query string
-       ['analyze_wildcard']         = (boolean) Specify whether wildcard and prefix queries should be analyzed
-(default: false)
-       ['default_operator']         = (enum) The default operator for query string query (AND or OR) (AND,OR)
-(default: OR)
-       ['df']                       = (string) The field to use as default where no field prefix is given in the
-query string
-       ['lenient']                  = (boolean) Specify whether format-based query failures (such as providing
-text to a numeric field) should be ignored
-       ['lowercase_expanded_terms'] = (boolean) Specify whether query terms should be lowercased
+       ['analyze_wildcard']         = (boolean) Specify whether wildcard and prefix queries should be analyzed (default: false)
+       ['default_operator']         = (enum) The default operator for query string query (AND or OR)
+       ['df']                       = (string) The field to use as default where no field prefix is given in the query string
        ['explain']                  = (boolean) Specify whether to return detailed information about score computation as part of a hit
        ['fields']                   = (list) A comma-separated list of fields to return as part of a hit
        ['from']                     = (number) Starting offset (default: 0)
        ['ignore_indices']           = (enum) When performed on multiple indices, allows to ignore `missing` ones
        ['indices_boost']            = (list) Comma-separated list of index boosts
+       ['lenient']                  = (boolean) Specify whether format-based query failures (such as providing text to a numeric field) should be ignored
+       ['lowercase_expanded_terms'] = (boolean) Specify whether query terms should be lowercased
+       ['preference']               = (string) Specify the node or shard the operation should be performed on (default: random)
+       ['q']                        = (string) Query in the Lucene query string syntax
+       ['query_cache']              = (boolean) Enable query cache for this request
+       ['request_cache']            = (boolean) Enable request cache for this request
+       ['routing']                  = (list) A comma-separated list of specific routing values
        ['scroll']                   = (duration) Specify how long a consistent view of the index should be maintained for scrolled search
        ['search_type']              = (enum) Search operation type
        ['size']                     = (number) Number of hits to return (default: 10)
@@ -839,7 +662,7 @@ text to a numeric field) should be ignored
        ['suggest_text']             = (text) The source text for which the suggestions should be returned
        ['timeout']                  = (time) Explicit operation timeout
        ['version']                  = (boolean) Specify whether to return document version as part of a hit
-       ['body']                     = A query to restrict the results specified with the Query DSL (optional)
+       ['body']                     = (array|string) The search definition using the Query DSL
        ['body']  = (array) Request body
 */
 
@@ -848,7 +671,7 @@ $params = [
 ];
 
 $client = ClientBuilder::create()->build();
-$response = $client->searchExists($params);
+$response = $client->search($params);
 ----
 ****
 
@@ -860,21 +683,14 @@ $response = $client->searchExists($params);
 [source,php]
 ----
 /*
-$params['index']              = (list) A comma-separated list of index names to search; use `_all` or empty
-string to perform the operation on all indices
-       ['type']               = (list) A comma-separated list of document types to search; leave empty to
-perform the operation on all types
-       ['preference']         = (string) Specify the node or shard the operation should be performed on
-(default: random)
+$params['index']              = (list) A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
+       ['type']               = (list) A comma-separated list of document types to search; leave empty to perform the operation on all types
+       ['preference']         = (string) Specify the node or shard the operation should be performed on (default: random)
        ['routing']            = (string) Specific routing value
-       ['local']              = (boolean) Return local information, do not retrieve the state from master node
-(default: false)
-       ['ignore_unavailable'] = (boolean) Whether specified concrete indices should be ignored when unavailable
-(missing or closed)
-       ['allow_no_indices']   = (boolean) Whether to ignore if a wildcard indices expression resolves into no
-concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open,
-closed or both. (open,closed,none,all) (default: open)
+       ['local']              = (bool) Return local information, do not retrieve the state from master node (default: false)
+       ['ignore_unavailable'] = (bool) Whether specified concrete indices should be ignored when unavailable (missing or closed)
+       ['allow_no_indices']   = (bool) Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
+       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open, closed or both.
        ['body']  = (array) Request body
 */
 
@@ -895,24 +711,8 @@ $response = $client->searchShards($params);
 [source,php]
 ----
 /*
-$params['index']              = (list) A comma-separated list of index names to search; use `_all` or empty
-string to perform the operation on all indices
-       ['type']               = (list) A comma-separated list of document types to search; leave empty to
-perform the operation on all types
-       ['ignore_unavailable'] = (boolean) Whether specified concrete indices should be ignored when unavailable
-(missing or closed)
-       ['allow_no_indices']   = (boolean) Whether to ignore if a wildcard indices expression resolves into no
-concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open,
-closed or both. (open,closed,none,all) (default: open)
-       ['preference']         = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['routing']            = (list) A comma-separated list of specific routing values
-       ['scroll']             = (duration) Specify how long a consistent view of the index should be maintained
-for scrolled search
-       ['search_type']        = (enum) Search operation type
-(query_then_fetch,query_and_fetch,dfs_query_then_fetch,dfs_query_and_fetch,count,scan)
-       ['body']               = The search definition template and its params
+$params['index']                    = (list) A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
+       ['type']                     = (list) A comma-separated list of document types to search; leave empty to perform the operation on all types
        ['body']  = (array) Request body
 */
 
@@ -934,9 +734,8 @@ $response = $client->searchTemplate($params);
 ----
 /*
 $params['scroll_id'] = (string) The scroll ID for scrolled search
-       ['scroll']    = (duration) Specify how long a consistent view of the index should be maintained for
-scrolled search
-       ['body']      = The scroll ID if not passed by URL or query parameter.
+       ['scroll']    = (duration) Specify how long a consistent view of the index should be maintained for scrolled search
+       ['body']      = (string) The scroll ID for scrolled search
        ['body']  = (array) Request body
 */
 
@@ -957,11 +756,9 @@ $response = $client->scroll($params);
 [source,php]
 ----
 /*
-$params['scroll_id'] = (list) A comma-separated list of scroll IDs to clear
-       ['scroll']    = (duration) Specify how long a consistent view of the index should be maintained for
-scrolled search
-       ['body']      = A comma-separated list of scroll IDs to clear if none was specified via the scroll_id
-parameter
+$params['scroll_id'] = (string) The scroll ID for scrolled search
+       ['scroll']    = (duration) Specify how long a consistent view of the index should be maintained for scrolled search
+       ['body']      = (string) The scroll ID for scrolled search
        ['body']  = (array) Request body
 */
 
@@ -985,28 +782,20 @@ $response = $client->clearScroll($params);
 $params['id']                = (string) Document ID (Required)
        ['index']             = (string) The name of the index (Required)
        ['type']              = (string) The type of the document (Required)
-       ['consistency']       = (enum) Explicit write consistency setting for the operation (one,quorum,all)
+       ['consistency']       = (enum) Explicit write consistency setting for the operation
        ['fields']            = (list) A comma-separated list of fields to return in the response
-       ['lang']              = (string) The script language (default: groovy)
-       ['parent']            = (string) ID of the parent document. Is is only used for routing and when for the
-upsert request
-       ['percolate']         = (string) Perform percolation during the operation; use specific registered query
-name, attribute, or wildcard
+       ['lang']              = (string) The script language (default: mvel)
+       ['parent']            = (string) ID of the parent document
        ['refresh']           = (boolean) Refresh the index after performing the operation
        ['replication']       = (enum) Specific replication type
-       ['retry_on_conflict'] = (number) Specify how many times should the operation be retried when a conflict
-occurs (default: 0)
+       ['retry_on_conflict'] = (number) Specify how many times should the operation be retried when a conflict occurs (default: 0)
        ['routing']           = (string) Specific routing value
-       ['script']            = The URL-encoded script definition (instead of using request body)
-       ['script_id']         = The id of a stored script
-       ['scripted_upsert']   = (boolean) True if the script referenced in script or script_id should be called
-to perform inserts - defaults to false
+       ['script']            = () The URL-encoded script definition (instead of using request body)
        ['timeout']           = (time) Explicit operation timeout
        ['timestamp']         = (time) Explicit timestamp for the document
        ['ttl']               = (duration) Expiration time for the document
-       ['version']           = (number) Explicit version number for concurrency control
-       ['version_type']      = (enum) Specific version type (internal,force)
-       ['body']              = The request definition using either `script` or partial `doc`
+       ['version_type']      = (number) Explicit version number for concurrency control
+       ['body']              = (array) The request definition using either `script` or partial `doc`
        ['body']  = (array) Request body
 */
 
@@ -1027,10 +816,8 @@ $response = $client->update($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Script ID (Required)
-       ['lang']         = (string) Script language (Required)
-       ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
+$params['id']   = (string) The script ID (Required)
+       ['lang'] = (string) The script language (Required)
        ['body']  = (array) Request body
 */
 
@@ -1051,10 +838,8 @@ $response = $client->getScript($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Script ID (Required)
-       ['lang']         = (string) Script language (Required)
-       ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
+$params['id']   = (string) The script ID (Required)
+       ['lang'] = (string) The script language (Required)
        ['body']  = (array) Request body
 */
 
@@ -1075,12 +860,8 @@ $response = $client->deleteScript($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Script ID (Required)
-       ['lang']         = (string) Script language (Required)
-       ['op_type']      = (enum) Explicit operation type (index,create) (default: index)
-       ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
-       ['body']         = The document
+$params['id']   = (string) The script ID (Required)
+       ['lang'] = (string) The script language (Required)
        ['body']  = (array) Request body
 */
 
@@ -1101,9 +882,7 @@ $response = $client->putScript($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Template ID (Required)
-       ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
+$params['id']   = (string) The search template ID (Required)
        ['body']  = (array) Request body
 */
 
@@ -1124,9 +903,7 @@ $response = $client->getTemplate($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Template ID (Required)
-       ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
+$params['id']   = (string) The search template ID (Required)
        ['body']  = (array) Request body
 */
 
@@ -1147,11 +924,7 @@ $response = $client->deleteTemplate($params);
 [source,php]
 ----
 /*
-$params['id']           = (string) Template ID (Required)
-       ['op_type']      = (enum) Explicit operation type (index,create) (default: index)
-       ['version']      = (number) Explicit version number for concurrency control
-       ['version_type'] = (enum) Specific version type (internal,external,external_gte,force)
-       ['body']         = The document
+$params['id']   = (string) The search template ID (Required)
        ['body']  = (array) Request body
 */
 
@@ -1172,20 +945,12 @@ $response = $client->putTemplate($params);
 [source,php]
 ----
 /*
-$params['index']              = (list) A comma-separated list of index names; use `_all` or empty string to
-perform the operation on all indices
-       ['fields']             = (list) A comma-separated list of fields for to get field statistics for (min
-value, max value, and more)
-       ['level']              = (enum) Defines if field stats should be returned on a per index level or on a
-cluster wide level (indices,cluster) (default: cluster)
-       ['ignore_unavailable'] = (boolean) Whether specified concrete indices should be ignored when unavailable
-(missing or closed)
-       ['allow_no_indices']   = (boolean) Whether to ignore if a wildcard indices expression resolves into no
-concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open,
-closed or both. (open,closed,none,all) (default: open)
-       ['body']               = Field json objects containing the name and optionally a range to filter out
-indices result, that have results outside the defined bounds
+$params['index']              = (list) A comma-separated list of indices to restrict the results
+       ['fields']             = (list) A comma-separated list of fields for to get field statistics for (min value, max value, and more)
+       ['level']              = (enum) Defines if field stats should be returned on a per index level or on a cluster wide level
+       ['ignore_unavailable'] = (bool) Whether specified concrete indices should be ignored when unavailable (missing or closed)
+       ['allow_no_indices']   = (bool) Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
+       ['expand_wildcards']   = (enum) Whether to expand wildcard expression to concrete indices that are open, closed or both.
        ['body']  = (array) Request body
 */
 
@@ -1200,95 +965,13 @@ $response = $client->fieldStats($params);
 
 
 
-[[Elasticsearch_ClientreIndex_reIndex]]
-.`reIndex()`
-****
-[source,php]
-----
-/*
-$params['refresh']             = (boolean) Should the effected indexes be refreshed?
-       ['timeout']             = (time) Time each individual bulk request should wait for shards that are
-unavailable. (default: 1m)
-       ['consistency']         = (enum) Explicit write consistency setting for the operation (one,quorum,all)
-       ['wait_for_completion'] = (boolean) Should the request should block until the reindex is complete.
-       ['body']  = (array) Request body
-*/
-
-$params = [
-    // ...
-];
-
-$client = ClientBuilder::create()->build();
-$response = $client->reIndex($params);
-----
-****
-
-
-
-[[Elasticsearch_ClientupdateByQuery_updateByQuery]]
-.`updateByQuery()`
-****
-[source,php]
-----
-/*
-$params['index']                    = (list) A comma-separated list of index names to search; use `_all` or
-empty string to perform the operation on all indices (Required)
-       ['type']                     = (list) A comma-separated list of document types to search; leave empty to
-perform the operation on all types
-       ['analyzer']                 = (string) The analyzer to use for the query string
-       ['analyze_wildcard']         = (boolean) Specify whether wildcard and prefix queries should be analyzed
-(default: false)
-       ['default_operator']         = (enum) The default operator for query string query (AND or OR) (AND,OR)
-(default: OR)
-       ['df']                       = (string) The field to use as default where no field prefix is given in the
-query string
-       ['explain']                  = (boolean) Specify whether to return detailed information about score
-computation as part of a hit
-       ['fields']                   = (list) A comma-separated list of fields to return as part of a hit
-       ['fielddata_fields']         = (list) A comma-separated list of fields to return as the field data
-representation of a field for each hit
-       ['from']                     = (number) Starting offset (default: 0)
-       ['ignore_unavailable']       = (boolean) Whether specified concrete indices should be ignored when
-unavailable (missing or closed)
-       ['allow_no_indices']         = (boolean) Whether to ignore if a wildcard indices expression resolves into
-no concrete indices. (This includes `_all` string or when no indices have been specified)
-       ['conflicts']                = (enum) What to do when the reindex hits version conflicts? (abort,proceed)
-(default: abort)
-       ['expand_wildcards']         = (enum) Whether to expand wildcard expression to concrete indices that are
-open, closed or both. (open,closed,none,all) (default: open)
-       ['lenient']                  = (boolean) Specify whether format-based query failures (such as providing
-text to a numeric field) should be ignored
-       ['lowercase_expanded_terms'] = (boolean) Specify whether query terms should be lowercased
-       ['preference']               = (string) Specify the node or shard the operation should be performed on
-(default: random)
-       ['q']                        = (string) Query in the Lucene query string syntax
-       ['routing']                  = (list) A comma-separated list of specific routing values
-       ['scroll']                   = (duration) Specify how long a consistent view of the index should be
-maintained for scrolled search
-       ['search_type']              = (enum) Search operation type (query_then_fetch,dfs_query_then_fetch)
-       ['search_timeout']           = (time) Explicit timeout for each search request. Defaults to no timeout.
-       ['body']  = (array) Request body
-*/
-
-$params = [
-    // ...
-];
-
-$client = ClientBuilder::create()->build();
-$response = $client->updateByQuery($params);
-----
-****
-
-
-
 [[Elasticsearch_ClientrenderSearchTemplate_renderSearchTemplate]]
 .`renderSearchTemplate()`
 ****
 [source,php]
 ----
 /*
-$params['id']   = (string) The id of the stored search template
-       ['body'] = The search definition template and its params
+$params['id']                 = (string) ID of the template to render
        ['body']  = (array) Request body
 */
 
@@ -1408,13 +1091,34 @@ $response = $client->cat();
 
 
 
+[[Elasticsearch_Clientingest_ingest]]
+.`ingest()`
+****
+[source,php]
+----
+/*
+Operate on the Ingest namespace of commands
+       ['body']  = (array) Request body
+*/
+
+$params = [
+    // ...
+];
+
+$client = ClientBuilder::create()->build();
+$response = $client->ingest();
+----
+****
+
+
+
 [[Elasticsearch_Clienttasks_tasks]]
 .`tasks()`
 ****
 [source,php]
 ----
 /*
-Operate on the Task namespace of commands
+Operate on the Tasks namespace of commands
        ['body']  = (array) Request body
 */
 
@@ -1424,6 +1128,27 @@ $params = [
 
 $client = ClientBuilder::create()->build();
 $response = $client->tasks();
+----
+****
+
+
+
+[[Elasticsearch_Client-call-_call]]
+.`__call()`
+****
+[source,php]
+----
+/*
+Catchall for registered namespaces
+       ['body']  = (array) Request body
+*/
+
+$params = [
+    // ...
+];
+
+$client = ClientBuilder::create()->build();
+$response = $client->__call($name,$arguments);
 ----
 ****
 

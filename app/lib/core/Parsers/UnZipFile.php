@@ -44,7 +44,7 @@ class UnZipFile {
 	/** 
 	 *
 	 */
-	public function UnZipFile($ps_filepath="") {
+	public function __construct($ps_filepath="") {
 		if ($ps_filepath) {
 			$this->load($ps_filepath);
 		}

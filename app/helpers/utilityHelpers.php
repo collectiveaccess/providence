@@ -646,6 +646,11 @@ function caFileIsIncludable($ps_file) {
 		return $vs_tmp;
 	}
 	# ----------------------------------------
+	function caIsTempFile($ps_file) {
+	    if (preg_match("!^".caGetTempDirPath()."/!", $ps_file)) { return true; }
+	    return false;
+	}
+	# ----------------------------------------
 	/**
 	 *
 	 */
@@ -937,7 +942,7 @@ function caFileIsIncludable($ps_file) {
 			} else {
 				$vn_val = '';
 			}
-			$vn_val = sprintf("%4.3f", ((float)$va_matches[1] + $vn_val));
+			$vn_val = sprintf("%4.4f", ((float)$va_matches[1] + $vn_val));
 
 			$vn_val = caConvertFloatToLocale($vn_val, $locale);
 			$ps_fractional_expression = str_replace($va_matches[0], $vn_val, $ps_fractional_expression);
@@ -3093,6 +3098,7 @@ function caFileIsIncludable($ps_file) {
 			$va_measurements = array($pm_value);
 		}
 
+        $va_unit_map = [];
 		foreach($va_measurements as $vn_i => $vs_measurement) {
 			$vs_measurement = trim(preg_replace("![ ]+!", " ", $vs_measurement));
 
@@ -3102,24 +3108,47 @@ function caFileIsIncludable($ps_file) {
 					throw new Exception("Missing or invalid dimensions");
 				} else {
 					$vs_measurement = trim($vo_parsed_measurement->toString());
-					$vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
+					$va_unit_map[] = $vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
 					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
 				}
 			} catch(Exception $e) {
-				if (preg_match("!^([\d\.]+)!", $vs_measurement, $va_matches)) {
-					$vs_measurement = $va_matches[0]." {$ps_units}";
+				if (preg_match("!^([\d\. \/]+)!", $vs_measurement, $va_matches)) {
+					$vs_measurement = $va_matches[0];   // record without units; we'll infer them below
+                    $va_unit_map[] = null;
 				} else {
 					continue;
 				}
 			}
-			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d\.]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
+			$va_extracted_measurements[] = ['quantity' => trim(preg_replace("![^\d\. \/]+!", "", $vs_measurement)), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
 		}
+		
 		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
 
 		$vn_set_count = 0;
 
 		$va_return = [];
 		foreach($va_extracted_measurements as $vn_i => $va_measurement) {
+		
+		    if(!$va_unit_map[$vn_i]) {
+                // reparse those that didn't have specified units
+                if (!($vs_inferred_units = $ps_units)) { $ps_units = "in"; }
+                for($x = $vn_i + 1; $x < sizeof($va_unit_map); $x++) {
+                    if ($va_unit_map[$x]) { $vs_inferred_units = $va_unit_map[$x]; break; }
+                }
+                
+                try {
+                    if($vo_parsed_measurement = caParseLengthDimension($va_measurement['string']." {$vs_inferred_units}")) {
+                        $vs_m = trim($vo_parsed_measurement->toString());
+                        $va_measurement = [
+                            'quantity' =>  trim(preg_replace("![^\d\. \/]+!", "", $vs_m)),
+                            'string' => $vs_m,
+                            'units' => caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true])
+                        ];
+                    }
+                } catch (Exception $e) {
+                    continue; 
+                }
+            }
 
 			if ($va_measurement['units']) {
 				$vs_measurement = $va_measurement['quantity']." ".$va_measurement['units'];
@@ -3170,12 +3199,13 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 100) { $va_tokens = array_slice($va_tokens, 50, 50, true); }
+	        if (sizeof($va_tokens) > 300) { $va_tokens = array_slice($va_tokens, 50, 250, true); }
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = 1; }
 	        
 	        
 	        $po_request->session->setVar('csrf_tokens', $va_tokens);
+	        $po_request->session->save();
 	    }
 	    return $vs_token;
 	}
@@ -3196,7 +3226,7 @@ function caFileIsIncludable($ps_file) {
 	    if (!is_array($va_tokens = $po_request->session->getVar('csrf_tokens'))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
-	        if (caGetOption('remove', $pa_options, true)) {
+	        if (caGetOption('remove', $pa_options, false)) {
 	            unset($va_tokens[$ps_token]);
 	            $po_request->session->setVar('csrf_tokens', $va_tokens);
 	        }
@@ -3593,7 +3623,7 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 			} else {
-				$va_values_proc[$vs_key][] = ['=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
+				$va_values_proc[$vs_key][] = [is_null($vm_val) ? 'IS' : '=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
 			}
 		}
 		return $va_values_proc;
@@ -3730,5 +3760,45 @@ function caFileIsIncludable($ps_file) {
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
 		return $va_tags;
+	}
+	# ----------------------------------------
+	/**
+	 * Extract attribute values from an HTML-like formatted attribute string. 
+	 * Ex. if attribute string is: idno="2010.001.5" type="object" and the values to be extracted are "idno" and "type" an array 
+	 * in the form ["idno" => "2010.001.5", "type" => "object"] is returned.
+	 *
+	 * @param string $ps_attr_string The attribute text
+	 * @param array $pa_attributes A list of attributes to extract
+	 * 
+	 * @return array
+	 */
+	function caParseAttributes($ps_attr_string, $pa_attributes) {
+	    $va_ret = [];
+	    foreach($pa_attributes as $vs_attr) {
+	        if(preg_match("!{$vs_attr}[ ]*=[ ]*[\"']{1}([^\"']+)[\"']{1}!", $ps_attr_string, $va_matches)) {
+	            $va_ret[$vs_attr] = $va_matches[1];
+	        }
+	    }
+	    
+	    return $va_ret;
+	}
+	# ----------------------------------------
+	/**
+	 * Fast (well... faster) implementation of array_intersect()
+	 *
+	 * @param array $array1
+	 * @param array $array2
+	 *
+	 * @return array
+	 */
+	function caFastArrayIntersect($array1, $array2) {
+	    $index = array_flip($array1);
+        foreach ($array2 as $value) {
+            if (isset($index[$value])) unset($index[$value]);
+        }
+        foreach ($index as $value => $key) {
+            unset($array1[$key]);
+        }
+        return $array1;
 	}
 	# ----------------------------------------

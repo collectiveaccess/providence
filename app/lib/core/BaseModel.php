@@ -1194,11 +1194,13 @@ class BaseModel extends BaseObject {
 		
 		$o_db = $this->getDb();
 		
+		$vs_deleted_sql = $this->hasField('deleted') ? " AND deleted = 0" : "";
+		
 		$qr_res = $o_db->query("
 			SELECT {$vs_pk}, {$vs_fld_list}
 			FROM {$vs_table_name}
 			WHERE
-				{$vs_pk} IN (?)
+				{$vs_pk} IN (?) {$vs_deleted_sql}
 		", array($va_ids));
 		
 		$va_vals = array();
@@ -1211,6 +1213,56 @@ class BaseModel extends BaseObject {
 			}
 		}
 		return BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num][$vs_cache_key] = $va_vals;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Translate an array of idnos into row_ids 
+	 * 
+	 * @param array $pa_idnos A list of idnos
+	 * @param array $pa_options Options include:
+	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
+	 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+	 *
+	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
+	 */
+	static public function getIDsForIdnos($pa_idnos, $pa_options=null) {
+	    $o_dm = Datamodel::load();
+	    if (!is_array($pa_idnos) && strlen($pa_idnos)) { $pa_idnos = [$pa_idnos]; }
+	    
+	    $pa_access_values = caGetOption('checkAccess', $pa_options, null);
+		
+		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name, true))) { return null; }
+		
+	    $pa_idnos = array_map(function($v) { return (string)$v; }, $pa_idnos);
+	    
+	    $vs_pk = $t_instance->primaryKey();
+	    $vs_table_name = $t_instance->tableName();
+	    $vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
+		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
+		
+		$va_params = array($pa_idnos);
+		
+		$vs_access_sql = '';
+		if (is_array($pa_access_values) && sizeof($pa_access_values)) {
+		    $vs_access_sql = " AND access IN (?)";
+		    $va_params[] = $pa_access_values;
+		}
+	    
+	    $qr_res = $t_instance->getDb()->query("
+			SELECT {$vs_pk}, {$vs_idno_fld}
+			FROM {$vs_table_name}
+			WHERE
+				{$vs_idno_fld} IN (?) {$vs_deleted_sql} {$vs_access_sql}
+		", $va_params);
+		
+		$pb_force_to_lowercase = caGetOption('forceToLowercase', $pa_options, false);
+		
+		$va_ret = [];
+		while($qr_res->nextRow()) {
+		    $va_ret[$pb_force_to_lowercase ? strtolower($qr_res->get($vs_idno_fld)) : $qr_res->get($vs_idno_fld)] = $qr_res->get($vs_pk);
+		}
+		return $va_ret;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -4752,8 +4804,12 @@ class BaseModel extends BaseObject {
 						$vs_serialized_data = caSerializeForDatabase($this->_FILES[$ps_field], true);
 						$vs_sql =  "$ps_field = ".$this->quote($vs_serialized_data).",";
 						if (($vs_metadata_field_name = $o_media_proc_settings->getMetadataFieldName()) && $this->hasField($vs_metadata_field_name)) {
+						    $vn_embedded_media_metadata_limit = (int)$this->_CONFIG->get('dont_extract_embedded_media_metdata_when_length_exceeds');
+						    if (($vn_embedded_media_metadata_limit > 0) && (strlen($vs_serialized_metadata = caSerializeForDatabase($media_metadata, true)) > $vn_embedded_media_metadata_limit)) {
+						        $media_metadata = null; $vs_serialized_metadata = '';
+						    }
 							$this->set($vs_metadata_field_name, $media_metadata);
-							$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
+							$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote($vs_serialized_metadata).",";
 						}
 				
 						if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
@@ -6271,8 +6327,8 @@ class BaseModel extends BaseObject {
 		if ($this->hasField($va_tmp[1])) {
 			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
 			return $this->htmlFormElement($va_tmp[1], '^ELEMENT', array_merge($pa_options, array(
-					'name' => $ps_field,
-					'id' => str_replace(".", "_", $ps_field),
+					'name' => caGetOption('name', $pa_options, $ps_field).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
+					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),
@@ -6981,6 +7037,7 @@ class BaseModel extends BaseObject {
 	 *		returnDeleted = return deleted records in list [default: false]
 	 *		additionalTableToJoin = name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
 	 *		idsOnly = return simple array of primary key values for child records rather than full result
+	 *      sort = 
 	 *
 	 * @return Mixed DbResult or array
 	 */
@@ -6998,6 +7055,8 @@ class BaseModel extends BaseObject {
 			$vs_hier_parent_id_fld	= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
 			$vs_hier_id_fld 		= $this->getProperty("HIERARCHY_ID_FLD");
 			$vs_hier_id_table 		= $this->getProperty("HIERARCHY_DEFINITION_TABLE");
+			
+			if (!($vs_rank_fld = caGetOption('sort', $pa_options, $this->getProperty('RANK'))) || !$this->hasField($vs_rank_fld)) { $vs_rank_fld = $vs_hier_left_fld; }
 		
 			if (!$pn_id) {
 				if (!($pn_id = $t_instance->getHierarchyRootID($t_instance->get($vs_hier_id_fld)))) {
@@ -7086,7 +7145,7 @@ class BaseModel extends BaseObject {
 							{$vs_deleted_sql}
 							{$vs_additional_wheres}
 						ORDER BY
-							{$vs_table_name}.{$vs_hier_left_fld}
+							{$vs_table_name}.{$vs_rank_fld}
 					";
 					//print $vs_sql;
 					$qr_hier = $o_db->query($vs_sql);
@@ -7758,8 +7817,10 @@ class BaseModel extends BaseObject {
 		
 		$va_hierarchy_data = array();
 		
-		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('includeBlankValuesInArray' => true, 'returnAsArray'=> true)));
+		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('indexWithIDs' => true, 'includeBlankValuesInArray' => true, 'returnAsArray'=> true)));
 		
+		$va_ids = array_keys($va_vals);
+		$va_vals = array_values($va_vals);
 		$pa_sort = caGetOption('sort', $pa_options, null);
 		if (!is_array($pa_sort) && $pa_sort) { $pa_sort = explode(";", $pa_sort); }
 		
@@ -8761,6 +8822,7 @@ $pa_options["display_form_field_tips"] = true;
 								
 								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 								
+								
 								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
 								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
 								{
@@ -8768,7 +8830,9 @@ $pa_options["display_form_field_tips"] = true;
 									width: '{$vs_width}',
 									height: '{$vs_height}',
 									toolbarLocation: 'top',
-									enterMode: CKEDITOR.ENTER_BR
+									enterMode: CKEDITOR.ENTER_BR,
+                                    lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
+                                    key: '".$pa_options['id']."_lookup'
 								});
 						
 								ckEditor.on('instanceReady', function(){ 
@@ -12121,7 +12185,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		parent::__destruct();
 	}
-	# --------------------------------------------------------------------------------------------
+	# ------------------------------------------------s--------------------------------------------
 }
 
 // includes for which BaseModel must already be defined

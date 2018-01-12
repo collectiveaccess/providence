@@ -1135,8 +1135,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		
-		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
 		if (!($vs_type = $va_info['type'])) { return null; }
 		
@@ -1151,7 +1149,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// start and count
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$pn_limit = caGetOption('limit', $pa_options, null);
-		
 		$vs_element = '';
 		switch($vs_type) {
 			# -------------------------------------------------
@@ -1172,76 +1169,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				switch($ps_bundle_name) {
 					# -------------------------------
 					case 'ca_object_representations':
-						foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
-							$pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
-						}
-						$va_reps = $this->getRepresentations(array('thumbnail', 'original'), null, $pa_options);
-						
-						$t_item = new ca_object_representations();
-						$va_rep_type_list = $t_item->getTypeList();
-						$va_errors = array();
-							
-						$vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
-
-						// Paging
-						$vn_primary_id = 0;
-						$va_initial_values = array();
-						if (sizeof($va_reps)) {
-							$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
-							$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
-	
-							// Get display template values
-							$va_display_template_values = array();
-							if($vs_bundle_template && is_array($va_relation_ids = caExtractValuesFromArrayList($va_reps, 'relation_id')) && sizeof($va_relation_ids)) {
-								if ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName())) {
-									$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true)));
-								}
-							}
-	
-							$vn_i = 0;
-							foreach ($va_reps as $va_rep) {
-								$vn_num_multifiles = $va_rep['num_multifiles'];
-								if ($vs_extracted_metadata = caFormatMediaMetadata(caSanitizeArray(caUnserializeForDatabase($va_rep['media_metadata']), array('removeNonCharacterData' => true)))) {
-									$vs_extracted_metadata = "<h3>"._t('Extracted metadata').":</h3>\n{$vs_extracted_metadata}\n";
-								}
-								$vs_md5 = isset($va_rep['info']['original']['MD5']) ? "<h3>"._t('MD5 signature').':</h3>'.$va_rep['info']['original']['MD5'] : '';
-
-								if ($va_rep['is_primary']) {
-									$vn_primary_id = $va_rep['representation_id'];
-								}
-								
-								$va_initial_values[$va_rep['representation_id']] = array(
-									'idno' => $va_rep['idno'], 
-									'_display' => ($vs_bundle_template && isset($va_display_template_values[$vn_i])) ? $va_display_template_values[$vn_i] : '',
-									'status' => $va_rep['status'], 
-									'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
-									'access' => $va_rep['access'],
-									'access_display' => $t_item->getChoiceListValue('access', $va_rep['access']), 
-									'rep_type_id' => $va_rep['type_id'],
-									'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
-									'rep_label' => $va_rep['label'],
-									'is_primary' => (int)$va_rep['is_primary'],
-									'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
-									'locale_id' => $va_rep['locale_id'], 
-									'icon' => $va_rep['tags']['thumbnail'], 
-									'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'], 
-									'annotation_type' => isset($va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']]) ? $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']] : null,
-									'type' => $va_rep['info']['original']['PROPERTIES']['typename'], 
-									'dimensions' => $va_rep['dimensions']['original'], 
-									'filename' => $va_rep['info']['original_filename'] ? $va_rep['info']['original_filename'] : _t('Unknown'),
-									'num_multifiles' => ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : ''),
-									'metadata' => $vs_extracted_metadata,
-									'md5' => $vs_md5 ? "{$vs_md5}" : "",
-									'typename' => $va_rep_type_list[$va_rep['type_id']]['name_singular'],
-									'fetched_from' => $va_rep['fetched_from'],
-									'fetched_on' => date('c', $va_rep['fetched_on']),
-									'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on'])) : ""
-								);
-		
-								$vn_i++;
-							}
-						}
-						return $va_initial_values;
+						return parent::getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					case 'ca_entities':
 					case 'ca_places':
@@ -1284,7 +1212,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				break;
-			}
+			
+			# -------------------------------------------------
+			case 'special':
+				switch($ps_bundle_name) {
+				    case 'ca_site_page_media':
+				        return parent::getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
+				        break;
+				}
+				break;
+			# -------------------------------------------------
+		}
 		return null;
 	}
 	# ------------------------------------------------------
@@ -2233,7 +2171,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				case 3:		// table_name.field_name.sub_element	
 					if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
 										
-					if ($va_tmp[0] != $this->tableName()) {
+					if (($va_tmp[0] != $this->tableName()) || ($va_tmp[1] == 'related')) {
 						switch(sizeof($va_tmp)) {
 							case 1:
 								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
@@ -2270,8 +2208,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 											break;
 									}
 									
-									$qr_res = call_user_func_array($va_tmp[0].'::find', array($va_find_params, array('sort' => caGetOption('sort', $pa_options, $t_instance->getLabelTableName().'.'.$vs_label_display_field), 'returnAs' => 'searchResult')));
-			
+									$vs_sort = caGetOption('sort', $pa_options, $t_instance->tableName().'.preferred_labels.'.$vs_label_display_field);
+									$qr_res = call_user_func_array($va_tmp[0].'::find', array($va_find_params, array('restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'sort' => $vs_sort, 'returnAs' => 'searchResult')));
+
 									$vs_pk = $t_instance->primaryKey();
 									$va_opts = array('-' => '');
 									
@@ -2303,14 +2242,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									}
 									
 									if ($qr_res) {
+									    $vs_field = ($va_tmp[1] == 'related') ? $va_tmp[0].'.'.$va_tmp[2] : $ps_field;
 										while($qr_res->nextHit()) {
 											if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
 											if (is_array($va_access) && sizeof($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
 											if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get($vs_rel_pk), $va_in_use_list)) { continue; }
-											$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
+											$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($vs_field);
 										}
 									}
-									uksort($va_opts, "strnatcasecmp");
+									
+									if (!isset($pa_options['sort'])) { uksort($va_opts, "strnatcasecmp"); }
 									return caHTMLSelect($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 								} else {
 									return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
@@ -4302,7 +4243,7 @@ if (!$vb_batch) {
 								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_effective_date_".$va_matches[1], pString);
 								$vn_group_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_id".$va_matches[1], pInteger);
 								$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access_".$va_matches[1], pInteger);
-								if ($vn_access > 0) {
+								if ($vn_access >= 0) {
 									$va_groups_to_set[$vn_group_id] = $vn_access;
 									$va_group_effective_dates[$vn_group_id] = $vs_effective_date;
 								}
@@ -4583,10 +4524,12 @@ if (!$vb_batch) {
 					
 						$this->set('is_deaccessioned', $vb_is_deaccessioned = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}is_deaccessioned", pInteger));
 						$this->set('deaccession_notes', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_notes", pString));
-						$this->set('deaccession_type_id', $x=$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_type_id", pString));
+						$this->set('deaccession_type_id', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_type_id", pString));
 	
 						$this->set('deaccession_date', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_date", pString));
-						
+						if ($po_request->config->get('deaccession_use_disposal_date')) {
+						    $this->set('deaccession_disposal_date', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_disposal_date", pString));
+						}
 						if ($vb_is_deaccessioned && (bool)$this->getAppConfig()->get('deaccession_force_access_private')) { $this->get('access', 0); }	// set access to private for accessioned items
 						$this->update();
 						break;
@@ -4651,7 +4594,124 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_page_media':
-						print "save media";
+					    if ($vb_batch) { break; }   // no batch mode
+						// check for existing representations to update (or delete)
+						
+						$vs_prefix_stub = $vs_placement_code.$vs_form_prefix.'_';
+						$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
+						$va_media_ids_sorted = $va_mediasort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'MediaBundleList', pString));
+						sort($va_media_ids_sorted, SORT_NUMERIC);
+						$va_media_list = $this->getPageMedia();
+						
+						if (is_array($va_media_ids_sorted)) {
+							foreach($va_media_list as $vn_i => $va_media) {
+								$this->clearErrors();
+								if (strlen($po_request->getParameter($vs_prefix_stub.'access_'.$va_media['media_id'], pInteger)) > 0) {
+									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_media['media_id']])) {
+										$va_tmp = explode('/', $vs_path);
+										$vs_original_name = array_pop($va_tmp);
+									} else {
+										$vs_path = $_FILES[$vs_prefix_stub.'media_'.$va_media['media_id']]['tmp_name'];
+										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_media['media_id']]['name'];
+									}
+									
+									$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_'.$va_media['media_id'], pString);
+									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_media['media_id'], pInteger);
+									$vs_title = trim($po_request->getParameter($vs_prefix_stub.'title_'.$va_media['media_id'], pString));
+									$vs_caption = trim($po_request->getParameter($vs_prefix_stub.'caption_'.$va_media['media_id'], pString));
+									
+									$vn_rank = null;
+									if (($vn_rank_index = array_search($va_media['media_id'], $va_mediasort_order)) !== false) {
+										$vn_rank = $va_media_ids_sorted[$vn_rank_index];
+									}
+									
+									$this->editMedia($va_media['media_id'], $vs_path, $vs_title, $vs_caption, $vs_idno, $vn_access, ['original_filename' => $vs_original_name, 'rank' => $vn_rank]);
+									if ($this->numErrors()) {
+										foreach($this->errors() as $o_e) {
+											switch($o_e->getErrorNumber()) {
+												case 795:
+													// field conflicts
+													$po_request->addActionError($o_e, $vs_f, $va_media['media_id']);
+													break;
+												default:
+													$po_request->addActionError($o_e, $vs_f, $va_media['media_id']);
+													break;
+											}
+										}
+									}
+									
+									if ($vs_title) {
+										//
+										// Set media title
+										//
+										$t_rep = new ca_object_representations();
+										if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
+										global $g_ui_locale_id;
+										if ($t_rep->load($va_media['media_id'])) {
+											$t_rep->setMode(ACCESS_WRITE);
+											$t_rep->replaceLabel(array('name' => $vs_title), $g_ui_locale_id, null, true, array('queueIndexing' => true));
+											if ($t_rep->numErrors()) {
+												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_media['media_id']);
+											}
+										}
+									}
+								} else {
+									// is it a delete key?
+									$this->clearErrors();
+									if (($po_request->getParameter($vs_prefix_stub.$va_media['media_id'].'_delete', pInteger)) > 0) {
+										$this->removeMedia($va_media['media_id']);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, $va_media['media_id']);
+										}
+									}
+								}
+							}
+						}
+
+					
+						// check for new media to add 
+						$va_file_list = $_FILES;
+						foreach($_REQUEST as $vs_key => $vs_value) {
+						    
+							if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'url' => $vs_value
+								);
+							} elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'tmp_name' => $vs_value,
+									'name' => $vs_value
+								);
+							}
+						}
+						
+						foreach($va_file_list as $vs_key => $va_values) {
+							$this->clearErrors();
+							
+							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
+							
+							if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
+								$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
+							}
+							
+                            if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
+                                $va_tmp = explode('/', $vs_path);
+                                $vs_original_name = array_pop($va_tmp);
+                            } else {
+                                $vs_path = $va_values['tmp_name'];
+                                $vs_original_name = $va_values['name'];
+                            }
+                            if (!$vs_path) { continue; }
+                            
+                            $vs_title = trim($po_request->getParameter($vs_prefix_stub.'title_new_'.$va_matches[1], pString));	
+                            $vs_caption = $po_request->getParameter($vs_prefix_stub.'caption_new_'.$va_matches[1], pString);
+                            $vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
+                            $vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
+                            $this->addMedia($vs_path, $vs_title, $vs_caption, $vs_idno, $vn_access, ['original_filename' => $vs_original_name]);
+                            if ($this->numErrors()) {
+                                $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
+                            } 
+						}
 						break;
 					# -------------------------------
 				}
@@ -5960,8 +6020,6 @@ if (!$vb_batch) {
 			
 			$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			
-			
-			
 			if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && !$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_disable_object_collection_idno_inheritance') && $pa_options['request'] && ($vn_collection_id = $pa_options['request']->getParameter('collection_id', pInteger))) {
 				// Parent will be set to collection
 				$t_coll = new ca_collections($vn_collection_id);
@@ -5970,7 +6028,7 @@ if (!$vb_batch) {
 					$this->opo_idno_plugin_instance->isChild(true, $t_coll->get('idno'));
 					if (!$this->opo_idno_plugin_instance->formatHas('PARENT')) { $this->set($vs_idno_fld, $t_coll->get('idno')); }
 				}
-			} elseif ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { 
+			} elseif ($vn_parent_id = $this->get($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { 
 				// Parent will be set
 				$t_parent = $this->getAppDatamodel()->getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
@@ -5978,7 +6036,12 @@ if (!$vb_batch) {
 				if ($t_parent->load($vn_parent_id)) {
 					$this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
 					if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
-						$this->set($vs_idno_fld, $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true));
+						$this->set($vs_idno_fld, 
+						    ($t_parent->get($vs_parent_id_fld)) ? 
+						        $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
+						        :
+						        ''
+						);
 					}
 				}
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
@@ -6747,7 +6810,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ($this->update()) {
+		if ($this->update(['queueIndexing' => true])) {
 			if (!$vb_already_in_transaction) { $o_t->commit(); }
 			return true;
 		}

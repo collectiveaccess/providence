@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class DeleteByQuery extends AbstractEndpoint
 {
@@ -36,21 +36,17 @@ class DeleteByQuery extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        if (isset($this->index) !== true) {
+        if (!$this->index) {
             throw new Exceptions\RuntimeException(
-                'index is required for DeleteByQuery'
+                'index is required for Deletebyquery'
             );
         }
-        $index = $this->index;
-        $type = $this->type;
-        $uri = "/$index/_query";
 
-        if (isset($index) === true && isset($type) === true) {
-            $uri = "/$index/$type/_query";
-        } elseif (isset($index) === true) {
-            $uri = "/$index/_query";
+        $uri = "/{$this->index}/_delete_by_query";
+        if ($this->type) {
+            $uri = "/{$this->index}/{$this->type}/_delete_by_query";
         }
 
         return $uri;
@@ -59,30 +55,49 @@ class DeleteByQuery extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
-            'q',
-            'consistency',
-            'ignore_unavailable',
+        return array(
+            '_source',
+            '_source_exclude',
+            '_source_include',
             'allow_no_indices',
-            'expand_wildcards',
-            'replication',
-            'size',
-            'source',
-            'timeout',
-            'routing',
-            'df',
+            'analyze_wildcard',
             'analyzer',
+            'conflicts',
             'default_operator',
-        ];
+            'df',
+            'expand_wildcards',
+            'from',
+            'ignore_unavailable',
+            'lenient',
+            'preference',
+            'query',
+            'refresh',
+            'request_cache',
+            'requests_per_second',
+            'routing',
+            'scroll',
+            'scroll_size',
+            'search_timeout',
+            'search_type',
+            'size',
+            'slices',
+            'sort',
+            'stats',
+            'terminate_after',
+            'timeout',
+            'version',
+            'wait_for_active_shards',
+            'wait_for_completion',
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
-        return 'DELETE';
+        return 'POST';
     }
 }

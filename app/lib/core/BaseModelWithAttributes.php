@@ -399,7 +399,7 @@
 					}
 				}
 			}
-			return $this->update();
+			return $this->update(['queueIndexing' => true]);
 		}
 		# ------------------------------------------------------------------
 		private function _commitAttributes($po_trans=null) {
@@ -1292,12 +1292,13 @@
 				}
 			}
 			
-			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
-				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes'], $pa_options);
+			$va_restrict_to_types = caGetOption(['restrictToTypes', 'restrict_to_types'], $pa_options, null);
+			if (isset($va_restrict_to_types) && is_array($va_restrict_to_types)) {
+				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $va_restrict_to_types, $pa_options);
 				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
-					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
+					$pa_options['limitToItemsWithID'] = $va_restrict_to_types;
 				} else {
-					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $va_restrict_to_types);
 				}
 			}
 			
@@ -1366,7 +1367,20 @@
 			}
 											
 			if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
-				return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)), $pa_options);
+				$vs_autocomplete = caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : "";
+				if ($va_tmp[0] == $this->tableName() && $vs_autocomplete) {
+					
+					if (!caGetOption('nojs', $pa_options, false)) {	
+						return caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $this, $pa_options);
+					} else {
+						$ps_field_proc = preg_replace("![\.]+!", "_", $ps_field);
+						if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, []))) { $vs_rel_types_proc = "_{$vs_rel_types}"; $vs_rel_types = "/{$vs_rel_types}";  }
+					
+						return $vs_buf.caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field))).$vs_autocomplete), $pa_options);
+					}
+				} else {
+					return caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field)))), $pa_options);
+				}
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1581,7 +1595,8 @@
 					't_subject' => $this,
 					'request' => $po_request,
 					'form_name' => $ps_form_name,
-					'format' => ''
+					'format' => '',
+					'dontDoRefSubstitution' => true
 				))));
 				
 				//if the elements datatype returns true from renderDataType, then force render the element
@@ -1786,15 +1801,30 @@
 		 *
 		 */
 		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
-			if ($vs_source_id_fld_name = $this->getSourceFieldName()) {
+		    $vs_source_id_fld_name = $this->getSourceFieldName();
+		    $vs_type_id_fld_name = $this->getTypeFieldName();
+			if ($vs_source_id_fld_name || $vs_type_id_fld_name) {
+			    $va_field_info = $this->getFieldInfo($ps_field);
+			    $vs_field_label = caGetOption('label', $pa_options, $va_field_info["LABEL"]);
+			    $vs_field_desc = caGetOption('description', $pa_options, $va_field_info["DESCRIPTION"]);
+			    
+			    $vs_element = null;
 				switch($ps_field) {
 					case $vs_source_id_fld_name:
 						if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
 							$pa_options['value'] = $this->get($ps_field);
 							$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
-							return $this->getSourceListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
+							$vs_element = $this->getSourceListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
 						}
 						break;
+					case $vs_type_id_fld_name:
+						$pa_options['value'] = $this->get($ps_field);
+						$vs_element =  $this->getTypeListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
+						break;
+				}
+				
+				if ($vs_element) {
+				    return str_replace("^DESCRIPTION", $vs_field_desc, str_replace("^LABEL", $vs_field_label, str_replace("^EXTRA", '', str_replace("^ELEMENT", $vs_element, $this->_CONFIG->get('form_element_display_format')))));
 				}
 			}
 			

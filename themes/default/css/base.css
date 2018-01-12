@@ -9,6 +9,7 @@ html, body {
     margin:0px;
     padding:0px;
     height: 100%;
+    overflow: auto !important;
 }
 
 form{
@@ -3234,6 +3235,13 @@ div.caObjectRepresentationDetailEditorElement {
     margin-right: 5px;
 }
 
+input.caObjectRepresentationDetailEditorElementReadOnly {
+    float: left;
+    font-size: 10px;
+    margin-right: 5px;
+    background-color: transparent !important;
+}
+
 div.caObjectRepresentationDetailEditorText {
     font-size: 14px;
     font-weight: normal;
@@ -5824,6 +5832,13 @@ div.preferencePlacementList {
     text-align: center;
 }
 
+#batchProcessingMessage {
+    display: none;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 .batchProcessingHelpText{
     padding:20px;
     margin:20px;
@@ -6360,6 +6375,12 @@ a.caInformationServiceMoreLink {
 
 /* LCSH attributes */
 a.caLCSHServiceMoreLink {
+    display: none;
+    text-decoration: none;
+}
+
+/* GeoNames attributes */
+a.caGeoNamesServiceMoreLink {
     display: none;
     text-decoration: none;
 }
@@ -7315,4 +7336,29 @@ div.caResultsComplexDataEditorErrorContainer {
 	font-weight:normal;
 	margin:5px 0px 0px 5px;
 	text-align:bottom;
+}
+
+/* Media content dialog in CKEditor */
+.camediacontentMediaList {
+    width: 200px; 
+    height: 300px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+div.camediacontentMediaList ul li.mediaItem {
+    padding: 3px;
+}
+
+div.camediacontentMediaList ul li.mediaItem div img {
+    margin: 0px 5px 0px 0px;
+}
+
+li.mediaItem-selected {
+    background-color: #dfdfdf !important;
+}
+
+/* Force CKEditor full screen overlay to top of window */
+.cke_maximized {
+    top: 0px !important;
 }

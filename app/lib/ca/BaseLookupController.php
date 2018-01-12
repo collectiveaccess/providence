@@ -164,6 +164,8 @@
 						$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
 					}
 				}
+		
+				if (preg_match("![\/\.\-]!", $ps_query)) { $pb_exact = true; }
 				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {

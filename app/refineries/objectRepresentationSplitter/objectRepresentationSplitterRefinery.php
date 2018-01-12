@@ -99,6 +99,15 @@
 				'label' => _t('Ignore type when trying to match row'),
 				'description' => _t('Ignore type when trying to match row.')
 			),
+			'objectRepresentationSplitter_relationshipType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationship type'),
+				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
+			),
 			'objectRepresentationSplitter_objectRepresentationType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
@@ -116,6 +125,15 @@
 				'default' => '',
 				'label' => _t('Attributes'),
 				'description' => _t('Sets or maps metadata for the object record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+			),
+			'objectRepresentationSplitter_relationshipTypeDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationship type default'),
+				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system.')
 			),
 			'objectRepresentationSplitter_objectRepresentationTypeDefault' => array(
 				'formatType' => FT_TEXT,

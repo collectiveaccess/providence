@@ -10,20 +10,18 @@ use Elasticsearch\Transport;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class MPercolate extends AbstractEndpoint implements BulkEndpointInterface
 {
     /**
-     * @param Transport $transport
      * @param SerializerInterface $serializer
      */
-    public function __construct(Transport $transport, SerializerInterface $serializer)
+    public function __construct(SerializerInterface $serializer)
     {
         $this->serializer = $serializer;
-        parent::__construct($transport);
     }
 
     /**
@@ -40,7 +38,7 @@ class MPercolate extends AbstractEndpoint implements BulkEndpointInterface
         if (is_array($body) === true) {
             $bulkBody = "";
             foreach ($body as $item) {
-                $bulkBody .= $this->serializer->serialize($item) . "\n";
+                $bulkBody .= $this->serializer->serialize($item)."\n";
             }
             $body = $bulkBody;
         }
@@ -53,7 +51,7 @@ class MPercolate extends AbstractEndpoint implements BulkEndpointInterface
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         return $this->getOptionalURI('_mpercolate');
     }
@@ -61,19 +59,19 @@ class MPercolate extends AbstractEndpoint implements BulkEndpointInterface
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'POST';
     }

@@ -208,7 +208,16 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Must be unique'),
 			'description' => _t('Check this option to enforce uniqueness across all values for this attribute.')
-		)
+		),
+		'referenceMediaIn' => array(
+            'formatType' => FT_TEXT,
+            'displayType' => DT_SELECT,
+            'showMediaElementBundles' => true,
+            'default' => '',
+            'width' => "200px", 'height' => 1,
+            'label' => _t('Reference media in'),
+            'description' => _t('Allow in-line references in text to a media element.')
+        )
 	);
  
 	class TextAttributeValue extends AttributeValue implements IAttributeValue {
@@ -223,7 +232,19 @@
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * @param array $pa_options Options include:
+ 		 *      doRefSubstitution = Parse and replace reference tags (in the form [table idno="X"]...[/table]). [Default is false in Providence; true in Pawtucket].
+ 		 * @return string
+ 		 */
 		public function getDisplayValue($pa_options=null) {
+		    global $g_request;
+		    
+		    // process reference tags
+		    if ($g_request && caGetOption('doRefSubstitution', $pa_options, __CA_APP_TYPE__ == 'PAWTUCKET')) {
+                return caProcessReferenceTags($g_request, $this->ops_text_value);
+            }
+		
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
@@ -282,7 +303,8 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique'));
+ 			global $g_request;
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique', 'referenceMediaIn'));
 
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
@@ -310,6 +332,15 @@
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				AssetLoadManager::register("ckeditor");
  				
+ 				$vb_show_media_content_option = false;
+ 				if (
+ 				    (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) 
+ 				    && 
+ 				    ($vb_show_media_content_option = (isset($va_settings['referenceMediaIn']) && (bool)$va_settings['referenceMediaIn']))
+ 				) {
+ 				    $va_toolbar_config['misc'][] = 'Media';
+ 				}
+ 				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
 						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
 						{
@@ -317,7 +348,11 @@
 							width: '{$vs_width}',
 							height: '{$vs_height}',
 							toolbarLocation: 'top',
-							enterMode: CKEDITOR.ENTER_BR
+							enterMode: CKEDITOR.ENTER_BR,
+				            lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
+				            contentUrl: ".($vb_show_media_content_option ? "'".caNavUrl($g_request, '*', '*', 'getMediaAttributeList', ['bundle' => $va_settings['referenceMediaIn'], $pa_options['t_subject']->primaryKey() => $pa_options['t_subject']->getPrimaryKey()])."'" : "null").",
+				            insertMediaRefs: true,
+				            key: '".$pa_element_info['element_id']."_{n}'
 						});
 						
 						ckEditor.on('instanceReady', function(){ 
@@ -360,11 +395,12 @@
  					$va_element_dom_ids[$va_element['element_code']] = "#{fieldNamePrefix}".$va_element['element_id']."_{n}";
  				}
  				
+ 				$vs_omit_units = ((bool)Configuration::load()->get('omit_repeating_units_for_measurements_in_templates')) ? "true" : "false";
  				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				";
  				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').bind('keyup', function(e) { 
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				});";
  				
  				$vs_element .="});</script>";

@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_attribute_values.php : table access class for table ca_attribute_values
+ * app/models/ca_attribute_values.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
