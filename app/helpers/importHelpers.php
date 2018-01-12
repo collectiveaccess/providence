@@ -944,7 +944,6 @@
 								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
-<<<<<<< HEAD
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
 								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'],'EXACT'), 'log' => $o_log]);
 									foreach($va_files as $vs_file) {
@@ -962,15 +961,6 @@
 							        }
 							        $vn_c++;
 							        continue(2);
-=======
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
-								} elseif(file_exists($va_val['media']['media'])) {
-								    $va_val['media']['media'] = $va_val['media']['media'];
-								} elseif(file_exists($vs_item)) {
-								    $va_val['media']['media'] = $vs_item;
-								} elseif(isset($va_val['media']['media']) && $va_val['media']['media']) {// try to locate file in import directory
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.str_replace("\\", "/", $va_val['media']['media']);
->>>>>>> d48a6228ed4035cfd771626bd726bcda6eddd9fc
 								} else {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
 								}
