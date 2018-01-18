@@ -6379,6 +6379,12 @@ a.caLCSHServiceMoreLink {
     text-decoration: none;
 }
 
+/* GeoNames attributes */
+a.caGeoNamesServiceMoreLink {
+    display: none;
+    text-decoration: none;
+}
+
 /* Media replication */
 table.caRepresentationMediaReplicationStatusTable {
     width: 75%;

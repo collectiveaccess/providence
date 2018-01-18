@@ -325,9 +325,7 @@ class ElementsController extends BaseEditorController {
 					continue;
 				}
 			}
-
-			CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSets');
-			CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSetIds');
+            $t_element->flushCacheForElement();
 		}
 		
 		$this->Edit();

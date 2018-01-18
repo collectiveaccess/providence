@@ -307,7 +307,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Flushes the element set cache for current record, its parent and the whole element set
 	 */
-	private function flushCacheForElement() {
+	public function flushCacheForElement() {
 		if(!$this->getPrimaryKey()) { return; }
 
 		if($vn_parent_id = $this->get('parent_id')) {
@@ -319,6 +319,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		CompositeCache::delete($this->getPrimaryKey(), 'ElementSets');
+		CompositeCache::delete(null.'/'.null.'/'.$this->getPrimaryKey(), 'ElementTypeRestrictions');
 
 		// flush getElementsAsList() cache too
 		if(CompositeCache::contains('cacheKeys', 'ElementList')) {

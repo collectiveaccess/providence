@@ -1431,7 +1431,7 @@
                         </label>
                     </labels>
                 </item>
-                <item idno="AVCHD" enabled="1" default="0">
+                <item idno="AVCHD_3D" enabled="1" default="0">
                     <labels>
                         <label locale="en_US" preferred="1">
                             <name_singular>AVCHD 3D</name_singular>
@@ -4571,7 +4571,7 @@
             <placement code="ca_attribute_wordCount">
               <bundle>ca_attribute_wordCount</bundle>
             </placement>  
-            <placement code="ca_attribute_documentFormat">
+            <placement code="ca_attribute_documentFormat2">
               <bundle>ca_attribute_documentFormat</bundle>
             </placement>
               <placement code="ca_attribute_notes">

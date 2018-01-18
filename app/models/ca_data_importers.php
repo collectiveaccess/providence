@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2219,8 +2219,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				//print_r($va_content_tree);
-				//die("END\n\n");
+				#print_r($va_content_tree);
+				#die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -2794,31 +2794,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												}
 											}
 										}
-									
-										// 
-	// 									if (($vs_subject_table_name == 'ca_objects') && $va_element_data['media']['media']) {
-	// 										unset($va_data_for_rel_table['media']);
-	// 										
-	// 										foreach($va_data_for_rel_table as $vs_key => $vm_val) {
-	// 											// Attributes, including intrinsics are in two-level format, eg. idno is $va_attributes['idno']['idno'] 
-	// 											// but addRepresentations() expects intrinsics to be single level (eg. $va_attributes['idno']) so
-	// 											// we do some rewriting here
-	// 											if (is_array($vm_val) && isset($vm_val[$vs_key])) { 
-	// 												$va_data_for_rel_table[$vs_key] = $vm_val[$vs_key];
-	// 											}
-	// 										}
-	// 										
-	// 										if (!($t_subject->addRepresentation($va_element_data['media']['media'], isset($va_element_data['_type']) ? $va_element_data['_type'] : caGetDefaultItemID('object_representation_types'), $vn_locale_id, 0, 0, true, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on)))) {
-	// 											$vs_error = join("; ", $t_subject->getErrors());
-	// 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-	// 											if ($vs_item_error_policy == 'stop') {
-	// 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-	// 												
-	// 												if ($o_trans) { $o_trans->rollback(); }
-	// 												return false;
-	// 											}
-	// 										}
-	// 									}
 										break;
 									case 'ca_loans':
 										if ($vn_rel_id = DataMigrationUtils::getLoanID($va_element_data['preferred_labels']['name'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
@@ -3029,7 +3004,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
 				foreach($vm_value as $vs_k => $vs_v) {
 					if (is_array($vs_v)) { continue; }	// skip odd mappings that return arrays of arrays
-					$vs_v = stripslashes($vs_v);
+					//$vs_v = stripslashes($vs_v);
+					$vs_v = str_replace('\\\\', '\\', $vs_v);
 					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item, $pa_options);
 				}
 				if ($pb_return_as_array) {
