@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -975,7 +975,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										}
 										if ($vb_do_stemming) {
 											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
-											if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
+											if (!preg_match('!y$!u', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
 												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
 													$vs_stem = (string)$vs_term;
 												}
