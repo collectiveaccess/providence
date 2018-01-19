@@ -1916,13 +1916,22 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		}
 		
-		// insert word
-		if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word)))) { $vs_stem = $ps_word; }
-		if (mb_strlen($vs_stem) > 255) { $vs_stem = mb_substr($vs_stem, 0, 255); }
-		
-		$this->opqr_insert_word->execute($ps_word, $vs_stem);
-		if ($this->opqr_insert_word->numErrors()) { return null; }
-		if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
+		try {
+            // insert word
+            if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word)))) { $vs_stem = $ps_word; }
+            if (mb_strlen($vs_stem) > 255) { $vs_stem = mb_substr($vs_stem, 0, 255); }
+        
+            $this->opqr_insert_word->execute($ps_word, $vs_stem);
+            if ($this->opqr_insert_word->numErrors()) { return null; }
+            if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
+        } catch (Exception $e) {
+            if ($qr_res = $this->opqr_lookup_word->execute($ps_word)) {
+                if ($qr_res->nextRow()) {
+                    return WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word] = (int)$qr_res->get('word_id', array('binary' => true));
+                }
+            }
+            return null;
+        }
 		
 		// create ngrams
 		// 		$va_ngrams = caNgrams($ps_word, 4);
