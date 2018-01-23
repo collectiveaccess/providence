@@ -4726,6 +4726,14 @@
       </labels>
       <items/>
     </list>
+    <list code="collection_hierarchy" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Collection hierarchy</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <!-- Digit Pres -->
     <list code="preservation_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
