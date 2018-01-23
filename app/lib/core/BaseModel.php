@@ -7804,7 +7804,7 @@ class BaseModel extends BaseObject {
 		
 		$vs_pk = $this->primaryKey();
 		$pn_id = caGetOption($vs_pk, $pa_options, null);
-		$va_hier = $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => false)));
+		$va_hier = $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => false, 'sort' => null)));
 		
 		$va_levels = $va_ids = $va_parent_ids = array();
 		
@@ -7821,7 +7821,7 @@ class BaseModel extends BaseObject {
 		
 		$pa_sort = caGetOption('sort', $pa_options, null);
 		if (!is_array($pa_sort) && $pa_sort) { $pa_sort = explode(";", $pa_sort); }
-		
+	
 		$ps_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, 'asc'));
 		if (!in_array($ps_sort_direction, array('asc', 'desc'))) { $ps_sort_direction = 'asc'; }
 		
