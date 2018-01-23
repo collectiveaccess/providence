@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -975,7 +975,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										}
 										if ($vb_do_stemming) {
 											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
-											if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
+											if (!preg_match('!y$!u', $vs_to_stem) && (preg_match('!^[\d]+$!', $vs_to_stem) || preg_match('!^[\w\-]+$!', $vs_to_stem))) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
 												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
 													$vs_stem = (string)$vs_term;
 												}
@@ -1916,13 +1916,22 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		}
 		
-		// insert word
-		if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word)))) { $vs_stem = $ps_word; }
-		if (mb_strlen($vs_stem) > 255) { $vs_stem = mb_substr($vs_stem, 0, 255); }
-		
-		$this->opqr_insert_word->execute($ps_word, $vs_stem);
-		if ($this->opqr_insert_word->numErrors()) { return null; }
-		if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
+		try {
+            // insert word
+            if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word)))) { $vs_stem = $ps_word; }
+            if (mb_strlen($vs_stem) > 255) { $vs_stem = mb_substr($vs_stem, 0, 255); }
+        
+            $this->opqr_insert_word->execute($ps_word, $vs_stem);
+            if ($this->opqr_insert_word->numErrors()) { return null; }
+            if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
+        } catch (Exception $e) {
+            if ($qr_res = $this->opqr_lookup_word->execute($ps_word)) {
+                if ($qr_res->nextRow()) {
+                    return WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word] = (int)$qr_res->get('word_id', array('binary' => true));
+                }
+            }
+            return null;
+        }
 		
 		// create ngrams
 		// 		$va_ngrams = caNgrams($ps_word, 4);

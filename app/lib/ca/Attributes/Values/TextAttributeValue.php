@@ -395,12 +395,27 @@
  					$va_element_dom_ids[$va_element['element_code']] = "#{fieldNamePrefix}".$va_element['element_id']."_{n}";
  				}
  				
- 				$vs_omit_units = ((bool)Configuration::load()->get('omit_repeating_units_for_measurements_in_templates')) ? "true" : "false";
+ 				$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+ 				$va_parser_opts = [];
+ 				foreach([
+                        'inch_decimal_precision', 'feet_decimal_precision', 'mile_decimal_precision', 
+                        'millimeter_decimal_precision', 'centimeter_decimal_precision', 'meter_decimal_precision', 
+                        'kilometer_decimal_precision', 
+                        'use_unicode_fraction_glyphs_for', 'display_fractions_for', 
+                        'add_period_after_units', 
+                        'use_inches_for_display_up_to', 'use_feet_for_display_up_to', 'use_millimeters_for_display_up_to', 
+                        'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to'
+ 			        ] as $vs_key) {
+ 				    $vs_proc_key = caSnakeToCamel($vs_key);
+ 				    $va_parser_opts[$vs_proc_key] = $o_dimensions_config->get($vs_key);
+ 				}
+ 				$vs_omit_units = ((bool)$o_dimensions_config->get('omit_repeating_units_for_measurements_in_templates')) ? "true" : "false";
  				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
+ 				    caDisplayTemplateParser.setOptions(".json_encode($va_parser_opts).");
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				";
  				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').bind('keyup', function(e) { 
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				});";
  				
  				$vs_element .="});</script>";

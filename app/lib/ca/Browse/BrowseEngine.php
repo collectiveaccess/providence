@@ -3275,7 +3275,7 @@
 								$qr_res->seek(0);
 
 								$t_list_item = new ca_list_items();
-								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('type_id', 'idno', 'item_value', 'parent_id', 'access'));
+								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('type_id', 'idno', 'item_value', 'parent_id', 'access', 'deleted'));
 								$va_list_child_count_cache = array();
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
@@ -3293,6 +3293,7 @@
 								$va_children_by_parent_id = [];
 								foreach($va_values as $i => $vn_val) {
 									if (!$vn_val) { continue; }
+									if ($va_list_item_cache[$vn_val]['deleted'] > 0) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
 									if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
 
