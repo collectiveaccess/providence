@@ -66,7 +66,8 @@
 			if (is_array($pm_value)) {
 				$va_measurements = $pm_value;	// for input formats that support repeating values
 			} else {
-				$pm_value = preg_replace("![^\d\.A-Za-z\"\"’” \/]+!", "", $pm_value);
+				$pm_value = preg_replace("!\([^\)]*\)!", "", $pm_value);        // remove parentheticals
+				$pm_value = preg_replace("![^\d\.A-Za-z\"\'\"’” \/]+!", " ", $pm_value);
 				$va_measurements = [$pm_value];
 			}
 			
@@ -75,15 +76,22 @@
 			foreach($va_measurements as $vs_measurement) {
 				$va_val = [];
 				
-				$va_parsed_measurements = caParseLengthExpression($vs_measurement, ['delimiter' => $pa_item['settings']['measurementsSplitter_delimiter'], 'units' => $pa_item['settings']['measurementsSplitter_units']]);
+				$va_parsed_measurements = caParseLengthExpression($vs_measurement, ['returnExtractedMeasurements' => true, 'delimiter' => $pa_item['settings']['measurementsSplitter_delimiter'], 'units' => $pa_item['settings']['measurementsSplitter_units']]);
+				
 				if(is_array($va_elements = $pa_item['settings']['measurementsSplitter_elements'])) {
 					$vn_set_count = 0;
 					foreach($va_elements as $vn_i => $va_element) {
 						if (!is_array($va_element)) { continue; }
 						if (!sizeof($va_parsed_measurements)) { break; }
-					
-						if ($vs_measurement = array_shift($va_parsed_measurements)) {
-					
+					    
+					    $va_measurement = array_shift($va_parsed_measurements);
+					    if(((strpos($va_measurement['source'], '/') !== false) || (preg_match("![\d\.]+[ ]*[\"'a-zA-Z\.]+[ ]+[\d\.]+[ ]*[a-zA-Z\.\"\']+!", $va_measurement['source'])))) {
+                            $vs_measurement = $va_measurement['source'];
+                            if (!preg_match("![A-Za-z\.\"']+[ ]*$!", $vs_measurement)) {  $vs_measurement .= " ".$va_measurement['units']; }
+                        } else {
+                            $vs_measurement = $va_measurement['string'];
+						}
+						if ($vs_measurement) {
 							// Set label
 							$va_val[$va_element['quantityElement']] = $vs_measurement;
 							if (isset($va_element['typeElement']) && $va_element['typeElement']) {
@@ -106,7 +114,6 @@
 				}
 				if ($vn_set_count > 0) { $va_vals[] = $va_val; }
 			}
-			
 			return $va_vals;
 		}
 		# -------------------------------------------------------	
