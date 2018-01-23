@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class CountPercolate extends AbstractEndpoint
 {
@@ -36,7 +36,7 @@ class CountPercolate extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->index) !== true) {
             throw new Exceptions\RuntimeException(
@@ -51,9 +51,9 @@ class CountPercolate extends AbstractEndpoint
         }
 
         $index = $this->index;
-        $type = $this->type;
-        $id = $this->id;
-        $uri = "/$index/$type/_percolate/count";
+        $type  = $this->type;
+        $id    = $this->id;
+        $uri   = "/$index/$type/_percolate/count";
 
         if (isset($id) === true) {
             $uri = "/$index/$type/$id/_percolate/count";
@@ -65,9 +65,9 @@ class CountPercolate extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'routing',
             'preference',
             'ignore_unavailable',
@@ -76,14 +76,14 @@ class CountPercolate extends AbstractEndpoint
             'percolate_index',
             'percolate_type',
             'version',
-            'version_type',
-        ];
+            'version_type'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

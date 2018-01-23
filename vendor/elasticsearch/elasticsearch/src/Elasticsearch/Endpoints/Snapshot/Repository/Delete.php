@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Snapshot\Repository;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Delete
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Snapshot\Repository
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Delete extends AbstractEndpoint
 {
@@ -39,7 +39,7 @@ class Delete extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->repository) !== true) {
             throw new Exceptions\RuntimeException(
@@ -47,7 +47,7 @@ class Delete extends AbstractEndpoint
             );
         }
         $repository = $this->repository;
-        $uri = "/_snapshot/$repository";
+        $uri   = "/_snapshot/$repository";
 
         if (isset($repository) === true) {
             $uri = "/_snapshot/$repository";
@@ -59,18 +59,18 @@ class Delete extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'master_timeout',
             'timeout',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'DELETE';
     }

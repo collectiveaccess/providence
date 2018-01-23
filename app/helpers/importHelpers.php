@@ -784,12 +784,12 @@
 						}
 		
 						// Set attributes
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 			
 						// Set interstitials
-						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader)))) {
+						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 							$va_val = array_merge($va_val, $va_interstitial_attr_vals);
 						}
 
@@ -944,13 +944,23 @@
 								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
-								} elseif(file_exists($va_val['media']['media'])) {
-								    $va_val['media']['media'] = $va_val['media']['media'];
-								} elseif(file_exists($vs_item)) {
-								    $va_val['media']['media'] = $vs_item;
-								} elseif(isset($va_val['media']['media']) && $va_val['media']['media']) {// try to locate file in import directory
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.str_replace("\\", "/", $va_val['media']['media']);
+									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
+								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'],'EXACT'), 'log' => $o_log]);
+									foreach($va_files as $vs_file) {
+									    $va_media_val = $va_val;
+									    if(!isset($va_media_val['preferred_labels'])) { $va_media_val['preferred_labels'] = array('name' => pathinfo($vs_file, PATHINFO_FILENAME)); }
+							            if(!isset($va_media_val['idno'])) { $va_media_val['idno'] = pathinfo($vs_file, PATHINFO_FILENAME); }
+							            $va_media_val['media']['media'] = $vs_file;
+							            if ($pb_dont_create) { $va_media_val['_dontCreate'] = 1; }
+							            if (isset($pa_options['nonPreferredLabels']) && is_array($pa_options['nonPreferredLabels'])) {
+                                            $va_media_val['nonpreferred_labels'] = $pa_options['nonPreferredLabels'];
+                                        }
+
+					                    $va_media_val['_matchOn'] = $va_match_on;
+							            $va_vals[] = $va_media_val;
+							        }
+							        $vn_c++;
+							        continue(2);
 								} else {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
 								}

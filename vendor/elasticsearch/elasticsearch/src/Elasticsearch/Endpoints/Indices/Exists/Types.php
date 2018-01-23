@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Indices\Exists;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Types
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices\Exists
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Types extends AbstractEndpoint
 {
@@ -20,7 +20,7 @@ class Types extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->index) !== true) {
             throw new Exceptions\RuntimeException(
@@ -35,8 +35,8 @@ class Types extends AbstractEndpoint
         }
 
         $index = $this->index;
-        $type = $this->type;
-        $uri = "/$index/$type";
+        $type  = $this->type;
+        $uri   = "/$index/$type";
 
         return $uri;
     }
@@ -44,20 +44,19 @@ class Types extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'ignore_unavailable',
             'allow_no_indices',
-            'expand_wildcards',
-            'local',
-        ];
+            'expand_wildcards'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'HEAD';
     }

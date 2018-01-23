@@ -558,4 +558,3 @@ class Db_mysqli extends DbDriverBase {
 		//$this->disconnect();
 	}
 }
-?>

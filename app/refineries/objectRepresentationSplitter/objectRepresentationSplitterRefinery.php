@@ -162,6 +162,24 @@
 				'label' => _t('Media prefix'),
 				'description' => ''
 			),
+			'objectRepresentationSplitter_matchMode' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Match mode'),
+				'description' => ''
+			),
+			'objectRepresentationSplitter_matchType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Match type'),
+				'description' => ''
+			),
 			'objectRepresentationSplitter_relationships' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,

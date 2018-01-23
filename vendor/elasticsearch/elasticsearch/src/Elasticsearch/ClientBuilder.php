@@ -10,6 +10,7 @@ use Elasticsearch\ConnectionPool\StaticNoPingConnectionPool;
 use Elasticsearch\Connections\Connection;
 use Elasticsearch\Connections\ConnectionFactory;
 use Elasticsearch\Connections\ConnectionFactoryInterface;
+use Elasticsearch\Namespaces\NamespaceBuilderInterface;
 use Elasticsearch\Serializers\SerializerInterface;
 use Elasticsearch\ConnectionPool\Selectors;
 use Elasticsearch\Serializers\SmartSerializer;
@@ -27,9 +28,9 @@ use Monolog\Processor\IntrospectionProcessor;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Common\Exceptions
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
   */
 class ClientBuilder
 {
@@ -38,6 +39,9 @@ class ClientBuilder
 
     /** @var callback */
     private $endpoint;
+
+    /** @var NamespaceBuilderInterface[] */
+    private $registeredNamespacesBuilders = [];
 
     /** @var  ConnectionFactoryInterface */
     private $connectionFactory;
@@ -85,12 +89,45 @@ class ClientBuilder
     /** @var null|bool|string */
     private $sslVerification = null;
 
+    /** @var bool  */
+    private $allowBadJSON = false;
+
     /**
      * @return ClientBuilder
      */
     public static function create()
     {
         return new static();
+    }
+
+    /**
+     * Can supply first parm to Client::__construct() when invoking manually or with dependency injection
+     * @return this->ransport
+     *
+     */
+    public function getTransport()
+    {
+        return $this->transport;
+    }
+
+    /**
+     * Can supply second parm to Client::__construct() when invoking manually or with dependency injection
+     * @return this->endpoint
+     *
+     */
+    public function getEndpoint()
+    {
+        return $this->endpoint;
+    }
+
+    /**
+     * Can supply third parm to Client::__construct() when invoking manually or with dependency injection
+     * @return this->registeredNamespacesBuilders
+     *
+     */
+    public function getRegisteredNamespacesBuilders()
+    {
+        return $this->registeredNamespacesBuilders;
     }
 
     /**
@@ -109,7 +146,8 @@ class ClientBuilder
      * @throws Common\Exceptions\RuntimeException
      * @return \Elasticsearch\Client
      */
-    public static function fromConfig($config, $quiet = false) {
+    public static function fromConfig($config, $quiet = false)
+    {
         $builder = new self;
         foreach ($config as $key => $value) {
             $method = "set$key";
@@ -228,6 +266,17 @@ class ClientBuilder
     public function setEndpoint($endpoint)
     {
         $this->endpoint = $endpoint;
+
+        return $this;
+    }
+
+    /**
+     * @param NamespaceBuilderInterface $namespaceBuilder
+     * @return $this
+     */
+    public function registerNamespace(NamespaceBuilderInterface $namespaceBuilder)
+    {
+        $this->registeredNamespacesBuilders[] = $namespaceBuilder;
 
         return $this;
     }
@@ -379,11 +428,24 @@ class ClientBuilder
         return $this;
     }
 
+    public function allowBadJSONSerialization()
+    {
+        $this->allowBadJSON = true;
+        return $this;
+    }
+
     /**
      * @return Client
      */
     public function build()
     {
+        if(!defined('JSON_PRESERVE_ZERO_FRACTION') && $this->allowBadJSON === false) {
+            throw new RuntimeException("Your version of PHP / json-ext does not support the constant 'JSON_PRESERVE_ZERO_FRACTION',".
+            " which is important for proper type mapping in Elasticsearch. Please upgrade your PHP or json-ext.\n".
+            "If you are unable to upgrade, and are willing to accept the consequences, you may use the allowBadJSONSerialization()".
+            " method on the ClientBuilder to bypass this limitation.");
+        }
+
         $this->buildLoggers();
 
         if (is_null($this->handler)) {
@@ -426,6 +488,23 @@ class ClientBuilder
             if (is_null($this->connectionParams)) {
                 $this->connectionParams = [];
             }
+
+            // Make sure we are setting Content-Type and Accept (unless the user has explicitly
+            // overridden it
+            if (isset($this->connectionParams['client']['headers']) === false) {
+                $this->connectionParams['client']['headers'] = [
+                    'Content-Type' => ['application/json'],
+                    'Accept' => ['application/json']
+                ];
+            } else {
+                if (isset($this->connectionParams['client']['headers']['Content-Type']) === false) {
+                    $this->connectionParams['client']['headers']['Content-Type'] = ['application/json'];
+                }
+                if (isset($this->connectionParams['client']['headers']['Accept']) === false) {
+                    $this->connectionParams['client']['headers']['Accept'] = ['application/json'];
+                }
+            }
+
             $this->connectionFactory = new ConnectionFactory($this->handler, $this->connectionParams, $this->serializer, $this->logger, $this->tracer);
         }
 
@@ -442,30 +521,36 @@ class ClientBuilder
         $this->buildTransport();
 
         if (is_null($this->endpoint)) {
-            $transport = $this->transport;
             $serializer = $this->serializer;
 
-            $this->endpoint = function ($class) use ($transport, $serializer) {
+            $this->endpoint = function ($class) use ($serializer) {
                 $fullPath = '\\Elasticsearch\\Endpoints\\' . $class;
-                if ($class === 'Bulk' || $class === 'MSearch' || $class === 'MPercolate') {
-                    return new $fullPath($transport, $serializer);
+                if ($class === 'Bulk' || $class === 'Msearch' || $class === 'MsearchTemplate' || $class === 'MPercolate') {
+                    return new $fullPath($serializer);
                 } else {
-                    return new $fullPath($transport);
+                    return new $fullPath();
                 }
             };
         }
 
-        return $this->instantiate($this->transport, $this->endpoint);
+        $registeredNamespaces = [];
+        foreach ($this->registeredNamespacesBuilders as $builder) {
+            /** @var $builder NamespaceBuilderInterface */
+            $registeredNamespaces[$builder->getName()] = $builder->getObject($this->transport, $this->serializer);
+        }
+
+        return $this->instantiate($this->transport, $this->endpoint, $registeredNamespaces);
     }
 
     /**
      * @param Transport $transport
      * @param callable $endpoint
+     * @param Object[] $registeredNamespaces
      * @return Client
      */
-    protected function instantiate(Transport $transport, callable $endpoint)
+    protected function instantiate(Transport $transport, callable $endpoint, array $registeredNamespaces)
     {
-        return new Client($transport, $endpoint);
+        return new Client($transport, $endpoint, $registeredNamespaces);
     }
 
     private function buildLoggers()

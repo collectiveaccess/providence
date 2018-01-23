@@ -41,7 +41,7 @@
 	
 	$vn_num_images = sizeof($va_images);
 ?>
-<div class="threesixty <?php print $vs_class; ?>" id="<?php print $vs_id; ?>">
+<div class="threesixty <?php print $vs_class; ?>" id="<?php print $vs_id; ?>" style="width: <?php print caGetOption('viewer_width', $va_data['display'], '800px'); ?>; height: <?php print caGetOption('viewer_height', $va_data['display'], '800px'); ?>;">
     <div class="spinner">
         <span>0%</span>
     </div>
