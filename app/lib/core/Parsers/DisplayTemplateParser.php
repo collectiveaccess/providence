@@ -1243,9 +1243,9 @@ class DisplayTemplateParser {
 		$va_tmp = explode('~', $ps_get_spec);
 		if (!is_array($va_modifiers = array_slice($va_tmp, 1))) { $va_modifiers = null; }
 	
-		$va_tag_opt_tmp = preg_split("![\%\&]{1}!", $vs_opts);
-		
-		if (sizeof($va_tag_opt_tmp) > 1) {
+		$va_tag_opt_tmp = array_filter(preg_split("![\%\&]{1}!", $vs_opts), "strlen");
+	
+		if (sizeof($va_tag_opt_tmp) > 0) {
 			foreach($va_tag_opt_tmp as $vs_tag_opt_raw) {
 				if (preg_match("!^\[([^\]]+)\]$!", $vs_tag_opt_raw, $va_matches)) {
 					if(sizeof($va_filter = explode("=", $va_matches[1])) == 2) {
@@ -1272,10 +1272,7 @@ class DisplayTemplateParser {
 			
 			$va_tmp[sizeof($va_tmp)-1] = $vs_tag_bit;	// remove option from tag-part array
 			$vs_tag_proc = join(".", $va_tmp);
-			
-			$ps_get_spec = $vs_tag_proc;
 		}
-		
 		return ['tag' => $ps_get_spec, 'options' => $va_tag_opts, 'filters' => $va_tag_filters, 'modifiers' => $va_modifiers];
 	}
 	# -------------------------------------------------------------------
