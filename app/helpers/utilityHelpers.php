@@ -947,16 +947,27 @@ function caFileIsIncludable($ps_file) {
 			$vn_val = caConvertFloatToLocale($vn_val, $locale);
 			$ps_fractional_expression = str_replace($va_matches[0], $vn_val, $ps_fractional_expression);
 		} 
-        $sep = caGetDecimalSeparator($locale);
+
         // replace unicode fractions with decimal equivalents
-        foreach([
-            '½' => "0{$sep}5", '⅓' => "0{$sep}333", '¼' => "0{$sep}25", '⅛' => "0{$sep}125",
-            '⅔' => "0{$sep}667",
-            '¾'	=> "0{$sep}75", '⅜' => "0{$sep}375", '⅝' => "0{$sep}625", '⅞' => "0{$sep}875", '⅒' => "0{$sep}1"] as $vs_glyph => $vs_val
+        foreach(caGetFractionalGlyphTable($locale) as $vs_glyph => $vs_val
         ) {
             $ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', " {$vs_val}", $ps_fractional_expression);
         }
 		return $ps_fractional_expression;
+	}
+	# ---------------------------------------
+	/**
+	 * Returns map of unicode fraction glyphs and their decimal approximations
+	 *
+	 * @param string locale A locale code. [Default is en_US]
+	 * @return array
+	 */
+	function caGetFractionalGlyphTable($locale="en_US") {
+		$sep = caGetDecimalSeparator($locale);
+		return [
+            '½' => "0{$sep}5", '⅓' => "0{$sep}333", '¼' => "0{$sep}25", '⅛' => "0{$sep}125",
+            '⅔' => "0{$sep}667",
+            '¾'	=> "0{$sep}75", '⅜' => "0{$sep}375", '⅝' => "0{$sep}625", '⅞' => "0{$sep}875", '⅒' => "0{$sep}1"];
 	}
 	# ---------------------------------------
 	/**
@@ -3091,10 +3102,11 @@ function caFileIsIncludable($ps_file) {
 	 *		delimiter = Delimiter string between dimensions. Delimiter will be processed case-insensitively. [Default is 'x']
 	 *		units = Units to use as default for quantities that lack a specification. [Default is inches]
 	 *		returnExtractedMeasurements = return an array of arrays, each of which includes the numeric quantity, units and display string as separate values. [Default is false]
+	 *		precision = number of significant digits to the right of the decimal point to return, overriding any unit specific settings in dimensions.conf. [Default is null]
 	 * @return array An array of parsed and normalized length dimensions, parseable by caParseLengthDimension() or Zend_Measure
 	 */
 	function caParseLengthExpression($ps_expression, $pa_options=null) {
-        $vn_precision = ini_get('precision');
+        $vn_php_precision = ini_get('precision');
         ini_set('precision', 12);
         
 		$va_extracted_measurements = [];
@@ -3104,14 +3116,17 @@ function caFileIsIncludable($ps_file) {
 
 		$ps_units = caGetOption('units', $pa_options, 'in');
 		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
+		$pn_precision = caGetOption('precision', $pa_options, null);
 
 		if ($ps_delimiter = caGetOption('delimiter', $pa_options, 'x')) {
-			$va_measurements = explode(strtolower($ps_delimiter), strtolower($ps_expression));
+			$va_measurements = explode(strtolower($ps_delimiter), mb_strtolower($ps_expression));
 		} else {
 			$ps_delimiter = '';
 			$va_measurements = array($pm_value);
 		}
-
+		
+		$va_glyphs = array_keys(caGetFractionalGlyphTable());
+		
         $va_unit_map = [];
 		foreach($va_measurements as $vn_i => $vs_measurement) {
 			$vs_measurement = trim(preg_replace("![ ]+!", " ", $vs_measurement));
@@ -3123,12 +3138,12 @@ function caFileIsIncludable($ps_file) {
 					throw new Exception("Missing or invalid dimensions");
 				} else {
 					$va_unit_map[] = $vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
-				    if(!($vn_parse_precision = $o_dimensions_config->get(caGetLengthUnitType($vs_extracted_units, ['code' => true])."_decimal_precision"))) { $vn_parse_precision = 4; }
+				    if(!strlen($vn_parse_precision = $pn_precision) && !strlen($vn_parse_precision = $o_dimensions_config->get(caGetLengthUnitType($vs_extracted_units, ['code' => true])."_decimal_precision"))) { $vn_parse_precision = 4; }
 				    $vs_measurement = trim($vo_parsed_measurement->toString($vn_parse_precision));
 					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
 				}
 			} catch(Exception $e) {
-				if (preg_match("!^([\d\. \/]+)!", $vs_measurement, $va_matches)) {
+				if (preg_match("!^([\d\. \/".join("", $va_glyphs)."]+)!", $vs_measurement, $va_matches)) {
 					$vs_measurement = $va_matches[0];   // record without units; we'll infer them below
                     $va_unit_map[] = null;
 				} else {
@@ -3137,7 +3152,6 @@ function caFileIsIncludable($ps_file) {
 			}
 			$va_extracted_measurements[] = ['quantity' => trim(preg_replace("![^\d\. \/]+!", "", $vs_measurement)), 'string' => $vs_measurement, 'units' => $vs_extracted_units, 'source' => $vs_measurement_original];
 		}
-		
 
 		$vn_set_count = 0;
 
@@ -3152,7 +3166,9 @@ function caFileIsIncludable($ps_file) {
                 
                 try {
                     if($vo_parsed_measurement = caParseLengthDimension($va_measurement['string']." {$vs_inferred_units}")) {
-                        $vs_m = trim($vo_parsed_measurement->toString());
+                    	if(!strlen($vn_parse_precision = $pn_precision) && !strlen($vn_parse_precision = $o_dimensions_config->get(caGetLengthUnitType($vs_inferred_units, ['code' => true])."_decimal_precision"))) { $vn_parse_precision = 4; }
+
+                        $vs_m = trim($vo_parsed_measurement->toString($vn_parse_precision));
                         $va_measurement = [
                             'quantity' =>  trim(preg_replace("![^\d\. \/]+!", "", $vs_m)),
                             'string' => $vs_m,
@@ -3179,7 +3195,7 @@ function caFileIsIncludable($ps_file) {
 
 		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
 
-		ini_set('precision', $vn_precision);
+		ini_set('precision', $vn_php_precision);
 		return array_map(function($v) { return $v['string']; }, $va_extracted_measurements);
 	}
 	# ----------------------------------------
