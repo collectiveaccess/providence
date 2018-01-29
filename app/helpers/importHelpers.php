@@ -215,8 +215,12 @@
 						$vn_id = $t_list->getRootItemIDForList($vn_list_id);
 						$va_attributes['parent_id'] = $vn_id;
 					}
-					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					
+					if (!$vs_idno) { $vs_idno = $vs_name; }
+					if (!$vs_name) { $vs_name = $vs_idno; }
+					if (!isset($va_attributes['is_enabled'])) { $va_attributes['is_enabled'] = 1; }
 					$va_attributes['preferred_labels']['name_singular'] = $va_attributes['preferred_labels']['name_plural'] = $vs_name;
+					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_idno, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_storage_locations':
 					if(!$vn_id) {	// get storage location hierarchy root
@@ -591,7 +595,6 @@
 		global $g_ui_locale_id;
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
-		
 		$o_dm = Datamodel::load();
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
@@ -864,8 +867,14 @@
 									if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] List was not specified')); }
 									continue(2);
 								}
-								$va_attr_vals_with_parent['is_enabled'] = 1;
-								$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+								
+					            if (!isset($va_attr_vals_with_parent['is_enabled'])) { $va_attr_vals_with_parent['is_enabled'] = 1; }
+								if (is_array($vs_idno = caGetOption('idno', $va_attr_vals_with_parent, null))) { $vs_idno = caGetOption('idno', $vs_idno, null); }
+								if (!$vs_idno) { $vs_idno = $vs_item; }
+								
+								$va_attr_vals_with_parent['preferred_labels']['name_singular'] = $va_attr_vals_with_parent['preferred_labels']['name_plural'] = $vs_item;
+								
+								$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_idno, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_storage_locations':
 								$vn_item_id = DataMigrationUtils::getStorageLocationID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -942,10 +951,12 @@
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
 								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
-							
+					
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
+		
 								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'],'EXACT'), 'log' => $o_log]);
+								
 									foreach($va_files as $vs_file) {
 									    $va_media_val = $va_val;
 									    if(!isset($va_media_val['preferred_labels'])) { $va_media_val['preferred_labels'] = array('name' => pathinfo($vs_file, PATHINFO_FILENAME)); }
