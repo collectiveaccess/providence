@@ -9,19 +9,19 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cluster
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Health extends AbstractEndpoint
 {
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $index = $this->index;
-        $uri = "/_cluster/health";
+        $uri   = "/_cluster/health";
 
         if (isset($index) === true) {
             $uri = "/_cluster/health/$index";
@@ -33,9 +33,9 @@ class Health extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'level',
             'local',
             'master_timeout',
@@ -44,13 +44,15 @@ class Health extends AbstractEndpoint
             'wait_for_nodes',
             'wait_for_relocating_shards',
             'wait_for_status',
-        ];
+            'wait_for_events',
+            'wait_for_no_relocating_shards'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

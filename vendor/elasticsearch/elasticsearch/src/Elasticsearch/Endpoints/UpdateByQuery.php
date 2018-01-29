@@ -42,21 +42,17 @@ class UpdateByQuery extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\BadMethodCallException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        if (isset($this->index) !== true) {
+        if (!$this->index) {
             throw new Exceptions\RuntimeException(
                 'index is required for UpdateByQuery'
             );
         }
-        $index = $this->index;
-        $type = $this->type;
-        $uri = "/$index/_update_by_query";
-        if (isset($index) === true && isset($type) === true) {
-            $uri = "/$index/$type/_update_by_query";
-        }
-        if (isset($index) === true) {
-            $uri = "/$index/_update_by_query";
+
+        $uri = "/{$this->index}/_update_by_query";
+        if ($this->type) {
+            $uri = "/{$this->index}/{$this->type}/_update_by_query";
         }
 
         return $uri;
@@ -66,7 +62,7 @@ class UpdateByQuery extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
         return [
             'analyzer',
@@ -116,7 +112,7 @@ class UpdateByQuery extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'POST';
     }

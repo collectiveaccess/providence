@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -151,6 +151,10 @@ class ItemService extends BaseJSONService {
 		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
+		
+		$o_service_config = Configuration::load(__CA_APP_DIR__."/conf/services.conf");
+		$va_versions = $o_service_config->get('item_service_media_versions');
+		if(!is_array($va_versions) || !sizeof($va_versions)) { $va_versions = ['preview170','original']; }
 
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
@@ -237,7 +241,7 @@ class ItemService extends BaseJSONService {
 
 		// representations for representable stuff
 		if($t_instance instanceof RepresentableBaseModel) {
-			$va_reps = $t_instance->getRepresentations(array('preview170','original'));
+			$va_reps = $t_instance->getRepresentations($va_versions);
 			if(is_array($va_reps) && (sizeof($va_reps)>0)) {
 				$va_return['representations'] = $va_reps;
 			}
@@ -309,7 +313,7 @@ class ItemService extends BaseJSONService {
 				if($t_rel_instance instanceof RepresentableBaseModel) {
 					foreach($va_related_items as &$va_rel_item) {
 						if($t_rel_instance->load($va_rel_item[$t_rel_instance->primaryKey()])) {
-							$va_rel_item['representations'] = $t_rel_instance->getRepresentations(array('preview170', 'original'));
+							$va_rel_item['representations'] = $t_rel_instance->getRepresentations($va_versions);
 						}
 					}
 				}
@@ -852,6 +856,12 @@ class ItemService extends BaseJSONService {
                 }
             }
         }
+        
+        // Set ACL for newly created record
+		if ($t_instance->getAppConfig()->get('perform_item_level_access_checking') && !$t_instance->getAppConfig()->get("{$ps_table}_dont_do_item_level_access_control")) {
+			$t_instance->setACLUsers(array($this->opo_request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
+			$t_instance->setACLWorldAccess($t_instance->getAppConfig()->get('default_item_access_level'));
+		}
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {

@@ -90,19 +90,11 @@
         </label>
       </labels>
       <items>
-        <item idno="dc" enabled="1" default="0">
+        <item idno="media" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>dublin core media</name_singular>
-              <name_plural>dublin core media</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="survivor" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>survivor testimony media</name_singular>
-              <name_plural>survivor testimony</name_plural>
+              <name_singular>media</name_singular>
+              <name_plural>media</name_plural>
             </label>
           </labels>
         </item>
@@ -527,6 +519,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>list item</name_singular>
               <name_plural>list item</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="collection" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>collection reference</name_singular>
+              <name_plural>collection references</name_plural>
             </label>
           </labels>
         </item>
@@ -4726,6 +4726,14 @@
       </labels>
       <items/>
     </list>
+    <list code="collection_hierarchy" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Collection hierarchy</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <!-- Digit Pres -->
     <list code="preservation_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -6602,6 +6610,14 @@
           <table>ca_object_representations</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_list_items">
+          <table>ca_list_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -9581,7 +9597,7 @@
     <metadataElement code="MARC_copyrightDate" datatype="DateRange">
       <labels>
         <label locale="en_US">
-          <name>Copyright Date</name>
+          <name>Publication or Copyright Date</name>
           <description>Library: 264c</description>
         </label>
       </labels>
@@ -10211,6 +10227,28 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="library_idno" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Holding Library Record Identifier</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>library</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -14156,7 +14194,10 @@
                 <setting name="label" locale="en_US">Permalink</setting>
               </settings>
             </placement>
-             <placement code="ca_attribute_MARC_isbn">
+             <placement code="ca_attribute_library_idno">
+              <bundle>ca_attribute_library_idno</bundle>
+            </placement> 
+            <placement code="ca_attribute_MARC_isbn">
               <bundle>ca_attribute_MARC_isbn</bundle>
             </placement>
             <placement code="ca_attribute_MARC_issn">
@@ -14847,10 +14888,9 @@
                 <setting name="display_template"><![CDATA[
             <l>^ca_entities.preferred_labels</l><br>
             <ifdef code="ca_entities.repository_description">Description:</ifdef> ^ca_entities.repository_description
-            <ifdef code="ca_entities.link"><br>Link:</ifdef> ^ca_entities.link<br>
-            <ifdef code="ca_entities.repository_map"><br>Location:</ifdef> ^ca_entities.repository_map<br>
-            <ifdef code="ca_entities.repository_statement"><br>Data statment:</ifdef> ^ca_entities.repository_statement<br>
-            ]]>
+            <ifdef code="ca_entities.link"><br>Link:</ifdef> ^ca_entities.link
+            <ifdef code="ca_entities.repository_map"><br>Location:</ifdef> ^ca_entities.repository_map
+            <ifdef code="ca_entities.repository_statement"><br>Data statment:</ifdef> ^ca_entities.repository_statement ]]>
             </setting>
               </settings>
             </placement>
@@ -15836,9 +15876,6 @@
             </placement>
             <placement code="ca_attribute_genre">
               <bundle>ca_attribute_genre</bundle>
-            </placement>
-            <placement code="ca_attribute_curatorial_description">
-              <bundle>ca_attribute_curatorial_description</bundle>
             </placement>
             <placement code="ca_attribute_historical_note">
               <bundle>ca_attribute_historical_note</bundle>
@@ -19015,6 +19052,9 @@ differs from the holder of rights for the work. Example: The work rights are “
               <name>Basic info</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="list_item" type="list_item"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
@@ -19025,14 +19065,56 @@ differs from the holder of rights for the work. Example: The work rights are “
             <placement code="idno">
               <bundle>idno</bundle>
             </placement>
-            <placement code="item_value">
-              <bundle>item_value</bundle>
-            </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
             </placement>
             <placement code="ca_attribute_termSource">
               <bundle>ca_attribute_termSource</bundle>
+            </placement>
+            <placement code="is_enabled">
+              <bundle>is_enabled</bundle>
+            </placement>
+            <placement code="is_default">
+              <bundle>is_default</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Cataloguing Status</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_collection" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="collection" type="collection"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hier_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Scope and Content</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_link">
+              <bundle>ca_attribute_link</bundle>
             </placement>
             <placement code="is_enabled">
               <bundle>is_enabled</bundle>
@@ -21298,6 +21380,31 @@ differs from the holder of rights for the work. Example: The work rights are “
     </login>
     <login user_name="Ryan" password="Betts" fname="Ryan"
       lname="Betts" email="ryanbetts@gmail.com">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Tim" password="Davis" fname="Tim"
+      lname="Davis" email="davistim@me.com">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Travis" password="Kirton" fname="Travis"
+      lname="Kirton" email="travis@logicandform.com">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Spencer" password="Perkins" fname="Spencer"
+      lname="Perkins" email="hello@spencerperkins.me">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Jeremy" password="Voldeng" fname="Jeremy"
+      lname="Voldeng" email="jeremyvoldeng@gmail.com">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Alejandro" password="Isaac" fname="Alejandro"
+      lname="Isaac" email="al@createwithflow.com">
       <role code="admin"/>
       <group code="admin"/>
     </login>

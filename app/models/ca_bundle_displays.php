@@ -746,7 +746,7 @@ if (!$pb_omit_editing_info) {
 		$pn_user_access = 									caGetOption('access', $pa_options, null); 
 		$pa_access = 										caGetOption('checkAccess', $pa_options, null); 
 		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
-		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
+		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return ($v == '*') ? false : (bool)$v; });
 		
 		$pb_system_only = 									caGetOption('systemOnly', $pa_options, false);
 		
@@ -877,7 +877,7 @@ if (!$pb_omit_editing_info) {
 			$va_content[_t('Default')] = 0;
 		}
 		
-		$ps_context = caGetOption('context', $pa_options, null); print "c=$ps_context";
+		$ps_context = caGetOption('context', $pa_options, null);
 		foreach($va_available_displays as $vn_display_id => $va_info) {
 		    if ($ps_context && is_array($va_info['settings']['show_only_in']) && sizeof($va_info['settings']['show_only_in']) && !in_array($ps_context, $va_info['settings']['show_only_in'])) { continue; }
 			$va_content[$va_info['name']] = $vn_display_id;
@@ -2529,8 +2529,7 @@ if (!$pb_omit_editing_info) {
 				);
 			}
 			
-			if (method_exists($t_model, 'getLabelTableInstance') && !(($ps_tablename === 'ca_objects') && ($this->getAppConfig()->get('ca_objects_dont_use_labels')))) {
-				$t_label = $t_model->getLabelTableInstance();
+			if (method_exists($t_model, 'getLabelTableInstance') && ($t_label = $t_model->getLabelTableInstance()) && !(($ps_tablename === 'ca_objects') && ($this->getAppConfig()->get('ca_objects_dont_use_labels')))) {
 				$va_display_list[$ps_tablename.'.preferred_labels'] = array(
 					'placement_id' => 				$ps_tablename.'.preferred_labels',
 					'bundle_name' => 				$ps_tablename.'.preferred_labels',
@@ -2550,8 +2549,8 @@ if (!$pb_omit_editing_info) {
 			$va_sortable_elements = ca_metadata_elements::getSortableElements($t_model->tableName());
 			$va_attribute_list = array_flip($t_model->getApplicableElementCodes($pn_type_id, false, false));
 			$t_label = $t_model->getLabelTableInstance();
-			$vs_label_table_name = $t_label->tableName();
-			$vs_label_display_field = $t_label->getDisplayField();
+			$vs_label_table_name = $t_label ? $t_label->tableName() : null;
+			$vs_label_display_field = $t_label ? $t_label->getDisplayField() : null;
 			foreach($va_display_list as $vn_i => $va_display_item) {
 				$va_tmp = explode('.', $va_display_item['bundle_name']);
 				

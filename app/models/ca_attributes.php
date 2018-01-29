@@ -207,9 +207,10 @@ class ca_attributes extends BaseModel {
 		return $vm_ret;
 	}
 	# -------------------------------------------------------
-
-
-	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+    /**
+     *
+     */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$vn_primary_key = $this->getPrimaryKey();
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
@@ -330,6 +331,7 @@ class ca_attributes extends BaseModel {
 	 *
 	 */
 	public function editAttribute($pa_values, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 		global $g_ui_locale_id;
 		
 		if (!$this->getPrimaryKey()) { return null; }
@@ -484,6 +486,13 @@ class ca_attributes extends BaseModel {
 			case 'count':
 				return sizeof($o_attr->getValues());
 				break;
+			case 'array':
+			    $va_ret = [];
+			    foreach($o_attr->getValues() as $o_val) {
+			        $va_ret[$o_val->getElementCode()] = $o_val->getDisplayValue($pa_options);
+			    }
+			    return $va_ret;
+			    break;
 			case 'values':
 			default:
 				return $o_attr->getValues();	
@@ -888,7 +897,7 @@ class ca_attributes extends BaseModel {
 						$va_attr_values = $o_attr->getValues();
 						$vn_locale_id = $o_attr->getLocaleID();
 						foreach($va_attr_values as $va_attr_value) {
-							$va_values[$vn_row_id][$vn_locale_id][] = $va_attr_value->getDisplayValue();
+							$va_values[$vn_row_id][$vn_locale_id][] = $va_attr_value->getDisplayValue($pa_options);
 						}
 					}
 				}
@@ -930,6 +939,69 @@ class ca_attributes extends BaseModel {
         
 		return null;
 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return attribute instance for a value_id, avoiding intermediate load of the attribute value.
+ 	 *
+ 	 * @param int $pn_value_id
+ 	 * @param array $pa_options Options include:
+ 	 *      transaction = transaction to perform queries within. [Default is null]
+ 	 *      db = use provided database connection. [Default is null; use new connection which may or may not be the most recently created one.]
+ 	 *
+ 	 *  @return ca_attributes instance or null if attribute cannot be loaded
+ 	 */
+ 	public static function getAttributeForValueID($pn_value_id, $pa_options=null) { 		
+        $o_trans = caGetOption('transaction', $pa_options, null);	
+        $o_db = caGetOption('db', $pa_options, null);
+        
+        if ((!$o_db) && ($o_trans)) {
+            $o_db = $o_trans->getDb();
+        } else {
+            $o_db = new Db();
+        }
+        
+        $qr_res = $o_db->query("SELECT attribute_id FROM ca_attribute_values WHERE value_id = ?", [(int)$pn_value_id]);
+        while($qr_res->nextRow()) {
+            return new ca_attributes($qr_res->get('attribute_id'));
+        }
+		return null;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return row instance for a value_id, avoiding intermediate loads of the attribute and attribute value.
+ 	 *
+ 	 * @param int $pn_value_id
+ 	 * @param array $pa_options Options include:
+ 	 *      transaction = transaction to perform queries within. [Default is null]
+ 	 *      db = use provided database connection. [Default is null; use new connection which may or may not be the most recently created one.]
+ 	 *
+ 	 *  @return BaseModel or null if row cannot be loaded
+ 	 */
+ 	public static function getRowInstanceForValueID($pn_value_id, $pa_options=null) { 		
+        $o_trans = caGetOption('transaction', $pa_options, null);	
+        $o_db = caGetOption('db', $pa_options, null);
+        
+        if ((!$o_db) && ($o_trans)) {
+            $o_db = $o_trans->getDb();
+        } else {
+            $o_db = new Db();
+        }
+        
+        $qr_res = $o_db->query("
+            SELECT ca.attribute_id, ca.table_num, ca.row_id
+            FROM ca_attribute_values cav
+            INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+            WHERE cav.value_id = ?
+        ", [(int)$pn_value_id]);
+        
+        $o_dm = Datamodel::load();
+        while($qr_res->nextRow()) {
+            if (($t_instance = $o_dm->getInstanceByTableNum($qr_res->get('table_num'), true)) && ($t_instance->load($qr_res->get('row_id')))) {
+                return $t_instance;
+            }
+        }
+		return null;
+ 	}
 	# ------------------------------------------------------
 	/**
 	 *
@@ -943,6 +1015,15 @@ class ca_attributes extends BaseModel {
 			}
 		}
 		return null;
+	}
+	# -------------------------------------------------------
+    /**
+     * Return maximum size of attribute cache
+     *
+     * @return int
+     */
+	public static function attributeCacheSize() {
+		return self::$s_attribute_cache_size;
 	}
 	# ------------------------------------------------------
 }

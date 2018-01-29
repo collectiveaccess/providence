@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -300,11 +300,16 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @param PDOStatement $pr_res mysql resource
 	 * @param mixed $pm_field the field or an array of fields
+	 * @param array $pa_options Options include:
+	 *      limit = cap number of field values returned. [Default is null]
+	 *
 	 * @return array an array of field values (if $pm_field is a single field name) or an array if field names each of which is an array of values (if $pm_field is an array of field names)
 	 */
-	function getAllFieldValues($po_caller, $pr_res, $pm_field) {
+	function getAllFieldValues($po_caller, $pr_res, $pm_field, $pa_options=null) {
 		$va_vals = array();
 
+		$pn_limit = isset($pa_options['limit']) ? (int)$pa_options['limit'] : null;
+        $c = 0;
 		if (is_array($pm_field)) {
 			$va_rows = $pr_res->fetchAll(PDO::FETCH_ASSOC);
 			foreach($va_rows as $va_row) {
@@ -313,6 +318,8 @@ class Db_pdo_mysql extends DbDriverBase {
 						$va_vals[$vs_field][] = $va_row[$vs_field];
 					}
 				}
+				$c++;
+				if ($pn_limit && ($c > $pn_limit)) { break; }
 			}
 		} else {
 			$va_rows = $pr_res->fetchAll(PDO::FETCH_ASSOC);
@@ -320,6 +327,9 @@ class Db_pdo_mysql extends DbDriverBase {
 				if(isset($va_row[$pm_field])) {
 					$va_vals[] = $va_row[$pm_field];
 				}
+				
+				$c++;
+				if ($pn_limit && ($c > $pn_limit)) { break; }
 			}
 		}
 		return $va_vals;

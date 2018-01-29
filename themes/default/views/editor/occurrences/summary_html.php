@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,6 @@
  	$t_item 				= $this->getVar('t_subject');
 	$vn_item_id 			= $this->getVar('subject_id');
 	
-	$va_bundle_displays 	= $this->getVar('bundle_displays');
 	$t_display 				= $this->getVar('t_display');
 	$va_placements 			= $this->getVar("placements");
 	

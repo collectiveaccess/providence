@@ -9,6 +9,7 @@ html, body {
     margin:0px;
     padding:0px;
     height: 100%;
+    overflow: auto !important;
 }
 
 form{
@@ -5831,6 +5832,13 @@ div.preferencePlacementList {
     text-align: center;
 }
 
+#batchProcessingMessage {
+    display: none;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 .batchProcessingHelpText{
     padding:20px;
     margin:20px;
@@ -6367,6 +6375,12 @@ a.caInformationServiceMoreLink {
 
 /* LCSH attributes */
 a.caLCSHServiceMoreLink {
+    display: none;
+    text-decoration: none;
+}
+
+/* GeoNames attributes */
+a.caGeoNamesServiceMoreLink {
     display: none;
     text-decoration: none;
 }
@@ -7342,4 +7356,9 @@ div.camediacontentMediaList ul li.mediaItem div img {
 
 li.mediaItem-selected {
     background-color: #dfdfdf !important;
+}
+
+/* Force CKEditor full screen overlay to top of window */
+.cke_maximized {
+    top: 0px !important;
 }

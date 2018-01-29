@@ -9,69 +9,59 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  * Class Get
  *
  * @category Elasticsearch
- * @package Elasticsearch\Endpoints\Tasks *
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @package  Elasticsearch\Endpoints\Tasks
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Get extends AbstractEndpoint
 {
-    // Return the task with specified id (node_id:task_number)
-    private $task_id;
-
+    private $taskId;
 
     /**
-     * @param $task_id
+     * @param string $taskId
      *
+     * @throws \Elasticsearch\Common\Exceptions\InvalidArgumentException
      * @return $this
      */
-    public function setTaskId($task_id)
+    public function setTaskId($taskId)
     {
-        if (isset($task_id) !== true) {
+        if (isset($taskId) !== true) {
             return $this;
         }
 
-        $this->task_id = $task_id;
+        $this->taskId = $taskId;
 
         return $this;
     }
 
-
     /**
+     * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        $task_id = $this->task_id;
-        $uri = "/_tasks";
-        if (isset($task_id) === true) {
-            $uri = "/_tasks/$task_id";
+        if (isset($this->taskId) === true) {
+            return "/_tasks/{$this->taskId}";
         }
 
-        return $uri;
+        return "/_tasks";
     }
-
 
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
-            'node_id',
-            'actions',
-            'detailed',
-            'parent_node',
-            'parent_task',
-            'wait_for_completion',
-        ];
+        return array(
+            'wait_for_completion'
+        );
     }
-
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

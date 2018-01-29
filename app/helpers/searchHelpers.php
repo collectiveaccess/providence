@@ -735,6 +735,8 @@
 							$va_query_elements[$vs_element][] = "(".$va_values['_fieldlist_field'][$vn_i].":".$pa_form_values['_fieldlist_value'][$vn_i].")";
 							break;
 						default:
+						    $va_tmp = explode('.', $vs_element);
+						    if ((sizeof($va_tmp) > 2) && ($va_tmp[1] == 'related')) { unset($va_tmp[1]); $vs_element = join('.', $va_tmp); }
 							$va_query_elements[$vs_element][] = "({$vs_element}:{$vs_query_element})";
 							break;
 					}
@@ -788,6 +790,9 @@
 				}
 			}
 			$va_fld = explode(".", $vs_element);
+			if ((sizeof($va_fld) > 2) && ($va_fld[1] == 'related')) {
+			    unset($va_fld[1]); $vs_element = join('.', $va_fld); $va_fld = array_values($va_fld);
+			}
 			$t_table = $o_dm->getInstanceByTableName($va_fld[0], true);
 		
 		// TODO: need universal way to convert item_ids in attributes and intrinsics to display text
@@ -796,6 +801,9 @@
 					case 'type_id':
 						$va_values = array($t_table->getTypeName($pa_form_values[$vs_dotless_element][0]));
 						break;
+					case $t_table->primaryKey():
+					    $va_display_string[] = join(", ", $t_table->getPreferredDisplayLabelsForIDs($pa_form_values[$vs_dotless_element]));
+					    break(2);
 					default:
 						$va_values = $pa_form_values[$vs_dotless_element];
 						break;
@@ -832,13 +840,22 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Format search expression into display string suitable for presentation to users
 	 *
+	 * @param string $ps_search
+	 * @param array $pa_options Options include:
+	 *      omitFieldNames = Omit field names (aka. qualifiers) in display string. Only search terms will be included. [Default is false]
+	 *      omitQualifiers = Synonym for omitFieldNames
+	 *
+	 * @return string
 	 */
 	function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 		$o_config = Configuration::load();
 		$o_query_parser = new LuceneSyntaxParser();
 		$o_query_parser->setEncoding($o_config->get('character_set'));
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
+		
+		$pb_omit_field_names = caGetOption(['omitFieldNames', 'omitQualifiers'], $pa_options, false);
 		
 		$ps_search = preg_replace('![\']+!', '', $ps_search);
 		try {
@@ -852,39 +869,21 @@
 			}
 		}
 		
-		switch(get_class($o_parsed_query)) {
-			case 'Zend_Search_Lucene_Search_Query_Boolean':
-				$va_items = $o_parsed_query->getSubqueries();
-				$va_signs = $o_parsed_query->getSigns();
-				break;
-			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
-				$va_items = $o_parsed_query->getTerms();
-				$va_signs = $o_parsed_query->getSigns();
-				break;
-			case 'Zend_Search_Lucene_Search_Query_Phrase':
-				$va_items = $o_parsed_query;
-				$va_signs = null;
-				break;
-			case 'Zend_Search_Lucene_Search_Query_Range':
-				$va_items = $o_parsed_query;
-				$va_signs = null;
-				break;
-			default:
-				$va_items = array();
-				$va_signs = null;
-				break;
-		}
+		$va_subqueries = caGetSubQueries($o_parsed_query);
+		$va_items = $va_subqueries['items'];
+		$va_signs = $va_subqueries['signs'];
 		
 		$va_query = [];
 		foreach ($va_items as $id => $subquery) {
-		
-			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
-				$va_query[] = 'AND';
-			} else if (($va_signs[$id] === false) && $id) {
-				$va_query[] = 'NOT';
-			} else {
-				if ($id) { $va_query[] = 'OR'; }
-			}
+		    if ($subquery->getTerm()->field) {
+                if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
+                    $va_query[] = 'AND';
+                } else if (($va_signs[$id] === false) && $id) {
+                    $va_query[] = 'NOT';
+                } else {
+                    if ($id) { $va_query[] = 'OR'; }
+                }
+            }
 			switch(get_class($subquery)) {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 					$vs_field = null;
@@ -895,28 +894,61 @@
 					}
 					
 					$vs_field_disp = caGetLabelForBundle($vs_field);
-					$va_query[] = ($vs_field_disp ? "{$vs_field_disp}: \"" : "").caGetDisplayValueForBundle($vs_field, join(" ", $va_terms))."\"";
+					$va_query[] = ($vs_field_disp && !$pb_omit_field_names ? "{$vs_field_disp}: \"" : "").caGetDisplayValueForBundle($vs_field, join(" ", $va_terms))."\"";
 					break;
 				case 'Zend_Search_Lucene_Index_Term':
 					$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
 					// intentional fallthrough to next case here
 				case 'Zend_Search_Lucene_Search_Query_Term':
 					$vs_field = caGetLabelForBundle($subquery->getTerm()->field);
-					$va_query[] = ($vs_field ? "{$vs_field}: " : "").$subquery->getTerm()->text;
+					$va_query[] = ($vs_field && !$pb_omit_field_names ? "{$vs_field}: " : "").$subquery->getTerm()->text;
 					break;	
 				case 'Zend_Search_Lucene_Search_Query_Range':
 					$vs_field = caGetLabelForBundle($subquery->getLowerTerm()->field);
-					$va_query[] = ($vs_field ? "{$v_field}: " : "")._t("%1 to %2", $subquery->getLowerTerm()->text, $subquery->getUpperTerm()->text);
+					$va_query[] = ($vs_field && !$pb_omit_field_names ? "{$v_field}: " : "")._t("%1 to %2", $subquery->getLowerTerm()->text, $subquery->getUpperTerm()->text);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Wildcard':
 					$va_query[] = "*";
 					break;
 				default:
-					$va_query[] = caGetDisplayStringForSearch($subquery);
+					$va_query[] = caGetDisplayStringForSearch($subquery, $pa_options);
 					break;
 			}
 		}
 		return join(" ", $va_query);
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetSubQueries($po_parsed_query) {
+	    switch(get_class($po_parsed_query)) {
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+			    $va_items = $va_signs = [];
+			    foreach($po_parsed_query->getSubqueries() as $o_q) {
+			        $va_subqueries = caGetSubQueries($o_q);
+			        $va_items = array_merge($va_items, is_array($va_subqueries['items']) ? $va_subqueries['items'] : []);
+				    $va_signs = array_merge($va_signs, is_array($va_subqueries['signs']) ? $va_subqueries['signs'] : []);
+				}
+				break;
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$va_items = $po_parsed_query->getTerms();
+				$va_signs = $po_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+				$va_items = $po_parsed_query;
+				$va_signs = null;
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				$va_items = $po_parsed_query;
+				$va_signs = null;
+				break;
+			default:
+				$va_items = array();
+				$va_signs = null;
+				break;
+		}
+		return ['items' => $va_items, 'signs' => $va_signs];
 	}
 	# ---------------------------------------
 	/**
@@ -1306,6 +1338,7 @@
 	 * @return array
 	 */
 	function caGetChangeLogForElasticSearch($po_db, $pn_table_num, $pn_row_id) {
+	    if(!$po_db->connected()) { $po_db->connect(); }
 		$qr_res = $po_db->query("
 				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, u.user_name
 				FROM ca_change_log ccl

@@ -247,7 +247,7 @@
 			);
 			
 			// merge default formats with drop-in print templates
-			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('table' => $this->ops_tablename)));
+			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('showOnlyIn' => ['search_browse_'.$this->opo_result_context->getCurrentView()], 'table' => $this->ops_tablename)));
 			
 			$this->view->setVar('export_formats', $va_export_options);
 			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));

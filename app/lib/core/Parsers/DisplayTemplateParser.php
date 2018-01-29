@@ -134,6 +134,7 @@ class DisplayTemplateParser {
 	 *		aggregateUnique = Remove duplicate values. If set then array of evaluated templates may not correspond one-to-one with the original list of row_ids set in $pa_row_ids. [Default is false]
 	 *      unitStart = Offset to start evaluating templating iterations at (there may be more than one iteration when relativeToContainer is set). [Default is 0]
 	 *      unitLength = Maximum number of templating iteration to evaluate. If null, no limit is enforced (there may be more than one iteration when relativeToContainer is set). [Default is null]
+	 *      indexWithIDs = Return array with indexes set to row_ids. [Default is false; use numeric indices starting with zero]
 	 *
 	 * @return mixed Output of processed templates
 	 *
@@ -162,6 +163,8 @@ class DisplayTemplateParser {
 			
 			$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 			$pb_include_blanks_for_prefetch = caGetOption('includeBlankValuesInTopLevelForPrefetch', $pa_options, false);
+		
+		    $pb_index_with_ids = caGetOption('indexWithIDs', $pa_options, false);
 		
 		// Bail if no rows or template are set
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids) || !$ps_template) {
@@ -238,7 +241,12 @@ class DisplayTemplateParser {
 					    // noop
 					}
 					
-					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
+					$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
+					if ($pb_index_with_ids) {
+				        $va_proc_templates[$qr_res->get($vs_pk)] = $v;
+				    } else {
+				        $va_proc_templates[] = $v;
+				    }
 				}
 			} else {
 			    $va_val_list = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), $pa_options);
@@ -248,7 +256,12 @@ class DisplayTemplateParser {
 			    } catch (Exception $e) {
 			        // noop
 			    }
-				$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
+				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
+				if ($pb_index_with_ids) {
+					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
+				} else {
+					$va_proc_templates[] = $v;
+				}
 			}
 		}
 		

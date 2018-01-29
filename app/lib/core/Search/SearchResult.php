@@ -97,6 +97,7 @@ class SearchResult extends BaseObject {
 	static $opa_hierarchy_siblings_prefetch_cache_index = array();
 	
 	private $opb_use_identifiers_in_urls = false;
+	private $ops_use_alt_identifiers_in_urls = null;
 	private $ops_subject_idno = false;
 	
 	/**
@@ -213,6 +214,7 @@ class SearchResult extends BaseObject {
 		$this->ops_subject_pk = $this->opo_subject_instance->primaryKey();
 		$this->ops_subject_idno = $this->opo_subject_instance->getProperty('ID_NUMBERING_ID_FIELD');
 		$this->opb_use_identifiers_in_urls = (bool)$this->opo_subject_instance->getAppConfig()->get('use_identifiers_in_urls');
+		$this->ops_use_alt_identifiers_in_urls = $this->opo_subject_instance->getAppConfig()->get('use_alternate_identifiers_in_urls_for_'.$this->ops_table_name);
 		$this->opa_row_ids_to_prefetch_cache = array();
 		
 		
@@ -2741,7 +2743,7 @@ class SearchResult extends BaseObject {
 		if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, $pa_options, array_shift($this->opa_field_media_info[$ps_field]));
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3280,7 +3282,9 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	public function getIdentifierForUrl() {
-		if ($this->opb_use_identifiers_in_urls && $this->ops_subject_idno) {
+		if ($this->ops_use_alt_identifiers_in_urls) {
+		    return $this->get($this->tableName().".".$this->ops_use_alt_identifiers_in_urls);
+		} elseif ($this->opb_use_identifiers_in_urls && $this->ops_subject_idno) {
 			return $this->get($this->ops_subject_idno);
 		} else {
 			return $this->get($this->ops_subject_pk);

@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Snapshot;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Restore
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Snapshot
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Restore extends AbstractEndpoint
 {
@@ -75,7 +75,7 @@ class Restore extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->repository) !== true) {
             throw new Exceptions\RuntimeException(
@@ -89,7 +89,7 @@ class Restore extends AbstractEndpoint
         }
         $repository = $this->repository;
         $snapshot = $this->snapshot;
-        $uri = "/_snapshot/$repository/$snapshot/_restore";
+        $uri   = "/_snapshot/$repository/$snapshot/_restore";
 
         if (isset($repository) === true && isset($snapshot) === true) {
             $uri = "/_snapshot/$repository/$snapshot/_restore";
@@ -101,18 +101,18 @@ class Restore extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'master_timeout',
             'wait_for_completion',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'POST';
     }

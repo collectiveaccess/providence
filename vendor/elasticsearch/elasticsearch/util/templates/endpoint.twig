@@ -2,19 +2,19 @@
 
 namespace Elasticsearch\Endpoints{% for class in namespace %}{{ loop.last ? ';' : '\\' ~ class|title  }}{%  endfor %}
 
-
 use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
 
 /**
- * Class {{ className|title }}
+ * Class {{ className|title|replace({'.': ""}) }}
  *
  * @category Elasticsearch
  * @package Elasticsearch\Endpoints{% for class in namespace %}{{ loop.last ? '' : '\\' ~ class|title  }}{%  endfor %}
+
  *
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 
 class {{ className|title }} extends AbstractEndpoint
@@ -23,8 +23,6 @@ class {{ className|title }} extends AbstractEndpoint
 {% if part != 'index' and part != 'type' and part != 'id' %}
     // {{info.description }}
     private ${{part}};
-
-
 {% endif %}
 {% endfor %}
 {% if data.body is not null %}
@@ -40,11 +38,6 @@ class {{ className|title }} extends AbstractEndpoint
             return $this;
         }
 
-        if (is_array($body) !== true) {
-            throw new Exceptions\InvalidArgumentException(
-                'Body must be an array'
-            );
-        }
         $this->body = $body;
         return $this;
     }
@@ -59,28 +52,28 @@ class {{ className|title }} extends AbstractEndpoint
      *
      * @return $this
      */
-    public function set{{part|title}}(${{part}})
+    public function set{{part|title|replace({'_': ""})}}(${{part}})
     {
         if (isset(${{part}}) !== true) {
             return $this;
         }
-
+{% if info.type == 'list' %}
+        if (is_array(${{part}}) === true) {
+            ${{part}} = implode(",", ${{part}});
+        }
+{% endif %}
         $this->{{part}} = ${{part}};
         return $this;
     }
-
 
 {% endif %}
 {% endfor %}
 {% set exception = '' %}
     /**
-{% for part, info in data.url.parts %}
-{% if info.required is not null %}
-{% set exception = '     * @throws \\Elasticsearch\\Common\\Exceptions\\BadMethodCallException
-' %}
-{% endif %}
-{% endfor %}{% autoescape false %}{{ exception }}{% endautoescape %}
-     * @return string
+{% for part, info in data.url.parts %}{% if info.required is not null %}{% set exception = ' * @throws \\Elasticsearch\\Common\\Exceptions\\BadMethodCallException
+    ' %}{% endif %}{% endfor %}
+    {% autoescape false %}{{ exception }}{% endautoescape %}
+ * @return string
      */
     protected function getURI()
     {
@@ -101,9 +94,12 @@ class {{ className|title }} extends AbstractEndpoint
 {% for part, info in data.url.processed %}
 {% if info.count > 0 %}
 {% set counter = 0 %}
-        {% if loopCounter != 0 %}else{% set loopCounter = 1 %}{% endif %}if ({% for param in info.params %}{% if counter == 0 %}isset(${{ param }}) === true{% else %} && isset(${{ param }}) === true{% endif %}{% set counter = counter + 1 %}{% endfor %}) {
+{% if loopCounter != 0 %}
+    else{% endif %}if ({% for param in info.params %}{% if counter == 0 %}isset(${{ param }}) === true{% else %} && isset(${{ param }}) === true{% endif %}{% set counter = counter + 1 %}{% endfor %})
+        {
             $uri = "{{ info.parsedPath }}";
         }
+{% set loopCounter = 1 %}
 {% endif %}
 {% endfor %}
 
@@ -132,7 +128,7 @@ class {{ className|title }} extends AbstractEndpoint
     protected function getBody()
     {
         if (isset($this->body) !== true) {
-            throw new Exceptions\RuntimeException('Body is required for Put');
+            throw new Exceptions\RuntimeException('Body is required for {{ className|title }}');
         }
         return $this->body;
     }

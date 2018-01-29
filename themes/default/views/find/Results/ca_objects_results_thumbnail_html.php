@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/ca_objects_thumbnail_html.php :
+ * themes/default/views/find/Results/ca_objects_results_thumbnail_html.php :
  * 		basic object search form view script 
  * ----------------------------------------------------------------------
  * CollectiveAccess

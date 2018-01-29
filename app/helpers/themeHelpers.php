@@ -392,7 +392,7 @@
 	 * @return string HTML output
 	 */
 	function caObjectRepresentationThumbnails($po_request, $pn_representation_id, $pt_object, $pa_options){
-		if(!$pt_object || !$pt_object->get("object_id")){
+		if(!$pt_object || !$pt_object->getPrimaryKey()){
 			return false;
 		}
 		if(!is_array($pa_options)){
@@ -430,7 +430,7 @@
 			switch($vs_link_to){
 				# -------------------------------
 				case "viewer":
-					$va_links[$vn_rep_id] = "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetRepresentationInfo', array('object_id' => $pt_object->get("object_id"), 'representation_id' => $vn_rep_id, 'overlay' => 1))."\"); return false;' ".(($vs_class) ? "class='".$vs_class."'" : "").">".$vs_thumb."</a>\n";
+					$va_links[$vn_rep_id] = "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array($pt_object->primaryKey() => $pt_object->getPrimaryKey(), 'representation_id' => $vn_rep_id, 'overlay' => 1, 'context' => $po_request->getAction()))."\"); return false;' ".(($vs_class) ? "class='".$vs_class."'" : "").">".$vs_thumb."</a>\n";
 					break;
 				# -------------------------------
 				case "carousel":
@@ -439,7 +439,7 @@
 				# -------------------------------
 				default:
 				case "detail":
-					$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb, $vs_class, 'ca_objects', $pt_object->get("object_id"), array("representation_id" => $vn_rep_id));
+					$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb, $vs_class, $pt_object->tableName(), $pt_object->getPrimaryKey(), array("representation_id" => $vn_rep_id));
 					break;
 				# -------------------------------
 			}

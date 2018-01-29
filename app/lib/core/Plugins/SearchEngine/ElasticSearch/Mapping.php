@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,7 +65,13 @@ class Mapping {
 	 * @var \ApplicationVars
 	 */
 	protected $opo_app_vars;
-
+	
+	/**
+	 * Elastic major version number in use
+	 * @var int
+	 */
+    protected $version;
+    
 	/**
 	 * Mapping constructor.
 	 */
@@ -74,6 +80,9 @@ class Mapping {
 		$this->opo_datamodel = \Datamodel::load();
 		$this->opo_search_conf = \Configuration::load(\Configuration::load()->get('search_config'));
 		$this->opo_indexing_conf = \Configuration::load($this->opo_search_conf->get('search_indexing_config'));
+		$this->version = $this->opo_indexing_conf->get('elasticsearch_version');
+		if (!in_array($this->version, [2,5])) { $this->version = 5; }
+		
 		$this->opo_db = new \Db();
 		$this->opo_search_base = new \SearchBase($this->opo_db, null, false);
 
@@ -249,7 +258,7 @@ class Mapping {
 				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'date_time_no_millis';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = true;
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => 'string');
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => ($this->version == 2) ? 'string' : 'text');
 				break;
 			case 4:	// geocode
 				//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
@@ -258,12 +267,12 @@ class Mapping {
 					'precision' => '3m'
 				);
 				// index text content as is -- sometimes useful for full text place search
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => 'string');
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => ($this->version == 2) ? 'string' : 'text');
 				break;
 			case 6: // currency
 				// we want to do range searches on currency too, so we gotta store the currency identified (USD) separately
 				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'double';
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_currency'] = array('type' => 'string');
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_currency'] = array('type' => ($this->version == 2) ? 'string' : 'text');
 				break;
 			case 8: // length
 			case 9: // weight
@@ -297,7 +306,7 @@ class Mapping {
 			case 29: // objects
 			case 30: // object lots
 			default:
-				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'string';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = ($this->version == 2) ? 'string' : 'text';
 				break;
 		}
 		return $va_element_config;
@@ -320,9 +329,9 @@ class Mapping {
 			)
 		);
 
-		if($pa_indexing_config['BOOST']){
-			$va_field_options[$ps_table.'/'.$vs_field_name]['boost'] = floatval($pa_indexing_config['BOOST']);
-		}
+		 if(($this->version == 2) && $pa_indexing_config['BOOST']){
+ 			$va_field_options[$ps_table.'/'.$vs_field_name]['boost'] = floatval($pa_indexing_config['BOOST']);
+ 		}
 
 		if(in_array('DONT_TOKENIZE',$pa_indexing_config)){
 			$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'not_analyzed';
@@ -339,7 +348,7 @@ class Mapping {
 			case (FT_FILE):
 			case (FT_PASSWORD):
 			case (FT_VARS):
-				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = ($this->version == 2) ? 'string' : 'text';
 				break;
 			case (FT_NUMBER):
 			case (FT_TIME):
@@ -348,7 +357,7 @@ class Mapping {
 				// list-based intrinsics get indexed with both item_id and label text, like so:
 				// image Image 24 -- for a ca_objects type_id image
 				if ($t_instance->getFieldInfo($vs_field_name, 'LIST_CODE')) {
-					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
+					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = ($this->version == 2) ? 'string' : 'text';
 					$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
 				} else {
 					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'double';
@@ -371,7 +380,7 @@ class Mapping {
 				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'boolean';
 				break;
 			default:
-				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = ($this->version == 2) ? 'string' : 'text';
 				break;
 		}
 

@@ -537,11 +537,11 @@ class RequestHTTP extends Request {
 		if (!isset($vm_val)) { return ""; }
 		
 		$vm_val = str_replace("\0", '', $vm_val);
-		if(caGetOption('purify', $pa_options, true) || $this->config->get('purify_all_text_input')) {
+		if(caGetOption('purify', $pa_options, true) && $this->config->get('purify_all_text_input')) {
 		    if(is_array($vm_val)) {
-		        $vm_val = array_map(function($v) { return is_array($v) ? $v : RequestHTTP::getPurifier()->purify(rawurldecode($v)); }, $vm_val);
+		        $vm_val = array_map(function($v) { return is_array($v) ? $v : str_replace("&amp;", "&", RequestHTTP::getPurifier()->purify(rawurldecode($v))); }, $vm_val);
 		    } else {
-		        $vm_val = RequestHTTP::getPurifier()->purify(rawurldecode($vm_val));
+		        $vm_val = str_replace("&amp;", "&", RequestHTTP::getPurifier()->purify(rawurldecode($vm_val)));
 		    }
 		}
 		
