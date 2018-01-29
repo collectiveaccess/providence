@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -934,9 +934,9 @@ function caFileIsIncludable($ps_file) {
 	 * @return string $ps_fractional_expression with fractions replaced with decimal equivalents
 	 */
 	function caConvertFractionalNumberToDecimal($ps_fractional_expression, $locale="en_US") {
-		$ps_fractional_expression = preg_replace("![\n\r\t ]+!", " ", $ps_fractional_expression);
+		$ps_fractional_expression = preg_replace("![\n\r\t \-]+!", " ", $ps_fractional_expression);
 		// convert ascii fractions (eg. 1/2) to decimal
-		if (preg_match('!^([\d]*)[ ]*([\d]+)/([\d]+)!', $ps_fractional_expression, $va_matches)) {
+		if (preg_match('!([\d]*)[ ]*([\d]+)/([\d]+)!', $ps_fractional_expression, $va_matches)) {
 			if ((float)$va_matches[2] > 0) {
 				$vn_val = ((float)$va_matches[2])/((float)$va_matches[3]);
 			} else {
@@ -946,19 +946,28 @@ function caFileIsIncludable($ps_file) {
 
 			$vn_val = caConvertFloatToLocale($vn_val, $locale);
 			$ps_fractional_expression = str_replace($va_matches[0], $vn_val, $ps_fractional_expression);
-		} else {
-			$sep = caGetDecimalSeparator($locale);
-			// replace unicode fractions with decimal equivalents
-			foreach([
-				'½' => $sep.'5', '⅓' => $sep.'333', '¼' => $sep.'25', '⅛' => $sep.'125',
-				'⅔' => $sep.'667',
-				'¾'	=> $sep.'75', '⅜' => $sep.'375', '⅝' => $sep.'625', '⅞' => $sep.'875', '⅒' => $sep.'1'] as $vs_glyph => $vs_val
-			) {
-				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);
-			}
-		}
+		} 
 
+        // replace unicode fractions with decimal equivalents
+        foreach(caGetFractionalGlyphTable($locale) as $vs_glyph => $vs_val
+        ) {
+            $ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', " {$vs_val}", $ps_fractional_expression);
+        }
 		return $ps_fractional_expression;
+	}
+	# ---------------------------------------
+	/**
+	 * Returns map of unicode fraction glyphs and their decimal approximations
+	 *
+	 * @param string locale A locale code. [Default is en_US]
+	 * @return array
+	 */
+	function caGetFractionalGlyphTable($locale="en_US") {
+		$sep = caGetDecimalSeparator($locale);
+		return [
+            '½' => "0{$sep}5", '⅓' => "0{$sep}333", '¼' => "0{$sep}25", '⅛' => "0{$sep}125",
+            '⅔' => "0{$sep}667",
+            '¾'	=> "0{$sep}75", '⅜' => "0{$sep}375", '⅝' => "0{$sep}625", '⅞' => "0{$sep}875", '⅒' => "0{$sep}1"];
 	}
 	# ---------------------------------------
 	/**
@@ -2843,12 +2852,14 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caGetLengthUnitType($ps_unit, $pa_options=null) {
 		$vb_return_short = caGetOption('short', $pa_options, false);
+		$vb_return_code = caGetOption('code', $pa_options, false);
 		switch(strtolower(str_replace(".", "", $ps_unit))) {
 			case "'":
 			case "’":
 			case 'ft':
 			case 'feet':
 			case 'foot':
+			    if ($vb_return_code) return 'feet';
 				return $vb_return_short ? 'ft' : Zend_Measure_Length::FEET;
 				break;
 			case '"':
@@ -2856,6 +2867,7 @@ function caFileIsIncludable($ps_file) {
 			case 'in':
 			case 'inch':
 			case 'inches':
+			    if ($vb_return_code) return 'inch';
 				return $vb_return_short ? 'in' :  Zend_Measure_Length::INCH;
 				break;
 			case 'm':
@@ -2865,6 +2877,7 @@ function caFileIsIncludable($ps_file) {
 			case 'metre':
 			case 'metres':
 			case 'mt':
+			    if ($vb_return_code) return 'meter';
 				return $vb_return_short ? 'm' :  Zend_Measure_Length::METER;
 				break;
 			case 'cm':
@@ -2872,6 +2885,7 @@ function caFileIsIncludable($ps_file) {
 			case 'centimeters':
 			case 'centimetre':
 			case 'centimetres':
+			    if ($vb_return_code) return 'centimeter';
 				return $vb_return_short ? 'cm' : Zend_Measure_Length::CENTIMETER;
 				break;
 			case 'mm':
@@ -2879,16 +2893,19 @@ function caFileIsIncludable($ps_file) {
 			case 'millimeters':
 			case 'millimetre':
 			case 'millimetres':
+			    if ($vb_return_code) return 'millimeter';
 				return $vb_return_short ? 'mm' :  Zend_Measure_Length::MILLIMETER;
 				break;
 			case 'point':
 			case 'pt':
 			case 'p':
+			    if ($vb_return_code) return 'point';
 				return $vb_return_short ? 'pt' :  Zend_Measure_Length::POINT;
 				break;
 			case 'mile':
 			case 'miles':
 			case 'mi':
+			    if ($vb_return_code) return 'mile';
 				return $vb_return_short ? 'mi' :  Zend_Measure_Length::MILE;
 				break;
 			case 'km':
@@ -2897,6 +2914,7 @@ function caFileIsIncludable($ps_file) {
 			case 'kilometers':
 			case 'kilometre':
 			case 'kilometres':
+			    if ($vb_return_code) return 'kilometer';
 				return $vb_return_short ? 'km' :  Zend_Measure_Length::KILOMETER;
 				break;
 			default:
@@ -2915,6 +2933,8 @@ function caFileIsIncludable($ps_file) {
 	function caParseLengthDimension($ps_value, $pa_options=null) {
 		global $g_ui_locale;
 		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+		
+		$ps_value = preg_replace("![\-]+!", " ", $ps_value);
 
 		$pa_values = array(caConvertFractionalNumberToDecimal(trim($ps_value), $vs_locale));
 
@@ -3082,51 +3102,59 @@ function caFileIsIncludable($ps_file) {
 	 *		delimiter = Delimiter string between dimensions. Delimiter will be processed case-insensitively. [Default is 'x']
 	 *		units = Units to use as default for quantities that lack a specification. [Default is inches]
 	 *		returnExtractedMeasurements = return an array of arrays, each of which includes the numeric quantity, units and display string as separate values. [Default is false]
+	 *		precision = number of significant digits to the right of the decimal point to return, overriding any unit specific settings in dimensions.conf. [Default is null]
 	 * @return array An array of parsed and normalized length dimensions, parseable by caParseLengthDimension() or Zend_Measure
 	 */
 	function caParseLengthExpression($ps_expression, $pa_options=null) {
+        $vn_php_precision = ini_get('precision');
+        ini_set('precision', 12);
+        
 		$va_extracted_measurements = [];
 		$vs_specified_units = $vs_extracted_units = null;
+		
+		$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
 
 		$ps_units = caGetOption('units', $pa_options, 'in');
 		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
+		$pn_precision = caGetOption('precision', $pa_options, null);
 
 		if ($ps_delimiter = caGetOption('delimiter', $pa_options, 'x')) {
-			$va_measurements = explode(strtolower($ps_delimiter), strtolower($ps_expression));
+			$va_measurements = explode(strtolower($ps_delimiter), mb_strtolower($ps_expression));
 		} else {
 			$ps_delimiter = '';
 			$va_measurements = array($pm_value);
 		}
-
+		
+		$va_glyphs = array_keys(caGetFractionalGlyphTable());
+		
         $va_unit_map = [];
 		foreach($va_measurements as $vn_i => $vs_measurement) {
 			$vs_measurement = trim(preg_replace("![ ]+!", " ", $vs_measurement));
+		    $vs_measurement_original = $vs_measurement;
 
 			$vs_extracted_units = $vs_measurement_units = null;
 			try {
 				if (!($vo_parsed_measurement = caParseLengthDimension($vs_measurement))) {
 					throw new Exception("Missing or invalid dimensions");
 				} else {
-					$vs_measurement = trim($vo_parsed_measurement->toString());
 					$va_unit_map[] = $vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
+				    if(!strlen($vn_parse_precision = $pn_precision) && !strlen($vn_parse_precision = $o_dimensions_config->get(caGetLengthUnitType($vs_extracted_units, ['code' => true])."_decimal_precision"))) { $vn_parse_precision = 4; }
+				    $vs_measurement = trim($vo_parsed_measurement->toString($vn_parse_precision));
 					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
 				}
 			} catch(Exception $e) {
-				if (preg_match("!^([\d\. \/]+)!", $vs_measurement, $va_matches)) {
+				if (preg_match("!^([\d\. \/".join("", $va_glyphs)."]+)!", $vs_measurement, $va_matches)) {
 					$vs_measurement = $va_matches[0];   // record without units; we'll infer them below
                     $va_unit_map[] = null;
 				} else {
 					continue;
 				}
 			}
-			$va_extracted_measurements[] = ['quantity' => trim(preg_replace("![^\d\. \/]+!", "", $vs_measurement)), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
+			$va_extracted_measurements[] = ['quantity' => trim(preg_replace("![^\d\. \/]+!", "", $vs_measurement)), 'string' => $vs_measurement, 'units' => $vs_extracted_units, 'source' => $vs_measurement_original];
 		}
-		
-		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
 
 		$vn_set_count = 0;
 
-		$va_return = [];
 		foreach($va_extracted_measurements as $vn_i => $va_measurement) {
 		
 		    if(!$va_unit_map[$vn_i]) {
@@ -3138,7 +3166,9 @@ function caFileIsIncludable($ps_file) {
                 
                 try {
                     if($vo_parsed_measurement = caParseLengthDimension($va_measurement['string']." {$vs_inferred_units}")) {
-                        $vs_m = trim($vo_parsed_measurement->toString());
+                    	if(!strlen($vn_parse_precision = $pn_precision) && !strlen($vn_parse_precision = $o_dimensions_config->get(caGetLengthUnitType($vs_inferred_units, ['code' => true])."_decimal_precision"))) { $vn_parse_precision = 4; }
+
+                        $vs_m = trim($vo_parsed_measurement->toString($vn_parse_precision));
                         $va_measurement = [
                             'quantity' =>  trim(preg_replace("![^\d\. \/]+!", "", $vs_m)),
                             'string' => $vs_m,
@@ -3152,15 +3182,21 @@ function caFileIsIncludable($ps_file) {
 
 			if ($va_measurement['units']) {
 				$vs_measurement = $va_measurement['quantity']." ".$va_measurement['units'];
+				$va_extracted_measurements[$vn_i]['units'] = $va_measurement['units'];
 			} elseif ($vs_specified_units) {
 				$vs_measurement = $va_measurement['quantity']." {$vs_specified_units}";
+			    $va_extracted_measurements[$vn_i]['units'] = $vs_specified_units;
 			} else {
 				$vs_measurement = $va_measurement['quantity']." {$ps_units}";
+			    $va_extracted_measurements[$vn_i]['units'] = $ps_units;
 			}
-			$va_return[] = $vs_measurement;
+			$va_extracted_measurements[$vn_i]['string'] = $vs_measurement;
 		}
 
-		return $va_return;
+		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
+
+		ini_set('precision', $vn_php_precision);
+		return array_map(function($v) { return $v['string']; }, $va_extracted_measurements);
 	}
 	# ----------------------------------------
 	/**
@@ -3416,13 +3452,31 @@ function caFileIsIncludable($ps_file) {
 	 * @param float $pn_inches_as_float
 	 * @param int $pn_denom
 	 * @param bool $pb_reduce
+	 * @param array $pa_options Options include:
+	 *      allowFractionsFor = 
+	 *      useUnicodeFractionGlyphsFor = 
+	 *      precision = 
+	 *      forceFractions = 
+	 *      
 	 * @return string
 	 */
-	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true, $pa_options=null) {
 		$o_config = Configuration::load();
-
+		$o_display_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+		
+		$pa_allow_fractions_for = caGetOption('allowFractionsFor', $pa_options, null);
+        if (is_null($pa_allow_fractions_for)) { $pa_allow_fractions_for = $o_display_config->get('display_fractions_for'); }
+        if (!is_array($pa_allow_fractions_for)) { $pa_allow_fractions_for = []; }
+        
+		$pa_use_unicode_fraction_glyphs_for = caGetOption('useUnicodeFractionGlyphsFor', $pa_options, null);
+        if (is_null($pa_use_unicode_fraction_glyphs_for)) { $pa_use_unicode_fraction_glyphs_for = $o_display_config->get('use_unicode_fraction_glyphs_for'); }
+        if (!is_array($pa_use_unicode_fraction_glyphs_for)) { $pa_use_unicode_fraction_glyphs_for = []; }
+        
+        $pb_use_unicode_fraction_glyphs = (is_array($pa_use_unicode_fraction_glyphs_for) && sizeof($pa_use_unicode_fraction_glyphs_for));
+        if (is_null($pa_use_unicode_fraction_glyphs_for)) { $pb_use_unicode_fraction_glyphs = $o_config->get('use_unicode_fractions_for_measurements'); }
+		
 		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
-		$num = round($pn_inches_as_float * $pn_denom);
+		$num = ceil($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
 
@@ -3444,46 +3498,62 @@ function caFileIsIncludable($ps_file) {
 			$pn_denom /= $a;
 		}
 
-		if ($int) {
-			// Suppress minus sign in numerator; keep it only in the integer part.
-			if ($num < 0) {
-				$num *= -1;
-			}
+        // Suppress minus sign in numerator; keep it only in the integer part.
+        if ($num < 0) {
+            $num *= -1;
+        }
+        
+       //  if (is_array($pa_allow_fractions_for) && !in_array("{$num}/{$pn_denom}", $pa_allow_fractions_for)) {
+//         
+//         }
+        
+        if(caGetOption('forceFractions', $pa_options, true)) {
+            $v = $num/$pn_denom;
+            foreach($pa_allow_fractions_for as $i => $f) {
+                $t = split("/", $f);
+                $tv = (int)$t[0]/(int)$t[1];
+                if ($tv >= $v) { 
+                    $frac = $f;
+                    break;
+                }
+            }
+        }
 
-			if ($o_config->get('use_unicode_fractions_for_measurements')) {
-				if (($num === 1) && ($pn_denom == 4)) {
-					$frac = "¼";
-				} elseif (($num === 1) && ($pn_denom == 2)) {
-					$frac = "½";
-				} elseif (($num === 1) && ($pn_denom == 3)) {
-					$frac = "⅓";
-				} elseif (($num === 1) && ($pn_denom == 4)) {
-					$frac = "¼";
-				} elseif (($num === 1) && ($pn_denom == 8)) {
-					$frac = "⅛";
-				} elseif (($num === 2) && ($pn_denom == 3)) {
-					$frac = "⅔";
-				} elseif (($num === 3) && ($pn_denom == 4)) {
-					$frac = "¾";
-				} elseif (($num === 3) && ($pn_denom == 8)) {
-					$frac = "⅜";
-				} elseif (($num === 5) && ($pn_denom == 8)) {
-					$frac = "⅝";
-				} elseif (($num === 7) && ($pn_denom == 8)) {
-					$frac = "⅞";
-				} elseif (($num === 1) && ($pn_denom == 10)) {
-					$frac = "⅒";
-				} else {
-					$frac = "{$num}/{$pn_denom}";
-				}
-			} else {
-				$frac = "{$num}/{$pn_denom}";
-			}
+        if ($pb_use_unicode_fraction_glyphs) {
+            $unicode_frac = null;
+            if (($num === 1) && ($pn_denom == 4)) {
+                $unicode_frac = "¼";
+            } elseif (($num === 1) && ($pn_denom == 2)) {
+                $unicode_frac = "½";
+            } elseif (($num === 1) && ($pn_denom == 3)) {
+                $unicode_frac = "⅓";
+            } elseif (($num === 1) && ($pn_denom == 4)) {
+                $unicode_frac = "¼";
+            } elseif (($num === 1) && ($pn_denom == 8)) {
+                $unicode_frac = "⅛";
+            } elseif (($num === 2) && ($pn_denom == 3)) {
+                $unicode_frac = "⅔";
+            } elseif (($num === 3) && ($pn_denom == 4)) {
+                $unicode_frac = "¾";
+            } elseif (($num === 3) && ($pn_denom == 8)) {
+                $unicode_frac = "⅜";
+            } elseif (($num === 5) && ($pn_denom == 8)) {
+                $unicode_frac = "⅝";
+            } elseif (($num === 7) && ($pn_denom == 8)) {
+                $unicode_frac = "⅞";
+            } elseif (($num === 1) && ($pn_denom == 10)) {
+                $unicode_frac = "⅒";
+            }
+            if ($unicode_frac && is_array($pa_use_unicode_fraction_glyphs_for) && sizeof($pa_use_unicode_fraction_glyphs_for) && in_array($unicode_frac, $pa_use_unicode_fraction_glyphs_for)) { 
+                $frac = $unicode_frac; 
+            } else {
+                $frac = "{$num}/{$pn_denom}";
+            }
+        } else {
+            $frac = "{$num}/{$pn_denom}";
+        }
 
-			return "$int $frac in";
-		}
-
-		return "$num/$pn_denom in";
+        return ($int > 0) ? trim("{$int} {$frac} in") : trim("{$frac} in");
 	}
 	# ----------------------------------------
 	/**
@@ -3682,7 +3752,12 @@ function caFileIsIncludable($ps_file) {
 			switch($vs_char = mb_substr($ps_template, $i, 1)) {
 				case '^':
 					if ($vb_in_tag) {
-						if ($vs_tag = trim($vs_tag)){ $va_tags[] = $vs_tag; }
+					    if ($vs_last_char === '^') {
+					        $vs_tag .= "^";
+					        break;
+					    } elseif ($vs_tag = trim($vs_tag)){ 
+					        $va_tags[] = $vs_tag; 
+					    }
 					}
 					$vb_in_tag = true;
 					$vs_tag = '';
@@ -3697,14 +3772,27 @@ function caFileIsIncludable($ps_file) {
 				case ' ':
 				case ',':
 				case '<':
-					if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
-						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
-						$vs_tag = '';
-						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
-					} else {
-						$vs_tag .= $vs_char;
-					}
+					if ($vb_in_tag) {
+                        if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
+                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+                            $vs_tag = '';
+                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+                        } else {
+                            $vs_tag .= $vs_char;
+                        }
+                    }
 					break;
+				case ')':
+				    if ($vb_in_tag) {
+                        if (!$vb_in_single_quote && !$vb_in_double_quote && !preg_match("![/]+!", $vs_tag)) {  // paren is not part of tag unless it's expath
+                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+                            $vs_tag = '';
+                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+                        } else {
+                            $vs_tag .= $vs_char;
+                        }
+                    }
+				    break;
 				case '"':
 					if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
 						$vb_in_double_quote = true;
@@ -3719,8 +3807,10 @@ function caFileIsIncludable($ps_file) {
 					}
 					break;
 				case "'":
-					$vb_in_single_quote = !$vb_in_single_quote;
-					$vs_tag .= $vs_char;
+					if ($vb_in_tag) {
+                        $vb_in_single_quote = !$vb_in_single_quote;
+                        $vs_tag .= $vs_char;
+                    }
 					break;
 				default:
 					if ($vb_in_tag) {
@@ -3800,5 +3890,37 @@ function caFileIsIncludable($ps_file) {
             unset($array1[$key]);
         }
         return $array1;
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings in snake-case to camel-case
+	 *
+	 * @param array $array1
+	 * @param array $array2
+	 *
+	 * @return array
+	 */
+	function caSnakeToCamel($pm_text) {
+	    if(is_array($pm_text)) {
+	        return array_map(function($v) { return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $v); }, $pm_text);
+	    } else {
+	        return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text);
+	    }
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings in camel-case to snake-case
+	 *
+	 * @param array $array1
+	 * @param array $array2
+	 *
+	 * @return array
+	 */
+	function caCamelToSnake($pm_text) {
+	    if(is_array($pm_text)) {
+	        return array_map(function($v) { return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtolower($m[1]); }, $v), '_'); }, $pm_text);
+	    } else {
+	        return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text), '_');
+	    }
 	}
 	# ----------------------------------------

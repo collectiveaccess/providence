@@ -2196,42 +2196,86 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=null) {
 	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
+		
+		$pb_omit_units = caGetOption('omitUnits', $pa_options, false);
+		
+		$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+		$va_add_periods_list = $o_dimensions_config->get('add_period_after_units');
+	
+	    $vn_precision = ini_get('precision');
+	    ini_set('precision', 12);
+	    
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
 			switch(strtoupper($va_tmp[0])) {
 			    case 'UNITS':
 			        try {
                         $vo_measurement = caParseLengthDimension($ps_value);
-                    
+                        
                         $vs_measure_conv = null;
-                        switch(strtoupper($va_tmp[1])) {
-                            case 'INFRAC':
-                                $vs_measure_conv = caLengthToFractions($vo_measurement->convertTo(Zend_Measure_Length::INCH, 8), 16, true);
+                        switch($vs_units = strtolower($va_tmp[1])) {
+                            case 'infrac':
+                            case 'english':
+                            case 'fractionalenglish':
+                                $vn_maximum_denominator = array_reduce($o_dimensions_config->get('display_fractions_for'), function($acc, $v) { 
+                                    $t = explode("/", $v); return ((int)$t[1] > $acc) ? (int)$t[1] : $acc; 
+                                }, 0);
+                                
+                                $vs_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+                                $vn_value_in_inches = (float)preg_replace("![^0-9\.]+!", "", $vs_in_inches);
+                                $va_measure_conv = [];
+                                if ($vn_value_in_inches > $o_dimensions_config->get('use_feet_for_display_up_to')) {
+                                    if ($vn_in_miles = (int)($vn_value_in_inches / (12 * 5280))) { $va_measure_conv[] = "{$vn_in_miles} miles".((!$pb_omit_units && in_array('MILE', $va_add_periods_list)) ? '.' : ''); }
+                                    $vn_value_in_inches -= ($vn_in_miles * (12 * 5280));
+                                }
+                                if ($vn_value_in_inches > $o_dimensions_config->get('use_inches_for_display_up_to')) {
+                                    if ($vn_in_feet = (int)($vn_value_in_inches / 12)) { $va_measure_conv[] = "{$vn_in_feet} ft".((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : ''); }
+                                    $vn_value_in_inches -= (12 * $vn_in_feet);
+                                }
+                                if ($vn_value_in_inches > 0) { 
+                                    $vo_inches = caParseLengthDimension("{$vn_value_in_inches} in");
+                                    $va_measure_conv[] = (in_array($vs_units, ['fractionalenglish', 'infrac']) ? caLengthToFractions($vn_value_in_inches, $vn_maximum_denominator, true) : $vo_inches->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision'))).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : ''); 
+                                }
+                                $vs_measure_conv = join(" ", $va_measure_conv);
+                                
                                 break;
-                            case 'M':
-                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, 4);
+                            case 'metric':
+                                $vs_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+                                $vn_value_in_cm = (float)preg_replace("![^0-9\.]+!", "", $vs_in_cm);
+                                if ($vn_value_in_cm <= $o_dimensions_config->get('use_millimeters_for_display_up_to')) {
+                                    $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::MILLIMETER, (int)$o_dimensions_config->get('millimeter_decimal_precision')).((!$pb_omit_units && in_array('MILLIMETER', $va_add_periods_list)) ? '.' : '');
+                                } elseif ($vn_value_in_cm <= $o_dimensions_config->get('use_centimeters_for_display_up_to')) {
+                                    $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, (int)$o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
+                                } elseif ($vn_value_in_cm <= $o_dimensions_config->get('use_meters_for_display_up_to')) {
+                                    $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, (int)$o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
+                                } else {
+                                    $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::KILOMETER, $o_dimensions_config->get('kilometer_decimal_precision')).((!$pb_omit_units && in_array('KILOMETER', $va_add_periods_list)) ? '.' : '');
+                                }
                                 break;
-                            case 'CM':
-                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 4);
+                            case 'm':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, $o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
                                 break;
-                            case 'FT':
-                            case 'FT.':
-                            case 'FOOT':
-                            case 'FEET':
+                            case 'cm':
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, $o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
+                                break;
+                            case 'ft':
+                            case 'ft.':
+                            case 'foot':
+                            case 'feet':
                             case "'":
-                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::FEET, 4);
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::FEET, $o_dimensions_config->get('feet_decimal_precision')).((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : '');
                                 break;
-                            case 'IN':
-                            case 'INCH':
-                            case 'INCHES':
-                            case 'IN.':
+                            case 'in':
+                            case 'inch':
+                            case 'inches':
+                            case 'in.':
                             case '"':
-                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 4);
+                                $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision')).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
                                 break;
                         }
-                    
+                        
                         if ($vs_measure_conv) {
-                            if (caGetOption('omitUnits', $pa_options, false)) { $vs_measure_conv = trim(preg_replace("![^\d\-\.\/ ]+!", "", $vs_measure_conv)); }
+                            if ($pb_omit_units) { $vs_measure_conv = trim(preg_replace("![^\d\-\.\/ ]+!", "", $vs_measure_conv)); }
                             $ps_value = "{$vs_measure_conv}";
                         }
                     } catch (Exception $e) {
@@ -2274,6 +2318,8 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 					break;
 			}
 		}
+		
+		ini_set('precision', $vn_precision);
 		return $ps_value;
 	}
 	# ------------------------------------------------------------------------------------------------

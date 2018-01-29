@@ -1937,6 +1937,7 @@ if (!$pb_omit_editing_info) {
 		}
 		
 		$va_bundle_bits = explode('.', $vs_bundle_name);
+		$pa_options['bundle'] = $vs_bundle_name;
 		
 		$pa_options['restrictToRelationshipTypes'] = 	caGetOption('restrict_to_relationship_types', $va_settings, null);
 		$pa_options['restrictToTypes'] =				caGetOption('restrict_to_types', $va_settings, null);
@@ -2022,7 +2023,7 @@ if (!$pb_omit_editing_info) {
 					}
 				} else {
 					// resolve template relative to current record
-					$vs_val = $po_result->getWithTemplate($vs_template, ['filters'=> $pa_options['filters'], 'delimiter' => $pa_options['delimiter']]);
+					$vs_val = $po_result->getWithTemplate($vs_template, ['relativeToContainer' => (ca_metadata_elements::getElementDatatype($va_bundle_bits[sizeof($va_bundle_bits)-1]) === 0) ? $vs_bundle_name : null, 'filters'=> $pa_options['filters'], 'delimiter' => $pa_options['delimiter']]);
 				}
 			}
 		} else {

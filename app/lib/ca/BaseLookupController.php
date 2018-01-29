@@ -174,7 +174,7 @@
 					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
 				}
 				
-				$qr_res = $o_search->search($vs_search);
+				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 				
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);

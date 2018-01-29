@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -865,7 +865,7 @@
 					}
 				}
 			
-				if (!$t_instance->getPrimaryKey()) {
+				if (!$t_instance->getPrimaryKey() && ($vs_import_mode !== 'DONT_MATCH')) {
 					// Use filename as idno if all else fails
 					if ($t_instance->load(array('idno' => $f, 'deleted' => 0))) {
 						$va_notices[$vs_relative_directory.'/'.$f.'_match'] = array(
