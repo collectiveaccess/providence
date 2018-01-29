@@ -625,7 +625,7 @@ class BaseEditorController extends ActionController {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
 		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
-		    $va_tmp = array_filter($va_displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
+		    $va_tmp = array_filter($va_displays, function($v) { return !isset($v['settings']['show_only_in']) || !is_array($v['settings']['show_only_in']) || in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
 
@@ -672,6 +672,7 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list);
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
+			print "SET displ=$vn_display_id";
 		} else {
             $va_display_list = $t_display->getDisplayListForResultsEditor($t_subject->tableName(), ['user_id' => $this->request->getUserID()]);
             
@@ -701,8 +702,9 @@ class BaseEditorController extends ActionController {
 		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
+		
 		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
-		    $va_tmp = array_filter($va_displays, function($v) { return in_array('editor_summary', $v['settings']['show_only_in']); });
+		    $va_tmp = array_filter($va_displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
 		
@@ -736,7 +738,7 @@ class BaseEditorController extends ActionController {
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
 		} else {
-			$vn_display_id = $t_display = null;
+			$vn_display_id = null;
 			$this->view->setVar('display_id', null);
 			$this->view->setVar('placements', array());
 		}
