@@ -4556,7 +4556,7 @@ create table ca_items_x_tags (
 	user_id		int unsigned null references ca_users(user_id),
 	access		tinyint unsigned not null default 0,
 	
-	ip_addr		char(39) null,
+	ip_addr		varchar(39) null,
 	
 	created_on	int unsigned not null,
 	
@@ -4676,7 +4676,7 @@ create table ca_search_log (
 	search_expression	varchar(1024) not null,
 	num_hits			int unsigned not null,
 	form_id				int unsigned null references ca_search_forms(form_id),
-	ip_addr				char(15) null,
+	ip_addr				varchar(39) null,
 	details				text not null,
 	execution_time 		decimal(7,3) not null,
 	search_source 		varchar(40) not null,
@@ -6783,7 +6783,7 @@ create table ca_download_log (
   log_id		      	int unsigned        not null AUTO_INCREMENT,
   log_datetime        	int unsigned        not null,
   user_id             	int unsigned        null,
-  ip_addr			  	char(15)			null,
+  ip_addr			  	varchar(39)			null,
   table_num    			tinyint unsigned    not null,
   row_id       			int unsigned        not null,
   representation_id     int unsigned      	null,
@@ -6877,4 +6877,4 @@ create table ca_schema_updates (
 
 /* Indicate up to what migration this schema definition covers */
 /* CURRENT MIGRATION: 151 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (151, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (152, unix_timestamp());
