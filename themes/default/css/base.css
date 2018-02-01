@@ -6456,7 +6456,6 @@ div.caRepresentationMediaReplicationControls {
     overflow: auto;
     display: none;
     padding:0px !important;
-    border: 2px solid #999999;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #ededed;
 }
