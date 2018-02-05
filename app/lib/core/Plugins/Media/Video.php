@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2017 Whirl-i-Gig
+ * Copyright 2004-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -578,6 +578,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false;
 		}
 		$o_tc = new TimecodeParser();
+		
+		$vs_grab_at = $this->opo_app_config->get('video_poster_frame_grab_at');
+        if(preg_match("!([\d]+)%!", $vs_grab_at, $va_matches)) {
+            $vn_start_secs = ceil((float)$this->get('duration') * ($va_matches[1]/100));
+        } elseif (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 5)) {
+            $vn_start_secs = 5;
+        }
 
 		# is mimetype valid?
 		switch($mimetype) {
@@ -587,10 +594,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->opa_media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
-					if (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 5)) {
-						$vn_start_secs = 5;
-					}
-
 					exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
@@ -614,10 +617,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->opa_media_metadata["mime_type"] != "application/x-shockwave-flash")) {
-					if (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 5)) {
-						$vn_start_secs = 5;
-					}
-					
 					exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);

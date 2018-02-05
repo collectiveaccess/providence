@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,8 +43,8 @@
 ?>
 
 <div class="caMediaOverlayControls">
+	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']); ?></a></div>
 	<div class="objectInfo"><?php print "{$vs_media_type}; ".caGetRepresentationDimensionsForDisplay($t_rep, 'original'); ?></div>
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
 </div>
 	
 <div class="caObjectRepresentationSetCenterContainer" style="width: <?php print $vn_image_width; ?>px; height: <?php print $vn_image_height; ?>px;">
