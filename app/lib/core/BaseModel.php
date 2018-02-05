@@ -11574,12 +11574,12 @@ $pa_options["display_form_field_tips"] = true;
 		if ($t_instance->hasField('deleted')) { 
 			$vs_deleted_sql = '(deleted = 0)'; 
 		}
-		
 		$va_sql = [];
 		if (sizeof($vs_wheres = join(" {$ps_boolean} ", $va_sql_wheres))) { $va_sql[] = $vs_wheres; }
 		if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
 		if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}
-		
+		$va_sql = array_filter($va_sql, function($v) { return strlen($v) > 0; });
+
 		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';

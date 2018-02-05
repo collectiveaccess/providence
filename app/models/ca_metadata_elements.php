@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -407,6 +407,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		return $va_tmp;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array of information about elements with a setting set to a given value.
+	 *
+	 * @param string $ps_setting Setting code
+	 * @param mixed $pm_value  Setting value
+	 * @param array $pa_options No options are currently supported
+	 *
+	 * @return array
+	 */
+	public static function getElementSetsWithSetting($ps_setting, $pm_value, $pa_options=null) {
+	    return array_map(function($v) { $v['settings'] = caUnserializeForDatabase($v['settings']); return $v; }, array_filter(ca_metadata_elements::find('*', ['returnAs' => 'arrays']), function($v) use ($ps_setting, $pm_value) {
+	        $va_settings = caUnserializeForDatabase($v['settings']);
+	        if (isset($va_settings[$ps_setting]) && ($va_settings[$ps_setting] == $pm_value)) {
+	            return true;
+	        }
+	        return false;
+	    }));
 	}
 	# ------------------------------------------------------
 	# Settings
