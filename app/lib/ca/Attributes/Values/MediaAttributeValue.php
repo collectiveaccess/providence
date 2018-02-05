@@ -181,7 +181,7 @@
 				
 				$vs_dimensions = '';
 				if ($pa_options['showMediaInfo']) {
-					$va_dimensions = array($va_info['INPUT']['MIMETYPE']);
+					$va_dimensions = array(Media::getTypenameForMimetype($va_info['INPUT']['MIMETYPE']));
 					if ($va_info['ORIGINAL_FILENAME']) {
 						$vs_filename = $va_info['ORIGINAL_FILENAME'];
 					} else {
@@ -215,12 +215,6 @@
 					if (isset($va_info['original']['PROPERTIES']['pages']) && ($vn_pages = $va_info['original']['PROPERTIES']['pages'])) {
 						$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
 					}
-					if (!isset($va_info['original']['PROPERTIES']['filesize']) || !($vn_filesize = $va_info['original']['PROPERTIES']['filesize'])) {
-						$vn_filesize = 0;
-					}
-					if ($vn_filesize) {
-						$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
-					}
 		
 					if (!isset($va_info['PROPERTIES']['filesize']) || !($vn_filesize = $va_info['PROPERTIES']['filesize'])) {
 						$vn_filesize = @filesize($this->opo_media_info_coder->getMediaPath('original'));
@@ -242,13 +236,13 @@
 					$vs_val = "<div id='caMediaAttribute".$this->opn_value_id."' class='attributeMediaInfoContainer'>";
 
 					$vs_val .= "<div class='attributeMediaThumbnail'>";
+					if ($pa_options['showMediaInfo']) {
+						$vs_val .= "<div class='attributeMediaInfo' style='float: right; width: 200px; padding: 0 0 0 10px;'>{$vs_filename}<br/>{$vs_dimensions}</div>";
+					}
 					$vs_val .= "<div style='float: left;'>".urlDecode(caNavLink($pa_options['request'], caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')))."</div>";
 					$vs_val .= "<a href='#' onclick='caMediaPanel.showPanel(\"{$vs_view_url}\"); return false;'>{$vs_tag}</a>";
 					$vs_val .= "</div>";
 					
-					if ($pa_options['showMediaInfo']) {
-						$vs_val .= "<div class='attributeMediaInfo'><p>{$vs_filename}</p><p>{$vs_dimensions}</p></div>";
-					}
 					
 					$vs_val .= "</div>";
 				} else {
