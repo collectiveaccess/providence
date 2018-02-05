@@ -116,11 +116,9 @@ if($vo_result->numHits() > 0) {
 		$va_display_lists = $this->getVar("display_lists");
 		$va_display_show_only_for_views = $this->getVar('display_show_only_for_views');
 	
-		print _t("Display").": <select id='display_select' name='display_id' style='width: 100px;'>\n";
 		if(is_array($va_display_lists) && sizeof($va_display_lists) > 0){
-			foreach($va_display_lists as $vn_display_id => $vs_display_name){
-				print "<option value='".$vn_display_id."' ".(($vn_display_id == $this->getVar("current_display_list")) ? "SELECTED='1'" : "").">{$vs_display_name}</option>\n";
-			}
+		    $va_opts = array_map(function($v) { return (int)$v; }, array_flip($va_display_lists));
+		    print _t("Display").": ".caHTMLSelect('display_id', $va_opts, ["id" => "display_select"], ["width" => "100px", "value" => (int)$this->getVar("current_display_list")]);
 		}
 		print "</select>\n";
 		print "</div>";		
@@ -155,7 +153,7 @@ if($vo_result->numHits() > 0) {
         for(var i in opts) {
             var display_id = opts[i].value;
             if(!(caDisplayShowMap[display_id] && (caDisplayShowMap[display_id] instanceof Array) && (caDisplayShowMap[display_id].length > 0) && caDisplayShowMap[display_id].indexOf(view) == -1)) {
-                filteredOpts.push("<option value='" + opts[i].value + "'>" + opts[i].text + "</option>");   // show
+                filteredOpts.push("<option value='" + opts[i].value + "' " + ((opts[i].value == jQuery('#display_select').val()) ? "SELECTED='1'" : "") +">" + opts[i].text + "</option>");   // show
             }
         }
         jQuery('#display_select').html(filteredOpts.join("\n"));
