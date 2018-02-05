@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -4321,6 +4321,90 @@
 		 */
 		public static function import_mediaHelp() {
 			return _t("Import media from a directory or directory tree.");
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function regenerate_dependent_field_values($po_opts=null) {
+			// Find containers with dependent fields
+			$va_elements = ca_metadata_elements::getElementSetsWithSetting("isDependentValue", 1);
+			$o_dm = Datamodel::load();
+			
+			
+			$c = 0;
+			foreach($va_elements as $va_element) {
+			    $t_element = ca_metadata_elements::getInstance($va_element['element_code']);
+			    $t_root = ca_metadata_elements::getInstance($va_element['hier_element_id']);
+			    $vs_root_code = $t_root->get('element_code');
+			    $vn_root_id = $t_root->get('element_id');
+			    
+			    CLIUtils::addMessage(_t('Processing %1.%2', $vs_root_code, $va_element['element_code']));
+			    
+			    // get type restrictions
+			    $va_type_res_list = $t_element->getTypeRestrictions();
+			    foreach($va_type_res_list as $va_type_res) {
+			        if (!($t_instance = $o_dm->getInstanceByTableNum($va_type_res['table_num']))) { continue; }
+			        $vs_table_name = $t_instance->tableName();
+			        if ($va_type_res['type_id'] > 0) {
+			            $qr_res = call_user_func("{$vs_table_name}::find", ["type_id" => (int)$va_type_res['type_id']], ['returnAs' => 'searchResult']);
+			        } else {
+			            $qr_res = call_user_func("{$vs_table_name}::find", ["*"], ['returnAs' => 'searchResult']);
+			        }
+			        
+			        while($qr_res->nextHit()) {
+			            $va_value_list = $qr_res->get("{$vs_table_name}.{$vs_root_code}", ["returnWithStructure" => true]);
+			            foreach($va_value_list as $vn_row_id => $va_values_by_attribute_id) {
+			                CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
+			                foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {
+			                    $vs_processed_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $va_values);
+			                    
+			                    $va_values[$va_element['element_code']] = $vs_processed_value;
+			                    if (!$t_instance->load($vn_row_id)) { continue; }
+			                    $t_instance->setMode(ACCESS_WRITE);
+			                    $t_instance->editAttribute(
+			                        $vn_attr_id, $vn_root_id, $va_values
+			                    );
+			                    $t_instance->update();
+			                    $c++;
+			                    if ($t_instance->numErrors() > 0) {
+			                        CLIUtils::addError(_t("Could not update dependent value: %1", join("; ", $t_instance->getErrors())));
+			                    }
+			                }
+			            }
+			        }
+			    }
+			}
+			
+			CLIUtils::addMessage(_t("Regenerated %1 values", $c));
+		}
+		# -------------------------------------------------------
+		public static function regenerate_dependent_field_valuesParamList() {
+			return [
+				
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_dependent_field_valuesUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_dependent_field_valuesShortHelp() {
+			return _t('Regenerate template-generated values for fields that are dependent values.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_dependent_field_valuesHelp() {
+			return _t('Text fields that are dependent upon other fields are only refreshed on save and import. For dependent display templates using dimensions (length, width) formatting, changes in the dimensions.conf configuration files are not automatically applied to existing values. This utility will batch update all dependent values using the current system configuration.');
 		}
 		# -------------------------------------------------------
 	}
