@@ -4397,14 +4397,14 @@
 		 *
 		 */
 		public static function regenerate_dependent_field_valuesShortHelp() {
-			return _t('---');
+			return _t('Regenerate template-generated values for fields that are dependent values.');
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function regenerate_dependent_field_valuesHelp() {
-			return _t('---');
+			return _t('Text fields that are dependent upon other fields are only refreshed on save and import. For dependent display templates using dimensions (length, width) formatting, changes in the dimensions.conf configuration files are not automatically applied to existing values. This utility will batch update all dependent values using the current system configuration.');
 		}
 		# -------------------------------------------------------
 	}
