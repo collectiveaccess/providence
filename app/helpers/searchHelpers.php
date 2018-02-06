@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1378,17 +1378,24 @@
 	 * @param string $ps_table
 	 * @param null|int $pn_type_id
 	 * @param array $pa_options Options include:
+	 *		request = The current request. [Default is null]
 	 *		includeUserSorts = 
 	 *		distinguishNonUniqueNames = 
 	 *		allowedSorts = 
 	 *		disableSorts = Don't return any available sorts. [Default is false]
-	 *		request = The current request. [Default is null]
 	 *		includeInterstitialSortsFor = Related table [Default is false]
 	 *		distinguishInterstitials = [Default is false]
+	 *      restrictToDisplay = [Default is null]
 	 * @return array
 	 */
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
 		if (caGetOption('disableSorts', $pa_options, false)) { return []; }
+		
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_table}/{$pn_type_id}");
+		
+		if (CompositeCache::contains("available_sorts_{$vs_cache_key}", "sorts")) { return CompositeCache::fetch("available_sorts_{$vs_cache_key}", "sorts"); }
+		
+		$pn_display_id = caGetOption('restrictToDisplay', $pa_options, null);
 	
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
 		require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
@@ -1636,11 +1643,22 @@
 			}
 		}
 		
+		if ($pn_display_id > 0) {
+            $t_display =  new ca_bundle_displays($pn_display_id); 
+            $va_display_bundles = array_map(function ($v) { return $v['bundle_name']; }, $t_display->getPlacements());	
+       
+            foreach($va_base_fields as $vs_f => $vs_l) {
+                if (!in_array($vs_f, $va_display_bundles)) { unset($va_base_fields[$vs_f]); }
+            }
+        } 
+		
 		$va_base_fields = array_map(function($v) { return caUcFirstUTF8Safe($v); }, $va_base_fields);
 		
 		natcasesort($va_base_fields);
 		
-		return array_merge(['_natural' => _t('Relevance')], $va_base_fields);
+		$ret = array_merge(['_natural' => _t('Relevance')], $va_base_fields);
+		CompositeCache::save("available_sorts_{$vs_cache_key}", $ret, 'sorts', 0);
+		return $ret;
 	}
 	# ---------------------------------------
 	/**
@@ -1648,12 +1666,15 @@
 	 * i.e. as array of human readable names
 	 * @param string $ps_table
 	 * @param array $ps_sort_fields
+	 * @param array $pa_options
+	 *
 	 * @return string
 	 */
-	function caGetSortForDisplay($ps_table, $ps_sort_fields) {
+	function caGetSortForDisplay($ps_table, $ps_sort_fields, $pa_options=null) {
+	    if (!is_array($pa_options)) { $pa_options = []; }
 		$va_sort_fields = explode(';', $ps_sort_fields);
 
-		$va_available_sorts = caGetAvailableSortFields($ps_table, null, ['includeUserSorts' => false]);
+		$va_available_sorts = caGetAvailableSortFields($ps_table, null, array_merge($pa_options, ['includeUserSorts' => false]));
 
 		$va_return = [];
 		foreach($va_sort_fields as $vs_sort_field) {

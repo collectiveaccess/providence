@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,8 +60,7 @@
 					$this->ops_view_default = $vs_view_default;
 				}
 
-				if(!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
-				$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request)));
+				if(!is_array($this->opa_sorts)) { $this->opa_sorts = []; }
 			}
  		}
  		# -------------------------------------------------------

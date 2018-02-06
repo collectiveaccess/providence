@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -456,6 +456,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = array_merge($this->errors, $t_placement->errors);
 			return false;
 		}
+		
+		// flush sort cache as modifying display will change values
+		CompositeCache::flush('sorts');
 		return $t_placement->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -487,6 +490,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			unset(ca_bundle_displays::$s_placement_list_cache[$vn_display_id]);
+			
+			// flush sort cache as modifying display will change values
+		    CompositeCache::flush('sorts');
 			return true;
 		}
 		return false;
