@@ -278,7 +278,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	function caDeleteRemapper($po_request, $t_instance) {
 		$vs_instance_table = $t_instance->tableName();
 		
-		$vn_reference_to_count = $vn_reference_from_count = 0;
+		$vn_reference_to_count = $vn_reference_from_count = $vn_child_count = 0;
 		$va_reference_to_buf = $va_reference_from_buf = array();
 		switch($vs_instance_table) {
 			case 'ca_relationship_types':
@@ -330,13 +330,23 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$vs_typename = $t_instance->getTypeName();
 				
 				// Check for authority references that are *part* of this row
-				
 				if (is_array($va_references_from = $t_instance->getAuthorityElementList()) && sizeof($va_references_from)) {
 					foreach($va_references_from as $va_ref) {
 						if (!($t_element = ca_metadata_elements::getInstance($va_ref['hier_element_id']))) { continue; }
 						$va_reference_from_buf[] = _t(($va_ref['count'] == 1) ? "%1 reference in %2" : "%1 references in %2", $va_ref['count'], $t_element->getLabelForDisplay());
 						$vn_reference_from_count += $va_ref['count'];
 					}
+				}
+				
+				// Check for child records in hierarchy
+				if ($t_instance->isHierarchical() && is_array($va_children = call_user_func($t_instance->tableName()."::getHierarchyChildrenForIDs", [$t_instance->getPrimaryKey()]))) {
+					$vn_child_count = sizeof($va_children);
+					if ($vn_child_count == 1) {
+						$va_reference_to_buf[] = _t("Has %1 child", $vn_child_count)."<br>\n";
+					} else {
+						$va_reference_to_buf[] = _t("Has %1 children", $vn_child_count)."<br>\n";
+					}
+					$vn_reference_to_count += $vn_child_count;
 				}
 				break;
 		}
@@ -385,6 +395,11 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', $va_remap_lookup_opts);
 			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapToID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapTo\").val(\"\"); jQuery(\"#caReferenceHandlingToClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingToClear'>"._t('Clear').'</a>';
 			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapToID', array('value' => '', 'id' => 'caReferenceHandlingToRemapToID'));
+			
+			if ($vn_child_count > 0) {
+				$vs_output .= '<p class="formLabelWarning" id="caChildDeletionWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Child records will be deleted')."</p>\n";
+			}
+			
 			$vs_output .= "<script type='text/javascript'>";
 			
 			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
@@ -402,9 +417,11 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				
 			$vs_output .= "jQuery('#caReferenceToHandlingRemap').click(function() {
 				jQuery('#caReferenceHandlingToRemapTo').attr('disabled', false);
+				jQuery('#caChildDeletionWarning').hide();
 			});
 			jQuery('#caReferenceHandlingToDelete').click(function() {
 				jQuery('#caReferenceHandlingToRemapTo').attr('disabled', true);
+				jQuery('#caChildDeletionWarning').show();
 			});
 			";
 			$vs_output .= "});";
