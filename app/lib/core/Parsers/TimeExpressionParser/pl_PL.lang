@@ -48,6 +48,9 @@ dateUncertaintyDayIndicator = [ d ]
 # What to use to indicate a geological date ("millions of years ago")
 dateMYA = [ mlt ]
 
+# What to use to indicate radiocarbon dates ("before present")
+dateBP = [bp]
+
 dateADIndicator = ad
 dateBCIndicator = pne
 ADBCTable = {
