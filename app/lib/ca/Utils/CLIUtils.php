@@ -3964,7 +3964,6 @@
 		# -------------------------------------------------------
 		public static function check_metadata_alertsParamList() {
 			return [];
-
 		}
 		# -------------------------------------------------------
 		/**
@@ -3987,7 +3986,7 @@
 		public static function check_metadata_alertsHelp() {
 			return _t('This utility checks all periodic metadatadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
 		}
-				# -------------------------------------------------------
+		# -------------------------------------------------------
 		/**
 		 *
 		 */
