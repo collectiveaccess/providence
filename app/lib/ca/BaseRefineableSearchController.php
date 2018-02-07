@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,28 @@
  		 * Browse engine used to wrap searches. The browse "wrapper" provides for "refine search" functionality
  		 */
  		protected $opo_browse;
+ 		# -------------------------------------------------------
+ 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
+ 			if ($this->ops_tablename) {
+				if ($va_items_per_page_config = $po_request->config->getList('items_per_page_options_for_'.$this->ops_tablename.'_search')) {
+					$this->opa_items_per_page = $va_items_per_page_config;
+				}
+				if (($vn_items_per_page_default = (int)$po_request->config->get('items_per_page_default_for_'.$this->ops_tablename.'_search')) > 0) {
+					$this->opn_items_per_page_default = $vn_items_per_page_default;
+				} else {
+					$this->opn_items_per_page_default = $this->opa_items_per_page[0];
+				}
+				
+				$this->ops_view_default = null;
+				if ($vs_view_default = $po_request->config->get('view_default_for_'.$this->ops_tablename.'_search')) {
+					$this->ops_view_default = $vs_view_default;
+				}
+
+				if(!is_array($this->opa_sorts)) { $this->opa_sorts = []; }
+			}
+ 		}
  		# -------------------------------------------------------
  		/**
  		 *
@@ -299,7 +321,7 @@
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
  			
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------
@@ -308,7 +330,7 @@
  			$this->opo_browse->removeCriteria($ps_facet_name, array($this->request->getParameter('mod_id', pString)));
  			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
  			
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------
@@ -316,7 +338,7 @@
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			$this->opo_browse->removeCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
  			
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------
@@ -334,7 +356,7 @@
  			if (method_exists($this, "hookAfterClearCriteria")) {
 				$this->hookAfterClearCriteria($this->opo_browse);
 			}
- 			$this->view->setVar('open_refine_controls', true);
+ 			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
  		}
  		# -------------------------------------------------------

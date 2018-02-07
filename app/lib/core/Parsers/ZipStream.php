@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -243,7 +243,6 @@
 					if ($vs_content !== FALSE) {
 						$vn_content_length = strlen($vs_content);
 						$vn_bytes_written = fwrite($r_out, $vs_content, $vn_content_length);
-						ob_flush();
 						flush();
 						
 						$vn_compressed_filesize += $vn_bytes_written;
@@ -368,7 +367,6 @@
 		"\x00\x00");
 		$vn_current_offset += strlen($vs_end_of_ctrl_dir);
 		
-		ob_flush();
 		flush();
 		fclose($r_out);
     } 

@@ -187,6 +187,15 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$info['mime_type'] = 'audio/x-wav';
 			}
 		}
+		if (
+		    ($info['fileformat'] == 'quicktime') && 
+		    ($info['audio']['codec'] == 'Fraunhofer MPEG Layer-III alias') &&
+		    ($info['video']['resolution_x'] == 0) && 
+		    ($info['video']['resolution_y'] == 0)
+		) {
+		    // Quicktime-wrapped MP3
+			$info['mime_type'] = 'audio/mpeg';
+		}
 		if (($info["mime_type"]) && isset($this->info["IMPORT"][$info["mime_type"]]) && $this->info["IMPORT"][$info["mime_type"]]) {
 			if ($info["mime_type"] === 'audio/x-wave') {
 				$info["mime_type"] = 'audio/x-wav';
@@ -267,6 +276,15 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if ($info["mime_type"] === 'audio/x-wave') {
 				$info["mime_type"] = 'audio/x-wav';
 			}
+			if (
+                ($info['fileformat'] == 'quicktime') && 
+                ($info['audio']['codec'] == 'Fraunhofer MPEG Layer-III alias') &&
+                ($info['video']['resolution_x'] == 0) && 
+                ($info['video']['resolution_y'] == 0)
+            ) {
+                // Quicktime-wrapped MP3
+                $info['mime_type'] = 'audio/mpeg';
+            }
 			
 			$this->handle = $this->ohandle = $info;
 			

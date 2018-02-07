@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,32 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Convert array of list codes into array of list ids
+	 *
+	 * @param array $pa_lists Array of list codes or list_ids
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 * @return array A list of list_ids
+	 */
+	function caMakeListIDList($pa_lists, $pa_options=null) {
+		global $g_list_id_cache;
+		
+		$va_list_codes = array_flip($va_list_ids = ca_lists::getListCodes($pa_options));
+		
+		$va_ids = [];
+		foreach($pa_lists as $pm_list) {
+			if (is_numeric($pm_list) && isset($va_list_ids[$pm_list])) {
+				$va_ids[] = (int)$pm_list;
+			} elseif (isset($va_list_codes[$pm_list])) { 
+				$va_ids[] = (int)$va_list_codes[$pm_list];
+			}
+			$g_list_id_cache[$pm_list] = $va_list_codes[$pm_list] ? (int)$va_list_codes[$pm_list] : null;
+		}
+		
+		return $va_ids;
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch item_id for item with specified idno in list
 	 *
 	 * @param string $ps_list_code List code
@@ -83,7 +109,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	$g_list_item_id_cache = array();
 	function caGetListItemID($ps_list_code, $ps_idno, $pa_options=null) {
-		if(!caGetOption('dontCache', $pa_options, false)) {
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 			global $g_list_item_id_cache;
 			if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
 		}
@@ -331,20 +357,21 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	function caGetAncestorsForItemID($pm_item_id, $pa_options=null) {
 		if(!$pm_item_id) { return null; }
 		global $g_list_item_id_ancestors_cache;
-		if(isset($g_list_item_id_ancestors_cache[$pn_item_id]) && !caGetOption('noCache', $pa_options, false)) { return $g_list_item_id_ancestors_cache[$pn_item_id]; }
+		$vs_key = caMakeCacheKeyFromOptions($pa_options, $pm_item_id);
+		if(isset($g_list_item_id_ancestors_cache[$vs_key]) && !caGetOption(['noCache', 'dontCache'], $pa_options, false)) { return $g_list_item_id_ancestors_cache[$vs_key]; }
 		$t_item = new ca_list_items();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
 		
 		if (!is_array($pm_item_id)) { $pm_item_id = [$pm_item_id]; }
 		
-		$va_acc = [];
+		$va_acc = caGetOption('includeSelf', $pa_options, false) ? [$pn_item_id] : [];
 		foreach($pm_item_id as $pn_item_id) {
 			if (is_array($va_ancestors = $t_item->getHierarchyAncestors($pn_item_id, ['idsOnly' => true, 'includeSelf' => caGetOption('includeSelf', $pa_options, false)]))) {
 				$va_acc = array_merge($va_acc, $va_ancestors);
 			}
 		}
 		
-		return $g_list_item_id_ancestors_cache[$pn_item_id] = $va_acc;
+		return $g_list_item_id_ancestors_cache[$vs_key] = array_unique($va_acc);
 	}
 	# ---------------------------------------
 	/**

@@ -1,4 +1,4 @@
-# *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
+ # *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
 
 # List month names; used whenever name of month needs to be displayed
 monthList = [enero, febrero, Marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
@@ -49,6 +49,9 @@ dateUncertaintyDayIndicator = [d]
 # What to use to indicate a geological date ("millions of years ago")
 dateMYA = [mya]
 
+# What to use to indicate radiocarbon dates ("before present")
+dateBP = [bp]
+
 dateADIndicator = d.C.
 dateBCIndicator = a.C.
 ADBCTable = {
@@ -89,7 +92,7 @@ monthComesFirstInDelimitedDate = 0
 daySuffix = 
 
 # Definite articles
-definiteArticles = [el, la]
+definiteArticles = [el, la, los, las]
 
 # Indefinite articles
 indefiniteArticles = [un, una]

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/ca_objects_thumbnail_html.php :
+ * themes/default/views/find/Results/ca_objects_results_thumbnail_html.php :
  * 		basic object search form view script 
  * ----------------------------------------------------------------------
  * CollectiveAccess
@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,7 @@
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vo_ar					= $this->getVar('access_restrictions');
 	$vs_image_name 			= $this->request->config->get('no_image_icon');
+	$vb_hide_children		= $this->getVar('hide_children');
 
 ?>
 <form id="caFindResultsForm">
@@ -41,22 +42,17 @@
 		$vn_col = 0;
 		$vn_item_count = 0;
 		
+		if (!($vs_caption_template = $this->request->config->get('ca_objects_results_thumbnail_caption_template'))) { $vs_caption_template = "^ca_objects.preferred_labels.name%truncate=27&ellipsis=1<br/>^ca_objects.idno"; }
+		
 		while(($vn_item_count < $vn_items_per_page) && ($vo_result->nextHit())) {
 			$vn_object_id = $vo_result->get('object_id');
 			
 			if (!$vn_col) { 
 				print "<tr>";
 			}
-			if (!($vs_idno = $vo_result->get('ca_objects.idno'))) {
-				$vs_idno = "???";
-			}
-			$va_labels = $vo_result->getDisplayLabels($this->request);
+			$vs_caption = $vo_result->getWithTemplate($vs_caption_template);
 			
-			$vs_caption = "";
-			foreach($va_labels as $vs_label){
-				$vs_label = "<br/>".((unicode_strlen($vs_label) > 27) ? strip_tags(mb_substr($vs_label, 0, 25, 'utf-8'))."..." : $vs_label);
-				$vs_caption .= $vs_label;
-			}
+			
 			# --- get the height of the image so can calculate padding needed to center vertically
 			$va_media_info = $vo_result->getMediaInfo('ca_object_representations.media', 'preview170');
 			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');

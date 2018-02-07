@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -136,7 +136,7 @@ class ObjectRepresentationBrowseResult extends BaseSearchResult {
 	 *						index = if media repeats, indicates the position of the value to return. The index is zero-based.
 	 *						checkAccess = array of access values to restrict returned values to.
 	 */
-	public function getMediaInfo($ps_field, $ps_version, $ps_key=null, $pa_options=null) {
+	public function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pa_options=null) {
 		$va_tmp = explode('.', $ps_field);
 		$va_check_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
 		

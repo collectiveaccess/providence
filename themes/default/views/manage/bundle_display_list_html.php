@@ -39,7 +39,7 @@
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	jQuery(document).ready(function(){
-		jQuery('#caBundleList').caFormatListTable();
+		jQuery('#caItemList').caFormatListTable();
 	});
 	
 	function _navigateToNewForm(table_num) {
@@ -50,13 +50,13 @@
 <div class="sectionBox">
 	<?php 
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caBundleList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
 			($this->request->user->canDoAction('can_create_ca_bundle_displays')) ? $vs_type_menu : ''
 		); 
 	?>
 	
-	<table id="caBundleList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -86,7 +86,7 @@
 				<td>
 					<?php print $va_display['bundle_display_content_type']; ?>
 				</td>
-				<td>
+				<td class="listtableEditDelete">
 <?php
 	if ($this->request->user->canDoAction('can_edit_ca_bundle_displays')) {
 ?>

@@ -81,6 +81,7 @@
 			
 			// Set object parents
 			if ($va_parents = $pa_item['settings']['objectHierarchyBuilder_parents']) {
+				$pa_options['refinery'] = $this;
 				$vn_parent_id = caProcessRefineryParents('objectHierarchyBuilder', 'ca_objects', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			

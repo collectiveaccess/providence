@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,7 +47,7 @@ class ItemService extends BaseJSONService {
 		switch($this->getRequestMethod()) {
 			case "GET":
 			case "POST":
-				if($this->opn_id) {	// we allow that this might be a string here for idno-based fetching
+				if(strlen($this->opn_id) > 0) {	// we allow that this might be a string here for idno-based fetching
 					if(sizeof($this->getRequestBodyArray())==0) {
 						// allow different format specifications
 						if($vs_format = $this->opo_request->getParameter("format", pString)) {
@@ -77,7 +77,7 @@ class ItemService extends BaseJSONService {
 					$this->addError(_t("Missing request body for PUT"));
 					return false;
 				}
-				if($this->opn_id>0) {
+				if(strlen($this->opn_id) > 0) {   // we allow that this might be a string here for idno-based updating
 					return $this->editItem();
 				} else {
 					return $this->addItem();
@@ -151,6 +151,10 @@ class ItemService extends BaseJSONService {
 		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
+		
+		$o_service_config = Configuration::load(__CA_APP_DIR__."/conf/services.conf");
+		$va_versions = $o_service_config->get('item_service_media_versions');
+		if(!is_array($va_versions) || !sizeof($va_versions)) { $va_versions = ['preview170','original']; }
 
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
@@ -237,7 +241,7 @@ class ItemService extends BaseJSONService {
 
 		// representations for representable stuff
 		if($t_instance instanceof RepresentableBaseModel) {
-			$va_reps = $t_instance->getRepresentations(array('preview170','original'));
+			$va_reps = $t_instance->getRepresentations($va_versions);
 			if(is_array($va_reps) && (sizeof($va_reps)>0)) {
 				$va_return['representations'] = $va_reps;
 			}
@@ -309,7 +313,7 @@ class ItemService extends BaseJSONService {
 				if($t_rel_instance instanceof RepresentableBaseModel) {
 					foreach($va_related_items as &$va_rel_item) {
 						if($t_rel_instance->load($va_rel_item[$t_rel_instance->primaryKey()])) {
-							$va_rel_item['representations'] = $t_rel_instance->getRepresentations(array('preview170', 'original'));
+							$va_rel_item['representations'] = $t_rel_instance->getRepresentations($va_versions);
 						}
 					}
 				}
@@ -840,6 +844,24 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
+		
+        if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
+            $vn_table_num = $t_instance->get('table_num');
+            if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
+                $vs_set_table = $t_set_table->tableName();
+                foreach($pa_data["set_content"] as $vs_idno) {
+                    if ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId'])) {
+                        $t_instance->addItem($vn_set_item_id);
+                    }
+                }
+            }
+        }
+        
+        // Set ACL for newly created record
+		if ($t_instance->getAppConfig()->get('perform_item_level_access_checking') && !$t_instance->getAppConfig()->get("{$ps_table}_dont_do_item_level_access_control")) {
+			$t_instance->setACLUsers(array($this->opo_request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
+			$t_instance->setACLWorldAccess($t_instance->getAppConfig()->get('default_item_access_level'));
+		}
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {
@@ -856,7 +878,8 @@ class ItemService extends BaseJSONService {
 		}
 	}
 	# -------------------------------------------------------
-	private function editItem() {
+	private function editItem($ps_table=null) {
+		if(!$ps_table) { $ps_table = $this->ops_table; }
 		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))) {
 			return false;
 		}
@@ -982,6 +1005,29 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
+		
+		if(($ps_table == 'ca_sets') && is_array($va_post["set_content"]) && sizeof($va_post["set_content"])>0) {
+            $vn_table_num = $t_instance->get('table_num');
+            if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
+                $vs_set_table = $t_set_table->tableName();
+                
+               $va_current_set_item_ids = $t_instance->getItems(['returnRowIdsOnly' => true]);
+                foreach($va_post["set_content"] as $vs_idno) {
+                    if (
+                        ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId']))
+                        &&
+                        (!$t_instance->isInSet($vs_set_table, $vn_set_item_id, $t_instance->getPrimaryKey()))
+                    ) {
+                        $t_instance->addItem($vn_set_item_id);
+                    }
+                    if ($vn_set_item_id) { unset($va_current_set_item_ids[$vn_set_item_id]); }
+                }
+                
+                foreach(array_keys($va_current_set_item_ids) as $vn_item_id) {
+                    $t_instance->removeItem($vn_item_id);
+                }
+            }
+        }
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {

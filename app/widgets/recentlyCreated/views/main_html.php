@@ -42,7 +42,7 @@
 	foreach($va_item_list as $vn_id => $va_record) {
 		print "<li>".
 			"<a href=\"".caEditorUrl($po_request, $vs_table_num, $vn_id)."\">".
-			(strlen($va_record["display"])>0 ? $va_record["display"] : _t("[BLANK]")).
+			(strlen($va_record["display"])>0 ? $va_record["display"] : '['._t("BLANK").']').
 			((($idno_display) && (strlen($va_record["idno"])>0)) ? " [".$va_record["idno"]."]" : "").
 			((($idno_display) && (strlen($va_record["idno_stub"])>0)) ? " [".$va_record["idno_stub"]."]" : "").			
 			"</a> - ".$va_record['datetime']."</li>\n";

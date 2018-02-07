@@ -52,6 +52,9 @@ dateUncertaintyDayIndicator = [giorno?]
 # What to use to indicate a geological date ("millions of years ago")
 dateMYA = [mya]
 
+# What to use to indicate radiocarbon dates ("before present")
+dateBP = [bp]
+
 dateADIndicator = D.C.
 dateBCIndicator = A.C.
 ADBCTable = {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -209,6 +209,7 @@
 			if (!($t_table = $o_dm->getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
 
 			$t_user = new ca_users($pn_user_id);
+			if ($t_user->canDoAction('is_administrator')) { return $pa_hits; }
 			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
 				$va_group_ids = array_keys($va_groups);
 				$vs_group_sql = 'OR (ca_acl.group_id IN ('.join(',',$va_group_ids).'))';
@@ -295,18 +296,17 @@
 			if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
 			
 			// Get field list
-			//$va_sort_tmp = explode('/', $pm_field);		// strip any relationship type
-			//$pm_field = $va_sort_tmp[0];
-			//$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;
-			$va_bundles = is_array($pm_field) ? $pm_field : explode(';', $pm_field); // $va_sort_tmp[0]);
+			$va_bundles = is_array($pm_field) ? $pm_field : explode(';', $pm_field); 
 			$va_sorted_hits = [];
 			$qr_sort = null;
 			
 			$vs_sort_tmp_table = null;
 			$va_sort_key_values = array();
 			foreach($va_bundles as $vs_bundle) {
-				$va_sort_tmp = explode('/', $vs_bundle);		// strip any relationship type
+				$va_sort_tmp = explode('/', $vs_bundle);		// strip any relationship type (and/or item type)
 				$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;	
+				$vs_item_type = (sizeof($va_sort_tmp) > 2) ? $va_sort_tmp[2] : null;	
+				
 				$vs_bundle = $va_sort_tmp[0];
 				
 				list($vs_field_table, $vs_field, $vs_subfield) = explode(".", $vs_bundle);
@@ -380,10 +380,14 @@
 						foreach($va_path as $vs_table => $va_info) {
 							$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 			
-							$vs_rel_type_sql = null;
+							$vs_rel_type_sql = $vs_item_type_sql = null;
 							if($t_instance->isRelationship() && $vs_rel_type) {
-								if(is_array($va_rel_types = caMakeRelationshipTypeIDList($vs_table, array($vs_rel_type))) && sizeof($va_rel_types)) {
+								if(is_array($va_rel_types = caMakeRelationshipTypeIDList($vs_table, explode(",", $vs_rel_type))) && sizeof($va_rel_types)) {
 									$vs_rel_type_sql = " AND {$vs_table}.type_id IN (".join(",", $va_rel_types).")";
+								}
+							} elseif (method_exists($t_instance, "getTypeFieldName") && ($vs_type_fld_name = $t_instance->getTypeFieldName())) {
+							    if(($ps_table !== $vs_table) && is_array($va_item_types = caMakeTypeIDList($vs_table, explode(",", $vs_item_type))) && sizeof($va_item_types)) {
+									$vs_item_type_sql = " AND {$vs_table}.{$vs_type_fld_name} IN (".join(",", $va_item_types).")";
 								}
 							}
 							if ($vs_last_table) {
@@ -392,9 +396,9 @@
 									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
 								}
 								if ($vs_table == $va_rels['one_table']) {
-									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql;
+									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql.$vs_item_type_sql;
 								} else {
-									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql;
+									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql.$vs_item_type_sql;
 								}
 							}
 							$vs_last_table = $vs_table;

@@ -1585,6 +1585,8 @@ create table ca_objects
    accession_edatetime            decimal(30,20),
    deaccession_sdatetime          decimal(30,20),
    deaccession_edatetime          decimal(30,20),
+   deaccession_disposal_sdatetime decimal(30,20),
+   deaccession_disposal_edatetime decimal(30,20),
    is_deaccessioned               tinyint                        not null default 0,
    deaccession_notes              text                           not null,
    deaccession_type_id            int unsigned                   null,
@@ -1648,6 +1650,8 @@ create index i_accession_sdatetime on ca_objects(accession_sdatetime);
 create index i_accession_edatetime on ca_objects(accession_edatetime);
 create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
 create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
+create index i_deaccession_disposal_sdatetime on ca_objects(deaccession_disposal_sdatetime);
+create index i_deaccession_disposal_edatetime on ca_objects(deaccession_disposal_edatetime);
 create index i_deaccession_type_id on ca_objects(deaccession_type_id);
 create index i_is_deaccessioned on ca_objects(is_deaccessioned);
 create index i_current_loc_class on ca_objects(current_loc_class);
@@ -1924,7 +1928,7 @@ create table ca_data_import_events
    occurred_on                    int unsigned                   not null,
    user_id                        int unsigned,
    description                    text                           not null,
-   type_code                      char(10)                       not null,
+   type_code                      char(50)                       not null,
    source                         text                           not null,
    primary key (event_id),
    constraint fk_ca_data_import_events_user_id foreign key (user_id)
@@ -2442,7 +2446,7 @@ create table ca_entity_labels
    forename                       varchar(100)                   not null,
    other_forenames                varchar(100)                   not null,
    middlename                     varchar(100)                   not null,
-   surname                        varchar(100)                   not null,
+   surname                        varchar(512)                   not null,
    prefix                         varchar(100)                   not null,
    suffix                         varchar(100)                   not null,
    name_sort                      varchar(512)                   not null,
@@ -2459,14 +2463,14 @@ create table ca_entity_labels
 
 create index i_entity_id on ca_entity_labels(entity_id);
 create index i_forename on ca_entity_labels(forename);
-create index i_surname on ca_entity_labels(surname);
+create index i_surname on ca_entity_labels(surname(128));
 create unique index u_all on ca_entity_labels
 (
    entity_id,
-   forename,
-   other_forenames,
-   middlename,
-   surname,
+   forename(50),
+   other_forenames(50),
+   middlename(50),
+   surname(50),
    type_id,
    locale_id
 );
@@ -4552,7 +4556,7 @@ create table ca_items_x_tags (
 	user_id		int unsigned null references ca_users(user_id),
 	access		tinyint unsigned not null default 0,
 	
-	ip_addr		char(39) null,
+	ip_addr		varchar(39) null,
 	
 	created_on	int unsigned not null,
 	
@@ -4672,7 +4676,7 @@ create table ca_search_log (
 	search_expression	varchar(1024) not null,
 	num_hits			int unsigned not null,
 	form_id				int unsigned null references ca_search_forms(form_id),
-	ip_addr				char(15) null,
+	ip_addr				varchar(39) null,
 	details				text not null,
 	execution_time 		decimal(7,3) not null,
 	search_source 		varchar(40) not null,
@@ -6283,13 +6287,13 @@ create table ca_sql_search_word_index (
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
-  field_num varchar(20) not null,
+  field_num varchar(20) not null default '',
+  field_container_id int unsigned null,  
   field_row_id int(10) unsigned not null,
   rel_type_id smallint unsigned not null default 0,
   word_id int(10) unsigned not null,
   boost tinyint unsigned not null default 1,
   access tinyint unsigned not null default 1,
-  
   primary key (index_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -6301,9 +6305,9 @@ create index i_field_table_num on ca_sql_search_word_index(field_table_num);
 create index i_field_num on ca_sql_search_word_index(field_num);
 CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, row_id);
 CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
-CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id);
+CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost);
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
-
+CREATE index i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, row_id, access, boost);
 
 /*==========================================================================*/
 create table ca_sql_search_ngrams (
@@ -6869,7 +6873,7 @@ create table ca_download_log (
   log_id		      	int unsigned        not null AUTO_INCREMENT,
   log_datetime        	int unsigned        not null,
   user_id             	int unsigned        null,
-  ip_addr			  	char(15)			null,
+  ip_addr			  	varchar(39)			null,
   table_num    			tinyint unsigned    not null,
   row_id       			int unsigned        not null,
   representation_id     int unsigned      	null,
@@ -6920,8 +6924,7 @@ create table ca_site_pages (
 
   primary key (page_id),
   key (template_id),
-  unique index u_path (path)
-
+  key (path)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
@@ -6963,5 +6966,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 146 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (146, unix_timestamp());
+/* CURRENT MIGRATION: 152 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (152, unix_timestamp());

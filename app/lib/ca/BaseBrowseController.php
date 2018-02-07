@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,8 +72,6 @@
 				if ($vs_view_default = $po_request->config->get('view_default_for_'.$this->ops_tablename.'_browse')) {
 					$this->ops_view_default = $vs_view_default;
 				}
-				
-				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
 			}
  		}
  		# -------------------------------------------------------
@@ -191,10 +189,16 @@
 			if ($vs_facet_group = $this->request->config->get($this->ops_tablename.(($this->opo_browse->numCriteria() < 1) ? '_browse_facet_group' : '_browse_refine_facet_group'))) {
 				$this->opo_browse->setFacetGroup($vs_facet_group);
 			}
- 			$this->opo_browse->execute(array('checkAccess' => $va_access_values, 'no_cache' => !$this->opo_result_context->cacheIsValid()));
+ 			$this->opo_browse->execute(array('checkAccess' => $va_access_values, 'no_cache' => !$this->opo_result_context->cacheIsValid(), 'rootRecordsOnly' => $this->view->getVar('hide_children')));
  			$this->opo_result_context->validateCache();
  			
 			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
+			
+	
+			if (!is_array($va_facets_with_info = $this->opo_browse->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
+				$this->view->setVar('open_refine_controls', false);
+				$this->view->setVar('noRefineControls', true);
+			}
  			
  			//
  			// Pass browse info (context + facets + criteria) to view
@@ -264,6 +268,8 @@
 			//
  			// Set up view for display of results
  			// 			
+ 			
+ 			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
 			$this->view->setVar('page', $vn_page_num);
 			$this->view->setVar('result', $vo_result);	
 			

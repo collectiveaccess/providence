@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,7 +76,7 @@
 				
 					$va_display = caGetOption('display', $pa_data, []);
 					
-					if(is_a($t_instance, "ca_object_representations")) {
+					if(is_a($t_instance, "ca_object_representations") || is_a($t_instance, "ca_site_page_media")) {
 						$vs_media_fld = 'media';
 					} elseif(is_a($t_instance, "ca_attribute_values")) {
 						$vs_media_fld = 'value_blob';
@@ -92,15 +92,27 @@
 					$vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $pa_data['display'], null);
 					if (((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) && !$vn_use_mirador_for_image_list_length) {
 						$pa_data['resources'] = $t_instance->getFileList();
-					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_mirador_for_image_list_length) {
-						$va_reps = $pa_data['t_subject']->getRepresentations(['small', $vs_display_version, 'original'], null, []);
-						
+					} elseif (is_a($t_instance, "ca_object_representations") && caGetOption('expand_hierarchically', $pa_data['display'], null) && $pa_data['t_subject'] && $pa_data['t_subject']->isHierarchical() && (is_array($va_ids = $pa_data['t_subject']->getHierarchy(null, ['idsOnly' => true, 'sort' => 'idno_sort']))) && sizeof($va_ids)) {  
+						$vn_root_id = $pa_data['t_subject']->getHierarchyRootID();
+						$va_ids = array_filter($va_ids, function($v) use ($vn_root_id) { return $v != $vn_root_id; });
+						$va_reps = $pa_data['t_subject']->getPrimaryMediaForIDs($va_ids, ['small', $vs_display_version, 'original']);
+						foreach($va_reps as $va_rep) {
+							$pa_data['resources'][] = [
+								'representation_id' => $va_rep['representation_id'],
+								'preview_url' => $va_rep['urls']['small'],
+								'url' => $va_rep['urls'][$vs_display_version],
+								'width' => $va_rep['info']['original']['WIDTH'],
+								'height' => $va_rep['info']['original']['HEIGHT'],
+								'noPages' => true
+							];
+						}
+					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_mirador_for_image_list_length && ($va_reps = $pa_data['t_subject']->getRepresentations(['small', $vs_display_version, 'original'], null, [])) && (sizeof($va_reps) >= $vn_use_mirador_for_image_list_length)) {
 						$t_rep = new ca_object_representations();
 						$va_labels = $t_rep->getPreferredDisplayLabelsForIDs(caExtractArrayValuesFromArrayOfArrays($va_reps, 'representation_id'));
 		
 						foreach($va_reps as $va_rep) {
 							$pa_data['resources'][] = [
-								'title' => $va_labels[$va_rep['representation_id']],
+								'title' => str_replace("["._t('BLANK')."]", "", $va_labels[$va_rep['representation_id']]),
 								'representation_id' => $va_rep['representation_id'],
 								'preview_url' => $va_rep['urls']['small'],
 								'url' => $va_rep['urls'][$vs_display_version],

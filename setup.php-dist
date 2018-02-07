@@ -150,7 +150,7 @@ if (!defined("__CA_DEFAULT_LOCALE__")) {
 # Only set this if your web server includes mod_rewrite and it is enabled using
 # the provided .htaccess file
 # 
-define("__CA_USE_CLEAN_URLS__", 1);
+define("__CA_USE_CLEAN_URLS__", 0);
 
 
 #
@@ -165,7 +165,10 @@ if (!defined("__CA_APP_NAME__")) {
 	define("__CA_APP_NAME__", "collectiveaccess");
 }
 
-
+#
+# __CA_GOOGLE_MAPS_KEY__ = GoogleMaps key to use for mapping (optional)
+#
+define("__CA_GOOGLE_MAPS_KEY__", "");
 
 # *** 
 # __   __          _                _                  
@@ -228,6 +231,15 @@ if (!defined("__CA_URL_ROOT__")) {
 #
 if (!defined("__CA_SITE_HOSTNAME__")) {
 	define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
+}
+
+#
+# __CA_SITE_PROTOCOL__ = the protocol your system should be accessed with
+#
+#		The default value is based on the URL being used to access the site.  To force a protocol, set it explicitly.
+#
+if (!defined("__CA_SITE_PROTOCOL__")) {
+	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : 'http');
 }
 
 # --------------------------------------------------------------------------------------------

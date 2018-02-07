@@ -392,7 +392,7 @@
 	 * @return string HTML output
 	 */
 	function caObjectRepresentationThumbnails($po_request, $pn_representation_id, $pt_object, $pa_options){
-		if(!$pt_object || !$pt_object->get("object_id")){
+		if(!$pt_object || !$pt_object->getPrimaryKey()){
 			return false;
 		}
 		if(!is_array($pa_options)){
@@ -430,7 +430,7 @@
 			switch($vs_link_to){
 				# -------------------------------
 				case "viewer":
-					$va_links[$vn_rep_id] = "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetRepresentationInfo', array('object_id' => $pt_object->get("object_id"), 'representation_id' => $vn_rep_id, 'overlay' => 1))."\"); return false;' ".(($vs_class) ? "class='".$vs_class."'" : "").">".$vs_thumb."</a>\n";
+					$va_links[$vn_rep_id] = "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array($pt_object->primaryKey() => $pt_object->getPrimaryKey(), 'representation_id' => $vn_rep_id, 'overlay' => 1, 'context' => $po_request->getAction()))."\"); return false;' ".(($vs_class) ? "class='".$vs_class."'" : "").">".$vs_thumb."</a>\n";
 					break;
 				# -------------------------------
 				case "carousel":
@@ -439,16 +439,16 @@
 				# -------------------------------
 				default:
 				case "detail":
-					$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb, $vs_class, 'ca_objects', $pt_object->get("object_id"), array("representation_id" => $vn_rep_id));
+					$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb, $vs_class, $pt_object->tableName(), $pt_object->getPrimaryKey(), array("representation_id" => $vn_rep_id));
 					break;
 				# -------------------------------
 			}
 		}
 		
 		# --- make sure the primary rep shows up first
-		$va_primary_link = array($vn_primary_id => $va_links[$vn_primary_id]);
-		unset($va_links[$vn_primary_id]);
-		$va_links = $va_primary_link + $va_links;
+		//$va_primary_link = array($vn_primary_id => $va_links[$vn_primary_id]);
+		//unset($va_links[$vn_primary_id]);
+		//$va_links = $va_primary_link + $va_links;
 		
 		# --- formatting
 		$vs_formatted_thumbs = "";
@@ -757,6 +757,8 @@
 		if (!($t_instance = $o_dm->getInstanceByTableName($pm_table, true))) { return null; }
 		if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) { return array(); }
 		
+		$ps_return = caGetOption("return", $pa_options, 'tags');
+		
 		if ((!caGetOption("useRelatedObjectRepresentations", $pa_options, array())) && method_exists($t_instance, "getPrimaryMediaForIDs")) {
 			// Use directly related media if defined
 			$va_media = $t_instance->getPrimaryMediaForIDs($pa_ids, array($vs_version = caGetOption('version', $pa_options, 'icon')), $pa_options);
@@ -815,7 +817,18 @@
 		$qr_res = $o_db->query($vs_sql, $va_params);
 		$va_res = array();
 		while($qr_res->nextRow()) {
-			$va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaTag("media", caGetOption('version', $pa_options, 'icon'));
+		    switch($ps_return) {
+		        case 'urls':
+			        $va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaUrl("media", caGetOption('version', $pa_options, 'icon'));
+			        break;
+		        case 'paths':
+			        $va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaPath("media", caGetOption('version', $pa_options, 'icon'));
+			        break;
+		        case 'tags':
+		        default:
+			        $va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaTag("media", caGetOption('version', $pa_options, 'icon'));
+			        break;
+			}
 		}
 		return $va_res;
 	}
@@ -993,6 +1006,8 @@
 		$o_dm = Datamodel::load();
  		if (!($pt_subject = $o_dm->getInstanceByTableName($va_search_info['table'], true))) { return null; }
  		
+ 		$va_globals = $pt_subject->getAppConfig()->getAssoc('global_template_values');
+ 		
 		$po_request = caGetOption('request', $pa_options, null);
 		$ps_controller = caGetOption('controller', $pa_options, null);
 		$ps_form_name = caGetOption('formName', $pa_options, 'caAdvancedSearch');
@@ -1006,6 +1021,8 @@
 		
 		$vb_submit_or_reset_set = false;
 		foreach($pa_tags as $vs_tag) {
+		    if(isset($va_globals[$vs_tag])) { continue; }
+		    
 			$va_parse = caParseTagOptions($vs_tag);
 			$vs_tag_proc = $va_parse['tag'];
 			$va_opts = $va_parse['options'];
@@ -1022,9 +1039,21 @@
 					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormSubmit'>".((isset($va_opts['label']) && $va_opts['label']) ? $va_opts['label'] : _t('Submit'))."</a>");
 					$vb_submit_or_reset_set = true;
 					break;
+				case 'submittag':
+					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormSubmit'>");
+					$vb_submit_or_reset_set = true;
+					break;
 				case 'reset':
 					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormReset'>".((isset($va_opts['label']) && $va_opts['label']) ? $va_opts['label'] : _t('Reset'))."</a>");
 					$vb_submit_or_reset_set = true;
+					break;
+				case 'resettag':
+					$po_view->setVar($vs_tag, "<a href='#' class='caAdvancedSearchFormReset'>");
+					$vb_submit_or_reset_set = true;
+					break;
+				case '/resettag':
+				case '/submittag':
+					$po_view->setVar($vs_tag, "</a>");
 					break;
 				default:
 					if (preg_match("!^(.*):label$!", $vs_tag_proc, $va_matches)) {
@@ -1092,6 +1121,7 @@
 			});
 			jQuery('.caAdvancedSearchFormReset').bind('click', function() {
 				jQuery('#caAdvancedSearch').find('input[type!=\"hidden\"],textarea').val('');
+				jQuery('#caAdvancedSearch').find('input.lookupBg').val('');
 				jQuery('#caAdvancedSearch').find('select.caAdvancedSearchBoolean').val('AND');
 				jQuery('#caAdvancedSearch').find('select').prop('selectedIndex', 0);
 				return false;
@@ -1118,6 +1148,47 @@
  		$po_view->setVar("/form", $vs_script.caHTMLHiddenInput("_advancedFormName", array("value" => $ps_function)).caHTMLHiddenInput("_formElements", array("value" => join('|', $va_form_elements))).caHTMLHiddenInput("_advanced", array("value" => 1))."</form>");
  			
 		return $va_form_elements;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $pt_instance, $pa_options=null) {
+		$vs_field_proc = preg_replace("![\.]+!", "_", $ps_field);
+		if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, []))) { $vs_rel_types_proc = "_{$vs_rel_types}"; $vs_rel_types = "/{$vs_rel_types}";  }
+	
+		$vs_buf = $pt_instance->htmlFormElementForSearch($po_request, $ps_field, array_merge($pa_options, ['class'=> 'lookupBg', 'name' => "{$ps_field}", 'id' => "{$vs_field_proc}{$vs_rel_types_proc}", 'autocomplete' => 1, 'nojs' => 1]));
+		$vs_buf .= "<input type=\"hidden\" name=\"{$ps_field}{$vs_rel_types}\" id=\"{$vs_field_proc}{$vs_rel_types_proc}\" value=\"\" class=\"lookupBg\"/>";
+									
+		if (!is_array($va_json_lookup_info = caJSONLookupServiceUrl($po_request, $pt_instance->tableName()))) { return null; }
+		$vs_buf .= "<script type=\"text/javascript\">
+jQuery(document).ready(function() {
+	jQuery('#{$vs_field_proc}{$vs_rel_types_proc}_autocomplete').autocomplete({ minLength: 3, delay: 800, html: true,
+					source: function( request, response ) {
+						$.ajax({
+							url: '".$va_json_lookup_info['search']."',
+							dataType: \"json\",
+							data: { term: '{$ps_field}:' + request.term },
+							success: function( data ) {
+								response(data);
+							}
+						});
+					},
+					select: function( event, ui ) {
+						if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
+							jQuery('#{$vs_field_proc}{$vs_rel_types_proc}').val('');  // no matches so clear text input
+							event.preventDefault();
+							return;
+						}
+						jQuery('#{$vs_field_proc}{$vs_rel_types_proc}_autocomplete').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+						jQuery('#{$vs_field_proc}{$vs_rel_types_proc}').val(ui.item.id);
+						event.preventDefault();
+					}
+			})});
+										
+</script>";
+
+		return $vs_buf;
 	}
 	# ---------------------------------------
 	/**
@@ -1160,3 +1231,85 @@
 		return is_array($va_template_values) ? sizeof($va_template_values) : 0;
 	}
 	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * 
+	 */
+	function caGetComparisonList($po_request, $ps_table, $pa_options=null) {
+		if (!is_array($va_comparison_list = $po_request->session->getVar("{$ps_table}_comparison_list"))) { $va_comparison_list = []; }
+		
+		// Get title template from config
+		$va_compare_config = $po_request->config->get('compare_images');
+		if (!is_array($va_compare_config = $va_compare_config[$ps_table])) { $va_compare_config = []; }
+		$va_display_list = caProcessTemplateForIDs(caGetOption('title_template', $va_compare_config, "^{$ps_table}.preferred_labels"), $ps_table, $va_comparison_list, ['returnAsArray' => true]);
+		
+		$va_list = [];
+		foreach($va_comparison_list as $vn_i => $vn_id) {
+			$va_list[$vn_id] = $va_display_list[$vn_i];
+		}
+		
+		return $va_list;
+	}
+	# ---------------------------------------
+	/**
+	 * Used to export collection hierarchy as PDF finding aid
+	 * recursive loop to display all collection children and objects
+	 * 
+	 */	
+	function caGetCollectionLevelSummary($po_request, $va_collection_ids, $vn_level) {
+		$va_access_values = caGetUserAccessValues($po_request);
+		# --- get collections configuration
+		$o_collections_config = caGetCollectionsConfig();
+		$vs_output = "";
+		$qr_collections = caMakeSearchResult("ca_collections", $va_collection_ids);
+		
+		$vs_sub_collection_label_template = $o_collections_config->get("export_sub_collection_label_template");
+		$vs_sub_collection_desc_template = $o_collections_config->get("export_sub_collection_description_template");
+		$vs_object_template = $o_collections_config->get("export_object_label_template");
+	
+		if($qr_collections->numHits()){
+			while($qr_collections->nextHit()) {
+				$vs_icon = "";
+				# --- related objects?
+				$va_object_ids = $qr_collections->get("ca_objects.object_id", array("returnAsArray" => true, 'checkAccess' => $va_access_values));
+				$vn_rel_object_count = sizeof($va_object_ids);
+				$va_child_ids = $qr_collections->get("ca_collections.children.collection_id", array("returnAsArray" => true, "checkAccess" => $va_access_values, "sort" => "ca_collections.idno_sort"));
+				$vs_output .= "<div class='unit' style='margin-left:".(40*($vn_level - 1))."px;'>";
+				$vs_output .= "<b>";
+				if($vs_sub_collection_label_template){
+					$vs_output .= $qr_collections->getWithTemplate($vs_sub_collection_label_template);
+				}else{
+					$vs_output .= $qr_collections->get("ca_collections.preferred_labels");
+				}
+				$vs_output .= "</b>";
+			
+				if($vn_rel_object_count){
+					$vs_output .= " <span class='small'>(".$vn_rel_object_count." record".(($vn_rel_object_count == 1) ? "" : "s").")</span>";
+				}
+				$vs_output .= "<br/>";
+				$vs_desc = "";
+				if($vs_sub_collection_desc_template && ($vs_desc = $qr_collections->getWithTemplate($vs_sub_collection_desc_template))){
+					$vs_output .= "<p>".$vs_desc."</p>";
+				}
+				# --- objects
+				if(sizeof($va_object_ids)){
+					$qr_objects = caMakeSearchResult("ca_objects", $va_object_ids);
+					while($qr_objects->nextHit()){
+						$vs_output .= "<div style='margin-left:20px;'>";
+						if($vs_object_template){
+							$vs_output .= $qr_objects->getWithTemplate($vs_object_template);
+						}else{
+							$vs_output .= $qr_objects->get("ca_objects.preferred_labels.name");
+						}
+						$vs_output .= "</div>";
+					}
+				}
+				$vs_output .= "</div>";
+				if(sizeof($va_child_ids)) {
+					$vs_output .=  caGetCollectionLevelSummary($po_request, $va_child_ids, $vn_level + 1);
+				}
+			}
+		}
+		return $vs_output;
+	}

@@ -507,7 +507,7 @@ var caUI = caUI || {};
 										editUrl = that.editUrl;
 									}
 									if (editUrl) {
-										jQuery('#' + newLevelListID + " li:last a:last").click(function() {
+										jQuery('#' + newLevelListID + " li:last a:last").click(function(e) {
 											if (that.dragAndDropSortInProgress) { e.preventDefault(); return false; }
 											if(that.selectMultiple){
 												// code to add + infront of items when multiple selections for or browse are permitted
@@ -596,6 +596,8 @@ var caUI = caUI || {};
 								jQuery.getJSON(that.sortSaveUrl, {'id': dragged_item_id, 'after_id': after_item_id}, function(d) {
 									if (!d) { alert("Could not save reordering"); return false; }
 									if (d.errors.length > 0) { alert("Could not save reordering: " + d.errors.join('; ')); return false; }
+									if (d.timestamp) { jQuery("#" + newLevelListID).closest('form').find('input[name=form_timestamp]').val(d.timestamp); }
+									return false;
 								});
 								
 							},

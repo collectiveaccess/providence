@@ -848,6 +848,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Disable quick add?'),
 								'description' => _t('If checked quickadd will be disabled regardless of user privileges.')
 							),
+							'prepopulateQuickaddFields' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'width' => "275px", 'height' => "40px",
+								'takesLocale' => false,
+								'default' => '0',
+								'options' => [_t('Preferred label') => 'preferred_labels', _t('Identifier') => $t_rel->getProperty('ID_NUMBERING_ID_FIELD')],
+								'label' => _t('Prepopulate quick add fields with search text'),
+								'description' => _t('Select quickadd form fields to be pre-filled with the user-entered search value. If no fields are selected then the preferred label will be prepopulated by default.')
+							),
 							'disableSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_CHECKBOXES,
@@ -1158,6 +1168,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
+										'takesLocale' => true,
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Object location display template'),
 										'description' => _t('Layout for current location of object when displayed in list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship that is current. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
@@ -1166,6 +1177,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
+										'takesLocale' => true,
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Object location history template'),
 										'description' => _t('Layout for each previous location of object when displayed in history list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
@@ -1584,7 +1596,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'includeIntrinsics' => ['effective_date'],
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Interstitial storage location elements to set'),
-										'description' => _t('')
+										'description' => _t('Interstitial storage location elements to set')
 									),
 									'ca_storage_locations_displayTemplate' => array(
 										'formatType' => FT_TEXT,

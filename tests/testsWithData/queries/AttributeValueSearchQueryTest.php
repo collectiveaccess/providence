@@ -100,11 +100,11 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 				),
 
 				// Georeference
-				'georeference' => array(
-					array(
-						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
-					),
-				),
+				// 'georeference' => array(
+// 					array(
+// 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+// 					),
+// 				),
 
 				// coverageNotes
 				'coverageNotes' => array(
@@ -179,19 +179,19 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.currency_test:"100 EUR"' => 0,
 
 			// Georeference
-			'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
-			'ca_objects.georeference:[36.4,-121.9 to 38.5,-123.5]' => 1, // order shouldn't matter
-			'ca_objects.georeference:[38.5,-121.9 to 36.4,-123.5]' => 1, // order shouldn't matter
-			'ca_objects.georeference:[40.0,-121.9 to 40.1,-123.5]' => 0,
-			'ca_objects.georeference:[38.5,-124.0 to 36.4,-123.5]' => 0,
-
-			'ca_objects.georeference:"[37.4224879,-122.08422 ~ 5km]"' => 1, // special range query embedded in a lucene phrase query
-			'ca_objects.georeference:"[40.0,-125.0 ~ 5km]"' => 0,
-			'ca_objects.georeference:"[36.4,-123.5 to 38.5,-121.9]"' => 1, // special range query embedded in a lucene phrase query
-			'ca_objects.georeference:"[36.4,-121.9 to 38.5,-123.5]"' => 1, // order shouldn't matter
-			'ca_objects.georeference:"[38.5,-121.9 to 36.4,-123.5]"' => 1, // order shouldn't matter
-			'ca_objects.georeference:"[40.0,-121.9 to 40.1,-123.5]"' => 0,
-			'ca_objects.georeference:"[38.5,-124.0 to 36.4,-123.5]"' => 0,
+			// 'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
+// 			'ca_objects.georeference:[36.4,-121.9 to 38.5,-123.5]' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:[38.5,-121.9 to 36.4,-123.5]' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:[40.0,-121.9 to 40.1,-123.5]' => 0,
+// 			'ca_objects.georeference:[38.5,-124.0 to 36.4,-123.5]' => 0,
+// 
+// 			'ca_objects.georeference:"[37.4224879,-122.08422 ~ 5km]"' => 1, // special range query embedded in a lucene phrase query
+// 			'ca_objects.georeference:"[40.0,-125.0 ~ 5km]"' => 0,
+// 			'ca_objects.georeference:"[36.4,-123.5 to 38.5,-121.9]"' => 1, // special range query embedded in a lucene phrase query
+// 			'ca_objects.georeference:"[36.4,-121.9 to 38.5,-123.5]"' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:"[38.5,-121.9 to 36.4,-123.5]"' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:"[40.0,-121.9 to 40.1,-123.5]"' => 0,
+// 			'ca_objects.georeference:"[38.5,-124.0 to 36.4,-123.5]"' => 0,
 
 			// Blank values
 			'ca_objects.coverageNotes:"[BLANK]"' => 1,			// actually has a blank value

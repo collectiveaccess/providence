@@ -31,8 +31,9 @@
  */
  
 	$va_data = $this->getVar('data');
-	$vs_identifer = $this->getVar('identifier');
+	$vs_identifier = $this->getVar('identifier');
 	$t_instance = $this->getVar('t_instance');
+	$t_subject = $this->getVar('t_subject');
 	$vo_request = $this->getVar('request');
 	$va_display = caGetOption('display', $va_data, []);
 	
@@ -51,8 +52,10 @@
 	$vs_base_url = $vo_request->getBaseUrlPath();
 	$vn_num_resources = sizeof($va_resources);
 	
+	$va_services = [];
+	
 	foreach($va_resources as $va_resource) {
-		$vs_canvas_id = "{$vs_identifer}:{$vn_page}";
+		$vs_canvas_id = "{$vs_identifier}:{$vn_page}";
 		
 		if (isset($va_resource['noPages'])) {
 			// If resource includes explicitly set "noPages" then assume representation identifier with that id
@@ -62,12 +65,12 @@
 			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/representation:".$va_resource['representation_id']."/full/!512,512/0/default.jpg";
 			$vn_width = $va_resource['width']; $vn_height = $va_resource['height'];
 		} elseif ($vs_display_version == 'tilepic') {
-			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}";
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!512,512/0/default.jpg";
+			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}/full/!512,512/0/default.jpg";
 			$vn_width = $va_data['width']; $vn_height = $va_data['height'];
 		} else {
 			$vs_service_url = $va_resource['url'];
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!512,512/0/default.jpg";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}/full/!512,512/0/default.jpg";
 			$vn_width = $va_data['width']; $vn_height = $va_data['height'];
 		}
 		
@@ -104,9 +107,22 @@
 			$vn_page++;
 	}
 	
+    $va_services[] = [
+        "@context" => "http://iiif.io/api/search/0/context.json",
+        "@id" => caNavUrl($vo_request, '*', '*', 'SearchMediaData', ['identifier' => $vs_identifier, $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'context' => caGetOption('context', $va_data, null), 'display' => caGetOption('display_type', $va_data, null)]),
+        "profile" => "http://iiif.io/api/search/0/search",
+        "label" => _t("Search within this manifest"),
+        "service" => [
+            "@id" => caNavUrl($vo_request, '*', '*', 'MediaDataAutocomplete', ['identifier' => $vs_identifier, $t_subject->primaryKey() => $t_subject->getPrimaryKey()]),
+            "profile" => "http://iiif.io/api/search/0/autocomplete",
+            "label" => _t("Get suggested words in this manifest")
+        ]
+    ];
+		
+	
 	$va_manifest = [
 		"@context" => "http://iiif.io/api/presentation/2/context.json",
-		"@id" => "{$vs_identifer}/manifest",
+		"@id" => "{$vs_identifier}/manifest",
 		"@type" => "sc:Manifest",
 		"label" => '',
 		"metadata" => $va_metadata,
@@ -114,11 +130,10 @@
 		"logo" => "",
 		"related" => [],
 		"seeAlso" => [],
-		"service" => [
-		],
-		"sequences" => [
+		"service" => $va_services,
+        "sequences" => [
 			[
-				"@id" => "{$vs_identifer}/sequence/s0",
+				"@id" => "{$vs_identifier}/sequence/s0",
 				"@type" => "sc:Sequence",
 				"label" => "Sequence s0",
 				"rendering" => [],

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -107,7 +107,7 @@
 					// copy value from failed update into form (so user can correct it)
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 				} else {
-					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true));
+					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true, 'showMediaInfo' => true));
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;

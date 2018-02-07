@@ -71,6 +71,19 @@
 					
 					// HTML for ThreeJS
 					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
+				} elseif (is_a($t_instance, "ca_site_page_media")) {
+					$va_viewer_opts = [
+						'id' => $vs_id, 'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%')
+					];
+					
+					if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
+						if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('alt_display_version', $pa_data['display'], 'original'))) {
+							$vs_version = 'original';
+						}
+					}
+					
+					// HTML for tileviewer
+					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
 				} else {
 					$va_viewer_opts = [
 						'id' => 'caMediaOverlayThreeJS', 'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%')

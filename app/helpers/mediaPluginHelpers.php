@@ -1033,42 +1033,6 @@
 			}
 		}
 		
-		if (caExifToolInstalled()) {
-			// try EXIFTool
-			$vs_exiftool_path = caGetExternalApplicationPath('exiftool');
-			exec("{$vs_exiftool_path} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-			
-			if (($vn_return == 0) && sizeof($va_output) > 0) {
-				$va_info = [];
-				foreach($va_output as $vs_line) {
-					$va_line = explode(":", $vs_line);
-					
-					$vs_tag = strtolower(trim(array_shift($va_line)));
-					$vs_value = trim(join(":", $va_line));
-				
-					switch($vs_tag) {
-						case 'page count':
-							$va_info['pages'] = (int)$vs_value;
-							break;
-						case 'pdf version':
-							$va_info['version'] = (float)$vs_value;
-							break;
-						case 'producer':
-							$va_info['software'] = $vs_value;
-							break;
-						case 'author':
-						case 'creator':
-						case 'title':
-							$va_info[$vs_tag] = $vs_value;
-							break;
-					}
-				}
-				return $va_info;
-			} else {
-				return null;
-			}
-		}
-		
 		// try pdfinfo
 		if (caMediaPluginPdftotextInstalled()) {
 			$vs_path_to_pdf_to_text = str_replace("pdftotext", "pdfinfo", caGetExternalApplicationPath('pdftotext'));
@@ -1106,12 +1070,48 @@
 					}
 				}
 				return $va_info;
-			} else {
-				return null;
 			}
 		}
 		
 		// ok, we're stumped
 		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Determine if permissions are set properly for the media directory
+	 *
+	 * @return bool True if permissions are set correctly, false if error
+	 */
+	function caCheckMediaDirectoryPermissions() {
+	    $o_config = Configuration::load();
+	    
+		$vs_media_root = $o_config->get('ca_media_root_dir');
+        $vs_base_dir = $o_config->get('ca_base_dir');
+		$va_tmp = explode('/', $vs_media_root);
+		
+		$vb_perm_media_error = false;
+		$vs_perm_media_path = null;
+		$vb_at_least_one_part_of_the_media_path_exists = false;
+		while(sizeof($va_tmp)) {
+			if (!file_exists(join('/', $va_tmp))) {
+				array_pop($va_tmp);
+				continue;
+			}
+			if (!is_writeable(join('/', $va_tmp))) {
+				$vb_perm_media_error = true;
+				$vs_perm_media_path = join('/', $va_tmp);
+				break;
+			}
+			$vb_at_least_one_part_of_the_media_path_exists = true;
+			break;
+		}
+
+		// check web root for write-ability
+		if (!$vb_perm_media_error && !$vb_at_least_one_part_of_the_media_path_exists && !is_writeable($vs_base_dir)) {
+			$vb_perm_media_error = true;
+			$vs_perm_media_path = $vs_base_dir;
+		}
+
+		return !$vb_perm_media_error;
 	}
 	# ------------------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,6 +95,14 @@
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
 					
 				}
+							
+                if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id)) {
+                    $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $vn_display_id));
+			    } else {
+			        $this->opa_sorts = [];
+			    }
+			} else {
+			    $this->opa_sorts = [];
 			}
  		}
 		# -------------------------------------------------------
@@ -128,8 +136,9 @@
 			$t_display 					= $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  	
  			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			
- 			// Default display is always there
- 			$va_displays = array('0' => _t('Default'));
+ 			
+ 			$va_displays = []; 
+ 			$va_display_show_only_for_views = [];
 
 			// Set display options
 			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
@@ -140,12 +149,29 @@
 			// Get current display list
  			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
  				$va_displays[$va_display['display_id']] = $va_display['name'];
+ 				
+ 				$va_show_only_in = [];
+ 				foreach(is_array($va_display['settings']['show_only_in']) ? $va_display['settings']['show_only_in'] : [] as $k => $v) {
+ 				    $v = str_replace('search_browse_', '', $v);
+ 				    if (!in_array($v, ['list', 'full', 'thumbnail'])) { continue; }
+ 				    $va_show_only_in[] = $v;
+ 				}
+ 				$va_display_show_only_for_views[$va_display['display_id']] = $va_show_only_in;
  			}
- 			if (!isset($va_displays[$vn_display_id])) { $vn_display_id = 0; }
+ 			if(!sizeof($va_displays)) { $va_displays = ['0' => _t('Default')]; } // force default display if none are configured
+ 			if(!isset($va_displays[$vn_display_id])) { $vn_display_id = array_shift(array_keys($va_displays)); }
  			
  			$this->view->setVar('display_lists', $va_displays);	
+ 			$this->view->setVar('display_show_only_for_views', $va_display_show_only_for_views);	
 			
 			$va_display_list = $this->_getDisplayList($vn_display_id);
+			if ($t_display = $this->view->getVar('t_display')) {
+			    $va_show_in = $t_display->getSetting('show_only_in');
+			    if (is_array($va_show_in) && sizeof($va_show_in) && !in_array('search_browse_'.$this->opo_result_context->getCurrentView(), $t_display->getSetting('show_only_in'))) {
+			        $vn_display_id = 0;
+			        $va_display_list = $this->_getDisplayList($vn_display_id);
+			    }
+			}  
 		
  			
  			// figure out which items in the display are sortable
@@ -229,7 +255,7 @@
 			);
 			
 			// merge default formats with drop-in print templates
-			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('table' => $this->ops_tablename)));
+			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('showOnlyIn' => ['search_browse_'.$this->opo_result_context->getCurrentView()], 'table' => $this->ops_tablename)));
 			
 			$this->view->setVar('export_formats', $va_export_options);
 			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));
@@ -256,6 +282,23 @@
 			
 			$this->view->setVar('result_context', $this->opo_result_context);
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
+			
+			#
+			#
+			#				
+			$this->view->setVar('children_display_mode_default', ($vs_children_display_mode_default = $this->request->config->get($this->ops_tablename."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow");
+
+			$ps_children_display_mode = $this->opo_result_context->getCurrentChildrenDisplayMode();
+			
+			// force mode when "always" is set
+			if (strtolower($vs_children_display_mode_default) == 'alwaysshow') {
+				$ps_children_display_mode = 'show';
+			} elseif(strtolower($vs_children_display_mode_default) == 'alwayshide') {
+				$ps_children_display_mode = 'hide';
+			}
+			$this->view->setVar('children_display_mode', $ps_children_display_mode);				
+			$this->view->setVar('hide_children', $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide']));			
+			$this->view->setVar('show_children_display_mode_control', !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide']));
  		}
  		# -------------------------------------------------------
 		/**
@@ -498,7 +541,13 @@
 				//
 				// PDF output
 				//
+				
+				if (preg_match("!^_pdf__display_([\d]+)$!", $ps_output_type, $va_matches)) {
+				    $this->_getDisplayList((int)$va_matches[1]);
+				    $ps_output_type = '_pdf_display';
+				}
 				$va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 5));
+				
 				if (!is_array($va_template_info)) {
 					$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
 					return;
@@ -845,8 +894,10 @@
  			$this->view->setVar('views', $this->opa_views);	// pass view list to view for rendering
  			$this->view->setVar('current_view', $vs_view);
  			
+ 			
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $vn_display_id)));
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -924,11 +975,12 @@
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
  			
  			// Get attribute sorts
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
+ 			
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $vn_display_id)));
  			
  			$this->view->setVar('display_id', $vn_display_id);
  			$this->view->setVar('columns',ca_bundle_displays::getColumnsForResultsEditor($va_display_list, array('request' => $this->request)));
- 			$this->view->setVar('display_list', $va_display_list);
+ 			
  			$this->view->setVar('num_rows', sizeof($va_ids));
  			
  			$this->render("Results/results_editable_html.php");
@@ -968,7 +1020,7 @@
  				
  				if (($pn_c > 0) && ($vn_c >= $pn_c)) { break; }
  			}
-			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, ['restrictToDisplay' => $vn_display_id]);
  			
  			$this->view->setVar('data', $va_data);
  			$this->render("Results/ajax_results_editable_data_json.php");
@@ -1027,12 +1079,14 @@
  			$t_display = new ca_bundle_displays($pn_display_id);
  			
  			$vs_view = $this->opo_result_context->getCurrentView();
- 			$va_ret = $t_display->getDisplayListForResultsEditor($this->ops_tablename, ['user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
+ 			$va_ret = $t_display->getDisplayListForResultsEditor($this->ops_tablename, ['user_id' => $this->request->getUserID(), 'request' => $this->request, 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			if (!is_array($va_ret)) { return null; }
  			
 			$this->view->setVar('t_display', $t_display);	
+			$this->view->setVar('display', $t_display);	
 			$this->view->setVar('current_display_list', $pn_display_id);
 			$this->view->setVar('column_headers', $va_ret['headers']);
+			$this->view->setVar('display_list', $va_ret['displayList']);
 		
  			return $va_ret['displayList'];
  		}
@@ -1059,7 +1113,7 @@
 				$va_hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
 			
 				if (!($vs_name = ($ps_mode == 'singular') ? $va_hier[$vn_type_id]['name_singular'] : $va_hier[$vn_type_id]['name_plural'])) {
-					$vs_name = '???';
+					$vs_name = mb_strtolower(($ps_mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
 				}
 				return mb_strtolower($vs_name);
 			} else {

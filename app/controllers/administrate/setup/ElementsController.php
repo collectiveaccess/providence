@@ -123,6 +123,9 @@ class ElementsController extends BaseEditorController {
 		$t_element->setMode(ACCESS_WRITE);
 		$va_request = $_REQUEST; /* we don't want to modify $_REQUEST since this may cause ugly side-effects */
 		foreach($t_element->getFormFields() as $vs_f => $va_field_info) {
+			if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use') && $t_element->getPrimaryKey()) { continue; }
+			if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_data_types_when_in_use') && $t_element->getPrimaryKey()) { continue; }
+			
 			$t_element->set($vs_f, $_REQUEST[$vs_f]);
 			unset($va_request[$vs_f]);
 			
@@ -322,9 +325,7 @@ class ElementsController extends BaseEditorController {
 					continue;
 				}
 			}
-
-			CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSets');
-			CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSetIds');
+            $t_element->flushCacheForElement();
 		}
 		
 		$this->Edit();

@@ -66,7 +66,7 @@ class Datamodel {
 	public function __construct($pb_dont_cache=false) {
 		// is there an on-disk cache of the internal graph?
 		if(!$pb_dont_cache && ExternalCache::contains('ca_datamodel_graph')) {
-			if ($va_graph = ExternalCache::fetch('ca_datamodel_graph')) {
+			if (is_array($va_graph = ExternalCache::fetch('ca_datamodel_graph')) && isset($va_graph['NODES']) && sizeof($va_graph['NODES'])) {
 				$this->opo_graph = new Graph($va_graph);
 				return;
 			}
@@ -424,6 +424,19 @@ class Datamodel {
 	public function isSelfRelationship($pn_tablenum) {
 		if ($t_instance = $this->getInstanceByTableNum($pn_tablenum, true)) {
 			return method_exists($t_instance, 'isSelfRelationship') ? $t_instance->isSelfRelationship() : false;
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Determines if table with number equal to $pn_tablenum is a label table
+	 *
+	 * @param int $pn_tablenum Table number
+	 * @return string Value of property or null if $pn_tablenum is invalid
+	 */
+	public function isLabel($pn_tablenum) {
+		if ($t_instance = $this->getInstanceByTableNum($pn_tablenum, true)) {
+			return is_a($t_instance, 'BaseLabel');
 		}
 		return null;
 	}

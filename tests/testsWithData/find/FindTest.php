@@ -125,11 +125,11 @@ class FindTest extends BaseTestWithData {
 				),
 
 				// Georeference
-				'georeference' => array(
-					array(
-						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
-					),
-				),
+				// 'georeference' => array(
+// 					array(
+// 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+// 					),
+// 				),
 
 				// coverageNotes
 				'coverageNotes' => array(
@@ -524,6 +524,14 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertContains($this->opn_object_id2, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testFindNull() {	
+		$vm_ret = ca_objects::find(['parent_id' => null], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
 	}
 	# -------------------------------------------------------
 }

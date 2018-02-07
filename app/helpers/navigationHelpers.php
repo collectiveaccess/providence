@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -203,7 +203,7 @@
 		
 		if ($ps_classname) { $pa_attributes['class'] = $ps_classname; }
 		if (is_array($pa_attributes)) {
-			$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
+			$vs_tag .= " "._caHTMLMakeAttributeString($pa_attributes);
 		}
 		
 		$vs_tag .= ">{$ps_content}</a>";
@@ -228,8 +228,6 @@
 	 *		no_background = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
-	 *		rightMargin =
-	 *		iconMargin = 
 	 *		size =
 	 */
 	function caNavButton($po_request, $pn_type, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
@@ -246,9 +244,6 @@
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
 		if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
-		if ($vs_right_margin = caGetOption('rightMargin', $pa_options, '2px')) {
-			$pa_attributes['style'] = "margin-right: {$vs_right_margin}; ".$pa_attributes['style'];	// add margin on right to give space between buttons
-		}
 		
 		if ($ps_classname) {
 			$vs_classname = $ps_classname;
@@ -287,8 +282,7 @@
 			$vs_alt = $vs_title = '';
 		}
 		
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
-	
+		
 		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
@@ -345,8 +339,7 @@
 		);
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
 			
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
-	
+		
 		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes)) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
@@ -380,6 +373,7 @@
 	 * Options:
 	 * 	disableUnsavedChangesWarning = if true, unsaved change warnings (when user tries to navigate away from the form before saving) are disabled. [Default is false]
 	 *	noTimestamp = if true no form timestamp (used to determine if other users have made changes while the form is being displayed) is included. [Default is false]
+	 *  noCSRFToken = if true CSRF token is omitted. [Default is false]
 	 *	disableSubmit = don't allow form to be submitted. [Default is false]
 	 *	submitOnReturn = submit form if user hits return in any form element. [Default is false]
 	 */
@@ -407,6 +401,10 @@
 		if (!caGetOption('noTimestamp', $pa_options, false)) {
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
+		if (!caGetOption('noCSRFToken', $pa_options, false)) {
+			$vs_buf .= caHTMLHiddenInput('crsfToken', array('value' => caGenerateCSRFToken($po_request)));
+		}
+		
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
 			// tagging form elements with the CSS 'dontTriggerUnsavedChangeWarning' class lets us skip over selected form elements
 			// when applying unsaved change warning event handlers
@@ -492,8 +490,7 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
-	
+		
 		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
@@ -563,8 +560,7 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
-	
+		
 		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
@@ -1143,16 +1139,20 @@
 		} else {
 			$vs_action = caGetDetailForType($ps_table, caGetOption('type_id', $pa_options, null), array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
 		}
-		if (caUseIdentifiersInUrls() && $t_table->getProperty('ID_NUMBERING_ID_FIELD')) {
+		
+		$vn_id_for_idno = null;
+		if(((int)$pn_id > 0) && ($vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls($ps_table))) {
+		    $va_attr = array_values($t_table->getAttributeForIDs($vs_use_alt_identifier_in_urls, [$pn_id]));
+		    if (is_array($va_attr[0]) && ($vn_id_for_idno = array_shift($va_attr[0]))) {
+				$vb_id_exists = true;
+			}
+		    $pn_id = (strlen($vn_id_for_idno)) ? $vn_id_for_idno : "id:{$pn_id}";
+		} elseif (caUseIdentifiersInUrls() && $t_table->getProperty('ID_NUMBERING_ID_FIELD')) {
 			$va_ids = $t_table->getFieldValuesForIDs(array($pn_id), array($t_table->getProperty('ID_NUMBERING_ID_FIELD')));
 			if (is_array($va_ids) && ($vn_id_for_idno = array_shift($va_ids))) {
 				$vb_id_exists = true;
 			}
-			if (strlen($vn_id_for_idno)) {
-				$pn_id = $vn_id_for_idno;
-			} else {
-				$pn_id = "id:{$pn_id}";
-			}
+		    $pn_id = (strlen($vn_id_for_idno)) ? $vn_id_for_idno : "id:{$pn_id}";
 		}
 		$vs_action .= "/".rawurlencode($pn_id);
 		
@@ -1299,6 +1299,14 @@
 			case 'ca_object_representations':
 			case 56:
 				$vs_controller = 'ObjectRepresentation';
+				break;
+			case 'ca_site_pages':
+			case 236:
+				$vs_controller = 'SitePage';
+				break;
+			case 'ca_site_page_media':
+			case 237:
+				$vs_controller = 'SitePageMedia';
 				break;
 			default:
 				return null;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,18 +99,30 @@ class SearchJSONService extends BaseJSONService {
 			$this->addError(_t("Invalid table"));
 			return false;
 		}
+		
+		$o_service_config = Configuration::load(__CA_APP_DIR__."/conf/services.conf");
+		
 		$t_instance = $this->_getTableInstance($vs_table_name = $this->getTableName());
 
-		$va_return = array();
 		$vo_result = $vo_search->search($this->ops_query, array(
 			'deletedOnly' => $this->opb_deleted_only,
 			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
-			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
-			'start' => $this->opo_request->getParameter('start', pInteger),
-			'limit' => $this->opo_request->getParameter('limit', pInteger)
+			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString)
 		));
+		
+		$va_return = ['total' => $vo_result->numHits()];
+		
+		if ($vn_start = $this->opo_request->getParameter('start', pInteger)) {
+		    $vo_result->seek($vn_start);
+		    $va_return['start'] = $vn_start;
+		}
+		
+		if (($vn_limit = $this->opo_request->getParameter('limit', pInteger)) > 0) {
+		    $va_return['limit'] = $vn_limit;
+		}
 
 		$vs_template = $this->opo_request->getParameter('template', pString);		// allow user-defined template to be passed; allows flexible formatting of returned label
+
 		while($vo_result->nextHit()) {
 			$va_item = array();
 
@@ -140,10 +152,25 @@ class SearchJSONService extends BaseJSONService {
 					// it should provide a means to get the media info array
 					if(trim($vs_bundle) == 'ca_object_representations.media') {
 						if($t_instance instanceof RepresentableBaseModel) {
-							$va_reps = $vo_result->getMediaInfo($vs_bundle);
-							if(is_array($va_reps) && sizeof($va_reps)>0) {
-								$va_item[$vs_bundle] = $va_reps;
-								continue;
+							if ($vs_rep_version = $o_service_config->get('search_service_return_media_version_as_url')) {
+								$va_object_ids = $vo_result->get('ca_objects.object_id', ['returnAsArray' => true]);
+								if (sizeof($va_object_ids)) {
+									if ($qr_objects = caMakeSearchResult('ca_objects', $va_object_ids)) {
+										while($qr_objects->nextHit()) {
+											$vs_reps = $qr_objects->get($vs_bundle.'.'.$vs_rep_version.'.url', ['returnAsArray' => false]);
+											if($vs_reps) {
+												$va_item[$vs_bundle] = $vs_reps;
+												continue(2);
+											}
+										}
+									}
+								}
+							} else {
+								$va_reps = $vo_result->getMediaInfo($vs_bundle);
+								if(is_array($va_reps) && sizeof($va_reps)>0) {
+									$va_item[$vs_bundle] = $va_reps;
+									continue;
+								}
 							}
 						}
 					}
@@ -160,6 +187,8 @@ class SearchJSONService extends BaseJSONService {
 			}
 
 			$va_return["results"][] = $va_item;
+			
+			if ($vn_limit && (sizeof($va_return['results']) >= $vn_limit)) { break; }
 		}
 
 		return $va_return;

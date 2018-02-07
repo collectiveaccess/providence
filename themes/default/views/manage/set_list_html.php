@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,10 +48,8 @@ if (!$this->request->isAjax()) {
 
 ?>
 <script language="JavaScript" type="text/javascript">
-/* <![CDATA[ */
 	jQuery(document).ready(function(){
-		//jQuery('#caSetList').caFormatListTable();
-		
+		jQuery('#caItemList').caFormatListTable();
 		jQuery('#setSearch').autocomplete(
 			{
 				minLength: 3, delay: 800, html: true,
@@ -64,23 +62,14 @@ if (!$this->request->isAjax()) {
 				}
 			}
 		).click(function() { this.select(); });
-
 	});
 	
 	function _navigateToNewForm(type_id, table_num) {
 		document.location = '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'Edit', array('set_id' => 0)); ?>/type_id/' + type_id + '/table_num/' + table_num;
 	}
-/* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
-		if($show_old_filter){
-			print caFormControlBox(
-				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caSetList\').caFilterTable(this.value); return false;" size="20"/></div>', 
-				'', 
-				$vs_set_type_menu
-			);
-		} 
 		$vs_type_id_form_element = '';
 		if ($vn_type_id = intval($this->getVar('list_set_type_id'))) {
 			$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
@@ -100,10 +89,15 @@ if (!$this->request->isAjax()) {
 <?php
 	print $this->render('sets/paging_controls_html.php');
 ?>
+	<?php print caFormTag($this->request, 'Algebra', 'algebraSetForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => true, 'submitOnReturn' => false]); ?>
+		<div id="algebraSetControls">
+			<?php print _t("Create new set %1 from the %2 of %3 selected sets", "<input type='text' size='10' name='algebra_set_name' id='algebraSetName'/>", caHTMLSelect("algebra_set_operation", [_t("combination") => "UNION", _t("intersection") => "INTERSECTION", _t("difference") => "DIFFERENCE"]), '<span id="selectedSetCount"></span>');?>  <?php print caFormSubmitButton($this->request, __CA_NAV_ICON_ADD__, '', 'algebraSetForm', ['size' => 1]); ?>
+		</div>
 	
-	<table id="caSetList" class="listtable">
+	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
+				<th class="list-header-nosort"> </th>
 				<th class="<?php print (($vs_current_sort == "name") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
 					<?php print caNavLink($this->request, _t('Name'), '', 'manage', 'Set', 'ListSets', array('sort' => 'name', 'direction' => ((($vs_current_sort == "name") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
@@ -131,17 +125,20 @@ if (!$this->request->isAjax()) {
 				<th class="<?php print (($vs_current_sort == "status") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
 					<?php print caNavLink($this->request, _t('Status'), '', 'manage', 'Set', 'ListSets', array('sort' => 'status', 'direction' => ((($vs_current_sort == "status") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="list-header-nolink listtableEditDelete"> </th>
+				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody id="setListBody">
 <?php
 	if (sizeof($va_set_list)) {
 		foreach($va_set_list as $va_set) {
 ?>
 			<tr>
 				<td>
-					<div class="caSetListName"><?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
+					<input type="checkbox" class="algebraSetSelector set-table-<?php print $va_set["table_num"]; ?>" name="algebra_set_id[]" data-table_num="<?php print $va_set["table_num"]; ?>" value="<?php print $va_set["set_id"]; ?>">
+				</td>
+				<td>
+					<div class="caItemListName"><?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
 				</td>
 				<td>
 					<div><?php print $va_set['set_content_type']; ?></div>
@@ -168,7 +165,7 @@ if (!$this->request->isAjax()) {
 					</div>
 				</td>
 				<td>
-					<div class="caSetListOwner"><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
+					<div class="caItemListOwner"><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
 				</td>
 				<td>
 					<div><?php print $t_set->getChoiceListValue('access', $va_set['access']); ?></div>
@@ -177,8 +174,8 @@ if (!$this->request->isAjax()) {
 					<div><?php print $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
-					<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php ($va_set['can_delete'] == true) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
 				</td>
 			</tr>
 <?php
@@ -200,6 +197,8 @@ if (!$this->request->isAjax()) {
 ?>
 		</tbody>
 	</table>
+	
+	</form>
 </div>
 <?php
 if (!$this->request->isAjax()) {
@@ -210,3 +209,32 @@ if (!$this->request->isAjax()) {
 <?php
 }
 ?>
+<script type="text/javascript">
+	function caUpdateSetAlgebraForm() {
+	
+	}
+	
+	var caAlgebraSetTableNum = null;
+	jQuery(document).ready(function() {
+		jQuery('#algebraSetControls').hide();
+		jQuery('#selectedSetCount').html(0);
+		
+		jQuery('#setListBody').on('click', '.algebraSetSelector', function(e) {
+			var c = jQuery('.algebraSetSelector:checked').length;
+			
+			if (c > 1) {
+				jQuery('#algebraSetControls').show(100);
+				jQuery('#selectedSetCount').html(c);
+			} else {
+				if (c == 1) {
+					caAlgebraSetTableNum = jQuery('.algebraSetSelector:checked').data('table_num');
+					jQuery(".algebraSetSelector").hide();
+					jQuery(".set-table-" + caAlgebraSetTableNum).show();
+				} else {
+					jQuery(".algebraSetSelector").show();
+				}
+				jQuery('#algebraSetControls').hide(100);
+			}
+		});
+	});
+</script>

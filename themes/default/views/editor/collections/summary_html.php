@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,13 +28,12 @@
  	$t_item 				= $this->getVar('t_subject');
 	$vn_item_id 			= $this->getVar('subject_id');
 	
-	$va_bundle_displays 	= $this->getVar('bundle_displays');
 	$t_display 				= $this->getVar('t_display');
 	$va_placements 			= $this->getVar("placements");
 ?>
 	<div id="summary" style="clear: both;">
 <?php
-	if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID())))) {
+	if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID()), 'context' => 'editor_summary'))) {
 ?>
 		<div id="printButton">
 			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->PrimaryKey() => $t_item->getPrimaryKey()))?>">
@@ -75,8 +74,23 @@
 		
 		if ($t_item->get('ca_collections.children.collection_id')) {
 			print "<div class='heading' style='margin-bottom:10px;'>".$t_item->get('ca_collections.type_id', array('convertCodesToDisplayText' => true))." Contents</div>";
-
-			$va_hierarchy = $t_item->hierarchyWithTemplate("<l>^ca_collections.preferred_labels.name</l> (^ca_collections.idno)", array('collection_id' => $vn_item_id, 'sort' => 'ca_collections.preferred_labels.name'));
+			//
+			if (
+				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_summary_sort_values')) && !sizeof($va_sort_fields))
+				&&
+				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_browser_sort_values')) && !sizeof($va_sort_fields))
+			) {
+				$va_sort_fields = ['ca_collections.preferred_labels.name'];
+			}
+			if(
+				!($vs_template = $t_item->getAppConfig()->get('ca_collections_hierarchy_summary_display_settings'))
+				&&
+				!($vs_template = $t_item->getAppConfig()->get('ca_collections_hierarchy_browser_display_settings'))
+			) {
+				$vs_template = "<l>^ca_collections.preferred_labels.name</l> (^ca_collections.idno)";
+			}
+			
+			$va_hierarchy = $t_item->hierarchyWithTemplate($vs_template, array('collection_id' => $vn_item_id, 'sort' => $va_sort_fields));
 			foreach($va_hierarchy as $vn_i => $va_hierarchy_item) {
 				$vs_margin = $va_hierarchy_item['level']*20;
 				print "<div style='margin-left:".$vs_margin."px;margin-bottom:10px;'><i class='fa fa-angle-right' ></i> ".$va_hierarchy_item['display']."</div>";

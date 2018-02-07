@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,7 +98,7 @@
 	
 	$va_args = $o_opts->getRemainingArgs();
 	
-	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2016 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2017 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 	
 	print $vs_app_heading;
 			
@@ -251,27 +251,14 @@
 		}
 
 		// Look in current directory and then in parent directories
-		$vs_cwd = getcwd();
-		$va_cwd = explode("/", $vs_cwd);
+		$va_cwd = explode("/", ltrim(__FILE__, "/")); array_pop($va_cwd);
 		while(sizeof($va_cwd) > 0) {
 			$vs_setup_path_fallback = "/".join("/", $va_cwd)."/".$vs_setup_path;
 			if (file_exists($vs_setup_path_fallback)) {
-				// Rewrite $_SERVER with paths that setup.php can use
-				//print_R($_SERVER);
-					// try to load pre-save paths
-				if(($vs_hints = @file_get_contents(join("/", $va_cwd)."/app/tmp/server_config_hints.txt")) && is_array($va_hints = unserialize($vs_hints))) {
-					$_SERVER['DOCUMENT_ROOT'] = $va_hints['DOCUMENT_ROOT'];
-					$_SERVER['SCRIPT_FILENAME'] = $va_hints['SCRIPT_FILENAME'];
-					if (!isset($_SERVER['HTTP_HOST'])) { $_SERVER['HTTP_HOST'] = $va_hints['HTTP_HOST']; }
-				} else {
-					// Guess paths based upon location of setup.php (*should* work)
-					if (!isset($_SERVER['DOCUMENT_ROOT']) || !$_SERVER['DOCUMENT_ROOT']) { $_SERVER['DOCUMENT_ROOT'] = join("/", $va_cwd); }
-					if (!isset($_SERVER['SCRIPT_FILENAME']) || !$_SERVER['SCRIPT_FILENAME']) { $_SERVER['SCRIPT_FILENAME'] = join("/", $va_cwd)."/index.php"; }
-					if (!isset($_SERVER['HTTP_HOST']) || !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
-					
-					print "[\033[1;33mWARNING\033[0m] Configuration is not available. Loading any CollectiveAccess screen (except for the installer) in a web browser will cache configuration details and resolve this issue.\n\n";
-					die;
-				}
+				// Guess paths based upon location of setup.php (*should* work)
+                if (!isset($_SERVER['DOCUMENT_ROOT']) || !$_SERVER['DOCUMENT_ROOT']) { $_SERVER['DOCUMENT_ROOT'] = '/'.join("/", $va_cwd); }
+                $_SERVER['SCRIPT_FILENAME'] = __FILE__;
+                if (!isset($_SERVER['HTTP_HOST']) || !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
 				
 				require_once($vs_setup_path_fallback);
 				return true;

@@ -164,6 +164,8 @@
 						$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
 					}
 				}
+		
+				if (preg_match("![\/\.\-]!", $ps_query)) { $pb_exact = true; }
 				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
@@ -172,7 +174,7 @@
 					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
 				}
 				
-				$qr_res = $o_search->search($vs_search);
+				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 				
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
@@ -602,8 +604,7 @@
 				$vn_return = 0;
 			}
 			
-			// TODO: report results and errors here
-			$this->view->setVar("result", ['ok' => $vn_return, 'errors' => $va_errors]);
+			$this->view->setVar("result", ['ok' => $vn_return, 'errors' => $va_errors, 'timestamp' => (sizeof($va_errors) == 0) ? time(): null]);
 			
 			return $this->render('set_sort_order_json.php');
 		}

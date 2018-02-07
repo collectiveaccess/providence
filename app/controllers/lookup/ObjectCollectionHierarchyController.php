@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2016 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,14 +64,14 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 		$o_config = Configuration::load();
 
 		if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
-		$va_items = array();
+		$va_items = [];
 		if (($vn_str_len = mb_strlen($ps_query)) > 0) {
 			if ($vn_str_len < 3) { $pb_exact = true; }		// force short strings to be an exact match (using a very short string as a stem would perform badly and return too many matches in most cases)
 
 			$o_object_search = new ObjectSearch();
 			$o_collection_search = new CollectionSearch();
 
-			$pa_types = array();
+			$pa_types = [];
 			if ($ps_types) {
 				$pa_types = explode(';', $ps_types);
 			} else {
@@ -82,10 +82,10 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 			// Get type_ids
 			$vs_type_query = '';
-			$va_ids = array();
+			$va_ids = [];
 			if (sizeof($pa_types)) {
 				$va_types = $this->opo_item_instance->getTypeList();
-				$va_types_proc = array();
+				$va_types_proc = [];
 				foreach($va_types as $vn_type_id => $va_type) {
 					$va_types_proc[$vn_type_id] = $va_types_proc[$va_type['idno']] = $vn_type_id;
 				}
@@ -180,8 +180,8 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 				}
 			}
 		}
-		if (!is_array($va_objects)) { $va_objects = array(); }
-		if (!is_array($va_collections)) { $va_collections = array(); }
+		if (!is_array($va_objects)) { $va_objects = []; }
+		if (!is_array($va_collections)) { $va_collections = []; }
 
 		if (!sizeof($va_objects) && !sizeof($va_collections)) {
 			$va_objects[-1] = _t('No matches found for <em>%1</em>', $ps_query);
@@ -232,8 +232,8 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 		$o_config = Configuration::load();
 		$t_object = new ca_objects();
 
-		$va_level_data = array();
-		foreach($pa_ids as $pn_id) {
+		$va_level_data = [];
+		foreach($pa_ids as $vn_i => $pn_id) {
 			$va_params = $this->getItemIDComponents($pn_id);
 			$vs_table = $va_params['table'];
 			$vn_id = $va_params['id'];
@@ -250,10 +250,11 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 			$vs_label_display_field_name = $t_item->getLabelDisplayField();
 			$vs_pk = $t_item->primaryKey();
 
+			$vs_level_pk = $vs_pk;
 
 			if($vn_start < 0) { $vn_start = 0; }
 
-			$va_items_for_locale = array();
+			$va_items_for_locale = [];
 			if ((!($vn_id)) && method_exists($t_item, "getHierarchyList")) {
 				$vn_id = $this->request->getParameter('root_item_id', pString);
 
@@ -293,7 +294,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 			} elseif ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
 
-				$va_additional_wheres = array();
+				$va_additional_wheres = [];
 				$t_label_instance = $t_item->getLabelTableInstance();
 				if ($t_label_instance && $t_label_instance->hasField('is_preferred')) {
 					$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
@@ -335,20 +336,22 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					)
 				);
 
-				$va_items = array();
+				$va_items = [];
 
 				if (!($vs_item_template = trim($o_config->get("{$vs_table}_hierarchy_browser_display_settings")))) {
 					$vs_item_template = "^{$vs_table}.preferred_labels.{$vs_label_display_field_name}";
 				}
 
-				$va_child_counts = array();
+				$va_child_counts = [];
 				$vn_c = 0;
 
 				$vn_item_count = $qr_children->numRows();
 
-				$qr_children->seek($vn_start);
+				//$qr_children->seek($vn_start);
 				$va_item_ids = [];
-				while($qr_children->nextRow()) {
+				
+				$qr_children = caMakeSearchResult($vs_table, array_slice($qr_children->getAllFieldValues($vs_pk), $vn_start, $vn_max_items_per_page));
+				while($qr_children->nextHit()) {
 					$va_tmp = array(
 						$vs_pk => $vn_id = $qr_children->get($vs_table.'.'.$vs_pk),
 						'item_id' => $vs_table.'-'.$vn_id,
@@ -362,10 +365,14 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table, array($va_tmp[$vs_pk]));
 
 					// Child count is only valid if has_children is not null
-					$va_tmp['children'] = $qr_children->get('has_children') ? (int)$qr_children->get('child_count') : 0;
+					$va_tmp['children'] = sizeof($qr_children->get("{$vs_table}.children.{$vs_pk}", ['returnAsArray' => true]));
+
+					if ($t_item->tableName() == 'ca_collections') {
+						$va_tmp['children'] += sizeof($qr_children->get('ca_objects.object_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$vs_object_collection_rel_type]]));
+					}
 
 					if (is_array($va_sorts)) {
-						$vs_sort_acc = array();
+						$vs_sort_acc = [];
 						foreach($va_sorts as $vs_sort) {
 							$vs_sort_acc[] = $qr_children->get($vs_sort);
 						}
@@ -421,7 +428,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					);
 
 					$vn_item_count += $vn_count;
-					$va_ids = array();
+					$va_ids = [];
 					foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
 						$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
 
@@ -439,6 +446,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 						$vs_item_template = "^ca_objects.preferred_labels.name";
 					}
 					if(sizeof($va_ids)) {
+						$vs_level_pk = 'object_id';
 						$va_child_counts = $t_object->getHierarchyChildCountsForIDs($va_ids);
 						$va_templates = caProcessTemplateForIDs($vs_item_template, 'ca_objects', $va_ids, array('returnAsArray' => true));
 
@@ -456,8 +464,8 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 			}
 
 			$va_items_for_locale['_sortOrder'] = array_keys($va_items_for_locale);
-			$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
-			$va_items_for_locale['_itemCount'] = $vn_item_count; //$qr_children ? $qr_children->numRows() : 0;
+			$va_items_for_locale['_primaryKey'] = $vs_level_pk;	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
+			$va_items_for_locale['_itemCount'] = $vn_item_count;
 
 			$va_level_data[$pn_id] = $va_items_for_locale;
 		}
@@ -481,7 +489,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 		$t_item = $vo_dm->getInstanceByTableName($vs_table, true);
 		$t_item->load($vn_id);
-		$va_ancestors = array();
+		$va_ancestors = [];
 		if ($t_item->getPrimaryKey()) {
 			$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
 		}
@@ -511,7 +519,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 						'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1 OR ca_collection_labels.is_preferred IS NULL)'),
 						'includeSelf' => false
 					)))) {
-						$va_collection_ancestor_list = array();
+						$va_collection_ancestor_list = [];
 					}
 					foreach($va_collection_ancestor_list as $vn_id => $va_collection_ancestor) {
 						array_unshift($va_ancestors, 'ca_collections-'.$va_collection_ancestor['NODE']['collection_id']);
@@ -563,5 +571,24 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 			'start' => $vn_start
 		);
 	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function SetSortOrder() {
+		$ps_after_id 	=  $this->getRequest()->getParameter('after_id', pString);
+		$ps_id 			=  $this->getRequest()->getParameter('id', pString);
+		
+		$va_tmp = explode('-', $ps_id);
+		if (in_array($va_tmp[0], ['ca_objects', 'ca_collections'])) {
+			$this->ops_table_name = $va_tmp[0];
+		}
+		$this->getRequest()->setParameter('id', (int)$va_tmp[1]);
+		
+		$va_tmp = explode('-', $ps_after_id);
+		$this->getRequest()->setParameter('after_id', (int)$va_tmp[1]);
+		
+		return parent::SetSortOrder();
+	}		
 	# -------------------------------------------------------
 }

@@ -285,7 +285,14 @@ class BaseXMLDataReader extends BaseDataReader {
 		$vo_children = $po_node->childNodes; 
 		if($vo_children) {
 			foreach ($vo_children as $vo_child) { 
-				$vs_buf .= $vo_child->ownerDocument->saveXML( $vo_child ); 
+				$vs_val = $vo_child->ownerDocument->saveXML( $vo_child ); 
+				
+				if (strpos($vs_val, "<![CDATA[") === 0) {
+				    $vs_val = substr($vs_val, 9);
+				    $vs_val = substr($vs_val, 0, strlen($vs_val) - 3);
+				}
+				
+				$vs_buf .= $vs_val;
 			} 
 		}
 

@@ -44,22 +44,38 @@ $_MEDIA_INFO_CODER_INSTANCE_CACHE = null;
 class MediaInfoCoder {
 	# ---------------------------------------------------------------------------
 	private $opo_volume_info;
+	private $opa_media_info;
 	# ---------------------------------------------------------------------------
-	static public function load() {
-		global $_MEDIA_INFO_CODER_INSTANCE_CACHE;
-		
-		if (!$_MEDIA_INFO_CODER_INSTANCE_CACHE) {
-			$_MEDIA_INFO_CODER_INSTANCE_CACHE = new MediaInfoCoder();
-		}
-		return $_MEDIA_INFO_CODER_INSTANCE_CACHE;
+	/**
+	 *
+	 */
+	public function __construct($pm_media_info=null) {
+		$this->opo_volume_info = new MediaVolumes();
+		if ($pm_media_info) { $this->setMedia($pm_media_info); }
 	}
 	# ---------------------------------------------------------------------------
-	public function __construct() {
-		$this->opo_volume_info = new MediaVolumes();
+	/**
+	 *
+	 */
+	public function setMedia($pm_media_info) {
+	    if ($va_d = $this->getMediaArray($pm_media_info)) {
+	        return $this->opa_media_info = $va_d;
+	    }
+	    return false;
+	}
+	# ---------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getMedia() {
+	    return $this->opa_media_info ? $this->opa_media_info : null;
 	}
 	# ---------------------------------------------------------------------------
 	# Support for field types
 	# ---------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getMediaArray($ps_data) {
 		if (!is_array($ps_data)) {
 			$va_data = caUnserializeForDatabase($ps_data);
@@ -69,10 +85,11 @@ class MediaInfoCoder {
 		}
 	}
 	# ---------------------------------------------------------------------------
-	public function getMediaInfo($ps_data, $ps_version=null, $ps_key=null, $pa_options=null) {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}	
+	/**
+	 *
+	 */
+	public function getMediaInfo($ps_version=null, $ps_key=null, $pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }	
 		
 		#
 		# Use icon
@@ -109,10 +126,11 @@ class MediaInfoCoder {
 		}
 	}
 	# ---------------------------------------------------------------------------
-	public function getMediaPath($ps_data, $ps_version, $pa_options=null) {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
+	/**
+	 *
+	 */
+	public function getMediaPath($ps_version, $pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
 		$vn_page = 1;
 		if (is_array($pa_options) && (isset($pa_options["page"])) && ($pa_options["page"] > 1)) {
@@ -163,10 +181,8 @@ class MediaInfoCoder {
 	 *		localOnly = if true url to locally hosted media is always returned, even if an external url is available
 	 *		externalOnly = if true url to externally hosted media is always returned, even if an no external url is available
 	 */
-	public function getMediaUrl($ps_data, $ps_version, $pa_options=null) {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
+	public function getMediaUrl($ps_version, $pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
 		$vn_page = 1;
 		if (is_array($pa_options) && (isset($pa_options["page"])) && ($pa_options["page"] > 1)) {
@@ -230,17 +246,14 @@ class MediaInfoCoder {
 		}
 	}
 	# ---------------------------------------------------------------------------
-	public function getMediaTag($ps_data, $ps_version, $pa_options=null) {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
-		
-		if (!is_array($pa_options)) {
-			$pa_options = array();
-		}
-		if (!isset($pa_options["page"]) || ($pa_options["page"] < 1)) {
-			$pa_options["page"] = 1;
-		}
+	/**
+	 *
+	 */
+	public function getMediaTag($ps_version, $pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
+	
+		if (!is_array($pa_options)) { $pa_options = [];}
+		if (!isset($pa_options["page"]) || ($pa_options["page"] < 1)) { $pa_options["page"] = 1; }
 		
 		#
 		# Use icon
@@ -256,7 +269,7 @@ class MediaInfoCoder {
 			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 		
-		$vs_url = $this->getMediaUrl($va_media_info, $ps_version, $pa_options["page"], $pa_options);
+		$vs_url = $this->getMediaUrl($ps_version, $pa_options);
 		$o_media = new Media();
 		
 		$o_vol = new MediaVolumes();
@@ -270,10 +283,11 @@ class MediaInfoCoder {
 		return $o_media->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $vs_url, $va_properties, $pa_options, $va_volume);
 	}
 	# ---------------------------------------------------------------------------
-	public function getMediaVersions($ps_data) {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
+	/**
+	 *
+	 */
+	public function getMediaVersions($pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
 		unset($va_media_info["ORIGINAL_FILENAME"]);
 		unset($va_media_info["INPUT"]);
@@ -281,6 +295,8 @@ class MediaInfoCoder {
 		unset($va_media_info["_undo_"]);
 		unset($va_media_info["TRANSFORMATION_HISTORY"]);
 		unset($va_media_info["_CENTER"]);
+		unset($va_media_info["_SCALE"]);
+		unset($va_media_info["_SCALE_UNITS"]);
 		unset($va_media_info["REPLICATION_KEYS"]);
 		unset($va_media_info["REPLICATION_STATUS"]);
 		unset($va_media_info["REPLICATION_LOG"]);
@@ -288,21 +304,20 @@ class MediaInfoCoder {
 		return array_keys($va_media_info);		
 	}
 	# ---------------------------------------------------------------------------
-	public function hasMedia($ps_data, $ps_field) {  
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
-		if (is_array($va_media_info)) {
-			return true;
-		} else {
-			return false;
-		}
+	/**
+	 *
+	 */
+	public function hasMedia($pa_options=null) {  
+		if(!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
+		if(!is_array($va_media_info)) { return false; }
+		return true;
 	}
 	# ---------------------------------------------------------------------------
-	public function mediaIsMirrored($ps_data, $ps_version) {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
+	/**
+	 *
+	 */
+	public function mediaIsMirrored($ps_version, $pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {
@@ -315,10 +330,11 @@ class MediaInfoCoder {
 		}
 	}
 	# --------------------------------------------------------------------------------
-	public function getMediaMirrorStatus($ps_data, $ps_version, $ps_mirror="") {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
+	/**
+	 *
+	 */
+	public function getMediaMirrorStatus($ps_version, $ps_mirror=null, $pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {
@@ -339,10 +355,8 @@ class MediaInfoCoder {
 	 *
 	 * @return float Value or null if not set
 	 */
-	public function getMediaScale($ps_data, $pa_options=null) {
-		if (!($va_media_info = $this->getMediaArray($ps_data))) {
-			return false;
-		}
+	public function getMediaScale($pa_options=null) {
+		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
 		return caGetOption('_SCALE', $va_media_info, null);
 	}

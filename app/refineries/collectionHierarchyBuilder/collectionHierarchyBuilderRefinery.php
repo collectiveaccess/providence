@@ -81,6 +81,7 @@
 			
 			// Set collection parents
 			if ($va_parents = $pa_item['settings']['collectionHierarchyBuilder_parents']) {
+				$pa_options['refinery'] = $this;
 				$vn_parent_id = caProcessRefineryParents('collectionHierarchyBuilder', 'ca_collections', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			

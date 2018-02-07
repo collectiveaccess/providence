@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -561,6 +561,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			allUsers =
 	 *			publicUsers =
 	 *			name = 
+	 *          byUser = return sets grouped by user with access. The array will be key'ed by sortable user name. Each entry includes a 'user' array with information about the user and a 'sets' array with the list of sets that user has access to. [Default is false]
+	 *
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
 	public function getSets($pa_options=null) {
@@ -572,6 +574,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pb_set_ids_only = isset($pa_options['setIDsOnly']) ? (bool)$pa_options['setIDsOnly'] : false;
 		$pb_omit_counts = isset($pa_options['omitCounts']) ? (bool)$pa_options['omitCounts'] : false;
 		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
+		
+		$pb_by_user = caGetOption('byUser', $pa_options, null);
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
 
@@ -785,49 +789,73 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
 			}
-			return $va_sets;
-		} else {
-			if ($pb_set_ids_only) {
-				// get sets
-				$qr_res = $o_db->query("
-					SELECT ".join(', ', $va_sql_selects)."
-					FROM ca_sets cs
-					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
-					LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
-					".join("\n", $va_extra_joins)."
-					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-					".join(' AND ', $va_sql_wheres)."
-					ORDER BY csl.name
-				", $va_sql_params);
-				return $qr_res->getAllFieldValues("set_id");
-			} else {
-				$qr_res = $o_db->query("
-					SELECT ".join(', ', $va_sql_selects)."
-					FROM ca_sets cs
-					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
-					LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
-					LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
-					".join("\n", $va_extra_joins)."
-					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-					".join(' AND ', $va_sql_wheres)."
-					ORDER BY csl.name
-				", $va_sql_params);
-				$t_list = new ca_lists();
-				$va_sets = array();
-				while($qr_res->nextRow()) {
-					$vn_table_num = $qr_res->get('table_num');
-					if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
-						$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
-					}
-					
-					$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
-					
-					$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
-				}
-
-				return $va_sets;
+			
+			if ($pb_by_user) {
+			    $va_sets_by_user = [];
+			    $va_sets = caExtractValuesByUserLocale($va_sets);
+			    foreach($va_sets as $va_set) {
+			        $va_users = $this->getUsers(['row_id' => $va_set['set_id']]);
+			        
+			        $vs_user_key = strtolower(str_pad(substr($va_set['lname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad(substr($va_set['fname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad($va_set['user_id'], 10, '0', STR_PAD_LEFT));
+			        if (!isset($va_sets_by_user[$vs_user_key]['user'])) {
+			            $va_sets_by_user[$vs_user_key]['user'] = [
+			                'user_id' => $va_set['user_id'], 'user_name' => $va_set['user_name'],
+			                'fname' => $va_set['fname'], 'lname' => $va_set['lname'],
+			                'email' => $va_set['email']
+			            ];
+			        }
+			        $va_sets_by_user[$vs_user_key]['sets'][] = $va_set;
+			        
+			        foreach($va_users as $va_user) {
+			            $vs_user_key = strtolower(str_pad(substr($va_user['lname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad(substr($va_user['fname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad($va_user['user_id'], 10, '0', STR_PAD_LEFT));
+			            $va_sets_by_user[$vs_user_key]['user'] = $va_user;
+			            $va_sets_by_user[$vs_user_key]['sets'][] = $va_set;
+			        }
+			    }
+			    ksort($va_sets_by_user);
+			    return $va_sets_by_user;
 			}
 			
+			return $va_sets;
+		} elseif ($pb_set_ids_only) {
+			// get sets
+			$qr_res = $o_db->query("
+				SELECT ".join(', ', $va_sql_selects)."
+				FROM ca_sets cs
+				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
+				".join("\n", $va_extra_joins)."
+				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+				".join(' AND ', $va_sql_wheres)."
+				ORDER BY csl.name
+			", $va_sql_params);
+			return $qr_res->getAllFieldValues("set_id");
+		} else {
+			$qr_res = $o_db->query("
+				SELECT ".join(', ', $va_sql_selects)."
+				FROM ca_sets cs
+				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
+				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
+				".join("\n", $va_extra_joins)."
+				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+				".join(' AND ', $va_sql_wheres)."
+				ORDER BY csl.name
+			", $va_sql_params);
+			$t_list = new ca_lists();
+			$va_sets = array();
+			while($qr_res->nextRow()) {
+				$vn_table_num = $qr_res->get('table_num');
+				if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
+					$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
+				}
+				
+				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
+				
+				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
+			}
+
+			return $va_sets;
 		}
 	}
 	# ------------------------------------------------------
@@ -1196,7 +1224,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 
 			$t_item->addLabel(array(
-				'caption' => _t('[BLANK]'),
+				'caption' => '['._t('BLANK').']',
 			), $g_ui_locale_id);
 			
 			if ($t_item->numErrors()) {
@@ -1263,7 +1291,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 
 			// Add empty labels to newly created items
 			foreach($va_item_ids as $vn_item_id) {
-				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'"._t("[BLANK]")."')";
+				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'["._t("BLANK")."]')";
 			}
 			$this->getDb()->query("INSERT INTO ca_set_item_labels (item_id, locale_id, caption) VALUES ".join(",", $va_label_values));
 			if ($this->getDb()->numErrors()) {
@@ -1279,8 +1307,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array($va_item_ids));
 			
 				$t_set_item = new ca_set_items();
+				
+				$va_set_ids = [];
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
+					$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
 					$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
 				}
 			
@@ -1288,8 +1319,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($va_item_ids));
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-				
 					$t_set_item_label->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_item_labels.label_id'), 'snapshot' => $va_snapshot]);
+				}
+				
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_sets WHERE set_id IN (?)", array(array_keys($va_set_ids)));
+			
+				$t_set = new ca_sets();
+				while($qr_res->nextRow()) {
+					$va_snapshot = $qr_res->getRow();
+					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
 				}
 			}
 			
@@ -1456,12 +1494,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return null;
 		}
 		
-		$vn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
+		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
 		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false); 
 		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $pa_options, false);
 		
 		// does user have edit access to set?
-		if ($vn_user_id && !$this->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__)) {
+		if ($pn_user_id && !$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) {
 			return false;
 		}
 	
@@ -1515,6 +1553,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_existing_ranks = array_values($va_row_ranks);
 		$vn_rank_acc = end(array_values($va_row_ranks));
 		
+		$va_rank_updates = array();
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
 			if (isset($va_existing_ranks[$vn_rank])) {
 				$vn_rank_inc = $va_existing_ranks[$vn_rank];
@@ -1535,9 +1574,44 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			} else {
 				// add item to set
-				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $vn_user_id, $vn_rank_inc);
+				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
 			}
 		}
+		
+		$va_updated_item_ids = [];
+		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
+			if($vb_treat_row_ids_as_rids) {
+				$va_tmp = explode("_", $vn_row_id);
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+				$va_updated_item_ids[$va_tmp[1]] = 1;
+			} else {
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
+			}
+		}
+		
+		if(sizeof($va_updated_item_ids) > 0) {
+			$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array(array_keys($va_updated_item_ids)));
+			
+			$t_set_item = new ca_set_items();
+			
+			$va_set_ids = [];
+			while($qr_res->nextRow()) {
+				$va_snapshot = $qr_res->getRow();
+				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
+				$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+			}
+			
+			if (sizeof($va_set_ids)) {
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_sets WHERE set_id IN (?)", array(array_keys($va_set_ids)));
+			
+				$t_set = new ca_sets();
+				while($qr_res->nextRow()) {
+					$va_snapshot = $qr_res->getRow();
+					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
+				}
+			}
+		}
+		
 		
 		if(sizeof($va_errors)) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }

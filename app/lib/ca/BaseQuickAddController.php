@@ -68,6 +68,11 @@
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
  			$vs_n = $this->request->getParameter('n', pString);
+ 			
+ 			// table name and row_id from calling record (what we're quick-adding on)
+ 			// only set for ca_objects quick-adds
+ 			$vs_source = $this->request->getParameter('source', pString);
+ 			$vn_source_id = $this->request->getParameter('source_id', pInteger);
  		
  			// Is user allowed to quickadd?
  			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
@@ -78,6 +83,13 @@
  			if ($vn_parent_id = $this->request->getParameter('parent_id', pInteger)) {
  				$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
  			}
+ 			
+ 			// Get user query
+			$this->view->setVar('q', preg_replace("!^[^:]*:!", "", $this->request->getParameter('q', pString)));
+ 			
+ 			// table name and row_id of caller
+ 			$this->view->setVar('source', $vs_source);
+ 			$this->view->setVar('source_id', $vn_source_id);
  			
  			//
  			// Is record of correct type?
@@ -108,6 +120,28 @@
 					return;
 				}
 			}
+			
+			
+			if (is_array($va_prepopulate_quickadd_fields = explode(";", $this->request->getParameter('prepopulate_fields', pString)))) {
+				$va_prepopulate_quickadd_fields = array_filter($va_prepopulate_quickadd_fields, function($v) { return strlen($v); });
+				foreach($va_prepopulate_quickadd_fields as $vs_field) {
+					if ($t_subject->hasField($vs_field)) { $t_subject->set($vs_field, caUcFirstUTF8Safe($this->view->getVar('q'))); }
+				}
+			}
+			
+			if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
+				global $g_ui_locale_id;
+				$va_force_new_label = [
+					'locale_id' => $g_ui_locale_id, 									// use default locale
+					$t_subject->getLabelDisplayField() => caUcFirstUTF8Safe($this->view->getVar('q'))		// query text is used for display field
+				];
+				foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
+					if ($vs_fld === $t_subject->getLabelDisplayField()) { continue; }
+					$va_force_new_label[$vs_fld] = '';
+				}						
+				$this->view->setVar('forceLabel', $va_force_new_label);
+			}
+			
  			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
@@ -211,7 +245,6 @@
 			$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
 			$this->view->setVar('n', $vs_n);
 			
-			$this->view->setVar('q', preg_replace("!^[^:]*:!", "", $this->request->getParameter('q', pString)));
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
 			
@@ -326,6 +359,11 @@
  			$vn_parent_id = $this->request->getParameter('parent_id', pInteger);
  			$t_subject->set('parent_id', $vn_parent_id);
  			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
+ 			
+ 			// Set lot_id when quick-adding objects from lots
+ 			if (($t_subject->tableName() == 'ca_objects') && ($vn_lot_id = $this->request->getParameter('lot_id', pInteger))) {
+ 			    $t_subject->set('lot_id', $vn_lot_id);
+ 			}
  			
  			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
