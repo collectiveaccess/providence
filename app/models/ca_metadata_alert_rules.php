@@ -437,7 +437,6 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));
 	}
 	# ------------------------------------------------------
-	# ------------------------------------------------------
 	/**
 	 * Returns list of metadata alert rules subject to options
 	 *
@@ -525,7 +524,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			$va_sql_wheres[] = "(".join(" OR ", $va_sql_access_wheres).")";
 		}
 
-		// get displays
+		// get rules
 		$qr_res = $o_db->query($vs_sql = "
 			SELECT
 				mar.rule_id, mar.code, mar.user_id, mar.table_num,
@@ -540,7 +539,6 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			".join(' AND ', $va_sql_wheres)."
 			ORDER BY martr.rule_id DESC, marl.name ASC
 		");
-		//print "got $vs_sql";
 		$va_rules = array();
 
 		$va_type_name_cache = array();
