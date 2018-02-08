@@ -2374,7 +2374,12 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_table
 	 * @param array $pa_attributes
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		prefix = Bundle prefix to use when generating UI elements. [Default is null]
+	 *		makeLink = Render text as link to related item. [Default is false]
+	 *		display = Name of bundle field to use as display text for related item. [Default is "_display"] 
+	 *		relationshipTypeDisplayPosition = Position to render relationship type in relative to display text. Valid values are "left", "right" and "none". [Default is "right"]
+	 *		editableRelationshipType = Render relationship type as drop-down to support in-place editing. [Default is to use table-specific settings in app.conf]
 	 *
 	 * @return string 
 	 */
@@ -2382,26 +2387,30 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$o_config = Configuration::load();
 		$o_dm = Datamodel::load();
 		
+		$ps_prefix = caGetOption('prefix', $pa_options, null);
+		
 		if (!($vs_relationship_type_display_position = caGetOption('relationshipTypeDisplayPosition', $pa_options, null))) {
 			$vs_relationship_type_display_position = strtolower($o_config->get($ps_table.'_lookup_relationship_type_position'));
 		}
 		
-		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
-		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
-		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
+		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : []);
+		$vs_display = "{".caGetOption('display', $pa_options, '_display')."}";
+		if (caGetOption('makeLink', $pa_options, false)) {
 			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
+		$vs_reltype_disp = caGetOption('editableRelationshipType', $pa_options, (bool)$o_config->get("{$ps_table}_lookup_relationship_type_editable")) ? "<select name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' class='listRelRelationshipTypeEdit'></select>" : "{{relationship_typename}} <input type='hidden' name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' value='{type_id}'/>";
+		
 		switch($vs_relationship_type_display_position) {
 			case 'left':
-				return "({{relationship_typename}}) {$vs_display}";
+				return "({$vs_reltype_disp}) {$vs_display}";
 				break;
 			case 'none':
 				return "{$vs_display}";
 				break;
 			default:
 			case 'right':
-				return "{$vs_display} ({{relationship_typename}})";
+				return "{$vs_display} ({$vs_reltype_disp})";
 				break;
 		}
 	}
@@ -2782,6 +2791,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'];
+				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
 				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
 				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld];

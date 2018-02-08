@@ -5606,6 +5606,10 @@ div.listRel:first-of-type {
     margin-top:5px;
 }
 
+select.listRelRelationshipTypeEdit {
+    font-size: 8px;
+}
+
 .caItemList {
     /* margin-top: 10px; */
     max-height: 500px;

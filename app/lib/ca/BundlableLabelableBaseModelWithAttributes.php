@@ -2920,6 +2920,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							'id' => $vn_id, 
 							'idno' => ($vn_idno = $t_item->get('idno')) ? $vn_idno : null, 
 							'idno_stub' => ($vn_idno_stub = $t_item->get('idno_stub')) ? $vn_idno_stub : null, 
+							'item_type_id' => $t_item->getTypeID(),
 							'relationship_type_id' => null
 						)
 					);
