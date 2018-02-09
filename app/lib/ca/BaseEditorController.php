@@ -710,7 +710,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list);
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-			print "SET displ=$vn_display_id";
 		} else {
             $va_display_list = $t_display->getDisplayListForResultsEditor($t_subject->tableName(), ['user_id' => $this->request->getUserID()]);
             
