@@ -45,13 +45,24 @@
 	 * @return string HTML implementing the control
 	 */
 	function caBatchEditorRelationshipModeControl($t_item, $ps_id_prefix) {
-		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
-			caHTMLSelect($ps_id_prefix."_batch_mode", array(
-			_t("do not use") => "_disabled_", 
-			_t('add to each') => '_add_', 
-			_t('replace value') => '_replace_',
-			_t('remove all values') => '_delete_'
-		), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'))."</div>\n
+	    switch($t_item->tableName()) {
+	        case 'ca_object_representations':
+	             $vs_select = caHTMLSelect($ps_id_prefix."_batch_mode", array(
+                    _t("do not use") => "_disabled_", 
+                    _t('replace value') => '_replace_',
+                    _t('remove all values') => '_delete_'
+                ), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'));
+	            break;
+	        default:
+	            $vs_select = caHTMLSelect($ps_id_prefix."_batch_mode", array(
+                    _t("do not use") => "_disabled_", 
+                    _t('add to each') => '_add_', 
+                    _t('replace value') => '_replace_',
+                    _t('remove all values') => '_delete_'
+                ), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'));
+                break;
+	    }
+		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." {$vs_select}</div>\n
 
 	<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
