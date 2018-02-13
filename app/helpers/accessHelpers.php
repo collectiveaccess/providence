@@ -359,7 +359,8 @@
 	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
 	 * @param array $pa_types List of type codes and/or type_ids that are the basis of the list
 	 * @param array $pa_options Array of options:
-	 *		No options are currently supported
+	 * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include subtypes
+	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
 	 *
 	 * @return array List of type codes
 	 */
@@ -368,6 +369,11 @@
 		if (!is_array($pa_type_ids)) { $pa_type_ids = [$pa_type_ids]; }
 		
 		$o_dm = Datamodel::load();
+		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
+	 	
+		if (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) {
+			$pa_options['noChildren'] = true;
+		}
 	
 		if (is_numeric($pm_table_name_or_num)) {
 			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
@@ -378,6 +384,8 @@
 		if (!$t_instance) { return null; }	// bad table
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
+		$t_item = new ca_list_items();
+		
 		$va_type_codes = [];
 		
 		foreach($pa_type_ids as $vm_type) {
@@ -387,6 +395,16 @@
 				$vs_type_code = caGetListItemIdno($vm_type);
 			} else {
 				$vs_type_code = $vm_type;
+			}
+			
+			if ($vs_type_code && (!isset($pa_options['noChildren']) || !$pa_options['noChildren'])) {
+				if ($qr_children = $t_item->getHierarchy(caGetListItemID($vs_type_list_code, $vs_type_code), array())) {
+					while($qr_children->nextRow()) {
+						$va_type_codes[$qr_children->get('idno')] = true;
+					}
+				}
+			} elseif ($vs_type_code) {
+				$va_type_codes[$vs_type_code] = true;
 			}
 			
 			$va_type_codes[$vs_type_code] = true;
