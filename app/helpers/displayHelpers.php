@@ -4304,6 +4304,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 */
 	function caExtractSettingValueByLocale($pa_settings, $ps_key, $ps_locale) {
 		if (isset($pa_settings[$ps_key])) {
+		    if(isset($pa_settings[$ps_key]) && !is_array($pa_settings[$ps_key])) { return $pa_settings[$ps_key]; }
 			if (isset($pa_settings[$ps_key][$ps_locale]) && ($pa_settings[$ps_key][$ps_locale])) {
 				return $pa_settings[$ps_key][$ps_locale];
 			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
