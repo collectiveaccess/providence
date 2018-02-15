@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2016 Whirl-i-Gig
+ * Copyright 2000-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -8447,7 +8447,7 @@ $pa_options["display_form_field_tips"] = true;
 							}
 							
 							$t_list = new ca_lists();
-							$va_list_attrs = array( 'id' => $pa_options['id']);
+							$va_list_attrs = array( 'id' => $pa_options['id'], 'class' => caGetOption('classname', $pa_options, null));
 							//if ($vn_max_pixel_width) { $va_list_attrs['style'] = $vs_width_style; }
 
 							if(method_exists($this, 'getTypeFieldName') && ($ps_field == $this->getTypeFieldName())) {
@@ -11574,12 +11574,12 @@ $pa_options["display_form_field_tips"] = true;
 		if ($t_instance->hasField('deleted')) { 
 			$vs_deleted_sql = '(deleted = 0)'; 
 		}
-		
 		$va_sql = [];
 		if (sizeof($vs_wheres = join(" {$ps_boolean} ", $va_sql_wheres))) { $va_sql[] = $vs_wheres; }
 		if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
 		if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}
-		
+		$va_sql = array_filter($va_sql, function($v) { return strlen($v) > 0; });
+
 		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';

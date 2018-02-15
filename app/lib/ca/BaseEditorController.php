@@ -519,10 +519,48 @@ class BaseEditorController extends ActionController {
 							$t_target->load($vn_remap_id);
 							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 						}
+						
+						// move children
+						if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
+							if (!$t_target) {
+								$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+								$t_target->load($vn_remap_id);
+							}
+							
+							$t_child = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+							$vn_child_count = 0;
+							foreach($va_children as $vn_child_id) {
+								$t_child->load($vn_child_id);
+								$t_child->setMode(ACCESS_WRITE);
+								$t_child->set('parent_id', $vn_remap_id);
+								$t_child->update();
+								if ($t_child->numErrors() > 0) {
+									continue;
+								}
+								$vn_child_count++;
+							}
+							$this->notification->addNotification(($vn_child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+						}
+						
 						break;
 				}
 			} else {
 				$t_subject->deleteAuthorityElementReferences();
+				
+				if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
+					$t_child = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+					$vn_child_count = 0;
+					foreach($va_children as $vn_child_id) {
+						$t_child->load($vn_child_id);
+						$t_child->setMode(ACCESS_WRITE);
+						$t_child->delete(true);
+						if ($t_child->numErrors() > 0) {
+							continue;
+						}
+						$vn_child_count++;
+					}
+					$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+				}
 			}
 			
 			// Do we need to move references contained in attributes bound to this item?
@@ -672,7 +710,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list);
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-			print "SET displ=$vn_display_id";
 		} else {
             $va_display_list = $t_display->getDisplayListForResultsEditor($t_subject->tableName(), ['user_id' => $this->request->getUserID()]);
             

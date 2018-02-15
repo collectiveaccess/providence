@@ -3235,6 +3235,15 @@ div.caObjectRepresentationDetailEditorElement {
     margin-right: 5px;
 }
 
+div.caObjectRepresentationBatchDetailEditorElement {
+    float: left;
+    margin-right: 5px;
+}
+
+div.caObjectRepresentationBatchDetailEditorElement input {
+    margin: 0 3px 3px 0;
+}
+
 input.caObjectRepresentationDetailEditorElementReadOnly {
     float: left;
     font-size: 10px;
@@ -3274,6 +3283,14 @@ div.caObjectRepresentationDetailEditorContainer{
 
 div.caObjectRepresentationNewDetailEditorContainer {
     display: none;
+    width: 540px;
+    padding: 10px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+
+div.caObjectRepresentationBatchDetailEditorContainer {
     width: 540px;
     padding: 10px;
     -moz-border-radius-: 4px;
@@ -5606,6 +5623,10 @@ div.listRel:first-of-type {
     margin-top:5px;
 }
 
+select.listRelRelationshipTypeEdit {
+    font-size: 8px;
+}
+
 .caItemList {
     /* margin-top: 10px; */
     max-height: 500px;
@@ -6456,7 +6477,6 @@ div.caRepresentationMediaReplicationControls {
     overflow: auto;
     display: none;
     padding:0px !important;
-    border: 2px solid #999999;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #ededed;
 }

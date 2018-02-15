@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,8 @@ $vo_result_context 			= $this->getVar('result_context');
 /** @var SearchResult $vo_result */
 $vo_result					= $this->getVar('result');
 
-$va_current_sort = caGetSortForDisplay($vo_result->getResultTableName(), $vo_result_context->getCurrentSort());
+$va_current_sort = caGetSortForDisplay($vo_result->getResultTableName(), $vo_result_context->getCurrentSort(), ['restrictToDisplay' => $vo_result_context->getCurrentBundleDisplay()]);
+
 if(is_array($va_current_sort) && (sizeof($va_current_sort) > 0)) {
 ?>
 	<h3 class='currentSort'><?php print _t("Current sort"); ?>:
