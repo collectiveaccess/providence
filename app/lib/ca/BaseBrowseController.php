@@ -72,8 +72,6 @@
 				if ($vs_view_default = $po_request->config->get('view_default_for_'.$this->ops_tablename.'_browse')) {
 					$this->ops_view_default = $vs_view_default;
 				}
-				
-				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
 			}
  		}
  		# -------------------------------------------------------

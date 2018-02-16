@@ -665,7 +665,7 @@ class DisplayTemplateParser {
 						if ($pb_is_case) { break(2); }
 					} else { 
 						if ($t_instance->isRelationship()) {
-							// Allow subunits to inherit incorrectly places restrict/exclude types options
+							// Allow subunits to inherit incorrectly placed restrict/exclude types options
 							// This enables templates such as this to work as expected:
 							//
 							// <unit relativeTo="ca_objects_x_entities" restrictToTypes="individual"><unit relativeTo="ca_entities">^ca_entities.preferred_labels.displayname</unit></unit>
@@ -698,32 +698,34 @@ class DisplayTemplateParser {
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
 							case 'related':
-								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
-								$va_relative_ids = array_values($va_relative_ids);
-								
-								$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data'))));
-								
-								$va_relationship_type_ids = array();
-								if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
-									$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
-									$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
-								}
-								break;
 							default:
 								if (method_exists($t_instance, 'isSelfRelationship') && $t_instance->isSelfRelationship() && is_array($pa_primary_ids) && isset($pa_primary_ids[$t_rel_instance->tableName()])) {
 									if (!is_array($va_relative_ids = array_values($t_instance->getRelatedIDsForSelfRelationship($pa_primary_ids[$t_rel_instance->tableName()], array($pr_res->getPrimaryKey()))))) { $va_relative_ids = []; }
-									
-									$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data'))));
+
+									$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))));
 									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t_rel_instance->getSelfRelationTableName(), $va_relation_ids);
 										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getSelfRelationTableName().'.type_id');
 									}
 								} else {
-									$va_relative_ids = $pr_res->get($t_rel_instance->primaryKey(true), $va_get_options);
-									$va_relative_ids = is_array($va_relative_ids) ? array_values($va_relative_ids) : array();
-									
-									$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data'))));
+									if (method_exists($t_rel_instance, 'isSelfRelationship') && $t_rel_instance->isSelfRelationship()) {
+                                        $va_get_options['primaryIDs'][$t_instance->tableName()] = [$pr_res->getPrimaryKey()];
+                                    }
+									 
+                                    if (method_exists($t_rel_instance, 'isRelationship') && $t_rel_instance->isRelationship() && ($t_opposite = $t_rel_instance->getInstanceOpposite($t_instance->tableName()))) {
+                                        // Try to fetch relationship subject to any type restriction for the table at the other end of the relationship
+                                        // This allows us to support specification restrictToTypes on a unit relative to a relationship type, which is 
+                                        // necessary when you want to pull content from both a related record and interstitial fields while also filtering
+                                        // on related record type. In this case the unit needs to be relative to the relationship.
+                                        $va_related_items = $t_instance->getRelatedItems($t_opposite->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
+                                        $va_relative_ids = $va_relation_ids = array_map(function($v) { return $v['relation_id']; }, $va_related_items);
+                                    } else {
+                                        if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
+								        $va_relative_ids = array_values($va_relative_ids);
+                                        
+								        $va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))));
+								    }
 									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
@@ -771,7 +773,8 @@ class DisplayTemplateParser {
 									'aggregateUnique' => $vb_aggregate_unique,
 									'relationIDs' => $va_relation_ids,
 									'relationshipTypeIDs' => $va_relationship_type_ids,
-									'filterNonPrimaryRepresentations' => $vb_filter_non_primary_reps
+									'filterNonPrimaryRepresentations' => $vb_filter_non_primary_reps,
+									'primaryIDs' => $va_get_options['primaryIDs']
 								]
 							)
 						);
@@ -1262,12 +1265,14 @@ class DisplayTemplateParser {
 				$va_tag_tmp[1] = trim($va_tag_tmp[1]);
 				if (in_array($va_tag_tmp[0], array('delimiter', 'hierarchicalDelimiter'))) {
 					$va_tag_tmp[1] = str_replace("_", " ", $va_tag_tmp[1]);
-				}
-				if (sizeof($va_tag_line_tmp = explode("|", $va_tag_tmp[1])) > 1) {
-					$va_tag_opts[trim($va_tag_tmp[0])] = $va_tag_line_tmp;
-				} else {
 					$va_tag_opts[trim($va_tag_tmp[0])] = $va_tag_tmp[1];
-				}
+				} else {
+                    if (sizeof($va_tag_line_tmp = explode("|", $va_tag_tmp[1])) > 1) {
+                        $va_tag_opts[trim($va_tag_tmp[0])] = $va_tag_line_tmp;
+                    } else {
+                        $va_tag_opts[trim($va_tag_tmp[0])] = $va_tag_tmp[1];
+                    }
+                }
 			}
 			
 			$va_tmp[sizeof($va_tmp)-1] = $vs_tag_bit;	// remove option from tag-part array

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -407,6 +407,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		return $va_tmp;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array of information about elements with a setting set to a given value.
+	 *
+	 * @param string $ps_setting Setting code
+	 * @param mixed $pm_value  Setting value
+	 * @param array $pa_options No options are currently supported
+	 *
+	 * @return array
+	 */
+	public static function getElementSetsWithSetting($ps_setting, $pm_value, $pa_options=null) {
+	    return array_map(function($v) { $v['settings'] = caUnserializeForDatabase($v['settings']); return $v; }, array_filter(ca_metadata_elements::find('*', ['returnAs' => 'arrays']), function($v) use ($ps_setting, $pm_value) {
+	        $va_settings = caUnserializeForDatabase($v['settings']);
+	        if (isset($va_settings[$ps_setting]) && ($va_settings[$ps_setting] == $pm_value)) {
+	            return true;
+	        }
+	        return false;
+	    }));
 	}
 	# ------------------------------------------------------
 	# Settings
@@ -1084,14 +1103,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Get element id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_options Supported options are:
+	 *      noCache = Don't use cache. [Default is false]
 	 * @return int
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getElementID($pm_element_code_or_id) {
+	static public function getElementID($pm_element_code_or_id, $pa_options=null) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
+		if(!caGetOption('noCache', $pa_options, false) && MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
 			return MemoryCache::fetch($pm_element_code_or_id, 'ElementIDs');
 		}
 

@@ -501,13 +501,13 @@
 			$t_instance = null;
 			$vs_table = get_called_class();
 			
+			$t_instance = new $vs_table;
 			if (!is_array($pa_values)) {
 				if ((int)$pa_values > 0) { 
-					$t_instance = new $vs_table;
 					$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
 					if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
 				} elseif($pa_values === '*') {
-					$pa_values = caGetOption('includeDeleted', $pa_options, false) ? [] : ['deleted' => 0];
+					$pa_values = (caGetOption('includeDeleted', $pa_options, false) || !$t_instance->hasField('deleted')) ? [] : ['deleted' => 0];
 				}
 			}
 			
@@ -524,8 +524,6 @@
 			$vb_purify_with_fallback 	= caGetOption('purifyWithFallback', $pa_options, false);
 			$vb_purify 					= $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
 			
-			
-			if (!$t_instance) { $t_instance = new $vs_table; }
 			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
@@ -551,12 +549,15 @@
 			$pa_values = caNormalizeValueArray($pa_values, ['purify' => $vb_purify]);
 		
 			// Check for intrinsics in value array
+			if (is_array($pa_values) && !sizeof($pa_values)) { 
+			    return parent::find($t_instance->hasField('deleted') ? ['deleted' => 0] : '*', $pa_options);
+			}
 			$vb_has_simple_fields = false;
 			foreach ($pa_values as $vs_field => $va_field_values) {
 				foreach ($va_field_values as  $va_field_value) {
 					$vs_op = $va_field_value[0];
 					$vm_value = $va_field_value[1];
-					if ($vm_value === '*') { return parent::find(['deleted' => 0], $pa_options); }
+					if ($vm_value === '*') { return parent::find($t_instance->hasField('deleted') ? ['deleted' => 0] : '*', $pa_options); }
 					if ($t_instance->hasField($vs_field)) { $vb_has_simple_fields = true; break; }
 				}
 			}
