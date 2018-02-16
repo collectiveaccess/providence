@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -296,8 +296,14 @@
         
         $o_log = caGetOption('log', $pa_options, null);
         $ps_match_mode = caGetOption('matchMode', $pa_options, 'FILE_NAME');
-        $ps_match_type = caGetOption('matchType', $pa_options, 'EXACT');
+        $ps_match_type = caGetOption('matchType', $pa_options, null);
         
+        // if value is a path rather than a simple file name add the path onto the existing directory path
+        if (sizeof(($va_file_bits = preg_split("![\/\\\\]+!", $ps_value)) > 1)) {
+            $ps_value = array_pop($va_file_bits);
+            $ps_directory .= "/".join("/", $va_file_bits);
+        }
+
         // Get file list
         if (!isset($g_batch_helpers_media_directory_contents_cache[$ps_directory])) {
             $g_batch_helpers_media_directory_contents_cache[$ps_directory] = caGetDirectoryContentsAsList($ps_directory);
@@ -311,11 +317,11 @@
         $va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(['log' => $o_log]);
         
         $va_matched_files = [];
-        
         foreach($va_files as $vs_file) {
             if (preg_match('!@SynoResource!', $vs_file)) { continue; }
             $va_tmp = explode("/", $vs_file);
             $f = array_pop($va_tmp);
+            $f_lc = strtolower($f);
             $d = array_pop($va_tmp);
             array_push($va_tmp, $d);
             $vs_directory = join("/", $va_tmp);
@@ -335,7 +341,7 @@
                             break;
                         default:
                         case 'FILE_NAME':
-                            $va_names_to_match = [$f];
+                            $va_names_to_match = [$f, pathinfo($f, PATHINFO_FILENAME)];
                             if ($o_log) $o_log->logDebug(_t("Trying to match on file name '%1'", $f));
                             break;
                     }
@@ -372,7 +378,6 @@
 
                     if ($o_log) $o_log->logDebug("Names to match: ".print_r($va_names_to_match, true));
 
-
                     foreach($va_names_to_match as $vs_match_name) {
                         if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
                             if (!$va_matches[1]) { if (!($va_matches[1] = $va_matches[0])) { continue; } }	// skip blank matches
@@ -380,19 +385,25 @@
                             if ($o_log) $o_log->logDebug(_t("Matched name %1 on regex %2",$vs_match_name,$vs_regex));
                             
                             $vb_match = false;
+                            
+                            // all comparisons are case-insensitive
                             switch(strtoupper($ps_match_type)) {
                                 case 'STARTS':
-                                    $vb_match = preg_match('!^'.$ps_value.'!', $va_matches[1], $va_matches);
+                                    $vb_match = preg_match('!^'.$ps_value.'!i', $va_matches[1], $va_matches);
                                     break;
                                 case 'ENDS':
-                                    $vb_match = preg_match('!'.$ps_value.'$!', $va_matches[1], $va_matches);
+                                    $vb_match = preg_match('!'.$ps_value.'$!i', $va_matches[1], $va_matches);
                                     break;
                                 case 'CONTAINS':
-                                    $vb_match = preg_match('!'.$ps_value.'!', $va_matches[1], $va_matches);
+                                    $vb_match = preg_match('!'.$ps_value.'!i', $va_matches[1], $va_matches);
                                     break;
                                 case 'EXACT':
+                                    // match the name exactly
+                                    $vb_match = (strtolower($va_matches[1]) === strtolower($ps_value));
+                                    break;  
+                                // Default is to match exact name or name without extension
                                 default:
-                                    $vb_match = ($va_matches[1] === $ps_value);
+                                    $vb_match = ((strtolower($va_matches[1]) === strtolower($ps_value)) || (strtolower($va_matches[1]) === strtolower(pathinfo($ps_value, PATHINFO_FILENAME))));
                                     break;
                             }
                             if ($vb_match) {  $va_matched_files[] = $vs_file; }
