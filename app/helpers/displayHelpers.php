@@ -1835,9 +1835,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$t_ui 					= $po_view->getVar('t_ui');
 		
 		$o_dm = Datamodel::load();
-	
-		// action extra to preserve currently open screen across next/previous links
-		//$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
 		
 		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink($po_view->request, 'Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
 
@@ -1894,7 +1891,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		// -------------------------------------------------------------------------------------
 	
 		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
-
+        					
 		// -------------------------------------------------------------------------------------
 		// Nav link for batch delete
 		// -------------------------------------------------------------------------------------
@@ -1907,6 +1904,16 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				caNavIcon(__CA_NAV_ICON_NUKE__, '24px', array('style' => 'margin-top:7px; vertical-align: text-bottom;'))." "._t("Delete <strong><em>all</em></strong> records in set")
 				, null, 'batch', 'Editor', 'Delete', array('set_id' => $t_set->getPrimaryKey())
 			);
+			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+						
+                $vs_buf .= "<a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('style' => 'margin: 7px 4px 0 0; vertical-align: text-bottom;'))." "._t("Set type for records in set")."</a>\n";
+            
+                $vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+                $vo_change_type_view->setVar('t_item', $t_item);
+            
+                FooterManager::add($vo_change_type_view->render("change_type_html.php"));
+                TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
+            }
 
 			$vs_buf .= "</div>\n";
 
