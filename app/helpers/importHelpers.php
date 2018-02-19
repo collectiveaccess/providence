@@ -665,6 +665,7 @@
 			foreach($va_delimited_items as $vn_x => $vs_delimited_item) {
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
 
+                $va_items = array_map("trim", $va_items);
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
 					
@@ -916,7 +917,7 @@
 							}
 						}
 
-						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
+						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log && ($ps_refinery_name !== 'objectRepresentationSplitter')) {
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
 						}
 	
@@ -962,11 +963,11 @@
 							    
 								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name; }
 					
-								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
+								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && ((isset($va_val['media']['media']) && ($va_val['media']['media'])) || $vs_item)) {
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
 
 								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'], null), 'log' => $o_log]);
-			
+
 									foreach($va_files as $vs_file) {
 									    $va_media_val = $va_val;
 							            if(!isset($va_media_val['idno'])) { $va_media_val['idno'] = pathinfo($vs_file, PATHINFO_FILENAME); }
