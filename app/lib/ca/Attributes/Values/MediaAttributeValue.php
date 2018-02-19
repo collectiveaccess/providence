@@ -278,7 +278,7 @@
  				||
  				($vb_is_file_path = isURL($ps_value))
  				||
- 				($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value))
+ 				(is_string($ps_value) && ($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value)))
  			) {
  				// got file
  				$vs_original_name = null;

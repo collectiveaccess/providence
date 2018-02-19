@@ -665,9 +665,10 @@
 			foreach($va_delimited_items as $vn_x => $vs_delimited_item) {
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
 
+                $va_items = array_map("trim", $va_items);
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
-
+					
 					// Set label
 					$va_val = array();
 					
@@ -678,6 +679,8 @@
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							while(sizeof($va_parents) > 0) {
 								$va_p = array_shift($va_parents);
+								if (!isset($va_p[$vs_display_field])) { $vs_display_field = 'name'; }
+								
 								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x))) {
 									$vs_item = $vs_laddered_val;
 									if ($o_log) { $o_log->logDebug(_t("[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank", $vs_item)); }
@@ -914,7 +917,7 @@
 							}
 						}
 
-						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
+						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log && ($ps_refinery_name !== 'objectRepresentationSplitter')) {
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
 						}
 	
@@ -950,16 +953,23 @@
 							case 'ca_object_representations':
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
-								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
+							    if (isset($va_val['name']) && is_array($va_val['name']) && isset($va_val['name']['name']) && $va_val['name']['name']) { 
+							        $vs_name = $va_val['name']['name'];
+							    } elseif((isset($va_val['name']) && $va_val['name'])) {
+							        $vs_name = $va_val['name'];
+							    } else {
+							        $vs_name = pathinfo($vs_item, PATHINFO_FILENAME);
+							    }
+							    
+								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name; }
 					
-								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
+								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && ((isset($va_val['media']['media']) && ($va_val['media']['media'])) || $vs_item)) {
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
-		
-								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'],'EXACT'), 'log' => $o_log]);
-								
+
+								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'], null), 'log' => $o_log]);
+
 									foreach($va_files as $vs_file) {
 									    $va_media_val = $va_val;
-									    if(!isset($va_media_val['preferred_labels'])) { $va_media_val['preferred_labels'] = array('name' => pathinfo($vs_file, PATHINFO_FILENAME)); }
 							            if(!isset($va_media_val['idno'])) { $va_media_val['idno'] = pathinfo($vs_file, PATHINFO_FILENAME); }
 							            $va_media_val['media']['media'] = $vs_file;
 							            if ($pb_dont_create) { $va_media_val['_dontCreate'] = 1; }

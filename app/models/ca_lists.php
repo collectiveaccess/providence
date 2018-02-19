@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -219,6 +219,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# Self-relations
 	# ------------------------------------------------------
 	protected $SELF_RELATION_TABLE_NAME = null;
+	
+	# ------------------------------------------------------
+	# ID numbering
+	# ------------------------------------------------------
+	protected $ID_NUMBERING_ID_FIELD = 'list_code';		// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;		    // name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
+	
 	
 	# ------------------------------------------------------
 	# ACL

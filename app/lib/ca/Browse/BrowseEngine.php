@@ -1376,7 +1376,7 @@
 													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
 														if($vs_f == '_dont_save') {
 															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
-															$va_attr_values[] = (int)$vn_row_id;
+															$va_attr_values[] = $vn_row_id;
 															break(2);
 														}
 														break;
@@ -3336,24 +3336,40 @@
 											if ($vb_check_ancestor_access && !in_array($qr_ancestors->get('access'), $pa_options['checkAccess'])) { continue; }
 											if (!($vn_parent_id = $qr_ancestors->get("parent_id"))) { continue; }
 											
-											$c = isset($va_parent_counts[$vn_ancestor_id]) ? $va_parent_counts[$vn_ancestor_id] : 0;
-											if(is_array($va_children_by_parent_id[$vn_ancestor_id])) {
-											    foreach($va_children_by_parent_id[$vn_ancestor_id] as $id) {
-											        if(isset($va_facet_list[$id])) {
-											            $c += (int)$va_facet_list[$id]['content_count'];
-											        }
-											    }
-											}
-											
+
+                                            if ((!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) && $t_rel_item->isHierarchical()) {
+                                                $vs_hier_left_fld = $t_rel_item->getProperty('HIERARCHY_LEFT_INDEX_FLD');
+                                                $vs_hier_right_fld = $t_rel_item->getProperty('HIERARCHY_RIGHT_INDEX_FLD');
+
+                                                $vs_get_item_sql = "{$vs_rel_table}.{$vs_hier_left_fld} >= ".$qr_ancestors->get($vs_hier_left_fld). " AND {$vs_rel_table}.{$vs_hier_right_fld} <= ".$qr_ancestors->get($vs_hier_right_fld);
+                                                if ($vn_hier_id_fld = $t_rel_item->getProperty('HIERARCHY_ID_FLD')) {
+                                                    $vs_get_item_sql .= " AND {$vs_rel_table}.{$vn_hier_id_fld} = ".(int)$qr_ancestors->get($vn_hier_id_fld);
+                                                }
+                                                $vs_get_item_sql = "({$vs_get_item_sql})";
+                                            } else {
+                                                $vs_get_item_sql = "({$vs_rel_table}.{$vs_rel_pk} = {$vn_ancestor_id})";
+                                            }
+                                            
+                                            $vs_sql = "
+                                                SELECT COUNT(DISTINCT ca_attributes.row_id, ca_attributes.table_num) as _count
+                                                FROM ca_attributes
+
+                                                {$vs_join_sql}
+                                                INNER JOIN ca_list_items ON ca_list_items.item_id = ca_attribute_values.item_id
+                                                WHERE
+                                                    ca_attribute_values.element_id = ? {$vs_where_sql} AND {$vs_get_item_sql}	
+                                            ";
+                                            $q_hier_count = $this->opo_db->query($vs_sql, $vn_element_id);
+										    $q_hier_count->nextRow();
+										
 											$va_facet_list[$vn_ancestor_id] = array(
 												'id' => $vn_ancestor_id,
 												'label' => ($vs_label = $qr_ancestors->get('ca_list_items.preferred_labels.name_plural')) ? $vs_label : '['._t('BLANK').']',
 												'parent_id' => $vn_parent_id,
 												'hierarchy_id' => $qr_ancestors->get('list_id'),
 												'child_count' => 1,
-										        'content_count' => $c
+										        'content_count' => (int)$q_hier_count->get('_count')
 											);
-											$va_parent_counts[$vn_ancestor_id] = $c;
 										}
 									}
 								}
