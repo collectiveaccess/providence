@@ -677,7 +677,6 @@ class MultipartIDNumber extends IDNumber {
 		    }
 		}
 		
-		
 		if ($qr_res = $this->opo_db->query("
 			SELECT $vs_field FROM ".$vs_table."
 			WHERE
@@ -781,7 +780,7 @@ class MultipartIDNumber extends IDNumber {
 								array_unshift($va_tmp, $va_matches[2]);
 							}
 						}
-						$vn_pad_len = 12 - mb_strlen($vs_piece);
+						$vn_pad_len = $vn_padding - mb_strlen($vs_piece);
 
 						if ($vn_pad_len >= 0) {
 							if (is_numeric($vs_piece)) {
