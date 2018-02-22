@@ -12485,7 +12485,7 @@
         <setting name="lineBreakAfterNumberOfElements">1</setting>    
       </settings>
       <elements>
-        <metadataElement code=desc_new_value" datatype="Text">
+        <metadataElement code="desc_new_value" datatype="Text">
           <labels>
             <label locale="en_US">
               <name>Text</name>
