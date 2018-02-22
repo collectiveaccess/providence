@@ -716,7 +716,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
 				$this->set('table_num', $vn_table_num);
 			}
-		} elseif(!caGetOption('insertRoot', $pa_options, false) && !($t_root_rel_type = ca_relationship_types::find(['type_code' => 'root_for_'.$this->get('table_num'), 'table_num' => $this->get('table_num')], ['returnAs' => 'firstModelInstance']))) {
+		} elseif(caGetOption('insertRoot', $pa_options, false) && !($t_root_rel_type = ca_relationship_types::find(['type_code' => 'root_for_'.$this->get('table_num'), 'table_num' => $this->get('table_num')], ['returnAs' => 'firstModelInstance']))) {
 		    $t_root_rel_type = new ca_relationship_types();
 		    $t_root_rel_type->setMode(ACCESS_WRITE);
 		    $t_root_rel_type->set('table_num', $this->get('table_num'));
