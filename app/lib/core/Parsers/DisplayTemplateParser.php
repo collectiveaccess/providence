@@ -87,7 +87,7 @@ class DisplayTemplateParser {
 							if (!$qr_res) { return; }
 
 							/** @var HTML_Node $o_node */
-							if(($o_node->filterNonPrimaryRepresentations == '0') && ($qr_res instanceof ObjectSearchResult)) {
+							if((($o_node->filterNonPrimaryRepresentations == '0') || (strtolower($o_node->filterNonPrimaryRepresentations) == 'no')) && ($qr_res instanceof ObjectSearchResult)) {
 								$qr_res->filterNonPrimaryRepresentations(false);
 							}
 						
@@ -195,7 +195,8 @@ class DisplayTemplateParser {
 
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
-		if(!caGetOption('filterNonPrimaryRepresentations', $pa_options, true) && ($qr_res instanceof ObjectSearchResult)) {
+        $vm_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
+		if((!$vm_filter_non_primary_reps || ($vm_filter_non_primary_reps == '0') || (strtolower($vm_filter_non_primary_reps) == 'no')) && ($qr_res instanceof ObjectSearchResult)) {
 			$qr_res->filterNonPrimaryRepresentations(false);
 		}
 		
@@ -545,7 +546,7 @@ class DisplayTemplateParser {
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 
 					$vb_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
-					if($vb_filter_non_primary_reps && ($o_node->filterNonPrimaryRepresentations == '0')) {
+					if(!$vb_filter_non_primary_reps || (($o_node->filterNonPrimaryRepresentations == '0') || (strtolower($o_node->filterNonPrimaryRepresentations) == 'no'))) {
 						$vb_filter_non_primary_reps = false;
 						$pr_res->filterNonPrimaryRepresentations(false);
 					}
