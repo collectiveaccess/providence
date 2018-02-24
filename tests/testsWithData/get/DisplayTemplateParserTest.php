@@ -192,6 +192,13 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 					"middlename" => "",
 					"surname" => "Strom",
 					"type_id" => "uf",
+				),
+				array(
+					"locale" => "en_US",
+					"forename" => "Hoch",
+					"middlename" => "",
+					"surname" => "Vogel",
+					"type_id" => "uf",
 				)
 			),
 			'related' => array(
@@ -928,7 +935,13 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities.nonpreferred_labels' restrictToTypes='uf'>Name: ^ca_entities.nonpreferred_labels.displayname</unit>", "ca_entities", array($this->opn_entity_id1), array('returnAsArray' => false));
 	
 		$this->assertInternalType('string', $vm_ret);
-		$this->assertEquals('Name: Alt Strom', $vm_ret);
+		$this->assertEquals('Name: Alt Strom; Name: Hoch Vogel', $vm_ret);
+		
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities.nonpreferred_labels' restrictToTypes='alt,uf'>Name: ^ca_entities.nonpreferred_labels.displayname</unit>", "ca_entities", array($this->opn_entity_id1), array('returnAsArray' => false));
+	
+		$this->assertInternalType('string', $vm_ret);
+		$this->assertEquals('Name: Max Power; Name: Alt Strom; Name: Hoch Vogel', $vm_ret);
 	}
 	# -------------------------------------------------------
 }
