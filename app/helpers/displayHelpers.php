@@ -2406,18 +2406,18 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
-		$vs_reltype_disp = caGetOption('editableRelationshipType', $pa_options, (bool)$o_config->get("{$ps_table}_lookup_relationship_type_editable")) ? "<select name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' class='listRelRelationshipTypeEdit'></select>" : "{{relationship_typename}} <input type='hidden' name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' value='{type_id}'/>";
+		$vs_reltype_disp = caGetOption('editableRelationshipType', $pa_options, (bool)$o_config->get("{$ps_table}_lookup_relationship_type_editable")) ? "<select name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' class='listRelRelationshipTypeEdit'></select>" : "({{relationship_typename}}) <input type='hidden' name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' value='{type_id}'/>";
 		
 		switch($vs_relationship_type_display_position) {
 			case 'left':
-				return "({$vs_reltype_disp}) {$vs_display}";
+				return "{$vs_reltype_disp} {$vs_display}";
 				break;
 			case 'none':
 				return "{$vs_display}";
 				break;
 			default:
 			case 'right':
-				return "{$vs_display} ({$vs_reltype_disp})";
+				return "{$vs_display} {$vs_reltype_disp}";
 				break;
 		}
 	}

@@ -565,7 +565,12 @@
 					$vn_element_id = $t_element->getPrimaryKey();
 					switch($vn_element_type = $t_element->get('datatype')) {
 						case __CA_ATTRIBUTE_VALUE_LIST__:
-							return caProcessTemplateForIDs("^ca_list_items.hierarchy.preferred_labels.name_plural", "ca_list_items", array($pn_row_id), array("delimiter" => " ➜ "));
+							$vs_label =  caProcessTemplateForIDs("^ca_list_items.hierarchy.preferred_labels.name_plural", "ca_list_items", array($pn_row_id), array("delimiter" => " ➜ "));
+							
+							if(is_array($va_facet_info['relabel']) && isset($va_facet_info['relabel'][$vs_label])) {
+							    $vs_label = $va_facet_info['relabel'][$vs_label];
+							}
+							return $vs_label;
 							break;
 						case __CA_ATTRIBUTE_VALUE_OBJECTS__:
 						case __CA_ATTRIBUTE_VALUE_ENTITIES__:
@@ -3302,9 +3307,13 @@
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
 									
+									if (!($vs_label = html_entity_decode($va_list_label_cache[$vn_val]))) { $vs_label = '['._t('BLANK').']'; }
+									if (is_array($va_facet_info['relabel']) && isset($va_facet_info['relabel'][$vs_label])) {
+									    $vs_label = $va_facet_info['relabel'][$vs_label];
+									}
 									$va_facet_list[$vn_val] = array(
 										'id' => $vn_val,
-										'label' => ($vs_label = html_entity_decode($va_list_label_cache[$vn_val])) ? $vs_label : '['._t('BLANK').']',
+										'label' => $vs_label,
 										'parent_id' => $vn_parent_id = isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
 										'child_count' => $vn_child_count,
 										'content_count' => $va_value_counts[$i]
@@ -5449,11 +5458,15 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							while($qr_ancestors->nextHit()) {
 								if ($qr_ancestors->get("{$vs_rel_table}.deleted")) { continue; }
 								if (!($vn_parent_type_id = $qr_ancestors->get('type_id'))) { continue; }
+								
+								$vn_ancestor_id = (int)$qr_ancestors->get("{$vs_rel_pk}");
+								if (isset($va_criteria[$vn_ancestor_id])) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+
 								if ((sizeof($va_exclude_types) > 0) && in_array($vn_parent_type_id, $va_exclude_types)) { continue; }
 								if ((sizeof($va_restrict_to_types) > 0) && !in_array($vn_parent_type_id, $va_restrict_to_types)) { continue; }
 								if ($vb_check_ancestor_access && !in_array($qr_ancestors->get('access'), $pa_options['checkAccess'])) { continue; }
 
-								$va_facet_items[$vn_ancestor_id = (int)$qr_ancestors->get("{$vs_rel_pk}")] = array(
+								$va_facet_items[$vn_ancestor_id] = array(
 									'id' => $vn_ancestor_id,
 									'type_id' => array(),
 									'parent_id' => $vb_rel_is_hierarchical ? $qr_ancestors->get("{$vs_hier_parent_id_fld}") : null,
