@@ -547,6 +547,7 @@ class DisplayTemplateParser {
 					$vb_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
 					if($vb_filter_non_primary_reps && ($o_node->filterNonPrimaryRepresentations == '0')) {
 						$vb_filter_non_primary_reps = false;
+						$pr_res->filterNonPrimaryRepresentations(false);
 					}
 
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
@@ -604,7 +605,7 @@ class DisplayTemplateParser {
 							case 'nonpreferred_labels':
 								/** @var LabelableBaseModelWithAttributes $t_instance */
 								$ps_tablename = $t_instance->getLabelTableName();
-								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['returnAsArray' => true]);
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['restrictToTypes' => $va_get_options['restrictToTypes'], 'returnAsArray' => true]);
 								break;
 							default:
 								// If relativeTo is not set to a valid attribute try to guess from template, looking for container
