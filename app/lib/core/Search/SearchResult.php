@@ -1533,7 +1533,7 @@ class SearchResult extends BaseObject {
 						$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
 					}
 					
-					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5], $t_instance, $va_val_opts);
+					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5], $t_instance, array_merge($va_val_opts, ['restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null)]));
 					if ($vb_return_as_count) { return $vm_val; }
 					goto filter;
 				}
@@ -1863,10 +1863,20 @@ class SearchResult extends BaseObject {
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 		$vb_convert_codes_to_idno 			= isset($pa_options['convertCodesToIdno']) ? (bool)$pa_options['convertCodesToIdno'] : false;
 		
+		$va_path_components			=& $pa_options['pathComponents'];
+		
+		$va_restrict_to_type_ids = null;
+		if (
+		    is_array($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null))
+		    &&
+		    ($vs_label_type_list_code = $pt_instance->getAppConfig()->get(($pt_instance->tableName().'_'.(($va_path_components['field_name'] == 'nonpreferred_labels') ? 'nonpreferred_label_type_list' : 'preferred_label_type_list'))))
+		) {
+		    $va_restrict_to_type_ids = caMakeItemIDList($vs_label_type_list_code, $va_restrict_to_types);
+		}
+		
 		if ($vb_convert_codes_to_display_text) { $pa_options['output'] = 'text'; }
 		if ($vb_convert_codes_to_idno) { $pa_options['output'] = 'idno'; }
 		
-		$va_path_components			=& $pa_options['pathComponents'];
 		
 		// Set subfield to display field if not specified and *NOT* returning as array
 		if ($vb_assume_display_field && !$va_path_components['subfield_name']) { 
@@ -1888,6 +1898,7 @@ class SearchResult extends BaseObject {
 				}
 				
 				foreach($va_labels_by_locale as $vn_id => $va_label) {
+				    if (is_array($va_restrict_to_type_ids) && sizeof($va_restrict_to_type_ids) && !in_array($va_label['type_id'], $va_restrict_to_type_ids)) { continue; }
 					$vn_id = $va_label[$vs_pk];
 				
 					

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -304,16 +304,7 @@
 	 * @return array List of numeric type_ids
 	 */
 	function caMakeTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
-		if (!is_array($pa_types) && !sizeof($pa_types)) { return array(); }
-		if (!is_array($pa_types)) { $pa_types = [$pa_types]; }
-		
 		$o_dm = Datamodel::load();
-		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
-	 	
-		if (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) {
-			$pa_options['noChildren'] = true;
-		}
-		
 		if (is_numeric($pm_table_name_or_num)) {
 			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
 		} else {
@@ -323,38 +314,67 @@
 		if (!$t_instance) { return null; }	// bad table
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
-		$va_type_ids = array();
+		return caMakeItemIDList($vs_type_list_code, $pa_types, $pa_options);
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Converts the given list of item idnos or item_ids into an expanded list of numeric item_ids. Processing
+	 * includes expansion of types to include subitems and conversion of any item codes to item_ids. 
+	 *
+	 * This helper is often used to convert type lists (which are just items in a list) to ids when enforcing 
+	 * type restrictions, which is why the options for expanding the list to include sub-items use "subtypes" in their names
+	 * (in case you were wondering)
+	 *
+	 * @param mixed $pm_list_code_or_id List code or list-id
+	 * @param array $pa_types List of item idnos and/or item_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include sub-items
+	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+	 *
+	 * @return array List of numeric item_ids
+	 */
+	function caMakeItemIDList($pm_list_code_or_id, $pa_item_idnos, $pa_options=null) {
+		if (!is_array($pa_item_idnos) && !sizeof($pa_item_idnos)) { return array(); }
+		if (!is_array($pa_item_idnos)) { $pa_item_idnos = [$pa_item_idnos]; }
+		
+		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
+	 	
+		if (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) {
+			$pa_options['noChildren'] = true;
+		}
+		
+		$va_item_ids = array();
 		$t_list = new ca_lists();
 		$t_item = new ca_list_items();
 		
-		$vs_list_code = $t_instance->getTypeListCode();
-		foreach($pa_types as $vm_type) {
-			if (!$vm_type) { continue; }
+		foreach($pa_item_idnos as $vm_item) {
+			if (!$vm_item) { continue; }
 			$vn_type_id = null;
-			if (is_numeric($vm_type)) { 
-				$vn_type_id = (int)$vm_type; 
+			if (is_numeric($vm_item)) { 
+				$vn_type_id = (int)$vm_item; 
 			} else {
-				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $vm_type);
+				$vn_type_id = (int)$t_list->getItemIDFromList($pm_list_code_or_id, $vm_item);
 			}
 			
 			if ($vn_type_id && (!isset($pa_options['noChildren']) || !$pa_options['noChildren'])) {
 				if ($qr_children = $t_item->getHierarchy($vn_type_id, array())) {
 					while($qr_children->nextRow()) {
-						$va_type_ids[$qr_children->get('item_id')] = true;
+						$va_item_ids[$qr_children->get('item_id')] = true;
 					}
 				}
 			} else {
 				if ($vn_type_id) {
-					$va_type_ids[$vn_type_id] = true;
+					$va_item_ids[$vn_type_id] = true;
 				}
 			}
 		}
-		return array_keys($va_type_ids);
+		return array_keys($va_item_ids);
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
-	 * Converts the given list of type codes or type_ids into an expanded list of numeric type codes suitable for enforcing type restrictions. Processing
-	 * includes expansion of types to include subtypes and conversion of any type codes to type_ids.
+	 * Converts the given list of type codes or type_ids into an expanded list of type idnos (aka codes) 
+	 * suitable for enforcing type restrictions. Processing includes expansion of types to include subtypes 
+	 * and conversion of any type codes to type idnos.
 	 *
 	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
 	 * @param array $pa_types List of type codes and/or type_ids that are the basis of the list
