@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1280,6 +1280,25 @@ class DisplayTemplateParser {
 			$va_tmp[sizeof($va_tmp)-1] = $vs_tag_bit;	// remove option from tag-part array
 			$vs_tag_proc = join(".", $va_tmp);
 		}
+		
+		// add implicit options
+		foreach($va_tag_opts as $o => $v) {
+		    switch($o) {
+		        case 'convertCodesToDisplayText':
+		            if ($v) { 
+		                // If one not the other...
+		                $va_tag_opts['convertCodesToIdno'] = false;
+		            }
+		            break;
+		        case 'convertCodesToIdno':
+		            if ($v) { 
+		                // If one not the other...
+		                $va_tag_opts['convertCodesToDisplayText'] = false;
+		            }
+		            break;
+		    }
+		}
+		
 		return ['tag' => $ps_get_spec, 'options' => $va_tag_opts, 'filters' => $va_tag_filters, 'modifiers' => $va_modifiers];
 	}
 	# -------------------------------------------------------------------
