@@ -259,7 +259,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			return caGetListItemIdno($this->opn_item_id);
 		}
 		if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
-			return caGetListItemForDisplayByItemID($this->opn_item_id, !$pa_options['useSingular']);
+			return caGetListItemByIDForDisplay($this->opn_item_id, !$pa_options['useSingular']);
 		}
 
 		if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {

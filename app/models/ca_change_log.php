@@ -445,7 +445,7 @@ class ca_change_log extends BaseModel {
 								($vs_fld == 'item_id')
 							) {
 								$va_snapshot['item_code'] = caGetListItemIdno($vm_val);
-								$va_snapshot['item_label'] = caGetListItemForDisplayByItemID($vm_val);
+								$va_snapshot['item_label'] = caGetListItemByIDForDisplay($vm_val);
 							}
 
 							$t_instance = $o_dm->getInstance((int) $qr_results->get('logged_table_num'), true);
