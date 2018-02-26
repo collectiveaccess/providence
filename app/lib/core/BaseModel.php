@@ -11329,14 +11329,20 @@ $pa_options["display_form_field_tips"] = true;
 	 * Return IDNO for primary key value
 	 *
 	 * @param int $pn_id Primary key value
-	 * @return string idno value
+	 * @param array $pa_options Options include:
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return string idno value, null if id does not exist or false if id exists but fails checkAccess checks
 	 */
-	public static function getIdnoForID($pn_id) {
+	public static function getIdnoForID($pn_id, $pa_options=null) {
 		$o_dm = Datamodel::load();
 		if (($t_instance = $o_dm->getTableInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = new Db();
 			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
+			
+			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
+			    if ((is_array($pa_check_access) && (sizeof($pa_check_access) > 0) ) && $t_instance->hasField('access') &&  !in_array($qr_res->get('access'), $pa_check_access)) { return false; }
 				return $qr_res->get($vs_idno_fld);
 			}
 		}
