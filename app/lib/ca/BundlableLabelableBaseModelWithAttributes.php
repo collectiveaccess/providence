@@ -2247,7 +2247,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 											if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
 											if (is_array($va_access) && sizeof($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
 											if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get($vs_rel_pk), $va_in_use_list)) { continue; }
-											$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($vs_field);
+											$va_opts[$l = $qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = ($v = $qr_res->get($vs_field)) ? $v : $l;
 										}
 									}
 									
