@@ -5516,7 +5516,7 @@ if (!$vb_batch) {
 				$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
 
                 $vb_use_is_primary = false;
-                if ($t_item_rel->hasField('is_primary')) {
+                if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
                     $va_selects[] = $t_item_rel->tableName().'.is_primary';
                     $vb_use_is_primary = true;
                 }
@@ -5710,7 +5710,7 @@ if (!$vb_batch) {
 			}
 			
 			$vb_use_is_primary = false;
-			if ($t_item_rel->hasField('is_primary')) {
+			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
 			    $va_selects[] = $t_item_rel->tableName().'.is_primary';
 			    $vb_use_is_primary = true;
 			}
