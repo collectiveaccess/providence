@@ -1849,9 +1849,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$t_ui 					= $po_view->getVar('t_ui');
 		
 		$o_dm = Datamodel::load();
-	
-		// action extra to preserve currently open screen across next/previous links
-		//$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
 		
 		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink($po_view->request, 'Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
 
@@ -1908,7 +1905,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		// -------------------------------------------------------------------------------------
 	
 		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
-
+        					
 		// -------------------------------------------------------------------------------------
 		// Nav link for batch delete
 		// -------------------------------------------------------------------------------------
@@ -1921,6 +1918,16 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				caNavIcon(__CA_NAV_ICON_NUKE__, '24px', array('style' => 'margin-top:7px; vertical-align: text-bottom;'))." "._t("Delete <strong><em>all</em></strong> records in set")
 				, null, 'batch', 'Editor', 'Delete', array('set_id' => $t_set->getPrimaryKey())
 			);
+			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+						
+                $vs_buf .= "<a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('style' => 'margin: 7px 4px 0 0; vertical-align: text-bottom;'))." "._t("Set type for records in set")."</a>\n";
+            
+                $vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+                $vo_change_type_view->setVar('t_item', $t_item);
+            
+                FooterManager::add($vo_change_type_view->render("change_type_html.php"));
+                TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
+            }
 
 			$vs_buf .= "</div>\n";
 
@@ -2388,7 +2395,12 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_table
 	 * @param array $pa_attributes
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		prefix = Bundle prefix to use when generating UI elements. [Default is null]
+	 *		makeLink = Render text as link to related item. [Default is false]
+	 *		display = Name of bundle field to use as display text for related item. [Default is "_display"] 
+	 *		relationshipTypeDisplayPosition = Position to render relationship type in relative to display text. Valid values are "left", "right" and "none". [Default is "right"]
+	 *		editableRelationshipType = Render relationship type as drop-down to support in-place editing. [Default is to use table-specific settings in app.conf]
 	 *
 	 * @return string 
 	 */
@@ -2396,26 +2408,30 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$o_config = Configuration::load();
 		$o_dm = Datamodel::load();
 		
+		$ps_prefix = caGetOption('prefix', $pa_options, null);
+		
 		if (!($vs_relationship_type_display_position = caGetOption('relationshipTypeDisplayPosition', $pa_options, null))) {
 			$vs_relationship_type_display_position = strtolower($o_config->get($ps_table.'_lookup_relationship_type_position'));
 		}
 		
-		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
-		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
-		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
+		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : []);
+		$vs_display = "{".caGetOption('display', $pa_options, '_display')."}";
+		if (caGetOption('makeLink', $pa_options, false)) {
 			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
+		$vs_reltype_disp = caGetOption('editableRelationshipType', $pa_options, (bool)$o_config->get("{$ps_table}_lookup_relationship_type_editable")) ? "<select name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' class='listRelRelationshipTypeEdit'></select>" : "({{relationship_typename}}) <input type='hidden' name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' value='{type_id}'/>";
+		
 		switch($vs_relationship_type_display_position) {
 			case 'left':
-				return "({{relationship_typename}}) {$vs_display}";
+				return "{$vs_reltype_disp} {$vs_display}";
 				break;
 			case 'none':
 				return "{$vs_display}";
 				break;
 			default:
 			case 'right':
-				return "{$vs_display} ({{relationship_typename}})";
+				return "{$vs_display} {$vs_reltype_disp}";
 				break;
 		}
 	}
@@ -2796,6 +2812,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'];
+				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
 				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
 				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld];
@@ -4308,6 +4325,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 */
 	function caExtractSettingValueByLocale($pa_settings, $ps_key, $ps_locale) {
 		if (isset($pa_settings[$ps_key])) {
+		    if(isset($pa_settings[$ps_key]) && !is_array($pa_settings[$ps_key])) { return $pa_settings[$ps_key]; }
 			if (isset($pa_settings[$ps_key][$ps_locale]) && ($pa_settings[$ps_key][$ps_locale])) {
 				return $pa_settings[$ps_key][$ps_locale];
 			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
@@ -4337,7 +4355,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	    
         foreach([
             'object' => 'ca_objects', 'entity' => 'ca_entities', 'place' => 'ca_places', 
-            'occurrrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans', 
+            'occurrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans', 
             'movement' => 'ca_movements', 'location' => 'ca_storage_locations', 'media' => 'ca_site_page_media', 'mediaRef' => 'ca_attributes'] as $vs_ref_tag => $vs_ref_type
         ) { 
             if (preg_match_all("!\[{$vs_ref_tag} ([^\]]+)\]([^\[]+)\[/{$vs_ref_tag}\]!", $ps_text, $va_matches)) {

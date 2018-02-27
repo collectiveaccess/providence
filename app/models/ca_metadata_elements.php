@@ -1170,14 +1170,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Get element id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_options Supported options are:
+	 *      noCache = Don't use cache. [Default is false]
 	 * @return int
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getElementID($pm_element_code_or_id) {
+	static public function getElementID($pm_element_code_or_id, $pa_options=null) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
+		if(!caGetOption('noCache', $pa_options, false) && MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
 			return MemoryCache::fetch($pm_element_code_or_id, 'ElementIDs');
 		}
 

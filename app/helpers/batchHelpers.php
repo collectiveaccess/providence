@@ -45,13 +45,24 @@
 	 * @return string HTML implementing the control
 	 */
 	function caBatchEditorRelationshipModeControl($t_item, $ps_id_prefix) {
-		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
-			caHTMLSelect($ps_id_prefix."_batch_mode", array(
-			_t("do not use") => "_disabled_", 
-			_t('add to each') => '_add_', 
-			_t('replace value') => '_replace_',
-			_t('remove all values') => '_delete_'
-		), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'))."</div>\n
+	    switch($t_item->tableName()) {
+	        case 'ca_object_representations':
+	             $vs_select = caHTMLSelect($ps_id_prefix."_batch_mode", array(
+                    _t("do not use") => "_disabled_", 
+                    _t('replace value') => '_replace_',
+                    _t('remove all values') => '_delete_'
+                ), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'));
+	            break;
+	        default:
+	            $vs_select = caHTMLSelect($ps_id_prefix."_batch_mode", array(
+                    _t("do not use") => "_disabled_", 
+                    _t('add to each') => '_add_', 
+                    _t('replace value') => '_replace_',
+                    _t('remove all values') => '_delete_'
+                ), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'));
+                break;
+	    }
+		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." {$vs_select}</div>\n
 
 	<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
@@ -296,7 +307,7 @@
         
         $o_log = caGetOption('log', $pa_options, null);
         $ps_match_mode = caGetOption('matchMode', $pa_options, 'FILE_NAME');
-        $ps_match_type = caGetOption('matchType', $pa_options, 'EXACT');
+        $ps_match_type = caGetOption('matchType', $pa_options, null);
         
         // if value is a path rather than a simple file name add the path onto the existing directory path
         if (sizeof(($va_file_bits = preg_split("![\/\\\\]+!", $ps_value)) > 1)) {
@@ -341,7 +352,7 @@
                             break;
                         default:
                         case 'FILE_NAME':
-                            $va_names_to_match = [$f];
+                            $va_names_to_match = [$f, pathinfo($f, PATHINFO_FILENAME)];
                             if ($o_log) $o_log->logDebug(_t("Trying to match on file name '%1'", $f));
                             break;
                     }
@@ -378,7 +389,6 @@
 
                     if ($o_log) $o_log->logDebug("Names to match: ".print_r($va_names_to_match, true));
 
-
                     foreach($va_names_to_match as $vs_match_name) {
                         if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
                             if (!$va_matches[1]) { if (!($va_matches[1] = $va_matches[0])) { continue; } }	// skip blank matches
@@ -399,8 +409,12 @@
                                     $vb_match = preg_match('!'.$ps_value.'!i', $va_matches[1], $va_matches);
                                     break;
                                 case 'EXACT':
-                                default:
+                                    // match the name exactly
                                     $vb_match = (strtolower($va_matches[1]) === strtolower($ps_value));
+                                    break;  
+                                // Default is to match exact name or name without extension
+                                default:
+                                    $vb_match = ((strtolower($va_matches[1]) === strtolower($ps_value)) || (strtolower($va_matches[1]) === strtolower(pathinfo($ps_value, PATHINFO_FILENAME))));
                                     break;
                             }
                             if ($vb_match) {  $va_matched_files[] = $vs_file; }

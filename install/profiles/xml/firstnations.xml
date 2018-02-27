@@ -2607,24 +2607,24 @@
         <item idno="text" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Texts</name_singular>
-              <name_plural>Texts</name_plural>
+              <name_singular>Text</name_singular>
+              <name_plural>Text</name_plural>
             </label>
           </labels>
           <items>
             <item idno="documents" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>Documents</name_singular>
-                  <name_plural>Documents</name_plural>
+                  <name_singular>Document</name_singular>
+                  <name_plural>Document</name_plural>
                 </label>
               </labels>
             </item>
             <item idno="books" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>Books</name_singular>
-                  <name_plural>Books</name_plural>
+                  <name_singular>Book</name_singular>
+                  <name_plural>Book</name_plural>
                 </label>
               </labels>
             </item>
@@ -2633,40 +2633,40 @@
         <item idno="objects" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Objects</name_singular>
-              <name_plural>Objects</name_plural>
+              <name_singular>Object</name_singular>
+              <name_plural>Object</name_plural>
             </label>
           </labels>
         </item>
         <item idno="web_based" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Web-Based Resources</name_singular>
-              <name_plural>Web-Based Resources</name_plural>
+              <name_singular>Web-Based Resource</name_singular>
+              <name_plural>Web-Based Resource</name_plural>
             </label>
           </labels>
         </item>
         <item idno="moving_images" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Moving Images</name_singular>
-              <name_plural>Moving Images</name_plural>
+              <name_singular>Moving Image</name_singular>
+              <name_plural>Moving Image</name_plural>
             </label>
           </labels>
         </item>
         <item idno="sound_recordings" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Sound Recordings</name_singular>
-              <name_plural>Sound Recordings</name_plural>
+              <name_singular>Sound Recording</name_singular>
+              <name_plural>Sound Recording</name_plural>
             </label>
           </labels>
         </item>
         <item idno="still_images" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Still Images</name_singular>
-              <name_plural>Still Images</name_plural>
+              <name_singular>Still Image</name_singular>
+              <name_plural>Still Image</name_plural>
             </label>
           </labels>
         </item>
@@ -4721,15 +4721,7 @@
     <list code="related_collection_list" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>TRC</name>
-        </label>
-      </labels>
-      <items/>
-    </list>
-    <list code="collection_hierarchy" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Collection hierarchy</name>
+          <name>Collection Hierarchy</name>
         </label>
       </labels>
       <items/>
@@ -6354,7 +6346,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -7824,7 +7816,7 @@
           <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -8724,7 +8716,7 @@
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
-        <setting name="maxChars">255</setting>
+        <setting name="maxChars">635255</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_objects">
@@ -9356,6 +9348,46 @@
           <description>Information on legal or donor restrictions that may affect use or
             reproduction of the material. No reproduction without prior written approval of the
             donor </description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="collections">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="rights_new" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Use Rights: Terms Governing Use and Reproduction</name>
+          <description></description>
         </label>
       </labels>
       <settings>
@@ -12442,8 +12474,61 @@
           </settings>
         </restriction>
       </typeRestrictions>
-      
     </metadataElement>
+     <metadataElement code="description_new" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Description</name><description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>    
+      </settings>
+      <elements>
+        <metadataElement code="desc_new_value" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Text</name>
+              <description/>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">6</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="desc_new_source" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Source</name>
+              <description/>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_object_representations">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+        </metadataElement>
     <metadataElement code="curators_comments" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -13660,6 +13745,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="NCTR_document_ID" datatype="Text">
@@ -13675,6 +13768,14 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_object_representations</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -13718,6 +13819,14 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_object_representations</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -15883,6 +15992,9 @@
             <placement code="ca_attribute_curators_comments">
               <bundle>ca_attribute_curators_comments</bundle>
             </placement>
+            <placement code="ca_attribute_description_new">
+              <bundle>ca_attribute_description_new</bundle>
+            </placement>
             <placement code="ca_attribute_community_input_objects">
               <bundle>ca_attribute_community_input_objects</bundle>
             </placement>
@@ -15957,6 +16069,9 @@ differs from the holder of rights for the work. Example: The work rights are “
             </placement>
             <placement code="ca_attribute_RAD_usePub">
               <bundle>ca_attribute_RAD_usePub</bundle>
+            </placement>
+            <placement code="ca_attribute_rights_new">
+              <bundle>ca_attribute_rights_new</bundle>
             </placement>
             <placement code="ca_attribute_traditional_knowledge">
               <bundle>ca_attribute_traditional_knowledge</bundle>
@@ -18754,6 +18869,9 @@ differs from the holder of rights for the work. Example: The work rights are “
                 <setting name="label" locale="en_US">Unique Identifier</setting>
                </settings>
             </placement>
+            <placement code="ca_attribute_record_type">
+              <bundle>ca_attribute_record_type</bundle>
+            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -18838,7 +18956,13 @@ differs from the holder of rights for the work. Example: The work rights are “
                 <setting name="label" locale="en_US">NCTR/TRC Object Identifier</setting>
               </settings>
             </placement>
-             <placement code="ca_attribute_digital_object_id">
+             <placement code="ca_attribute_NCTR_container_ID">
+              <bundle>ca_attribute_NCTR_container_ID</bundle>
+            </placement>
+             <placement code="ca_attribute_NCTR_document_ID">
+              <bundle>ca_attribute_NCTR_document_ID</bundle>
+            </placement>
+            <placement code="ca_attribute_digital_object_id">
               <bundle>ca_attribute_digital_object_id</bundle>
             </placement>
              <placement code="ca_attribute_filenames">
@@ -21405,6 +21529,16 @@ differs from the holder of rights for the work. Example: The work rights are “
     </login>
     <login user_name="Alejandro" password="Isaac" fname="Alejandro"
       lname="Isaac" email="al@createwithflow.com">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Blair" password="Galston" fname="Blair"
+      lname="Galston" email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Maryann" password="Amor" fname="Maryann"
+      lname="Amor" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>

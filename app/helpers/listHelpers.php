@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,28 +48,30 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return int list_id of list or null if no matching list was found
 	 */
-	$g_list_id_cache = array();
+	$g_list_id_cache = [];
 	function caGetListID($ps_list, $pa_options=null) {
 		global $g_list_id_cache;
-		if(isset($g_list_id_cache[$ps_list])) { return $g_list_id_cache[$ps_list]; }
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list);
+		
+		if(isset($g_list_id_cache[$vs_cache_key])) { return $g_list_id_cache[$vs_cache_key]; }
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		if (is_numeric($ps_list)) {
 			if ($t_list->load((int)$ps_list)) {
-				return $g_list_id_cache[$ps_list] = $t_list->getPrimaryKey();
+				return $g_list_id_cache[$vs_cache_key] = $t_list->getPrimaryKey();
 			}
 		}
 		
 		if ($t_list->load(array('list_code' => $ps_list))) {
-			return $g_list_id_cache[$ps_list] = $t_list->getPrimaryKey();
+			return $g_list_id_cache[$vs_cache_key] = $t_list->getPrimaryKey();
 		}
 		
 		$t_label = new ca_list_labels();
 		if ($t_label->load(array('name' => $ps_list))) {
-			return $g_list_id_cache[$ps_list] = $t_label->get('list_id');
+			return $g_list_id_cache[$vs_cache_key] = $t_label->get('list_id');
 		}
-		return $g_list_id_cache[$ps_list] = null;
+		return $g_list_id_cache[$vs_cache_key] = null;
 	}
 	# ---------------------------------------
 	/**
@@ -105,18 +107,24 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_idno idno of item to get item_id for
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+     *
 	 * @return int item_id of list item or null if no matching item was found
 	 */
-	$g_list_item_id_cache = array();
+	$g_list_item_id_cache = [];
 	function caGetListItemID($ps_list_code, $ps_idno, $pa_options=null) {
+		global $g_list_item_id_cache;
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_idno}");
+		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			global $g_list_item_id_cache;
-			if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
+			if(isset($g_list_item_id_cache[$vs_cache_key])) { return $g_list_item_id_cache[$vs_cache_key]; }
 		}
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno] = $t_list->getItemIDFromList($ps_list_code, $ps_idno);
+		return $g_list_item_id_cache[$vs_cache_key] = $t_list->getItemIDFromList($ps_list_code, $ps_idno, $pa_options);
 	}
 	# ---------------------------------------
 	/**
@@ -125,17 +133,25 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param int $pn_list_id List ID
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+     *
 	 * @return string The list code for the list, or null if the list_id is not valid
 	 */
-	$g_ca_get_list_code_cache = array();
+	$g_ca_get_list_code_cache = [];
 	function caGetListCode($pn_list_id, $pa_options=null) {
 		global $g_ca_get_list_code_cache;
-		if(isset($g_ca_get_list_code_cache[$pn_list_id])) { return $g_ca_get_list_code_cache[$pn_list_id]; }
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_list_id);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_ca_get_list_code_cache[$vs_cache_key])) { return $g_ca_get_list_code_cache[$vs_cache_key]; }
+		}
+		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
-		$t_list->load($pn_list_id);
+		if (!$t_list->load($pn_list_id)) { return null; }
 		
-		return $g_ca_get_list_code_cache[$pn_list_id] = $t_list->get('list_code');
+		return $g_ca_get_list_code_cache[$vs_cache_key] = $t_list->get('list_code');
 	}
 	# ---------------------------------------
 	/**
@@ -144,17 +160,27 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param int $pn_item_id item_id to get idno for
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
 	 * @return string idno of list item or null if no matching item was found
 	 */
-	$g_list_item_idno_cache = array();
+	$g_list_item_idno_cache = [];
 	function caGetListItemIdno($pn_item_id, $pa_options=null) {
 		global $g_list_item_idno_cache;
-		if(isset($g_list_item_idno_cache[$pn_item_id])) { return $g_list_item_idno_cache[$pn_item_id]; }
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_item_id);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_item_idno_cache[$vs_cache_key])) { return $g_list_item_idno_cache[$vs_cache_key]; }
+		}
+		
 		$t_item = new ca_list_items();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
-		$t_item->load($pn_item_id);
+		if (!$t_item->load($pn_item_id)) { return null; }
+		if (is_array($pa_check_access = caGetOption('checkAccess', $pa_options, null)) && (sizeof($pa_check_access) > 0) && !in_array($t_item->get('ca_list_items.access'), $pa_check_access)) { return null; }
 		
-		return $g_list_item_idno_cache[$pn_item_id] = $t_item->get('idno');
+		return $g_list_item_idno_cache[$vs_cache_key] = $t_item->get('idno');
 	}
 	# ---------------------------------------
 	/**
@@ -165,35 +191,25 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
 	 * @return string The label of the list item, or null if no matching item was found
 	 */
-	$g_list_item_label_cache = array();
-	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pb_return_plural=false, $pa_options=null) {
+	$g_list_item_label_cache = [];
+	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pa_options=null) {
 		global $g_list_item_label_cache;
-		if(isset($g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural])) { return $g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural]; }
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_idno}");
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_item_label_cache[$vs_cache_key])) { return $g_list_item_label_cache[$vs_cache_key]; }
+		}
+		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		return $g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural] = $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pb_return_plural);
-	}
-	# ---------------------------------------
-	/**
-	 * Fetch display label in current locale for item with specified iteM-id in list
-	 *
-	 * @param int $pn_item_id primary key of item to get label for
-	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
-	 * @param array $pa_options Options include:
-	 *		transaction = transaction to execute queries within. [Default=null]
-	 * @return string The label of the list item, or null if no matching item was found
-	 */
-	$g_list_item_label_by_id_cache = array();
-	function caGetListItemForDisplayByItemID($pn_item_id, $pb_return_plural=false, $pa_options=null) {
-		global $g_list_item_label_by_id_cache;
-		if(isset($g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural])) { return $g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural]; }
-		$t_list = new ca_lists();
-		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
-
-		return $g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural] = $t_list->getItemForDisplayByItemID($pn_item_id, $pb_return_plural);
+		return $g_list_item_label_cache[$vs_cache_key] = $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pa_options);
 	}
 	# ---------------------------------------
 	/**
@@ -203,39 +219,52 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
 	 * @return string The label of the list item, or null if no matching item was found
 	 */
-	$g_list_item_label_cache = array();
-	function caGetListItemByIDForDisplay($pn_item_id, $pb_return_plural=false, $pa_options=null) {
+	$g_list_item_label_cache = [];
+	function caGetListItemByIDForDisplay($pn_item_id, $pa_options=null) {
 		global $g_list_item_label_cache;
-		if(isset($g_list_item_label_cache[$pn_item_id.'/'.(int)$pb_return_plural])) { return $g_list_item_label_cache[$pn_item_id.'/'.(int)$pb_return_plural]; }
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_item_id);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_item_label_cache[$vs_cache_key])) { return $g_list_item_label_cache[$vs_cache_key]; }
+		}
+		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		return $g_list_item_label_cache[$pn_item_id.'/'.(int)$pb_return_plural] = $t_list->getItemForDisplayByItemID($pn_item_id, $pb_return_plural);
+		return $g_list_item_label_cache[$vs_cache_key] = $t_list->getItemForDisplayByItemID($pn_item_id, $pa_options);
 	}
 	# ---------------------------------------
 	/**
 	 * Get list item id for value. Can be useful when handling access/status values
 	 * @param string $ps_list_code Code of the list
 	 * @param string $ps_value item_value of the list item in question
-	 * @param array $pa_options Options for ca_lists::getItemFromListByItemValue()
+	 * @param array $pa_options Options for ca_lists::getItemFromListByItemValue() plus:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
 	 * @return string|null
-	 * @throws MemoryCacheInvalidParameterException
 	 */
+	$g_list_item_ids_for_values = [];
 	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
-		$vs_cache_key = md5($ps_list_code . $ps_value . serialize($pa_options));
-		if(MemoryCache::contains($vs_cache_key, 'ListItemIDsForValues')) {
-			return MemoryCache::fetch($vs_cache_key, 'ListItemIDsForValues');
-		}
-
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_value}");
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_item_ids_for_values[$vs_cache_key])) { return $g_list_item_ids_for_values[$vs_cache_key]; }
+        }
+        
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		if ($va_item = $t_list->getItemFromListByItemValue($ps_list_code, $ps_value)) {
-			$vs_ret = array_shift(array_keys($va_item));
-			MemoryCache::save($vs_cache_key, $vs_ret, 'ListItemIDsForValues');
-			return $vs_ret;
+		if ($va_item = $t_list->getItemFromListByItemValue($ps_list_code, $ps_value, $pa_options)) {
+			return $g_list_item_ids_for_values[$vs_cache_key] = array_shift(array_keys($va_item));
 		}
 		return null;
 	}
@@ -243,24 +272,29 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	/**
 	 * Get list item value for a given item_id
 	 * @param int $pn_id
-	 * @param null|array $pa_options
-	 * @return string
-	 * @throws MemoryCacheInvalidParameterException
+	 * @param null|array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return string|null
 	 */
-	function caGetListItemValueForID($pn_id, $pa_options= null) {
+	$g_list_item_values_for_ids = [];
+	function caGetListItemValueForID($pn_id, $pa_options=null) {
 		if(!$pn_id || !is_numeric($pn_id)) { return null; }
-		$vs_cache_key = md5($pn_id . serialize($pa_options));
-		if(MemoryCache::contains($vs_cache_key, 'ListItemValuesForIDs')) {
-			return MemoryCache::fetch($vs_cache_key, 'ListItemValuesForIDs');
-		}
-
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn-id);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_item_values_for_ids[$vs_cache_key])) { return $g_list_item_values_for_ids[$vs_cache_key]; }
+        }
+        
 		$t_item = new ca_list_items();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
 
 		if ($t_item->load($pn_id)) {
-			$vs_ret = $t_item->get('item_value');
-			MemoryCache::save($vs_cache_key, $vs_ret, 'ListItemValuesForIDs');
-			return $vs_ret;
+		    if (is_array($pa_check_access = caGetOption('checkAccess', $pa_options, null)) && (sizeof($pa_check_access) > 0) && !in_array($t_item->get('ca_list_items.access'), $pa_check_access)) { return null; }
+			return $g_list_item_values_for_ids[$vs_cache_key] = $t_item->get('item_value');
 		}
 		return null;
 	}
@@ -283,16 +317,68 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_label The label value to search for
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+     *
 	 * @return int item_id of list item or null if no matching item was found
 	 */
-	$g_list_item_id_for_label_cache = array();
+	$g_list_item_id_for_label_cache = [];
 	function caGetListItemIDForLabel($ps_list_code, $ps_label, $pa_options=null) {
 		global $g_list_item_id_for_label_cache;
-		if(isset($g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label])) { return $g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label]; }
+		
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_label}");
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_item_id_for_label_cache[$vs_cache_key])) { return $g_list_item_id_for_label_cache[$vs_cache_key]; }
+		}
+		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		return $g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label] = $t_list->getItemIDFromListByLabel($ps_list_code, $ps_label);
+		return $g_list_item_id_for_label_cache[$vs_cache_key] = $t_list->getItemIDFromListByLabel($ps_list_code, $ps_label, $pa_options);
+	}
+	# ---------------------------------------
+	/**
+	 * Return simple array with items from a list. Array keys and values may be any list item field.
+	 *
+	 * @param string $ps_list_code List code
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *		index = name of field to index returned list on. [Default is item_id]
+	 *		value = value to return in list. [Default is name_plural]
+	 *		defaultOnly = return only default item in list. [Default is false]	 
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+     *
+	 * @return array
+	 */
+	$g_list_items_cache = [];
+	function caGetListItems($ps_list_code, $pa_options=null) {
+		global $g_list_items_cache;
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list_code);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_items_cache[$vs_cache_key])) { return $g_list_items_cache[$vs_cache_key]; }
+		}
+		
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		
+		$key = caGetOption('index', $pa_options, 'id');
+		$value = caGetOption('value', $pa_options, 'name_plural');
+		$default_only = caGetOption('defaultOnly', $pa_options, false);
+		
+		$list_items = caExtractValuesByUserLocale($t_list->getItemsForList($ps_list_code, $pa_options));
+		
+		$list = [];
+		foreach($list_items as $id => $item) {
+			if ($default_only && !$item['is_default']) { continue; }
+			$list[isset($item[$key]) ? $item[$key] : $id] = isset($item[$value]) ? $item[$value] : $item['name_plural'];
+		}
+		ksort($list);
+		return $g_list_items_cache[$vs_cache_key] = $list;
 	}
 	# ---------------------------------------
 	/**
@@ -301,16 +387,24 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_list_code List code
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+     *
 	 * @return int item_id of list item or null if no default item was found
 	 */
-	$g_default_list_item_id_cache = array();
+	$g_default_list_item_id_cache = [];
 	function caGetDefaultItemID($ps_list_code, $pa_options=null) {
 		global $g_default_list_item_id_cache;
-		if(isset($g_default_list_item_id_cache[$ps_list_code])) { return $g_default_list_item_id_cache[$ps_list_code]; }
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list_code);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_default_list_item_id_cache[$vs_cache_key])) { return $g_default_list_item_id_cache[$vs_cache_key]; }
+		}
+		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		return $g_default_list_item_id_cache[$ps_list_code] = $t_list->getDefaultItemID($ps_list_code, ['useFirstElementAsDefaultDefault' => true]);
+		return $g_default_list_item_id_cache[$vs_cache_key] = $t_list->getDefaultItemID($ps_list_code, array_merge($pa_options, ['useFirstElementAsDefaultDefault' => true]));
 	}
 	# ---------------------------------------
 	/**
@@ -324,17 +418,17 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @return array List of numeric item_ids
 	 */
 	function caMakeListItemIDList($pm_list, $pa_list_items, $pa_options=null) {
-		if (!($vn_list_id = caGetListID($pm_list))) return array();
+		if (!($vn_list_id = caGetListID($pm_list))) return [];
 		$t_item = new ca_list_items();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
 		
-		$va_ids = array();
+		$va_ids = [];
 		
 		foreach($pa_list_items as $vm_item) {
 			if (is_numeric($vm_item) && ((int)$vm_item > 0)) {
 				$va_ids[(int)$vm_item] = true;
 			} else {
-				if ($vn_id = caGetListItemID($vn_list_id, $vm_item)) {
+				if ($vn_id = caGetListItemID($vn_list_id, $vm_item, $pa_options)) {
 					$va_ids[(int)$vn_id] = true;
 				}
 			}
@@ -344,21 +438,29 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
-	 * Return item_ids for ancestors of an item
+	 * Return item_ids for ancestors of an item. 
+	 *
+	 * Note: does NOT support checkAccess option.
 	 *
 	 * @param mixed $pm_item_id 
 	 * @param array $pa_options Options include:
 	 *		transaction = transaction to execute queries within. [Default is null]
-	 *		includeSelf = include $pn_item_id in returned list. [Default is false]
-	 *		noCache = don't use cached results. [Default is false]
+	 *		includeSelf = include $pn_item_id in returned list. [Default is false]	 
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+     *
 	 * @return array An array of item_ids for items that are ancestors of the specified item. The specified item_id is only included in the returned list if the includeSelf option is set.
 	 */
-	$g_list_item_id_ancestors_cache = array();
+	$g_list_item_id_ancestors_cache = [];
 	function caGetAncestorsForItemID($pm_item_id, $pa_options=null) {
 		if(!$pm_item_id) { return null; }
 		global $g_list_item_id_ancestors_cache;
-		$vs_key = caMakeCacheKeyFromOptions($pa_options, $pm_item_id);
-		if(isset($g_list_item_id_ancestors_cache[$vs_key]) && !caGetOption(['noCache', 'dontCache'], $pa_options, false)) { return $g_list_item_id_ancestors_cache[$vs_key]; }
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_item_id);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_list_item_id_ancestors_cache[$vs_cache_key])) { return $g_list_item_id_ancestors_cache[$vs_cache_key]; }
+		}
+		
 		$t_item = new ca_list_items();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
 		
@@ -371,7 +473,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 			}
 		}
 		
-		return $g_list_item_id_ancestors_cache[$vs_key] = array_unique($va_acc);
+		return $g_list_item_id_ancestors_cache[$vs_cache_key] = array_unique($va_acc);
 	}
 	# ---------------------------------------
 	/**

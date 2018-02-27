@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2934,6 +2934,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							'id' => $vn_id, 
 							'idno' => ($vn_idno = $t_item->get('idno')) ? $vn_idno : null, 
 							'idno_stub' => ($vn_idno_stub = $t_item->get('idno_stub')) ? $vn_idno_stub : null, 
+							'item_type_id' => $t_item->getTypeID(),
 							'relationship_type_id' => null
 						)
 					);
@@ -3221,6 +3222,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * @return mixed
 	*/
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
+	    global $g_ui_locale_id;
+										
 		$vb_we_set_transaction = false;
 		$vs_form_prefix = caGetOption('formName', $pa_options, $po_request->getParameter('_formName', pString));
 		
@@ -3929,7 +3932,6 @@ if (!$vb_batch) {
 										//
 										$t_rep = new ca_object_representations();
 										if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
-										global $g_ui_locale_id;
 										if ($t_rep->load($va_rep['representation_id'])) {
 											$t_rep->setMode(ACCESS_WRITE);
 											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true, array('queueIndexing' => true));
@@ -3956,81 +3958,90 @@ if (!$vb_batch) {
 							$vs_batch_mode = $_REQUEST[$vs_prefix_stub.'batch_mode'];
 	
 							if ($vs_batch_mode == '_disabled_') { break;}
-							if ($vs_batch_mode == '_replace_') { $this->removeAllRepresentations();}
+							if (($vs_batch_mode == '_replace_') && sizeof($va_reps)) { 
+							    foreach($va_reps as $va_rep) {
+									$pn_access = $po_request->getParameter("{$vs_prefix_stub}access_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}access_new_0", pInteger) : null;
+									$pn_status = $po_request->getParameter("{$vs_prefix_stub}access_status_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}status_new_0", pInteger) : null;
+									$pn_type_id = $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0", pInteger) : null;
+									$ps_rep_label = $po_request->getParameter("{$vs_prefix_stub}rep_label_new_0_enabled", pInteger) ? trim($po_request->getParameter("{$vs_prefix_stub}rep_label_new_0", pString)) : null;
+									$this->editRepresentation($va_rep['representation_id'], null, $g_ui_locale_id, $pn_status, $pn_access, null, [], ['label' => $ps_rep_label, 'type_id' => $pn_type_id]);
+							    }
+							}
 							if ($vs_batch_mode == '_delete_') { $this->removeAllRepresentations(); break; }
-						}
+						} else {
 					
-						// check for new representations to add 
-						$va_file_list = $_FILES;
-						foreach($_REQUEST as $vs_key => $vs_value) {
-							if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
-								$va_file_list[$vs_key] = array(
-									'url' => $vs_value
-								);
-							} elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
-								$va_file_list[$vs_key] = array(
-									'tmp_name' => $vs_value,
-									'name' => $vs_value
-								);
-							}
-						}
-						
-						foreach($va_file_list as $vs_key => $va_values) {
-							$this->clearErrors();
-							
-							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
-							
-							if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
-								$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
-							}
-							
-							$vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_id_new_'.$va_matches[1], pInteger);
-							if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
-								$this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
-							} else {
-								if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
-									$va_tmp = explode('/', $vs_path);
-									$vs_original_name = array_pop($va_tmp);
-								} else {
-									$vs_path = $va_values['tmp_name'];
-									$vs_original_name = $va_values['name'];
-								}
-								if (!$vs_path) { continue; }
-							
-								$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], pInteger);
-								if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
-									require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-									$t_list = new ca_lists();
-									if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
-										$vn_rep_type_id = array_shift($va_rep_type_ids);
-									}
-								}
-						
-								if (is_array($pa_options['existingRepresentationMap']) && isset($pa_options['existingRepresentationMap'][$vs_path]) && $pa_options['existingRepresentationMap'][$vs_path]) {
-									$this->addRelationship('ca_object_representations', $pa_options['existingRepresentationMap'][$vs_path], $vn_type_id);
-									break;
-								}
-							
-								$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_new_'.$va_matches[1], pString));	
-								$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_new_'.$va_matches[1], pInteger);
-								$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
-								$vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
-								$vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
-								$vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
-								
-								// Get user-specified center point (images only)
-								$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
-								$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
-						
-								$t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label, 'idno' => $vs_idno), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
-								if ($this->numErrors()) {
-									$po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
-								} else {
-									if ($t_rep && is_array($pa_options['existingRepresentationMap'])) { 
-										$pa_options['existingRepresentationMap'][$vs_path] = $t_rep->getPrimaryKey();
-									}
-								}
-							}
+                            // check for new representations to add 
+                            $va_file_list = $_FILES;
+                            foreach($_REQUEST as $vs_key => $vs_value) {
+                                if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+                                    $va_file_list[$vs_key] = array(
+                                        'url' => $vs_value
+                                    );
+                                } elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
+                                    $va_file_list[$vs_key] = array(
+                                        'tmp_name' => $vs_value,
+                                        'name' => $vs_value
+                                    );
+                                }
+                            }
+                        
+                            foreach($va_file_list as $vs_key => $va_values) {
+                                $this->clearErrors();
+                            
+                                if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
+                            
+                                if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
+                                    $po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
+                                }
+                            
+                                $vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_id_new_'.$va_matches[1], pInteger);
+                                if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
+                                    $this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
+                                } else {
+                                    if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
+                                        $va_tmp = explode('/', $vs_path);
+                                        $vs_original_name = array_pop($va_tmp);
+                                    } else {
+                                        $vs_path = $va_values['tmp_name'];
+                                        $vs_original_name = $va_values['name'];
+                                    }
+                                    if (!$vs_path) { continue; }
+                            
+                                    $vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], pInteger);
+                                    if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
+                                        require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+                                        $t_list = new ca_lists();
+                                        if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
+                                            $vn_rep_type_id = array_shift($va_rep_type_ids);
+                                        }
+                                    }
+                        
+                                    if (is_array($pa_options['existingRepresentationMap']) && isset($pa_options['existingRepresentationMap'][$vs_path]) && $pa_options['existingRepresentationMap'][$vs_path]) {
+                                        $this->addRelationship('ca_object_representations', $pa_options['existingRepresentationMap'][$vs_path], $vn_type_id);
+                                        break;
+                                    }
+                            
+                                    $vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_new_'.$va_matches[1], pString));	
+                                    $vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_new_'.$va_matches[1], pInteger);
+                                    $vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
+                                    $vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
+                                    $vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
+                                    $vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
+                                
+                                    // Get user-specified center point (images only)
+                                    $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
+                                    $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
+                        
+                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label, 'idno' => $vs_idno), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                                    if ($this->numErrors()) {
+                                        $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
+                                    } else {
+                                        if ($t_rep && is_array($pa_options['existingRepresentationMap'])) { 
+                                            $pa_options['existingRepresentationMap'][$vs_path] = $t_rep->getPrimaryKey();
+                                        }
+                                    }
+                                }
+                            }
 						}
 						break;
 					# -------------------------------------
