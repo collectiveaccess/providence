@@ -1873,6 +1873,14 @@ class SearchResult extends BaseObject {
 		) {
 		    $va_restrict_to_type_ids = caMakeItemIDList($vs_label_type_list_code, $va_restrict_to_types);
 		}
+		$va_exclude_type_ids = null;
+		if (
+		    is_array($va_exclude_types = caGetOption('excludeTypes', $pa_options, null))
+		    &&
+		    ($vs_label_type_list_code = $pt_instance->getAppConfig()->get(($pt_instance->tableName().'_'.(($va_path_components['field_name'] == 'nonpreferred_labels') ? 'nonpreferred_label_type_list' : 'preferred_label_type_list'))))
+		) {
+		    $va_exclude_type_ids = caMakeItemIDList($vs_label_type_list_code, $va_exclude_types);
+		}
 		
 		if ($vb_convert_codes_to_display_text) { $pa_options['output'] = 'text'; }
 		if ($vb_convert_codes_to_idno) { $pa_options['output'] = 'idno'; }
@@ -1899,6 +1907,8 @@ class SearchResult extends BaseObject {
 				
 				foreach($va_labels_by_locale as $vn_id => $va_label) {
 				    if (is_array($va_restrict_to_type_ids) && sizeof($va_restrict_to_type_ids) && !in_array($va_label['type_id'], $va_restrict_to_type_ids)) { continue; }
+				    if (is_array($va_exclude_type_ids) && sizeof($va_exclude_type_ids) && in_array($va_label['type_id'], $va_exclude_type_ids)) { continue; }
+				    
 					$vn_id = $va_label[$vs_pk];
 				
 					
