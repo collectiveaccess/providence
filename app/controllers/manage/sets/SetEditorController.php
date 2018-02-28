@@ -311,7 +311,7 @@
 			# --- get the export format/template to use
 			$ps_export_format = $this->request->getParameter('export_format', pString);
 			
-			caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets']);
+			caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set]);
 			
 			return;
 		}

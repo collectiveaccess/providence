@@ -7816,7 +7816,7 @@
           <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -8716,7 +8716,7 @@
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
-        <setting name="maxChars">255</setting>
+        <setting name="maxChars">635255</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_objects">
@@ -12485,7 +12485,7 @@
         <setting name="lineBreakAfterNumberOfElements">1</setting>    
       </settings>
       <elements>
-        <metadataElement code=desc_new_value" datatype="Text">
+        <metadataElement code="desc_new_value" datatype="Text">
           <labels>
             <label locale="en_US">
               <name>Text</name>

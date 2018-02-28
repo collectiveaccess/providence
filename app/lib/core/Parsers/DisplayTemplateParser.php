@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,7 +87,7 @@ class DisplayTemplateParser {
 							if (!$qr_res) { return; }
 
 							/** @var HTML_Node $o_node */
-							if(($o_node->filterNonPrimaryRepresentations == '0') && ($qr_res instanceof ObjectSearchResult)) {
+							if((($o_node->filterNonPrimaryRepresentations == '0') || (strtolower($o_node->filterNonPrimaryRepresentations) == 'no')) && ($qr_res instanceof ObjectSearchResult)) {
 								$qr_res->filterNonPrimaryRepresentations(false);
 							}
 						
@@ -195,7 +195,8 @@ class DisplayTemplateParser {
 
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
-		if(!caGetOption('filterNonPrimaryRepresentations', $pa_options, true) && ($qr_res instanceof ObjectSearchResult)) {
+        $vm_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
+		if((!$vm_filter_non_primary_reps || ($vm_filter_non_primary_reps == '0') || (strtolower($vm_filter_non_primary_reps) == 'no')) && ($qr_res instanceof ObjectSearchResult)) {
 			$qr_res->filterNonPrimaryRepresentations(false);
 		}
 		
@@ -545,8 +546,9 @@ class DisplayTemplateParser {
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 
 					$vb_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
-					if($vb_filter_non_primary_reps && ($o_node->filterNonPrimaryRepresentations == '0')) {
+					if(!$vb_filter_non_primary_reps || (($o_node->filterNonPrimaryRepresentations == '0') || (strtolower($o_node->filterNonPrimaryRepresentations) == 'no'))) {
 						$vb_filter_non_primary_reps = false;
+						$pr_res->filterNonPrimaryRepresentations(false);
 					}
 
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
@@ -604,7 +606,7 @@ class DisplayTemplateParser {
 							case 'nonpreferred_labels':
 								/** @var LabelableBaseModelWithAttributes $t_instance */
 								$ps_tablename = $t_instance->getLabelTableName();
-								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['returnAsArray' => true]);
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['restrictToTypes' => $va_get_options['restrictToTypes'], 'returnAsArray' => true]);
 								break;
 							default:
 								// If relativeTo is not set to a valid attribute try to guess from template, looking for container
@@ -1278,6 +1280,25 @@ class DisplayTemplateParser {
 			$va_tmp[sizeof($va_tmp)-1] = $vs_tag_bit;	// remove option from tag-part array
 			$vs_tag_proc = join(".", $va_tmp);
 		}
+		
+		// add implicit options
+		foreach($va_tag_opts as $o => $v) {
+		    switch($o) {
+		        case 'convertCodesToDisplayText':
+		            if ($v) { 
+		                // If one not the other...
+		                $va_tag_opts['convertCodesToIdno'] = false;
+		            }
+		            break;
+		        case 'convertCodesToIdno':
+		            if ($v) { 
+		                // If one not the other...
+		                $va_tag_opts['convertCodesToDisplayText'] = false;
+		            }
+		            break;
+		    }
+		}
+		
 		return ['tag' => $ps_get_spec, 'options' => $va_tag_opts, 'filters' => $va_tag_filters, 'modifiers' => $va_modifiers];
 	}
 	# -------------------------------------------------------------------

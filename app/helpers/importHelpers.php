@@ -651,7 +651,7 @@
 		
 		$pa_options['dontCreate'] = $pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
-		$va_vals = array();
+		$va_vals = [];  // value list for all items
 		$vn_c = 0;
 		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return array(); }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
@@ -670,7 +670,7 @@
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
 					
 					// Set label
-					$va_val = array();
+					$va_val = [];       // values for current item
 					
 					$vs_laddered_type = null;
 					if (!($vs_item = trim($vs_item))) { 
@@ -685,6 +685,9 @@
 									$vs_item = $vs_laddered_val;
 									if ($o_log) { $o_log->logDebug(_t("[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank", $vs_item)); }
 									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x));
+									if ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
+									    $va_val[$vs_idno_fld] = BaseRefinery::parsePlaceholder($va_p[$vs_idno_fld], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x));
+									}
 									break;
 								}
 							}
@@ -700,7 +703,7 @@
 				
 					// Set value as hierarchy
 					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
-						$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_hierarchy_setting, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true, 'refinery' => $po_refinery_instance)));
+						$va_val = array_merge($va_val, caProcessRefineryParents($ps_refinery_name, $ps_table, $va_hierarchy_setting, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true, 'refinery' => $po_refinery_instance))));
 						$vs_item = $va_val['_preferred_label'];
 					} else {
 		
@@ -790,11 +793,13 @@
 						}
 		
 						// Set attributes
+						//      $va_attr_vals = directly attached attributes for item
 						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 			
 						// Set interstitials
+						//      $va_interstitial_attr_vals = interstitial attributes for item
 						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 							$va_val = array_merge($va_val, $va_interstitial_attr_vals);
 						}
@@ -833,8 +838,8 @@
 					) {	
 				
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
-						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
-						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));						
+						//if(!is_array($va_attr_vals)) { $va_attr_vals = $va_val; }
+						$va_attr_vals_with_parent = array_merge($va_val, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));						
 						
 						switch($ps_table) {
 							case 'ca_objects':

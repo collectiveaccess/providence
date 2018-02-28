@@ -4166,7 +4166,7 @@
 			if (!$vn_access) {
 			    $vn_id = caGetDefaultItemID('access_statuses');
 			    $vn_access = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting target access to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting target access to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 
 			$vn_rep_access = null;
@@ -4176,7 +4176,7 @@
 			if (!$vn_rep_access) {
 			    $vn_id = caGetDefaultItemID('access_statuses');
 			    $vn_rep_access = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting representation access to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting representation access to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 			
 			$vn_status = null;
@@ -4186,7 +4186,7 @@
 			if (!$vn_status) {
 			    $vn_id = caGetDefaultItemID('workflow_statuses');
 			    $vn_status = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting target status to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting target status to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 
 			$vn_rep_status = null;
@@ -4196,7 +4196,7 @@
 			if (!$vn_rep_status) {
 			    $vn_id = caGetDefaultItemID('workflow_statuses');
 			    $vn_rep_status = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting representation status to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting representation status to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 			
 			$vn_mapping_id = null;

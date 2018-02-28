@@ -4341,7 +4341,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	    
         foreach([
             'object' => 'ca_objects', 'entity' => 'ca_entities', 'place' => 'ca_places', 
-            'occurrrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans', 
+            'occurrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans', 
             'movement' => 'ca_movements', 'location' => 'ca_storage_locations', 'media' => 'ca_site_page_media', 'mediaRef' => 'ca_attributes'] as $vs_ref_tag => $vs_ref_type
         ) { 
             if (preg_match_all("!\[{$vs_ref_tag} ([^\]]+)\]([^\[]+)\[/{$vs_ref_tag}\]!", $ps_text, $va_matches)) {

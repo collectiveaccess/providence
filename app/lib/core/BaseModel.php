@@ -7203,36 +7203,31 @@ class BaseModel extends BaseObject {
 				return $qr_hier; 
 			}
 			$vs_hier_right_fld 			= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
+			$vs_parent_id_fld 			= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
 			
-			$va_indent_stack = array();
-			$va_hier = array();
+			$va_indent_stack = $va_hier = $va_omit_stack = $va_parent_map = [];
 			
 			$vn_cur_level = -1;
-			$va_omit_stack = array();
 			
 			$vn_root_id = $pn_id;
+		
 			while($qr_hier->nextRow()) {
 				$vn_row_id = $qr_hier->get($this->primaryKey());
 				if (is_null($vn_root_id)) { $vn_root_id = $vn_row_id; }
 				
 				if ($pb_dont_include_root && ($vn_row_id == $vn_root_id)) { continue; } // skip root if desired
 				
+				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
+				
+				if (!isset($va_parent_map[$vn_parent_id])) {
+				    $va_parent_map[$vn_parent_id] = ['id' => $vn_row_id, 'level' => $vn_cur_level + 1];
+				    $vn_cur_level++;
+				} else {
+				    $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
+				}
+				
 				$vn_r = $qr_hier->get($vs_hier_right_fld);
 				$vn_c = sizeof($va_indent_stack);
-				
-				if($vn_c > 0) {
-					while (($vn_c) && ($va_indent_stack[$vn_c - 1] <= $vn_r)){
-						array_pop($va_indent_stack);
-						$vn_c = sizeof($va_indent_stack);
-					}
-				}
-				
-				if($vn_cur_level != sizeof($va_indent_stack)) {
-					if ($vn_cur_level > sizeof($va_indent_stack)) {
-						$va_omit_stack = array();
-					}
-					$vn_cur_level = intval(sizeof($va_indent_stack));
-				}
 				
 				if (is_null($pn_max_levels) || ($vn_cur_level < $pn_max_levels)) {
 					$va_field_values = $qr_hier->getRow();
@@ -7810,8 +7805,8 @@ class BaseModel extends BaseObject {
 		
 		if (!is_array($va_hier)) { return array(); }
 		foreach($va_hier as $vn_i => $va_item) {
-			$va_levels[$vn_i] = $va_item['LEVEL'];
 			$va_ids[$vn_i] = $vn_id = $va_item['NODE'][$vs_pk];
+			$va_levels[$vn_id] = $va_item['LEVEL'];
 			$va_parent_ids[$vn_id] = $va_item['NODE']['parent_id'];
 		}
 		
@@ -7842,7 +7837,7 @@ class BaseModel extends BaseObject {
 			
 			foreach($va_vals as $vn_i => $vs_val) {
 				$va_hierarchy_data[$va_parent_ids[$va_ids[$vn_i]]][$va_sort_keys[$vn_i]] = array(
-					'level' => $va_levels[$vn_i],
+					'level' => $va_levels[$va_ids[$vn_i]],
 					'id' => $va_ids[$vn_i],
 					'parent_id' => $va_parent_ids[$va_ids[$vn_i]],
 					'display' => $vs_val
@@ -11334,14 +11329,20 @@ $pa_options["display_form_field_tips"] = true;
 	 * Return IDNO for primary key value
 	 *
 	 * @param int $pn_id Primary key value
-	 * @return string idno value
+	 * @param array $pa_options Options include:
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return string idno value, null if id does not exist or false if id exists but fails checkAccess checks
 	 */
-	public static function getIdnoForID($pn_id) {
+	public static function getIdnoForID($pn_id, $pa_options=null) {
 		$o_dm = Datamodel::load();
 		if (($t_instance = $o_dm->getTableInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = new Db();
 			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
+			
+			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
+			    if ((is_array($pa_check_access) && (sizeof($pa_check_access) > 0) ) && $t_instance->hasField('access') &&  !in_array($qr_res->get('access'), $pa_check_access)) { return false; }
 				return $qr_res->get($vs_idno_fld);
 			}
 		}
