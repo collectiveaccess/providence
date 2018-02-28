@@ -1362,7 +1362,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
-				print "GOT $vs_description";
 				if (($vs_label) && ($vs_description)) { 
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
@@ -2246,7 +2245,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 											if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
 											if (is_array($va_access) && sizeof($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
 											if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get($vs_rel_pk), $va_in_use_list)) { continue; }
-											$va_opts[$l = $qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = ($v = $qr_res->get($vs_field)) ? $v : $l;
+											$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($vs_field);
 										}
 									}
 									
@@ -5514,12 +5513,6 @@ if (!$vb_batch) {
 				
 				$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
 
-                $vb_use_is_primary = false;
-                if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
-                    $va_selects[] = $t_item_rel->tableName().'.is_primary';
-                    $vb_use_is_primary = true;
-                }
-
 				$vs_order_by = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
 					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
@@ -5591,10 +5584,6 @@ if (!$vb_batch) {
 
 					$va_rels[$vs_v]['_key'] = $vs_key;
 					$va_rels[$vs_v]['direction'] = $vs_direction;
-					
-                    if ($vb_use_is_primary) {
-                        $va_rels_for_id[$vs_v]['is_primary'] = $qr_res->get('is_primary');
-                    }
 
 					$vn_c++;
 					if ($vb_uses_relationship_types) {
@@ -5707,12 +5696,6 @@ if (!$vb_batch) {
 			if($vs_related_table_name == 'ca_set_items') {
 				$va_selects[] = 'ca_set_items.row_id AS record_id';
 			}
-			
-			$vb_use_is_primary = false;
-			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
-			    $va_selects[] = $t_item_rel->tableName().'.is_primary';
-			    $vb_use_is_primary = true;
-			}
 
 			$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
 
@@ -5793,11 +5776,7 @@ if (!$vb_batch) {
 
 				$va_rels_for_id[$vs_v]['_key'] = $vs_key;
 				$va_rels_for_id[$vs_v]['direction'] = $vs_direction;
-				
-				if ($vb_use_is_primary) {
-				    $va_rels_for_id[$vs_v]['is_primary'] = $qr_res->get('is_primary');
-                }
-                
+
 				$vn_c++;
 				if ($vb_uses_relationship_types) {
 					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
