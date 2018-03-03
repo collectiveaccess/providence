@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1202,8 +1202,8 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
 		if (!$this->request->isLoggedIn()) { return array(); }
 
-		if (!($vn_type_id = $t_subject->getTypeID())) {
-			$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
+		if (!($vn_type_id = $t_subject->getTypeID()) && !($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger))) {
+		    $vn_type_id = $t_subject->getDefaultTypeID();
 		}
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
 			isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
