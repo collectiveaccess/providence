@@ -853,8 +853,7 @@
 										break;
 								}
 						
-						
-								$va_attr_sql[] = join(" AND ", $va_q);
+						        if (sizeof($va_q)) { $va_attr_sql[] = join(" AND ", $va_q); }
 							}
 						}
 					}
