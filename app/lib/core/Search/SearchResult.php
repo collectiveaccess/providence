@@ -961,6 +961,7 @@ class SearchResult extends BaseObject {
 	 *			returnPath = When fetching intrinsic value of type FT_MEDIA return path to media rather than HTML tag. [Default is false] 
 	 *			unserialize = When fetching intrinsic value of type FT_VARS (serialized variables) return unserialized value. [Default is false]
 	 *			list = A list code or array or list codes to restrict returned values to when referencing ca_list_items values. [Default is null]
+	 *          primaryOnly = Return only related representations marked "primary", otherwise return all representations. Has no effect when not pulling related representations. [Default is false]
 	 *			
 	 *		[Formatting options for strings and arrays]
 	 *			template = Display template use when formatting return values. @see http://docs.collectiveaccess.org/wiki/Display_Templates. [Default is null]
@@ -1533,7 +1534,7 @@ class SearchResult extends BaseObject {
 						$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
 					}
 					
-					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5], $t_instance, array_merge($va_val_opts, ['restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null)]));
+					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5], $t_instance, array_merge($va_val_opts, ['restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'excludeTypes' => caGetOption('excludeTypes', $pa_options, null)]));
 					if ($vb_return_as_count) { return $vm_val; }
 					goto filter;
 				}
@@ -1758,6 +1759,7 @@ class SearchResult extends BaseObject {
 		$vb_assume_display_field 	= isset($pa_options['assumeDisplayField']) ? (bool)$pa_options['assumeDisplayField'] : true;
 		
 		$pa_check_access		= $pa_options['checkAccess'];
+		$pb_primary_only		= $pa_options['primaryOnly'];
 		if (!is_array($pa_exclude_idnos	= $pa_options['excludeIdnos'])) { $pa_exclude_idnos = []; }
 		
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
@@ -1784,9 +1786,9 @@ class SearchResult extends BaseObject {
 		}
 		$vs_pk = $t_rel_instance->primaryKey();
 		
-		
 		$va_ids = array();
 		foreach($pa_value_list as $vn_i => $va_rel_item) {
+		    if ($pb_primary_only && isset($va_rel_item['is_primary']) && !$va_rel_item['is_primary']) { continue; }
 			$va_ids[] = $va_rel_item[$vs_pk];
 		}
 		if (!sizeof($va_ids)) { return $pa_options['returnAsArray'] ? array() : null; }
@@ -1874,6 +1876,15 @@ class SearchResult extends BaseObject {
 		    $va_restrict_to_type_ids = caMakeItemIDList($vs_label_type_list_code, $va_restrict_to_types);
 		}
 		
+		$va_exclude_type_ids = null;
+		if (
+		    is_array($va_exclude_types = caGetOption('excludeTypes', $pa_options, null))
+		    &&
+		    ($vs_label_type_list_code = $pt_instance->getAppConfig()->get(($pt_instance->tableName().'_'.(($va_path_components['field_name'] == 'nonpreferred_labels') ? 'nonpreferred_label_type_list' : 'preferred_label_type_list'))))
+		) {
+		    $va_exclude_type_ids = caMakeItemIDList($vs_label_type_list_code, $va_exclude_types);
+		}
+		
 		if ($vb_convert_codes_to_display_text) { $pa_options['output'] = 'text'; }
 		if ($vb_convert_codes_to_idno) { $pa_options['output'] = 'idno'; }
 		
@@ -1899,6 +1910,8 @@ class SearchResult extends BaseObject {
 				
 				foreach($va_labels_by_locale as $vn_id => $va_label) {
 				    if (is_array($va_restrict_to_type_ids) && sizeof($va_restrict_to_type_ids) && !in_array($va_label['type_id'], $va_restrict_to_type_ids)) { continue; }
+				    if (is_array($va_exclude_type_ids) && sizeof($va_exclude_type_ids) && in_array($va_label['type_id'], $va_exclude_type_ids)) { continue; }
+				    
 					$vn_id = $va_label[$vs_pk];
 				
 					
