@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_form = $this->getVar('t_subject');
+ 	$t_alert = $this->getVar('t_subject');
 	$vn_rule_id = $this->getVar('subject_id');
-	$vn_table_num = $t_form->get("table_num"); 
+	$vn_table_num = $t_alert->get("table_num"); 
 	
 	$t_ui = $this->getVar('t_ui');	
 ?>
@@ -42,7 +42,7 @@
 		
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/rule_id/'.$vn_rule_id, 'MetadataAlertRuleEditorForm', null, 'POST', 'multipart/form-data');
 			
-			$va_form_elements = $t_form->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+			$va_form_elements = $t_alert->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
 									'formName' => 'MetadataAlertRuleEditorForm'));
 			
@@ -51,9 +51,9 @@
 				// ... BUT ...
 				// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
 				// This allows us to set the content type for the form from the calling control
-				$va_mandatory_fields = $t_form->getMandatoryFields();
+				$va_mandatory_fields = $t_alert->getMandatoryFields();
 				if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
-					if ($vn_table_num = $t_form->get('table_num')) {
+					if ($vn_table_num) {
 						print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
 						unset($va_form_elements['table_num']);
 						unset($va_mandatory_fields[$vn_index]);

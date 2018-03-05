@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,13 +64,28 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
 			'LABEL' => _t('User'), 'DESCRIPTION' => _t('The user who created the form.')
 		),
 		'table_num' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'DONT_USE_AS_BUNDLE' => true,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => 'Table', 'DESCRIPTION' => 'Table',
-			'BOUNDS_VALUE' => array(0,255)
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DONT_USE_AS_BUNDLE' => true,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'BOUNDS_VALUE' => array(1,255),
+				'LABEL' => _t('Alert target'), 'DESCRIPTION' => _t('Determines what kind of item (objects, entities, places, etc.) is covered by the alert .'),
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Objects') => 57,
+					_t('Object lots') => 51,
+					_t('Entities') => 20,
+					_t('Places') => 72,
+					_t('Occurrences') => 67,
+					_t('Collections') => 13,
+					_t('Storage locations') => 89,
+					_t('Object representations') => 56,
+					_t('Loans') => 133,
+					_t('Movements') => 137,
+					_t('List items') => 33,
+					_t('Tours') => 153,
+					_t('Tour stops') => 155
+				)
 		),
 		'code' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
@@ -227,7 +242,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		parent::__construct($pn_id);	# call superclass constructor
 
 		// Filter list of tables form can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caGetPrimaryTables(true);
+		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true));
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {

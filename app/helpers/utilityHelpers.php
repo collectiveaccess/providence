@@ -3631,7 +3631,7 @@ function caFileIsIncludable($ps_file) {
 			$va_rels = $t_rel->getRelationshipsUsingTypes();
 
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
-				$va_ret[$va_rel_table_info['table']] = $vn_table_num;
+				$va_ret[$vn_table_num] = $va_rel_table_info['table'];
 			}
 		}
 
