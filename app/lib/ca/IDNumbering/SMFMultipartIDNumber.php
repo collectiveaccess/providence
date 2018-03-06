@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -585,7 +585,7 @@
 		 * @param string $ps_value
 		 * @return array
 		 */
-		public function getIndexValues($ps_value=null) {
+		public function getIndexValues($ps_value=null, $pa_options=null) {
 			$vs_separator = $this->getSeparator();
 			if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
 			$va_element_names_normal_order = array_keys($va_elements_normal_order);
