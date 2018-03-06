@@ -38,6 +38,7 @@ define('__CA_ALERT_RULE_NO_ACCESS__', 0);
 define('__CA_ALERT_RULE_ACCESS_NOTIFICATION__', 1);
 define('__CA_ALERT_RULE_ACCESS_ACCESS_EDIT__', 2);
 
+require_once(__CA_LIB_DIR__.'/ca/SetUniqueIdnoTrait.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_type_restrictions.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_labels.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules_x_user_groups.php');
@@ -93,7 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
 			'IS_NULL' => false,
 			'DEFAULT' => '',
 			'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code for rule (must be unique)'),
-			'BOUNDS_LENGTH' => array(1,20)
+			'BOUNDS_LENGTH' => array(0,20)
 		),
 		'settings' => array(
 			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
@@ -106,6 +107,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
 );
 
 class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes {
+	use SetUniqueIdnoTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -210,8 +213,9 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
-	protected $ID_NUMBERING_ID_FIELD = null;				// name of field containing user-defined identifier
-	protected $ID_NUMBERING_SORT_FIELD = null;				// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_ID_FIELD = 'code';			// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;			// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
 
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -748,10 +752,13 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		}
 
 		if($t_trigger->numErrors() > 0) {
-			foreach($t_trigger->getErrors() as $vs_error) {
-				$this->notification->addNotification($vs_error, __NOTIFICATION_TYPE_ERROR__);
-			}
+			// foreach($t_trigger->getErrors() as $vs_error) {
+// 				$this->notification->addNotification($vs_error, __NOTIFICATION_TYPE_ERROR__);
+// 			}
+			$this->errors = $t_trigger->errors;
+			return false;
 		}
+		return true;
 	}
 	# ------------------------------------------------------
 }
