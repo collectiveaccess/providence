@@ -63,10 +63,14 @@
 			$vs_prefix = preg_replace("![^a-z0-9]+!", "_", strtolower($this->getProperty('NAME_SINGULAR')));
 			
 			if (!strlen(trim($this->get($vs_idno_fld)))) {
+				if (!($vn_len = (is_array($va_len = $this->getFieldInfo($vs_idno_fld, 'BOUNDS_LENGTH')) && sizeof($va_len) > 1) ? (int)$va_len[1] : 0)) {
+					$vn_len = 20;
+				}
+				
 				$this->setMode(ACCESS_WRITE);
 				if(!($vs_label = strtolower($this->getLabelForDisplay()))) { $vs_label = "{$vs_prefix}_".$this->getPrimaryKey(); }
-				$vs_new_code = substr(preg_replace('![^a-z0-9]+!', '_', $vs_label), 0, 50);
-				if (ca_bundle_displays::find(array($vs_idno_fld => $vs_new_code), array('returnAs' => 'firstId')) > 0) {
+				$vs_new_code = substr(preg_replace('![^a-z0-9]+!', '_', $vs_label), 0, $vn_len);
+				if (call_user_func_array($this->tableName().'::find', [$x=array($vs_idno_fld => $vs_new_code), array('returnAs' => 'firstId')]) > 0) {
 					$vs_new_code .= '_'.$this->getPrimaryKey();
 				}
 				$this->set($vs_idno_fld, $vs_new_code);
