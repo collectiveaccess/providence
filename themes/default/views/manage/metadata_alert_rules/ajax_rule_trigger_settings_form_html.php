@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,14 +33,11 @@
 	
 	if(is_array($va_available_settings = $this->getVar('available_settings')) && sizeof($va_available_settings)) {
 ?>
-		<div class='formLabel'><span><?php print _t("Trigger-specific options"); ?></span><br/></div>
-		<div style="margin-left: 20px;">
 <?php
 		foreach($va_available_settings as $vs_code => $va_properties) {
 			print $t_trigger->settingHTMLFormElement($vs_code, ['name' => $vs_prefix . '_setting_' . $vs_code]);
 		}
 ?>
-		</div>
 <?php
 	}
 

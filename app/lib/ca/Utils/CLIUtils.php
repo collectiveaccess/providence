@@ -2251,7 +2251,6 @@
 					}
 					
 					if (sizeof($va_object_ids)) { 
-						print_R($va_object_ids);
 						$va_sql_wheres[] = "(oxor.object_id IN (?))";
 						$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations AS oxor ON oxor.representation_id = o_r.representation_id";
 						$va_params[] = $va_object_ids;
@@ -4464,6 +4463,5 @@
 		public static function regenerate_dependent_field_valuesHelp() {
 			return _t('Text fields that are dependent upon other fields are only refreshed on save and import. For dependent display templates using dimensions (length, width) formatting, changes in the dimensions.conf configuration files are not automatically applied to existing values. This utility will batch update all dependent values using the current system configuration.');
         }
-		# -------------------------------------------------------
 		# -------------------------------------------------------
 	}

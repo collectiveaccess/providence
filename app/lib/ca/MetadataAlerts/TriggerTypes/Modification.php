@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,7 +81,7 @@ class Modification extends Base {
 				// if trigger_fire is based on element, but no element is set,
 				// just bail. trigger did not fire in that case
 				if(!$va_values['element_id']) { return false; }
-
+				
 				$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
 				return $t_instance->elementHasChanged($vs_code);
 		}

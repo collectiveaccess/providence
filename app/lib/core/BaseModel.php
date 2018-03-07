@@ -11733,9 +11733,10 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param string $ps_message
 	 * @param bool $pb_system Indicates if this notification is global and can be seen and interacted with by everyone, system-wide
 	 * @param array $pa_options
-	 * 		datetime - timestamp for notification -- defaults to now
-	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y] pairs to add as additional subjects
-	 * @return bool sucess or not
+	 * 		datetime = timestamp for notification. [Default is now]
+	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y] pairs to add as additional subjects. [Default is null]
+	 *		key = Optional unique md5 signature for notification. This should be unique to the situation in which the notification was generated. [Default is null]
+	 * @return bool True on success
 	 */
 	public function addNotification($pn_type, $ps_message, $pb_system=false, array $pa_options=[]) {
 		$vb_we_set_transaction = false;
@@ -11751,6 +11752,7 @@ $pa_options["display_form_field_tips"] = true;
 		$t_notification->set('message', $ps_message);
 		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
 		$t_notification->set('is_system', $pb_system ? 1 : 0);
+		$t_notification->set('notification_key', caGetOption('key', $pa_options, null));
 
 		$t_notification->insert();
 
@@ -11804,6 +11806,32 @@ $pa_options["display_form_field_tips"] = true;
 		}
 
 		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param int $pn_type Indicates notification type
+	 * @param string $ps_key Unique md5 signature for notification.
+	 *
+	 * @return mixed Integer, non-zero subject_id if exists; false if notification does not exist, null if error (Eg. no row is loaded)
+	 */
+	public function notificationExists($pn_type, $ps_key) {
+		if (!($vn_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT n.notification_id, ns.subject_id
+			FROM ca_notifications n
+			INNER JOIN ca_notification_subjects AS ns ON n.notification_id = ns.notification_id
+			WHERE
+				n.notification_type = ? AND n.notification_key = ? AND ns.table_num = ? AND ns.row_id = ? 
+		", [$pn_type, $ps_key, $this->tableNum(), $vn_id]);
+		
+		while($qr_res->nextRow()) {
+			return $qr_res->get('subject_id');
+		}
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

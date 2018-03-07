@@ -6845,12 +6845,14 @@ create table ca_notifications (
   notification_type   tinyint unsigned    not null default 0,
   datetime            int unsigned        not null,
   message             longtext,
-  is_system		        tinyint unsigned    not null default 0,
+  is_system		      tinyint unsigned    not null default 0,
+  notification_key    char(32)            not null default '',
 
   primary key (notification_id),
 
   index i_datetime (datetime),
-  index i_notification_type (notification_type)
+  index i_notification_type (notification_type),
+  index i_notification_key (notification_key)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
@@ -6859,12 +6861,13 @@ create table ca_notification_subjects (
   subject_id      int unsigned        not null auto_increment,
   notification_id int unsigned        not null references ca_notifications(notification_id),
   was_read        tinyint unsigned    not null default 0,
+  read_on         int unsigned        null,
   table_num       tinyint unsigned    not null,
   row_id          int unsigned        not null,
 
   primary key (subject_id),
   index i_notification_id (notification_id),
-  index i_table_num_row_id (table_num, row_id)
+  index i_table_num_row_id (table_num, row_id, read_on),
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
@@ -6966,5 +6969,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 152 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (152, unix_timestamp());
+/* CURRENT MIGRATION: 153 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (153, unix_timestamp());

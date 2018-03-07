@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
  */
 
 require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Base.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata alert triggers'),
@@ -187,12 +188,18 @@ class ca_metadata_alert_triggers extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
 
 		$this->loadAvailableSettingsForTriggerType();
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	protected function loadAvailableSettingsForTriggerType() {
 		if($vs_trigger_type = $this->get('trigger_type')) {
 			/** @var CA\MetadataAlerts\TriggerTypes\Base $o_trigger_type */
@@ -201,6 +208,9 @@ class ca_metadata_alert_triggers extends BaseModel {
 		}
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		$vm_ret = parent::set($pa_fields, $pm_value, $pa_options);
 
@@ -211,6 +221,9 @@ class ca_metadata_alert_triggers extends BaseModel {
 		return $vm_ret;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function load($pm_id=null, $pb_use_cache=true) {
 		$vm_ret = parent::load($pm_id, $pb_use_cache);
 
@@ -235,46 +248,58 @@ class ca_metadata_alert_triggers extends BaseModel {
 	 * @param int $pn_type
 	 */
 	public static function fireApplicableTriggers(&$t_subject, $pn_type = __CA_MD_ALERT_CHECK_TYPE_SAVE__) {
-		$va_triggers = self::getApplicableTriggers($t_subject);
+		$va_triggers = self::getApplicableTriggersForInstance($t_subject);
 		if(!is_array($va_triggers) || !sizeof($va_triggers)) { return; }
 
-		$t_rule = new ca_metadata_alert_rules();
-		$t_user = new ca_users();
-		$t_group = new ca_user_groups();
 
 		foreach($va_triggers as $va_trigger) {
 			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
-
-			// skip triggers of different types
+			
+			// skip triggers if not specified type
 			if($o_trigger->getTriggerType() != $pn_type) { continue; }
+			
+			self::fireTrigger($o_trigger, $t_subject, $va_trigger);
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param Mixed $t_subject
+	 * @param int $pn_type
+	 */
+	public static function fireTrigger($po_trigger, &$t_subject, $pa_trigger) {
+		$t_rule = new ca_metadata_alert_rules();
+		$t_user = new ca_users();
+		$t_group = new ca_user_groups();
+		
+		// is the trigger firing?
+		if($po_trigger->check($t_subject)) {
+			if(!$t_rule->load($pa_trigger['rule_id'])) { return false; }
 
-			// is the trigger firing?
-			if($o_trigger->check($t_subject)) {
-				if(!$t_rule->load($va_trigger['rule_id'])) { continue; }
+			$vs_notification_key = $po_trigger->getEventKey($t_subject);
 
-				// notify users
-				$va_users = $t_rule->getUsers();
-				if(is_array($va_users)) {
-					foreach ($va_users as $va_user) {
-						if ($va_user['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
-							$t_user->load($va_user['user_id']);
-							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $o_trigger->getNotificationMessage($t_subject));
-						}
+			// notify users
+			$va_users = $t_rule->getUsers();
+			if(is_array($va_users)) {
+				foreach ($va_users as $va_user) {
+					if ($va_user['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
+						$t_user->load($va_user['user_id']);
+						if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
+						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key]);
 					}
 				}
+			}
 
-				// notify user groups
-				$va_groups = $t_rule->getUserGroups();
-				if(is_array($va_groups)) {
-					foreach ($va_groups as $va_group) {
-						if ($va_group['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
-							$t_group->load($va_group['user_id']);
+			// notify user groups
+			$va_groups = $t_rule->getUserGroups();
+			if(is_array($va_groups)) {
+				foreach ($va_groups as $va_group) {
+					if ($va_group['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
+						$t_group->load($va_group['user_id']);
 
-							foreach($t_group->getGroupUsers() as $va_user) {
-								if(!$t_user->load($va_user['user_id'])) { continue; }
-
-								$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $o_trigger->getNotificationMessage($t_subject));
-							}
+						foreach($t_group->getGroupUsers() as $va_user) {
+							if(!$t_user->load($va_user['user_id'])) { continue; }
+							if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
+							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key]);
 						}
 					}
 				}
@@ -284,19 +309,22 @@ class ca_metadata_alert_triggers extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 * Get applicable triggers for a given model instance
-	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
+	 *
+	 * @param int|BundlableLabelableBaseModelWithAttributes $t_subject Table number or model instance
+	 *
 	 * @return array
 	 */
-	private static function getApplicableTriggers(&$t_subject) {
+	private static function getApplicableTriggersForInstance($t_subject=null) {
 		$va_triggers = [];
 
 		// find applicable rules
-		$va_rules = ca_metadata_alert_rules::find(['table_num' => $t_subject->tableNum()], ['returnAs' => 'modelInstances']);
+		$va_rules = ca_metadata_alert_rules::find(['table_num' => is_object($t_subject) ? $t_subject->tableNum() : $t_subject], ['returnAs' => 'modelInstances']);
+		
 		if(!is_array($va_rules) || !sizeof($va_rules)) { return; }
 
 		foreach($va_rules as $t_rule) {
 			/** @var ca_metadata_alert_rules $t_rule */
-
+			
 			// check type restrictions
 			$va_restrictions = $t_rule->getTypeRestrictions();
 			if(is_array($va_restrictions) && sizeof($va_restrictions)) {
@@ -305,9 +333,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 					$va_type_ids[] = $va_restriction['type_id'];
 				}
 
-				if(!in_array($t_subject->getTypeID(), $va_type_ids)) {
-					continue;
-				}
+				if(is_object($t_subject) && !in_array($t_subject->getTypeID(), $va_type_ids)) { continue; }
 			}
 
 			$va_triggers += $t_rule->getTriggers();
@@ -316,25 +342,91 @@ class ca_metadata_alert_triggers extends BaseModel {
 		return $va_triggers;
 	}
 	# ------------------------------------------------------
-	public static function firePeriodicTriggers() {
-		$o_db = new Db();
-		// @todo go through all records and load them!? argh; might want to make this searchresult-based. did not see that coming ...
-		foreach(['ca_objects', 'ca_entities'] as $vs_table) {
-			/** @var BundlableLabelableBaseModelWithAttributes $t_instance */
-			$t_instance = new $vs_table;
+	/**
+	 * Get applicable triggers
+	 *
+	 * @param int|BundlableLabelableBaseModelWithAttributes $t_subject Table number or model instance
+	 *
+	 * @return array
+	 */
+	private static function getApplicableTriggersForTable($pn_table_num) {
+		$va_triggers = [];
 
-			$vs_where = '';
-			if($t_instance->hasField('deleted')) {
-				$vs_where = 'WHERE deleted = 0';
+		// find applicable rules
+		$va_rules = ca_metadata_alert_rules::find(['table_num' => $pn_table_num], ['returnAs' => 'modelInstances']);
+		
+		if(!is_array($va_rules) || !sizeof($va_rules)) { return; }
+
+		foreach($va_rules as $t_rule) {
+			/** @var ca_metadata_alert_rules $t_rule */
+			
+			// check type restrictions
+			$va_restrictions = $t_rule->getTypeRestrictions();
+			$va_type_ids = [];
+			if(is_array($va_restrictions) && sizeof($va_restrictions)) {
+				foreach($va_restrictions as $va_restriction) {
+					$va_type_ids[] = $va_restriction['type_id'];
+				}
+
 			}
 
-			$qr_records = $o_db->query("SELECT ".$t_instance->primaryKey(). " FROM {$vs_table} {$vs_where}");
-
-			while($qr_records->nextRow()) {
-				$t_instance->load($qr_records->get($t_instance->primaryKey()));
-				self::fireApplicableTriggers($t_instance, __CA_MD_ALERT_CHECK_TYPE_PERIODIC__);
+			foreach($t_rule->getTriggers() as $va_trigger) {
+				$va_triggers[] = [
+					'info' => $va_trigger,
+					'type_restrictions' => $va_type_ids
+				];
 			}
 		}
+
+		return $va_triggers;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function firePeriodicTriggers() {
+		foreach(self::tablesWithRules() as $vn_table_num => $vs_table) {
+			$va_triggers = self::getApplicableTriggersForTable($vn_table_num);
+			if(!is_array($va_triggers)) { continue; }
+			
+			foreach($va_triggers as $va_trigger) {
+				$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['info']['trigger_type'], $va_trigger['info']);
+				if($o_trigger->getTriggerType() != __CA_MD_ALERT_CHECK_TYPE_PERIODIC__) { continue; }	// only periodic triggers here
+				
+				if (!is_array($va_criteria = $o_trigger->getTriggerQueryCriteria($va_trigger['info']))) {
+					$va_criteria = '*';	// default to examining all records
+				}
+				
+				$va_params = ['returnAs' => 'searchResult'];
+				if (is_array($va_trigger['type_restrictions']) && sizeof($va_trigger['type_restrictions'])) {
+					$va_params['restrictToTypes'] = $va_trigger['type_restrictions'];
+				}
+				
+				$qr_records = call_user_func_array("{$vs_table}::find", [$va_criteria, $va_params]);
+				
+				while($qr_records->nextHit()) {
+					self::fireTrigger($o_trigger, $qr_records, $va_trigger['info']);
+				}
+			}
+		}
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * Return a list of tables for which metadata alert rules exist. The keys of the array are table_nums and values are table names.
+	 *
+	 * @return array
+	 */
+	public static function tablesWithRules() {
+		$o_db = new Db();
+		$o_dm = Datamodel::load();
+	
+		$va_table_list = [];
+		$qr_table_nums = $o_db->query("SELECT DISTINCT table_num FROM ca_metadata_alert_rules");
+		while($qr_table_nums->nextRow()) {
+			$va_table_list[$vn_table_num = $qr_table_nums->get('table_num')] = $o_dm->getTableName($vn_table_num);
+		}
+		return $va_table_list;
 	}
 	# ------------------------------------------------------
 }

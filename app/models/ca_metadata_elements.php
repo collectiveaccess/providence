@@ -669,13 +669,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$pm_table_name_or_num = caGetOption('tableNum', $pa_options, null);
 		$pm_type_name_or_id = caGetOption('typeNameOrID', $pa_options, null);
 		$pb_add_empty_option = caGetOption('addEmptyOption', $pa_options, false);
+		$ps_empty_option = caGetOption('emptyOption', $pa_options, '---');
 		$pb_no_containers = caGetOption('noContainers', $pa_options, false);
 		$pm_value = caGetOption('value', $pa_options, null);
 
 		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
 
 		if($pb_add_empty_option) {
-			$va_list = [0 => '---'];
+			$va_list = [0 => $ps_empty_option];
 		} else {
 			$va_list = [];
 		}
@@ -690,8 +691,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				continue;
 			}
 
-			$va_list[$va_element['element_id']] = $va_element['display_label'] . ' [' . $va_element['element_code'] . ']';
+			
+			$va_list[$va_element['element_id']] = (($va_element['parent_id'] > 0) ? self::getElementLabel($va_element['hier_element_id']). " &gt; " : '').$va_element['display_label'] . ' (' . $va_element['element_code'] . ')';
 		}
+		natsort($va_list);
 
 		return caHTMLSelect($ps_select_name, $va_list, $pa_attributes, $va_options);
 	}
@@ -1138,6 +1141,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		MemoryCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get element label for given element_id (or code)
+	 * @param mixed $pm_element_id
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementLabel($pm_element_id) {
+		if(!$pm_element_id) { return null; }
+		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
+
+		if(MemoryCache::contains($pm_element_id, 'ElementLabels')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementLabels');
+		}
+
+		$vm_return = null;
+		if (!$t_element = self::getInstance($pm_element_id)) { return null; }
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->get('ca_metadata_elements.preferred_labels.name');
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementLabels');
 		return $vm_return;
 	}
 	# ------------------------------------------------------

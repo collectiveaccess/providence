@@ -66,7 +66,7 @@ class VersionUpdate137 extends BaseVersionUpdater {
 		$t_ui->setMode(ACCESS_WRITE);
 		$t_ui->set('user_id', null);
 		$t_ui->set('is_system_ui', 1);
-		$t_ui->set('editor_type', 233);
+		$t_ui->set('editor_type', 238);
 		$t_ui->set('editor_code', 'metadata_alert_rule_config_ui');
 		$t_ui->set('color', '000000');
 		$t_ui->insert();

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,6 +66,29 @@ abstract class Base {
 	 */
 	public function setTriggerValues($pa_trigger_values) {
 		$this->opa_trigger_values = $pa_trigger_values;
+	}
+	
+	/**
+	 * Return query criteria for BundlableLabelableBaseModelWithAttributes::find() to generate a set of records that may require 
+	 * notifications. This base implementation just returns null.
+	 *
+	 * @param array $pa_trigger_values
+	 *
+	 * @return array Query parameters for use with BundlableLabelableBaseModelWithAttributes::find(), false if trigger is invalid or null if criteria not support for trigger type.
+	 */
+	public function getTriggerQueryCriteria($pa_trigger_values) {
+		return null;
+	}
+	
+	/**
+	 * 
+	 *
+	 * @param BaseModel $t_instance
+	 *
+	 * @return string Always returns null
+	 */
+	public function getEventKey($t_instance) {
+		return null;
 	}
 
 	/**

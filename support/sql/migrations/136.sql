@@ -17,6 +17,8 @@ ALTER TABLE ca_notifications DROP COLUMN was_read;
 ALTER TABLE ca_notifications DROP INDEX i_table_num_row_id;
 ALTER TABLE ca_notifications DROP COLUMN table_num;
 ALTER TABLE ca_notifications DROP COLUMN row_id;
+
+ALTER TABLE ca_notifications ADD COLUMN is_system tinyint unsigned not null default 0;
 /*==========================================================================*/
 create table ca_notification_subjects (
   subject_id      int unsigned        not null auto_increment,

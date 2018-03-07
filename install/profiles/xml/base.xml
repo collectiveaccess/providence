@@ -3752,14 +3752,8 @@
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
             </placement>
-            <placement code="code">
-              <bundle>code</bundle>
-            </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
-            </placement>
-            <placement code="ca_metadata_alert_rule_type_restrictions">
-              <bundle>ca_metadata_alert_rule_type_restrictions</bundle>
+            <placement code="ca_metadata_alert_triggers">
+              <bundle>ca_metadata_alert_triggers</bundle>
             </placement>
             <placement code="ca_users">
               <bundle>ca_users</bundle>
@@ -3775,8 +3769,11 @@
                 <setting name="add_label" locale="en_US">Add group</setting>
               </settings>
             </placement>
-            <placement code="ca_metadata_alert_triggers">
-              <bundle>ca_metadata_alert_triggers</bundle>
+            <placement code="ca_metadata_alert_rule_type_restrictions">
+              <bundle>ca_metadata_alert_rule_type_restrictions</bundle>
+            </placement>
+            <placement code="code">
+              <bundle>code</bundle>
             </placement>
           </bundlePlacements>
         </screen>

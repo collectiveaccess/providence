@@ -74,6 +74,13 @@ BaseModel::$s_ca_models_definitions['ca_notification_subjects'] = array(
 			'DESCRIPTION' => _t('Indicates whether this notification was marked as read or not.'),
 			'BOUNDS_VALUE' => array(0,1),
 		),
+		'read_on' => array(
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Date read'), 'DESCRIPTION' => _t('The date and time the notification was read.')
+		)
 	)
 );
 
@@ -178,6 +185,26 @@ class ca_notification_subjects extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function insert($pa_options=null) {
+		if ($this->get('was_read')) { 
+			$this->set('read_on', _t('now'));
+		}
+		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($pa_options=null) {
+		if ($this->changed('was_read') && $this->get('was_read')) { 
+			$this->set('read_on', _t('now'));
+		}
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 }
