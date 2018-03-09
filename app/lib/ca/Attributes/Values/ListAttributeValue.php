@@ -254,6 +254,10 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					break;
 			}
 		}
+		
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
+			if (!in_array(ca_lists::getAccessForItemID($this->opn_item_id), $pa_options['checkAccess'])) { return null; }
+		}
 
 		if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
 			return caGetListItemIdno($this->opn_item_id, $pa_options);

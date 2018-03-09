@@ -2184,4 +2184,20 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		return [$this->get('list_code')];
 	}
 	# ------------------------------------------------------
+	/**
+	 * Quickly return access value for list item 
+	 *
+	 * @param int $item_id 
+	 * 
+	 * @return bool or null if item does not exist
+	 */
+	static public function getAccessForItemID($pn_item_id) {
+		$o_db = new Db();
+		$q = $o_db->query("SELECT access FROM ca_list_items WHERE item_id = ? AND deleted = 0", [(int)$pn_item_id]);
+		while($q->nextRow()) {
+			return $q->get('access');
+		}
+		return null;
+	}
+	# ------------------------------------------------------
 }
