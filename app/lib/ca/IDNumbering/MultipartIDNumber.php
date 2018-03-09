@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -834,7 +834,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $ps_value Value from which to derive the index values. If omitted the current value is used. [Default is null]
 	 * @return array Array of string for indexing
 	 */
-	public function getIndexValues($ps_value=null) {
+	public function getIndexValues($ps_value=null, $pa_options=null) {
 		$vs_separator = $this->getSeparator();
 		if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
 		$va_element_names_normal_order = array_keys($va_elements_normal_order);
@@ -943,7 +943,12 @@ class MultipartIDNumber extends IDNumber {
 			$va_output_values = array_merge($va_output_values, $va_tokens);
 		}
 		
-		return $va_output_values;
+		if (isset($pa_options['INDEX_IDNO_PARTS']) || (is_array($pa_options) && (in_array('INDEX_IDNO_PARTS', $pa_options)))) {
+		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $pa_options, [$this->getSeparator()])) && sizeof($va_delimiters)) {
+		        $va_output_values = array_merge($va_output_values, preg_split("![".preg_quote(join('', $va_delimiters), "!")."]!", $ps_value));
+		    }
+		}
+		return array_unique($va_output_values);
 	}
 	# -------------------------------------------------------
 	# User interace (HTML)
