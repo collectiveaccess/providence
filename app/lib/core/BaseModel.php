@@ -7854,7 +7854,7 @@ class BaseModel extends BaseObject {
 			foreach($va_vals as $vn_i => $vs_val) {
 				$va_hierarchy_data[] = array(
 					'level' => $va_levels[$vn_i],
-					'id' => $va_ids[$vn_i],
+					'id' => $va_ids[$va_ids[$vn_i]],
 					'display' => $vs_val
 				);
 			}
