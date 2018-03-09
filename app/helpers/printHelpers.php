@@ -522,6 +522,8 @@
                 $va_options[$va_form_info['name']] = $va_form_info['code'];
             }
         }
+        
+		if (sizeof($va_options) == 0) { return ''; }
 		
 		// Get current display list
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
@@ -570,6 +572,7 @@
 		foreach($va_formats as $vn_ => $va_form_info) {
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
+		if (sizeof($va_options) == 0) { return ''; }
 		
 		$t_display = new ca_bundle_displays();
 		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
