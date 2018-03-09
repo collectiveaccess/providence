@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1137,7 +1137,10 @@
 		if(isset($pa_options['action'])){
 			$vs_action = $pa_options['action'];
 		} else {
-			$vs_action = caGetDetailForType($ps_table, caGetOption('type_id', $pa_options, null), array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
+			if ($pn_id && !($vn_type_id = caGetOption('type_id', $pa_options, null))) {
+				$vn_type_id = $t_table->getTypeID($pn_id);
+			}
+			$vs_action = caGetDetailForType($ps_table, $vn_type_id, array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
 		}
 		
 		$vn_id_for_idno = null;
