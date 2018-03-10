@@ -5,7 +5,7 @@
     "elasticsearch/elasticsearch": "~5.0",
     "monolog/monolog": "~1.0",
     "knplabs/github-api": "~1.2",
-    "ezyang/htmlpurifier": "~4.6",
+    "ezyang/htmlpurifier": "~4.9",
     "easyrdf/easyrdf": "0.9.*",
     "hoa/compiler": "~2.15",
     "hoa/visitor": "~1.15",
