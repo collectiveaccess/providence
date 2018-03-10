@@ -31,6 +31,7 @@
 	
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
+	require('./app/helpers/post-setup.php');
 
 	try {
 		// connect to database
