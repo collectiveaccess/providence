@@ -191,20 +191,26 @@ class ExternalCache {
 				return self::getRedisObject();
 			case 'apc':
 				return self::getApcObject();
+			case 'sqlite':
+				return self::getSqliteObject();
 			case 'file':
 			default:
 				return self::getFileCacheObject();
 		}
 	}
 	# ------------------------------------------------
-	private static function getFileCacheObject(){
+	private static function getCacheDirectory() {
 		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 		if(!file_exists($vs_cache_dir)) { mkdir($vs_cache_dir); }
-
+		return $vs_cache_dir;
+	}
+	# ------------------------------------------------
+	private static function getFileCacheObject(){
 		try {
 			$driver = new Stash\Driver\FileSystem([
-				'path' => $vs_cache_dir
+				'path' => ExternalCache::getCacheDirectory(),
+				'dirSplit' => 2
 			]);
 			return new Stash\Pool($driver);
 		} catch (InvalidArgumentException $e) {
@@ -221,7 +227,7 @@ class ExternalCache {
 		if(!defined('__CA_MEMCACHED_PORT__')) {
 			define('__CA_MEMCACHED_PORT__', 11211);
 		}
-		$driver = new Stash\Driver\Memcache(['servers' => [__CA_MEMCACHED_HOST__, __CA_MEMCACHED_PORT__, 'prefix_key' => __CA_APP_NAME__, 'serializer' => 'json']]);
+		$driver = new Stash\Driver\Memcache(['servers' => [__CA_MEMCACHED_HOST__, __CA_MEMCACHED_PORT__, 'prefix_key' => ExternalCache::makeCacheName(), 'serializer' => 'json']]);
 		return new Stash\Pool($driver);
 	}
 	# ------------------------------------------------
@@ -233,20 +239,36 @@ class ExternalCache {
 		if(!defined('__CA_REDIS_PORT__')) {
 			define('__CA_REDIS_PORT__', 6379);
 		}
+		if(!defined('__CA_REDIS_DB__')) {
+			define('__CA_REDIS_DB__', 0);
+		}
 		
-		$driver = new Stash\Driver\Redis();
-		$driver->setOptions(array('servers' => array(__CA_REDIS_HOST__, __CA_REDIS_PORT__)));
+		
+		$driver = new Stash\Driver\Redis(['servers' => [__CA_REDIS_HOST__, __CA_REDIS_PORT__], 'database' => __CA_REDIS_DB__]);
+		return new Stash\Pool($driver);
+	}
+	# ------------------------------------------------
+	private static function getSqliteObject(){
+		$driver = new Stash\Driver\Sqlite([
+			'path' => ExternalCache::getCacheDirectory(),
+			'nesting' => 0
+		]);
 		return new Stash\Pool($driver);
 	}
 	# ------------------------------------------------
 	private static function getApcObject(){
-		$driver = new Stash\Driver\Apc(['ttl' => __CA_CACHE_TTL__, 'namespace' => __CA_APP_NAME__]);
+		$driver = new Stash\Driver\Apc(['ttl' => __CA_CACHE_TTL__, 'namespace' => ExternalCache::makeCacheName()]);
 		return new Stash\Pool($driver);
 	}
 	# ------------------------------------------------
 	private static function makeKey($ps_key, $ps_namespace) {
 		if(!defined('__CA_APP_TYPE__')) { define('__CA_APP_TYPE__', 'PROVIDENCE'); }
-		return __CA_APP_TYPE__.':'.$ps_key.':'.$ps_namespace;
+		return substr(__CA_APP_TYPE__, 0, 4).':'.$ps_key.':'.$ps_namespace; // only use the first four chars of app type for compactness
+	}
+	# ------------------------------------------------
+	private static function makeCacheName() {
+		if(!defined('__CA_APP_TYPE__')) { define('__CA_APP_TYPE__', 'PROVIDENCE'); }
+		return substr(__CA_APP_TYPE__, 0, 4).'_'.__CA_APP_NAME__;	// only use the first four chars of app type for compactness
 	}
 	# ------------------------------------------------
 }
