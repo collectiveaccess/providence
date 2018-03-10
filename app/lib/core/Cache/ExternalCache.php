@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,6 @@
  */
 
 require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php");
-require_once(__CA_LIB_DIR__."/core/Cache/CAFileSystemCache.php");
 
 class ExternalCache {
 	# ------------------------------------------------
@@ -62,7 +61,7 @@ class ExternalCache {
 	 * @return bool
 	 */
 	private static function cacheExists() {
-		return (isset(self::$opo_cache) && (self::$opo_cache instanceof Doctrine\Common\Cache\CacheProvider));
+		return (isset(self::$opo_cache) && (self::$opo_cache instanceof Stash\Pool));
 	}
 	# ------------------------------------------------
 	private static function checkParameters($ps_namespace, $ps_key) {
@@ -102,7 +101,8 @@ class ExternalCache {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCache()->fetch(self::makeKey($ps_key, $ps_namespace));
+		$item = self::getCache()->getItem(self::makeKey($ps_key, $ps_namespace));
+		return $item->isMiss() ? null : $item->get();
 	}
 	# ------------------------------------------------
 	/**
@@ -122,7 +122,12 @@ class ExternalCache {
 			define('__CA_CACHE_TTL__', 3600);
 		}
 
-		self::getCache()->save(self::makeKey($ps_key, $ps_namespace), $pm_data, (!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
+		$pool = self::getCache();
+		$item = $pool->getItem(self::makeKey($ps_key, $ps_namespace));
+		$item->expiresAfter((!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
+		
+		$item->set($pm_data);
+		$pool->save($item);
 		return true;
 	}
 	# ------------------------------------------------
@@ -136,8 +141,9 @@ class ExternalCache {
 	public static function contains($ps_key, $ps_namespace='default') {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
-
-		return self::getCache()->contains(self::makeKey($ps_key, $ps_namespace));
+		
+		$item = self::getCache()->getItem(self::makeKey($ps_key, $ps_namespace));
+		return !$item->isMiss();
 	}
 	# ------------------------------------------------
 	/**
@@ -150,8 +156,9 @@ class ExternalCache {
 	public static function delete($ps_key, $ps_namespace='default') {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
-
-		return self::getCache()->delete(self::makeKey($ps_key, $ps_namespace));
+		
+		self::getCache()->deleteItem(self::makeKey($ps_key, $ps_namespace));
+		return true;
 	}
 	# ------------------------------------------------
 	/**
@@ -168,16 +175,6 @@ class ExternalCache {
 			// We do nothing here because the directory is re-created automatically the next time someone
 			// tries to access the cache.
 		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Get cache stats
-	 * @return array|bool
-	 */
-	public static function getStats() {
-		if(!self::init()) { return false; }
-
-		return self::getCache()->getStats();
 	}
 	# ------------------------------------------------
 	# Helpers
@@ -203,10 +200,13 @@ class ExternalCache {
 	private static function getFileCacheObject(){
 		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
+		if(!file_exists($vs_cache_dir)) { mkdir($vs_cache_dir); }
 
 		try {
-			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir, '.ca.cache');
-			return $o_cache;
+			$driver = new Stash\Driver\FileSystem([
+				'path' => $vs_cache_dir
+			]);
+			return new Stash\Pool($driver);
 		} catch (InvalidArgumentException $e) {
 			// carry on ... but no caching :(
 			return null;
@@ -221,13 +221,8 @@ class ExternalCache {
 		if(!defined('__CA_MEMCACHED_PORT__')) {
 			define('__CA_MEMCACHED_PORT__', 11211);
 		}
-
-		$o_memcached = new Memcached();
-		$o_memcached->addServer(__CA_MEMCACHED_HOST__, __CA_MEMCACHED_PORT__);
-
-		$o_cache = new \Doctrine\Common\Cache\MemcachedCache();
-		$o_cache->setMemcached($o_memcached);
-		return $o_cache;
+		$driver = new Stash\Driver\Memcache(['servers' => [__CA_MEMCACHED_HOST__, __CA_MEMCACHED_PORT__, 'prefix_key' => __CA_APP_NAME__, 'serializer' => 'json']]);
+		return new Stash\Pool($driver);
 	}
 	# ------------------------------------------------
 	private static function getRedisObject(){
@@ -238,20 +233,15 @@ class ExternalCache {
 		if(!defined('__CA_REDIS_PORT__')) {
 			define('__CA_REDIS_PORT__', 6379);
 		}
-
-		$o_redis = new Redis();
-		$o_redis->connect(__CA_REDIS_HOST__, __CA_REDIS_PORT__);
-		if(defined('__CA_REDIS_DB__') && is_int(__CA_REDIS_DB__)) {
-			$o_redis->select(__CA_REDIS_DB__);
-		}
-
-		$o_cache = new \Doctrine\Common\Cache\RedisCache();
-		$o_cache->setRedis($o_redis);
-		return $o_cache;
+		
+		$driver = new Stash\Driver\Redis();
+		$driver->setOptions(array('servers' => array(__CA_REDIS_HOST__, __CA_REDIS_PORT__)));
+		return new Stash\Pool($driver);
 	}
 	# ------------------------------------------------
 	private static function getApcObject(){
-		return new \Doctrine\Common\Cache\ApcCache();
+		$driver = new Stash\Driver\Apc(['ttl' => __CA_CACHE_TTL__, 'namespace' => __CA_APP_NAME__]);
+		return new Stash\Pool($driver);
 	}
 	# ------------------------------------------------
 	private static function makeKey($ps_key, $ps_namespace) {
