@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -292,7 +292,6 @@
 		if (is_array($pa_attributes)) {
 			$va_attr_vals = array();
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
-			
 				$vs_prefix = '';
 				$va_prefix_file_list = [];
 				if (in_array(ca_metadata_elements::getElementDatatype($vs_element_code), [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__]) && $vs_batch_media_directory && isset($pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) && $pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) {
@@ -303,7 +302,52 @@
 			
 				$vb_is_repeating = false;
 				$vn_num_repeats = null;
-				if(is_array($va_attrs)) {
+				if(caIsIndexedArray($va_attrs)) {
+					// multiple mappings
+					$vn_offset = 0;
+					foreach($va_attrs as $va_attrs_i) {
+						foreach($va_attrs_i as $vs_k => $vs_v) {
+							// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
+						
+							$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader));
+
+							if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
+						
+							if ($vb_is_repeating) {
+								if (is_null($vn_num_repeats)) { $vn_num_repeats = sizeof($va_vals); }
+							
+								$vn_c = 0;
+								foreach($va_vals as $vn_x => $va_v) {
+									if (!$va_v || (!is_array($va_v) && !trim($va_v))) { continue; }
+									if ($vs_prefix && is_array($va_v)) {
+										$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; });
+									
+										foreach($va_v as $vn_y => $vm_val_to_import) {
+											if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
+												$va_v[$vn_y] = array_shift($va_candidates);
+											} else {
+												$va_v[$vn_y] = $vs_path;
+											}
+										}
+									}
+									$va_attr_vals[$vs_element_code][$vn_offset + $vn_x][$vs_k] = $va_v;
+									$vn_c++;
+									if ($vn_c >= $vn_num_repeats) { break; }
+								}
+							} else {
+								if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'returnAsString' => true, 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
+									if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
+										$vs_path = array_shift($va_candidates);
+									}
+									$va_attr_vals[$vs_element_code][$vn_offset][$vs_k] = $vs_path;
+									$vn_c = 1;
+								}
+							}
+						}
+						$vn_offset += $vn_c;
+					}
+				}elseif(caIsAssociativeArray($va_attrs)) {
+					// single mapping
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						
