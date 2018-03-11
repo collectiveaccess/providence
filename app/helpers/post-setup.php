@@ -101,12 +101,11 @@ if (!defined("__CA_CONF_DIR__")) {
 	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 }
 
-# Path to local config directory - configuration containing installation-specific configuration
-# Note that this is not the same as the __CA_CONF_DIR__, which contains general application configuration
-# Installation-specific configuration simply allows you to override selected application configuration as-needed without having to modify the stock config
-# Note also that unit tests should generally ignore local configuration and use the base configuration only
-if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
-	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_CONF_DIR__."/local");
+#
+if(!isset($_CA_THEMES_BY_DEVICE) || !is_array($_CA_THEMES_BY_DEVICE) || !sizeof($_CA_THEMES_BY_DEVICE)) {
+	$_CA_THEMES_BY_DEVICE = array(
+		'_default_' 	=> 'default'
+	);
 }
 
 # Set path to instance configuration file
@@ -145,10 +144,12 @@ if (!defined('__CA_APP_CONFIG__')) {
 	define('__CA_APP_CONFIG__', $_CA_CONFIG_PATH);
 }
 
+# Now that we have __CA_APP_DIR__ set we can load our request helpers - very basic functions we need to set up request handling
+require_once(__CA_APP_DIR__.'/helpers/requestHelpers.php');
 
 # Name of theme to use for this request
 if (!defined("__CA_THEME__")) {
-	define("__CA_THEME__", 'default');
+	define("__CA_THEME__", $g_configuration_cache_suffix = caGetPreferredThemeForCurrentDevice($_CA_THEMES_BY_DEVICE));
 }
 
 # Path to CollectiveAccess 'themes' directory containing visual presentation elements
@@ -171,6 +172,14 @@ if (!defined("__CA_THEME_DIR__")) {
 }
 if (!defined("__CA_THEME_URL__")) {
 	define("__CA_THEME_URL__", __CA_THEMES_URL__."/".__CA_THEME__);
+}
+
+# Path to local config directory - configuration containing installation-specific configuration
+# Note that this is not the same as the __CA_CONF_DIR__, which contains general application configuration
+# Installation-specific configuration simply allows you to override selected application configuration as-needed without having to modify the stock config
+# Note also that unit tests should generally ignore local configuration and use the base configuration only
+if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
+	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_THEMES_DIR__."/".__CA_THEME__."/conf");
 }
 
 #
