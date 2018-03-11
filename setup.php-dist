@@ -6,6 +6,7 @@
 # | |__| (_) | | |  __/ (__| |_| |\ V /  __// ___ \ (_| (_|  __/\__ \__ \
 #  \____\___/|_|_|\___|\___|\__|_| \_/ \___/_/   \_\___\___\___||___/___/
 #
+#				Providence: Cataloguing system for CollectiveAccess
 #               Open-source collections management software
 #               Version 1.7.7
 #				
@@ -216,6 +217,8 @@ if (!defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) {
 if (!defined('__CA_STACKTRACE_ON_EXCEPTION__')) {
 	define('__CA_STACKTRACE_ON_EXCEPTION__', false);
 }
+
+require(__DIR__."/app/helpers/post-setup.php");
 
 /* ----------------------------------------------------------------------
  * CollectiveAccess

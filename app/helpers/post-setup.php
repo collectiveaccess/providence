@@ -327,3 +327,10 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
 if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__')) {
 	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__', true);
 }
+
+# __CA_APP_TYPE__
+#
+# Flag indicating application type to code libraries
+if (!defined("__CA_APP_TYPE__")) {
+	define("__CA_APP_TYPE__", "PROVIDENCE");
+}

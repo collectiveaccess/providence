@@ -25,13 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
+	define("__CA_APP_TYPE__", "PROVIDENCE");
 	define("__CA_MICROTIME_START_OF_REQUEST__", microtime());
 	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
-	define("__CA_APP_TYPE__", "PROVIDENCE");
+	require("./app/helpers/errorHelpers.php");
 	
-	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
+	if (!file_exists('./setup.php')) {
+		caDisplayException(new ApplicationException("No setup.php found"));
+		exit; 
+	}
 	require('./setup.php');
-	require('./app/helpers/post-setup.php');
+	require_once('./app/helpers/post-setup.php');
 
 	try {
 		// connect to database
