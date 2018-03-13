@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,6 +61,9 @@
 					<?php print _t('Alert name'); ?>
 				</th>
 				<th class="list-header-unsorted">
+					<?php print _t('Rule type'); ?>
+				</th>
+				<th class="list-header-unsorted">
 					<?php print _t('Content type'); ?>
 				</th>
 				<th class="list-header-unsorted">
@@ -77,6 +80,9 @@
 			<tr>
 				<td>
 					<div class="caMetadataAlertListName"><?php print $va_rule['name'].($va_rule['code'] ? "<br/>(".$va_rule['code'].")" : ""); ?></div>
+				</td>
+				<td>
+					<div><?php print $va_rule['trigger_types']; ?></div>
 				</td>
 				<td>
 					<div><?php print $va_rule['metadata_alert_rule_content_type']; ?></div>

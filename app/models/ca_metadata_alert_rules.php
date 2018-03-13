@@ -543,8 +543,19 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			$va_sql_wheres[] = "(".join(" OR ", $va_sql_access_wheres).")";
 		}
 
+		// get triggers
+		$va_triggers_by_rule_id = [];
+		$qr_triggers = $o_db->query("
+			SELECT rule_id, trigger_type
+			FROM ca_metadata_alert_triggers
+		");
+		while($qr_triggers->nextRow()) {
+			$va_triggers_by_rule_id[$qr_triggers->get('rule_id')][] = $qr_triggers->get('trigger_type');
+		}
+		
+		
 		// get rules
-		$qr_res = $o_db->query($vs_sql = "
+		$qr_res = $o_db->query("
 			SELECT
 				mar.rule_id, mar.code, mar.user_id, mar.table_num,
 				marl.label_id, marl.name, marl.locale_id, u.fname, u.lname, u.email,
@@ -563,10 +574,12 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$va_type_name_cache = array();
 		while($qr_res->nextRow()) {
 			$vn_table_num = $qr_res->get('table_num');
+			$vn_rule_id = $qr_res->get('rule_id');
+			
 			if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_display_type = $va_type_name_cache[$vn_table_num])) {
 				$vs_display_type = $va_type_name_cache[$vn_table_num] = $this->getMetadataAlertRuleTypeName($vn_table_num, array('number' => 'plural'));
 			}
-			$va_rules[$qr_res->get('rule_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('metadata_alert_rule_content_type' => $vs_display_type));
+			$va_rules[$vn_rule_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('metadata_alert_rule_content_type' => $vs_display_type, 'trigger_types' => is_array($va_triggers_by_rule_id[$vn_rule_id]) ? join(', ', $va_triggers_by_rule_id[$vn_rule_id]) : ""));
 		}
 		return $va_rules;
 	}
