@@ -11729,13 +11729,19 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Attach notification to currently loaded row
+	 *
 	 * @param int $pn_type Indicates notification type
 	 * @param string $ps_message
 	 * @param bool $pb_system Indicates if this notification is global and can be seen and interacted with by everyone, system-wide
 	 * @param array $pa_options
-	 * 		datetime = timestamp for notification. [Default is now]
-	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y] pairs to add as additional subjects. [Default is null]
+	 * 		datetime = Date/time for notification. [Default is now]
+	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y, deliverByEmail => true/false, deliverToInbox => true/false] pairs to add as additional subjects. [Default is null]
 	 *		key = Optional unique md5 signature for notification. This should be unique to the situation in which the notification was generated. [Default is null]
+	 *		data = Additional data to attach to the notification. Data can be in the form of a scalar value or array and will be serialized. [Default is null]
+	 *		deliverByEmail = Deliver notification by email if possible. [Default is false]
+	 *		deliverToInbox = Deliver notification to user's dashboard index. [Default is true]
+	 *
 	 * @return bool True on success
 	 */
 	public function addNotification($pn_type, $ps_message, $pb_system=false, array $pa_options=[]) {
@@ -11750,10 +11756,13 @@ $pa_options["display_form_field_tips"] = true;
 		$t_notification->setMode(ACCESS_WRITE);
 		$t_notification->set('notification_type', $pn_type);
 		$t_notification->set('message', $ps_message);
-		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
+		$t_notification->set('datetime', caGetOption('datetime', $pa_options, _t('now')));
 		$t_notification->set('is_system', $pb_system ? 1 : 0);
 		$t_notification->set('notification_key', caGetOption('key', $pa_options, null));
-
+		
+		if ($pm_data = caGetOption('data', $pa_options, null)) {
+			$t_notification->set('extra_data', $pm_data);
+		}
 		$t_notification->insert();
 
 		if(!$t_notification->getPrimaryKey()) {
@@ -11770,6 +11779,8 @@ $pa_options["display_form_field_tips"] = true;
 			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
 			$t_subject->set('table_num', $this->tableNum());
 			$t_subject->set('row_id', $this->getPrimaryKey());
+			$t_subject->set('delivery_email', caGetOption('deliverByEmail', $pa_options, 0));
+			$t_subject->set('delivery_inbox', caGetOption('deliverToInbox', $pa_options, 1));
 
 			$t_subject->insert();
 
@@ -11794,6 +11805,8 @@ $pa_options["display_form_field_tips"] = true;
 				$t_subject->set('notification_id', $t_notification->getPrimaryKey());
 				$t_subject->set('table_num', $va_subject['table_num']);
 				$t_subject->set('row_id', $va_subject['row_id']);
+				$t_subject->set('delivery_email', caGetOption('deliverByEmail', $va_subject, 0));
+				$t_subject->set('delivery_inbox', caGetOption('deliverToInbox', $va_subject, 1));
 
 				$t_subject->insert();
 
@@ -11804,6 +11817,8 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			}
 		}
+		
+		// Send email immediately when queue is not enabled
 
 		return true;
 	}
@@ -11864,8 +11879,8 @@ $pa_options["display_form_field_tips"] = true;
 		$qr_notifications = $this->getDb()->query("
 			SELECT DISTINCT
 				ca_notifications.notification_id, ca_notifications.message,
-				ca_notifications.notification_type, ca_notifications.datetime,
-				ca_notification_subjects.subject_id
+				ca_notifications.notification_type, ca_notifications.datetime, ca_notifications.extra_data,
+				ca_notification_subjects.subject_id, ca_notification_subjects.read_on
 			FROM ca_notification_subjects, ca_notifications
 			WHERE ca_notification_subjects.notification_id = ca_notifications.notification_id
 			AND ca_notification_subjects.table_num = ?
@@ -11880,6 +11895,8 @@ $pa_options["display_form_field_tips"] = true;
 			$va_row = $qr_notifications->getRow();
 			// translate for display
 			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
+			
+			$va_row['extra_data'] = caUnserializeForDatabase($va_row['extra_data']);
 
 			$va_return[$qr_notifications->get('notification_id')] = $va_row;
 		}
