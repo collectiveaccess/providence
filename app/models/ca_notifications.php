@@ -61,7 +61,7 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			'LABEL' => _t('Notification type'), 'DESCRIPTION' => _t('Indicates the type of this notification.')
 		),
 		'datetime' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
@@ -94,6 +94,13 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			
 			'LABEL' => _t('MD5 hash'), 'DESCRIPTION' => _t('MD5-generated identifier for this notification.'),
 			'BOUNDS_LENGTH' => array(0,32)
+		),
+		'extra_data' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Notification-specific data', 'DESCRIPTION' => 'Additional data attached to this notification'
 		)
 	)
 );
