@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2342,6 +2342,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caIsAssociativeArray($pa_array) {
+	  if(!is_array($pa_array)) { return false; }
 	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
 	}
 	# ----------------------------------------
