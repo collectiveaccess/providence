@@ -81,13 +81,24 @@ abstract class Base {
 	}
 	
 	/**
-	 * 
+	 * Unique key for trigger event
 	 *
 	 * @param BaseModel $t_instance
 	 *
 	 * @return string Always returns null
 	 */
 	public function getEventKey($t_instance) {
+		return null;
+	}
+	
+	/**
+	 * Extra data to attach to notification for triggered event
+	 *
+	 * @param BaseModel $t_instance
+	 *
+	 * @return string Always returns null
+	 */
+	public function getData($t_instance) {
 		return null;
 	}
 

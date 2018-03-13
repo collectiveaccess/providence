@@ -48,7 +48,7 @@ class Date extends Base {
 				'displayType' => DT_FIELD,
 				'width' => 5, 'height' => 1,
 				'default' => 0,
-				'label' => _t('Number of days before or after the event'),
+				'label' => _t('Number of seconds before or after the event'),
 				'description' => _t('If set to a non-zero value, this trigger will fire X number of days before or after event. You can enter negative values to set up a warning before the scheduled event. Note that if the event is a date range, the trigger will fire X days before the beginning of the range or X days after the end of the range.')
 			),
 		];
@@ -81,19 +81,13 @@ class Date extends Base {
 		foreach($t_instance->get($vs_get_spec, ['returnAsArray' => true, 'dateFormat' => 'iso8601']) as $vs_val) {
 			$o_tep->parse($vs_val);
 
-			// offset should be in days -- convert to seconds
-			$vn_offset = $this->getTriggerValues()['settings']['offset'] * 60 * 60 * 24;
+			// offset should be in seconds
+			$vn_offset = $this->getTriggerValues()['settings']['offset'];
 
-			// @todo: impose some kind of limit. a trigger set to a date
-			// @todo: should not fire every single day after that.
-			if($vn_offset < 0) {
-				if(time() > (($o_tep->getUnixTimestamps()['start']) + $vn_offset)) {
-					return true;
-				}
-			} else {
-				if((time() - $vn_offset) > $o_tep->getUnixTimestamps()['start']) {
-					return true;
-				}
+			if(($vn_offset <= 0) && (time() > (($o_tep->getUnixTimestamps()['start']) - abs($vn_offset)))) {
+				return true;
+			} elseif((time() - abs($vn_offset)) > $o_tep->getUnixTimestamps()['end']) {
+				return true;
 			}
 		}
 
@@ -101,7 +95,7 @@ class Date extends Base {
 	}
 	
 	/**
-	 * 
+	 * Unique key for trigger event
 	 *
 	 * @param BaseModel $t_instance
 	 *
@@ -110,6 +104,17 @@ class Date extends Base {
 	public function getEventKey($t_instance) {
 		$va_spec = $this->_getSpec($t_instance);
 		return md5($t_instance->tableName().'/'.$t_instance->getPrimaryKey().'/'.$t_instance->get($va_spec['spec']));
+	}
+	
+	/**
+	 * Extra data to attach to notification for triggered event
+	 *
+	 * @param BaseModel $t_instance
+	 *
+	 * @return string Always returns null
+	 */
+	public function getData($t_instance) {
+		return ['table_num' => $t_instance->tableNum(), 'table_name' => $t_instance->tableName(), 'row_id' => $t_instance->getPrimaryKey()];
 	}
 	
 	/** 
@@ -146,25 +151,30 @@ class Date extends Base {
 		}
 		$vs_parent_code = \ca_metadata_elements::getElementCodeForId(\ca_metadata_elements::getElementHierarchyID($vs_element_code));
 		
-		$vn_offset = $pa_trigger_values['settings']['offset'] * 60 * 60 * 24;
+		$vn_offset = $pa_trigger_values['settings']['offset'];		// in seconds
 		
+		// Windows are always a day wide on the assumption notifications will be checked at least once a day
+		// If they're not, some notifications will be missed
 		if ($vn_offset <= 0) {
-			$vn_start = time() + $vn_offset;
-			$vn_end = time();
+			// Notifications where user wants to know *before* the event happens of *when* it happens (offset = 0)
+			$vn_start = time() + abs($vn_offset);					// start: offset seconds in the future
+			$vn_end = time() + abs($vn_offset) + (24 * 60 * 60);	// end: offset seconds + 1 day in the future
 		} else {
-			$vn_start = time();
-			$vn_end = time() + $vn_offset;
+			// Notifications where user wants to know *after* the event happens
+			$vn_start = time() - abs($vn_offset);					// start: offset seconds in the past
+			$vn_end = time() - abs($vn_offset) + (24 * 60 * 60);	// end: offset seconds in the past + 1 day
 		}
 		
 		$va_criteria = [];
 		
-		$vs_date_range = caGetLocalizedDateRange($vn_start, $vn_end, ['timeOmit' => true]);
+		$vs_date_range = caGetLocalizedDateRange($vn_start, $vn_end, ['timeOmit' => false]);
 		
 		if ($vs_parent_code) {
 			$va_criteria[$vs_parent_code] = [$vs_element_code => $vs_date_range];
 		} else {
 			$va_criteria[$vs_element_code] = $vs_date_range;
 		}
+		
 		return $va_criteria;
 	}
 }

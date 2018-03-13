@@ -284,7 +284,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 					if ($va_user['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
 						$t_user->load($va_user['user_id']);
 						if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key]);
+						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject)]);
 					}
 				}
 			}
@@ -299,7 +299,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 						foreach($t_group->getGroupUsers() as $va_user) {
 							if(!$t_user->load($va_user['user_id'])) { continue; }
 							if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key]);
+							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject)]);
 						}
 					}
 				}
@@ -403,17 +403,17 @@ class ca_metadata_alert_triggers extends BaseModel {
 				}
 				
 				$qr_records = call_user_func_array("{$vs_table}::find", [$va_criteria, $va_params]);
-				
+				//print "Got records: ".$qr_records->numHits()."\n";
 				while($qr_records->nextHit()) {
 					self::fireTrigger($o_trigger, $qr_records, $va_trigger['info']);
 				}
 			}
 		}
 	}
-	
 	# ------------------------------------------------------
 	/**
-	 * Return a list of tables for which metadata alert rules exist. The keys of the array are table_nums and values are table names.
+	 * Return a list of tables for which metadata alert rules exist. 
+	 * The keys of the array are table_nums and values are table names.
 	 *
 	 * @return array
 	 */
