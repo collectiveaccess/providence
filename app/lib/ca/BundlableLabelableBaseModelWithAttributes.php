@@ -3559,7 +3559,6 @@ if (!$vb_batch) {
 		$this->setMode(ACCESS_WRITE);
 			
 		$vb_is_insert = false;
-		$this->triggerMetadataAlerts();
 		
 		if ($this->getPrimaryKey()) {
 			$this->update(array('queueIndexing' => true));
@@ -4791,9 +4790,9 @@ if (!$vb_batch) {
 		}
 
 		if ($vb_dryrun) { $this->removeTransaction(false); }
-		$this->triggerMetadataAlerts();
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
+		$this->triggerMetadataAlerts();
 		return true;
 	}
  	# ------------------------------------------------------
