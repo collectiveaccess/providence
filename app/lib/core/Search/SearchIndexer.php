@@ -902,7 +902,6 @@ class SearchIndexer extends SearchBase {
                                 continue;
                             }
                             if(is_array($va_restrict_indexing_to_types) && !in_array($vn_row_type_id, $va_restrict_indexing_to_types)) {
-                                print "SKIP $vs_related_table BECAUSE TYPE WAS $vn_row_type_id\n";
                                 continue;
                             }
                             
@@ -1922,7 +1921,7 @@ class SearchIndexer extends SearchBase {
 // update indexing for each relationship
 				foreach($va_rel_tables_to_index_list as $vs_rel_table) {
 					$va_indexing_info = $this->getTableIndexingInfo($vn_dep_table_num, $vs_rel_table);
-					$vn_rel_table_num = $this->opo_datamodel->getTableNum($vs_rel_table);
+					$vn_rel_table_num = $this->opo_datamodel->getTableNum(preg_replace("/\.related$/", "", $vs_rel_table));
 					$vn_rel_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_rel_table_num);
 					$t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_table_num, true);
 					$t_rel->setDb($this->getDb());
@@ -1936,8 +1935,9 @@ class SearchIndexer extends SearchBase {
 							continue;
 						}
 					}
-
+					
 					foreach($va_table_path as $vs_n => $va_linking_tables_config) {
+					    $va_table_list = (caIsIndexedArray($va_linking_tables_config)) ? $va_linking_tables_config : array_keys($va_linking_tables_config);
 						if (caIsIndexedArray($va_linking_tables_config)) {
 							$va_tmp = array();
 							foreach($va_linking_tables_config as $vs_t) {
@@ -1945,8 +1945,7 @@ class SearchIndexer extends SearchBase {
 							}
 							$va_linking_tables_config = $va_tmp;
 						}
-						$va_table_list = array_keys($va_linking_tables_config);
-							
+						
 						if (!in_array($vs_dep_table, $va_table_list)) { array_unshift($va_table_list, $vs_dep_table); }
 						if (!in_array($vs_rel_table, $va_table_list)) { $va_table_list[] = $vs_rel_table; }
 						if (!in_array($vs_subject_tablename, $va_table_list)) { continue; }
@@ -2087,7 +2086,7 @@ class SearchIndexer extends SearchBase {
 		$va_flds = $va_fld_names = $va_wheres = array();
 		
 		if(true) { //!MemoryCache::contains($vs_key, 'SearchIndexerRelatedRowsJoins')) {
-			$vs_left_table = $vs_select_table = array_shift($pa_tables);
+			$vs_left_table = $vs_select_table = preg_replace("/\.related$/", "", array_shift($pa_tables));
 
 			$t_select = $this->opo_datamodel->getInstanceByTableName($vs_select_table, true);
 			$vs_select_pk = $t_select->primaryKey();

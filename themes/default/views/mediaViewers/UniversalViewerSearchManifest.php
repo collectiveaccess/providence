@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017 Whirl-i-Gig
+ * Copyright 2017-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,7 @@
 	
 	$va_manifest = [
         "@context" => "http://iiif.io/api/search/0/context.json",
-        "@id" => "https://wellcomelibrary.org/annoservices/search/b18035723?q=wunder",
+        "@id" => "{$vs_identifier}_results",
         "@type" => "sc:AnnotationList",
         "within" => [
             "@type" => "sc:Layer",

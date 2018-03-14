@@ -844,6 +844,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		// get fields 
 
 		foreach($va_search_settings as $vs_table => $va_fields) {
+		    if (preg_match("!\.related$!", $vs_table)) { continue; }
 			if (!is_array($va_fields['fields'])) { continue; }
 
 			if ($vs_table == $vs_primary_table) {

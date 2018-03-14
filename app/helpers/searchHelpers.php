@@ -1429,7 +1429,9 @@
 						}
 						
 						if (isset($va_placement['settings']['label'])) {
-							$va_ui_bundle_label_map[$vs_bundle_name] = isset($va_placement['settings']['label'][$g_ui_locale_id]) ? $va_placement['settings']['label'][$g_ui_locale_id] : array_shift($va_placement['settings']['label']);
+							if ($vs_label_tmp = isset($va_placement['settings']['label'][$g_ui_locale_id]) ? $va_placement['settings']['label'][$g_ui_locale_id] : array_shift($va_placement['settings']['label'])) {
+								$va_ui_bundle_label_map[$vs_bundle_name] = $vs_label_tmp;
+							}
 						}
 						
 					}
