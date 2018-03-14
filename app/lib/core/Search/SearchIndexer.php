@@ -1937,6 +1937,7 @@ class SearchIndexer extends SearchBase {
 					}
 					
 					foreach($va_table_path as $vs_n => $va_linking_tables_config) {
+					    $va_table_list = (caIsIndexedArray($va_linking_tables_config)) ? $va_linking_tables_config : array_keys($va_linking_tables_config);
 						if (caIsIndexedArray($va_linking_tables_config)) {
 							$va_tmp = array();
 							foreach($va_linking_tables_config as $vs_t) {
@@ -1944,8 +1945,7 @@ class SearchIndexer extends SearchBase {
 							}
 							$va_linking_tables_config = $va_tmp;
 						}
-						$va_table_list = array_keys($va_linking_tables_config);
-							
+						
 						if (!in_array($vs_dep_table, $va_table_list)) { array_unshift($va_table_list, $vs_dep_table); }
 						if (!in_array($vs_rel_table, $va_table_list)) { $va_table_list[] = $vs_rel_table; }
 						if (!in_array($vs_subject_tablename, $va_table_list)) { continue; }
