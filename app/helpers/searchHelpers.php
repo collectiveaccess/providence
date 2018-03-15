@@ -1400,11 +1400,11 @@
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
 		require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 		global $g_ui_locale_id;
+		$o_dm = Datamodel::load();
 
 		if(is_numeric($ps_table)) {
 			$ps_table = $o_dm->getTableName($ps_table);
 		}
-		$o_dm = Datamodel::load();
 		if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return []; }
 		
 		$t_rel = null;
