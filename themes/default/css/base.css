@@ -5094,6 +5094,11 @@ table.uiScreenItem .fa{
     text-decoration: none;
 }
 
+.dashboardWidgetContentSmallNote {
+	font-size: 10px;
+	font-style: italic;
+}
+
 .dashboardColumn { width: 480px; float: left;}
 .dashboard a {text-decoration: none;}
 

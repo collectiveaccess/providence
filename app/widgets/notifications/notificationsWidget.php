@@ -37,8 +37,8 @@
 		static $s_widget_settings = [];
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {
-			$this->title = _t('Notifications');
-			$this->description = _t('Displays notifications');
+			$this->title = _t('Notification inbox');
+			$this->description = _t('Displays current notifications');
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/notifications.conf');
