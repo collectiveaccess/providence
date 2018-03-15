@@ -197,7 +197,7 @@
 							'completedOn' => caGetLocalizedDate(time()),
 							'setName' => $vs_set_name,
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
-						)
+						), null, null, ['source' => 'Batch edit complete']
 					);
 				}
 			}
@@ -1158,7 +1158,7 @@
 							'completedOn' => caGetLocalizedDate(time()),
 							'setName' => ($vn_set_id) ? $vs_set_name : null,
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
-						)
+						), null, null, ['source' => 'Batch media import complete']
 					);
 				}
 			}
@@ -1263,7 +1263,7 @@
 							'startedOn' => caGetLocalizedDate($vn_start_time),
 							'completedOn' => caGetLocalizedDate(time()),
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
-						)
+						), null, null, ['source' => 'Metadata import complete']
 					);
 				}
 			}
