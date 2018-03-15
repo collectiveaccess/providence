@@ -736,7 +736,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 
 		$this->set("page", 1);
 		$this->set('resolution', $vn_old_res);
-		$this->set('resolution', $vn_old_quality);
+		$this->set('quality', $vn_old_quality);
 		
 		
 		if (!sizeof($va_files)) {
