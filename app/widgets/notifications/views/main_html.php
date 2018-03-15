@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,10 +47,13 @@
 <?php
 				foreach ($va_notification_list as $vn_notification_id => $va_notification) {
 					print "<tr>";
-					print "<td><a href='#' onclick='caMarkNotificationAsRead(" . $va_notification['subject_id'] . ", " . $vn_notification_id . "); return false;'>" . _t("Read") . "</a></td>";
-					print "<td>" . date("n/d/y, g:iA", $va_notification['datetime']) . "</td>";
+					print "<td><a href='#' onclick='caMarkNotificationAsRead(" . $va_notification['subject_id'] . ", " . $vn_notification_id . "); return false;'>" . caNavIcon(__CA_NAV_ICON_CLOSE__, '14px') . "</a></td>";
+					print "<td>" .$va_notification['datetime_display'] . "</td>";
 					print "<td id='notificationWidgetMessage{$vn_notification_id}'>";
 					print "<div>" . $va_notification['message'] . "</div>";
+					if ($va_notification['delivery_email_sent_on'] > 0) {
+						print "<div class='dashboardWidgetContentSmallNote'>("._t("Email sent on %1", $va_notification['delivery_email_sent_on_display']).")</div>";
+					}
 					print "</td>";
 					print "</tr>\n";
 				}
