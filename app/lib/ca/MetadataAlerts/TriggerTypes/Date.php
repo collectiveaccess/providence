@@ -44,12 +44,13 @@ class Date extends Base {
 	public function getTypeSpecificSettings() {
 		return [
 			'offset' => array(
-				'formatType' => FT_NUMBER,
-				'displayType' => DT_FIELD,
+				'formatType' => FT_TEXT,
+				'displayType' => DT_INTERVAL,
 				'width' => 5, 'height' => 1,
-				'default' => 0,
-				'label' => _t('Number of seconds before or after the event'),
-				'description' => _t('If set to a non-zero value, this trigger will fire X number of days before or after event. You can enter negative values to set up a warning before the scheduled event. Note that if the event is a date range, the trigger will fire X days before the beginning of the range or X days after the end of the range.')
+				'default' => '0|HOURS|AFTER',
+				'label' => _t('Notify user'),
+				'suffix' => _t('date'),
+				'description' => _t('Set an interval before or after an event in which to trigger a notification. Note that if the event is a date range, the trigger will fire before the beginning of the range or after the end of the range.')
 			),
 		];
 	}
@@ -82,7 +83,7 @@ class Date extends Base {
 			$o_tep->parse($vs_val);
 
 			// offset should be in seconds
-			$vn_offset = $this->getTriggerValues()['settings']['offset'];
+			$vn_offset = self::offsetToSeconds($this->getTriggerValues()['settings']['offset']);
 
 			if(($vn_offset <= 0) && (time() > (($o_tep->getUnixTimestamps()['start']) - abs($vn_offset)))) {
 				return true;
@@ -92,6 +93,13 @@ class Date extends Base {
 		}
 
 		return false;
+	}
+	
+	/**
+	 *
+	 */
+	public function getElementDataTypeFilters() {
+		return [__CA_ATTRIBUTE_VALUE_DATERANGE__];
 	}
 	
 	/**
@@ -151,7 +159,7 @@ class Date extends Base {
 		}
 		$vs_parent_code = \ca_metadata_elements::getElementCodeForId(\ca_metadata_elements::getElementHierarchyID($vs_element_code));
 		
-		$vn_offset = $pa_trigger_values['settings']['offset'];		// in seconds
+		$vn_offset = self::offsetToSeconds($pa_trigger_values['settings']['offset']);		// in seconds
 		
 		// Windows are always a day wide on the assumption notifications will be checked at least once a day
 		// If they're not, some notifications will be missed
@@ -176,5 +184,38 @@ class Date extends Base {
 		}
 		
 		return $va_criteria;
+	}
+	
+	/**
+	 *
+	 */
+	public static function offsetToSeconds($ps_offset) {
+		$pa_offset = explode('|', $ps_offset);
+		if (sizeof($pa_offset) != 3) { return 0; }
+		
+		$n = (int)$pa_offset[0];
+		switch(strtolower($pa_offset[1])) {
+			case 'hours':
+				$n = $n * 60 * 60;	
+				break;
+			case 'minutes':
+				$n = $n * 60;	
+				break;
+			case 'seconds':
+				// noop
+				break;
+			case 'weeks':
+				$n = $n * 60 * 60 * 24 * 7;	
+				break;
+			default:
+			case 'days':
+				$n = $n * 60 * 60 * 24;	
+				break;
+		}
+		
+		if (strtolower($pa_offset[2]) == 'before') {
+			$n = $n * -1;
+		}
+		return $n;
 	}
 }

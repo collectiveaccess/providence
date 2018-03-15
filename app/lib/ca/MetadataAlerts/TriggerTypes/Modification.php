@@ -42,23 +42,7 @@ class Modification extends Base {
 	 * @return array
 	 */
 	public function getTypeSpecificSettings() {
-		return [
-			'trigger_fire' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'default' => 1,
-				'width' => 60, 'height' => 1,
-				'label' => _t('Trigger on change type'),
-				'description' => _t('Defines when this trigger fires. '),
-				'options' => array(
-					_t('When element chosen for this trigger is changed') => 'element',
-					_t('Any change') => 'any',
-				)
-			),
-
-			// all accessible items?
-			// restrict by set?
-		];
+		return [];
 	}
 
 	public function getTriggerType() {
@@ -73,17 +57,14 @@ class Modification extends Base {
 		$va_values = $this->getTriggerValues();
 		if(!sizeof($va_values)) { return false; }
 
-		switch($va_values['settings']['trigger_fire']) {
-			case 'any':
-				return $t_instance->hasChangedSinceLoad();
-			case 'element':
-			default:
-				// if trigger_fire is based on element, but no element is set,
-				// just bail. trigger did not fire in that case
-				if(!$va_values['element_id']) { return false; }
-				
-				$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
-				return $t_instance->elementHasChanged($vs_code);
+
+		if(!$va_values['element_id']) {
+			// Trigger on any change
+			return $t_instance->hasChangedSinceLoad();
 		}
+		
+		// Trigger on specific element
+		$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
+		return $t_instance->elementHasChanged($vs_code);
 	}
 }

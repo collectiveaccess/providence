@@ -765,9 +765,6 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		}
 
 		if($t_trigger->numErrors() > 0) {
-			// foreach($t_trigger->getErrors() as $vs_error) {
-// 				$this->notification->addNotification($vs_error, __NOTIFICATION_TYPE_ERROR__);
-// 			}
 			$this->errors = $t_trigger->errors;
 			return false;
 		}

@@ -671,6 +671,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$pb_add_empty_option = caGetOption('addEmptyOption', $pa_options, false);
 		$ps_empty_option = caGetOption('emptyOption', $pa_options, '---');
 		$pb_no_containers = caGetOption('noContainers', $pa_options, false);
+		$pa_restrict_to_datatypes = caGetOption('restrictToDataTypes', $pa_options, null);
 		$pm_value = caGetOption('value', $pa_options, null);
 
 		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
@@ -687,11 +688,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		foreach($va_elements as $va_element) {
-			if($pb_no_containers && ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__)) {
-				continue;
-			}
+			if($pb_no_containers && ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__)) { continue; }
+			if (is_array($pa_restrict_to_datatypes) && !in_array($va_element['datatype'], $pa_restrict_to_datatypes)) { continue; }
 
-			
 			$va_list[$va_element['element_id']] = (($va_element['parent_id'] > 0) ? self::getElementLabel($va_element['hier_element_id']). " &gt; " : '').$va_element['display_label'] . ' (' . $va_element['element_code'] . ')';
 		}
 		natsort($va_list);

@@ -53,16 +53,6 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 				?>
 				<?php print $t_trigger->htmlFormElement('trigger_type', null, ['name' => $vs_id_prefix . '_trigger_type', 'id' => $vs_id_prefix.'triggerTypeSelect']); ?>
 				<div id="<?php print $vs_id_prefix; ?>triggerTypeSettingsForm"></div>
-				<div class="formLabel"><?php print _t('Trigger element'); ?><br/>
-				<?php print ca_metadata_elements::getElementListAsHTMLSelect($vs_id_prefix . '_element_id', [], [
-					'rootElementsOnly' => false,
-					'noContainers' => true,
-					'tableNum' => $vn_table_num,
-					'addEmptyOption' => true,
-					'emptyOption' => '-',
-					'value' => $t_trigger->get('element_id')
-				]); ?>
-				</div>
 			</div>
 		</div>
 	</div>

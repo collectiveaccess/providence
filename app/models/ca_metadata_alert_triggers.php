@@ -76,7 +76,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 			'IS_NULL' => false,
 			'DEFAULT' => '',
 			'BOUNDS_CHOICE_LIST' => CA\MetadataAlerts\TriggerTypes\Base::getAvailableTypes(),
-			'LABEL' => _t('Trigger type'), 'DESCRIPTION' => _t('Element indicating type of trigger.'),
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Alerts may be triggered by various types of events. Select the type of event to trigger this alert here.'),
 		),
 	)
 );
@@ -211,6 +211,17 @@ class ca_metadata_alert_triggers extends BaseModel {
 	/**
 	 *
 	 */
+	public function getTriggerInstance() {
+		if($vs_trigger_type = $this->get('trigger_type')) {
+			/** @var CA\MetadataAlerts\TriggerTypes\Base $o_trigger_type */
+			return CA\MetadataAlerts\TriggerTypes\Base::getInstance($vs_trigger_type, []);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		$vm_ret = parent::set($pa_fields, $pm_value, $pa_options);
 
@@ -277,6 +288,14 @@ class ca_metadata_alert_triggers extends BaseModel {
 
 			$vs_notification_key = $po_trigger->getEventKey($t_subject);
 
+			
+			if (!is_array($va_delivery_options = caGetOption('notificationDeliveryOptions', $pa_trigger['settings'], null))) {
+				$va_delivery_options = [];
+			}
+			
+			$vb_email = in_array('EMAIL', $va_delivery_options);
+			$vb_inbox = in_array('INBOX', $va_delivery_options);
+			
 			// notify users
 			$va_users = $t_rule->getUsers();
 			if(is_array($va_users)) {
@@ -284,7 +303,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 					if ($va_user['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
 						$t_user->load($va_user['user_id']);
 						if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject)]);
+						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
 					}
 				}
 			}
@@ -299,7 +318,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 						foreach($t_group->getGroupUsers() as $va_user) {
 							if(!$t_user->load($va_user['user_id'])) { continue; }
 							if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject)]);
+							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
 						}
 					}
 				}

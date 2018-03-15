@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/manage/metadata_alert_triggers/ajax_rule_trigger_settings_form_html.php
+ * default/views/mailTemplates/notification_digest.tpl
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,31 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
-
-	/** @var ca_metadata_alert_triggers $t_trigger */
-	$t_trigger = $this->getVar('t_trigger');
-	$vs_id_prefix = $this->getVar('id_prefix');
-	$vn_trigger_id = $t_trigger->getPrimaryKey();
+ 	$notifications = $this->getVar('notifications');
+ 	$num_notifications = sizeof($notifications);
+?>
+	<p>You have the <?php print $num_notifications; ?> notifications:</p>
 	
-	if(is_array($va_available_settings = $this->getVar('available_settings')) && sizeof($va_available_settings)) {
-?>
+	<ul>
 <?php
-		foreach($va_available_settings as $vs_code => $va_properties) {
-			print $t_trigger->settingHTMLFormElement($vs_code, ['name' => "{$vs_id_prefix}_setting_{$vs_code}"]);
-		}
-?>
-		<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
-		<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", [], [
-			'rootElementsOnly' => false,
-			'noContainers' => true,
-			'tableNum' => $vn_table_num,
-			'addEmptyOption' => true,
-			'emptyOption' => '-',
-			'value' => $t_trigger->get('element_id'),
-			'restrictToDataTypes' => $t_trigger->getTriggerInstance()->getElementDataTypeFilters()
-		]); ?>
-		</div>
-<?php
+	foreach $notifications as $notification) { 
+		print "<li>".$notification['message']."</li>\n";
 	}
-
-	print TooltipManager::getLoadHTML();
+?>
+	</ul>

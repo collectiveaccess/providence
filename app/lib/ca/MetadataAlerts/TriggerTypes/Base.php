@@ -117,11 +117,20 @@ abstract class Base {
 				'width' => 90, 'height' => 4,
 				'label' => _t('Notification template'),
 				'validForRootOnly' => 1,
-				'description' => _t('Message for the alert/notification sent to the user. This is a display template relative to the alert record.')
+				'description' => _t('Message for the alert notification sent to users. This is a display template with access to all metadata in the affected record.')
 			),
+			'notificationDeliveryOptions' => [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'multiple' => true,
+				'options' => [_t('by email') => 'EMAIL', _t('to inbox') => 'INBOX'],
+				'default' => 'INBOX',
+				'label' => _t('Deliver notifications'),
+				'description' => _t('Choose methods to deliver notifications here.')
+			]
 		];
 
-		return array_merge($va_generic_settings, $this->getTypeSpecificSettings());
+		return array_merge($this->getTypeSpecificSettings(), $va_generic_settings);
 	}
 
 	/**
@@ -175,6 +184,13 @@ abstract class Base {
 		} else {
 			return $t_instance->getWithTemplate($vs_template);
 		}
+	}
+	
+	/**
+	 *
+	 */
+	public function getElementDataTypeFilters() {
+		return null;
 	}
 
 	/**
