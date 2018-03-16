@@ -837,6 +837,8 @@
 											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
 												$va_values[$vs_fld] = array($vs_fld => array('name' => $vs_match_value));
+											} elseif(sizeof($va_flds = explode('.', $vs_fld)) > 1) {
+												$va_values[$va_flds[0]][$va_flds[1]] = $vs_match_value;
 											} else {
 												$va_values[$vs_fld] = $vs_match_value;
 											}
