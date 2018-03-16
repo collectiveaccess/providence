@@ -1490,8 +1490,6 @@ class SearchResult extends BaseObject {
 				
 						switch($vs_subfield) {
 							case 'user':
-								$vm_val = trim(self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id]['fname'].' '.self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id]['lname']);
-								break;
 							case 'fname':
 							case 'lname':
 							case 'email':
@@ -1531,8 +1529,6 @@ class SearchResult extends BaseObject {
 				
 						switch($vs_subfield) {
 							case 'user':
-								$vm_val = trim(self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id]['fname'].' '.self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id]['lname']);
-								break;
 							case 'fname':
 							case 'lname':
 							case 'email':
