@@ -1488,10 +1488,21 @@ class SearchResult extends BaseObject {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
 						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id]['timestamp'];
 				
-						if ($vs_subfield == 'timestamp') {
-							$this->opo_tep->init();
-							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
-							$vm_val = $this->opo_tep->getText($pa_options);
+						switch($vs_subfield) {
+							case 'user':
+							case 'fname':
+							case 'lname':
+							case 'email':
+								$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+								break;
+							case 'timestamp':
+								// noop
+								break;
+							default:
+								$this->opo_tep->init();
+								$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
+								$vm_val = $this->opo_tep->getText($pa_options);
+								break;
 						}
 						goto filter;
 					}
@@ -1516,10 +1527,21 @@ class SearchResult extends BaseObject {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
 						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id]['timestamp'];
 				
-						if ($vs_subfield == 'timestamp') {
-							$this->opo_tep->init();
-							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
-							$vm_val = $this->opo_tep->getText($pa_options);
+						switch($vs_subfield) {
+							case 'user':
+							case 'fname':
+							case 'lname':
+							case 'email':
+								$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+								break;
+							case 'timestamp':
+								// noop
+								break;
+							default:
+								$this->opo_tep->init();
+								$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
+								$vm_val = $this->opo_tep->getText($pa_options);
+								break;
 						}
 						goto filter;
 					}
