@@ -806,7 +806,7 @@
 										break;
 									case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 										if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
-											$va_q[] = "'((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?)))";
+											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?)))";
 											array_push($va_attr_params, $va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']);
 										} else {
 											continue(2);
@@ -929,7 +929,7 @@
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 	
-			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
+			$qr_res = $o_db->query($vs_sql, $x=array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
