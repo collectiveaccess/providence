@@ -3865,6 +3865,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caParseAttributes($ps_attr_string, $pa_attributes) {
 	    $va_ret = [];
+	    $ps_attr_string = html_entity_decode($ps_attr_string, ENT_QUOTES);	// ensure quotes are there for the picking
 	    foreach($pa_attributes as $vs_attr) {
 	        if(preg_match("!{$vs_attr}[ ]*=[ ]*[\"']{1}([^\"']+)[\"']{1}!", $ps_attr_string, $va_matches)) {
 	            $va_ret[$vs_attr] = $va_matches[1];
