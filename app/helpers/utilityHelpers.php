@@ -2089,7 +2089,7 @@ function caFileIsIncludable($ps_file) {
 					continue;
 				}
 
-				if ((!preg_match("!^\X+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
+				if (((strlen($vm_v) < 8192) && (!preg_match("!^\X+$!", $vm_v))) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 					continue;
 				}
