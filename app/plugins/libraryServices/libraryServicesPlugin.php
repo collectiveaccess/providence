@@ -46,7 +46,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Override checkStatus() to return true - the twitterPlugin plugin always initializes ok
+		 * Override checkStatus() to return true 
 		 */
 		public function checkStatus() {
 			return array(
