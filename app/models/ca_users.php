@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2876,12 +2876,18 @@ class ca_users extends BaseModel {
 	 * keys and values that can contain such information
 	 */
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
+	
+		$vs_username = $ps_username;
+		if ($vs_rewrite_username_with_regex = $this->opo_auth_config->get('rewrite_username_with_regex')) {
+			$vs_rewrite_username_to_regex = $this->opo_auth_config->get('rewrite_username_to_regex');
+			$vs_username = preg_replace("!".preg_quote($vs_rewrite_username_with_regex, "!")."!", $vs_rewrite_username_to_regex, $vs_username);
+		}
 
 		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
-		if (strlen($ps_username) > 0 && !$this->load($ps_username)) {
+		if (strlen($vs_username) > 0 && !$this->load($vs_username)) {
 			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__)) {
 				try{
-					$va_values = AuthenticationManager::getUserInfo($ps_username, $ps_password);
+					$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
 				} catch (Exception $e) {
 					$this->opo_log->log(array(
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
@@ -2933,8 +2939,8 @@ class ca_users extends BaseModel {
 		}
 
 		try {
-			if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
-				$this->load($ps_username);
+			if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
+				$this->load($vs_username);
 				return true;
 			}
 		}  catch (Exception $e) {
