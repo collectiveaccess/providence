@@ -67,7 +67,7 @@ class Modification extends Base {
 		// Trigger on specific element
 		$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
 		if (is_array($va_filter_vals = caGetOption($vs_code, $va_filters, null)) && sizeof($va_filter_vals)) {
-			if(!in_array($x=$t_instance->get($t_instance->tableName().".{$vs_code}"), $va_filter_vals)) { return false; }
+			if(!in_array($t_instance->get($t_instance->tableName().".{$vs_code}"), $va_filter_vals)) { return false; }
 		}
 		return $t_instance->elementHasChanged($vs_code);
 	}
