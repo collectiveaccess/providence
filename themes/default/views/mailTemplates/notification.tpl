@@ -26,4 +26,9 @@
  * ----------------------------------------------------------------------
  */
 
- print $this->getVar('notification');
+?>
+	<h2><?php print _t('Notification'); ?><h2>
+ 	<div>
+ 		<?php print $this->getVar('notification'); ?>
+		<em><?php print $this->getVar('datetime_display'); ?></em>
+	</div>

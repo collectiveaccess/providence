@@ -11832,7 +11832,7 @@ $pa_options["display_form_field_tips"] = true;
 				}
 				// Send email immediately when queue is not enabled
 				if ((!defined("__CA_QUEUE_ENABLED__") || !__CA_QUEUE_ENABLED__) && (bool)$vb_send_email && $t_instance->hasField('email') && ($t_instance->load($va_subject['row_id'])) &&  ($vs_to_email = $t_instance->get('email'))) {
-					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] Notification", "notification.tpl", ['notification' => $ps_message, 'sent_on' => time()], null, null, ['source' => 'Notification'])) {
+					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] Notification", "notification.tpl", ['notification' => $ps_message, 'datetime' => time(), 'datetime_display' => caGetLocalizedDate()], null, null, ['source' => 'Notification'])) {
 						$t_subject->set('delivery_email_sent_on', _t('now'));
 						$t_subject->update();
 					} // caSendMessageUsingView logs failures
@@ -11870,15 +11870,16 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Get notifications pertaining to current row
+	 * Get notifications pertaining to current row. Notifications are return in order posted (oldest first).
+	 *
 	 * @param array $pa_options
-	 * 		table_num =
-	 * 		row_id =
-	 * 		includeRead =	 
+	 * 		table_num = Table number to apply notification to. [Default is the table number of this model]
+	 * 		row_id = row_id to apply notification to. [Default is the currently loaded row]
+	 * 		includeRead = Include notifications marked as read or sent. [Default is false]
 	 *		deliverByEmail = Return notifications marked for delivery by email. [Default is null - don't filter]
 	 *		deliverToInbox = Return notifications marked for deliery to user's dashboard inbox. [Default is null - don't filter]
 	 *			
-	 * @return array
+	 * @return array Array of notifications indexed by notification subject_id. Each value is an array of notification content.
 	 */
 	public function getNotifications(array $pa_options = []) {
 		$t_notification = new ca_notifications();
@@ -11896,15 +11897,21 @@ $pa_options["display_form_field_tips"] = true;
 
 		$va_params = [$pn_table_num, $pn_row_id];
 		if(!caGetOption('includeRead', $pa_options, false)) {
-			$va_additional_wheres[] = 'ca_notification_subjects.was_read = 0';
+			if ($vb_inbox) {
+				$va_additional_wheres[] = '(ns.was_read = 0 AND ns.delivery_inbox = 1)';
+			} elseif($vb_email) {
+				$va_additional_wheres[] = '(ns.delivery_email_sent_on IS NULL AND ns.delivery_email = 1)';
+			} else {
+				$va_additional_wheres[] = '((ns.was_read = 0 AND ns.delivery_inbox = 1) or (ns.delivery_email_sent_on IS NULL AND ns.delivery_email = 1))';
+			}
 		}
 		
 		if (!is_null($vb_email)) {
-			$va_additional_wheres[] = "ca_notification_subjects.delivery_email = ?";
+			$va_additional_wheres[] = "ns.delivery_email = ?";
 			$va_params[] = $vb_email ? 1 : 0;
 		}
 		if (!is_null($vb_inbox)) {
-			$va_additional_wheres[] = "ca_notification_subjects.delivery_inbox = ?";
+			$va_additional_wheres[] = "ns.delivery_inbox = ?";
 			$va_params[] = $vb_inbox ? 1 : 0;
 		}
 		
@@ -11916,14 +11923,15 @@ $pa_options["display_form_field_tips"] = true;
 
 		$qr_notifications = $this->getDb()->query("
 			SELECT DISTINCT
-				ca_notifications.notification_id, ca_notifications.message,
-				ca_notifications.notification_type, ca_notifications.datetime, ca_notifications.extra_data,
-				ca_notification_subjects.subject_id, ca_notification_subjects.read_on, ca_notification_subjects.delivery_email_sent_on
-			FROM ca_notification_subjects, ca_notifications
-			WHERE ca_notification_subjects.notification_id = ca_notifications.notification_id
-			AND ca_notification_subjects.table_num = ?
-			AND ca_notification_subjects.row_id = ?
+				n.notification_id, n.message,
+				n.notification_type, n.datetime, n.extra_data,
+				ns.subject_id, ns.read_on, ns.delivery_email_sent_on
+			FROM ca_notifications n
+			INNER JOIN ca_notification_subjects AS ns ON n.notification_id = ns.notification_id
+			WHERE 
+				ns.table_num = ? AND ns.row_id = ?
 			{$vs_additional_wheres}
+			ORDER BY n.datetime
 		", $va_params);
 
 
@@ -11935,13 +11943,63 @@ $pa_options["display_form_field_tips"] = true;
 			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
 			$va_row['extra_data'] = caUnserializeForDatabase($va_row['extra_data']);
 			
-			$va_row['datetime_display'] = caGetLocalizedDate($va_row['datetime']);
-			$va_row['read_on_display'] = caGetLocalizedDate($va_row['read_on']);
-			$va_row['delivery_email_sent_on_display'] = caGetLocalizedDate($va_row['delivery_email_sent_on']);
+			$va_row['datetime_display'] = $va_row['datetime'] ? caGetLocalizedDate($va_row['datetime']) : null;
+			$va_row['read_on_display'] = $va_row['read_on'] ? caGetLocalizedDate($va_row['read_on']) : null;
+			$va_row['delivery_email_sent_on_display'] = $va_row['delivery_email_sent_on'] ? caGetLocalizedDate($va_row['delivery_email_sent_on']) : null;
 
-			$va_return[$qr_notifications->get('notification_id')] = $va_row;
+			$va_return[$qr_notifications->get('subject_id')] = $va_row;
 		}
 
+		return $va_return;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return unsent email notifications. Notifications are return in order posted (oldest first)
+	 *
+	 * @param array $pa_options No options are currently available.
+	 *			
+	 * @return array Array of notifications indexed by notification subject_id. Each value is an array of notification content.
+	 */
+	static public function getQueuedEmailNotifications(array $pa_options = []) {
+		$o_dm = Datamodel::load();
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name = get_called_class()))) { return null; }
+		$vn_table_num = $t_instance->tableNum();
+		$vs_pk = $t_instance->primaryKey();
+		
+		$o_db = $t_instance->getDb();
+		$t_notification = new ca_notifications();
+		
+		$va_fields = array_map(function($v) { return "t.{$v}"; }, array_keys(array_filter($t_instance->getFieldsArray(), function($v) { if (!in_array($v['FIELD_TYPE'], [FT_VARS]) && !in_array($v['DISPLAY_TYPE'], [DT_OMIT])) { return $v; } })));
+	
+		$vs_field_sql = sizeof($va_fields) ? ", ".join(", ", $va_fields) : "";
+		$qr_notifications = $o_db->query("
+			SELECT DISTINCT
+				n.notification_id, n.message,
+				n.notification_type, n.datetime, n.extra_data,
+				ns.subject_id, ns.read_on, ns.delivery_email_sent_on {$vs_field_sql}
+			FROM ca_notifications n
+			INNER JOIN ca_notification_subjects AS ns ON n.notification_id = ns.notification_id
+			INNER JOIN {$vs_table_name} AS t ON t.{$vs_pk} = ns.row_id
+			WHERE 
+				ns.table_num = ? AND ns.delivery_email = 1 AND ns.delivery_email_sent_on IS NULL
+			ORDER BY n.datetime
+		", [$vn_table_num]);
+
+
+		$va_types = array_flip($t_notification->getFieldInfo('notification_type')['BOUNDS_CHOICE_LIST']);
+		$va_return = [];
+		while($qr_notifications->nextRow()) {
+			$va_row = $qr_notifications->getRow();
+			// translate for display
+			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
+			$va_row['extra_data'] = caUnserializeForDatabase($va_row['extra_data']);
+			
+			$va_row['datetime_display'] = $va_row['datetime'] ? caGetLocalizedDate($va_row['datetime']) : null;
+			$va_row['read_on_display'] = $va_row['read_on'] ? caGetLocalizedDate($va_row['read_on']) : null;
+			$va_row['delivery_email_sent_on_display'] = $va_row['delivery_email_sent_on'] ? caGetLocalizedDate($va_row['delivery_email_sent_on']) : null;
+
+			$va_return[$qr_notifications->get('subject_id')] = $va_row;
+		}
 		return $va_return;
 	}
 	# ------------------------------------------------------

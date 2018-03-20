@@ -28,12 +28,12 @@
  	$notifications = $this->getVar('notifications');
  	$num_notifications = sizeof($notifications);
 ?>
-	<p>You have the <?php print $num_notifications; ?> notifications:</p>
+	<h2><?php print ($num_notifications == 1) ? _t('You have %1 notification', $num_notifications) : _t('You have %1 notifications', $num_notifications); ?></h2>
 	
 	<ul>
 <?php
-	foreach $notifications as $notification) { 
-		print "<li>".$notification['message']."</li>\n";
+	foreach($notifications as $notification) { 
+		print "<li>".$notification['message']." <em>".$notification['datetime_display']."</em></li>\n";
 	}
 ?>
 	</ul>
