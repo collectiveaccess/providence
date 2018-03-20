@@ -187,9 +187,21 @@ abstract class Base {
 	}
 	
 	/**
+	 * List of data types to restrict metadata element list to. 
+	 * Return null to disable filtering and show full element list
 	 *
+	 * @return array
 	 */
 	public function getElementDataTypeFilters() {
+		return null;
+	}
+	
+	/**
+	 * Return additional filter values for specified metadata element. Return null for no filtering.
+	 *
+	 * @return string
+	 */
+	public function getElementFilters($pn_element_id, $ps_prefix_id) {
 		return null;
 	}
 

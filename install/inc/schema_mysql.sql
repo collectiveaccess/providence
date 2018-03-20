@@ -6783,6 +6783,7 @@ create table ca_metadata_alert_triggers (
   trigger_id      int unsigned      not null AUTO_INCREMENT,
   rule_id         int unsigned      not null,
   element_id      smallint unsigned,
+  element_filters text          	not null,
   settings        longtext          not null,
   trigger_type    varchar(30)       not null,
 

@@ -56,7 +56,8 @@ class Modification extends Base {
 	public function check(&$t_instance) {
 		$va_values = $this->getTriggerValues();
 		if(!sizeof($va_values)) { return false; }
-
+		
+		if (is_array($va_filters = $va_values['element_filters']) && !sizeof($va_filters)) { $va_filters = null; }
 
 		if(!$va_values['element_id']) {
 			// Trigger on any change
@@ -65,6 +66,35 @@ class Modification extends Base {
 		
 		// Trigger on specific element
 		$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
+		if (is_array($va_filter_vals = caGetOption($vs_code, $va_filters, null)) && sizeof($va_filter_vals)) {
+			if(!in_array($x=$t_instance->get($t_instance->tableName().".{$vs_code}"), $va_filter_vals)) { return false; }
+		}
 		return $t_instance->elementHasChanged($vs_code);
+	}
+	
+	/**
+	 * Return additional filter values for specified metadata element. Return null for no filtering.
+	 *
+	 * @return string
+	 */
+	public function getElementFilters($pn_element_id, $ps_prefix_id, array $pa_options=[]) {
+		if ($t_element = \ca_metadata_elements::getInstance($pn_element_id)) {
+			// filter on list elements in containers
+			if($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_LIST__) {
+				$va_html = [];
+				
+				$va_values = caGetOption('values', $pa_options, []);
+				$vs_element_code = $t_element->get('element_code');
+				if ($vs_list = \ca_lists::getListAsHTMLFormElement(
+					$t_element->get('list_id'), "{$ps_prefix_id}_element_filter_{$vs_element_code}"."[]", 
+					['id' => "{$ps_prefix_id}_element_filter_{$vs_element_code}"], 
+					['maxItemCount' => 100, 'render' => 'multiple', 'values' => caGetOption($vs_element_code, $va_values, null)]
+				)) {
+					$va_html[] = $t_element->get('ca_metadata_elements.preferred_labels.name').': '.$vs_list;
+				}
+				return $va_html;
+			}
+		}
+		return null;
 	}
 }

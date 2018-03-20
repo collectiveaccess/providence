@@ -712,6 +712,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		while($qr_triggers->nextRow()) {
 			$va_return[$qr_triggers->get('trigger_id')] = $qr_triggers->getRow();
 			$va_return[$qr_triggers->get('trigger_id')]['settings'] = caUnserializeForDatabase($qr_triggers->get('settings'));
+			$va_return[$qr_triggers->get('trigger_id')]['element_filters'] = caUnserializeForDatabase($qr_triggers->get('element_filters'));
 		}
 
 		return $va_return;
@@ -738,7 +739,6 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$t_trigger = new ca_metadata_alert_triggers($vn_trigger_id);
 
 		// set vars for trigger
-
 		if($vs_trigger_type = $_REQUEST["{$vs_id_prefix}_trigger_type"]) {
 			$t_trigger->set('trigger_type', $vs_trigger_type);
 		}
@@ -748,12 +748,17 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		}
 
 		// find settings keys in request and set them
+		// find element filters
+		$va_element_filters = [];
 		foreach($_REQUEST as $vs_k => $vm_v) {
 			if(preg_match("/^{$vs_id_prefix}_setting_(.+)$/u", $vs_k, $va_matches)) {
 				$t_trigger->setSetting($va_matches[1], $vm_v);
+			} elseif(preg_match("/^{$vs_id_prefix}_element_filter_(.+)$/u", $vs_k, $va_matches)) {
+				$va_element_filters[$va_matches[1]] = $vm_v;
 			}
 		}
-
+		
+		$t_trigger->set('element_filters', $va_element_filters);
 		$t_trigger->set('rule_id', $this->getPrimaryKey());
 		$t_trigger->setMode(ACCESS_WRITE);
 

@@ -38,18 +38,39 @@
 			print $t_trigger->settingHTMLFormElement($vs_code, ['name' => "{$vs_id_prefix}_setting_{$vs_code}"]);
 		}
 ?>
-		<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
-		<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", [], [
-			'rootElementsOnly' => false,
-			'noContainers' => true,
-			'tableNum' => $vn_table_num,
-			'addEmptyOption' => true,
-			'emptyOption' => '-',
-			'value' => $t_trigger->get('element_id'),
-			'restrictToDataTypes' => $t_trigger->getTriggerInstance()->getElementDataTypeFilters()
-		]); ?>
-		</div>
 <?php
 	}
+?>
 
+		<table><tr valign="top"><td>
+			<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
+		
+			<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", ["id" => "{$vs_id_prefix}_element_id"], [
+				'rootElementsOnly' => false,
+				'noContainers' => true,
+				'tableNum' => $vn_table_num,
+				'addEmptyOption' => true,
+				'emptyOption' => '-',
+				'value' => $t_trigger->get('element_id'),
+				'restrictToDataTypes' => $t_trigger->getTriggerInstance()->getElementDataTypeFilters()
+			]); ?>
+			</div>
+		</td><td>
+			<div class="formLabel" id="<?php print $vs_id_prefix; ?>_filter"></div>
+		</td></tr></table>
+		
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery("#<?php print $vs_id_prefix.'_element_id'; ?>").off().on('change', function() { 
+					jQuery("#<?php print $vs_id_prefix; ?>_filter").load('<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'getTriggerTypeFilterForm'); ?>', {
+						'triggerType': jQuery('#<?php print "{$vs_id_prefix}triggerTypeSelect"; ?>').val(),
+						'trigger_id': <?php print (int)$t_trigger->getPrimaryKey(); ?>,
+						'id_prefix': '<?php print $vs_id_prefix; ?>',
+						'element_id': parseInt(jQuery('#<?php print "{$vs_id_prefix}_element_id"; ?>').val())
+					});
+				});
+				jQuery("#<?php print $vs_id_prefix.'_element_id'; ?>").trigger('change');
+			});
+		</script>
+<?php
 	print TooltipManager::getLoadHTML();

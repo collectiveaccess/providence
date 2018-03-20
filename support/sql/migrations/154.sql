@@ -22,6 +22,8 @@ ALTER TABLE ca_notification_subjects ADD COLUMN delivery_inbox tinyint unsigned 
 CREATE INDEX i_delivery_email ON ca_notification_subjects(delivery_email, delivery_email_sent_on);
 CREATE INDEX i_delivery_inbox ON ca_notification_subjects(delivery_inbox);
 
+ALTER TABLE ca_metadata_alert_triggers ADD COLUMN element_filters text not null;
+
 /*==========================================================================*/
 
 

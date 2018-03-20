@@ -65,7 +65,6 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 		opts['triggerType'] = jQuery("#<?php print $vs_id_prefix.'triggerTypeSelect'; ?>").val();
 		opts['trigger_id'] = <?php print (int)$t_trigger->getPrimaryKey(); ?>;
 		opts['id_prefix'] = '<?php print $vs_id_prefix; ?>';
-		console.log('opts', opts);
 		jQuery("#<?php print $vs_id_prefix; ?>triggerTypeSettingsForm").load('<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'getTriggerTypeSettingsForm'); ?>', opts);
 	}
 

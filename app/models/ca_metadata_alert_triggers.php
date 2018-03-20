@@ -33,7 +33,6 @@
 /**
  *
  */
-
 require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Base.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
@@ -62,6 +61,13 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 			'IS_NULL' => true,
 			'DEFAULT' => '',
 			'LABEL' => 'Element id', 'DESCRIPTION' => 'Identifier for trigger element'
+		),
+		'element_filters' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Element filters'), 'DESCRIPTION' => _t('Serialized filter data')
 		),
 		'settings' => array(
 			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,

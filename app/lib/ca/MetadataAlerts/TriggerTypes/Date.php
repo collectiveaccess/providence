@@ -74,12 +74,14 @@ class Date extends Base {
 		$va_spec = $this->_getSpec($t_instance);
 		$vs_element_code = $va_spec['element_code'];
 		$vs_get_spec = $va_spec['spec'];
+		
+		if (is_array($va_filters = $va_values['element_filters']) && !sizeof($va_filters)) { $va_filters = null; }
 
 		if(\ca_metadata_elements::getDataTypeForElementCode($vs_element_code) !== __CA_ATTRIBUTE_VALUE_DATERANGE__) {
 			return false;
 		}
-
-		foreach($t_instance->get($vs_get_spec, ['returnAsArray' => true, 'dateFormat' => 'iso8601']) as $vs_val) {
+		
+		foreach($t_instance->get($vs_get_spec, ['returnAsArray' => true, 'dateFormat' => 'iso8601', 'filters' => $va_filters]) as $vs_val) {
 			$o_tep->parse($vs_val);
 
 			// offset should be in seconds
@@ -96,10 +98,41 @@ class Date extends Base {
 	}
 	
 	/**
+	 * Limit elements this trigger applies to to date ranges
 	 *
+	 * @return array
 	 */
 	public function getElementDataTypeFilters() {
 		return [__CA_ATTRIBUTE_VALUE_DATERANGE__];
+	}
+	
+	/**
+	 * Return additional filter values for specified metadata element. Return null for no filtering.
+	 *
+	 * @return string
+	 */
+	public function getElementFilters($pn_element_id, $ps_prefix_id, array $pa_options=[]) {
+		if ($t_root = \ca_metadata_elements::getInstance(\ca_metadata_elements::getElementHierarchyID($pn_element_id))) {
+			// filter on list elements in containers
+			if($t_root->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+				$va_html = [];
+				
+				$va_values = caGetOption('values', $pa_options, []);
+				foreach($va_elements = $t_root->getElementsInSet() as $va_element) {
+					if ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_LIST__) {
+						if ($vs_list = \ca_lists::getListAsHTMLFormElement(
+							$va_element['list_id'], "{$ps_prefix_id}_element_filter_".$va_element['element_code']."[]", 
+							['id' => "{$ps_prefix_id}_element_filter_".$va_element['element_code']], 
+							['maxItemCount' => 100, 'render' => 'multiple', 'values' => caGetOption($va_element['element_code'], $va_values, null)]
+						)) {
+							$va_html[] = $va_element['display_label'].': '.$vs_list;
+						}
+					}
+				}
+				return $va_html;
+			}
+		}
+		return null;
 	}
 	
 	/**
