@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,6 +80,13 @@ require_once(__CA_LIB_DIR__.'/ca/IApplicationPlugin.php');
 				'warnings' => array(),
 				'available' => false
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get plugin user actions
+		 */
+		static public function getRoleActionList() {
+			return [];
 		}
 		# -------------------------------------------------------
 	}
