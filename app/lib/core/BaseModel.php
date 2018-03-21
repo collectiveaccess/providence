@@ -173,6 +173,11 @@ class BaseModel extends BaseObject {
 	protected $_FIELD_VALUE_CHANGED;
 
 	/**
+	 * @access protected
+	 */
+	protected $_FIELD_VALUE_DID_CHANGE;
+
+	/**
 	 * @access private
 	 */
 	var $_FIELD_VALUES_OLD;
@@ -395,7 +400,7 @@ class BaseModel extends BaseObject {
 		$this->_SET_FILES = array();
 		$this->_MEDIA_VOLUMES = MediaVolumes::load();
 		$this->_FILE_VOLUMES = FileVolumes::load();
-		$this->_FIELD_VALUE_CHANGED = array();
+		$this->_FIELD_VALUE_CHANGED = $this->_FIELD_VALUE_DID_CHANGE = array();
 
 		if ($vs_locale = $this->_CONFIG->get("locale")) {
 			$this->ops_locale = $vs_locale;
@@ -643,6 +648,16 @@ class BaseModel extends BaseObject {
 	 */
 	public function changed($ps_field) {
 		return isset($this->_FIELD_VALUE_CHANGED[$ps_field]) ? $this->_FIELD_VALUE_CHANGED[$ps_field] : null;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Check if the content of a field changed prior to the last insert or update.
+	 *
+	 * @param string $ps_field field name
+	 * @return bool
+	 */
+	public function didChange($ps_field) {
+		return isset($this->_FIELD_VALUE_DID_CHANGE[$ps_field]) ? $this->_FIELD_VALUE_DID_CHANGE[$ps_field] : null;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -2602,6 +2617,7 @@ class BaseModel extends BaseObject {
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
+					$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
 					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
@@ -3191,6 +3207,8 @@ class BaseModel extends BaseObject {
 				}
 
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+				
+				$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 				$this->_FIELD_VALUE_CHANGED = array();
 				
 				// Update instance cache

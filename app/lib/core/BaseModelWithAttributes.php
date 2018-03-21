@@ -3106,4 +3106,22 @@
 			return isset($this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_id] : false;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * This is the same as BaseModel::didChange(), except for elements.
+		 * We changed the name instead of overriding it so that we don't have to run
+		 * every single changed() call on a Bundlable through this function. Turns out it gets called a lot.
+		 *
+		 * @param $pm_element_code_or_id
+		 * @return bool
+		 */
+		public function elementDidChange($pm_element_code_or_id) {
+			$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
+			$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
+
+			// not an element?
+			if(!$vs_code || (!$this->hasElement($vs_code))) { return false; }
+
+			return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
+		}
+		# ------------------------------------------------------------------
 	}

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://dublincore.org/documents/dces/">
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
+  infoUrl="http://dublincore.org/documents/dces/">
   <profileName>[Testing] Profile for test cases</profileName>
   <profileDescription/>
+
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="de" country="DE">Deutsch</locale>
@@ -458,87 +461,87 @@
         </label>
       </labels>
       <items>
-      <item idno="audio_basic" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/basic</name_singular>
-            <name_plural>audio/basic</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_L24" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/L24</name_singular>
-            <name_plural>audio/L24</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_mp4" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/mp4</name_singular>
-            <name_plural>audio/mp4</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_mpeg" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/mpeg</name_singular>
-            <name_plural>audio/mpeg</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_ogg" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/ogg</name_singular>
-            <name_plural>audio/ogg</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_opus" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/opus</name_singular>
-            <name_plural>audio/opus</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_vorbis" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/vorbis</name_singular>
-            <name_plural>audio/vorbis</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_vnd_rn_realaudio" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/vnd.rn-realaudio</name_singular>
-            <name_plural>audio/vnd.rn-realaudio</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_vnd_wave" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/vnd.wave</name_singular>
-            <name_plural>audio/vnd.wave</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="audio_webm" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>audio/webm</name_singular>
-            <name_plural>audio/webm</name_plural>
-          </label>
-        </labels>
-      </item>
-      </items>  
+        <item idno="audio_basic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/basic</name_singular>
+              <name_plural>audio/basic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_L24" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/L24</name_singular>
+              <name_plural>audio/L24</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_mp4" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/mp4</name_singular>
+              <name_plural>audio/mp4</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_mpeg" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/mpeg</name_singular>
+              <name_plural>audio/mpeg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_ogg" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/ogg</name_singular>
+              <name_plural>audio/ogg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_opus" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/opus</name_singular>
+              <name_plural>audio/opus</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_vorbis" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/vorbis</name_singular>
+              <name_plural>audio/vorbis</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_vnd_rn_realaudio" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/vnd.rn-realaudio</name_singular>
+              <name_plural>audio/vnd.rn-realaudio</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_vnd_wave" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/vnd.wave</name_singular>
+              <name_plural>audio/vnd.wave</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="audio_webm" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>audio/webm</name_singular>
+              <name_plural>audio/webm</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
     </list>
     <list code="image_format" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -547,54 +550,54 @@
         </label>
       </labels>
       <items>
-      <item idno="image_gif" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>image/gif</name_singular>
-            <name_plural>image/gif</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="image_jpeg" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>image/jpeg</name_singular>
-            <name_plural>image/jpeg</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="image_pjpeg" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>image/pjpeg</name_singular>
-            <name_plural>image/pjpeg</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="image_png" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>image/png</name_singular>
-            <name_plural>image/png</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="image_svg_xml" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>image/svg+xml</name_singular>
-            <name_plural>image/svg+xml</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="image_tiff" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>image/tiff</name_singular>
-            <name_plural>image/tiff</name_plural>
-          </label>
-        </labels>
-      </item>
+        <item idno="image_gif" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>image/gif</name_singular>
+              <name_plural>image/gif</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="image_jpeg" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>image/jpeg</name_singular>
+              <name_plural>image/jpeg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="image_pjpeg" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>image/pjpeg</name_singular>
+              <name_plural>image/pjpeg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="image_png" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>image/png</name_singular>
+              <name_plural>image/png</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="image_svg_xml" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>image/svg+xml</name_singular>
+              <name_plural>image/svg+xml</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="image_tiff" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>image/tiff</name_singular>
+              <name_plural>image/tiff</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="text_format" hierarchical="0" system="0" vocabulary="0">
@@ -604,62 +607,62 @@
         </label>
       </labels>
       <items>
-      <item idno="text_cmd" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>text/cmd</name_singular>
-            <name_plural>text/cmd</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="text_css" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>text/css</name_singular>
-            <name_plural>text/css</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="text_csv" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>text/csv</name_singular>
-            <name_plural>text/csv</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="text_html" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>text/html</name_singular>
-            <name_plural>text/html</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="text_plain" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>text/plain</name_singular>
-            <name_plural>text/plain</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="text_rtf" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>text/rtf</name_singular>
-            <name_plural>text/rtf</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="text_xml" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>text/xml</name_singular>
-            <name_plural>text/xml</name_plural>
-          </label>
-        </labels>
-      </item>
+        <item idno="text_cmd" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text/cmd</name_singular>
+              <name_plural>text/cmd</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="text_css" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text/css</name_singular>
+              <name_plural>text/css</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="text_csv" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text/csv</name_singular>
+              <name_plural>text/csv</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="text_html" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text/html</name_singular>
+              <name_plural>text/html</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="text_plain" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text/plain</name_singular>
+              <name_plural>text/plain</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="text_rtf" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text/rtf</name_singular>
+              <name_plural>text/rtf</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="text_xml" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text/xml</name_singular>
+              <name_plural>text/xml</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="video_format" hierarchical="0" system="0" vocabulary="0">
@@ -669,70 +672,70 @@
         </label>
       </labels>
       <items>
-      <item idno="video_avi" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/avi</name_singular>
-            <name_plural>video/avi</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="video_mpeg" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/mpeg</name_singular>
-            <name_plural>video/mpeg</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="video_mp4" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/mp4</name_singular>
-            <name_plural>video/mp4</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="video_ogg" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/ogg</name_singular>
-            <name_plural>video/ogg</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="video_quicktime" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/quicktime</name_singular>
-            <name_plural>video/quicktime</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="video_webm" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/webm</name_singular>
-            <name_plural>video/webm</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="video_wmv" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/wmv</name_singular>
-            <name_plural>video/wmv</name_plural>
-          </label>
-        </labels>
-      </item>
-      <item idno="video_flv" enabled="1" default="0">
-        <labels>
-          <label locale="en_US" preferred="1">
-            <name_singular>video/flv</name_singular>
-            <name_plural>video/flv</name_plural>
-          </label>
-        </labels>
-      </item>
+        <item idno="video_avi" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/avi</name_singular>
+              <name_plural>video/avi</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_mpeg" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/mpeg</name_singular>
+              <name_plural>video/mpeg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_mp4" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/mp4</name_singular>
+              <name_plural>video/mp4</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_ogg" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/ogg</name_singular>
+              <name_plural>video/ogg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_quicktime" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/quicktime</name_singular>
+              <name_plural>video/quicktime</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_webm" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/webm</name_singular>
+              <name_plural>video/webm</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_wmv" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/wmv</name_singular>
+              <name_plural>video/wmv</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_flv" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>video/flv</name_singular>
+              <name_plural>video/flv</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="date_types" hierarchical="0" system="0" vocabulary="0">
@@ -4263,14 +4266,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-          <restriction code="r2">
-              <table>ca_sets</table>
-              <settings>
-                  <setting name="minAttributesPerRow">0</setting>
-                  <setting name="maxAttributesPerRow">255</setting>
-                  <setting name="minimumAttributeBundlesToDisplay">1</setting>
-              </settings>
-          </restriction>
+        <restriction code="r2">
+          <table>ca_sets</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="entity_reference_2" datatype="Entities">
@@ -4468,7 +4471,7 @@
               <bundle>ca_attribute_coverageNotes</bundle>
             </placement>
           </bundlePlacements>
-        </screen>       
+        </screen>
         <screen idno="format" default="0">
           <labels>
             <label locale="en_US">
@@ -4653,7 +4656,7 @@
               <bundle>access</bundle>
             </placement>
           </bundlePlacements>
-        </screen>        
+        </screen>
       </screens>
     </userInterface>
     <userInterface code="standard_entity_ui" type="ca_entities">
@@ -5434,7 +5437,7 @@
         </screen>
       </screens>
     </userInterface>
-    
+
     <userInterface code="standard_representation_annotation_ui" type="ca_representation_annotations">
       <labels>
         <label locale="en_US">
@@ -5530,7 +5533,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="publisher" default="0">
           <labels>
@@ -5540,7 +5543,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="contributor" default="0">
           <labels>
@@ -5550,7 +5553,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="source" default="0">
           <labels>
@@ -5560,7 +5563,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5594,7 +5597,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5608,7 +5611,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5622,7 +5625,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="source" default="0">
           <labels>
@@ -5632,7 +5635,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="duplicate" default="0">
           <labels>
@@ -5642,7 +5645,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="part_of" default="0">
           <labels>
@@ -5652,7 +5655,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5679,8 +5682,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft></subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeLeft/>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5694,7 +5697,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="located" default="0">
           <labels>
@@ -5704,7 +5707,7 @@
             </label>
           </labels>
           <subTypeLeft>image</subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="depicts" default="1">
           <labels>
@@ -5714,7 +5717,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="describes" default="0">
           <labels>
@@ -5724,7 +5727,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5738,7 +5741,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="depicts" default="0">
           <labels>
@@ -5748,7 +5751,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5762,7 +5765,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5776,7 +5779,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="residence" default="0">
           <labels>
@@ -5786,7 +5789,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="workplace" default="0">
           <labels>
@@ -5796,7 +5799,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="ownership" default="0">
           <labels>
@@ -5806,7 +5809,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="built_by" default="0">
           <labels>
@@ -5816,7 +5819,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5844,7 +5847,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="provider" default="0">
           <labels>
@@ -5854,7 +5857,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5868,7 +5871,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5882,7 +5885,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5896,7 +5899,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5910,7 +5913,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5924,7 +5927,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5938,7 +5941,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5952,7 +5955,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5966,7 +5969,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -5994,7 +5997,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6008,7 +6011,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6022,7 +6025,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6036,7 +6039,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6050,7 +6053,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="illustrated" default="1">
           <labels>
@@ -6060,7 +6063,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6074,7 +6077,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="describes" default="1">
           <labels>
@@ -6084,7 +6087,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6098,7 +6101,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="describes" default="1">
           <labels>
@@ -6108,7 +6111,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6146,7 +6149,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -6168,7 +6171,7 @@
             <setting name="restrict_to_relationship_types">creator</setting>
             <setting name="label" locale="en_US">Creator(s)</setting>
           </settings>
-        </placement>       
+        </placement>
         <placement code="subject">
           <bundle>ca_objects.lcsh_terms</bundle>
         </placement>
@@ -6181,7 +6184,7 @@
             <setting name="restrict_to_relationship_types">publisher</setting>
             <setting name="label" locale="en_US">Publisher(s)</setting>
           </settings>
-        </placement> 
+        </placement>
         <placement code="contributor">
           <bundle>ca_entities</bundle>
           <settings>
@@ -6197,19 +6200,19 @@
         </placement>
         <placement code="audio_format">
           <bundle>ca_objects.audio_format</bundle>
-        </placement>        
+        </placement>
         <placement code="video_format">
           <bundle>ca_objects.video_format</bundle>
-        </placement> 
+        </placement>
         <placement code="text_format">
           <bundle>ca_objects.text_format</bundle>
-        </placement> 
+        </placement>
         <placement code="image_format">
           <bundle>ca_objects.image_format</bundle>
-        </placement> 
+        </placement>
         <placement code="gen_format">
           <bundle>ca_objects.gen_format</bundle>
-        </placement> 
+        </placement>
         <placement code="idno">
           <bundle>ca_objects.idno</bundle>
         </placement>
@@ -6230,7 +6233,7 @@
         </placement>
         <placement code="rights">
           <bundle>ca_objects.rights</bundle>
-        </placement>   
+        </placement>
       </bundlePlacements>
     </display>
     <display code="researcher_display" type="ca_objects" system="1">
@@ -6242,7 +6245,7 @@
       <bundlePlacements>
         <placement code="idno">
           <bundle>ca_objects.idno</bundle>
-        </placement>        
+        </placement>
         <placement code="preferred_labels">
           <bundle>ca_objects.preferred_labels</bundle>
         </placement>
@@ -6254,13 +6257,13 @@
         </placement>
         <placement code="type">
           <bundle>ca_objects.type_id</bundle>
-        </placement>        
+        </placement>
         <placement code="entities">
           <bundle>ca_entities</bundle>
-        </placement>       
+        </placement>
       </bundlePlacements>
     </display>
-    
+
   </displays>
   <searchForms>
     <searchForm code="ca_objects_adv_search" type="ca_objects" system="1">
@@ -6477,25 +6480,61 @@
       </bundlePlacements>
     </searchForm>
   </searchForms>
-  
+
   <logins>
-    <login user_name="administrator" password="dublincore" fname="CollectiveAccess" 
-           lname="Administrator" email="info@collectiveaccess.org">
+    <login user_name="administrator" password="dublincore" fname="CollectiveAccess"
+      lname="Administrator" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>
-    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess" 
-           lname="Cataloguer" email="support@collectiveaccess.org">
+    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess" lname="Cataloguer"
+      email="support@collectiveaccess.org">
       <role code="cataloguer"/>
       <group code="cataloguer"/>
     </login>
-    <login user_name="researcher" password="researcher" fname="CollectiveAccess"
-           lname="Researcher" email="support@collectiveaccess.org">
+    <login user_name="researcher" password="researcher" fname="CollectiveAccess" lname="Researcher"
+      email="support@collectiveaccess.org">
       <role code="researcher"/>
     </login>
-    <login user_name="moderator" password="moderator" fname="CollectiveAccess"
-           lname="Moderator" email="support@collectiveaccess.org">
+    <login user_name="moderator" password="moderator" fname="CollectiveAccess" lname="Moderator"
+      email="support@collectiveaccess.org">
       <role code="moderator"/>
     </login>
   </logins>
+
+  <metadataAlerts>
+    <metadataAlert type="ca_objects" code="test_alert_1">
+      <labels>
+        <label locale="en_US">
+          <name>Test alert 1</name>
+          <description>xxx</description>
+        </label>
+      </labels>
+      <triggers>
+        <trigger type="date" code="date_trigger_1" metadataElement="ca_objects.dates.dates_value" metadataElementFilter="">
+          <settings>
+            <setting name="offset">0|HOURS|AFTER</setting>
+            <setting name="notificationTemplate">^ca_objects.preferred_labels.name is up!</setting>
+            <setting name="notificationDeliveryOptions">EMAIL|INBOX</setting>
+          </settings>
+        </trigger>
+      </triggers>
+
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+        </restriction>
+      </typeRestrictions>
+
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+
+      <groupAccess>
+        <permission group="admin" access="edit"/>
+      </groupAccess>
+    </metadataAlert>
+  </metadataAlerts>
+
+
 </profile>
