@@ -123,7 +123,7 @@ abstract class Base {
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'multiple' => true,
-				'options' => [_t('by email') => 'EMAIL', _t('to inbox') => 'INBOX'],
+				'options' => [_t('by email') => 'EMAIL', _t('to dashboard') => 'INBOX'],
 				'default' => 'INBOX',
 				'label' => _t('Deliver notifications'),
 				'description' => _t('Choose methods to deliver notifications here.')
