@@ -6511,7 +6511,7 @@
         </label>
       </labels>
       <triggers>
-        <trigger type="date" code="date_trigger_1" metadataElement="ca_objects.dates.dates_value" metadataElementFilter="">
+        <trigger type="date" code="date_trigger_1" metadataElement=".dates_value" metadataElementFilter="">
           <settings>
             <setting name="offset">0|HOURS|AFTER</setting>
             <setting name="notificationTemplate">^ca_objects.preferred_labels.name is up!</setting>
