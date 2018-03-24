@@ -83,13 +83,12 @@ class Date extends Base {
 		
 		foreach($t_instance->get($vs_get_spec, ['returnAsArray' => true, 'dateFormat' => 'iso8601', 'filters' => $va_filters]) as $vs_val) {
 			$o_tep->parse($vs_val);
-
+			
 			// offset should be in seconds
 			$vn_offset = self::offsetToSeconds($this->getTriggerValues()['settings']['offset']);
-
 			if(($vn_offset <= 0) && (time() > (($o_tep->getUnixTimestamps()['start']) - abs($vn_offset)))) {
 				return true;
-			} elseif((time() - abs($vn_offset)) > $o_tep->getUnixTimestamps()['end']) {
+			} elseif(time() >= ($o_tep->getUnixTimestamps()['end'] + abs($vn_offset))) {
 				return true;
 			}
 		}
@@ -125,7 +124,7 @@ class Date extends Base {
 							['id' => "{$ps_prefix_id}_element_filter_".$va_element['element_code']], 
 							['maxItemCount' => 100, 'render' => 'multiple', 'values' => caGetOption($va_element['element_code'], $va_values, null)]
 						)) {
-							$va_html[] = $va_element['display_label'].': '.$vs_list;
+							$va_html[] = "<span class='formLabelPlain'>".$va_element['display_label'].':</span><br/>'.$vs_list;
 						}
 					}
 				}
@@ -196,14 +195,15 @@ class Date extends Base {
 		
 		// Windows are always a day wide on the assumption notifications will be checked at least once a day
 		// If they're not, some notifications will be missed
+		
 		if ($vn_offset <= 0) {
 			// Notifications where user wants to know *before* the event happens of *when* it happens (offset = 0)
-			$vn_start = time() + abs($vn_offset);					// start: offset seconds in the future
-			$vn_end = time() + abs($vn_offset) + (24 * 60 * 60);	// end: offset seconds + 1 day in the future
+			$vn_start = time();										// start: now
+			$vn_end = time() + abs($vn_offset) + (12 * 60 * 60);	// end: offset seconds + 12 hours in the future
 		} else {
 			// Notifications where user wants to know *after* the event happens
-			$vn_start = time() - abs($vn_offset);					// start: offset seconds in the past
-			$vn_end = time() - abs($vn_offset) + (24 * 60 * 60);	// end: offset seconds in the past + 1 day
+			$vn_start = time() - abs($vn_offset) - (12 * 60 * 60);					// start: offset seconds in the past
+			$vn_end = time();										// end:  now
 		}
 		
 		$va_criteria = [];
@@ -215,7 +215,6 @@ class Date extends Base {
 		} else {
 			$va_criteria[$vs_element_code] = $vs_date_range;
 		}
-		
 		return $va_criteria;
 	}
 	
@@ -226,7 +225,7 @@ class Date extends Base {
 		$pa_offset = explode('|', $ps_offset);
 		if (sizeof($pa_offset) != 3) { return 0; }
 		
-		$n = (int)$pa_offset[0];
+		$n = (float)$pa_offset[0];
 		switch(strtolower($pa_offset[1])) {
 			case 'hours':
 				$n = $n * 60 * 60;	

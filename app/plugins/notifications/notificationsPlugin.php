@@ -28,6 +28,7 @@
  	require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
  	require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
  	require_once(__CA_LIB_DIR__.'/core/Db.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_triggers.php');
 	
 	class notificationsPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------
@@ -59,6 +60,8 @@
 			$t_log = new Eventlog();
 			$o_db = new Db();
 			
+			ca_metadata_alert_triggers::firePeriodicTriggers();
+			
 			if (!defined('__CA_QUEUE_ENABLED__') || !__CA_QUEUE_ENABLED__) { return true; }
 			
 			if (is_array($va_notifications = ca_users::getQueuedEmailNotifications())) {
@@ -72,7 +75,7 @@
 				foreach($va_notifications_by_user as $vn_user_id => $va_notifications_for_user) {
 					if(!sizeof($va_notifications_for_user)) { continue; }
 					$vs_to_email = $va_notifications_for_user[0]['email'];
-					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] Notifications", "notification_digest.tpl", ['notifications' => $va_notifications_for_user, 'sent_on' => time()], null, null, ['source' => 'Notification'])) {
+					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, $this->opo_config->get('notification_email_subject'), "notification_digest.tpl", ['notifications' => $va_notifications_for_user, 'sent_on' => time()], null, null, ['source' => 'Notification'])) {
 						$va_notification_subject_ids = array_map(function($v) { return $v['subject_id']; }, $va_notifications_for_user);
 						$t_subject = new ca_notification_subjects();
 						foreach($va_notification_subject_ids as $vn_subject_id) {

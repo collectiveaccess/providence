@@ -197,6 +197,16 @@ abstract class Base {
 	}
 	
 	/**
+	 * List of elements to add to standard list of element. Return null if
+	 * no elements are to be added.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalElementList() {
+		return null;
+	}
+	
+	/**
 	 * Return additional filter values for specified metadata element. Return null for no filtering.
 	 *
 	 * @return string

@@ -30,6 +30,7 @@
 	$t_trigger = $this->getVar('t_trigger');
 	$vs_id_prefix = $this->getVar('id_prefix');
 	$vn_trigger_id = $t_trigger->getPrimaryKey();
+	$va_triggers = $t_trigger->get('element_filters');
 	
 	if(is_array($va_available_settings = $this->getVar('available_settings')) && sizeof($va_available_settings)) {
 ?>
@@ -42,7 +43,6 @@
 	}
 ?>
 
-		<table><tr valign="top"><td>
 			<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
 		
 			<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", ["id" => "{$vs_id_prefix}_element_id"], [
@@ -51,13 +51,12 @@
 				'tableNum' => $vn_table_num,
 				'addEmptyOption' => true,
 				'emptyOption' => '-',
-				'value' => $t_trigger->get('element_id'),
-				'restrictToDataTypes' => $t_trigger->getTriggerInstance()->getElementDataTypeFilters()
+				'value' => ($vn_element_id = $t_trigger->get('element_id')) ? $vn_element_id : $va_triggers['_non_element_filter'],
+				'restrictToDataTypes' => $t_trigger->getTriggerInstance()->getElementDataTypeFilters(),
+				'addItems' => $t_trigger->getTriggerInstance()->getAdditionalElementList()
 			]); ?>
 			</div>
-		</td><td>
 			<div class="formLabel" id="<?php print $vs_id_prefix; ?>_filter"></div>
-		</td></tr></table>
 		
 		<script type="text/javascript">
 			jQuery(document).ready(function() {

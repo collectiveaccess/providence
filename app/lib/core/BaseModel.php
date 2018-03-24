@@ -620,7 +620,9 @@ class BaseModel extends BaseObject {
 	 */
 	public function getChangedFieldValuesArray() {
 		$va_fieldnames = array_keys($this->_FIELD_VALUES);
-
+		$va_fieldnames[] = 'preferred_labels';
+		$va_fieldnames[] = 'nonpreferred_labels';
+		
 		$va_changed_field_values_array = array();
 		foreach($va_fieldnames as $vs_fieldname) {
 			if($this->changed($vs_fieldname)) {
@@ -11815,7 +11817,7 @@ $pa_options["display_form_field_tips"] = true;
 					
 			// Send email immediately when queue is not enabled
 			if ((!defined("__CA_QUEUE_ENABLED__") || !__CA_QUEUE_ENABLED__) && (bool)$vb_send_email && $this->hasField('email') && ($vs_to_email = $this->get('email'))) {
-				if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] Notification", "notification.tpl", ['notification' => $ps_message, 'sent_on' => time()],null, null, ['source' => 'Notification'])) {
+				if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, $this->getAppConfig()->get('notification_email_subject'), "notification.tpl", ['notification' => $ps_message, 'sent_on' => time()],null, null, ['source' => 'Notification'])) {
 					$t_subject->set('delivery_email_sent_on', _t('now'));
 					$t_subject->update();
 				} // caSendMessageUsingView logs failures
@@ -11850,7 +11852,7 @@ $pa_options["display_form_field_tips"] = true;
 				}
 				// Send email immediately when queue is not enabled
 				if ((!defined("__CA_QUEUE_ENABLED__") || !__CA_QUEUE_ENABLED__) && (bool)$vb_send_email && $t_instance->hasField('email') && ($t_instance->load($va_subject['row_id'])) &&  ($vs_to_email = $t_instance->get('email'))) {
-					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] Notification", "notification.tpl", ['notification' => $ps_message, 'datetime' => time(), 'datetime_display' => caGetLocalizedDate()], null, null, ['source' => 'Notification'])) {
+					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, $this->getAppConfig()->get('notification_email_subject'), "notification.tpl", ['notification' => $ps_message, 'datetime' => time(), 'datetime_display' => caGetLocalizedDate()], null, null, ['source' => 'Notification'])) {
 						$t_subject->set('delivery_email_sent_on', _t('now'));
 						$t_subject->update();
 					} // caSendMessageUsingView logs failures

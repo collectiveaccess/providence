@@ -427,8 +427,9 @@ class ca_metadata_alert_triggers extends BaseModel {
 					$va_params['restrictToTypes'] = $va_trigger['type_restrictions'];
 				}
 				
+				require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
 				$qr_records = call_user_func_array("{$vs_table}::find", [$va_criteria, $va_params]);
-				//print "Got records: ".$qr_records->numHits()."\n";
+				
 				while($qr_records->nextHit()) {
 					self::fireTrigger($o_trigger, $qr_records, $va_trigger['info']);
 				}

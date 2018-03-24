@@ -672,6 +672,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$ps_empty_option = caGetOption('emptyOption', $pa_options, '---');
 		$pb_no_containers = caGetOption('noContainers', $pa_options, false);
 		$pa_restrict_to_datatypes = caGetOption('restrictToDataTypes', $pa_options, null);
+		$pa_add_items = caGetOption('addItems', $pa_options, null);
 		$pm_value = caGetOption('value', $pa_options, null);
 
 		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
@@ -681,6 +682,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		} else {
 			$va_list = [];
 		}
+		
+		if (is_array($pa_add_items)) { $va_list = array_merge($va_list, $pa_add_items); }
 
 		$va_options = ['contentArrayUsesKeysForValues' => true];
 		if($pm_value) {

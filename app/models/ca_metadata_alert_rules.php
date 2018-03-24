@@ -742,12 +742,18 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		if($vs_trigger_type = $_REQUEST["{$vs_id_prefix}_trigger_type"]) {
 			$t_trigger->set('trigger_type', $vs_trigger_type);
 		}
-
-		$t_trigger->set('element_id', ($vn_element_id = $_REQUEST["{$vs_id_prefix}_element_id"]) ? $vn_element_id : null);
-
+		
 		// find settings keys in request and set them
 		// find element filters
 		$va_element_filters = [];
+		
+		$vn_element_id = (int)$_REQUEST["{$vs_id_prefix}_element_id"];
+		$t_trigger->set('element_id', $vn_element_id ? $vn_element_id : null);
+		
+		if(in_array($_REQUEST["{$vs_id_prefix}_element_id"], ['_intrinsic_idno', '_preferred_labels', '_nonpreferred_labels'])) {
+			$va_element_filters['_non_element_filter'] = $_REQUEST["{$vs_id_prefix}_element_id"];
+		}
+		
 		foreach($_REQUEST as $vs_k => $vm_v) {
 			if(preg_match("/^{$vs_id_prefix}_setting_(.+)$/u", $vs_k, $va_matches)) {
 				$t_trigger->setSetting($va_matches[1], $vm_v);

@@ -56,20 +56,39 @@ class Modification extends Base {
 	public function check(&$t_instance) {
 		$va_values = $this->getTriggerValues();
 		if(!sizeof($va_values)) { return false; }
-		
 		if (is_array($va_filters = $va_values['element_filters']) && !sizeof($va_filters)) { $va_filters = null; }
-
-		if(!$va_values['element_id']) {
+		unset($va_filters['_non_element_filter']);
+		
+		$vs_non_element_filter = $va_values['element_filters']['_non_element_filter'];
+		
+		if(!$va_values['element_id'] && !$vs_non_element_filter) {
 			// Trigger on any change
 			return $t_instance->hasChangedSinceLoad();
 		}
 		
-		// Trigger on specific element
-		$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
-		if (is_array($va_filter_vals = caGetOption($vs_code, $va_filters, null)) && sizeof($va_filter_vals)) {
-			if(!in_array($t_instance->get($t_instance->tableName().".{$vs_code}"), $va_filter_vals)) { return false; }
+		if ($vs_non_element_filter) {
+			switch($vs_non_element_filter) {
+				case '_intrinsic_idno':
+					return $t_instance->didChange($t_instance->getProperty('ID_NUMBERING_ID_FIELD'));
+					break;
+				case '_preferred_labels':
+					return $t_instance->changed('preferred_labels');
+					break;
+				case '_nonpreferred_labels':
+					return $t_instance->changed('nonpreferred_labels');
+					break;
+				default:
+					return false;
+					break;
+			}
+		} else {
+			// Trigger on specific element
+			$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
+			if (is_array($va_filter_vals = caGetOption($vs_code, $va_filters, null)) && sizeof($va_filter_vals)) {
+				if(!in_array($t_instance->get($t_instance->tableName().".{$vs_code}"), $va_filter_vals)) { return false; }
+			}
+			return $t_instance->elementDidChange($vs_code);
 		}
-		return $t_instance->elementDidChange($vs_code);
 	}
 	
 	/**
@@ -90,11 +109,25 @@ class Modification extends Base {
 					['id' => "{$ps_prefix_id}_element_filter_{$vs_element_code}"], 
 					['maxItemCount' => 100, 'render' => 'multiple', 'values' => caGetOption($vs_element_code, $va_values, null)]
 				)) {
-					$va_html[] = $t_element->get('ca_metadata_elements.preferred_labels.name').': '.$vs_list;
+					$va_html[] = "<span class='formLabelPlain'>".$t_element->get('ca_metadata_elements.preferred_labels.name').':</span><br/>'.$vs_list;
 				}
 				return $va_html;
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * List of elements to add to standard list of element. Return null if
+	 * no elements are to be added.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalElementList() {
+		return [
+			'_preferred_labels' => _t('Preferred labels'),
+			'_nonpreferred_labels' => _t('Non-preferred labels'),
+			'_intrinsic_idno' => _t('Identifer (idno)')
+		];
 	}
 }
