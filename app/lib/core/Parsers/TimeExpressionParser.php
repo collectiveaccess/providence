@@ -2856,10 +2856,18 @@ class TimeExpressionParser {
 		if (((int)$pa_start_pieces['day'] === 1) && ((int)$pa_end_pieces['day'] === (int)$this->daysInMonth($pa_end_pieces['month'], $pa_end_pieces['year']))) {
 			$pa_start_pieces['day'] = null;
 		}
-		if (((int)$pa_end_pieces['day'] === (int)$this->daysInMonth(12, $pa_end_pieces['year'])) && ((int)$pa_end_pieces['month'] === 12)) {
+		if (
+			(((int)$pa_end_pieces['day'] === (int)$this->daysInMonth(12, $pa_end_pieces['year'])) && ((int)$pa_end_pieces['month'] === 12))
+			&&
+			(((int)$pa_start_pieces['day'] === 1) && ((int)$pa_start_pieces['month'] === 1))
+		) {
 			$pa_end_pieces['day'] = $pa_end_pieces['month'] = null;
 		}
-		if (((int)$pa_start_pieces['day'] === 1) && ((int)$pa_start_pieces['month'] === 1)) {
+		if (
+			(((int)$pa_start_pieces['day'] === 1) && ((int)$pa_start_pieces['month'] === 1))
+			&& 
+			(((int)$pa_end_pieces['day'] === 31) && ((int)$pa_end_pieces['month'] === 12))
+		) {
 			$pa_start_pieces['day'] = $pa_start_pieces['month'] = null;
 		}
 		
