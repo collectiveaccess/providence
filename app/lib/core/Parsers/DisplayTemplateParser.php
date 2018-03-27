@@ -142,29 +142,29 @@ class DisplayTemplateParser {
 	 */
 	static public function process($ps_template, $pm_tablename_or_num, array $pa_row_ids, array $pa_options=null) {
 		// Set up options
-			foreach(array(
-				'request', 
-				'template',	// we pass through options to get() and don't want templates 
-				'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
-				'useLocaleCodes') as $vs_k) {
-				unset($pa_options[$vs_k]);
-			}
-			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
-			$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
-			unset($pa_options['returnAsArray']);
+		foreach(array(
+			'request', 
+			'template',	// we pass through options to get() and don't want templates 
+			'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
+			'useLocaleCodes') as $vs_k) {
+			unset($pa_options[$vs_k]);
+		}
+		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
+		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
+		unset($pa_options['returnAsArray']);
+	
+		if (($pa_sort = caGetOption('sort', $pa_options, null)) && !is_array($pa_sort)) {
+			$pa_sort = explode(";", $pa_sort);
+		}
+		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
+		if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
+	
+		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
 		
-			if (($pa_sort = caGetOption('sort', $pa_options, null)) && !is_array($pa_sort)) {
-				$pa_sort = explode(";", $pa_sort);
-			}
-			$ps_sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
-			if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
-		
-			$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
-			
-			$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
-			$pb_include_blanks_for_prefetch = caGetOption('includeBlankValuesInTopLevelForPrefetch', $pa_options, false);
-		
-		    $pb_index_with_ids = caGetOption('indexWithIDs', $pa_options, false);
+		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
+		$pb_include_blanks_for_prefetch = caGetOption('includeBlankValuesInTopLevelForPrefetch', $pa_options, false);
+	
+		$pb_index_with_ids = caGetOption('indexWithIDs', $pa_options, false);
 		
 		// Bail if no rows or template are set
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids) || !$ps_template) {
@@ -191,7 +191,7 @@ class DisplayTemplateParser {
 			return self::_processLabelTemplate($t_instance, $ps_template, $pa_row_ids, $pa_options);
 		}
 
-		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids);
+		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, ['sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
 
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
@@ -1112,7 +1112,7 @@ class DisplayTemplateParser {
                             $vb_rel_type_is_set = true;
                             break;
                         case 'date':		// allows embedding of current date
-                            $va_val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
+                            $va_val_list = date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'));
                             break;
                         case 'primary':
                             $va_val_list = [$pr_res->tableName()];
@@ -1143,8 +1143,8 @@ class DisplayTemplateParser {
                                     }
                                 }
                             }
-                        
-                            if (is_array($va_parsed_tag_opts['modifiers']) && (sizeof($va_parsed_tag_opts['modifiers']) > 0)) {
+
+                                                    if (is_array($va_parsed_tag_opts['modifiers']) && (sizeof($va_parsed_tag_opts['modifiers']) > 0)) {
                                 $va_val_list = array_map(function($v) use ($va_parsed_tag_opts) { return caProcessTemplateTagDirectives($v, $va_parsed_tag_opts['modifiers']); }, $va_val_list);
                             }
                         
