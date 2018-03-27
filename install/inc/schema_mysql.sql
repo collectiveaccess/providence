@@ -6874,7 +6874,7 @@ create table ca_notification_subjects (
   index i_notification_id (notification_id),
   index i_table_num_row_id (table_num, row_id, read_on),
   index i_delivery_email (delivery_email, delivery_email_sent_on),
-  index i_delivery_inbox (delivery_inbox),
+  index i_delivery_inbox (delivery_inbox)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
