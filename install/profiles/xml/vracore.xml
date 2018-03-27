@@ -3250,7 +3250,7 @@
           </labels>
           <settings/>
           <elements>
-            <metadataElement code="discriptionText" datatype="Text">
+            <metadataElement code="descriptionText" datatype="Text">
               <labels>
                 <label locale="en_US">
                   <name>Description</name>
