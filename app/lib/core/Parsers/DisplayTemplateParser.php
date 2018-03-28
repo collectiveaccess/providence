@@ -1112,7 +1112,7 @@ class DisplayTemplateParser {
                             $vb_rel_type_is_set = true;
                             break;
                         case 'date':		// allows embedding of current date
-                            $va_val_list = date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'));
+                            $va_val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
                             break;
                         case 'primary':
                             $va_val_list = [$pr_res->tableName()];
