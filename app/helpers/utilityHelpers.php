@@ -3511,7 +3511,7 @@ function caFileIsIncludable($ps_file) {
         if(caGetOption('forceFractions', $pa_options, true)) {
             $v = $num/$pn_denom;
             foreach($pa_allow_fractions_for as $i => $f) {
-                $t = split("/", $f);
+                $t = explode("/", $f);
                 $tv = (int)$t[0]/(int)$t[1];
                 if ($tv >= $v) { 
                     $frac = $f;

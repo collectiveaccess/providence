@@ -1633,6 +1633,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if (isset($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && strlen($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && (sizeof(array_filter($va_subject_type_list, function($v) use ($vs_type) { return ($vs_type === $v['idno']);  })) == 0)) {
                 $vs_type = $va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default'];
             }
+            if (!$vs_type) { $vs_type = $vs_type_mapping_setting; }		// fallback to mapping default if necessary
 			
 			// Get idno
 			$vs_idno = $va_idnos_for_row = null;
