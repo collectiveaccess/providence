@@ -34,6 +34,7 @@
   *
   */
  
+require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php');
 require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/View.php');
@@ -121,6 +122,14 @@ class ActionController extends BaseObject {
 		$this->opo_view = new View($this->opo_request, $this->opa_view_paths);
 		$this->opo_view->setVar('request', $this->getRequest());
 		$this->opo_view->setVar('controller', $this);
+		
+		// Set globals
+		if (is_array($va_globals = $this->opo_request->config->getAssoc('global_template_values'))) {
+			$o_appvars = new ApplicationVars();
+			foreach($va_globals as $vs_name => $va_info) {
+				$this->opo_view->setVar($vs_name, $o_appvars->getVar("pawtucket_global_{$vs_name}"));
+			}
+		}
 		
 		return $this->opo_view;
 	}

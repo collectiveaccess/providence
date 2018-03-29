@@ -12,10 +12,11 @@ use Iterator;
  * @package  Elasticsearch\Helper\Iterators
  * @author   Arturo Mejia <arturo.mejia@kreatetechnology.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  * @see      Iterator
  */
-class SearchResponseIterator implements Iterator {
+class SearchResponseIterator implements Iterator
+{
 
     /**
      * @var Client
@@ -67,7 +68,8 @@ class SearchResponseIterator implements Iterator {
     /**
      * Destructor
      */
-    public function __destruct() {
+    public function __destruct()
+    {
         $this->clearScroll();
     }
 
@@ -106,8 +108,6 @@ class SearchResponseIterator implements Iterator {
     /**
      * Rewinds the iterator by performing the initial search.
      *
-     * The "search_type" parameter will determine if the first "page" contains
-     * hits or if the first page contains just a "scroll_id"
      *
      * @return void
      * @see    Iterator::rewind()
@@ -128,27 +128,27 @@ class SearchResponseIterator implements Iterator {
      */
     public function next()
     {
+        if ($this->current_key !== 0) {
+            $this->current_scrolled_response = $this->client->scroll(
+                array(
+                    'scroll_id' => $this->scroll_id,
+                    'scroll'    => $this->scroll_ttl
+                )
+            );
+            $this->scroll_id = $this->current_scrolled_response['_scroll_id'];
+        }
         $this->current_key++;
-        $this->current_scrolled_response = $this->client->scroll(
-            array(
-                'scroll_id' => $this->scroll_id,
-                'scroll'    => $this->scroll_ttl
-            )
-        );
-        $this->scroll_id = $this->current_scrolled_response['_scroll_id'];
     }
 
     /**
      * Returns a boolean value indicating if the current page is valid or not
-     * based on the number of hits in the page considering that the first page
-     * might not include any hits
      *
      * @return bool
      * @see    Iterator::valid()
      */
     public function valid()
     {
-        return ($this->current_key === 0) || isset($this->current_scrolled_response['hits']['hits'][0]);
+        return isset($this->current_scrolled_response['hits']['hits'][0]);
     }
 
     /**

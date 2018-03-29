@@ -1,9 +1,9 @@
-
+[[php_json_objects]]
 == Dealing with JSON Arrays and Objects in PHP
 
 A common source of confusion with the client revolves around JSON arrays and objects, and how to specify them in PHP.
 In particular, problems are caused by empty objects and arrays of objects.  This page will show you some common patterns
-used in Elasticsearch JSON API, and how to convert that to a PHP representation
+used in Elasticsearch JSON API, and how to convert that to a PHP representation.
 
 === Empty Objects
 
@@ -53,7 +53,7 @@ $results = $client->search($params);
 <1> We use the generic PHP stdClass object to represent an empty object.  The JSON will now encode correctly.
 
 By using an explicit stdClass object, we can force the `json_encode` parser to correctly output an empty object, instead
-of an empty array.  Sadly, this verbose solution is the only way to accomplish the goal in PHP...there is no "short"
+of an empty array.  Sadly, this verbose solution is the only way to acomplish the goal in PHP...there is no "short"
 version of an empty object.
 
 === Arrays of Objects

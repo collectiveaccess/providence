@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,6 +83,12 @@ class RequestHTTP extends Request {
  	private $ops_parsed_action_extra;
  	private $ops_parsed_controller_url;
  	private $ops_parsed_is_app_plugin = false;
+ 	
+ 	
+ 	/**
+ 	 * 
+ 	 */
+ 	static $html_purifier;
  		
 	# -------------------------------------------------------
 	/**
@@ -506,6 +512,16 @@ class RequestHTTP extends Request {
 		
 		return join('/', $va_url);
 	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Return HTMLPurifier instance
+	 *
+	 * @return HTMLPurifier Returns instance
+	 */
+	static public function getPurifier() {
+		if (!RequestHTTP::$html_purifier) { RequestHTTP::$html_purifier = new HTMLPurifier(); }
+		return RequestHTTP::$html_purifier;
+	}
 	# -------------------------------------------------------
 	public function getParameter($ps_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
 		if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
@@ -521,6 +537,13 @@ class RequestHTTP extends Request {
 		if (!isset($vm_val)) { return ""; }
 		
 		$vm_val = str_replace("\0", '', $vm_val);
+		if(caGetOption('purify', $pa_options, true) && $this->config->get('purify_all_text_input')) {
+		    if(is_array($vm_val)) {
+		        $vm_val = array_map(function($v) { return is_array($v) ? $v : str_replace("&amp;", "&", RequestHTTP::getPurifier()->purify(rawurldecode($v))); }, $vm_val);
+		    } else {
+		        $vm_val = str_replace("&amp;", "&", RequestHTTP::getPurifier()->purify(rawurldecode($vm_val)));
+		    }
+		}
 		
 		if ($vm_val == "") { return ""; }
 		
@@ -529,14 +552,14 @@ class RequestHTTP extends Request {
 			case pInteger:
 				if (is_numeric($vm_val)) {
 					if ($vm_val == intval($vm_val)) {
-						return $vm_val;
+						return (int)$vm_val;
 					}
 				}
 				break;
 			# -----------------------------------------
 			case pFloat:
 				if (is_numeric($vm_val)) {
-					return $vm_val;
+					return (float)$vm_val;
 				}
 				break;
 			# -----------------------------------------

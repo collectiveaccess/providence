@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -186,6 +186,20 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 					"surname" => "Power",
 					"type_id" => "alt",
 				),
+				array(
+					"locale" => "en_US",
+					"forename" => "Alt",
+					"middlename" => "",
+					"surname" => "Strom",
+					"type_id" => "uf",
+				),
+				array(
+					"locale" => "en_US",
+					"forename" => "Hoch",
+					"middlename" => "",
+					"surname" => "Vogel",
+					"type_id" => "uf",
+				)
 			),
 			'related' => array(
 				'ca_objects' => array(
@@ -910,6 +924,24 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		<unit relativeTo='ca_objects.dimensions' start='1' length='1'>
 			^ca_objects.dimensions.dimensions_length x ^ca_objects.dimensions.dimensions_weight
 		</unit>", 'ca_objects', array($this->opn_object_id))));
+	}
+	# -------------------------------------------------------
+	public function testNonpreferredLabelsRestrictToTypes() {
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities.nonpreferred_labels' restrictToTypes='alt'>Name: ^ca_entities.nonpreferred_labels.displayname</unit>", "ca_entities", array($this->opn_entity_id1), array('returnAsArray' => false));
+	
+		$this->assertInternalType('string', $vm_ret);
+		$this->assertEquals('Name: Max Power', $vm_ret);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities.nonpreferred_labels' restrictToTypes='uf'>Name: ^ca_entities.nonpreferred_labels.displayname</unit>", "ca_entities", array($this->opn_entity_id1), array('returnAsArray' => false));
+	
+		$this->assertInternalType('string', $vm_ret);
+		$this->assertEquals('Name: Alt Strom; Name: Hoch Vogel', $vm_ret);
+		
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities.nonpreferred_labels' restrictToTypes='alt,uf'>Name: ^ca_entities.nonpreferred_labels.displayname</unit>", "ca_entities", array($this->opn_entity_id1), array('returnAsArray' => false));
+	
+		$this->assertInternalType('string', $vm_ret);
+		$this->assertEquals('Name: Max Power; Name: Alt Strom; Name: Hoch Vogel', $vm_ret);
 	}
 	# -------------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2016 Whirl-i-Gig
+ * Copyright 2006-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -541,6 +541,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$pb_write_all_pages = caGetOption('writeAllPages', $pa_options, false);
 		$pb_dont_allow_default_icons = caGetOption('dontUseDefaultIcons', $pa_options, false);
+		$pb_antialiasing = caGetOption('antialiasing', $pa_options, false);
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
@@ -580,7 +581,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				if ($vn_end_page > $this->get('pages')) { $vn_end_page = (int)$this->get('pages'); }
 				if ($vn_end_page < 1) { $vn_end_page = $vn_start_page; }
 				
-				$vs_antialiasing = ($this->get("antialiasing")) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
+				$vs_antialiasing = ($this->get("antialiasing") || $pb_antialiasing) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
 				
 				$vb_processed_preview = false;
 				switch($ps_mimetype) {
@@ -723,14 +724,19 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caDocumentPreview');
 		
 		$vn_old_res = $this->get('resolution');
+		$vn_old_quality = $this->get('quality');
 		
 		if (($vn_res = (int)$this->opo_config->get("document_preview_resolution")) < 72) { $vn_res = 72; }
 		$this->set('resolution', $vn_res);
 		
-		$va_files = $this->write($vs_output_file_prefix, 'image/jpeg', ['dontUseDefaultIcons' => true, 'writeAllPages' => true, 'start' => $vn_start_at, 'numPages' => (($vn_tot_pages > $vn_max_number_of_pages) > $vn_max_number_of_pages) ? $vn_max_number_of_pages : $vn_tot_pages]);
+		if (($vn_quality = (int)$this->opo_config->get("document_preview_quality")) > 100) { $vn_quality = 75; }
+		$this->set('quality', $vn_quality);
+		
+		$va_files = $this->write($vs_output_file_prefix, 'image/jpeg', ['dontUseDefaultIcons' => true, 'antialiasing' => true, 'writeAllPages' => true, 'start' => $vn_start_at, 'numPages' => (($vn_tot_pages > $vn_max_number_of_pages) > $vn_max_number_of_pages) ? $vn_max_number_of_pages : $vn_tot_pages]);
 
 		$this->set("page", 1);
 		$this->set('resolution', $vn_old_res);
+		$this->set('resolution', $vn_old_quality);
 		
 		
 		if (!sizeof($va_files)) {

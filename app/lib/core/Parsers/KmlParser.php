@@ -53,7 +53,7 @@ class KmlParser {
 	# --------------------------------------------------------------------------------
 	private $opa_filedata;
 	# --------------------------------------------------------------------------------
-	public function KmlParser($ps_filepath=null) {
+	public function __construct($ps_filepath=null) {
 		if ($ps_filepath) { $this->parse($ps_filepath); }
 	}
 	# --------------------------------------------------------------------------------

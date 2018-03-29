@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,10 +106,13 @@ class CompositeCache {
 	# ------------------------------------------------
 	/**
 	 * Flush whole cache, both in-memory and on-disk. Use with caution!
+	 * Note that namespace restriction will only apply to in-memory cache
+	 *
+	 * @param string $ps_namespace 
 	 */
-	public static function flush() {
-		MemoryCache::flush();
-		ExternalCache::flush();
+	public static function flush($ps_namespace=null) {
+		MemoryCache::flush($ps_namespace);
+		if (!$ps_namespace) { ExternalCache::flush(); }
 	}
 	# ------------------------------------------------
 }

@@ -2,18 +2,19 @@
 
 namespace Elasticsearch\Endpoints\Indices\Template;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Delete
  *
  * @category Elasticsearch
  * @package Elasticsearch\Endpoints\Indices\Template
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
+
 class Delete extends AbstractEndpoint
 {
     // The name of the template
@@ -39,7 +40,7 @@ class Delete extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->name) !== true) {
             throw new Exceptions\RuntimeException(
@@ -47,7 +48,7 @@ class Delete extends AbstractEndpoint
             );
         }
         $name = $this->name;
-        $uri = "/_template/$name";
+        $uri   = "/_template/$name";
 
         if (isset($name) === true) {
             $uri = "/_template/$name";
@@ -59,18 +60,18 @@ class Delete extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'timeout',
             'master_timeout',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'DELETE';
     }

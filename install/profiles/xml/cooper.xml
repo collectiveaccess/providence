@@ -23,72 +23,129 @@
             </label>
           </labels>
         </item>
-        <item idno="student_work" enabled="1" default="0">
+        <item idno="student_project" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Student Work</name_singular>
-              <name_plural>Student Works</name_plural>
+              <name_singular>Student Project</name_singular>
+              <name_plural>Student Projects</name_plural>
             </label>
           </labels>
           <items>
-            <item idno="Model" enabled="1" default="0">
+            <item idno="item" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>Model</name_singular>
-                  <name_plural>Model</name_plural>
+                  <name_singular>Project Item</name_singular>
+                  <name_plural>Project Items</name_plural>
                 </label>
               </labels>
             </item>
-            <item idno="Supplemental" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Supplemental</name_singular>
-                  <name_plural>Supplemental</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="Drawing" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Drawing</name_singular>
-                  <name_plural>Drawing</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="Photo" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Photo</name_singular>
-                  <name_plural>Photo</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="Sketch" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Sketch</name_singular>
-                  <name_plural>Sketch</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="Text" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Text</name_singular>
-                  <name_plural>Text</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="Transcript" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Transcript</name_singular>
-                  <name_plural>Transcript</name_plural>
-                </label>
-              </labels>
-            </item>             
           </items>
-        </item>        
+        </item>
+      </items>
+    </list>
+    <list code="content_categories" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Content Categories</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="Model" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Model</name_singular>
+              <name_plural>Model</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Supplemental" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Supplemental</name_singular>
+              <name_plural>Supplemental</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Drawing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Drawing</name_singular>
+              <name_plural>Drawing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Photo" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Photo</name_singular>
+              <name_plural>Photo</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sketch" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sketch</name_singular>
+              <name_plural>Sketch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Text" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Text</name_singular>
+              <name_plural>Text</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Transcript" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Transcript</name_singular>
+              <name_plural>Transcript</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="item_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Item Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="Image" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Image</name_singular>
+              <name_plural>Image</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Moving_Image" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Moving Image</name_singular>
+              <name_plural>Moving Image</name_plural>
+            </label>
+          </labels>
+        </item><item idno="Text" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Text</name_singular>
+              <name_plural>Text</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sound" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sound</name_singular>
+              <name_plural>Sound</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
@@ -146,7 +203,7 @@
               <name_plural>City</name_plural>
             </label>
           </labels>
-        </item>        
+        </item>
         <item idno="Borough" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
@@ -205,11 +262,19 @@
         </label>
       </labels>
       <items>
-        <item idno="coure" enabled="1" default="1">
+        <item idno="course" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Course</name_singular>
               <name_plural>Courses</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="academic_year" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Academic year</name_singular>
+              <name_plural>Academic year</name_plural>
             </label>
           </labels>
         </item>
@@ -898,7 +963,7 @@
               <name_plural>Streetscape</name_plural>
             </label>
           </labels>
-        </item>        
+        </item>
       </items>
     </list>
     <list code="yes_no" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
@@ -908,19 +973,19 @@
         </label>
       </labels>
       <items>
-        <item idno="yes" enabled="1" default="0" rank="10">
+        <item idno="Yes" enabled="1" default="0" rank="10">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>yes</name_singular>
-              <name_plural>yes</name_plural>
+              <name_singular>Yes</name_singular>
+              <name_plural>Yes</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="no" enabled="1" default="0" rank="20">
+        <item idno="No" enabled="1" default="0" rank="20">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>no</name_singular>
-              <name_plural>no</name_plural>
+              <name_singular>No</name_singular>
+              <name_plural>No</name_plural>
             </label>
           </labels>
         </item>
@@ -1005,7 +1070,7 @@
                   <name_plural>Bank of Manhattan</name_plural>
                 </label>
               </labels>
-            </item> 
+            </item>
             <item idno="Bank_of_Ma_Federal_Reserve_Bank" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
@@ -3868,450 +3933,36 @@
         </item>
       </items>
     </list>
-    <list code="student_work_subjects" hierarchical="0" system="0" vocabulary="1">
+    <list code="student_project_subjects" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Student Work Subjects</name>
         </label>
       </labels>
-      <items>
-      </items>
+      <items> </items>
     </list>
 
-    <list code="program_types" hierarchical="1" system="0" vocabulary="0">
+    <list code="program_types" hierarchical="1" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Program Types</name>
         </label>
       </labels>
-      <items>
-        <item idno="House" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>House</name_singular>
-              <name_plural>House</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Library" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Library</name_singular>
-              <name_plural>Library</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Museum" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Museum</name_singular>
-              <name_plural>Museum</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Theater" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Theater</name_singular>
-              <name_plural>Theater</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="MixedUse" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Mixed-Use</name_singular>
-              <name_plural>Mixed-Use</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="Church" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Church</name_singular>
-              <name_plural>Church</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="TownPlan" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Town Plan</name_singular>
-              <name_plural>Town Plan</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="CityPlan" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>City Plan</name_singular>
-              <name_plural>City Plan</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Seminary" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Seminary</name_singular>
-              <name_plural>Seminary</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Temple" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Temple</name_singular>
-              <name_plural>Temple</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="TrainStation" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Train Station</name_singular>
-              <name_plural>Train Station</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Offices" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Offices</name_singular>
-              <name_plural>Offices</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="Well" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Well</name_singular>
-              <name_plural>Well</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="CityWall" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>City Wall</name_singular>
-              <name_plural>City Wall</name_plural>
-            </label>
-          </labels>
-        </item>  
-        <item idno="Bathhouse" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Bathhouse</name_singular>
-              <name_plural>Bathhouse</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="Tower" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Tower</name_singular>
-              <name_plural>Tower</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="EducationalInstitution" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Educational Institution</name_singular>
-              <name_plural>Educational Institution</name_plural>
-            </label>
-          </labels>
-        </item>          
-      </items>
-    </list>
-    <list code="problem_types" hierarchical="1" system="0" vocabulary="0">
+      <items> </items></list>
+    <list code="problem_types" hierarchical="1" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Problem Types</name>
         </label>
       </labels>
-      <items>
-        <item idno="NineSquareGrid" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Nine Square Grid</name_singular>
-              <name_plural>Nine Square Grid</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Cube" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Cube</name_singular>
-              <name_plural>Cube</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="UtilitarianObject" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Utilitarian Object</name_singular>
-              <name_plural>Utilitarian Object</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="DomesticObject" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Domestic Object</name_singular>
-              <name_plural>Domestic Object</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="MusicalInstrument" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Musical Instrument</name_singular>
-              <name_plural>Musical Instrument</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="Analysis" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Analysis</name_singular>
-              <name_plural>Analysis</name_plural>
-            </label>
-          </labels>
-        </item>  
-        <item idno="City" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>City</name_singular>
-              <name_plural>City</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="Box" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Box</name_singular>
-              <name_plural>Box</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="Film" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Film</name_singular>
-              <name_plural>Film</name_plural>
-            </label>
-          </labels>
-        </item>        
-      </items>
-    </list>  
-    <list code="architectural_elements" hierarchical="0" system="0" vocabulary="0">
+      <items> </items></list>
+    <list code="architectural_elements" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Architectural Elements</name>
         </label>
       </labels>
-      <items>
-        <item idno="window" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>window</name_singular>
-              <name_plural>window</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="door" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>door</name_singular>
-              <name_plural>door</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="buttress" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>buttress</name_singular>
-              <name_plural>buttress</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="bridge" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>bridge</name_singular>
-              <name_plural>bridge</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="stair" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>stair</name_singular>
-              <name_plural>stair</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="column" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>column</name_singular>
-              <name_plural>column</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="arch" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>arch</name_singular>
-              <name_plural>arch</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="capital" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>capital</name_singular>
-              <name_plural>capital</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="retaining_wall" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>retaining wall</name_singular>
-              <name_plural>retaining wall</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="wall" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>wall</name_singular>
-              <name_plural>wall</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="foundation" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>foundation</name_singular>
-              <name_plural>foundation</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="footing" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>footing</name_singular>
-              <name_plural>footing</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="pier" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>pier</name_singular>
-              <name_plural>pier</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="ribbed_vault" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>ribbed vault</name_singular>
-              <name_plural>ribbed vault</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="gate" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>gate</name_singular>
-              <name_plural>gate</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="well" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>well</name_singular>
-              <name_plural>well</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="ramp" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>ramp</name_singular>
-              <name_plural>ramp</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="intakes" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>intakes</name_singular>
-              <name_plural>intakes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="exhausts" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>exhausts</name_singular>
-              <name_plural>exhausts</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="cooling_pool" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>cooling pool</name_singular>
-              <name_plural>cooling pool</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="truss" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>truss</name_singular>
-              <name_plural>truss</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="frame" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>frame</name_singular>
-              <name_plural>frame</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="joint" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>joint</name_singular>
-              <name_plural>joint</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="beam" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>beam</name_singular>
-              <name_plural>beam</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="grid" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>grid</name_singular>
-              <name_plural>grid</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
+      <items> </items>
     </list>
     <list code="semesters" hierarchical="1" system="0" vocabulary="0">
       <labels>
@@ -4320,7 +3971,7 @@
         </label>
       </labels>
       <items>
-        <item idno="fall" enabled="1" default="0">
+        <item idno="Fall" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Fall</name_singular>
@@ -4328,7 +3979,7 @@
             </label>
           </labels>
         </item>
-        <item idno="spring" enabled="1" default="0">
+        <item idno="Spring" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Spring</name_singular>
@@ -4343,9 +3994,9 @@
               <name_plural>Fall/Spring</name_plural>
             </label>
           </labels>
-        </item>        
+        </item>
       </items>
-    </list>    
+    </list>
     <list code="languages" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -5850,6 +5501,14 @@
             </label>
           </labels>
         </item>
+        <item idno="5x8_inch_color_transparency" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>5x8 inch color transparency</name_singular>
+              <name_plural>5x8 inch color transparency</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="4x5_inch_color_transparency" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -5930,11 +5589,11 @@
             </label>
           </labels>
         </item>
-        <item idno="digital_print" enabled="1" default="0">
+        <item idno="computer_print" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>digital print</name_singular>
-              <name_plural>digital print</name_plural>
+              <name_singular>computer print</name_singular>
+              <name_plural>computer print</name_plural>
             </label>
           </labels>
         </item>
@@ -5943,6 +5602,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>4x5 inch negative</name_singular>
               <name_plural>4x5 inch negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="8x10_inch_negative" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>8x10 inch negative</name_singular>
+              <name_plural>8x10 inch negative</name_plural>
             </label>
           </labels>
         </item>
@@ -5962,8 +5629,80 @@
             </label>
           </labels>
         </item>
+        <item idno="8x10_inch_color_transparency" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>8x10 inch color transparency</name_singular>
+              <name_plural>8x10 inch color transparency</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Pencil_drawing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pencil drawing</name_singular>
+              <name_plural>Pencil drawing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="typewritten_document" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>typewritten document</name_singular>
+              <name_plural>typewritten document</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="faxed_document" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>faxed document</name_singular>
+              <name_plural>faxed document</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pencil_and_ink_drawing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pencil and ink drawing</name_singular>
+              <name_plural>pencil and ink drawing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="handwritten_document" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>handwritten document</name_singular>
+              <name_plural>handwritten document</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ink_drawing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>ink drawing</name_singular>
+              <name_plural>ink drawing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="35mm_color_transparency" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>35 mm color transparency</name_singular>
+              <name_plural>35 mm color transparency</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="TIFF_file" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>TIFF file</name_singular>
+              <name_plural>TIFF file</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
-    </list>      
+    </list>
   </lists>
   <elementSets>
     <!--Postcard Elements-->
@@ -6001,7 +5740,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>postcard</type>          
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -6022,7 +5761,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>postcard</type>          
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6046,7 +5785,7 @@
       <typeRestrictions>
         <restriction code="objects">
           <table>ca_objects</table>
-          <type>postcard</type>          
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6072,7 +5811,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>postcard</type>          
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6098,7 +5837,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>postcard</type>          
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6125,7 +5864,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>postcard</type>          
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6150,7 +5889,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>postcard</type>          
+          <type>postcard</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6159,7 +5898,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <!--Basic Elements-->
     <metadataElement code="copyright" datatype="Text">
       <labels>
@@ -6290,10 +6029,10 @@
     </metadataElement>
 
     <!--Student Work Elements-->
-    <metadataElement code="program_type" datatype="List" list="program_types">
+    <metadataElement code="content_category" datatype="List" list="content_categories">
       <labels>
         <label locale="en_US">
-          <name>Program Type</name>
+          <name>Content category</name>
         </label>
       </labels>
       <settings>
@@ -6302,19 +6041,19 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>student_work</type>
+          <type>item</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="problem_type" datatype="List" list="problem_types">
+    <metadataElement code="item_type" datatype="List" list="item_type">
       <labels>
         <label locale="en_US">
-          <name>Problem Type</name>
+          <name>Item Type</name>
         </label>
       </labels>
       <settings>
@@ -6323,36 +6062,16 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>student_work</type>
+          <type>item</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="architectural_element" datatype="List" list="architectural_elements">
-      <labels>
-        <label locale="en_US">
-          <name>Architectural Element</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="render">checklist</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <type>student_work</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
+    
     <metadataElement code="academic_year" datatype="DateRange">
       <labels>
         <label locale="en_US">
@@ -6368,7 +6087,7 @@
       <typeRestrictions>
         <restriction code="objects">
           <table>ca_objects</table>
-          <type>student_work</type>          
+          <type>student_project</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6389,7 +6108,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>student_work</type>
+          <type>student_project</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6413,7 +6132,7 @@
       <typeRestrictions>
         <restriction code="objects">
           <table>ca_objects</table>
-          <type>student_work</type>
+          <type>student_project</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6422,7 +6141,79 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+    <metadataElement code="author_text" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Author text link</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">640px</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <type>student_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="faculty_text" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Faculty text link</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">640px</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <type>student_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="supplemental" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Supplemental material link</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">640px</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <type>student_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+
     <metadataElement code="format" datatype="List" list="format">
       <labels>
         <label locale="en_US">
@@ -6444,7 +6235,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <metadataElement code="dimensions" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -6553,7 +6344,8 @@
         </label>
       </labels>
       <settings>
-        <setting name="nullOptionText"/>
+        <setting name="maxColumns"/>
+        <setting name="nullOptionText">Not Set</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -6565,10 +6357,55 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        
+
       </typeRestrictions>
     </metadataElement>
-    
+
+    <metadataElement code="lcsh" datatype="LCSH">
+      <labels>
+        <label locale="en_US">
+          <name>Library of Congress Subject Headings</name>
+          <description>Library of Congress Subject headings describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="vocabulary">cs:http://id.loc.gov/authorities/subjects</setting>
+        <setting name="fieldWidth">70</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="aat" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>Getty Art and Architecture Thesarus</name>
+          <description>This type-ahead searches the Getty's AAT information service.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">AAT</setting>
+        <setting name="fieldWidth">90</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+
     <!--Entity Elements-->
     <metadataElement code="address" datatype="Container">
       <labels>
@@ -6797,6 +6634,297 @@
       </typeRestrictions>
     </metadataElement>
 
+    <!--Tracking Elements-->
+    <metadataElement code="scanning_complete" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Scanning Complete</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>item</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="cataloging_complete" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Cataloging Complete</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="tag" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Tag in CA</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="request_info" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Request more information</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="no_text_available" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>No Text Available</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>student_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="file_folder" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>File Folder</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="model_photos" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Model Photos</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="slides" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Slides</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="11_oversize" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>11x14 Oversize</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="museum_oversize" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Museum Oversize</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="audio" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Audio</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="born_digital" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Born Digital</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="audio_visual" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Audio Visual</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+
+    <metadataElement code="course_description" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Course Description</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>course</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -6877,14 +7005,14 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="basic_student_work" default="1">
+        <screen idno="basic_student_project" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic information</name>
             </label>
           </labels>
           <typeRestrictions>
-            <restriction code="student_work" type="student_work"/>
+            <restriction code="student_project" type="student_project"/>
           </typeRestrictions>          
           <bundlePlacements>
             <placement code="hierarchy_location">
@@ -6901,8 +7029,7 @@
               <settings>
                 <setting name="label" locale="en_US">Project Title</setting>
               </settings>
-            </placement>
-              
+            </placement>            
             <placement code="author">
               <bundle>ca_entities</bundle>
                <settings>
@@ -6914,6 +7041,7 @@
               <bundle>ca_occurrences</bundle>
                <settings>
                 <setting name="label" locale="en_US">Course</setting>
+                <setting name="restrict_to_types">course</setting>
               </settings>
             </placement>
             <placement code="faculty">
@@ -6922,30 +7050,49 @@
                 <setting name="restrict_to_relationship_types">faculty</setting>
                 <setting name="label" locale="en_US">Faculty</setting>
               </settings>
-            </placement>   
-            <placement code="ca_attribute_academic_year">
-              <bundle>ca_attribute_academic_year</bundle>
             </placement>
+            <placement code="ca_academic">
+              <bundle>ca_occurrences</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Academic Year</setting>
+                <setting name="restrict_to_types">academic_year</setting>
+              </settings>
+            </placement>            
             <placement code="ca_attribute_semester">
               <bundle>ca_attribute_semester</bundle>
-            </placement>  
-            <placement code="ca_attribute_program_type">
-              <bundle>ca_attribute_program_type</bundle>
-            </placement>  
-            <placement code="ca_attribute_problem_type">
-              <bundle>ca_attribute_problem_type</bundle>
-            </placement>              
-            <placement code="ca_attribute_architectural_element">
-              <bundle>ca_attribute_architectural_element</bundle>
-            </placement> 
+            </placement>
+            <placement code="program_type">
+              <bundle>ca_list_items</bundle>
+                <settings>
+                 <setting name="restrict_to_lists">program_types</setting> 
+                 <setting name="label" locale="en_US">Program type</setting>
+                <setting name="add_label" locale="en_US">Add program types.</setting>               
+              </settings>
+            </placement>            
+            <placement code="problem_type">
+              <bundle>ca_list_items</bundle>
+                <settings>
+                 <setting name="restrict_to_lists">problem_types</setting> 
+                 <setting name="label" locale="en_US">Problem type</setting>
+                <setting name="add_label" locale="en_US">Add problem types.</setting>               
+              </settings>
+            </placement>
+            <placement code="architectural_element">
+              <bundle>ca_list_items</bundle>
+                <settings>
+                 <setting name="restrict_to_lists">architectural_elements</setting> 
+                 <setting name="label" locale="en_US">Architectural elements</setting>
+                <setting name="add_label" locale="en_US">Add architectural elements.</setting>               
+              </settings>
+            </placement>            
             <placement code="ca_attribute_abstract">
               <bundle>ca_attribute_abstract</bundle>
             </placement>             
             <placement code="architect">
               <bundle>ca_entities</bundle>
                <settings>
-                <setting name="restrict_to_relationship_types">architect</setting>
-                <setting name="label" locale="en_US">Architect</setting>
+                <setting name="restrict_to_relationship_types">individual_analyzed</setting>
+                <setting name="label" locale="en_US">Individual Analyzed</setting>
               </settings>
             </placement> 
             <placement code="photographer">
@@ -6954,7 +7101,16 @@
                 <setting name="restrict_to_relationship_types">photographer</setting>
                 <setting name="label" locale="en_US">Project photographer</setting>
               </settings>
-            </placement>             
+            </placement>  
+            <placement code="ca_attribute_author_text">
+              <bundle>ca_attribute_author_text</bundle>
+            </placement> 
+            <placement code="ca_attribute_faculty_text">
+              <bundle>ca_attribute_faculty_text</bundle>
+            </placement>
+            <placement code="ca_attribute_supplemental">
+              <bundle>ca_attribute_supplemental</bundle>
+            </placement>            
           </bundlePlacements>
         </screen>
         <screen idno="basic_item" default="1">
@@ -6964,15 +7120,17 @@
             </label>
           </labels>
           <typeRestrictions>
-            <restriction code="Model" type="Model"/>
-            <restriction code="Supplemental" type="Supplemental"/>
-            <restriction code="Drawing" type="Drawing"/>
-            <restriction code="Photo" type="Photo"/>
-            <restriction code="Sketch" type="Sketch"/>
+            <restriction code="item" type="item"/>
           </typeRestrictions>          
           <bundlePlacements>
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
+            </placement>
+             <placement code="ca_attribute_content_category">
+              <bundle>ca_attribute_content_category</bundle>
+            </placement>
+            <placement code="ca_attribute_item_type">
+              <bundle>ca_attribute_item_type</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -7004,10 +7162,13 @@
             </placement>             
             <placement code="ca_attribute_notes">
               <bundle>ca_attribute_notes</bundle>
-            </placement>  
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>                          
           </bundlePlacements>
         </screen>
-        
+
         <screen idno="secondary_postcard" default="0">
           <labels>
             <label locale="en_US">
@@ -7032,14 +7193,14 @@
             </placement>             
           </bundlePlacements>
         </screen>
-        <screen idno="secondary_student_work" default="0">
+        <screen idno="secondary_student_project" default="0">
           <labels>
             <label locale="en_US">
               <name>Secondary information</name>
             </label>
           </labels>
           <typeRestrictions>
-            <restriction code="student_work" type="student_work"/>
+            <restriction code="student_project" type="student_project"/>
           </typeRestrictions>            
           <bundlePlacements>
             <placement code="ca_places">
@@ -7051,20 +7212,78 @@
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
                 <settings>
-                 <setting name="restrict_to_lists">student_work_subjects</setting> 
+                 <setting name="restrict_to_lists">student_project_subjects</setting> 
                  <setting name="label" locale="en_US">Subjects</setting>
                 <setting name="add_label" locale="en_US">Add subjects</setting>               
               </settings>
             </placement>
+            <placement code="ca_attribute_lcsh">
+              <bundle>ca_attribute_lcsh</bundle>
+            </placement>    
+            <placement code="ca_attribute_aat">
+              <bundle>ca_attribute_aat</bundle>
+            </placement>    
             <placement code="ca_attribute_notes">
               <bundle>ca_attribute_notes</bundle>
             </placement>
             <placement code="ca_attribute_rights">
               <bundle>ca_attribute_rights</bundle>
+            </placement>            
+          </bundlePlacements>
+        </screen>
+        <screen idno="tracking_item" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Tracking</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="item" type="item"/>
+            <restriction code="student_project" type="student_project"/>
+          </typeRestrictions>          
+          <bundlePlacements>
+             <placement code="ca_attribute_scanning_complete">
+              <bundle>ca_attribute_scanning_complete</bundle>
+            </placement>
+            <placement code="ca_attribute_cataloging_complete">
+              <bundle>ca_attribute_cataloging_complete</bundle>
+            </placement>
+             <placement code="ca_attribute_tag">
+              <bundle>ca_attribute_tag</bundle>
+            </placement>  
+            <placement code="ca_attribute_request_info">
+              <bundle>ca_attribute_request_info</bundle>
+            </placement>            
+             <placement code="ca_attribute_no_text_available">
+              <bundle>ca_attribute_no_text_available</bundle>
+            </placement>
+            <placement code="ca_attribute_file_folder">
+              <bundle>ca_attribute_file_folder</bundle>
+            </placement>
+             <placement code="ca_attribute_model_photos">
+              <bundle>ca_attribute_model_photos</bundle>
+            </placement>   
+             <placement code="ca_attribute_slides">
+              <bundle>ca_attribute_slides</bundle>
+            </placement>
+             <placement code="ca_attribute_11_oversize">
+              <bundle>ca_attribute_11_oversize</bundle>
+            </placement>   
+             <placement code="ca_attribute_museum_oversize">
+              <bundle>ca_attribute_museum_oversize</bundle>
+            </placement>
+            <placement code="ca_attribute_audio">
+              <bundle>ca_attribute_audio</bundle>
+            </placement>
+             <placement code="ca_attribute_born_digital">
+              <bundle>ca_attribute_born_digital</bundle>
+            </placement>               
+             <placement code="ca_attribute_audio_visual">
+              <bundle>ca_attribute_audio_visual</bundle>
             </placement> 
           </bundlePlacements>
         </screen>
-        
+
         <screen idno="location" default="0">
           <labels>
             <label locale="en_US">
@@ -7072,7 +7291,7 @@
             </label>
           </labels>
           <typeRestrictions>
-            <restriction code="student_work" type="student_work"/>
+            <restriction code="student_project" type="student_project"/>
             <restriction code="postcard" type="postcard"/>            
           </typeRestrictions>           
           <bundlePlacements>
@@ -7190,6 +7409,19 @@
             </placement>
           </bundlePlacements>
         </screen>
+        <screen idno="screen_14_4" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations1">
+              <bundle>ca_object_representations</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+
       </screens>
     </userInterface>
     <userInterface code="places_ui" type="ca_places">
@@ -7637,7 +7869,7 @@
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
-                <setting name="label" locale="en_US">Course ID</setting>
+                <setting name="label" locale="en_US">ID</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
@@ -7646,13 +7878,16 @@
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Course name</setting>
+                <setting name="label" locale="en_US">Name</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
                 <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
+            <placement code="ca_attribute_course_description">
+              <bundle>ca_attribute_course_description</bundle>
+            </placement>            
           </bundlePlacements>
         </screen>
         <screen idno="relationships" default="0">
@@ -7685,9 +7920,22 @@
             </placement>
           </bundlePlacements>
         </screen>
+        <screen idno="screen_20_3" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations1">
+              <bundle>ca_object_representations</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+
       </screens>
     </userInterface>
-    
+
     <userInterface code="standard_representation_annotation_ui" type="ca_representation_annotations">
       <labels>
         <label locale="en_US">
@@ -7794,7 +8042,7 @@
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
-        </type>    
+        </type>
         <type code="faculty" default="0">
           <labels>
             <label locale="en_US">
@@ -7804,17 +8052,17 @@
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
-        </type>            
-        <type code="architect" default="0">
+        </type>
+        <type code="individual_analyzed" default="0">
           <labels>
             <label locale="en_US">
-              <typename>architect</typename>
-              <typename_reverse>architect</typename_reverse>
+              <typename>individual analyzed</typename>
+              <typename_reverse>individual analyzed</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
-        </type>  
+        </type>
         <type code="photographer" default="0">
           <labels>
             <label locale="en_US">
@@ -7824,7 +8072,7 @@
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
-        </type>                    
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_occurrences">
@@ -7836,8 +8084,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft></subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeLeft/>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -8394,7 +8642,7 @@
       </types>
     </relationshipTable>
   </relationshipTypes>
-  <displays> 
+  <displays>
     <display code="basic_postcard_display" type="ca_objects" system="1">
       <labels>
         <label locale="en_US">
@@ -8433,7 +8681,7 @@
             <setting name="format"><![CDATA[]]></setting>
             <setting name="delimiter"><![CDATA[]]></setting>
             <setting name="sort"><![CDATA[]]></setting>
-            <setting name="restrict_to_lists">keywords</setting> 
+            <setting name="restrict_to_lists">keywords</setting>
             <setting name="show_hierarchy"><![CDATA[0]]></setting>
             <setting name="remove_first_items"><![CDATA[0]]></setting>
             <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
@@ -8473,10 +8721,99 @@
         </placement>
       </bundlePlacements>
     </display>
-    
+    <display code="item_display" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Item Display (for Student Works)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values"><![CDATA[1]]></setting>
+        <setting name="bottom_line"><![CDATA[]]></setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <bundlePlacements>
+        <placement code="ca_objects_idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_objects_type_id">
+          <bundle>ca_objects.type_id</bundle>
+        </placement>
+        <placement code="ca_objects_dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>
+        <placement code="ca_objects_format">
+          <bundle>ca_objects.format</bundle>
+        </placement>
+        <placement code="ca_objects_language">
+          <bundle>ca_objects.language</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="student_project_display" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Student Work Display</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values"><![CDATA[1]]></setting>
+        <setting name="bottom_line"><![CDATA[]]></setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <bundlePlacements>
+        <placement code="ca_objects_idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_objects_semester">
+          <bundle>ca_objects.semester</bundle>
+        </placement>
+        <placement code="ca_objects_program_type">
+          <bundle>ca_objects.program_type</bundle>
+        </placement>
+        <placement code="ca_objects_problem_type">
+          <bundle>ca_objects.problem_type</bundle>
+        </placement>
+        <placement code="ca_objects_architectural_element">
+          <bundle>ca_objects.architectural_element</bundle>
+        </placement>
+        <placement code="ca_objects_abstract">
+          <bundle>ca_objects.abstract</bundle>
+        </placement>
+        <placement code="ca_objects_rights">
+          <bundle>ca_objects.rights</bundle>
+        </placement>
+        <placement code="ca_objects_notes">
+          <bundle>ca_objects.notes</bundle>
+        </placement>
+        <placement code="ca_list_items">
+          <bundle>ca_list_items</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+        </placement>
+        <placement code="ca_occurrences">
+          <bundle>ca_occurrences</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+
   </displays>
-  <searchForms> 
-    <searchForm code="postcard_adv_search" type="ca_objects" system="1">
+  <searchForms>
+    <searchForm code="postcard_adv_search" type="ca_objects" system="1" typeRestrictions="postcard">
       <labels>
         <label locale="en_US">
           <name>Postcard advanced search</name>
@@ -8533,7 +8870,49 @@
         </placement>
       </bundlePlacements>
     </searchForm>
-    
+    <searchForm code="SWC_advanced_search" type="ca_objects" system="1"
+      typeRestrictions="student_project" includeSubtypes="1">
+      <labels>
+        <label locale="en_US">
+          <name>SWC advanced search</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="form_width">3</setting>
+      </settings>
+      <userAccess>
+        <permission user="caitlin" access="edit"/>
+      </userAccess>
+      <bundlePlacements>
+        <placement code="p38">
+          <bundle>ca_entity_labels.surname</bundle>
+        </placement>
+        <placement code="p39">
+          <bundle>ca_entity_labels.forename</bundle>
+        </placement>
+        <placement code="p41">
+          <bundle>ca_objects.semester</bundle>
+        </placement>
+        <placement code="p42">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="p43">
+          <bundle>ca_occurrences.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Course Identifier</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+        <placement code="p44">
+          <bundle>ca_occurrence_labels.name</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Course Name</setting>
+            <setting name="width">100px</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </searchForm>
+
   </searchForms>
 
   <logins>
@@ -8549,6 +8928,11 @@
     </login>
     <login user_name="steven" password="covino" fname="Steven" lname="Hillyer"
       email="hillye2@cooper.edu">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="caitlin" password="covino" fname="Caitlin" lname="Biggers"
+      email="cbiggers@cooper.edu">
       <role code="admin"/>
       <group code="admin"/>
     </login>

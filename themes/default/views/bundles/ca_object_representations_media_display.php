@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,7 +75,7 @@
 <?php
 	if ($vb_media_is_set) {
 ?>						
-						<div style="float:right;">
+						<div style="float:right; margin-left: 5px;">
 							<?php print urldecode(caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{$vs_id_prefix}download"), array('no_background' => true, 'dont_show_content' => true))); ?>
 						</div>
 <?php

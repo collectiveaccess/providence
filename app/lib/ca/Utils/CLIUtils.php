@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1868,7 +1868,7 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
-				"username" => _t("User name to reset password for."),
+				"username|n=s" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
@@ -3156,6 +3156,7 @@
 				return;
 			}
 			$o_cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
+			if(!is_array($va_exclude_from_precache = $o_cache_config->get('exclude_from_precache'))) { $va_exclude_from_precache = []; }
 			
 			$va_cached_actions = $o_cache_config->getAssoc('cached_actions');
 			if(!is_array($va_cached_actions)) { 
@@ -3177,25 +3178,12 @@
 			}
 			
 			foreach($va_cached_actions as $vs_controller => $va_actions) {
+			    if(in_array($vs_controller, $va_exclude_from_precache)) { continue; }
 				switch($vs_controller) {
 					case 'Browse':
 					case 'Search':
 						// preloading of cache not supported
 						CLIUtils::addMessage(_t("Preloading from %1 is not supported", $vs_controller), array('color' => 'yellow'));
-						break;
-					case 'Splash':
-						$va_tmp = explode("/", $vs_controller);
-						$vs_controller = array_pop($va_tmp);
-						$vs_module_path = join("/", $va_tmp);
-						foreach($va_actions as $vs_action => $vn_ttl) {
-							if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action, array('noCache' => 1))) {
-							
-								CLIUtils::addMessage(_t("Preloading from %1::%2", $vs_controller, $vs_action), array('color' => 'bold_blue'));
-								$vs_url = $vs_site_protocol."://".$vs_site_hostname.$vs_url;
-							 	file_get_contents($vs_url);
-							}
-							
-						}
 						break;
 					case 'Detail':
 						$va_tmp = explode("/", $vs_controller);
@@ -3229,6 +3217,21 @@
 							
 						}
 						break;
+					case 'splash':
+					default:
+					    $va_tmp = explode("/", $vs_controller);
+						if ($vs_controller == 'splash') { $vs_controller = array_pop($va_tmp); }
+						$vs_module_path = join("/", $va_tmp);
+						foreach($va_actions as $vs_action => $vn_ttl) {
+							if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action, array('noCache' => 1))) {
+							
+								CLIUtils::addMessage(_t("Preloading from %1::%2", $vs_controller, $vs_action), array('color' => 'bold_blue'));
+								$vs_url = $vs_site_protocol."://".$vs_site_hostname.$vs_url;
+							 	file_get_contents($vs_url);
+							}
+							
+						}
+					    break;
 				}
 			}
 			
@@ -4163,7 +4166,7 @@
 			if (!$vn_access) {
 			    $vn_id = caGetDefaultItemID('access_statuses');
 			    $vn_access = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting target access to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting target access to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 
 			$vn_rep_access = null;
@@ -4173,7 +4176,7 @@
 			if (!$vn_rep_access) {
 			    $vn_id = caGetDefaultItemID('access_statuses');
 			    $vn_rep_access = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting representation access to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting representation access to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 			
 			$vn_status = null;
@@ -4183,7 +4186,7 @@
 			if (!$vn_status) {
 			    $vn_id = caGetDefaultItemID('workflow_statuses');
 			    $vn_status = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting target status to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting target status to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 
 			$vn_rep_status = null;
@@ -4193,7 +4196,7 @@
 			if (!$vn_rep_status) {
 			    $vn_id = caGetDefaultItemID('workflow_statuses');
 			    $vn_rep_status = caGetListItemValueForID($vn_id);
-			    CLIUtils::addMessage(_t('Setting representation status to default %1', caGetListItemForDisplayByItemID($vn_id)));
+			    CLIUtils::addMessage(_t('Setting representation status to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
 			
 			$vn_mapping_id = null;
@@ -4259,7 +4262,7 @@
             }
             print CLIProgressBar::start($va_counts['files'], _t('Processing media'));
 			if (!BatchProcessor::importMediaFromDirectory(null, $va_opts)) {
-				CLIUtils::addError(_t("Could not import media from %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
+				CLIUtils::addError(_t("Could not import media from %1: %2", $vs_data_source, join("; ", BatchProcessor::getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported media from source %1", $vs_data_source));
@@ -4271,6 +4274,31 @@
 		 *
 		 */
 		public static function import_mediaParamList() {
+		
+			$access_status_values = caGetListItems('access_statuses', ['index' => 'item_value', 'value' => 'name_plural']);
+			$access_status_default = caGetListItems('access_statuses', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
+			
+			$access_status_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $access_status_values, array_keys($access_status_values)));
+			$access_status_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $access_status_default, array_keys($access_status_default)));
+			
+			$workflow_status_values = caGetListItems('workflow_statuses', ['index' => 'item_value', 'value' => 'name_plural']);
+			$workflow_status_default = caGetListItems('workflow_statuses', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
+			
+			$workflow_status_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $workflow_status_values, array_keys($workflow_status_values)));
+			$workflow_status_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $workflow_status_default, array_keys($workflow_status_default)));
+			
+			$object_type_values = caGetListItems('object_types', ['index' => 'item_value', 'value' => 'name_plural']);
+			$object_type_default = caGetListItems('object_types', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
+			
+			$object_type_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $object_type_values, array_keys($object_type_values)));
+			$object_type_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $object_type_default, array_keys($object_type_default)));
+			
+			$representation_type_values = caGetListItems('object_representation_types', ['index' => 'item_value', 'value' => 'name_plural']);
+			$representation_type_default = caGetListItems('object_representation_types', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
+			
+			$representation_type_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $representation_type_values, array_keys($representation_type_values)));
+			$representation_type_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $representation_type_default, array_keys($representation_type_default)));
+			
 			return array(
 				"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
 				"username|u-s" => _t('User name of user to log import against.'),
@@ -4287,13 +4315,13 @@
 				'import-target-type|itt-s' => _t('Type to use for all newly created target records. Default is the first type in the target\'s type list.'),
 				'import-target-idno|iti-s' => _t('Identifier to use for all newly created target records.'),
 				'import-target-idno-mode|itim-s' => _t('Sets how identifiers of newly created target records are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory name and file name with extension. Default is AUTO.'),
-				'import-target-access|ita-s' => _t('Set access for newly created target records. Default is private.'),
-				'import-target-status|its-s' => _t('Set status for newly created target records. Default is first value in status list.'),
-				'representation-type|rt-s' => _t('Type to use for all newly created representations. Default is the first type in the representation type list.'),
+				'import-target-access|ita-s' => _t('Set access for newly created target records. Possible values are %1. Default is %2.', $access_status_list_str, $access_status_default_str),
+				'import-target-status|its-s' => _t('Set status for newly created target records. Possible values are %1. Default is %2.', $workflow_status_list_str, $workflow_status_default_str),
+				'representation-type|rt-s' => _t('Type to use for all newly created representations. Possible values are %1. Default is %2.', $representation_type_list_str, $representation_type_default_str),
 				'representation-idno|ri-s' => _t('Identifier to use for all newly created representation records.'),
 				'representation-idno-mode|rim-s' => _t('Sets how identifiers of newly created representations are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory name and file name with extension. Default is AUTO.'),
-				'representation-access|ra-s' => _t('Set access for newly created representations. Default is private.'),
-				'representation-status|rs-s' => _t('Set status for newly created representations. Default is first value in status list.'),
+				'representation-access|ra-s' => _t('Set access for newly created representations. Possible values are %1. Default is %2.', $access_status_list_str, $access_status_default_str),
+				'representation-status|rs-s' => _t('Set status for newly created representations. Possible values are %1. Default is %2.', $workflow_status_list_str, $workflow_status_default_str),
 				'representation-mapping|rm-s' => _t('Code for mapping to apply when importing media.'),
 				'delete-media-on-import|dmoi-s' => _t('Remove media from directory after it has been successfully imported. Default is false.')
 			);
@@ -4318,6 +4346,90 @@
 		 */
 		public static function import_mediaHelp() {
 			return _t("Import media from a directory or directory tree.");
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function regenerate_dependent_field_values($po_opts=null) {
+			// Find containers with dependent fields
+			$va_elements = ca_metadata_elements::getElementSetsWithSetting("isDependentValue", 1);
+			$o_dm = Datamodel::load();
+			
+			
+			$c = 0;
+			foreach($va_elements as $va_element) {
+			    $t_element = ca_metadata_elements::getInstance($va_element['element_code']);
+			    $t_root = ca_metadata_elements::getInstance($va_element['hier_element_id']);
+			    $vs_root_code = $t_root->get('element_code');
+			    $vn_root_id = $t_root->get('element_id');
+			    
+			    CLIUtils::addMessage(_t('Processing %1.%2', $vs_root_code, $va_element['element_code']));
+			    
+			    // get type restrictions
+			    $va_type_res_list = $t_element->getTypeRestrictions();
+			    foreach($va_type_res_list as $va_type_res) {
+			        if (!($t_instance = $o_dm->getInstanceByTableNum($va_type_res['table_num']))) { continue; }
+			        $vs_table_name = $t_instance->tableName();
+			        if ($va_type_res['type_id'] > 0) {
+			            $qr_res = call_user_func("{$vs_table_name}::find", ["type_id" => (int)$va_type_res['type_id']], ['returnAs' => 'searchResult']);
+			        } else {
+			            $qr_res = call_user_func("{$vs_table_name}::find", ["*"], ['returnAs' => 'searchResult']);
+			        }
+			        
+			        while($qr_res->nextHit()) {
+			            $va_value_list = $qr_res->get("{$vs_table_name}.{$vs_root_code}", ["returnWithStructure" => true]);
+			            foreach($va_value_list as $vn_row_id => $va_values_by_attribute_id) {
+			                CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
+			                foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {
+			                    $vs_processed_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $va_values);
+			                    
+			                    $va_values[$va_element['element_code']] = $vs_processed_value;
+			                    if (!$t_instance->load($vn_row_id)) { continue; }
+			                    $t_instance->setMode(ACCESS_WRITE);
+			                    $t_instance->editAttribute(
+			                        $vn_attr_id, $vn_root_id, $va_values
+			                    );
+			                    $t_instance->update();
+			                    $c++;
+			                    if ($t_instance->numErrors() > 0) {
+			                        CLIUtils::addError(_t("Could not update dependent value: %1", join("; ", $t_instance->getErrors())));
+			                    }
+			                }
+			            }
+			        }
+			    }
+			}
+			
+			CLIUtils::addMessage(_t("Regenerated %1 values", $c));
+		}
+		# -------------------------------------------------------
+		public static function regenerate_dependent_field_valuesParamList() {
+			return [
+				
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_dependent_field_valuesUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_dependent_field_valuesShortHelp() {
+			return _t('Regenerate template-generated values for fields that are dependent values.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_dependent_field_valuesHelp() {
+			return _t('Text fields that are dependent upon other fields are only refreshed on save and import. For dependent display templates using dimensions (length, width) formatting, changes in the dimensions.conf configuration files are not automatically applied to existing values. This utility will batch update all dependent values using the current system configuration.');
 		}
 		# -------------------------------------------------------
 	}

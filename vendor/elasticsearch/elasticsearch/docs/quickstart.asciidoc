@@ -11,7 +11,7 @@ This section will give you a quick overview of the client and how the major func
 ----------------------------
 {
     "require": {
-        "elasticsearch/elasticsearch": "~2.0"
+        "elasticsearch/elasticsearch": "~5.0"
     }
 }
 ----------------------------
@@ -30,7 +30,9 @@ php composer.phar install --no-dev
 ----------------------------
 require 'vendor/autoload.php';
 
-$client = Elasticsearch\ClientBuilder::create()->build();
+use Elasticsearch\ClientBuilder;
+
+$client = ClientBuilder::create()->build();
 ----------------------------
 
 
@@ -256,7 +258,7 @@ Array
 
 === Wrap up
 
-That was just a crash-course overview of the client and it's syntax.  If you are familiar with elasticsearch, you'll
+That was just a crash-course overview of the client and its syntax.  If you are familiar with elasticsearch, you'll
 notice that the methods are named just like REST endpoints.
 
 You'll also notice that the client is configured in a manner that facilitates easy discovery via your IDE.  All core

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -307,7 +307,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Flushes the element set cache for current record, its parent and the whole element set
 	 */
-	private function flushCacheForElement() {
+	public function flushCacheForElement() {
 		if(!$this->getPrimaryKey()) { return; }
 
 		if($vn_parent_id = $this->get('parent_id')) {
@@ -319,6 +319,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		CompositeCache::delete($this->getPrimaryKey(), 'ElementSets');
+		CompositeCache::delete(null.'/'.null.'/'.$this->getPrimaryKey(), 'ElementTypeRestrictions');
 
 		// flush getElementsAsList() cache too
 		if(CompositeCache::contains('cacheKeys', 'ElementList')) {
@@ -408,6 +409,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $va_tmp;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Return array of information about elements with a setting set to a given value.
+	 *
+	 * @param string $ps_setting Setting code
+	 * @param mixed $pm_value  Setting value
+	 * @param array $pa_options No options are currently supported
+	 *
+	 * @return array
+	 */
+	public static function getElementSetsWithSetting($ps_setting, $pm_value, $pa_options=null) {
+	    return array_map(function($v) { $v['settings'] = caUnserializeForDatabase($v['settings']); return $v; }, array_filter(ca_metadata_elements::find('*', ['returnAs' => 'arrays']), function($v) use ($ps_setting, $pm_value) {
+	        $va_settings = caUnserializeForDatabase($v['settings']);
+	        if (isset($va_settings[$ps_setting]) && ($va_settings[$ps_setting] == $pm_value)) {
+	            return true;
+	        }
+	        return false;
+	    }));
+	}
+	# ------------------------------------------------------
 	# Settings
 	# ------------------------------------------------------
 	/**
@@ -439,6 +459,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function setSetting($ps_setting, $pm_value, &$ps_error=null) {
 		if (is_null($this->get('datatype'))) { return null; }
 		if (!$this->isValidSetting($ps_setting)) { return null; }
+		
+		if ($ps_setting == 'canBeUsedInSort') {
+			CompositeCache::delete('ElementsSortable');
+			CompositeCache::delete('available_sorts');
+		}
 
 		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
 		$vs_error = null;
@@ -540,6 +565,28 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 				if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
 				$va_opts = array('id' => $vs_input_name, 'width' => $vn_width, 'height' => $vn_height);
+				
+				
+ 				if($va_properties['showMediaElementBundles']) {
+ 				    $va_restrictions = $this->getTypeRestrictions();
+ 				    
+                    $va_select_opts = ['-' => ''];
+ 				    foreach($va_restrictions as $va_restriction) {
+                        // find metadata elements that are either (a) Media or (b) a container that includes a media element
+                        if (is_array($va_elements = ca_metadata_elements::getElementsAsList(false, $va_restriction['table_num'], null, true, false, false, null))) {
+                            foreach($va_elements as $vn_element_id => $va_element_info) {
+                                if ($va_element_info['datatype'] == __CA_ATTRIBUTE_VALUE_MEDIA__) {
+                                    if ($va_element_info['parent_id'] > 0) {
+                                        $va_select_opts[$va_elements[$va_element_info['hier_element_id']]['display_label']." &gt; ".$va_element_info['display_label']] = $va_elements[$va_element_info['hier_element_id']]['element_code'].".".$va_element_info['element_code'];
+                                    } else {
+                                        $va_select_opts[$va_element_info['display_label']] = $va_element_info['element_code'];
+                                    }
+                                }
+                            }
+                        }
+                        $va_properties['options'] = $va_select_opts;
+                    } 
+                } 
 
 				$vm_value = $this->getSetting($ps_setting);
 
@@ -826,6 +873,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 */
 	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $pa_options=null){
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_table_name_or_num.'/'.$pm_type_name_or_id);
+		if(!caGetOption('noCache', $pa_options, false) && CompositeCache::contains('ElementsSortable') && is_array($va_cached_data = CompositeCache::fetch('ElementsSortable')) && isset($va_cached_data[$vs_cache_key])) {
+			return $va_cached_data[$vs_cache_key];
+		}
 		$va_elements = ca_metadata_elements::getElementsAsList(false, $pm_table_name_or_num, $pm_type_name_or_id);
 		if (!is_array($va_elements) || !sizeof($va_elements)) { return array(); }
 
@@ -842,7 +893,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$va_sortable_elements[$va_element[$vs_key]] = $va_element;
 			}
 		}
-
+		$va_cached_data[$vs_cache_key] = $va_sortable_elements;
+		CompositeCache::save('ElementsSortable', $va_cached_data);
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------
@@ -1056,14 +1108,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Get element id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_options Supported options are:
+	 *      noCache = Don't use cache. [Default is false]
 	 * @return int
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getElementID($pm_element_code_or_id) {
+	static public function getElementID($pm_element_code_or_id, $pa_options=null) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
+		if(!caGetOption('noCache', $pa_options, false) && MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
 			return MemoryCache::fetch($pm_element_code_or_id, 'ElementIDs');
 		}
 

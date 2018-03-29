@@ -254,12 +254,16 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					break;
 			}
 		}
+		
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
+			if (!in_array(ca_lists::getAccessForItemID($this->opn_item_id), $pa_options['checkAccess'])) { return null; }
+		}
 
 		if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
-			return caGetListItemIdno($this->opn_item_id);
+			return caGetListItemIdno($this->opn_item_id, $pa_options);
 		}
 		if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
-			return caGetListItemForDisplayByItemID($this->opn_item_id, !$pa_options['useSingular']);
+			return caGetListItemByIDForDisplay($this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
 		}
 
 		if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {
@@ -288,7 +292,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('delimiter' => ' ➔ ', $pa_options)));
 			}
 
-			return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->opn_item_id, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
+			return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
 		}
 		return $this->ops_text_value;
 	}
@@ -445,6 +449,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
 						$vs_hide_js = '';
+						$vs_show_js = '';
 						$vs_condition = '';
 						$vs_select = '';
 
@@ -458,6 +463,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								if(!is_array($va_tmp)) { continue; }
 
 								$vs_hide_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().hide();\n";
+								$vs_show_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().show();\n";
 							}
 						}
 
@@ -496,6 +502,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			if ({$vs_condition}) {
 				jQuery('div.bundleLabel').show();
 				{$vs_hide_js}
+			} else {
+			    {$vs_show_js}
 			}
 		});
 
@@ -570,6 +578,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_SELECT,
+							'multiple' => true,
 							'options' => $va_options_for_settings,
 							'takesLocale' => false,
 							'default' => '',
@@ -588,7 +597,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			if(is_array($va_list_items) && sizeof($va_list_items)) {
 				foreach($va_list_items as $va_items_by_locale) {
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-						$va_element_settings['hideIfSelected_'.$va_item['idno']] = true;
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => true, 'multiple' => true];
 					}
 				}
 			}

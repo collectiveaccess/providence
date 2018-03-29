@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,6 +80,7 @@
 	 *		table =
 	 *		type =
 	 * 		elementCode =
+	 *      showOnlyIn = 
 	 *
 	 * @return array
 	 */
@@ -90,6 +91,10 @@
 		$vs_type = caGetOption('type', $pa_options, 'page');
 		$vs_element_code = caGetOption('elementCode', $pa_options, null);
 		$vb_for_html_select = caGetOption('forHTMLSelect', $pa_options, false);
+		if (!is_array($va_show_only_in = caGetOption('showOnlyIn', $pa_options, null))) {
+		    $va_show_only_in = array_map(function($v) { return trim($v); }, explode(',', $va_show_only_in));
+		}
+		
 
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
 		
@@ -102,10 +107,19 @@
 		
 				if (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) {
 					$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplates');
+					
+					$f = array_map("filemtime", glob("{$vs_template_path}/*.{php,css}", GLOB_BRACE));
+					sort($f);
+					$vn_template_rev = file_exists($vs_template_path) ? array_pop($f) : 0;
+					
+					$f = array_map("filemtime", glob("{$vs_template_path}/local/*.{php,css}", GLOB_BRACE));
+					sort($f);
+					$vn_local_rev = file_exists("{$vs_template_path}/local") ? array_pop($f) : 0;
+					
 					if(
 						$va_list && is_array($va_list) &&
-						(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= filemtime($vs_template_path)) &&
-						(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= filemtime("{$vs_template_path}/local"))
+						(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= $vn_template_rev) &&
+						(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= $vn_local_rev)
 					){
 						$va_templates = array_merge($va_templates, $va_list);
 						continue;
@@ -118,7 +132,10 @@
 						$vs_template_tag = pathinfo($vs_template, PATHINFO_FILENAME);
 						if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
 							if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
-
+							
+							$va_template_show_only_in = array_filter(array_map(function($v) { return trim($v); }, explode(",", caGetOption('showOnlyIn', $va_template_info, null))), function($v) { return (bool)strlen($v);});
+							if(is_array($va_show_only_in) && (sizeof($va_show_only_in) > 0) && is_array($va_template_show_only_in) && (sizeof($va_template_show_only_in) > 0) && !sizeof(array_intersect($va_template_show_only_in, $va_show_only_in))) { continue; }
+                            
 							if ($vs_element_code && (caGetOption('elementCode', $va_template_info, null) !== $vs_element_code)) { continue; }
 
 							if ($vs_tablename && (!in_array($vs_tablename, $va_template_info['tables'])) && (!in_array('*', $va_template_info['tables']))) {
@@ -148,8 +165,8 @@
 		
 		if ($vb_needs_caching) {	
 			ExternalCache::save($vs_cache_key, $va_templates, 'PrintTemplates');
-			ExternalCache::save("{$vs_cache_key}_mtime", filemtime($vs_template_path), 'PrintTemplates');
-			ExternalCache::save("{$vs_cache_key}_local_mtime", @filemtime("{$vs_template_path}/local"), 'PrintTemplates');
+			ExternalCache::save("{$vs_cache_key}_mtime", $vn_template_rev, 'PrintTemplates');
+			ExternalCache::save("{$vs_cache_key}_local_mtime", $vn_local_rev, 'PrintTemplates');
 		}
 		return $va_templates;
 	}
@@ -176,6 +193,7 @@
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type.'/'.$vs_template_path);
 			if (ExternalCache::contains($vs_cache_key, 'PrintTemplateDetails')) {
 				$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplateDetails');
+				$vn_template_rev = file_exists($vs_template_path) ? array_shift(array_map("filemtime", glob("{$vs_template_path}/*.{php,css}", GLOB_BRACE))) : 0;
 				if(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplateDetails') >= filemtime($vs_template_path)) {
 					return $va_list;
 				}
@@ -188,7 +206,7 @@
 				"@name", "@type", "@pageSize", "@pageOrientation", "@tables",
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
-				"@elementCode"
+				"@elementCode", "@showOnlyIn"
 			) as $vs_tag) {
 				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
@@ -488,8 +506,8 @@
 	 *
 	 */
 	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values) {
-		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => null]);
-		if(!is_array($va_formats) || (sizeof($va_formats) == 0)) { return ''; }
+		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => null, 'showOnlyIn' => 'editor_relationship_bundle']);
+		if(!is_array($va_formats)) { $va_formats = []; }
 		$vs_pk = $pt_related->primaryKey();
 		
 		$va_ids = [];
@@ -499,14 +517,26 @@
 		}
 		
 		$va_options = [];
-		foreach($va_formats as $vn_ => $va_form_info) {
-			$va_options[$va_form_info['name']] = $va_form_info['code'];
-		}
+		if (sizeof($va_formats) > 0) {
+            foreach($va_formats as $vn_ => $va_form_info) {
+                $va_options[$va_form_info['name']] = $va_form_info['code'];
+            }
+        }
+        
+		if (sizeof($va_options) == 0) { return ''; }
+		
+		// Get current display list
+		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
+		$t_display = new ca_bundle_displays();
+        foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $pt_related->tableName()])) as $va_display_info) {
+            if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
+            $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
+        }
 		
 		uksort($va_options, 'strnatcasecmp');
 		
 		$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
-		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList"), array('value' => null, 'width' => '150px'))."\n";
+		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => null, 'width' => '150px'))."\n";
 		
 		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);
 		
@@ -529,32 +559,37 @@
 	 *
 	 */
 	function caGetPrintFormatsListAsHTMLForSetItemBundles($ps_id_prefix, $po_request, $pt_set, $pa_row_ids) {
+	    require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
+	
 		$o_dm = Datamodel::load();
 		$vs_set_table = $o_dm->getTableName($pt_set->get("table_num"));
-		$va_formats = caGetAvailablePrintTemplates('sets', ['table' => $vs_set_table, 'type' => null]);
+		$va_formats = caGetAvailablePrintTemplates('sets', ['showOnlyIn' => 'set_item_bundle', 'table' => $vs_set_table, 'type' => null]);
 		
 		if(!is_array($va_formats) || (sizeof($va_formats) == 0)) { return ''; }
 		$vs_pk = $pt_set->primaryKey();
-		
-#		$va_ids = [];
-		
-#		foreach($pa_initial_values as $vn_relation_id => $va_info) {
-#			$va_ids[$vn_relation_id] = $va_info[$vs_pk];
-#		}
 		
 		$va_options = [];
 		foreach($va_formats as $vn_ => $va_form_info) {
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
+		if (sizeof($va_options) == 0) { return ''; }
+		
+		$t_display = new ca_bundle_displays();
+		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
+		    foreach($va_displays as $vn_display_id => $va_display_info) {
+		        if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('set_item_bundle', $va_display_info['settings']['show_only_in'])) { continue; }
+		        $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];
+		    }
+		}
+		
 		
 		uksort($va_options, 'strnatcasecmp');
 		
 		$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
-		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList"), array('value' => null, 'width' => '150px'))."\n";
+		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => null, 'width' => '150px'))."\n";
 		
 		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);
 		
-		#$vs_url = caNavUrl($po_request, 'find', 'RelatedList', 'Export', ['relatedRelTable' => $pt_relation->tableName(), 'primaryTable' => $pt_primary->tableName(), 'primaryID' => $pt_primary->getPrimaryKey(), 'download' => 1, 'relatedTable' => $pt_related->tableName()]);
 		$vs_url = caNavUrl($po_request, 'manage', 'sets', 'setEditor/exportSetItems', ['set_id' => $pt_set->get("set_id"), 'download' => 1]);
 		$vs_buf .= "</div>";
 		$vs_buf .= "

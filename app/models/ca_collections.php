@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -386,5 +386,52 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::hierarchyWithTemplate() to optionally include top level of objects in collection hierarchy when 
+	 * object-collection hierarchies are enabled. 
+	 * 
+	 * @param string $ps_template 
+	 * @param array $pa_options Any options supported by BaseModel::getHierarchyAsList() and caProcessTemplateForIDs() as well as:
+	 *		sort = An array or semicolon delimited list of elements to sort on. [Default is null]
+	 * 		sortDirection = Direction to sorting, either 'asc' (ascending) or 'desc' (descending). [Default is asc]
+	 *		includeObjects = Include top level of objects in collection hierarchy when object-collection hierarchies are enabled. id values for included objects will be prefixed with "ca_objects:" [Default is true]
+	 *		objectTemplate = Display template to use for included objects. [Default is to use the value set in app.conf in the "ca_objects_hierarchy_browser_display_settings" directive]
+	 * @return array
+	 */
+	public function hierarchyWithTemplate($ps_template, $pa_options=null) {
+		$va_vals = parent::hierarchyWithTemplate($ps_template, $pa_options);
+		if ($this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && caGetOption('includeObjects', $pa_options, true) && ($ps_object_template = caGetOption('objectTemplate', $pa_options, $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings')))) {
+			$va_collection_ids = array_map(function($v) { return $v['id']; }, $va_vals);
+			
+			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => 142], ['returnAs' => 'searchResult']);
+			$va_objects_by_collection = [];
+			while($qr->nextHit()) {
+				$va_objects_by_collection[$qr->get('ca_objects_x_collections.collection_id')][] = $qr->get('ca_objects_x_collections.object_id');
+ 			}
+ 			$va_objects = [];
+ 			foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
+ 				$va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+ 			}
+ 			
+ 			$va_vals_proc = [];
+ 			foreach($va_vals as $vn_i => $va_val) {
+ 				$va_vals_proc[] = $va_val;
+ 				if(isset($va_objects[$va_val['id']])) {
+ 					foreach($va_objects[$va_val['id']] as $vn_j => $vs_object_display_value) {
+						$va_vals_proc[] = [
+							'level' => $va_val['level'] + 1,
+							'id' => "ca_objects:".$va_objects_by_collection[$va_val['id']][$vn_j],
+							'parent_id' => "ca_collections:{$va_val['id']}",
+							'display' => $vs_object_display_value
+						];
+					}
+ 				}
+ 			}
+ 			$va_vals = $va_vals_proc;
+		}
+		
+		
+		return $va_vals;
+	}
+	# ------------------------------------------------------
 }
-?>

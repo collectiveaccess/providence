@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -636,7 +636,7 @@
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
 			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
 			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $t_rep->getPrimaryKey());
-			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
+			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? $pa_options['type_id'] : null); }
 			$t_oxor->insert();
 		
 		
@@ -686,7 +686,8 @@
 		 * @param array $pa_options
 		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
-		 *
+		 *      label = Preferred label in specified locale for representation. [Default is null]
+		 *      type_id = Type to force representation to. [Default is null]
 		 * @return bool True on success, false on failure, null if no row has been loaded into the object model 
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
@@ -700,9 +701,10 @@
 				return false;
 			} else {
 				$t_rep->setMode(ACCESS_WRITE);
-				$t_rep->set('locale_id', $pn_locale_id);
-				$t_rep->set('status', $pn_status);
-				$t_rep->set('access', $pn_access);
+				if ($pn_locale_id) { $t_rep->set('locale_id', $pn_locale_id); }
+				if (!is_null($pn_status)) { $t_rep->set('status', $pn_status); }
+				if (!is_null($pn_access)) { $t_rep->set('access', $pn_access); }
+				if ($pm_type_id = caGetOption('type_id', $pa_options, null)) {  $t_rep->set('type_id', $pm_type_id, ['allowSettingOfTypeID' => true]); }
 			
 				if ($ps_media_path) {
 					if(is_array($va_replication_targets = $t_rep->getUsedMediaReplicationTargets('media'))) {
@@ -748,6 +750,18 @@
 				$vn_center_y = caGetOption('centerY', $pa_options, null);
 				if (strlen($vn_center_x) && (strlen($vn_center_y)) && ($vn_center_x >= 0) && ($vn_center_y >= 0) && ($vn_center_x <= 1) && ($vn_center_y <= 1)) {
 					$t_rep->setMediaCenter('media', (float)$vn_center_x, (float)$vn_center_y);
+					if ($t_rep->numErrors()) {
+                        $this->errors = array_merge($this->errors, $t_rep->errors());
+                        return false;
+                    }
+				}
+				
+				if ($pn_locale_id && ($ps_label = caGetOption('label', $pa_options, null))) {
+				    $t_rep->replaceLabel(array('name' => $ps_label), $pn_locale_id, null, true, array('queueIndexing' => true));
+				    if ($t_rep->numErrors()) {
+                        $this->errors = array_merge($this->errors, $t_rep->errors());
+                        return false;
+                    }
 				}
 					
 				if ($ps_media_path) {
@@ -923,7 +937,21 @@
 			$t_oxor->set('representation_id', $pn_representation_id);
 			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
 			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $pn_representation_id);
-			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
+			if ($t_oxor->hasField('type_id') && ($pm_type_id = caGetOption('type_id', $pa_options, null))) {
+			    $pn_type_id = null;
+			    if ($pm_type_id && !is_numeric($pm_type_id)) {
+                    $t_rel_type = new ca_relationship_types();
+                    if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_oxor->tableName())) {
+                        $pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+                    } else {
+                        $this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'RepresentableBaseModel->linkRepresentation()');
+                        return false;
+                    }
+                } else {
+                    $pn_type_id = $pm_type_id;
+                }
+			    $t_oxor->set('type_id', $pn_type_id); 
+			}
 			$t_oxor->insert();
 		
 		
@@ -1158,6 +1186,82 @@
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
 			return $o_dm->getInstanceByTableName($va_path[1], true);
+		}
+		# ------------------------------------------------------
+        /**
+         *
+         */
+        public function getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {		
+            foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
+                $pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
+            }
+            $va_reps = $this->getRepresentations(array('thumbnail', 'original'), null, $pa_options);
+        
+            $t_item = new ca_object_representations();
+            $va_rep_type_list = $t_item->getTypeList();
+            $va_errors = array();
+            
+            $vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
+
+            // Paging
+            $vn_primary_id = 0;
+            $va_initial_values = array();
+            if (sizeof($va_reps)) {
+                $o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
+                $va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
+
+                // Get display template values
+                $va_display_template_values = array();
+                if($vs_bundle_template && is_array($va_relation_ids = caExtractValuesFromArrayList($va_reps, 'relation_id')) && sizeof($va_relation_ids)) {
+                    if ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName())) {
+                        $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true)));
+                    }
+                }
+
+                $vn_i = 0;
+                foreach ($va_reps as $va_rep) {
+                    $vn_num_multifiles = $va_rep['num_multifiles'];
+                    if ($vs_extracted_metadata = caFormatMediaMetadata(caSanitizeArray(caUnserializeForDatabase($va_rep['media_metadata']), array('removeNonCharacterData' => true)))) {
+                        $vs_extracted_metadata = "<h3>"._t('Extracted metadata').":</h3>\n{$vs_extracted_metadata}\n";
+                    }
+                    $vs_md5 = isset($va_rep['info']['original']['MD5']) ? "<h3>"._t('MD5 signature').':</h3>'.$va_rep['info']['original']['MD5'] : '';
+
+                    if ($va_rep['is_primary']) {
+                        $vn_primary_id = $va_rep['representation_id'];
+                    }
+                
+                    $va_initial_values[$va_rep['representation_id']] = array(
+                        'idno' => $va_rep['idno'], 
+                        '_display' => ($vs_bundle_template && isset($va_display_template_values[$vn_i])) ? $va_display_template_values[$vn_i] : '',
+                        'status' => $va_rep['status'], 
+                        'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
+                        'access' => $va_rep['access'],
+                        'access_display' => $t_item->getChoiceListValue('access', $va_rep['access']), 
+                        'rep_type_id' => $va_rep['type_id'],
+                        'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
+                        'rep_label' => $va_rep['label'],
+                        'is_primary' => (int)$va_rep['is_primary'],
+                        'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
+                        'locale_id' => $va_rep['locale_id'], 
+                        'icon' => $va_rep['tags']['thumbnail'], 
+                        'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'], 
+                        'annotation_type' => isset($va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']]) ? $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']] : null,
+                        'type' => $va_rep['info']['original']['PROPERTIES']['typename'], 
+                        'dimensions' => $va_rep['dimensions']['original'], 
+                        'filename' => $va_rep['info']['original_filename'] ? $va_rep['info']['original_filename'] : _t('Unknown'),
+                        'num_multifiles' => ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : ''),
+                        'metadata' => $vs_extracted_metadata,
+                        'md5' => $vs_md5 ? "{$vs_md5}" : "",
+                        'typename' => $va_rep_type_list[$va_rep['type_id']]['name_singular'],
+                        'fetched_from' => $va_rep['fetched_from'],
+                        'fetched_on' => date('c', $va_rep['fetched_on']),
+                        'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on'])) : ""
+                    );
+
+                    $vn_i++;
+                }
+            }
+            return $va_initial_values;
 		}
 		# ------------------------------------------------------
 	}

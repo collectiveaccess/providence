@@ -38,6 +38,7 @@
 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 	require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
+	require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
  	
  	class BaseSearchController extends BaseRefineableSearchController {
  		# -------------------------------------------------------
@@ -108,14 +109,6 @@
  			
  			MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
  			
- 			// Get attribute sorts
- 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
- 			
- 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $va_sortable_element) {
- 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
- 			}
-
 			$vs_append_to_search = '';
  			if ($pa_options['appendToSearch']) {
  				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
@@ -266,35 +259,6 @@
 			
 			$t_display = $this->view->getVar('t_display');
 			if (!is_array($va_display_list = $this->view->getVar('display_list'))) { $va_display_list = array(); }
-			if ($vs_view == 'editable') {
-				
-				$va_initial_data = array();
-				$va_row_headers = array();
-				
- 				$vn_item_count = 0;
- 				
- 				if ($vo_result) {
-					$vs_pk = $vo_result->primaryKey();
-				
-					while(($vn_item_count < 100) && $vo_result->nextHit()) {
-						$va_result = array('item_id' => $vn_id = $vo_result->get($vs_pk));
-	
-						foreach($va_display_list as $vn_placement_id => $va_bundle_info) {
-							$va_result[str_replace(".", "-", $va_bundle_info['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
-						}
-	
-						$va_initial_data[] = $va_result;
-	
-						$vn_item_count++;
-	
-						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
-	
-					}
-				}
-				
-				$this->view->setVar('initialData', $va_initial_data);
-				$this->view->setVar('rowHeaders', $va_row_headers);
-			}
 			
 			$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 			
@@ -514,5 +478,34 @@
  			
  			return $this->render('Search/widget_'.$this->ops_tablename.'_search_tools.php', true);
  		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * QuickLook
+ 		 */
+ 		public function QuickLook() {
+ 			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$vn_id = (int)$this->request->getParameter($t_subject->primaryKey(), pInteger);
+ 			$t_subject->load($vn_id);
+ 			if (!($vn_representation_id = (int)$this->request->getParameter('representation_id', pInteger))) {
+ 				$vn_representation_id = $t_subject->getPrimaryRepresentationID();
+ 			}
+ 			$t_rep = new ca_object_representations($vn_representation_id);
+ 			
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				// error: no viewer available
+				die("Invalid viewer");
+			}
+			
+			if(!$vn_id) {
+				$this->postError(1100, _t('Invalid object/representation'), 'SearchObjectsController->QuickLook');
+				return;
+			}
+
+			$this->response->addContent($vs_viewer_name::getViewerHTML(
+				$this->request, 
+				"representation:{$vn_representation_id}", 
+				['context' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
+			);
+		}
  		# -------------------------------------------------------
  	}
