@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2069,18 +2069,20 @@ class SearchResult extends BaseObject {
 							}
 						} elseif ($pt_instance->hasElement($va_path_components['field_name'], null, true, array('dontCache' => false))) {
 							// ca_objects.authority_attr_code
-							$va_auth_spec = [];
+							$va_auth_spec = array_slice($va_path_components['components'], 2);
 						}
 					}
 					
-					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !SearchResult::_isHierarchyModifier($va_path_components['subfield_name']) && !($o_value instanceof InformationServiceAttributeValue) && !($o_value instanceof LCSHAttributeValue) && !($o_value instanceof MediaAttributeValue) && !($o_value instanceof FileAttributeValue)) {
+					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !SearchResult::_isHierarchyModifier($va_path_components['subfield_name']) && !($o_value instanceof InformationServiceAttributeValue) && !($o_value instanceof LCSHAttributeValue) && !($o_value instanceof MediaAttributeValue) && !($o_value instanceof FileAttributeValue) && !is_a($o_value, "AuthorityAttributeValue")) {
 						$vb_dont_return_value = true;
 						if (!$pa_options['filter']) { continue; }
 					}
 									
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$vs_auth_table_name = $o_value->tableName();
-						if (!is_array($va_auth_spec) || !sizeof($va_auth_spec)) { $va_auth_spec = [SearchResult::$opo_datamodel->primaryKey($vs_auth_table_name)]; }
+						
+						$vb_has_field_spec = (is_array($va_auth_spec) && sizeof($va_auth_spec));
+						if (!$vb_has_field_spec) { $va_auth_spec = [SearchResult::$opo_datamodel->primaryKey($vs_auth_table_name)]; }
 						array_unshift($va_auth_spec, $vs_auth_table_name);
 						
 						if ($qr_res = caMakeSearchResult($vs_auth_table_name, array($o_value->getID()))) {
@@ -2094,8 +2096,8 @@ class SearchResult extends BaseObject {
 										continue;
 									}
 								}
-							
 								$va_val_proc = $qr_res->get(join(".", $va_auth_spec), $va_options);
+							
 								if(is_array($va_val_proc)) {
 									foreach($va_val_proc as $vn_i => $vs_v) {
 										$vn_list_id = null;
@@ -2106,9 +2108,9 @@ class SearchResult extends BaseObject {
 
 										$vb_did_return_value = true;
 										if ($pa_options['returnWithStructure']) {
-											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')][$vs_element_code] = $vb_has_hierarchy_modifier ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')][$vs_element_code] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 										} else {
-											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vb_has_hierarchy_modifier ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 										}
 									}
 								}
