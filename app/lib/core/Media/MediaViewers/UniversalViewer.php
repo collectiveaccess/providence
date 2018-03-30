@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2017 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -146,14 +146,19 @@
 		        
                 $va_identifier = caParseMediaIdentifier($ps_identifier);
                 $t_rep = new ca_object_representations();
-                if (!is_array($va_pages = $t_rep->getFileList($va_identifier['id'], 0, 1, ['original'])) || !sizeof($va_pages)) {
+                $t_attr = new ca_attribute_values();
+                if (
+                	($va_identifier['type'] == 'representation') && (!is_array($va_pages = $t_rep->getFileList($va_identifier['id'], 0, 1, ['original'])) || !sizeof($va_pages))
+                	||
+                	
+                	($va_identifier['type'] == 'attribute') && (!is_array($va_pages = $t_attr->getFileList($va_identifier['id'], 0, 1, ['original'])) || !sizeof($va_pages))
+                ) {
                     $pa_data['width'] = $pa_data['height'] = 0;
                     $va_locs = [];
                 } else {
                     $va_page = array_shift($va_pages);
                     $pa_data['width'] = $va_page['original_width'];
                     $pa_data['height'] = $va_page['original_height'];
-                    
                     switch($va_identifier['type']) {
                         case 'representation':
                         default:

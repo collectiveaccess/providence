@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2089,7 +2089,7 @@ function caFileIsIncludable($ps_file) {
 					continue;
 				}
 
-				if ((!preg_match("!^\X+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
+				if (((strlen($vm_v) < 8192) && (!preg_match("!^\X+$!", $vm_v))) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 					continue;
 				}
@@ -2342,6 +2342,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caIsAssociativeArray($pa_array) {
+	  if(!is_array($pa_array)) { return false; }
 	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
 	}
 	# ----------------------------------------
@@ -3510,7 +3511,7 @@ function caFileIsIncludable($ps_file) {
         if(caGetOption('forceFractions', $pa_options, true)) {
             $v = $num/$pn_denom;
             foreach($pa_allow_fractions_for as $i => $f) {
-                $t = split("/", $f);
+                $t = explode("/", $f);
                 $tv = (int)$t[0]/(int)$t[1];
                 if ($tv >= $v) { 
                     $frac = $f;
@@ -3864,6 +3865,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caParseAttributes($ps_attr_string, $pa_attributes) {
 	    $va_ret = [];
+	    $ps_attr_string = html_entity_decode($ps_attr_string, ENT_QUOTES);	// ensure quotes are there for the picking
 	    foreach($pa_attributes as $vs_attr) {
 	        if(preg_match("!{$vs_attr}[ ]*=[ ]*[\"']{1}([^\"']+)[\"']{1}!", $ps_attr_string, $va_matches)) {
 	            $va_ret[$vs_attr] = $va_matches[1];

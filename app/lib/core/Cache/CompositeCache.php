@@ -112,7 +112,7 @@ class CompositeCache {
 	 */
 	public static function flush($ps_namespace=null) {
 		MemoryCache::flush($ps_namespace);
-		ExternalCache::flush();
+		if (!$ps_namespace) { ExternalCache::flush(); }
 	}
 	# ------------------------------------------------
 }

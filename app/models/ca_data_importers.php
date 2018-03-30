@@ -1633,6 +1633,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if (isset($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && strlen($va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default']) && (sizeof(array_filter($va_subject_type_list, function($v) use ($vs_type) { return ($vs_type === $v['idno']);  })) == 0)) {
                 $vs_type = $va_mapping_items[$vn_type_id_mapping_item_id]['settings']['default'];
             }
+            if (!$vs_type) { $vs_type = $vs_type_mapping_setting; }		// fallback to mapping default if necessary
 			
 			// Get idno
 			$vs_idno = $va_idnos_for_row = null;
@@ -2131,6 +2132,22 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$vn_c++;
 									}
 									$vn_c = $vn_orig_c;
+									
+									// Replicate constants as needed: constant is already set for first constant in group, 
+									// but will not be set for repeats so we set them here
+									if (sizeof($va_group_buf) > 1) {
+                                        foreach($va_items_by_group[$vn_group_id] as $va_gitem) {
+                                            if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'], $va_gmatches)) {
+                                                
+                                                $va_gitem_dest = explode(".",  $va_gitem['destination']);
+                                                $vs_gitem_terminal = $va_gitem_dest[sizeof($va_gitem_dest)-1];
+                                                for($vn_gc=1; $vn_gc < sizeof($va_group_buf); $vn_gc++) {
+                                                    $va_group_buf[$vn_gc][$vs_gitem_terminal] = $va_gmatches[1];		// Set it and go onto the next item
+                                                }
+                                            }
+                                    
+                                        }
+                                    }
 						
 									continue;	// Don't add "regular" value below
 								}
@@ -2219,7 +2236,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				#print_r($va_content_tree);
+				//print_r($va_content_tree);
 				#die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {

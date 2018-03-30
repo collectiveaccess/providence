@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -718,7 +718,7 @@ class SearchIndexer extends SearchBase {
 
 					// specialized identifier (idno) processing; uses IDNumbering plugin to generate searchable permutations of identifier
 					if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
-						$va_values = $o_idno->getIndexValues($pa_field_data[$vs_field]);
+						$va_values = $o_idno->getIndexValues($pa_field_data[$vs_field], $va_data);
 						$vn_fld_num = $t_subject->fieldNum($vs_field);
 						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_values, $va_data);
 						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_values, $va_data);
@@ -902,7 +902,6 @@ class SearchIndexer extends SearchBase {
                                 continue;
                             }
                             if(is_array($va_restrict_indexing_to_types) && !in_array($vn_row_type_id, $va_restrict_indexing_to_types)) {
-                                print "SKIP $vs_related_table BECAUSE TYPE WAS $vn_row_type_id\n";
                                 continue;
                             }
                             
@@ -989,7 +988,7 @@ class SearchIndexer extends SearchBase {
 										} else {
 											if (((isset($va_rel_field_info['INDEX_AS_IDNO']) && $va_rel_field_info['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_rel_field_info)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
 												// specialized identifier (idno) processing; uses IDNumbering plugin to generate searchable permutations of identifier
-												$va_values = $o_idno->getIndexValues($vs_fld_data);
+												$va_values = $o_idno->getIndexValues($vs_fld_data, $va_rel_field_info);
 												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field)), $vn_id = $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 												$this->_genIndexInheritance($t_subject, $t_rel, "I{$vn_fn}", $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 											} elseif (((isset($va_rel_field_info['INDEX_AS_MIMETYPE']) && $va_rel_field_info['INDEX_AS_MIMETYPE']) || in_array('INDEX_AS_MIMETYPE', $va_rel_field_info))) {
@@ -1247,7 +1246,7 @@ class SearchIndexer extends SearchBase {
 									}
 
 
-									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, array_merge($va_row_to_reindex['indexing_info'], array('PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id)));
+									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], null, $va_row_to_reindex['field_row_id'], $vs_v, array_merge($va_row_to_reindex['indexing_info'], array('PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id)));
 
 									break;
 								default:
@@ -1922,7 +1921,7 @@ class SearchIndexer extends SearchBase {
 // update indexing for each relationship
 				foreach($va_rel_tables_to_index_list as $vs_rel_table) {
 					$va_indexing_info = $this->getTableIndexingInfo($vn_dep_table_num, $vs_rel_table);
-					$vn_rel_table_num = $this->opo_datamodel->getTableNum($vs_rel_table);
+					$vn_rel_table_num = $this->opo_datamodel->getTableNum(preg_replace("/\.related$/", "", $vs_rel_table));
 					$vn_rel_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_rel_table_num);
 					$t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_table_num, true);
 					$t_rel->setDb($this->getDb());
@@ -1936,8 +1935,9 @@ class SearchIndexer extends SearchBase {
 							continue;
 						}
 					}
-
+					
 					foreach($va_table_path as $vs_n => $va_linking_tables_config) {
+					    $va_table_list = (caIsIndexedArray($va_linking_tables_config)) ? $va_linking_tables_config : array_keys($va_linking_tables_config);
 						if (caIsIndexedArray($va_linking_tables_config)) {
 							$va_tmp = array();
 							foreach($va_linking_tables_config as $vs_t) {
@@ -1945,8 +1945,7 @@ class SearchIndexer extends SearchBase {
 							}
 							$va_linking_tables_config = $va_tmp;
 						}
-						$va_table_list = array_keys($va_linking_tables_config);
-							
+						
 						if (!in_array($vs_dep_table, $va_table_list)) { array_unshift($va_table_list, $vs_dep_table); }
 						if (!in_array($vs_rel_table, $va_table_list)) { $va_table_list[] = $vs_rel_table; }
 						if (!in_array($vs_subject_tablename, $va_table_list)) { continue; }
@@ -2087,7 +2086,7 @@ class SearchIndexer extends SearchBase {
 		$va_flds = $va_fld_names = $va_wheres = array();
 		
 		if(true) { //!MemoryCache::contains($vs_key, 'SearchIndexerRelatedRowsJoins')) {
-			$vs_left_table = $vs_select_table = array_shift($pa_tables);
+			$vs_left_table = $vs_select_table = preg_replace("/\.related$/", "", array_shift($pa_tables));
 
 			$t_select = $this->opo_datamodel->getInstanceByTableName($vs_select_table, true);
 			$vs_select_pk = $t_select->primaryKey();
