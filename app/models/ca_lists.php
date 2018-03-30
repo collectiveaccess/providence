@@ -888,7 +888,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
 		}
 	
-		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "" : "(cli.deleted = 0) AND ";
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_idno}");
@@ -932,7 +932,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		
-		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "" : "(cli.deleted = 0) AND ";
 		
 		$va_params = [(int)$vn_list_id, (int)$pn_item_id];
         $vs_access_sql = '';

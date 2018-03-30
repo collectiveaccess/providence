@@ -1393,8 +1393,8 @@
 		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_table}/{$pn_type_id}");
 		
-		if (CompositeCache::contains("available_sorts_{$vs_cache_key}", "sorts")) { return CompositeCache::fetch("available_sorts_{$vs_cache_key}", "sorts"); }
-		
+		if (CompositeCache::contains("available_sorts") && is_array($va_cached_data = CompositeCache::fetch("available_sorts")) && isset($va_cached_data[$vs_cache_key])) { return $va_cached_data[$vs_cache_key]; }
+
 		$pn_display_id = caGetOption('restrictToDisplay', $pa_options, null);
 	
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
@@ -1662,7 +1662,9 @@
 		natcasesort($va_base_fields);
 		
 		$ret = array_merge(['_natural' => _t('Relevance')], $va_base_fields);
-		CompositeCache::save("available_sorts_{$vs_cache_key}", $ret, 'sorts', 0);
+		
+		$va_cached_data[$vs_cache_key] = $ret;
+		CompositeCache::save("available_sorts", $va_cached_data);
 		return $ret;
 	}
 	# ---------------------------------------

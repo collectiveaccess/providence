@@ -629,7 +629,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			if (($vs_fld == 'lot_id') && ($pb_assume_idno_stub_for_lot_id || preg_match("![^\d]+!", $vs_val))) {
 				$t_lot = new ca_object_lots();
 				if ($this->inTransaction()) { $t_lot->setTransaction($this->getTransaction()); }
-				if ($t_lot->load(array('idno_stub' => $vs_val))) {
+				if ($t_lot->load(array('idno_stub' => $vs_val, 'deleted' => 0))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
 					$pm_fields[$vs_fld] = $vn_lot_id;
 				} else {

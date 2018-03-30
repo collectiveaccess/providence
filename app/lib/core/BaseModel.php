@@ -7243,7 +7243,7 @@ class BaseModel extends BaseObject {
 			$vs_hier_right_fld 			= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
 			$vs_parent_id_fld 			= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
 			
-			$va_indent_stack = $va_hier = $va_omit_stack = $va_parent_map = [];
+			$va_indent_stack = $va_hier = $va_parent_map = [];
 			
 			$vn_cur_level = -1;
 			
@@ -7258,10 +7258,13 @@ class BaseModel extends BaseObject {
 				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
 				
 				if (!isset($va_parent_map[$vn_parent_id])) {
-				    $va_parent_map[$vn_parent_id] = ['id' => $vn_row_id, 'level' => $vn_cur_level + 1];
+				    $va_parent_map[$vn_parent_id] = ['level' => $vn_cur_level + 1];
 				    $vn_cur_level++;
 				} else {
 				    $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
+				}
+				if (!isset($va_parent_map[$vn_row_id])) {
+					$va_parent_map[$vn_row_id] = ['level' => $vn_cur_level + 1];
 				}
 				
 				$vn_r = $qr_hier->get($vs_hier_right_fld);
