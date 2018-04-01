@@ -289,6 +289,21 @@ if (!defined('__CA_REDIS_DB__')) {
 
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
+# __CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__
+#
+# Set this to allow allow web-based loading of missing vendor libraries.
+# This can be a very convenient way to install your system but could present a possible 
+# security risk if your system is publicly accessible on the internet. The risk is that 
+# by exposing the update control on a public url on a publicly accessible site you are 
+# potentially allowing anyone to initiate the update. 
+if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__')) {
+	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__', true);
+}
+
+# Is vendor code set up?
+require_once(__CA_APP_DIR__.'/helpers/requestHelpers.php');	// provides caCheckVendorLibraries helper
+caCheckVendorLibraries();
+
 # includes commonly used classes
 require_once(__CA_APP_DIR__.'/helpers/preload.php');
 
@@ -330,9 +345,7 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
 # This can be a very convenient way to update your database but could present a possible 
 # security risk if your system is publicly accessible on the internet. The risk is that 
 # by exposing the update control on a public url on a publicly accessible site you are 
-# potentially allowing anyone to initiate the database update. That's all they
-# can do, which in and of itself should not be harmful, but some system administrators 
-# may not be comfortable with it. 
+# potentially allowing anyone to initiate the database update. 
 if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__')) {
 	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__', true);
 }
