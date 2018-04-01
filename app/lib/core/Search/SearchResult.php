@@ -2357,6 +2357,25 @@ class SearchResult extends BaseObject {
 					}
 				}
 				break;
+			case FT_VARS:
+				$va_array_path = array_slice($va_path_components['components'], 2);
+				foreach($pa_value_list as $vn_locale_id => $va_values) {
+					foreach($va_values as $id => $va_value) {
+						$vn_id = $va_value[$vs_pk];
+						$v = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
+						foreach($va_array_path as $p) {
+							if (!isset($v[$p])) { break; }
+							$v = $v[$p];
+						}
+						
+						if (is_array($v) && !$pa_options['returnAsArray']) {
+							// force arrays to strings
+							$v = join(caGetOption('delimiter', $pa_options, '; '), $v);
+						}
+						$va_return_values[$vn_id][$vn_locale_id][] = $v;
+					}
+				}
+				break;
 			case FT_MEDIA:
 				if(!($vs_version = $va_path_components['subfield_name'])) {
 					$vs_version = "largeicon"; // TODO: fix
