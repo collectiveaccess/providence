@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -411,6 +411,9 @@ final class ConfigurationCheck {
 		}
 		if (!function_exists("curl_exec")){
 			self::addError(_t("The PHP cURL module is required for CollectiveAccess to run. Please install it."));
+		}
+		if (!class_exists("ZipArchive")){
+			self::addError(_t("The PHP ZipArchive module is required for CollectiveAccess to run. Please install it."));
 		}
 		
 		if (@preg_match('/\p{L}/u', 'a') != 1) {
