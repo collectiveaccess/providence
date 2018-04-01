@@ -530,7 +530,11 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		 * For the dependent field visibility feature we need to add a select-able list of all applicable
 		 * UI bundle placements here ... for each item in that list!
 		 */
-
+		$vs_cache_key = "ca_metadata_elements_available_settings_".$pa_element_info['element_id'];
+		 
+        if (CompositeCache::contains($vs_cache_key)) {
+            return CompositeCache::fetch($vs_cache_key);
+        }
 		if(
 			Configuration::load()->get('enable_dependent_field_visibility') &&
 			is_array($pa_element_info) &&
@@ -589,6 +593,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					}
 				}
 			}
+            CompositeCache::save($vs_cache_key, $va_element_settings);
 		} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependent_field_visibility')) {
 			// when installing, UIs, screens and placements are not yet available when we process elementSets, so
 			// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
@@ -602,7 +607,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				}
 			}
 		}
-
 
 		return $va_element_settings;
 	}
