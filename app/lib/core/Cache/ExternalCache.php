@@ -168,7 +168,7 @@ class ExternalCache {
 	public static function flush() {
 		try {
 			if(!self::init()) { return false; }
-			self::getCache()->flushAll();
+			self::getCache()->clear();
 		} catch(UnexpectedValueException $e) {
 			// happens during the installer pre tasks when we just purge everything in app/tmp without asking.
 			// At that point we have existing objects in self::$opo_cache that can't deal with that.
