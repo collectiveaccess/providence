@@ -83,7 +83,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 			'DEFAULT' => '',
 			'BOUNDS_CHOICE_LIST' => CA\MetadataAlerts\TriggerTypes\Base::getAvailableTypes(),
 			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Alerts may be triggered by various types of events. Select the type of event to trigger this alert here.'),
-		),
+		)
 	)
 );
 
