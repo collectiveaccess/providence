@@ -6507,13 +6507,26 @@
       <labels>
         <label locale="en_US">
           <name>Test alert 1</name>
-          <description>xxx</description>
+          <description>An example of a metadata alert</description>
         </label>
       </labels>
       <triggers>
-        <trigger type="date" code="date_trigger_1" metadataElement=".dates_value" metadataElementFilter="">
+        <!-- 
+            type:
+                "Date" or "Modification"
+                
+            metadataElementFilter:
+                <element code1>:<list item code>|<list item code>|...;<element code2>:<list item code>|<list item code>|...
+                
+            setting "offset":
+                <quantity>|<time units>|<position>  => Ex. 10|HOURS|BEFORE Ex. 5|MINUTES|AFTER
+                
+            setting "notificationDeliveryOptions"
+                <option1>|<option2>|... => Ex. EMAIL|INBOX
+        -->
+        <trigger type="Date" code="date_trigger_1" metadataElement="dates_value" metadataElementFilter="dc_dates_types:available|created">
           <settings>
-            <setting name="offset">0|HOURS|AFTER</setting>
+            <setting name="offset">2|HOURS|AFTER</setting>
             <setting name="notificationTemplate">^ca_objects.preferred_labels.name is up!</setting>
             <setting name="notificationDeliveryOptions">EMAIL|INBOX</setting>
           </settings>
@@ -6521,9 +6534,8 @@
       </triggers>
 
       <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-        </restriction>
+        <restriction code="r1" type="dataset"/>
+        <restriction code="r1" type="image"/>
       </typeRestrictions>
 
       <userAccess>
@@ -6535,6 +6547,4 @@
       </groupAccess>
     </metadataAlert>
   </metadataAlerts>
-
-
 </profile>

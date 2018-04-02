@@ -136,6 +136,9 @@
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Setting up hierarchies")); }
 			$vo_installer->processMiscHierarchicalSetup();
+			
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata alerts")); }
+			$vo_installer->processMetadataAlerts();
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing post install tasks")); }
 			$vo_installer->performPostInstallTasks();

@@ -81,8 +81,8 @@
   
   <xs:simpleType name="mdAlertTriggerTypes">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="date"/>
-      <xs:enumeration value="modification"/>
+      <xs:enumeration value="Date"/>
+      <xs:enumeration value="Modification"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -572,7 +572,18 @@
         </xs:complexType>
       </xs:element>
       
-      <xs:element name="typeRestrictions" type="typeRestrictions" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:attribute name="code" type="codeType" use="optional"/>
+                <xs:attribute name="type" type="xs:string" use="required"/>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
 
       <xs:element name="userAccess" minOccurs="0" maxOccurs="1">
         <xs:complexType>

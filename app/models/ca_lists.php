@@ -242,6 +242,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
 	static $s_item_id_to_code_cache = array();				// cache for ca_lists::itemIDsToIDNOs()
 	static $s_item_id_to_value_cache = array();				// cache for ca_lists::itemIDsToItemValues()
+	static $s_code_to_item_id_cache = array();				// cache for ca_lists::IDNOsToItemIDs()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -2181,6 +2182,50 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
 	 	}
 	 	return ca_lists::$s_item_id_to_value_cache[$vs_cache_key] = $va_item_ids_to_values + $va_non_numerics;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts a list of item idno's to a list of numeric item_id's. The conversion is literal without hierarchical expansion.
+	 *
+	 * @param array $pa_list A list of relationship numeric item_ids
+	 * @param array $pa_options Options include:
+	 * 		transaction = transaction to perform database operations within. [Default is null]
+	 *		list_id = restrict lookup to a specific list by list_id. [Default is null; no filtering]
+	 * @return array A list of corresponding item_ids with item_id as key and idno as value 
+	 */
+	 static public function IDNOsToItemIDs($pa_item_ids, $pa_options=null) {
+	 	if (!is_array($pa_item_ids) || !sizeof($pa_item_ids)) { return null; }
+	 	
+	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_ids, 'opts' => $pa_options]);
+	 	if (isset(ca_lists::$s_code_to_item_id_cache[$vs_cache_key])) {
+	 		return ca_lists::$s_code_to_item_id_cache[$vs_cache_key];
+	 	}
+	 	
+	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+		$va_params = [$pa_item_ids];
+		$vs_list_sql = '';
+		if ($vn_list_id = caGetOption('list_id', $pa_options, null, ['castTo' => 'int'])) {
+			$vs_list_sql = " AND list_id = ?";
+			$va_params[] = $vn_list_id;
+		}
+		
+	 	$qr_res = $o_db->query("
+	 		SELECT item_id, idno 
+	 		FROM ca_list_items
+	 		WHERE
+	 			idno IN (?) {$vs_list_sql}
+	 	", array($pa_item_ids));
+	 	
+	 	$va_item_ids = array();
+	 	while($qr_res->nextRow()) {
+	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
+	 	}
+	 	return ca_lists::$s_code_to_item_id_cache[$vs_cache_key] = $va_item_ids_to_codes;
 	}
 	# ------------------------------------------------------
 	/**

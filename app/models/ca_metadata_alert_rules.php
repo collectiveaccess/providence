@@ -102,7 +102,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
 			'IS_NULL' => false,
 			'DEFAULT' => '',
 			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Trigger settings')
-		),
+		)
 	)
 );
 
