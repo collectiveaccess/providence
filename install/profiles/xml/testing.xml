@@ -6480,7 +6480,6 @@
       </bundlePlacements>
     </searchForm>
   </searchForms>
-
   <logins>
     <login user_name="administrator" password="dublincore" fname="CollectiveAccess"
       lname="Administrator" email="info@collectiveaccess.org">
@@ -6501,7 +6500,6 @@
       <role code="moderator"/>
     </login>
   </logins>
-
   <metadataAlerts>
     <metadataAlert type="ca_objects" code="test_alert_1">
       <labels>
@@ -6535,7 +6533,7 @@
 
       <typeRestrictions>
         <restriction code="r1" type="dataset"/>
-        <restriction code="r1" type="image"/>
+        <restriction code="r2" type="image"/>
       </typeRestrictions>
 
       <userAccess>
