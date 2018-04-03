@@ -347,6 +347,8 @@
 		$t_list = new ca_lists();
 		$t_item = new ca_list_items();
 		
+		if (!is_array($va_item_ids_in_list = $t_list->getItemsForList($pm_list_code_or_id, ['idsOnly' => true]))) { $va_item_ids_in_list = []; }
+	
 		foreach($pa_item_idnos as $vm_item) {
 			if (!$vm_item) { continue; }
 			$vn_type_id = null;
@@ -355,6 +357,7 @@
 			} else {
 				$vn_type_id = (int)$t_list->getItemIDFromList($pm_list_code_or_id, $vm_item);
 			}
+			if (!in_array($vn_type_id, $va_item_ids_in_list)) { continue; }	// skip type_id if it's not in list $pm_list_code_or_id
 			
 			if ($vn_type_id && (!isset($pa_options['noChildren']) || !$pa_options['noChildren'])) {
 				if ($qr_children = $t_item->getHierarchy($vn_type_id, array())) {
