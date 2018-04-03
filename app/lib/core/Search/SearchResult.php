@@ -2055,19 +2055,24 @@ class SearchResult extends BaseObject {
 						
 						$vb_has_hierarchy_modifier = SearchResult::_isHierarchyModifier($va_auth_spec);
 						
-						if (SearchResult::_isHierarchyModifier($va_path_components['field_name']) && $pt_instance->hasElement($va_path_components['subfield_name'], null, true, array('dontCache' => false))) {
+						$vb_element_is_present = $pt_instance->hasElement($va_path_components['field_name'], null, true, array('dontCache' => false));
+						$vb_sub_element_is_present = $pt_instance->hasElement($va_path_components['subfield_name'], null, true, array('dontCache' => false));
+						
+						if (SearchResult::_isHierarchyModifier($va_path_components['field_name']) && $vb_sub_element_is_present) {
 							// ca_objects.hierarchy.authority_attr_code
 							array_shift($va_auth_spec); // remove table spec
 							array_shift($va_auth_spec); // remove hier modifier
 							array_shift($va_auth_spec); // remove auth_attr_code
 							
-						} elseif (($vb_has_field_name = $pt_instance->hasElement($va_path_components['field_name'], null, true, array('dontCache' => false))) && $vb_has_hierarchy_modifier) {
+						} elseif ($vb_element_is_present && $vb_has_hierarchy_modifier) {
 							// ca_objects.authority_attr_code.hierarchy
 							// ca_objects.authority_attr_code.authority_attr_subcode.hierarchy
 							while(sizeof($va_auth_spec) && !SearchResult::_isHierarchyModifier($va_auth_spec[0])) {
 								array_shift($va_auth_spec); // remove auth_attr_code
 							}
-						} elseif ($pt_instance->hasElement($va_path_components['field_name'], null, true, array('dontCache' => false))) {
+						} elseif ($vb_element_is_present && $vb_sub_element_is_present) {
+							$va_auth_spec = [];
+						} elseif ($vb_element_is_present) {
 							// ca_objects.authority_attr_code
 							$va_auth_spec = array_slice($va_path_components['components'], 2);
 						}
