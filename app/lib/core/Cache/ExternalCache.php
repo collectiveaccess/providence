@@ -64,6 +64,14 @@ class ExternalCache {
 		return (isset(self::$opo_cache) && (self::$opo_cache instanceof Stash\Pool));
 	}
 	# ------------------------------------------------
+	/**
+	 * 
+	 * @return string
+	 */
+	private static function filterKey($ps_key) {
+		return str_replace("/", "_", $ps_key);
+	}
+	# ------------------------------------------------
 	private static function checkParameters($ps_namespace, $ps_key) {
 		if(!is_string($ps_namespace)) {
 			throw new ExternalCacheInvalidParameterException('Namespace has to be a string');
@@ -99,6 +107,7 @@ class ExternalCache {
 	 */
 	public static function fetch($ps_key, $ps_namespace='default') {
 		if(!self::init()) { return false; }
+		$ps_key = self::filterKey($ps_key);
 		self::checkParameters($ps_namespace, $ps_key);
 
 		$item = self::getCache()->getItem(self::makeKey($ps_key, $ps_namespace));
@@ -116,6 +125,7 @@ class ExternalCache {
 	 */
 	public static function save($ps_key, $pm_data, $ps_namespace='default', $pn_ttl=null) {
 		if(!self::init()) { return false; }
+		$ps_key = self::filterKey($ps_key);
 		self::checkParameters($ps_namespace, $ps_key);
 
 		if(!defined('__CA_CACHE_TTL__')) {
@@ -140,6 +150,7 @@ class ExternalCache {
 	 */
 	public static function contains($ps_key, $ps_namespace='default') {
 		if(!self::init()) { return false; }
+		$ps_key = self::filterKey($ps_key);
 		self::checkParameters($ps_namespace, $ps_key);
 		
 		$item = self::getCache()->getItem(self::makeKey($ps_key, $ps_namespace));
@@ -155,6 +166,7 @@ class ExternalCache {
 	 */
 	public static function delete($ps_key, $ps_namespace='default') {
 		if(!self::init()) { return false; }
+		$ps_key = self::filterKey($ps_key);
 		self::checkParameters($ps_namespace, $ps_key);
 		
 		self::getCache()->deleteItem(self::makeKey($ps_key, $ps_namespace));
