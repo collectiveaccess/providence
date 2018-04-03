@@ -179,7 +179,7 @@ abstract class Base {
 			return _t(
 				"Metadata alert rule '%1' triggered for record %2",
 				$t_rule->getLabelForDisplay(),
-				caEditorLink($g_request, $t_instance->getLabelForDisplay(), '', $t_instance->tableName(), $t_instance->getPrimaryKey())
+				caEditorLink($g_request, $t_instance->get($t_instance->tableName().".preferred_labels"), '', $t_instance->tableName(), $t_instance->getPrimaryKey())
 			);
 		} else {
 			return $t_instance->getWithTemplate($vs_template);

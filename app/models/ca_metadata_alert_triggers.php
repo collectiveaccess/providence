@@ -321,11 +321,13 @@ class ca_metadata_alert_triggers extends BaseModel {
 					if ($va_group['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
 						$t_group->load($va_group['user_id']);
 
-						foreach($t_group->getGroupUsers() as $va_user) {
-							if(!$t_user->load($va_user['user_id'])) { continue; }
-							if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-							$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
-						}
+                        if (is_array($va_groups = $t_group->getGroupUsers())) {
+                            foreach($va_groups as $va_user) {
+                                if(!$t_user->load($va_user['user_id'])) { continue; }
+                                if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
+                                $t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
+                            }
+                        }
 					}
 				}
 			}
