@@ -100,12 +100,6 @@
 
 			$t_trigger->set('trigger_type', $ps_trigger_type);
 
-			// foreach($_REQUEST as $vs_k => $vs_v) {
-// 				if (substr($vs_k, 0, 8) == 'setting_') {
-//					$t_trigger->setSetting(substr($vs_k, 8), $this->getRequest()->getParameter($vs_k, pString));
-			//	}
-			//}
-
 			$this->view->setVar('available_settings',$t_trigger->getAvailableSettings());
 			$this->render("ajax_rule_trigger_settings_form_html.php");
 		}
@@ -122,7 +116,6 @@
 			
 			if(!$t_trigger->getTriggerInstance()) { throw new ApplicationException(_t('No trigger')); }
 			$this->view->setVar('filters', $t_trigger->getTriggerInstance()->getElementFilters($pn_element_id, $ps_prefix, ['values' => $t_trigger->get('element_filters')]));
-
 
 			$this->view->setVar('available_settings',$t_trigger->getAvailableSettings());
 			$this->render("ajax_rule_trigger_filter_form_html.php");

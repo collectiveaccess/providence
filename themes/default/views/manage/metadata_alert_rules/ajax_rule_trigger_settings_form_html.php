@@ -28,6 +28,7 @@
 
 	/** @var ca_metadata_alert_triggers $t_trigger */
 	$t_trigger = $this->getVar('t_trigger');
+	$t_rule = $t_trigger->getRuleInstance();
 	$vs_id_prefix = $this->getVar('id_prefix');
 	$vn_trigger_id = $t_trigger->getPrimaryKey();
 	$va_triggers = $t_trigger->get('element_filters');
@@ -42,13 +43,13 @@
 <?php
 	}
 ?>
-
+t_rule
 			<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
 		
 			<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", ["id" => "{$vs_id_prefix}_element_id"], [
 				'rootElementsOnly' => false,
 				'noContainers' => true,
-				'tableNum' => $vn_table_num,
+				'tableNum' => $t_rule->get('table_num'),
 				'addEmptyOption' => true,
 				'emptyOption' => '-',
 				'value' => ($vn_element_id = $t_trigger->get('element_id')) ? $vn_element_id : $va_triggers['_non_element_filter'],
