@@ -1144,7 +1144,7 @@ class DisplayTemplateParser {
                                 }
                             }
 
-                                                    if (is_array($va_parsed_tag_opts['modifiers']) && (sizeof($va_parsed_tag_opts['modifiers']) > 0)) {
+                                if (is_array($va_parsed_tag_opts['modifiers']) && (sizeof($va_parsed_tag_opts['modifiers']) > 0)) {
                                 $va_val_list = array_map(function($v) use ($va_parsed_tag_opts) { return caProcessTemplateTagDirectives($v, $va_parsed_tag_opts['modifiers']); }, $va_val_list);
                             }
                         

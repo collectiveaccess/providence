@@ -319,7 +319,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		CompositeCache::delete($this->getPrimaryKey(), 'ElementSets');
-		CompositeCache::delete(null.'/'.null.'/'.$this->getPrimaryKey(), 'ElementTypeRestrictions');
+		$vs_key = caMakeCacheKeyFromOptions(['table_num' => null, 'type_id' => null, 'element_id' => $this->getPrimaryKey()]);
+		CompositeCache::delete($vs_key, 'ElementTypeRestrictions');
 
 		// flush getElementsAsList() cache too
 		if(CompositeCache::contains('cacheKeys', 'ElementList')) {
@@ -1330,7 +1331,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vn_element_id = $this->getHierarchyRootID(null);
 		}	
 		
-		$vs_key = "{$pn_table_num}/{$pn_type_id}/{$vn_element_id}";
+		$vs_key = caMakeCacheKeyFromOptions(['table_num' => $pn_table_num, 'type_id' => $pn_type_id, 'element_id' => $vn_element_id]);
 		
 		if (CompositeCache::contains($vs_key, 'ElementTypeRestrictions')) { 
 			return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
