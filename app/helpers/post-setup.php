@@ -179,7 +179,10 @@ if (!defined("__CA_THEME_URL__")) {
 # Installation-specific configuration simply allows you to override selected application configuration as-needed without having to modify the stock config
 # Note also that unit tests should generally ignore local configuration and use the base configuration only
 if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
-	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_THEMES_DIR__."/".__CA_THEME__."/conf");
+	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_APP_DIR__."/conf/local");
+}
+if (!defined("__CA_DEFAULT_THEME_CONFIG_DIRECTORY__")) {
+	define("__CA_DEFAULT_THEME_CONFIG_DIRECTORY__", __CA_THEMES_DIR__."/".__CA_THEME__."/conf");
 }
 
 #
