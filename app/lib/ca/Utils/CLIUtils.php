@@ -484,7 +484,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Remove media present in media directories but not referenced in database (aka. orphan media)
+		 * Permanently remove object representations marked for deletion, deleting referenced files on disk and reclaiming disk space
 		 */
 		public static function remove_deleted_representations($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Db.php");
@@ -561,6 +561,90 @@
 		 */
 		public static function remove_deleted_representationsHelp() {
 			return _t("Detects and, optionally, completely removes object representations marked as deleted in the database. Files referenced by these records are also removed. This can be useful if there has been a lot of fluctuation in your representation stock and you want to free up disk space.");
+		}
+		# -------------------------------------------------------
+		/**
+		 * Permanently remove records marked as deleted
+		 */
+		public static function purge_deleted($po_opts=null) {
+			CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
+            flush();
+            ob_flush();
+            $confirmation  =  trim( fgets( STDIN ) );
+            if ( $confirmation !== 'y' ) {
+                // The user did not say 'y'.
+                return false;
+            }
+
+			$o_dm = Datamodel::load();
+			$va_tables = $o_dm->getTableNames();
+			$o_db = new Db();
+			$va_tables_to_process = array_filter(array_map("trim", preg_split('![ ,;]!', (string)$po_opts->getOption('tables'))), "strlen");
+
+			$vn_t = 0;
+			foreach($va_tables as $vs_table) {
+				if(is_array($va_tables_to_process) && sizeof($va_tables_to_process) && !in_array($vs_table, $va_tables_to_process)) { continue; }
+				if (!$t_instance = $o_dm->getInstanceByTableName($vs_table, true)) { continue; }
+				if (!$t_instance->hasField('deleted')) { continue; }
+			
+				$t_instance->setMode(ACCESS_WRITE);
+
+				$qr_del = $o_db->query("SELECT * FROM {$vs_table} WHERE deleted=1");
+				if($qr_del->numRows() > 0) {
+					print CLIProgressBar::start($qr_del->numRows(), _t('Removing deleted %1 from database', $t_instance->getProperty('NAME_PLURAL')));
+
+					$vn_c = 0;
+					while($qr_del->nextRow()) {
+						print CLIProgressBar::next();
+						$t_instance->load($qr_del->get($t_instance->primaryKey()));
+						$t_instance->setMode(ACCESS_WRITE);
+						$t_instance->removeAllLabels();
+						$t_instance->delete(true, array('hard' => true));
+						$vn_c++;
+					}
+
+					CLIUtils::addMessage(_t('Removed %1 %2', $vn_c, $t_instance->getProperty(($vn_c == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), array('color' => 'green'));
+					print CLIProgressBar::finish();
+					
+					$vn_t += $vn_c;
+				}
+			}
+			
+			if ($vn_t > 0) {
+				CLIUtils::addMessage(_t('Done!'), array('color' => 'green'));
+			} else {
+				CLIUtils::addMessage(_t('Nothing to delete!'), array('color' => 'red'));
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function purge_deletedParamList() {
+			return array(
+				"tables|t=s" => _t('List of tables for which to purge deleted records. List multiple tables names separated by commas. If no table list is provided all tables are purged.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function purge_deletedUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function purge_deletedShortHelp() {
+			return _t("Completely and permanently removes records marked as deleted in the database.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function purge_deletedHelp() {
+			return _t("Completely and permanently removes records marked as deleted in the database. Files referenced by these records are also removed. Note that this cannot be undone.");
 		}
 		# -------------------------------------------------------
 		/**
