@@ -6678,9 +6678,11 @@ create table ca_search_indexing_queue
   options         LONGTEXT          null,
   is_unindex      tinyint unsigned  not null default 0,
   dependencies    LONGTEXT          null,
+  started_on      int unsigned      null,
 
   primary key (entry_id),
-  index i_table_num_row_id (table_num, row_id)
+  index i_table_num_row_id (table_num, row_id),
+  index i_started_on (started_on)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
@@ -6876,5 +6878,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 151 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (152, unix_timestamp());
+/* CURRENT MIGRATION: 153 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (153, unix_timestamp());
