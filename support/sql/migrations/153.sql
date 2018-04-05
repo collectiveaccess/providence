@@ -1,8 +1,13 @@
 /*
-	Date: 6 February 2018
+	Date: 4 April 2018
 	Migration: 153
-	Description: Add tables for metadata alerts
+	Description: Add tables for metadata alerts, add indexing queue started_on field
 */
+
+/*==========================================================================*/
+
+ALTER TABLE ca_search_indexing_queue ADD COLUMN started_on int unsigned null;
+CREATE INDEX i_started_on ON ca_search_indexing_queue(started_on);
 
 /*==========================================================================*/
 create table ca_metadata_alert_rules (
@@ -84,7 +89,6 @@ create table ca_metadata_alert_rule_type_restrictions (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
-
 
 /* Always add the update to ca_schema_updates at the end of the file */
 INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (153, unix_timestamp());
