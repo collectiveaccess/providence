@@ -455,7 +455,7 @@
             </label>
           </labels>
         </item>
-        <item idno="buttons" enabled="1" default="0">
+        <item idno="buttons1" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>buttons</name_singular>
@@ -4005,7 +4005,7 @@
             </label>
           </labels>
         </item>
-        <item idno="l" rank="12" enabled="1" default="0">
+        <item idno="44_mens" rank="12" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>44 (Mens)</name_singular>
@@ -4126,7 +4126,7 @@
             </label>
           </labels>
         </item>
-        <item idno="l" rank="12" enabled="1" default="0">
+        <item idno="44_mens2" rank="12" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>44 (Mens)</name_singular>
@@ -4705,14 +4705,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">100</setting>
@@ -6327,31 +6319,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="conditionNote" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Condition note</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">3</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">255</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <type>garments</type>
-          <includeSubtypes>1</includeSubtypes>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">5</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="expectedDate" datatype="DateRange">
       <labels>
         <label locale="en_US">
@@ -7837,45 +7804,6 @@
                 <setting name="label" locale="en_US">Alternate names</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="standard_object_event_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
