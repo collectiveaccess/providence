@@ -483,7 +483,7 @@
             </label>
           </labels>
         </item>
-        <item idno="available" enabled="1" default="0">
+        <item idno="date_available" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date available</name_singular>
@@ -896,7 +896,7 @@
             </label>
           </labels>
           <items>
-            <item idno="option1" enabled="1" default="0">
+            <item idno="optiona" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital image file</name_singular>
@@ -904,7 +904,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option2" enabled="1" default="0">
+            <item idno="optionb" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital image file (JPEG)</name_singular>
@@ -912,7 +912,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option3" enabled="1" default="0">
+            <item idno="optionc" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital image file (TIFF)</name_singular>
@@ -920,7 +920,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option4" enabled="1" default="0">
+            <item idno="optiond" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>film negative</name_singular>
@@ -928,7 +928,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option5" enabled="1" default="0">
+            <item idno="optione" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>photographic print</name_singular>
@@ -936,7 +936,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option6" enabled="1" default="0">
+            <item idno="optionf" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>poster</name_singular>
@@ -944,7 +944,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option7" enabled="1" default="0">
+            <item idno="optiong" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>slide</name_singular>
@@ -952,7 +952,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option8" enabled="1" default="0">
+            <item idno="optionh" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>transparency</name_singular>
@@ -970,7 +970,7 @@
             </label>
           </labels>
           <items>
-            <item idno="option1" enabled="1" default="0">
+            <item idno="optioni" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video disc</name_singular>
@@ -978,7 +978,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option2" enabled="1" default="0">
+            <item idno="optionj" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video disc (VCD/SVCD)</name_singular>
@@ -986,7 +986,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option3" enabled="1" default="0">
+            <item idno="optionk" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video disc (DVD)</name_singular>
@@ -994,7 +994,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option4" enabled="1" default="0">
+            <item idno="optionl" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video disc (Blu-Ray)</name_singular>
@@ -1002,7 +1002,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option5" enabled="1" default="0">
+            <item idno="optionm" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video file</name_singular>
@@ -1010,7 +1010,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option6" enabled="1" default="0">
+            <item idno="optionn" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video file (MOV)</name_singular>
@@ -1018,7 +1018,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option7" enabled="1" default="0">
+            <item idno="optiono" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video file (MPG)</name_singular>
@@ -1026,7 +1026,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option9" enabled="1" default="0">
+            <item idno="optionp" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video file (MP4)</name_singular>
@@ -1034,7 +1034,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option10" enabled="1" default="0">
+            <item idno="optionq" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video file (RM)</name_singular>
@@ -1042,7 +1042,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option11" enabled="1" default="0">
+            <item idno="optionr" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>digital video file (WMV)</name_singular>
@@ -1050,7 +1050,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option12" enabled="1" default="0">
+            <item idno="options" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>videocassette</name_singular>
@@ -1058,7 +1058,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option13" enabled="1" default="0">
+            <item idno="optiont" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>videocassette (8mm)</name_singular>
@@ -1180,7 +1180,7 @@
             </label>
           </labels>
           <items>
-            <item idno="option1" enabled="1" default="0">
+            <item idno="optionu" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>administrative material</name_singular>
@@ -1188,7 +1188,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option2" enabled="1" default="0">
+            <item idno="optionv" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>book</name_singular>
@@ -1196,7 +1196,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option3" enabled="1" default="0">
+            <item idno="optionw" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>brochure</name_singular>
@@ -1204,7 +1204,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option4" enabled="1" default="0">
+            <item idno="optionx" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>clipping</name_singular>
@@ -1212,7 +1212,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option5" enabled="1" default="0">
+            <item idno="optiony" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>correspondence</name_singular>
@@ -1220,7 +1220,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option6" enabled="1" default="0">
+            <item idno="optionz" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>ephemera</name_singular>
@@ -1228,7 +1228,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option7" enabled="1" default="0">
+            <item idno="optionaa" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>fieldnotes</name_singular>
@@ -1236,7 +1236,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option8" enabled="1" default="0">
+            <item idno="optionab" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>manuscript</name_singular>
@@ -1244,7 +1244,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option9" enabled="1" default="0">
+            <item idno="optionac" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>media log</name_singular>
@@ -1252,7 +1252,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option10" enabled="1" default="0">
+            <item idno="optionad" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>pamphlet</name_singular>
@@ -1260,7 +1260,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option11" enabled="1" default="0">
+            <item idno="optionae" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>periodical</name_singular>
@@ -1268,7 +1268,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option12" enabled="1" default="0">
+            <item idno="optionaf" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>transcript</name_singular>
@@ -1286,7 +1286,7 @@
             </label>
           </labels>
           <items>
-            <item idno="option1" enabled="1" default="0">
+            <item idno="optionaj" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>hymnal</name_singular>
@@ -1294,7 +1294,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option2" enabled="1" default="0">
+            <item idno="optionak" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>manuscript score</name_singular>
@@ -1302,7 +1302,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option3" enabled="1" default="0">
+            <item idno="optional" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>music score</name_singular>
@@ -1310,7 +1310,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option4" enabled="1" default="0">
+            <item idno="optionam" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>sheet music</name_singular>
@@ -1318,7 +1318,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option5" enabled="1" default="0">
+            <item idno="optionan" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>songbook</name_singular>
@@ -1326,7 +1326,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="option6" enabled="1" default="0">
+            <item idno="optionao" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>songster</name_singular>
@@ -2228,14 +2228,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="description_source" datatype="Text">
@@ -2443,14 +2435,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -3733,14 +3717,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
@@ -5315,7 +5291,7 @@
               <bundle>ca_attribute_repository_parent</bundle>
             </placement>
             
-            <placement code="ca_attribute_external_link">
+            <placement code="ca_attribute_link">
               <bundle>ca_attribute_external_link</bundle>
               <settings>
                 <setting name="label" locale="en_US">Repository Parent URL</setting>
@@ -6087,45 +6063,6 @@
                 <setting name="label" locale="en_US">Alternate names</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="standard_object_event_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
