@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2036,7 +2036,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_default = $t_exporter_item->getSetting('default');
 		$vs_prefix = $t_exporter_item->getSetting('prefix');
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
-		//$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');		// Deprecated -- remove?
+		$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');	
 		$vn_max_length = $t_exporter_item->getSetting('maxLength');
 
 		$vs_original_values = $t_exporter_item->getSetting('original_values');
@@ -2052,6 +2052,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				if(strlen($va_item['text']) < 1) {
 					unset($va_item_info[$vn_key]);
 				}
+			}
+			
+			if ($vs_regexp && preg_match("!{$vs_regexp}!", $va_item['text'])) { 
+				unset($va_item_info[$vn_key]);
+				continue; 
 			}
 
 			// handle skipIfExpression setting
