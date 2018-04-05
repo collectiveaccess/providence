@@ -243,6 +243,7 @@
 					if ($vs_content !== FALSE) {
 						$vn_content_length = strlen($vs_content);
 						$vn_bytes_written = fwrite($r_out, $vs_content, $vn_content_length);
+						ob_flush();
 						flush();
 						
 						$vn_compressed_filesize += $vn_bytes_written;
