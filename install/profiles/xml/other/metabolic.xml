@@ -4415,14 +4415,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="internalNotes" datatype="Text">
@@ -4537,14 +4529,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -9248,32 +9232,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="loanInsurance" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Loan Insurance</name>
-          <description/>
-        </label>
-      </labels>
-      <settings>
-        <setting name="default_text">Objects shall be insured at the borrower’s expense for the value stated on the face of this agreement under an all-risk wall-to-wall policy subject to the following standard exclusions: wear and tear, insects, vermin, gradual deterioration or inherent vice; repairing, restoration or retouching processes; hostile or warlike action, insurrection, or rebellion; nuclear reaction, nuclear radiation or radioactive contamination. The Metabolic Studio shall determine whether the borrower insures the objects or whether the Metabolic Studio insures them and bills the borrower for the premium. If the borrower is insuring the objects, the Metabolic Studio must be furnished with a certificate of insurance insurance or a copy of the policy made out in favor of the Metabolic Studio prior to shipment of the loan. The Metabolic Studio must be notified in writing at least 30 days prior to any cancellation or meaningful change in the borrower’s policy. Any lapses in coverage, any failure to secure insurance and/or inaction by the Metabolic Studio will not release the borrower from liability for loss or damage. </setting>
-        <setting name="fieldWidth">110</setting>
-        <setting name="fieldHeight">5</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_loans</table>
-          <type>out</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="reproductionCredit" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -11832,45 +11790,6 @@
                 <setting name="label" locale="en_US">Alternate names</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="standard_object_event_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
