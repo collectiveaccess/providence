@@ -29,9 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
-		$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-		array_pop($va_tmp);
-		$vs_path = join("/", $va_tmp);
+		$va_tmp = explode("/", str_replace("\\", "/", __DIR__));
+		array_pop($va_tmp); array_pop($va_tmp);
+		$vs_theme_path = join("/", $va_tmp);
+		$vs_theme_url = str_replace(__CA_BASE_DIR__, "", $vs_theme_path);
 		
 		if (!is_array($opa_error_messages)) {
 			$opa_error_messages = self::$opa_error_messages;
@@ -41,12 +42,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess configuration error display</title>
-	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href="<?php print $vs_theme_url; ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
 	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/ca_logo.png"/></div><!-- end logo -->
+	<div id="logo"><img src="<?php print $vs_theme_url ?>/graphics/logos/ca_logo.png"/></div><!-- end logo -->
 	<div id="content">
 		<?php print "<div class='error'>Issues with your system configuration have been detected</div>
 			General installation instructions can be found

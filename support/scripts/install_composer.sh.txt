@@ -1,13 +1,15 @@
 #!/bin/sh
 
-EXPECTED_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig)
-if ["$EXPECTED_SIGNATURE" = ""]
+
+if command -v curl > /dev/null
 then
     EXPECTED_SIGNATURE=$(curl -s https://composer.github.io/installer.sig)
+else
+    EXPECTED_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig)
 fi
 
-php -r "copy('https://getcomposer.org/installer', 'app/tmp/composer-setup.php');"
-ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', 'app/tmp/composer-setup.php');")
+php -r "copy('https://getcomposer.org/installer', './composer-setup.php');"
+ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', './composer-setup.php');")
 
 if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
 then
@@ -16,8 +18,8 @@ then
     exit 1
 fi
 
-export COMPOSER_HOME=.
-php app/tmp/composer-setup.php --quiet --install-dir app/tmp
+export COMPOSER_HOME=$COLLECTIVEACCESS_HOME/app/tmp
+php ./composer-setup.php --install-dir $COMPOSER_HOME
 RESULT=$?
-rm app/tmp/composer-setup.php
+rm ./composer-setup.php
 exit $RESULT
