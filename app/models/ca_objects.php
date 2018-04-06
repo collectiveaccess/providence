@@ -894,6 +894,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		// Lots
 		if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null)) && ($vn_lot_id = $this->get('lot_id'))) {
+			require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 			$t_lot = new ca_object_lots($vn_lot_id);
 			if (!$t_lot->get('ca_object_lots.deleted')) {
 				$va_lot_type_info = $t_lot->getTypeList(); 
@@ -959,7 +960,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$va_loans = $this->get('ca_loans_x_objects.relation_id', array('returnAsArray' => true));
 		if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans) && sizeof($va_loans)) {	
 			$qr_loans = caMakeSearchResult('ca_loans_x_objects', $va_loans);
-			
+			require_once(__CA_MODELS_DIR__."/ca_loans.php");
 			$t_loan = new ca_loans();
 			$va_loan_type_info = $t_loan->getTypeList(); 
 			
@@ -1032,7 +1033,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$va_movements = $this->get('ca_movements_x_objects.relation_id', array('returnAsArray' => true));
 		if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements) && sizeof($va_movements)) {	
 			$qr_movements = caMakeSearchResult('ca_movements_x_objects', $va_movements);
-			
+			require_once(__CA_MODELS_DIR__."/ca_movements.php");
 			$t_movement = new ca_movements();
 			$va_movement_type_info = $t_movement->getTypeList(); 
 			
@@ -1107,7 +1108,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$va_occurrences = $this->get('ca_objects_x_occurrences.relation_id', array('returnAsArray' => true));
 		if(is_array($va_occurrence_types = caGetOption('ca_occurrences_showTypes', $pa_bundle_settings, null)) && is_array($va_occurrences) && sizeof($va_occurrences)) {	
 			$qr_occurrences = caMakeSearchResult('ca_objects_x_occurrences', $va_occurrences);
-			
+			require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
 			$t_occurrence = new ca_occurrences();
 			$va_occurrence_type_info = $t_occurrence->getTypeList(); 
 			
@@ -1180,7 +1181,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$va_collections = $this->get('ca_objects_x_collections.relation_id', array('returnAsArray' => true));
 		if(is_array($va_collection_types = caGetOption('ca_collections_showTypes', $pa_bundle_settings, null)) && is_array($va_collections) && sizeof($va_collections)) {	
 			$qr_collections = caMakeSearchResult('ca_objects_x_collections', $va_collections);
-			
+			require_once(__CA_MODELS_DIR__."/ca_collections.php");
 			$t_collection = new ca_collections();
 			$va_collection_type_info = $t_collection->getTypeList(); 
 			
@@ -1253,6 +1254,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$va_locations = $this->get('ca_objects_x_storage_locations.relation_id', array('returnAsArray' => true));
 	
 		if(is_array($va_location_types = caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)) && is_array($va_locations) && sizeof($va_locations)) {	
+			require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
 			$t_location = new ca_storage_locations();
 			if ($this->inTransaction()) { $t_location->setTransaction($this->getTransaction()); }
 			$va_location_type_info = $t_location->getTypeList(); 
