@@ -7212,14 +7212,14 @@ class BaseModel extends BaseObject {
 			$vn_root_id = $pn_id;
 		
 			while($qr_hier->nextRow()) {
-				$vn_row_id = $qr_hier->get($this->primaryKey());
-				if (is_null($vn_root_id)) { $vn_root_id = $vn_row_id; }
-				
-				if ($pb_dont_include_root && ($vn_row_id == $vn_root_id)) { continue; } // skip root if desired
+			    $vn_row_id = $qr_hier->get($this->primaryKey());
 				
 				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
 				
-				if (!isset($va_parent_map[$vn_parent_id])) {
+				if(!$vn_parent_id) {
+			        $vn_cur_level = 0;
+			        $va_parent_map[$vn_row_id] = ['level' =>  1];
+				} elseif (!isset($va_parent_map[$vn_parent_id])) {
 				    $va_parent_map[$vn_parent_id] = ['level' => $vn_cur_level + 1];
 				    $vn_cur_level++;
 				} else {
@@ -7228,7 +7228,19 @@ class BaseModel extends BaseObject {
 				if (!isset($va_parent_map[$vn_row_id])) {
 					$va_parent_map[$vn_row_id] = ['level' => $vn_cur_level + 1];
 				}
+			}
+			
+			$qr_hier->seek(0);
+			while($qr_hier->nextRow()) {
+				$vn_row_id = $qr_hier->get($this->primaryKey());
+				if (is_null($vn_root_id)) { $vn_root_id = $vn_row_id; }
 				
+				if ($pb_dont_include_root && ($vn_row_id == $vn_root_id)) { continue; } // skip root if desired
+				
+				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
+				
+                $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
+                
 				$vn_r = $qr_hier->get($vs_hier_right_fld);
 				$vn_c = sizeof($va_indent_stack);
 				
@@ -7249,7 +7261,7 @@ class BaseModel extends BaseObject {
 
 				}
 				$va_indent_stack[] = $vn_r;
-			}		
+			}
 			return $va_hier;
 		} else {
 			return null;
@@ -7804,7 +7816,7 @@ class BaseModel extends BaseObject {
 		$pn_id = caGetOption($vs_pk, $pa_options, null);
 		$va_hier = $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => false, 'sort' => null)));
 		
-		$va_levels = $va_ids = $va_parent_ids = array();
+		$va_levels = $va_ids = $va_parent_ids = [];
 		
 		if (!is_array($va_hier)) { return array(); }
 		foreach($va_hier as $vn_i => $va_item) {
@@ -7813,7 +7825,7 @@ class BaseModel extends BaseObject {
 			$va_parent_ids[$vn_id] = $va_item['NODE']['parent_id'];
 		}
 		
-		$va_hierarchy_data = array();
+		$va_hierarchy_data = [];
 		
 		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('indexWithIDs' => true, 'includeBlankValuesInArray' => true, 'returnAsArray'=> true)));
 		
@@ -11471,22 +11483,42 @@ $pa_options["display_form_field_tips"] = true;
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => false, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
 					
 					if (!is_numeric($vm_value)) {
-						if (is_array($vm_value)) {
-							$va_trans_vals = [];
-							foreach($vm_value as $vn_j => $vs_value) {
-								if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
-									$va_trans_vals[] = $vn_id;
-								}
-								$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];
-							}
-						} elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
-							$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
-						}
+					    if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) {
+					        if(is_array($va_field_values = $pa_values['type_id'])) {
+				
+                                foreach($va_field_values as $vn_i => $va_field_value) {
+                                    $vs_op = strtolower($va_field_value[0]);
+                                    $vm_value = $va_field_value[1];
+                                    if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => false, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
+                    
+                                    if (!$vm_value) { continue; }
+                                    if (!is_numeric($vm_value)) {
+                                        if (!is_array($vm_value)) {
+                                            $vm_value = [$vm_value];
+                                        }
+                                        if ($va_types = caMakeRelationshipTypeIDList($t_instance->tableName(), $vm_value)) {
+                                            $pa_values['type_id'][$vn_i] = [$vs_op, $va_types];
+                                        }
+                                    }
+                                }
+                            }
+					    } else {
+                            if (is_array($vm_value)) {
+                                $va_trans_vals = [];
+                                foreach($vm_value as $vn_j => $vs_value) {
+                                    if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
+                                        $va_trans_vals[] = $vn_id;
+                                    }
+                                    $pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];
+                                }
+                            } elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+                                $pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
+                            }
+                        }
 					}
 				}
 			}
-		}
-		
+		} 
 		//
 		// Convert other intrinsic list references
 		//
