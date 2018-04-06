@@ -11483,38 +11483,18 @@ $pa_options["display_form_field_tips"] = true;
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => false, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
 					
 					if (!is_numeric($vm_value)) {
-					    if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) {
-					        if(is_array($va_field_values = $pa_values['type_id'])) {
-				
-                                foreach($va_field_values as $vn_i => $va_field_value) {
-                                    $vs_op = strtolower($va_field_value[0]);
-                                    $vm_value = $va_field_value[1];
-                                    if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => false, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
-                    
-                                    if (!$vm_value) { continue; }
-                                    if (!is_numeric($vm_value)) {
-                                        if (!is_array($vm_value)) {
-                                            $vm_value = [$vm_value];
-                                        }
-                                        if ($va_types = caMakeRelationshipTypeIDList($t_instance->tableName(), $vm_value)) {
-                                            $pa_values['type_id'][$vn_i] = [$vs_op, $va_types];
-                                        }
-                                    }
-                                }
-                            }
-					    } else {
-                            if (is_array($vm_value)) {
-                                $va_trans_vals = [];
-                                foreach($vm_value as $vn_j => $vs_value) {
-                                    if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
-                                        $va_trans_vals[] = $vn_id;
-                                    }
-                                    $pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];
-                                }
-                            } elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
-                                $pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
-                            }
-                        }
+					   
+						if (is_array($vm_value)) {
+							$va_trans_vals = [];
+							foreach($vm_value as $vn_j => $vs_value) {
+								if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
+									$va_trans_vals[] = $vn_id;
+								}
+								$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];
+							}
+						} elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+							$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
+						}
 					}
 				}
 			}
