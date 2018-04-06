@@ -103,8 +103,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('relationship types') => 79,
 					_t('site pages') => 235,
 					_t('user interfaces') => 101,
-					_t('user interface screens') => 100,
-					_t('metadata alert rules') => 238,
+					_t('user interface screens') => 100
 				)
 		),
 		'color' => array(
@@ -1388,10 +1387,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
-		} elseif(method_exists($t_instance, "getTypeListAsHTMLFormElement")) { // list-based
+		} else { // list-based
 			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
-		} else {
-			$o_view->setVar('type_restrictions', []);
 		}
 	
 		return $o_view->render('ca_editor_ui_type_restrictions.php');

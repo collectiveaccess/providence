@@ -166,23 +166,22 @@ abstract class Base {
 	 * @return string
 	 */
 	public function getNotificationMessage(&$t_instance) {
-		$vs_template = $this->getTriggerValues()['settings']['notificationTemplate'];
+        global $g_request;
 
-		if(!$vs_template) {
+        if(!$g_request) {
+            $g_request = new \RequestHTTP(null, ['no_headers' => true, 'simulateWith' => ['REQUEST_METHOD' => 'GET', 'SCRIPT_NAME' => 'index.php']]);
+        }
+        
+		if(!($vs_template = $this->getTriggerValues()['settings']['notificationTemplate'])) {
 			$t_rule = new \ca_metadata_alert_rules($this->getTriggerValues()['rule_id']);
-			global $g_request;
-
-			if(!$g_request) {
-				$g_request = new \RequestHTTP(null, ['no_headers' => true, 'simulateWith' => ['REQUEST_METHOD' => 'GET', 'SCRIPT_NAME' => 'index.php']]);
-			}
 
 			return _t(
 				"Metadata alert rule '%1' triggered for record %2",
 				$t_rule->getLabelForDisplay(),
-				caEditorLink($g_request, $t_instance->get($t_instance->tableName().".preferred_labels"), '', $t_instance->tableName(), $t_instance->getPrimaryKey())
+				caEditorLink($g_request, $t_instance->get($t_instance->tableName().".preferred_labels"), '', $t_instance->tableName(), $t_instance->getPrimaryKey(), [], ['absolute' => true])
 			);
 		} else {
-			return $t_instance->getWithTemplate($vs_template);
+			return $t_instance->getWithTemplate($vs_template, ['absolute' => true]);
 		}
 	}
 	
