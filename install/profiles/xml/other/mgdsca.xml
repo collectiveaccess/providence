@@ -919,14 +919,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r5">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="description_archival" datatype="Text">
@@ -969,14 +961,6 @@
         </restriction>
         <restriction code="z4">
           <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="z5">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -2494,10 +2478,7 @@
               <settings>
                 <setting name="label" locale="en_US">Measurements as text</setting>
                 <setting name="add_label" locale="en_US">Add measurement</setting>
-                <setting name="ca_objects" locale="bundle">ca_objects</setting>
-                <setting name="ca_occurrences" locale="bundle">ca_occurrences</setting>
-                <setting name="ca_object_representations" locale="bundle">ca_object_representations</setting>
-              </settings>
+                  </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -3427,57 +3408,6 @@
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
                 <setting name="add_label" option="fr_FR">Ajouter un autre titre</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="object_event_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Editeur d\'événement d\'objet</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Informations basiques</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Relations</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_occurrences">
-              <bundle>ca_occurrences</bundle>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
