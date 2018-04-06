@@ -43,13 +43,12 @@
 <?php
 	}
 ?>
-t_rule
 			<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
 		
 			<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", ["id" => "{$vs_id_prefix}_element_id"], [
 				'rootElementsOnly' => false,
 				'noContainers' => true,
-				'tableNum' => $t_rule->get('table_num'),
+				'tableNum' => $t_rule ? $t_rule->get('table_num') : null,
 				'addEmptyOption' => true,
 				'emptyOption' => '-',
 				'value' => ($vn_element_id = $t_trigger->get('element_id')) ? $vn_element_id : $va_triggers['_non_element_filter'],
