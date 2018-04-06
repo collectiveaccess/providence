@@ -822,7 +822,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="8mm" enabled="1" default="0">
+            <item idno="film_8mm" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Film: 8 mm.</name_singular>
@@ -2441,7 +2441,7 @@
             </label>
           </labels>
         </item>
-        <item idno="camera_assistant" enabled="1" default="0">
+        <item idno="camera_assistant1" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Camera Assistant</name_singular>
@@ -2490,7 +2490,7 @@
             </label>
           </labels>
           <items>
-            <item idno="access_copy" enabled="1" default="0">
+            <item idno="video_access_copy" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Access copy</name_singular>
@@ -2724,7 +2724,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="access_copy" enabled="1" default="0">
+            <item idno="film_access_copy" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Access copy</name_singular>
@@ -2740,7 +2740,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="archival_footage" enabled="1" default="0">
+            <item idno="archival_footage1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Archival footage</name_singular>
@@ -2820,7 +2820,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="graphics" enabled="1" default="0">
+            <item idno="graphics1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Graphics</name_singular>
@@ -2876,7 +2876,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_distribution" enabled="1" default="0">
+            <item idno="master_distribution1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: distribution</name_singular>
@@ -2884,7 +2884,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_preservation" enabled="1" default="0">
+            <item idno="master_preservation1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: preservation</name_singular>
@@ -2892,7 +2892,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_preservation_dub" enabled="1" default="0">
+            <item idno="master_preservation_dub1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: preservation dub</name_singular>
@@ -3004,7 +3004,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="stock_footage" enabled="1" default="0">
+            <item idno="stock_footage1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Stock footage</name_singular>
@@ -3020,7 +3020,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="titles" enabled="1" default="0">
+            <item idno="titles1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Titles</name_singular>
@@ -3086,7 +3086,7 @@
             </label>
           </labels>
           <items>
-            <item idno="access_copy" enabled="1" default="0">
+            <item idno="access_copy1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Access copy</name_singular>
@@ -3102,7 +3102,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="data_tape" enabled="1" default="0">
+            <item idno="data_tape1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Data tape</name_singular>
@@ -3118,7 +3118,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="dub" enabled="1" default="0">
+            <item idno="dub1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Dub</name_singular>
@@ -3134,7 +3134,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_distribution" enabled="1" default="0">
+            <item idno="audio_master_distribution" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: distribution</name_singular>
@@ -3142,7 +3142,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_preservation" enabled="1" default="0">
+            <item idno="audio_master_preservation" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: preservation</name_singular>
@@ -3150,7 +3150,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_preservation_dub" enabled="1" default="0">
+            <item idno="audio_master_preservation_dub" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: preservation dub</name_singular>
@@ -3158,7 +3158,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_production" enabled="1" default="0">
+            <item idno="master_production1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: production</name_singular>
@@ -3166,7 +3166,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master_protection" enabled="1" default="0">
+            <item idno="master_protection1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master: protection</name_singular>
@@ -3270,7 +3270,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="outtakes" enabled="1" default="0">
+            <item idno="outtakes1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Outtakes</name_singular>
@@ -5893,7 +5893,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="brittleness" enabled="1" default="0">
+            <item idno="brittleness1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Brittleness</name_singular>
@@ -5925,7 +5925,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="mold" enabled="1" default="0">
+            <item idno="mold1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Mold</name_singular>
@@ -6980,7 +6980,7 @@
             </label>
           </labels>
         </item>
-        <item idno="access_copy" enabled="1" default="0">
+        <item idno="access_copy1" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Access copy</name_singular>
@@ -10464,14 +10464,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="work_description_w_type" datatype="Container">
@@ -10603,14 +10595,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>

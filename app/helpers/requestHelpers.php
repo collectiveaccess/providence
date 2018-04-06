@@ -118,7 +118,7 @@ function caCheckVendorLibraries() {
 			}
 		} else {
 			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__) {
-				$opa_error_messages = ["Your installation is missing required vendor libraries. This is normal if you have just installed from a Git branch. <a href='index.php?updateVendor=1'><strong>Click here</strong></a> to automatically load the required libraries, or see the <a href=\"http://docs.collectiveaccess.org/wiki/Installing_Vendor_Libraries\">wiki</a> for instructions on installing the required libraries manually."];
+				$opa_error_messages = ["Your installation is missing required vendor libraries. This is normal if you have just installed from a Git branch. <a href='index.php?updateVendor=1'><strong>Click here</strong></a> to automatically load the required libraries, or see the <a href=\"http://docs.collectiveaccess.org/wiki/Installing_Vendor_Libraries\">wiki</a> for instructions on installing the required libraries manually. <strong>NOTE: Installation may take some time.</strong>"];
 			} else {
 				$opa_error_messages = ["Your installation is missing required vendor libraries. This is normal if you have just installed from a Git branch. See the <a href=\"http://docs.collectiveaccess.org/wiki/Installing_Vendor_Libraries\">wiki</a> for instructions on installing the required libraries manually."];
 			}
@@ -148,15 +148,20 @@ function caInstallVendorLibraries() {
 		if (!copy(__CA_BASE_DIR__.'/support/scripts/install_composer.sh.txt', __CA_APP_DIR__.'/tmp/install_composer.sh')) {
 			return ["Could not copy composer installer to app/tmp"];
 		}
+		$output = [];
+		putenv("COLLECTIVEACCESS_HOME=".__CA_BASE_DIR__);
 		exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
 		if ($ret > 0) {
 			return ["Composer installation failed: ".join("; ", $output)];
 		}
+		
+		$output = [];
 		putenv("COMPOSER_HOME=".__CA_BASE_DIR__."/app/tmp");
-		exec("php ".__CA_APP_DIR__.'/tmp/composer.phar install 2>&1', $output, $ret);
+		exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n -d='.__CA_BASE_DIR__.' install 2>&1', $output, $ret);
 		if ($ret > 0) {
 			return ["Library installation failed: ".join("; ", $output)];
 		}
+		
 		unlink(__CA_APP_DIR__.'/tmp/composer.phar');
 		unlink(__CA_APP_DIR__.'/tmp/install_composer.sh');
 		return [];

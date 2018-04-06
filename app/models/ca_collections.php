@@ -403,11 +403,12 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		if ($this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && caGetOption('includeObjects', $pa_options, true) && ($ps_object_template = caGetOption('objectTemplate', $pa_options, $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings')))) {
 			$va_collection_ids = array_map(function($v) { return $v['id']; }, $va_vals);
 			
-			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => 142], ['returnAs' => 'searchResult']);
+			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')], ['returnAs' => 'searchResult']);
 			$va_objects_by_collection = [];
 			while($qr->nextHit()) {
 				$va_objects_by_collection[$qr->get('ca_objects_x_collections.collection_id')][] = $qr->get('ca_objects_x_collections.object_id');
  			}
+ 			
  			$va_objects = [];
  			foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
  				$va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);

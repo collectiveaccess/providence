@@ -668,14 +668,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="description_source" datatype="Text">
@@ -1655,15 +1647,6 @@
         <setting name="fieldHeight">4</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_object_events</table>
-          <type>movement</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="object_movement_requested_by" datatype="Text">
@@ -1678,15 +1661,6 @@
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_object_events</table>
-          <type>movement</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="object_movement_authorized_by" datatype="Text">
@@ -1701,15 +1675,6 @@
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_object_events</table>
-          <type>movement</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="object_movement_executed_by" datatype="Text">
@@ -1724,15 +1689,6 @@
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_object_events</table>
-          <type>movement</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
   </elementSets>
@@ -2780,86 +2736,8 @@
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="object_event_cataloguers_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="planned_datetime">
-              <bundle>planned_datetime</bundle>
-            </placement>
-            <placement code="ca_attribute_object_movement_requested_by">
-              <bundle>ca_attribute_object_movement_requested_by</bundle>
-            </placement>
-            <placement code="ca_attribute_object_movement_authorized_by">
-              <bundle>ca_attribute_object_movement_authorized_by</bundle>
-            </placement>
-            <placement code="event_datetime">
-              <bundle>event_datetime</bundle>
-            </placement>
-            <placement code="ca_attribute_object_movement_executed_by">
-              <bundle>ca_attribute_object_movement_executed_by</bundle>
-            </placement>
-            <placement code="ca_attribute_object_movement_notes">
-              <bundle>ca_attribute_object_movement_notes</bundle>
-            </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_events">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_type">event</setting>
-                <setting name="label">Related events</setting>
-              </settings>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
   </userInterfaces>
   <relationshipTypes>
-    <relationshipTable name="ca_object_events_x_storage_locations">
-      <types>
-        <type code="is_destination" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>has as destination</typename>
-              <typename_reverse>is destination</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-      </types>
-    </relationshipTable>
     <relationshipTable name="ca_representation_annotations_x_objects">
       <types>
         <type code="depicts" default="1">

@@ -1284,7 +1284,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Indeterminate" enabled="1" default="0">
+            <item idno="Indeterminate1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Indeterminate/Other</name_singular>
@@ -1318,7 +1318,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Indeterminate" enabled="1" default="0">
+            <item idno="Indeterminate2" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Indeterminate/Other</name_singular>
@@ -1344,7 +1344,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Indeterminate" enabled="1" default="0">
+            <item idno="Indeterminate3" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Indeterminate/Other</name_singular>
@@ -1370,7 +1370,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Indeterminate" enabled="1" default="0">
+            <item idno="Indeterminate4" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Indeterminate/Other</name_singular>
@@ -1388,7 +1388,7 @@
             </label>
           </labels>
           <items>
-            <item idno="Indeterminate" enabled="1" default="0">
+            <item idno="Indeterminate5" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Indeterminate/Other</name_singular>
@@ -2298,7 +2298,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="equipment" enabled="1" default="0">
+                <item idno="equipment1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Equipment</name_singular>
@@ -2326,7 +2326,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="equipment" enabled="1" default="0">
+                <item idno="equipment2" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Equipment</name_singular>
@@ -2565,7 +2565,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2602,7 +2602,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified2" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2639,7 +2639,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified3" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2685,7 +2685,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified4" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2740,7 +2740,7 @@
                   </labels>
                 </item>
 
-                <item idno="ostrich" enabled="1" default="0">
+                <item idno="ostrich1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>ostrich</name_singular>
@@ -2785,7 +2785,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified5" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2804,7 +2804,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified6" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2823,7 +2823,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified7" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2861,7 +2861,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="seal" enabled="1" default="0">
+                <item idno="seal1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>seal</name_singular>
@@ -2870,7 +2870,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified8" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2889,7 +2889,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified9" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2927,7 +2927,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified10" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -2965,7 +2965,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="whale" enabled="1" default="0">
+                <item idno="whale1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>whale</name_singular>
@@ -2974,7 +2974,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified11" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3030,7 +3030,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified12" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3085,7 +3085,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified13" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3159,7 +3159,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified14" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3187,7 +3187,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified15" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3206,7 +3206,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified16" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3234,7 +3234,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified17" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3253,7 +3253,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified18" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3281,7 +3281,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified19" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3300,7 +3300,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified20" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3319,7 +3319,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified21" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3338,7 +3338,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified22" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3357,7 +3357,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified23" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3422,7 +3422,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified24" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3451,7 +3451,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="botanical" enabled="1" default="0">
+                <item idno="botanical1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>botanical</name_singular>
@@ -3460,7 +3460,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified25" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3479,7 +3479,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified26" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3498,7 +3498,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified27" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3544,7 +3544,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified28" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3563,7 +3563,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="mineral" enabled="1" default="0">
+                <item idno="mineral1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>mineral</name_singular>
@@ -3646,7 +3646,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified29" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3682,7 +3682,7 @@
                   </labels>
                 </item>
 
-                <item idno="yucca" enabled="1" default="0">
+                <item idno="yucca1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>yucca</name_singular>
@@ -3719,7 +3719,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified30" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3747,7 +3747,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified31" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3766,7 +3766,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="silk" enabled="1" default="0">
+                <item idno="silk1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>silk</name_singular>
@@ -3775,7 +3775,7 @@
                   </labels>
                 </item>
 
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified32" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3794,7 +3794,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified33" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -3851,7 +3851,7 @@
               </labels>
             </item>
 
-            <item idno="unidentified" enabled="1" default="0">
+            <item idno="unidentified34" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>unidentified</name_singular>
@@ -3897,7 +3897,7 @@
               </labels>
             </item>
 
-            <item idno="unidentified" enabled="1" default="0">
+            <item idno="unidentified35" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>unidentified</name_singular>
@@ -3997,7 +3997,7 @@
               </labels>
             </item>
 
-            <item idno="unidentified" enabled="1" default="0">
+            <item idno="unidentified36" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>unidentified</name_singular>
@@ -4043,7 +4043,7 @@
               </labels>
             </item>
 
-            <item idno="unidentified" enabled="1" default="0">
+            <item idno="unidentified37" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>unidentified</name_singular>
@@ -4071,7 +4071,7 @@
               </labels>
             </item>
 
-            <item idno="unidentified" enabled="1" default="0">
+            <item idno="unidentified38" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>unidentified</name_singular>
@@ -4144,7 +4144,7 @@
               </labels>
             </item>
 
-            <item idno="unidentified" enabled="1" default="0">
+            <item idno="unidentified39" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>unidentified</name_singular>
@@ -4152,7 +4152,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="unidentified" enabled="1" default="0">
+                <item idno="unidentified40" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>unidentified</name_singular>
@@ -4209,7 +4209,7 @@
               </labels>
             </item>
 
-            <item idno="unidentified" enabled="1" default="0">
+            <item idno="unidentified41" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>unidentified</name_singular>
@@ -4702,7 +4702,7 @@
             </label>
           </labels>
           <items>
-            <item idno="mediterranean" enabled="1" default="0">
+            <item idno="mediterranean1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Mediterranean</name_singular>
@@ -5182,7 +5182,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="united_states_of_america" enabled="1" default="0">
+                <item idno="united_states_of_america1" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>United States of America</name_singular>
@@ -5266,7 +5266,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="united_states_of_america" enabled="1" default="0">
+                <item idno="united_states_of_america2" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>United States of America</name_singular>
@@ -5305,7 +5305,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="united_states_of_america" enabled="1" default="0">
+                <item idno="united_states_of_america3" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>United States of America</name_singular>
@@ -5471,7 +5471,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="united_states_of_america" enabled="1" default="0">
+                <item idno="united_states_of_america4" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>United States of America</name_singular>
@@ -5597,7 +5597,7 @@
             </label>
           </labels>
           <items>
-            <item idno="pacific_islands" enabled="1" default="0">
+            <item idno="pacific_islands1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Pacific Islands</name_singular>
@@ -5605,7 +5605,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="united_states_of_america" enabled="1" default="0">
+                <item idno="united_states_of_america5" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>United States of America</name_singular>
@@ -5676,7 +5676,7 @@
           </items>
         </item>
 
-        <item idno="middle_east" enabled="1" default="0">
+        <item idno="middle_east1" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Middle East</name_singular>
@@ -5704,7 +5704,7 @@
           </items>
         </item>
 
-        <item idno="pacific_islands" enabled="1" default="0">
+        <item idno="pacific_islands2" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Pacific Islands</name_singular>
