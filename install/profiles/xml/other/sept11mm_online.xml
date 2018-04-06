@@ -1354,14 +1354,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="caption" datatype="Text">
@@ -2548,7 +2540,7 @@
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
             </placement>  
-            <placement code="ca_events">
+            <placement code="ca_exh">
               <bundle>ca_occurrences</bundle>
               <settings>
                 <setting name="restrict_to_type">exhibition_area</setting>
@@ -2664,7 +2656,7 @@
                 <setting name="label" locale="en_US">Employer</setting>
               </settings>
             </placement>  
-            <placement code="ca_places">
+            <placement code="ca_floor">
               <bundle>ca_places</bundle>
               <settings>
                 <setting name="restrict_to_type">floor</setting>
@@ -2677,7 +2669,7 @@
             <placement code="ca_places">
               <bundle>ca_places</bundle>
             </placement>
-            <placement code="ca_entities">
+            <placement code="ca_entities1">
               <bundle>ca_entities</bundle>
             </placement>            
             <placement code="ca_events">

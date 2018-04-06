@@ -3989,7 +3989,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="negative" enabled="1" default="0">
+            <item idno="negative1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Negative</name_singular>
@@ -4047,7 +4047,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="print" enabled="1" default="0">
+            <item idno="print1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Print</name_singular>
@@ -4116,7 +4116,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="4800" enabled="1" default="0">
+                        <item idno="4800_1" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>4800'</name_singular>
@@ -4134,7 +4134,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="4800" enabled="1" default="0">
+                        <item idno="4800_2" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>4800'</name_singular>
@@ -4152,7 +4152,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="4800" enabled="1" default="0">
+                        <item idno="4800_3" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>4800'</name_singular>
@@ -4170,7 +4170,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="4800" enabled="1" default="0">
+                        <item idno="4800_4" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>4800'</name_singular>
@@ -4188,7 +4188,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="4800" enabled="1" default="0">
+                        <item idno="4800_5" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>4800'</name_singular>
@@ -4206,7 +4206,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="4800" enabled="1" default="0">
+                        <item idno="4800_7" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>4800'</name_singular>
@@ -4292,7 +4292,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min1" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4300,7 +4300,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min1" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4308,7 +4308,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min1" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4316,7 +4316,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min1" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4324,7 +4324,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min1" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4332,7 +4332,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min1" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4350,7 +4350,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min2" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4358,7 +4358,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min2" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4366,7 +4366,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min2" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4374,7 +4374,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min2" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4382,7 +4382,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min2" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4390,7 +4390,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min2" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4408,7 +4408,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min3" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4416,7 +4416,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min3" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4424,7 +4424,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min3" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4432,7 +4432,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min3" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4440,7 +4440,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min3" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4448,7 +4448,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min3" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4466,7 +4466,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min4" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4474,7 +4474,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min4" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4482,7 +4482,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min4" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4490,7 +4490,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min4" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4498,7 +4498,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min4" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4506,7 +4506,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min4" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4524,7 +4524,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min5" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4532,7 +4532,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min5" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4540,7 +4540,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min5" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4548,7 +4548,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min5" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4556,7 +4556,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min5" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4564,7 +4564,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min5" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4582,7 +4582,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min6" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4590,7 +4590,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min6" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4598,7 +4598,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min6" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4606,7 +4606,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min6" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4614,7 +4614,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min6" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4622,7 +4622,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min6" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4640,7 +4640,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min7" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4648,7 +4648,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min7" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4656,7 +4656,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min7" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4664,7 +4664,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min7" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4672,7 +4672,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min7" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4680,7 +4680,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min7" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4698,7 +4698,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min8" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4706,7 +4706,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min8" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4714,7 +4714,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min8" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4722,7 +4722,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min8" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4730,7 +4730,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min8" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4738,7 +4738,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min8" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4756,7 +4756,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min9" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4764,7 +4764,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min9" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4772,7 +4772,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                        <item idno="30_min9" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4780,7 +4780,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                        <item idno="60_min9" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4788,7 +4788,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                        <item idno="90_min9" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4796,7 +4796,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                        <item idno="120_min9" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4814,7 +4814,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                        <item idno="10_min10" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4822,7 +4822,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                        <item idno="20_min10" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4830,7 +4830,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                      <item idno="30_min10" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4838,7 +4838,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                      <item idno="60_min10" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4846,7 +4846,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                      <item idno="90_min10" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4854,7 +4854,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                      <item idno="120_min10" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4872,7 +4872,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                      <item idno="10_min11" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4880,7 +4880,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                      <item idno="20_min11" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4888,7 +4888,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                      <item idno="30_min11" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4896,7 +4896,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                      <item idno="60_min11" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4904,7 +4904,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                      <item idno="90_min11" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4912,7 +4912,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                      <item idno="120_min11" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -4930,7 +4930,7 @@
                         </label>
                     </labels>
                     <items>
-                        <item idno="10_min" enabled="1" default="0">
+                      <item idno="10_min12" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>10 min.</name_singular>
@@ -4938,7 +4938,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="20_min" enabled="1" default="0">
+                      <item idno="20_min12" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>20 min.</name_singular>
@@ -4946,7 +4946,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="30_min" enabled="1" default="0">
+                      <item idno="30_min12" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>30 min.</name_singular>
@@ -4954,7 +4954,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="60_min" enabled="1" default="0">
+                      <item idno="60_min12" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>60 min.</name_singular>
@@ -4962,7 +4962,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="90_min" enabled="1" default="0">
+                      <item idno="90_min12" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>90 min.</name_singular>
@@ -4970,7 +4970,7 @@
                                 </label>
                             </labels>
                         </item>
-                        <item idno="120_min" enabled="1" default="0">
+                      <item idno="120_min12" enabled="1" default="0">
                             <labels>
                                 <label locale="en_US" preferred="1">
                                     <name_singular>120 min.</name_singular>
@@ -5057,7 +5057,7 @@
           </label>
         </labels>
         <items>
-          <item idno="600" enabled="1" default="0">
+          <item idno="600_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>600'</name_singular>
@@ -5065,7 +5065,7 @@
               </label>
             </labels>
           </item>
-          <item idno="900" enabled="1" default="0">
+          <item idno="900_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>900'</name_singular>
@@ -5073,7 +5073,7 @@
               </label>
             </labels>
           </item>
-          <item idno="1200" enabled="1" default="0">
+          <item idno="1200_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>1200'</name_singular>
@@ -5081,7 +5081,7 @@
               </label>
             </labels>
           </item>
-          <item idno="1800" enabled="1" default="0">
+          <item idno="1800_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>1800'</name_singular>
@@ -5089,7 +5089,7 @@
               </label>
             </labels>
           </item>
-          <item idno="2400" enabled="1" default="0">
+          <item idno="2400_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>2400'</name_singular>
@@ -5107,7 +5107,7 @@
           </label>
         </labels>
         <items>
-          <item idno="600" enabled="1" default="0">
+          <item idno="600_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>600'</name_singular>
@@ -5115,7 +5115,7 @@
               </label>
             </labels>
           </item>
-          <item idno="900" enabled="1" default="0">
+          <item idno="900_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>900'</name_singular>
@@ -5123,7 +5123,7 @@
               </label>
             </labels>
           </item>
-          <item idno="1200" enabled="1" default="0">
+          <item idno="1200_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>1200'</name_singular>
@@ -5131,7 +5131,7 @@
               </label>
             </labels>
           </item>
-          <item idno="1800" enabled="1" default="0">
+          <item idno="1800_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>1800'</name_singular>
@@ -5139,7 +5139,7 @@
               </label>
             </labels>
           </item>
-          <item idno="2400" enabled="1" default="0">
+          <item idno="2400_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>2400'</name_singular>
@@ -5157,7 +5157,7 @@
           </label>
         </labels>
         <items>
-          <item idno="600" enabled="1" default="0">
+          <item idno="600_3" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>600'</name_singular>
@@ -5165,7 +5165,7 @@
               </label>
             </labels>
           </item>
-          <item idno="900" enabled="1" default="0">
+          <item idno="900_3" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>900'</name_singular>
@@ -5173,7 +5173,7 @@
               </label>
             </labels>
           </item>
-          <item idno="1200" enabled="1" default="0">
+          <item idno="1200_3" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>1200'</name_singular>
@@ -5181,7 +5181,7 @@
               </label>
             </labels>
           </item>
-          <item idno="1800" enabled="1" default="0">
+          <item idno="1800_3" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>1800'</name_singular>
@@ -5189,7 +5189,7 @@
               </label>
             </labels>
           </item>
-          <item idno="2400" enabled="1" default="0">
+          <item idno="2400_3" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>2400'</name_singular>
@@ -5265,7 +5265,7 @@
           </label>
         </labels>
         <items>
-          <item idno="C10" enabled="1" default="0">
+          <item idno="C10_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>C10</name_singular>
@@ -5273,7 +5273,7 @@
               </label>
             </labels>
           </item>
-          <item idno="C20" enabled="1" default="0">
+          <item idno="C20_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>C20</name_singular>
@@ -5281,7 +5281,7 @@
               </label>
             </labels>
           </item>
-          <item idno="C30" enabled="1" default="0">
+          <item idno="C30_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>C30</name_singular>
@@ -5289,7 +5289,7 @@
               </label>
             </labels>
           </item>
-          <item idno="C60" enabled="1" default="0">
+          <item idno="C60_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>C60</name_singular>
@@ -5297,7 +5297,7 @@
               </label>
             </labels>
           </item>
-          <item idno="C90" enabled="1" default="0">
+          <item idno="C90_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>C90</name_singular>
@@ -5305,7 +5305,7 @@
               </label>
             </labels>
           </item>
-          <item idno="C120" enabled="1" default="0">
+          <item idno="C120_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>C120</name_singular>
@@ -5357,7 +5357,7 @@
           </label>
         </labels>
         <items>
-          <item idno="12in" enabled="1" default="0">
+          <item idno="12in_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>12 in.</name_singular>
@@ -5365,7 +5365,7 @@
               </label>
             </labels>
           </item>
-          <item idno="10in" enabled="1" default="0">
+          <item idno="10in_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>10 in.</name_singular>
@@ -5373,7 +5373,7 @@
               </label>
             </labels>
           </item>
-          <item idno="7in" enabled="1" default="0">
+          <item idno="7in_1" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>7 in.</name_singular>
@@ -5391,7 +5391,7 @@
           </label>
         </labels>
         <items>
-          <item idno="12in" enabled="1" default="0">
+          <item idno="12in_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>12 in.</name_singular>
@@ -5399,7 +5399,7 @@
               </label>
             </labels>
           </item>
-          <item idno="10in" enabled="1" default="0">
+          <item idno="10in_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>10 in.</name_singular>
@@ -5407,7 +5407,7 @@
               </label>
             </labels>
           </item>
-          <item idno="7in" enabled="1" default="0">
+          <item idno="7in_2" enabled="1" default="0">
             <labels>
               <label locale="en_US" preferred="1">
                 <name_singular>7 in.</name_singular>
@@ -6089,14 +6089,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r6">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
         <restriction code="r7">
           <table>ca_entities</table>
           <settings>
@@ -6213,14 +6205,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r6">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="cfaInternalNote" datatype="Text">
@@ -6274,14 +6258,6 @@
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r6">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -12825,45 +12801,6 @@
                 <setting name="label" locale="en_US">Alternate names</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="standard_object_event_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
