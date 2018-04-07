@@ -1475,11 +1475,12 @@ class TimeExpressionParser {
 				if ($vb_was_peeked) { $this->skipToken(); }
 				$this->skipToken();
 			
+			    $vb_is_bc = false;
 				while($va_modfier_token = $this->peekToken()) {
 					switch($va_modfier_token['type']) {
 						case TEP_TOKEN_ERA:
 							if($va_modfier_token['era'] == TEP_ERA_BC) {
-								$vn_century *= -1;
+								$vb_is_bc = true;
 							}
 							$this->skipToken();
 							break;
@@ -1498,17 +1499,17 @@ class TimeExpressionParser {
 				}
 			
 				$vn_start_year = (int) ($va_matches[1] - ($va_matches[1] % 10));
+				if ($vb_is_bc) { $vn_start_year *= -1; }
 				$va_dates['start'] = array(
 					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 				$va_dates['end'] = array(
-					'month' => 12, 'day' => 31, 'year' => ($vn_start_year + 9),
+					'month' => 12, 'day' => 31, 'year' => $vb_is_bc ? ($vn_start_year - 9) : ($vn_start_year + 9),
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 			}
 		}
-
 		return $va_dates;
 	}
 	# -------------------------------------------------------------------
