@@ -1042,6 +1042,19 @@ if (!$pb_omit_editing_info) {
 		$t_placement = new ca_bundle_display_placements(null, []);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
+		
+		// add generic bundle
+		$vs_label = _t('Generic bundle');
+		$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_generic_bundle_'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
+			
+		$va_available_bundles[$vs_display]['_generic_bundle_'] = [
+			'bundle' => "{$vs_table}._generic_bundle_",
+			'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+			'description' => _t('Generic template bundle for %1', caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'))),
+			'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+			'settings' => []	
+		];
+		
 		// get intrinsic fields
 		$va_additional_settings = array(
 			'maximum_length' => array(
@@ -1661,7 +1674,9 @@ if (!$pb_omit_editing_info) {
 			);
 		}
 		
-		ksort($va_available_bundles);
+		uksort($va_available_bundles, function($a, $b) {
+			return strcasecmp(strip_tags($a), strip_tags($b));
+		});
 		$va_sorted_bundles = [];
 		foreach($va_available_bundles as $vs_k => $va_val) {
 			foreach($va_val as $vs_real_key => $va_info) {
