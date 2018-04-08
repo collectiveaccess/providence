@@ -1913,6 +1913,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				switch($va_tmp[1]) {
 					# --------------------
+					case '_generic_bundle_':
+						return _t('Generic bundle');
+						break;
+					# --------------------
 					case 'related':
 						unset($va_tmp[1]);
 						$vs_label = $this->getDisplayLabel(join('.', $va_tmp));
