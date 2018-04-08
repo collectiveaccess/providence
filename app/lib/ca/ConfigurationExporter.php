@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -345,7 +345,7 @@ final class ConfigurationExporter {
 
 			$vo_item->appendChild($vo_labels);
 			$va_settings = $qr_items->get('settings', ['unserialize' => true]);
-			if ($va_settings){
+			if (is_array($va_settings) && (sizeof($va_settings) > 0)){
 				$vo_settings = $this->opo_dom->createElement("settings");
 				foreach($va_settings as $vs_name => $va_setting){
 					$vo_setting = $this->opo_dom->createElement("setting",caEscapeForXML($va_setting));
@@ -639,7 +639,7 @@ final class ConfigurationExporter {
 				}
 
 				// append settings to XML tree
-				if(sizeof($va_settings)>0) {
+				if(is_array($va_settings) && (sizeof($va_settings)>0)) {
 					$vo_settings = $this->opo_dom->createElement("settings");
 					$vo_entry->appendChild($vo_settings);
 
@@ -701,7 +701,7 @@ final class ConfigurationExporter {
 						}
 
 						// append settings to XML tree
-						if(sizeof($va_settings)>0) {
+						if(is_array($va_settings) && (sizeof($va_settings)>0)) {
 							$vo_settings = $this->opo_dom->createElement("settings");
 							$vo_rule->appendChild($vo_settings);
 
@@ -808,8 +808,11 @@ final class ConfigurationExporter {
 					}
 					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes)  { $vb_include_subtypes = true; }
 				}
-				$vo_ui->setAttribute("typeRestrictions", join(",", $va_types));
-				$vo_ui->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+				
+				if(is_array($va_types) && (sizeof($va_types) > 0)) {
+					$vo_ui->setAttribute("typeRestrictions", join(",", $va_types));
+					$vo_ui->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+				}
 			}
 
 			// User and group access
@@ -921,9 +924,10 @@ final class ConfigurationExporter {
 						//$vo_type_restrictions->appendChild($vo_type_restriction);
 					}
 
-					//$vo_screen->appendChild($vo_type_restrictions);
-					$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
-					$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+					if (is_array($va_types) && (sizeof($va_types) > 0)) {
+						$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
+						$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+					}
 				}
 
 
@@ -939,8 +943,11 @@ final class ConfigurationExporter {
 						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
 
 						if (isset($va_placement['settings']['bundleTypeRestrictions']) && (is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions']) || strlen($va_type_restrictions))) {
-							if(!is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
-							$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+							if($va_type_restrictions && !is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
+							
+							if (is_array($va_type_restrictions) && (sizeof($va_type_restrictions) > 0)) {
+								$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+							}
 						}
 						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {
 							$vo_placement->setAttribute("includeSubtypes", 1);
@@ -1089,7 +1096,7 @@ final class ConfigurationExporter {
 			}
 		}
 
-		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=? ORDER BY rank, type_id",$pn_parent_id);
+		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id= ? ORDER BY rank, type_id", [$pn_parent_id]);
 		if(!$qr_types->numRows() && !$this->opn_modified_after) { return false; }
 
 		while($qr_types->nextRow()) {
@@ -1112,7 +1119,7 @@ final class ConfigurationExporter {
 			$vo_type->setAttribute("default", $qr_types->get("is_default"));
 
 			$vo_labels = $this->opo_dom->createElement("labels");
-			$qr_type_labels = $this->opo_db->query("SELECT * FROM ca_relationship_type_labels WHERE type_id=?",$qr_types->get("type_id"));
+			$qr_type_labels = $this->opo_db->query("SELECT * FROM ca_relationship_type_labels WHERE type_id = ?", [$qr_types->get("type_id")]);
 			while($qr_type_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
@@ -1158,7 +1165,7 @@ final class ConfigurationExporter {
 			// subtypes
 
 			if($vo_subtypes = $this->getRelationshipTypesForParentAsDOM($qr_types->get("type_id"), $pn_table_num)) {
-				$vo_types->appendChild($vo_subtypes);
+				$vo_type->appendChild($vo_subtypes);
 			}
 
 			$vo_types->appendChild($vo_type);
@@ -1392,7 +1399,7 @@ final class ConfigurationExporter {
 					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
 					$va_type_ids[] = $va_restriction['type_id'];
 				}
-				if (sizeof($va_type_ids)) {
+				if (is_array($va_type_ids) && (sizeof($va_type_ids) > 0)) {
 					$vo_form->setAttribute("typeRestrictions", join(",", caMakeTypeList($t_form->get('table_num'), $va_type_ids)));
 					$vo_form->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
 				}
@@ -1608,7 +1615,7 @@ final class ConfigurationExporter {
 			foreach($va_placements as $vn_placement_id => $va_placement_info) {
 				$vs_buf .= "\t\t<placement code='".preg_replace("![^A-Za-z0-9_]+!", "_", $va_placement_info['bundle_name'])."'><bundle>".$va_placement_info['bundle_name']."</bundle>\n";
 				$va_settings = caUnserializeForDatabase($va_placement_info['settings']);
-				if(is_array($va_settings)) {
+				if(is_array($va_settings) && (sizeof($va_settings) > 0)) {
 					$vs_buf .= "<settings>\n";
 					foreach($va_settings as $vs_setting => $vm_value) {
 						switch($vs_setting) {
