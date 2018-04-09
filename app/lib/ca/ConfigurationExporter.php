@@ -314,6 +314,11 @@ final class ConfigurationExporter {
 			$vo_item->setAttribute("idno", $vs_idno);
 			$vo_item->setAttribute("enabled", $qr_items->get("is_enabled"));
 			$vo_item->setAttribute("default", $qr_items->get("is_default"));
+								
+			if ($vs_color = $qr_items->get('color')) {
+				$vo_item->setAttribute("color", $vs_color);
+			}
+			
 			if(is_numeric($vn_value = $qr_items->get("item_value"))) {
 				$vo_item->setAttribute("value", $vn_value);
 			}
@@ -762,6 +767,10 @@ final class ConfigurationExporter {
 			}
 
 			$vo_ui->setAttribute("type", $vs_type);
+			
+			if ($vs_color = $qr_uis->get('color')) {
+				$vo_ui->setAttribute("color", $vs_color);
+			}
 
 			// labels
 			$vo_labels = $this->opo_dom->createElement("labels");
@@ -875,6 +884,10 @@ final class ConfigurationExporter {
 				}
 
 				$vo_screen->setAttribute("default", $qr_screens->get("is_default"));
+							
+				if ($vs_color = $qr_screens->get('color')) {
+					$vo_screen->setAttribute("color", $vs_color);
+				}
 
 				$vo_labels = $this->opo_dom->createElement("labels");
 				$qr_screen_labels = $this->opo_db->query("SELECT * FROM ca_editor_ui_screen_labels WHERE screen_id=?",$qr_screens->get("screen_id"));
