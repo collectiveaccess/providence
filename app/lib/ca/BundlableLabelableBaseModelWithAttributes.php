@@ -835,7 +835,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function checkForDupeLabel($pn_locale_id, $pa_label_values, $pb_preferred_only=true) {
 		$o_db = $this->getDb();
 		$t_label = $this->getLabelTableInstance();
-		unset($pa_label_values['displayname']);
+		//unset($pa_label_values['displayname']);
 		$va_wheres = array();
 		foreach($pa_label_values as $vs_field => $vs_value) {
 			$va_wheres[] = "(l.{$vs_field} = ?)";
@@ -1926,6 +1926,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$vs_suffix = $vs_suffix_string;
 				}
 				switch($va_tmp[1]) {
+					# --------------------
+					case '_generic_bundle_':
+						return _t('Generic bundle');
+						break;
 					# --------------------
 					case 'related':
 						unset($va_tmp[1]);
@@ -3624,6 +3628,8 @@ if ($this->getProperty('LABEL_TABLE_NAME')) {
 		$vb_check_for_dupe_labels = $this->_CONFIG->get('allow_duplicate_labels_for_'.$this->tableName()) ? false : true;
 		$vb_error_inserting_pref_label = false;
 		if (is_array($va_fields_by_type['preferred_label'])) {
+		    $vs_label_must_be_in_list = $this->_CONFIG->get('preferred_label_for_'.$this->tableName().'_must_be_in_list');
+		    
 			foreach($va_fields_by_type['preferred_label'] as $vs_placement_code => $vs_f) {
 
 if (!$vb_batch) {	
@@ -3637,6 +3643,11 @@ if (!$vb_batch) {
 								if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], true))) {
 									if ($vb_check_for_dupe_labels && $this->checkForDupeLabel($vn_label_locale_id, $va_label_values)) {
 										$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
+										$po_request->addActionErrors($this->errors(), 'preferred_labels');
+										continue;
+									}
+									if ($vs_label_must_be_in_list && !caGetListItemIDForLabel($vs_label_must_be_in_list, $vs_label_val = $va_label_values[$this->getLabelDisplayField()])) {
+									    $this->postError(1100, _t('Value <em>%1</em> is not in <em>%2</em>', $vs_label_val, caGetListName($vs_label_must_be_in_list)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
 										$po_request->addActionErrors($this->errors(), 'preferred_labels');
 										continue;
 									}
@@ -3730,6 +3741,13 @@ if (!$vb_batch) {
 								$vb_error_inserting_pref_label = true;
 								continue;
 							}
+							if ($vs_label_must_be_in_list && !caGetListItemIDForLabel($vs_label_must_be_in_list, $vs_label_val = $va_label_values[$this->getLabelDisplayField()])) {
+                                $this->postError(1100, _t('Value <em>%1</em> is not in <em>%2</em>', $vs_label_val, caGetListName($vs_label_must_be_in_list)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
+                                $po_request->addActionErrors($this->errors(), 'preferred_labels');
+                                $vb_error_inserting_pref_label = true;
+                                continue;
+                            }
+                            
 							$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_new_'.$vn_c, pInteger);
 							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
 							if ($this->numErrors()) {

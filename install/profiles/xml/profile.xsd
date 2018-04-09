@@ -62,6 +62,14 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="colorType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Fa-f0-9]+"/>
+      <xs:minLength value="6"/>
+      <xs:maxLength value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="bundleType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[A-Za-z\.0-9_]+"/>
@@ -306,6 +314,7 @@
     <xs:attribute name="value" type="xs:string" use="optional"/>
     <xs:attribute name="type" type="codeType" use="optional"/>
     <xs:attribute name="deleted" type="booleanType" use="optional"/>
+    <xs:attribute name="color" type="colorType" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="metadataElement">
@@ -459,6 +468,7 @@
           <xs:attribute name="deleted" type="booleanType" use="optional"/>
           <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
           <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
+          <xs:attribute name="color" type="colorType" use="optional"/>
         </xs:complexType>
 
         <!-- placement codes must be unique inside a screen -->
@@ -848,6 +858,9 @@
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
                   <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
                   <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
+				  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
+				  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
+                  <xs:attribute name="color" type="colorType" use="optional"/>
                 </xs:complexType>
 
                 <!-- ui screen idnos must be unique inside a UI -->

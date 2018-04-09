@@ -650,6 +650,7 @@ class Installer {
 			$vs_rank = self::getAttribute($vo_item, "rank");
 			$vn_enabled = self::getAttribute($vo_item, "enabled");
 			$vn_default = self::getAttribute($vo_item, "default");
+			$vs_color = self::getAttribute($vo_item, "color");
 
 			if (!isset($vs_item_value) || !strlen(trim($vs_item_value))) {
 				$vs_item_value = $vs_item_idno;
@@ -675,10 +676,10 @@ class Installer {
 					$t_item->delete();
 					continue;
 				}
-				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $vs_item_idno));
-				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
@@ -978,6 +979,7 @@ class Installer {
 			$t_ui->set('is_system_ui', 1);
 			$t_ui->set('editor_code', $vs_ui_code);
 			$t_ui->set('editor_type', $vn_type);
+			if ($vs_color = self::getAttribute($vo_ui, "color")) { $t_ui->set('color', $vs_color); }
 
 			if($t_ui->getPrimaryKey()) {
 				$t_ui->update();
@@ -1083,6 +1085,7 @@ class Installer {
 				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
+				if ($vs_color = self::getAttribute($vo_screen, "color")) { $t_ui_screens->set('color', $vs_color); }
 
 				if($t_ui_screens->getPrimaryKey()) {
 					$t_ui_screens->update();

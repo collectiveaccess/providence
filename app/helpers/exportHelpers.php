@@ -427,7 +427,7 @@
 				//
 				// PDF output
 				//
-				caExportViewAsPDF($o_view, $va_template_info, caGetOption('filename', $va_template_info, 'export_results.pdf'), []);
+				caExportViewAsPDF($o_view, $va_template_info, ($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results.pdf'), []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
 		
