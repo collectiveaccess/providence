@@ -155,6 +155,38 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch list name for list with specified list_id
+	 *
+	 * @param mixed $pm_list_code_or_id List code or numeric list_id
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+     *
+	 * @return string The preferred label for the list, or null if no list exists
+	 */
+	$g_ca_get_list_name_cache = [];
+	function caGetListName($pm_list_code_or_id, $pa_options=null) {
+		global $g_ca_get_list_name_cache;
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_code_or_id);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_ca_get_list_name_cache[$vs_cache_key])) { return $g_ca_get_list_name_cache[$vs_cache_key]; }
+		}
+		
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		
+		if (is_numeric($pm_list_code_or_id)) {
+		    if (!$t_list->load($pm_list_code_or_id)) { return null; }
+		} else {
+		    if (!($t_list = ca_lists::find(['list_code' => $pm_list_code_or_id], ['returnAs' => 'firstModelInstance']))) { return null; }
+		}
+		
+		return $g_ca_get_list_name_cache[$vs_cache_key] = $t_list->get('ca_lists.preferred_labels.name');
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch idno for item with specified item_id in list
 	 *
 	 * @param int $pn_item_id item_id to get idno for
