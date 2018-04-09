@@ -1004,9 +1004,46 @@ if (!$pb_omit_editing_info) {
 		$va_available_bundles = [];
 		
 		$t_placement = new ca_bundle_display_placements(null, []);
+		
+		
+		// add generic bundle
+		$vs_label = _t('Generic bundle');
+		$vs_bundle = "{$vs_table}._generic_bundle_";
+		$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}__generic_bundle_'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
+		
+		$va_additional_settings = [
+			'format' => [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 35, 'height' => 5,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Display format'),
+				'description' => _t('Template used to format output.'),
+				'helpText' => ''
+			]
+		];
+		$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
+		$va_available_bundles[$vs_display][$vs_bundle] = [
+			'bundle' => $vs_bundle,
+			'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+			'description' => _t('Generic template bundle for %1', caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'))),
+			'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+			'settings' => $va_additional_settings
+		];
+		
+		if ($vb_show_tooltips) {
+			TooltipManager::add(
+				"#bundleDisplayEditorBundle_".str_replace('.', '_', $vs_bundle),
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, _t('Use this generic %1 bundle to display %1 templates not specific to a single metadata element.', $t_instance->getProperty('NAME_SINGULAR'), $t_instance->getProperty('NAME_SINGULAR')))
+			);
+		}
+		
 		// get intrinsic fields
+		$t_placement = new ca_bundle_display_placements(null, []);
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$va_additional_settings = array(
 			'maximum_length' => array(
 				'formatType' => FT_NUMBER,
@@ -1625,7 +1662,9 @@ if (!$pb_omit_editing_info) {
 			);
 		}
 		
-		ksort($va_available_bundles);
+		uksort($va_available_bundles, function($a, $b) {
+			return strcasecmp(strip_tags($a), strip_tags($b));
+		});
 		$va_sorted_bundles = [];
 		foreach($va_available_bundles as $vs_k => $va_val) {
 			foreach($va_val as $vs_real_key => $va_info) {

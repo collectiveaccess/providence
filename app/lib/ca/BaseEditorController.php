@@ -816,7 +816,8 @@ class BaseEditorController extends ActionController {
 			$vs_content = $this->render($va_template_info['path']);
 
 			$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
-			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+			
+			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
 
 			$vb_printed_properly = true;
 
@@ -1262,7 +1263,12 @@ class BaseEditorController extends ActionController {
 				if ($vn_item_id == $vn_root_id) { continue; } // skip root
 				$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 			}
+			
+			$va_limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
+			
 			foreach($va_hier as $vn_item_id => $va_item) {
+			    if (is_array($va_limit_to_types) && sizeof($va_limit_to_types) && !in_array($va_item['idno'], $va_limit_to_types)) { continue; }
+			    
 				if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
 				// does this item have sub-items?
@@ -1303,7 +1309,7 @@ class BaseEditorController extends ActionController {
 			}
 			ksort($va_types);
 		}
-
+			
 		$va_types_proc = array();
 		foreach($va_types as $vs_sort_key => $va_items) {
 			foreach($va_items as $vn_i => $va_item) {
@@ -1362,9 +1368,13 @@ class BaseEditorController extends ActionController {
 		ksort($va_subtypes);
 		$va_subtypes_proc = array();
 
+        $va_limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
+        
 		foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
+				if (is_array($va_limit_to_types) && sizeof($va_limit_to_types) && !in_array($va_item['idno'], $va_limit_to_types)) { continue; }
+			    
 				$va_subtypes_proc[$vn_item_id] = $va_item;
 			}
 		}

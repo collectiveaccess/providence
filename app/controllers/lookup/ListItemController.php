@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,7 +56,7 @@
 							$va_tmp[] = "'".preg_replace("![\"']+!", "", $vs_list)."'";
 						}
 					}
-					$pa_options['filters'][] = array("ca_lists.list_code", "IN", "(".join(",", $va_tmp).")");
+					$pa_options['filters'][] = array("ca_list_items.list_id", "IN", join(",", $va_tmp));
 				}
 			}
 			return parent::Get($pa_additional_query_params, $pa_options);

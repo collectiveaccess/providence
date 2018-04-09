@@ -2363,7 +2363,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						
 						if ($vb_remove_labels) {
-							$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
+							$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__, ['locales' => [$vn_locale_id]]);
 							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove preferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 								if ($vs_import_error_policy == 'stop') {
@@ -2383,7 +2383,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ($va_mapping_items[$vn_nonpreferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
 						}
 						if ($vb_remove_labels) {
-							$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+							$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__, ['locales' => [$vn_locale_id]]);
 							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 								if ($vs_import_error_policy == 'stop') {

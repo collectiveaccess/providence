@@ -344,11 +344,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_validation_format
 	 * @param int $pn_status
 	 * @param int $pn_access
-	 * @param int $pn_rank
+	 * @param int $pn_rank 
+	 * @param string $ps_color Color of list item, in hex without leading "#" (ex. FF0000). [Default is null]
 	 *
 	 * @return bool|ca_list_items
 	 */
-	public function addItem($ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
+	public function addItem($ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null, $ps_color=null) {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return null; }
 		
 		$t_item = new ca_list_items();
@@ -366,6 +367,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_item->set('validation_format', $ps_validation_format);
 		$t_item->set('status', $pn_status);
 		$t_item->set('access', $pn_access);
+		$t_item->set('color', $ps_color);
 		if (!is_null($pn_rank)) { $t_item->set('rank', $pn_rank); }
 		
 		$vn_item_id = $t_item->insert();
@@ -392,10 +394,11 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_status
 	 * @param int $pn_access
 	 * @param int $pn_rank
+	 * @param string $ps_color Color of list item, in hex without leading "#" (ex. FF0000). [Default is null]
 	 *
 	 * @return bool|ca_list_items
 	 */
-	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
+	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null, $ps_color=null) {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return false; }
 
 		$t_item = new ca_list_items($pn_item_id);
@@ -415,6 +418,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_item->set('validation_format', $ps_validation_format);
 		$t_item->set('status', $pn_status);
 		$t_item->set('access', $pn_access);
+		$t_item->set('color', $ps_color);
 		if (!is_null($pn_rank)) { $t_item->set('rank', $pn_rank); }
 
 		$t_item->update();

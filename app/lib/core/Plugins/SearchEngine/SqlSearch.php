@@ -2406,7 +2406,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_values = array();
 				foreach($va_tmp as $vs_tmp) {
 					if ($vs_tmp == 'NULL') { continue; }
-					$va_values[] = (int)$vs_tmp;
+					$va_values[] = (int)preg_replace("![^\d]+!", "", $vs_tmp);
 				}
 				return "(".join(",", $va_values).")";
 				break;

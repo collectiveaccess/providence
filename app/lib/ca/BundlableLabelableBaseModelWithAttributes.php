@@ -835,7 +835,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function checkForDupeLabel($pn_locale_id, $pa_label_values, $pb_preferred_only=true) {
 		$o_db = $this->getDb();
 		$t_label = $this->getLabelTableInstance();
-		unset($pa_label_values['displayname']);
+		//unset($pa_label_values['displayname']);
 		$va_wheres = array();
 		foreach($pa_label_values as $vs_field => $vs_value) {
 			$va_wheres[] = "(l.{$vs_field} = ?)";
@@ -1926,6 +1926,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$vs_suffix = $vs_suffix_string;
 				}
 				switch($va_tmp[1]) {
+					# --------------------
+					case '_generic_bundle_':
+						return _t('Generic bundle');
+						break;
 					# --------------------
 					case 'related':
 						unset($va_tmp[1]);

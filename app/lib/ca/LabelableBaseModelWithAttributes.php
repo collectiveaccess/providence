@@ -309,6 +309,9 @@
 		 * The $pn_mode parameter can be used to restrict removal to preferred or non-preferred if needed.
 		 *
 		 * @param int $pn_mode Set to __CA_LABEL_TYPE_PREFERRED__ or __CA_LABEL_TYPE_NONPREFERRED__ to restrict removal. Default is __CA_LABEL_TYPE_ANY__ (no restriction)
+		 * @param array $pa_options Options include:
+		 *		locales = Limit removal to specific locales. Values must be valid locale ids or codes. A single locale or array of locales may be passed. [Default is null, delete all labels]
+		 *		locale = Synonym for locales.
 		 *
 		 * @return bool True on success, false on error
 		 */
@@ -320,11 +323,14 @@
  				$o_trans = $this->getTransaction();
 				$t_label->setTransaction($o_trans);
 			}
- 			
+			
+			$va_locale_ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, caGetOption(['locales', 'locale'], $pa_options, null, ['castTo' => 'array']));
+ 	
  			$vb_ret = true;
  			$va_labels = $this->getLabels();
  			foreach($va_labels as $vn_id => $va_labels_by_locale) {
  				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
+ 					if (is_array($va_locale_ids) && sizeof($va_locale_ids) && !in_array($vn_locale_id, $va_locale_ids)) { continue; }
  					foreach($va_labels as $vn_i => $va_label) {
  						if (isset($va_label['is_preferred'])) {
 							switch($pn_mode) {
