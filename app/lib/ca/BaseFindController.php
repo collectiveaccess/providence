@@ -440,7 +440,7 @@
 				$vs_content .= $this->render("pdfEnd.php");
 				
 				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'labels.pdf')));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
 
 				$vb_printed_properly = true;
 				
@@ -573,9 +573,11 @@
 					$vs_content = $this->render($va_template_info['path']);
 					
 					$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
-					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
+					
+					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results.pdf')));
 					exit;
 				} catch (Exception $e) {
+					die($e->getMessage());
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
 				return;			
