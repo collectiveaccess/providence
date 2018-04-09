@@ -1263,7 +1263,12 @@ class BaseEditorController extends ActionController {
 				if ($vn_item_id == $vn_root_id) { continue; } // skip root
 				$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 			}
+			
+			$va_limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
+			
 			foreach($va_hier as $vn_item_id => $va_item) {
+			    if (is_array($va_limit_to_types) && sizeof($va_limit_to_types) && !in_array($va_item['idno'], $va_limit_to_types)) { continue; }
+			    
 				if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
 				// does this item have sub-items?
@@ -1304,7 +1309,7 @@ class BaseEditorController extends ActionController {
 			}
 			ksort($va_types);
 		}
-
+			
 		$va_types_proc = array();
 		foreach($va_types as $vs_sort_key => $va_items) {
 			foreach($va_items as $vn_i => $va_item) {
@@ -1363,9 +1368,13 @@ class BaseEditorController extends ActionController {
 		ksort($va_subtypes);
 		$va_subtypes_proc = array();
 
+        $va_limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
+        
 		foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
+				if (is_array($va_limit_to_types) && sizeof($va_limit_to_types) && !in_array($va_item['idno'], $va_limit_to_types)) { continue; }
+			    
 				$va_subtypes_proc[$vn_item_id] = $va_item;
 			}
 		}
