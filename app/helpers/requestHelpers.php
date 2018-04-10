@@ -157,7 +157,8 @@ function caInstallVendorLibraries() {
 		
 		$output = [];
 		putenv("COMPOSER_HOME=".__CA_BASE_DIR__."/app/tmp");
-		exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n -d='.__CA_BASE_DIR__.' install 2>&1', $output, $ret);
+		chdir(__CA_BASE_DIR__);
+		exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
 		if ($ret > 0) {
 			return ["Library installation failed: ".join("; ", $output)];
 		}

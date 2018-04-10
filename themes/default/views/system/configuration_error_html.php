@@ -32,7 +32,7 @@
 		$va_tmp = explode("/", str_replace("\\", "/", __DIR__));
 		array_pop($va_tmp); array_pop($va_tmp);
 		$vs_theme_path = join("/", $va_tmp);
-		$vs_theme_url = str_replace(__CA_BASE_DIR__, "", $vs_theme_path);
+		$vs_theme_url = str_replace(str_replace(__CA_URL_ROOT__, "", __CA_BASE_DIR__), "", $vs_theme_path);
 		
 		if (!is_array($opa_error_messages)) {
 			$opa_error_messages = self::$opa_error_messages;
