@@ -214,14 +214,21 @@ class BaseModel extends BaseObject {
 	private $DIRECT_DATETIMES = 0;
 
 	/**
-	 * local Configuration object representation
+	 * local Configuration object
 	 *
 	 * @access protected
 	 */
 	protected $_CONFIG;
 
 	/**
-	 * local Datamodel object representation
+	 * local Translation object
+	 *
+	 * @access protected
+	 */
+	protected $_TRANSLATIONS;
+
+	/**
+	 * local Datamodel object
 	 *
 	 * @access protected
 	 */
@@ -383,6 +390,7 @@ class BaseModel extends BaseObject {
 
 		$this->_CONFIG = Configuration::load();
 		$this->_DATAMODEL = Datamodel::load();
+		$this->_TRANSLATIONS = Configuration::load(__CA_CONF_DIR__."/translations.conf");
 		$this->_FILES_CLEAR = array();
 		$this->_SET_FILES = array();
 		$this->_MEDIA_VOLUMES = MediaVolumes::load();
@@ -6221,7 +6229,15 @@ class BaseModel extends BaseObject {
 	 */
 	public function getFieldInfo($field, $attribute = "") {
 		if (isset($this->FIELDS[$field])) {
+			
 			$fieldinfo = $this->FIELDS[$field];
+			
+			$translations = $this->_TRANSLATIONS->getAssoc('fields');
+			if (isset($translations[$this->tableName()][$field]) && is_array($translations[$this->tableName()][$field])) {
+			    foreach($translations[$this->tableName()][$field] as $k => $v) {
+			        $fieldinfo[$k] = $v;
+			    }
+			}
 
 			if ($attribute) {
 				return (isset($fieldinfo[$attribute])) ? $fieldinfo[$attribute] : "";
@@ -6240,6 +6256,11 @@ class BaseModel extends BaseObject {
 	public function getDisplayLabel($ps_field) {
 		$va_tmp = explode('.', $ps_field);
 		
+		$translations = $this->_TRANSLATIONS->getAssoc('fields');
+        if (isset($translations[$this->tableName()][$va_tmp[0]]) && is_array($translations[$this->tableName()][$va_tmp[0]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[0]]['LABEL'];
+        }
+		
 		if ($va_tmp[0] == 'created') {
 			return _t('Creation date/time');
 		}
@@ -6251,6 +6272,9 @@ class BaseModel extends BaseObject {
 		if ($this->hasField($va_tmp[1])) {
 			return $this->getFieldInfo($va_tmp[1], 'LABEL');	
 		}
+		if (isset($translations[$this->tableName()][$va_tmp[1]]) && is_array($translations[$this->tableName()][$va_tmp[1]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[1]]['LABEL'];
+        }
 		if ($va_tmp[1] == 'created') {
 			return _t('Creation date/time');
 		}
@@ -6267,6 +6291,11 @@ class BaseModel extends BaseObject {
 	public function getDisplayDescription($ps_field) {
 		$va_tmp = explode('.', $ps_field);
 		
+		$translations = $this->_TRANSLATIONS->getAssoc('fields');
+        if (isset($translations[$this->tableName()][$va_tmp[0]]) && is_array($translations[$this->tableName()][$va_tmp[0]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[0]]['LABEL'];
+        }
+		
 		if ($va_tmp[0] == 'created') {
 			return _t('Date and time %1 was created', $this->getProperty('NAME_SINGULAR'));
 		}
@@ -6278,6 +6307,9 @@ class BaseModel extends BaseObject {
 		if ($this->hasField($va_tmp[1])) {
 			return $this->getFieldInfo($va_tmp[1], 'DESCRIPTION');	
 		}
+		if (isset($translations[$this->tableName()][$va_tmp[1]]) && is_array($translations[$this->tableName()][$va_tmp[1]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[1]]['LABEL'];
+        }
 		if ($va_tmp[1] == 'created') {
 			return _t('Date and time %1 was created', $this->getProperty('NAME_SINGULAR'));
 		}

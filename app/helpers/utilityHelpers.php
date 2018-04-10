@@ -55,10 +55,21 @@ use Guzzle\Http\Client;
 
 MemoryCache::flush('translation');
 
+$g_translations = Configuration::load(__CA_CONF_DIR__."/translations.conf");
+
+$g_translation_strings = $g_translations->get('strings');
+$g_translation_replacements = $g_translations->get('replacements');
+foreach($g_translation_strings as $s => $sd) {
+    $g_translation_strings[strtolower($s)] = strtolower($sd);
+}
+
+
 function _t($ps_key) {
 	if(!$ps_key) { return ''; }
-	global $_;
-
+	global $_, $g_translation_strings, $g_translation_replacements;
+	
+	if (isset($g_translation_strings[$ps_key])) { return $g_translation_strings[$ps_key]; }
+	
 	if(!MemoryCache::contains($ps_key, 'translation')) {
 		if (is_array($_)) {
 			$vs_str = $ps_key;
