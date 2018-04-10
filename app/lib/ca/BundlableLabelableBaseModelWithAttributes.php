@@ -5564,6 +5564,12 @@ if (!$vb_batch) {
 				
 				$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
 
+                $vb_use_is_primary = false;
+                if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
+                    $va_selects[] = $t_item_rel->tableName().'.is_primary';
+                    $vb_use_is_primary = true;
+                }
+
 				$vs_order_by = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
 					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
@@ -5635,6 +5641,10 @@ if (!$vb_batch) {
 
 					$va_rels[$vs_v]['_key'] = $vs_key;
 					$va_rels[$vs_v]['direction'] = $vs_direction;
+					
+                    if ($vb_use_is_primary) {
+                        $va_rels_for_id[$vs_v]['is_primary'] = $qr_res->get('is_primary');
+                    }
 
 					$vn_c++;
 					if ($vb_uses_relationship_types) {
@@ -5695,6 +5705,11 @@ if (!$vb_batch) {
 
 			if ($vb_is_combo_key_relation) {
 				$va_joins = array("INNER JOIN {$vs_related_table_name} ON {$vs_related_table_name}.row_id = ".$this->primaryKey(true)." AND {$vs_related_table_name}.table_num = ".$this->tableNum());
+				if(method_exists($t_rel_item, "getLabelTableInstance") && ($t_rel_label = $t_rel_item->getLabelTableInstance())) {
+				    $vs_related_label_table_name = $t_rel_label->tableName();
+				    $vs_rel_pk = $t_rel_item->primaryKey();
+				    $va_joins[] = "INNER JOIN {$vs_related_label_table_name} ON {$vs_related_label_table_name}.{$vs_rel_pk} = {$vs_related_table_name}.{$vs_rel_pk}";
+			    }
 			} else {
 				foreach($va_path as $vs_join_table) {
 					$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
@@ -5746,6 +5761,12 @@ if (!$vb_batch) {
 			// If we're getting ca_set_items, we have to rename the intrinsic row_id field because the pk is named row_id below. Hence, this hack.
 			if($vs_related_table_name == 'ca_set_items') {
 				$va_selects[] = 'ca_set_items.row_id AS record_id';
+			}
+			
+			$vb_use_is_primary = false;
+			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
+			    $va_selects[] = $t_item_rel->tableName().'.is_primary';
+			    $vb_use_is_primary = true;
 			}
 
 			$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
@@ -5827,7 +5848,11 @@ if (!$vb_batch) {
 
 				$va_rels_for_id[$vs_v]['_key'] = $vs_key;
 				$va_rels_for_id[$vs_v]['direction'] = $vs_direction;
-
+				
+				if ($vb_use_is_primary) {
+				    $va_rels_for_id[$vs_v]['is_primary'] = $qr_res->get('is_primary');
+                }
+                
 				$vn_c++;
 				if ($vb_uses_relationship_types) {
 					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
