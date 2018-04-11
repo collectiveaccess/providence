@@ -59,10 +59,6 @@ $g_translations = Configuration::load(__CA_CONF_DIR__."/translations.conf");
 
 $g_translation_strings = $g_translations->get('strings');
 $g_translation_replacements = $g_translations->get('replacements');
-foreach($g_translation_strings as $s => $sd) {
-    $g_translation_strings[strtolower($s)] = strtolower($sd);
-}
-
 
 function _t($ps_key) {
 	if(!$ps_key) { return ''; }
@@ -86,6 +82,11 @@ function _t($ps_key) {
 				$vs_str = $_->_($ps_key);
 			}
 		}
+		
+		if(is_array($g_translation_replacements)) {
+		    $vs_str = str_replace(array_keys($g_translation_replacements), array_values($g_translation_replacements), $vs_str);
+		}
+		
 		MemoryCache::save($ps_key, $vs_str, 'translation');
 	} else {
 		$vs_str = MemoryCache::fetch($ps_key, 'translation');
