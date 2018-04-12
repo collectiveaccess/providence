@@ -17,7 +17,7 @@ if (!defined("__CA_APP_DISPLAY_NAME__")) {
 	define("__CA_APP_DISPLAY_NAME__", 'CollectiveAccess Unit Tests');
 }
 if (!defined("__CA_DB_TYPE__")) {
-	define("__CA_DB_TYPE__", 'pdo_mysql');
+	define("__CA_DB_TYPE__", 'mysqli');
 }
 
 # Include the defaults.
