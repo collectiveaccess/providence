@@ -85,18 +85,18 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 * @return bool success or not
 	 */
 	public function prepopulateFields(&$t_instance, $pa_options=null) {
-		if(!$t_instance->getPrimaryKey()) { print "exit due to no loaded row \n"; return false; }
+		if(!$t_instance->getPrimaryKey()) { return false; }
 		if($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $pa_options, null)) {
 			$this->opo_plugin_config = Configuration::load($vs_prepopulate_cfg);
 		}
 
 		if(!($this->opo_plugin_config->get('prepopulate_fields_on_save') || $this->opo_plugin_config->get('prepopulate_fields_on_load'))) {
-			print "EXIT due to no save config\n"; return false;
+			return false;
 		}
 
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
-		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { print "exit due to no rules\n";return false; }
-print_R($va_rules);
+		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
+
 		global $g_ui_locale_id;
 
 		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
@@ -113,23 +113,22 @@ print_R($va_rules);
 		// process rules
 		$va_expression_vars = array(); // we only process those if and when we need them
 		foreach($va_rules as $vs_rule_key => $va_rule) {
-			if($t_instance->tableName() != $va_rule['table']) { print "skip rule $vs_rule_key because not relevant\n"; continue; }
+			if($t_instance->tableName() != $va_rule['table']) { continue; }
 
 			// check target
 			$vs_target = $va_rule['target'];
-			if(strlen($vs_target)<1) { Debug::msg($x="[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); print $x; continue; }
+			if(strlen($vs_target)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
 
 			// check template
 			$vs_template = $va_rule['template'];
-			if(strlen($vs_template)<1) { Debug::msg($x="[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); print $x; continue; }
+			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
 
 			$vs_mode = caGetOption('mode', $va_rule, 'merge');
 
 			// respect restrictToTypes option
 			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
 				if(!in_array($t_instance->getTypeCode(), $va_rule['restrictToTypes'])) {
-					Debug::msg($x="[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$t_instance->getTypeCode()." is not in restrictToTypes");
-					print $x;
+					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$t_instance->getTypeCode()." is not in restrictToTypes");
 					continue;
 				}
 			}
@@ -143,18 +142,17 @@ print_R($va_rules);
 						$va_expression_vars[$vs_tag] = $t_instance->get($vs_tag, array('returnIdno' => true, 'delimiter' => ';'));
 					}
 				}
-				print_R($va_expression_vars);
+
 				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
-					Debug::msg($x="[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
-					print $x;
+					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
 					continue;
 				}
 			}
 
 			// evaluate template
 			$vs_value = caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), array($t_instance->getPrimaryKey()), array('path' => true));
-			Debug::msg($x="[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
-			print $x;
+			Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
+
 			// inject into target
 			$va_parts = explode('.', $vs_target);
 // intrinsic or simple (non-container) attribute
@@ -164,17 +162,13 @@ print_R($va_rules);
 					switch(strtolower($vs_mode)) {
 						case 'overwrite': // always set
 							$t_instance->set($va_parts[1], $vs_value);
-							
-							print "overwrite to $vs_value: "; print_r($va_parts);
 							break;
 						case 'addifempty':
 						default:
 							if(!$t_instance->get($va_parts[1])) {
 								$t_instance->set($va_parts[1], $vs_value);
-							print "addifempty to $vs_value: "; print_r($va_parts);
 							} else {
-								Debug::msg($x="[prepopulateFields()] rule {$vs_rule_key}: intrinsic skipped because it already has value and mode is addIfEmpty or merge");
-								print $x;
+								Debug::msg("[prepopulateFields()] rule {$vs_rule_key}: intrinsic skipped because it already has value and mode is addIfEmpty or merge");
 							}
 							break;
 					}
@@ -183,28 +177,25 @@ print_R($va_rules);
 
 					$va_attributes = $t_instance->getAttributesByElement($va_parts[1]);
 					if(sizeof($va_attributes)>1) {
-						Debug::msg($x="[prepopulateFields()] containers with multiple values are not supported");
-						print $x;
+						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
 						continue;
 					}
 
 					switch(strtolower($vs_mode)) {
 						case 'overwrite': // always replace first value we find
-							$t_instance->replaceAttribute($z=array(
+							$t_instance->replaceAttribute(array(
 								$va_parts[1] => $vs_value,
 								'locale_id' => $g_ui_locale_id
 							), $va_parts[1]);
-							print "[2] overwrite: "; print_r($z);
 							break;
 						default:
 						case 'addifempty': // only add value if none exists
 							if(!$t_instance->get($vs_target)) {
-								$t_instance->replaceAttribute($z=array(
+								$t_instance->replaceAttribute(array(
 									$va_parts[1] => $vs_value,
 									'locale_id' => $g_ui_locale_id
 								), $va_parts[1]);
 							}
-							print "[2] addifempty to $vs_target: "; print_r($z);
 							break;
 					}
 				}
@@ -225,7 +216,7 @@ print_R($va_rules);
 											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue(['idsOnly' => true]);
 										}
 									}
-print "[3] overwrite "; print_R($va_value);
+
 									$t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
 									break;
 								case 'addifempty':
@@ -243,11 +234,9 @@ print "[3] overwrite "; print_R($va_value);
 									if ($vb_update) {
 										$t_instance->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
 									}
-print "[3] addifempty "; print_R($va_value); print_R($va_parts);
 									break;
 								default:
-									Debug::msg($x="[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
-									print $x;
+									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
 									break;
 							}
 							break;
@@ -256,11 +245,9 @@ print "[3] addifempty "; print_R($va_value); print_R($va_parts);
 								$va_parts[2] => $vs_value,
 								'locale_id' => $g_ui_locale_id
 							), $va_parts[1]);
-							print "[4] ADD "; print_R($va_parts);
 							break;
 						default:
-							Debug::msg($x="[prepopulateFields()] containers with multiple values are not supported");
-							print $x;
+							Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
 							break;
 					}
 // labels
@@ -327,19 +314,16 @@ print "[3] addifempty "; print_R($va_value); print_R($va_parts);
 		$t_instance->setMode($vn_old_mode);
 
 		//$_REQUEST['form_timestamp'] = $vn_timestamp;
-		$t_instance->dump();
 
 		if($t_instance->numErrors() > 0) {
 			foreach($t_instance->getErrors() as $vs_error) {
-				Debug::msg($x="[prepopulateFields()] there was an error while updating the record: ".$vs_error);
-				print $x;
+				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
 			}
 			if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
 			return false;
 		}
 
 		if ($vb_we_set_transaction) { $t_instance->removeTransaction(true); }
-		print "DONE\n";
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
