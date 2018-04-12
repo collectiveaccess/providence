@@ -214,14 +214,21 @@ class BaseModel extends BaseObject {
 	private $DIRECT_DATETIMES = 0;
 
 	/**
-	 * local Configuration object representation
+	 * local Configuration object
 	 *
 	 * @access protected
 	 */
 	protected $_CONFIG;
 
 	/**
-	 * local Datamodel object representation
+	 * local Translation object
+	 *
+	 * @access protected
+	 */
+	protected $_TRANSLATIONS;
+
+	/**
+	 * local Datamodel object
 	 *
 	 * @access protected
 	 */
@@ -383,6 +390,7 @@ class BaseModel extends BaseObject {
 
 		$this->_CONFIG = Configuration::load();
 		$this->_DATAMODEL = Datamodel::load();
+		$this->_TRANSLATIONS = Configuration::load(__CA_CONF_DIR__."/translations.conf");
 		$this->_FILES_CLEAR = array();
 		$this->_SET_FILES = array();
 		$this->_MEDIA_VOLUMES = MediaVolumes::load();
@@ -6221,7 +6229,15 @@ class BaseModel extends BaseObject {
 	 */
 	public function getFieldInfo($field, $attribute = "") {
 		if (isset($this->FIELDS[$field])) {
+			
 			$fieldinfo = $this->FIELDS[$field];
+			
+			$translations = $this->_TRANSLATIONS->getAssoc('fields');
+			if (isset($translations[$this->tableName()][$field]) && is_array($translations[$this->tableName()][$field])) {
+			    foreach($translations[$this->tableName()][$field] as $k => $v) {
+			        $fieldinfo[$k] = $v;
+			    }
+			}
 
 			if ($attribute) {
 				return (isset($fieldinfo[$attribute])) ? $fieldinfo[$attribute] : "";
@@ -6240,6 +6256,11 @@ class BaseModel extends BaseObject {
 	public function getDisplayLabel($ps_field) {
 		$va_tmp = explode('.', $ps_field);
 		
+		$translations = $this->_TRANSLATIONS->getAssoc('fields');
+        if (isset($translations[$this->tableName()][$va_tmp[0]]) && is_array($translations[$this->tableName()][$va_tmp[0]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[0]]['LABEL'];
+        }
+		
 		if ($va_tmp[0] == 'created') {
 			return _t('Creation date/time');
 		}
@@ -6251,6 +6272,9 @@ class BaseModel extends BaseObject {
 		if ($this->hasField($va_tmp[1])) {
 			return $this->getFieldInfo($va_tmp[1], 'LABEL');	
 		}
+		if (isset($translations[$this->tableName()][$va_tmp[1]]) && is_array($translations[$this->tableName()][$va_tmp[1]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[1]]['LABEL'];
+        }
 		if ($va_tmp[1] == 'created') {
 			return _t('Creation date/time');
 		}
@@ -6267,6 +6291,11 @@ class BaseModel extends BaseObject {
 	public function getDisplayDescription($ps_field) {
 		$va_tmp = explode('.', $ps_field);
 		
+		$translations = $this->_TRANSLATIONS->getAssoc('fields');
+        if (isset($translations[$this->tableName()][$va_tmp[0]]) && is_array($translations[$this->tableName()][$va_tmp[0]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[0]]['LABEL'];
+        }
+		
 		if ($va_tmp[0] == 'created') {
 			return _t('Date and time %1 was created', $this->getProperty('NAME_SINGULAR'));
 		}
@@ -6278,6 +6307,9 @@ class BaseModel extends BaseObject {
 		if ($this->hasField($va_tmp[1])) {
 			return $this->getFieldInfo($va_tmp[1], 'DESCRIPTION');	
 		}
+		if (isset($translations[$this->tableName()][$va_tmp[1]]) && is_array($translations[$this->tableName()][$va_tmp[1]]) && isset($translations[$this->tableName()][$va_tmp[1]]['LABEL'])) {
+            return $translations[$this->tableName()][$va_tmp[1]]['LABEL'];
+        }
 		if ($va_tmp[1] == 'created') {
 			return _t('Date and time %1 was created', $this->getProperty('NAME_SINGULAR'));
 		}
@@ -7212,14 +7244,14 @@ class BaseModel extends BaseObject {
 			$vn_root_id = $pn_id;
 		
 			while($qr_hier->nextRow()) {
-				$vn_row_id = $qr_hier->get($this->primaryKey());
-				if (is_null($vn_root_id)) { $vn_root_id = $vn_row_id; }
-				
-				if ($pb_dont_include_root && ($vn_row_id == $vn_root_id)) { continue; } // skip root if desired
+			    $vn_row_id = $qr_hier->get($this->primaryKey());
 				
 				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
 				
-				if (!isset($va_parent_map[$vn_parent_id])) {
+				if(!$vn_parent_id) {
+			        $vn_cur_level = 0;
+			        $va_parent_map[$vn_row_id] = ['level' =>  1];
+				} elseif (!isset($va_parent_map[$vn_parent_id])) {
 				    $va_parent_map[$vn_parent_id] = ['level' => $vn_cur_level + 1];
 				    $vn_cur_level++;
 				} else {
@@ -7228,7 +7260,19 @@ class BaseModel extends BaseObject {
 				if (!isset($va_parent_map[$vn_row_id])) {
 					$va_parent_map[$vn_row_id] = ['level' => $vn_cur_level + 1];
 				}
+			}
+			
+			$qr_hier->seek(0);
+			while($qr_hier->nextRow()) {
+				$vn_row_id = $qr_hier->get($this->primaryKey());
+				if (is_null($vn_root_id)) { $vn_root_id = $vn_row_id; }
 				
+				if ($pb_dont_include_root && ($vn_row_id == $vn_root_id)) { continue; } // skip root if desired
+				
+				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
+				
+                $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
+                
 				$vn_r = $qr_hier->get($vs_hier_right_fld);
 				$vn_c = sizeof($va_indent_stack);
 				
@@ -7249,7 +7293,7 @@ class BaseModel extends BaseObject {
 
 				}
 				$va_indent_stack[] = $vn_r;
-			}		
+			}
 			return $va_hier;
 		} else {
 			return null;
@@ -7804,7 +7848,7 @@ class BaseModel extends BaseObject {
 		$pn_id = caGetOption($vs_pk, $pa_options, null);
 		$va_hier = $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => false, 'sort' => null)));
 		
-		$va_levels = $va_ids = $va_parent_ids = array();
+		$va_levels = $va_ids = $va_parent_ids = [];
 		
 		if (!is_array($va_hier)) { return array(); }
 		foreach($va_hier as $vn_i => $va_item) {
@@ -7813,7 +7857,7 @@ class BaseModel extends BaseObject {
 			$va_parent_ids[$vn_id] = $va_item['NODE']['parent_id'];
 		}
 		
-		$va_hierarchy_data = array();
+		$va_hierarchy_data = [];
 		
 		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('indexWithIDs' => true, 'includeBlankValuesInArray' => true, 'returnAsArray'=> true)));
 		
@@ -11485,8 +11529,7 @@ $pa_options["display_form_field_tips"] = true;
 					}
 				}
 			}
-		}
-		
+		} 
 		//
 		// Convert other intrinsic list references
 		//
