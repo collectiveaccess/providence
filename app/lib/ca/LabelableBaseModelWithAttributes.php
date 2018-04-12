@@ -638,26 +638,26 @@
 					}
 				}
 				
-				if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) {
-					if (isset($pa_values['type_id']) && !is_numeric($pa_values['type_id'])) {
-						
-						$va_field_values = $pa_values['type_id'];
-						foreach($va_field_values as $vn_i => $va_field_value) {
-							$vs_op = strtolower($va_field_value[0]);
-							$vm_value = $va_field_value[1];
-							if (!$vm_value) { continue; }
-				
-							if (!is_numeric($vm_value)) {
-								if (!is_array($vm_value)) {
-								    $vm_value = [$vm_value];
-								}
-                                if ($va_types = caMakeRelationshipTypeIDList($t_instance->tableName(), $vm_value)) {
-                                    $pa_values['type_id'][$vn_i] = [$vs_op, $va_types];
-                                }
-							}
-						}
-					}
-				}
+				// if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) {
+// 					if (isset($pa_values['type_id']) && !is_numeric($pa_values['type_id'])) {
+// 						
+// 						$va_field_values = $pa_values['type_id'];
+// 						foreach($va_field_values as $vn_i => $va_field_value) {
+// 							$vs_op = strtolower($va_field_value[0]);
+// 							$vm_value = $va_field_value[1];
+// 							if (!$vm_value) { continue; }
+// 				
+// 							if (!is_numeric($vm_value)) {
+// 								if (!is_array($vm_value)) {
+// 								    $vm_value = [$vm_value];
+// 								}
+//                                 if ($va_types = caMakeRelationshipTypeIDList($t_instance->tableName(), $vm_value)) {
+//                                     $pa_values['type_id'][$vn_i] = [$vs_op, $va_types];
+//                                 }
+// 							}
+// 						}
+// 					}
+// 				}
 				
 				//
 				// Convert other intrinsic list references
