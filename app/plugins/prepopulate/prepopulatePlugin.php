@@ -327,6 +327,7 @@ print "[3] addifempty "; print_R($va_value); print_R($va_parts);
 		$t_instance->setMode($vn_old_mode);
 
 		//$_REQUEST['form_timestamp'] = $vn_timestamp;
+		$t_instance->dump();
 
 		if($t_instance->numErrors() > 0) {
 			foreach($t_instance->getErrors() as $vs_error) {
