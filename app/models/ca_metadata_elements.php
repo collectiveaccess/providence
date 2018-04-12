@@ -1333,9 +1333,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		$vs_key = caMakeCacheKeyFromOptions(['table_num' => $pn_table_num, 'type_id' => $pn_type_id, 'element_id' => $vn_element_id]);
 		
-		if (CompositeCache::contains($vs_key, 'ElementTypeRestrictions')) { 
-			return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
-		}
+		//if (CompositeCache::contains($vs_key, 'ElementTypeRestrictions')) { 
+		//	return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
+		//}
 		
 		$o_db = $this->getDb();
 
