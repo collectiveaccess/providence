@@ -133,18 +133,14 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 		$t_object->insert();
-		$t_object->dump();
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		print "xxx = ".__CA_APP_DIR__.'/plugins/prepopulate';
-		print_R($va_prepopulate_options);
 		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
-		$t_object->dump();
 		$this->assertEquals('test123', $vs_get, 'description must match idno after prepopulation');
 	}
 
