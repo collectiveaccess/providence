@@ -2563,6 +2563,8 @@ class SearchResult extends BaseObject {
 	 *		length = Return all values truncated to a maximum length. [Default is null]
 	 *		truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
 	 *		ellipsis = Add ellipsis ("...") to truncated values. Values will be set to the truncated length including the ellipsis. Eg. a value truncated to 12 characters will include 9 characters of text and 3 characters of ellipsis. [Default is false]
+	 *		sort = Sort returned values. [Default is false]
+	 *		sortDirection = Direction of sort. Values are ASC (ascending) or DESC (descending). [Default is ascending]
 	 *
 	 * @return array
 	 */
@@ -2574,14 +2576,7 @@ class SearchResult extends BaseObject {
 				if (!is_array($va_by_attr)) { $va_flattened_values[] = $va_by_attr; continue;  }
 				foreach($va_by_attr as $vs_val) {
 					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
-						if (caIsAssociativeArray($vs_val)) {
-							foreach($vs_val as $k => $v) {
-								$va_flattened_values[$k] = $v;
-							}
-							continue;
-						} else {
-							$vs_val = array_shift($vs_val); 
-						}
+						$vs_val = array_shift($vs_val); 
 					} elseif(is_array($vs_val)) {
 						$va_flattened_values[] = $vs_val;
 						continue;
@@ -2624,15 +2619,8 @@ class SearchResult extends BaseObject {
 			foreach($pa_array as $va_vals) {
 				if(!is_array($va_vals)) { $va_flattened_values[] = $va_vals; continue; }
 				foreach($va_vals as $vs_val) {
-					if (is_array($vs_val) && sizeof($vs_val) == 1) {
-						if (caIsAssociativeArray($vs_val)) {
-							foreach($vs_val as $k => $v) {
-								$va_flattened_values[$k] = $v;
-							}
-							continue;
-						} else {
-							$vs_val = array_shift($vs_val); 
-						}
+					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
+						$vs_val = array_shift($vs_val); 
 					} elseif(is_array($vs_val)) {
 						$va_flattened_values[] = $vs_val;
 						continue;
@@ -2673,7 +2661,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if (caGetOption('sort', $pa_options, null)) {
-			ksort($va_flattened_values);
+			sort($va_flattened_values);
 			if(caGetOption('sortDirection', $pa_options, null, ['forceLowercase' => true]) == 'desc') { $va_flattened_values = array_reverse($va_flattened_values); }
 		}
 		return $va_flattened_values;
