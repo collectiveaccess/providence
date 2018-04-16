@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2017 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -183,7 +183,7 @@ var caUI = caUI || {};
                                 unitBits = unitRegex.exec(val);
                                 if (!unitBits || (unitBits.length < 3)) {
                                     // no units - replace as-is so the user has something to look at
-                                    if (!foundValue) t = t.replace(tag, '?');
+                                    if (!foundValue) t = t.replace(tag, val ? '?' : '');
                                     break;
                                 }
                                 var units = unitBits[2].trim(), unitCode = null, normalizedVal = null;
