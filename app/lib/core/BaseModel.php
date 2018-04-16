@@ -12273,4 +12273,3 @@ require_once(__CA_APP_DIR__.'/models/ca_item_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_items_x_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_comments.php');
 require_once(__CA_APP_DIR__.'/models/ca_notifications.php');
-
