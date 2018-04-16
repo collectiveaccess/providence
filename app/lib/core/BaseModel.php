@@ -11621,7 +11621,7 @@ $pa_options["display_form_field_tips"] = true;
 						} else {
 							$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
 						}
-						if (is_null($vs_value)) { $vs_op = '='; }
+						if (is_null($vm_value) && !$t_instance->getFieldInfo($vs_field, 'IS_NULL')) { $vs_op = '='; }
 					}
 
 					if (is_null($vm_value)) {
@@ -11638,7 +11638,6 @@ $pa_options["display_form_field_tips"] = true;
 					}
 				}
 			}
-			
 			if(!sizeof($va_sql_wheres)) { return null; }
 		}
 				
@@ -12274,3 +12273,4 @@ require_once(__CA_APP_DIR__.'/models/ca_item_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_items_x_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_comments.php');
 require_once(__CA_APP_DIR__.'/models/ca_notifications.php');
+
