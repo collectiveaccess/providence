@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2015 Whirl-i-Gig
+ * Copyright 2000-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -338,7 +338,7 @@ class Configuration {
 								$vn_in_quote = 0;
 								$vn_state = -1;
 
-								$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
+								$this->ops_config_settings["scalars"][$vs_key] = $vs_scalar_value;
 								break;
 							}
 						}

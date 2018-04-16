@@ -74,12 +74,19 @@
 						'download_url' => caNavUrl($po_request, '*', '*', 'DownloadMedia', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
 						'help_load_url' => caNavUrl($po_request, '*', '*', 'ViewerHelp', array()),
 						'annotationEditorPanel' => 'caRepresentationAnnotationEditor',
+						'read_only' => !$po_request->isLoggedIn(),
 						'annotationEditorUrl' => caNavUrl($po_request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => (int)$t_instance->getPrimaryKey())),
 						'captions' => $t_instance->getCaptionFileList(), 'progress_id' => 'caMediaOverlayProgress'
 					];
 					
-					// HTML for tileviewer
-					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
+					$vb_no_overlay = (caGetOption('no_overlay', $pa_data['display'], null) || caGetOption('noOverlay', $pa_options, null));
+					if($vb_no_overlay){
+						// HTML for tileviewer
+						$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
+					}else{
+						// HTML for tileviewer
+						$o_view->setVar('viewerHTML', "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => caGetOption('context', $pa_options, null), 'id' => (int)$t_subject->getPrimaryKey(), 'representation_id' => (int)$t_instance->getPrimaryKey(), 'overlay' => 1))."\"); return false;'>".$t_instance->getMediaTag('media', $vs_version, $va_viewer_opts)."</a>");
+					}
 				} elseif (is_a($t_instance, "ca_site_page_media")) {
 					$va_viewer_opts = [
 						'id' => $vs_id,
@@ -100,6 +107,7 @@
 						'viewer_base_url' => $po_request->getBaseUrlPath(),
 						'download_url' => caNavUrl($po_request, '*', '*', 'DownloadMedia', array('value_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
 						'help_load_url' => caNavUrl($po_request, '*', '*', 'ViewerHelp', array()),
+						'read_only' => !$po_request->isLoggedIn(),
 						'captions' => null, 'progress_id' => 'caMediaOverlayProgress'
 					];
 					

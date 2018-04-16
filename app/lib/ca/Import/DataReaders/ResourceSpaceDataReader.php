@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017 Whirl-i-Gig
+ * Copyright 2017-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,7 +62,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
         $o_config = Configuration::load();
 
         if (!$va_api_credentials = caGetOption('resourceSpaceAPIs', $pa_options, null)) {
-			$va_api_credentials= $o_config->get('resourcespace_apis');
+			if (!is_array($va_api_credentials = $o_config->get('resourcespace_apis'))) { $va_api_credentials = []; }
         }
 
         $this->opa_api_credentials = array();

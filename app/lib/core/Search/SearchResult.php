@@ -2574,7 +2574,14 @@ class SearchResult extends BaseObject {
 				if (!is_array($va_by_attr)) { $va_flattened_values[] = $va_by_attr; continue;  }
 				foreach($va_by_attr as $vs_val) {
 					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
-						$vs_val = array_shift($vs_val); 
+						if (caIsAssociativeArray($vs_val)) {
+							foreach($vs_val as $k => $v) {
+								$va_flattened_values[$k] = $v;
+							}
+							continue;
+						} else {
+							$vs_val = array_shift($vs_val); 
+						}
 					} elseif(is_array($vs_val)) {
 						$va_flattened_values[] = $vs_val;
 						continue;
@@ -2617,8 +2624,15 @@ class SearchResult extends BaseObject {
 			foreach($pa_array as $va_vals) {
 				if(!is_array($va_vals)) { $va_flattened_values[] = $va_vals; continue; }
 				foreach($va_vals as $vs_val) {
-					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
-						$vs_val = array_shift($vs_val); 
+					if (is_array($vs_val) && sizeof($vs_val) == 1) {
+						if (caIsAssociativeArray($vs_val)) {
+							foreach($vs_val as $k => $v) {
+								$va_flattened_values[$k] = $v;
+							}
+							continue;
+						} else {
+							$vs_val = array_shift($vs_val); 
+						}
 					} elseif(is_array($vs_val)) {
 						$va_flattened_values[] = $vs_val;
 						continue;
@@ -2656,6 +2670,11 @@ class SearchResult extends BaseObject {
 					$va_flattened_values[] = $vs_val;
 				}
 			}	
+		}
+		
+		if (caGetOption('sort', $pa_options, null)) {
+			ksort($va_flattened_values);
+			if(caGetOption('sortDirection', $pa_options, null, ['forceLowercase' => true]) == 'desc') { $va_flattened_values = array_reverse($va_flattened_values); }
 		}
 		return $va_flattened_values;
 	}
