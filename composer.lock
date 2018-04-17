@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "3a93ac94d68e6702c0be7f3abc0b89d7",
+    "content-hash": "960e525d60fb5ba5b47b9b940c6dab47",
     "packages": [],
     "packages-dev": [
         {
@@ -1315,6 +1315,108 @@
             "time": "2014-06-05T11:42:24+00:00"
         },
         {
+            "name": "pear/file_marc",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear/File_MARC.git",
+                "reference": "84b7f633c9261245bf6b16d7fbe87fe503551c9a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear/File_MARC/zipball/84b7f633c9261245bf6b16d7fbe87fe503551c9a",
+                "reference": "84b7f633c9261245bf6b16d7fbe87fe503551c9a",
+                "shasum": ""
+            },
+            "require": {
+                "pear/pear_exception": "1.*"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "suggest": {
+                "pear/validate_ispn": "Install optionally via your project's composer.json"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "File": "./"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "include-path": [
+                "./"
+            ],
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "Dan Scott",
+                    "email": "dbs@php.net",
+                    "homepage": "https://coffeecode.net",
+                    "role": "Lead"
+                }
+            ],
+            "description": "Supports the MAchine Readable Cataloging (MARC) file format documented at http://loc.gov/marc/",
+            "time": "2017-12-04T10:30:19+00:00"
+        },
+        {
+            "name": "pear/pear_exception",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear/PEAR_Exception.git",
+                "reference": "8c18719fdae000b690e3912be401c76e406dd13b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear/PEAR_Exception/zipball/8c18719fdae000b690e3912be401c76e406dd13b",
+                "reference": "8c18719fdae000b690e3912be401c76e406dd13b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=4.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "class",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "PEAR": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "include-path": [
+                "."
+            ],
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Helgi Thormar",
+                    "email": "dufuz@php.net"
+                },
+                {
+                    "name": "Greg Beaver",
+                    "email": "cellog@php.net"
+                }
+            ],
+            "description": "The PEAR Exception base class.",
+            "homepage": "https://github.com/pear/PEAR_Exception",
+            "keywords": [
+                "exception"
+            ],
+            "time": "2015-02-10T20:07:52+00:00"
+        },
+        {
             "name": "phpoffice/common",
             "version": "0.2.7",
             "source": {
@@ -1498,34 +1600,34 @@
         },
         {
             "name": "phpoffice/phpword",
-            "version": "v0.13.0",
+            "version": "v0.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPOffice/PHPWord.git",
-                "reference": "0a3f873972defb304de4fa2f5f53156558c11a7a"
+                "reference": "b614497ae6dd44280be1c2dda56772198bcd25ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPOffice/PHPWord/zipball/0a3f873972defb304de4fa2f5f53156558c11a7a",
-                "reference": "0a3f873972defb304de4fa2f5f53156558c11a7a",
+                "url": "https://api.github.com/repos/PHPOffice/PHPWord/zipball/b614497ae6dd44280be1c2dda56772198bcd25ae",
+                "reference": "b614497ae6dd44280be1c2dda56772198bcd25ae",
                 "shasum": ""
             },
             "require": {
                 "ext-xml": "*",
-                "php": ">=5.3.3",
-                "phpoffice/common": "0.2.*",
-                "zendframework/zend-escaper": "2.4.*",
-                "zendframework/zend-stdlib": "2.4.*",
-                "zendframework/zend-validator": "2.4.*"
+                "php": "^5.3.3 || ^7.0",
+                "phpoffice/common": "^0.2",
+                "zendframework/zend-escaper": "^2.2",
+                "zendframework/zend-stdlib": "^2.2 || ^3.0"
             },
             "require-dev": {
-                "dompdf/dompdf": "0.6.*",
-                "mpdf/mpdf": "5.*",
+                "dompdf/dompdf": "0.8.*",
+                "friendsofphp/php-cs-fixer": "^2.0",
+                "mpdf/mpdf": "5.* || 6.* || 7.*",
                 "phpdocumentor/phpdocumentor": "2.*",
-                "phploc/phploc": "2.*",
+                "phploc/phploc": "2.* || 3.* || 4.*",
                 "phpmd/phpmd": "2.*",
-                "phpunit/phpunit": "3.7.*",
-                "squizlabs/php_codesniffer": "1.*",
+                "phpunit/phpunit": "^4.8.36 || ^5.0",
+                "squizlabs/php_codesniffer": "^2.7",
                 "tecnickcom/tcpdf": "6.*"
             },
             "suggest": {
@@ -1550,10 +1652,6 @@
                     "name": "Mark Baker"
                 },
                 {
-                    "name": "Franck Lefevre",
-                    "homepage": "http://blog.rootslabs.net"
-                },
-                {
                     "name": "Gabriel Bull",
                     "email": "me@gabrielbull.com",
                     "homepage": "http://gabrielbull.com/"
@@ -1565,6 +1663,13 @@
                 {
                     "name": "Roman Syroeshko",
                     "homepage": "http://ru.linkedin.com/pub/roman-syroeshko/34/a53/994/"
+                },
+                {
+                    "name": "Franck Lefevre",
+                    "homepage": "https://rootslabs.net/blog/"
+                },
+                {
+                    "name": "Antoine de Troostembergh"
                 }
             ],
             "description": "PHPWord - A pure PHP library for reading and writing word processing documents (OOXML, ODF, RTF, HTML, PDF)",
@@ -1594,7 +1699,7 @@
                 "word",
                 "writer"
             ],
-            "time": "2016-07-31T08:53:39+00:00"
+            "time": "2017-12-29T01:30:53+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -2619,31 +2724,30 @@
         },
         {
             "name": "zendframework/zend-escaper",
-            "version": "2.4.13",
+            "version": "2.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-escaper.git",
-                "reference": "13f468ff824f3c83018b90aff892a1b3201383a9"
+                "reference": "2dcd14b61a72d8b8e27d579c6344e12c26141d4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-escaper/zipball/13f468ff824f3c83018b90aff892a1b3201383a9",
-                "reference": "13f468ff824f3c83018b90aff892a1b3201383a9",
+                "url": "https://api.github.com/repos/zendframework/zend-escaper/zipball/2dcd14b61a72d8b8e27d579c6344e12c26141d4e",
+                "reference": "2dcd14b61a72d8b8e27d579c6344e12c26141d4e",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.23"
+                "php": ">=5.5"
             },
             "require-dev": {
                 "fabpot/php-cs-fixer": "1.7.*",
-                "phpunit/phpunit": "~4.0",
-                "satooshi/php-coveralls": "dev-master"
+                "phpunit/phpunit": "~4.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.4-dev",
-                    "dev-develop": "2.5-dev"
+                    "dev-master": "2.5-dev",
+                    "dev-develop": "2.6-dev"
                 }
             },
             "autoload": {
@@ -2660,45 +2764,35 @@
                 "escaper",
                 "zf2"
             ],
-            "time": "2015-05-07T14:55:31+00:00"
+            "time": "2016-06-30T19:48:38+00:00"
         },
         {
             "name": "zendframework/zend-stdlib",
-            "version": "2.4.13",
+            "version": "3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-stdlib.git",
-                "reference": "d8ecb629a72da9f91bd95c5af006384823560b42"
+                "reference": "10ef03144902d1955f935fff5346ed52f7d99bcc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-stdlib/zipball/d8ecb629a72da9f91bd95c5af006384823560b42",
-                "reference": "d8ecb629a72da9f91bd95c5af006384823560b42",
+                "url": "https://api.github.com/repos/zendframework/zend-stdlib/zipball/10ef03144902d1955f935fff5346ed52f7d99bcc",
+                "reference": "10ef03144902d1955f935fff5346ed52f7d99bcc",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.23"
+                "php": "^5.6 || ^7.0"
             },
             "require-dev": {
-                "fabpot/php-cs-fixer": "1.7.*",
+                "athletic/athletic": "~0.1",
                 "phpunit/phpunit": "~4.0",
-                "satooshi/php-coveralls": "dev-master",
-                "zendframework/zend-eventmanager": "self.version",
-                "zendframework/zend-filter": "self.version",
-                "zendframework/zend-serializer": "self.version",
-                "zendframework/zend-servicemanager": "self.version"
-            },
-            "suggest": {
-                "zendframework/zend-eventmanager": "To support aggregate hydrator usage",
-                "zendframework/zend-filter": "To support naming strategy hydrator usage",
-                "zendframework/zend-serializer": "Zend\\Serializer component",
-                "zendframework/zend-servicemanager": "To support hydrator plugin manager usage"
+                "zendframework/zend-coding-standard": "~1.0.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.4-dev",
-                    "dev-develop": "2.5-dev"
+                    "dev-master": "3.1-dev",
+                    "dev-develop": "3.2-dev"
                 }
             },
             "autoload": {
@@ -2715,72 +2809,7 @@
                 "stdlib",
                 "zf2"
             ],
-            "time": "2015-07-21T13:55:46+00:00"
-        },
-        {
-            "name": "zendframework/zend-validator",
-            "version": "2.4.13",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/zendframework/zend-validator.git",
-                "reference": "81415511fe729e6de19a61936313cef43c80d337"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-validator/zipball/81415511fe729e6de19a61936313cef43c80d337",
-                "reference": "81415511fe729e6de19a61936313cef43c80d337",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.23",
-                "zendframework/zend-stdlib": "~2.4.0"
-            },
-            "require-dev": {
-                "fabpot/php-cs-fixer": "1.7.*",
-                "phpunit/phpunit": "~4.0",
-                "satooshi/php-coveralls": "dev-master",
-                "zendframework/zend-config": "~2.4.0",
-                "zendframework/zend-db": "~2.4.0",
-                "zendframework/zend-filter": "~2.4.0",
-                "zendframework/zend-i18n": "~2.4.0",
-                "zendframework/zend-math": "~2.4.0",
-                "zendframework/zend-servicemanager": "~2.4.0",
-                "zendframework/zend-session": "~2.4.0",
-                "zendframework/zend-uri": "~2.4.0"
-            },
-            "suggest": {
-                "zendframework/zend-db": "Zend\\Db component",
-                "zendframework/zend-filter": "Zend\\Filter component, required by the Digits validator",
-                "zendframework/zend-i18n": "Zend\\I18n component to allow translation of validation error messages as well as to use the various Date validators",
-                "zendframework/zend-math": "Zend\\Math component",
-                "zendframework/zend-resources": "Translations of validator messages",
-                "zendframework/zend-servicemanager": "Zend\\ServiceManager component to allow using the ValidatorPluginManager and validator chains",
-                "zendframework/zend-session": "Zend\\Session component",
-                "zendframework/zend-uri": "Zend\\Uri component, required by the Uri and Sitemap\\Loc validators"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.4-dev",
-                    "dev-develop": "2.5-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Zend\\Validator\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "provides a set of commonly needed validators",
-            "homepage": "https://github.com/zendframework/zend-validator",
-            "keywords": [
-                "validator",
-                "zf2"
-            ],
-            "time": "2015-09-08T21:04:17+00:00"
+            "time": "2018-04-12T16:05:42+00:00"
         }
     ],
     "aliases": [],
