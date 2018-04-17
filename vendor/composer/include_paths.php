@@ -8,7 +8,4 @@ $baseDir = dirname($vendorDir);
 return array(
     $vendorDir . '/pear/file_marc',
     $vendorDir . '/pear/pear_exception',
-    $vendorDir . '/phpunit/php-file-iterator',
-    $vendorDir . '/phpunit/phpunit',
-    $vendorDir . '/symfony/yaml',
 );
