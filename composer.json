@@ -14,6 +14,7 @@
     "phpoffice/phppresentation": "dev-master",
     "phpoffice/phpword": "v0.14.*",
     "phpoffice/phpexcel": "v1.8.1",
-    "pear/file_marc": "~1.2"
+    "pear/file_marc": "~1.2",
+    "dompdf/dompdf": "~0.8"
   }
 }
