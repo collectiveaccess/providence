@@ -3756,6 +3756,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
 		$va_tags = [];
+		$vb_ignore_quotes = caGetOption('ignoreQuotes', $pa_options, false);
 
 		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = $vb_is_ca_get_ref = false;
 		$vs_tag = '';
@@ -3785,45 +3786,34 @@ function caFileIsIncludable($ps_file) {
 				case ' ':
 				case ',':
 				case '<':
-					if ($vb_in_tag) {
-                        if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
-                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
-                            $vs_tag = '';
-                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
-                        } else {
-                            $vs_tag .= $vs_char;
-                        }
-                    }
-					break;
-				case ')':
-				    if ($vb_in_tag) {
-                        if (!$vb_in_single_quote && !$vb_in_double_quote && !preg_match("![/]+!", $vs_tag)) {  // paren is not part of tag unless it's expath
-                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
-                            $vs_tag = '';
-                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
-                        } else {
-                            $vs_tag .= $vs_char;
-                        }
-                    }
-				    break;
-				case '"':
-					if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
-						$vb_in_double_quote = true;
-						$vs_tag .= $vs_char;
-					} elseif($vb_in_tag && $vb_in_double_quote) {
-						$vs_tag .= $vs_char;
-						$vb_in_double_quote = false;
-					} elseif($vb_in_tag) {
+					if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
 						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 						$vs_tag = '';
 						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+					} else {
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case '"':
+					if (!$vb_ignore_quotes) {
+						if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
+							$vb_in_double_quote = true;
+							$vs_tag .= $vs_char;
+						} elseif($vb_in_tag && $vb_in_double_quote) {
+							$vs_tag .= $vs_char;
+							$vb_in_double_quote = false;
+						} elseif($vb_in_tag) {
+							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+							$vs_tag = '';
+							$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+						}
 					}
 					break;
 				case "'":
-					if ($vb_in_tag) {
-                        $vb_in_single_quote = !$vb_in_single_quote;
-                        $vs_tag .= $vs_char;
-                    }
+					if (!$vb_ignore_quotes) {
+						$vb_in_single_quote = !$vb_in_single_quote;
+						$vs_tag .= $vs_char;
+					}
 					break;
 				default:
 					if ($vb_in_tag) {
@@ -3831,7 +3821,7 @@ function caFileIsIncludable($ps_file) {
 							$vb_is_ca_get_ref = true;
 						}
 						if ($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char))) {
-							$va_tags[] = $vs_tag;
+							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
 							$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
 						} else {
@@ -3862,7 +3852,7 @@ function caFileIsIncludable($ps_file) {
 
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
-		return $va_tags;
+		return array_filter($va_tags, "strlen");
 	}
 	# ----------------------------------------
 	/**

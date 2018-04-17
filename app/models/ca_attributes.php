@@ -286,7 +286,6 @@ class ca_attributes extends BaseModel {
 			
 			if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
 			    $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
-			    //print "DEP=$vm_value\n";
 			}
 			
 			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, array_merge($pa_options, ['t_attribute' => $this]))) === false) {

@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-12-20 18:42-0500\n"
-"PO-Revision-Date: 2017-12-20 19:07-0500\n"
+"PO-Revision-Date: 2018-04-02 11:37-0500\n"
 "Last-Translator: Seth <Seth@collectiveacess.org>\n"
 "Language-Team: French (France) (http://www.transifex.com/collectiveaccess/"
 "collectiveaccess-providence/language/fr_FR/)\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -663,8 +663,8 @@ msgstr "objet"
 #: app/models/ca_bookmarks.php:65 app/models/ca_bundle_displays.php:85
 #: app/models/ca_data_exporters.php:80 app/models/ca_data_importers.php:83
 #: app/models/ca_editor_uis.php:84
-#: app/models/ca_metadata_type_restrictions.php:87 app/models/ca_objects.php:51
-#: app/models/ca_search_forms.php:93
+#: app/models/ca_metadata_type_restrictions.php:87
+#: app/models/ca_objects.php:51 app/models/ca_search_forms.php:93
 msgid "objects"
 msgstr "objets"
 
@@ -1288,9 +1288,9 @@ msgstr "Entités"
 #: app/conf/user_pref_defs.conf:738 app/conf/user_pref_defs.conf:797
 #: app/conf/user_pref_defs.conf:854 app/conf/user_pref_defs.conf:912
 #: app/conf/user_pref_defs.conf:1177 app/conf/user_pref_defs.conf:1274
-#: app/lib/ca/BaseSearchController.php:431 app/lib/ca/Search/QuickSearch.php:53
-#: app/models/ca_set_items.php:68 app/models/ca_sets.php:93
-#: app/models/ca_user_sorts.php:62
+#: app/lib/ca/BaseSearchController.php:431
+#: app/lib/ca/Search/QuickSearch.php:53 app/models/ca_set_items.php:68
+#: app/models/ca_sets.php:93 app/models/ca_user_sorts.php:62
 #: app/widgets/recentChanges/recentChangesWidget.php:125
 #: app/widgets/recentlyCreated/recentlyCreatedWidget.php:54
 #: app/widgets/recentlyCreated/recentlyCreatedWidget.php:258
@@ -1471,7 +1471,7 @@ msgstr "Outils"
 
 #: app/conf/navigation.conf:3349
 msgid "My project teams"
-msgstr "Mes groupes de projet"
+msgstr "Mes équipes de projet"
 
 #: app/conf/navigation.conf:3356
 msgid "My displays"
@@ -1609,11 +1609,11 @@ msgstr "Logs"
 
 #: app/conf/navigation.conf:3968
 msgid "My change log"
-msgstr ""
+msgstr "Log de mes changements"
 
 #: app/conf/navigation.conf:3975
 msgid "Global change log"
-msgstr ""
+msgstr "Log des changements globaux"
 
 #: app/conf/navigation.conf:3982
 msgid "Events log"
@@ -1625,7 +1625,7 @@ msgstr "Log des recherches"
 
 #: app/conf/navigation.conf:3996
 msgid "Download log"
-msgstr ""
+msgstr "Log des téléchargements"
 
 #: app/conf/navigation.conf:4005
 msgid "Administration"
@@ -1733,7 +1733,8 @@ msgstr "Retour"
 msgid "Import"
 msgstr "Importer"
 
-#: app/conf/navigation.conf:4270 app/models/ca_bundle_display_placements.php:83
+#: app/conf/navigation.conf:4270
+#: app/models/ca_bundle_display_placements.php:83
 #: app/models/ca_bundle_display_type_restrictions.php:90
 #: app/models/ca_bundle_displays.php:116
 #: app/models/ca_data_exporter_items.php:94
@@ -5428,8 +5429,9 @@ msgstr "détenu par %1 depuis %2"
 msgid "Due on"
 msgstr "Retour prévu le "
 
-#: app/controllers/library/CheckOutController.php:164 app/models/ca_acl.php:101
-#: app/models/ca_bookmarks.php:101 app/models/ca_data_importer_log.php:86
+#: app/controllers/library/CheckOutController.php:164
+#: app/models/ca_acl.php:101 app/models/ca_bookmarks.php:101
+#: app/models/ca_data_importer_log.php:86
 #: app/models/ca_data_importer_log_items.php:102 app/models/ca_ips.php:100
 #: app/models/ca_task_queue.php:115
 #: themes/default/views/bundles/ca_objects_deaccession.php:68
@@ -5706,11 +5708,13 @@ msgid "Please use the checkboxes to select tags for deletion"
 msgstr ""
 "Veuillez utiliser les cases à cocher pour sélectionner les tags à supprimer"
 
-#: app/controllers/manage/TagsController.php:206 app/models/ca_item_tags.php:41
+#: app/controllers/manage/TagsController.php:206
+#: app/models/ca_item_tags.php:41
 msgid "tag"
 msgstr "tag"
 
-#: app/controllers/manage/TagsController.php:206 app/models/ca_item_tags.php:42
+#: app/controllers/manage/TagsController.php:206
+#: app/models/ca_item_tags.php:42
 msgid "tags"
 msgstr "tags"
 
@@ -6419,7 +6423,7 @@ msgstr "Modification par lot"
 
 #: app/helpers/displayHelpers.php:1407
 msgid "Batch Edit"
-msgstr ""
+msgstr "Modification par lot"
 
 #: app/helpers/displayHelpers.php:1409 app/helpers/displayHelpers.php:1494
 msgid "Number of items"
@@ -6644,8 +6648,8 @@ msgstr ""
 msgid "Invalid viewer %1/%2"
 msgstr ""
 
-#: app/helpers/displayHelpers.php:4023 app/lib/ca/BaseEditorController.php:1879
-#: app/lib/core/BaseModel.php:12142
+#: app/helpers/displayHelpers.php:4023
+#: app/lib/ca/BaseEditorController.php:1879 app/lib/core/BaseModel.php:12142
 msgid "Invalid id"
 msgstr ""
 
@@ -14209,7 +14213,8 @@ msgstr ""
 "Valide tous les enregistrements à l'aide de règles dans le dictionnaire de "
 "métadonnées"
 
-#: app/lib/ca/Utils/CLIUtils.php:2204 app/models/ca_data_exporter_items.php:560
+#: app/lib/ca/Utils/CLIUtils.php:2204
+#: app/models/ca_data_exporter_items.php:560
 msgid "ID"
 msgstr "Identifiant"
 
@@ -17928,12 +17933,14 @@ msgstr "Contenu du média"
 #: app/models/ca_loans_x_object_lots.php:92
 #: app/models/ca_loans_x_object_representations.php:99
 #: app/models/ca_loans_x_objects.php:92
-#: app/models/ca_loans_x_occurrences.php:92 app/models/ca_loans_x_places.php:92
+#: app/models/ca_loans_x_occurrences.php:92
+#: app/models/ca_loans_x_places.php:92
 #: app/models/ca_loans_x_storage_locations.php:92
 #: app/models/ca_loans_x_vocabulary_terms.php:92
 #: app/models/ca_metadata_elements.php:117
 #: app/models/ca_metadata_type_restrictions.php:143
-#: app/models/ca_movements.php:136 app/models/ca_movements_x_collections.php:92
+#: app/models/ca_movements.php:136
+#: app/models/ca_movements_x_collections.php:92
 #: app/models/ca_movements_x_entities.php:92
 #: app/models/ca_movements_x_movements.php:93
 #: app/models/ca_movements_x_object_lots.php:92
@@ -18065,8 +18072,9 @@ msgstr "attributs"
 #: app/models/ca_relationship_type_labels.php:63
 #: app/models/ca_representation_annotation_labels.php:64
 #: app/models/ca_representation_annotations.php:66
-#: app/models/ca_search_form_labels.php:63 app/models/ca_set_item_labels.php:63
-#: app/models/ca_set_labels.php:64 app/models/ca_storage_location_labels.php:63
+#: app/models/ca_search_form_labels.php:63
+#: app/models/ca_set_item_labels.php:63 app/models/ca_set_labels.php:64
+#: app/models/ca_storage_location_labels.php:63
 #: app/models/ca_tour_labels.php:63 app/models/ca_tour_stop_labels.php:63
 #: app/models/ca_user_representation_annotation_labels.php:64
 #: app/models/ca_user_representation_annotations.php:66
@@ -18090,26 +18098,28 @@ msgstr "répertoires de favoris"
 
 #: app/models/ca_bookmark_folders.php:48 app/models/ca_bookmarks.php:47
 #: app/models/ca_bundle_displays.php:59 app/models/ca_collections.php:51
-#: app/models/ca_data_exporter_items.php:49 app/models/ca_data_exporters.php:61
+#: app/models/ca_data_exporter_items.php:49
+#: app/models/ca_data_exporters.php:61
 #: app/models/ca_data_importer_groups.php:50
-#: app/models/ca_data_importer_items.php:56 app/models/ca_data_importers.php:64
-#: app/models/ca_editor_ui_screens.php:53 app/models/ca_editor_uis.php:50
-#: app/models/ca_entities.php:50 app/models/ca_guids.php:46
-#: app/models/ca_ips.php:46 app/models/ca_item_comments.php:50
-#: app/models/ca_item_tags.php:49 app/models/ca_list_items.php:53
-#: app/models/ca_lists.php:59 app/models/ca_loans.php:51
-#: app/models/ca_locales.php:46 app/models/ca_metadata_elements.php:52
-#: app/models/ca_movements.php:51 app/models/ca_notifications.php:48
-#: app/models/ca_object_lots.php:52 app/models/ca_object_representations.php:57
-#: app/models/ca_objects.php:58 app/models/ca_occurrences.php:51
-#: app/models/ca_places.php:52 app/models/ca_relationship_types.php:49
+#: app/models/ca_data_importer_items.php:56
+#: app/models/ca_data_importers.php:64 app/models/ca_editor_ui_screens.php:53
+#: app/models/ca_editor_uis.php:50 app/models/ca_entities.php:50
+#: app/models/ca_guids.php:46 app/models/ca_ips.php:46
+#: app/models/ca_item_comments.php:50 app/models/ca_item_tags.php:49
+#: app/models/ca_list_items.php:53 app/models/ca_lists.php:59
+#: app/models/ca_loans.php:51 app/models/ca_locales.php:46
+#: app/models/ca_metadata_elements.php:52 app/models/ca_movements.php:51
+#: app/models/ca_notifications.php:48 app/models/ca_object_lots.php:52
+#: app/models/ca_object_representations.php:57 app/models/ca_objects.php:58
+#: app/models/ca_occurrences.php:51 app/models/ca_places.php:52
+#: app/models/ca_relationship_types.php:49
 #: app/models/ca_replication_log.php:46
 #: app/models/ca_representation_annotations.php:51
-#: app/models/ca_search_forms.php:56 app/models/ca_search_indexing_queue.php:50
-#: app/models/ca_set_items.php:49 app/models/ca_sets.php:57
-#: app/models/ca_site_page_media.php:49 app/models/ca_storage_locations.php:52
-#: app/models/ca_tour_stops.php:53 app/models/ca_tours.php:48
-#: app/models/ca_user_notes.php:49
+#: app/models/ca_search_forms.php:56
+#: app/models/ca_search_indexing_queue.php:50 app/models/ca_set_items.php:49
+#: app/models/ca_sets.php:57 app/models/ca_site_page_media.php:49
+#: app/models/ca_storage_locations.php:52 app/models/ca_tour_stops.php:53
+#: app/models/ca_tours.php:48 app/models/ca_user_notes.php:49
 #: app/models/ca_user_representation_annotations.php:51
 #: app/models/ca_user_sort_items.php:46 app/models/ca_user_sorts.php:48
 #: app/models/ca_watch_list.php:48
@@ -18450,7 +18460,8 @@ msgid ""
 msgstr ""
 "Si coché, toutes les valeurs seront affichées même si leur contenu est vide."
 
-#: app/models/ca_bundle_displays.php:151 app/models/ca_bundle_displays.php:1164
+#: app/models/ca_bundle_displays.php:151
+#: app/models/ca_bundle_displays.php:1164
 msgid "Bottom line format"
 msgstr "Format de ligne en bas de tableau"
 
@@ -18893,8 +18904,9 @@ msgstr "noms de collection"
 #: app/models/ca_occurrence_labels.php:63 app/models/ca_place_labels.php:63
 #: app/models/ca_relationship_type_labels.php:63
 #: app/models/ca_representation_annotation_labels.php:64
-#: app/models/ca_search_form_labels.php:63 app/models/ca_set_item_labels.php:63
-#: app/models/ca_set_labels.php:64 app/models/ca_storage_location_labels.php:63
+#: app/models/ca_search_form_labels.php:63
+#: app/models/ca_set_item_labels.php:63 app/models/ca_set_labels.php:64
+#: app/models/ca_storage_location_labels.php:63
 #: app/models/ca_tour_labels.php:63 app/models/ca_tour_stop_labels.php:63
 #: app/models/ca_user_representation_annotation_labels.php:64
 msgid "Locale of label"
@@ -18945,7 +18957,8 @@ msgstr "Identifiant de la collection"
 msgid "A unique alphanumeric identifier for this collection."
 msgstr "Un identifiant alphanumérique unique pour cette collection"
 
-#: app/models/ca_collections.php:100 app/models/ca_data_import_event_log.php:96
+#: app/models/ca_collections.php:100
+#: app/models/ca_data_import_event_log.php:96
 #: app/models/ca_data_import_events.php:94 app/models/ca_entities.php:74
 #: app/models/ca_list_items.php:209 app/models/ca_loans.php:92
 #: app/models/ca_movements.php:85 app/models/ca_object_lots.php:135
@@ -19402,7 +19415,8 @@ msgstr "relations collection ⇔ collection"
 #: app/models/ca_loans_x_object_lots.php:85
 #: app/models/ca_loans_x_object_representations.php:85
 #: app/models/ca_loans_x_objects.php:85
-#: app/models/ca_loans_x_occurrences.php:85 app/models/ca_loans_x_places.php:85
+#: app/models/ca_loans_x_occurrences.php:85
+#: app/models/ca_loans_x_places.php:85
 #: app/models/ca_loans_x_storage_locations.php:85
 #: app/models/ca_loans_x_vocabulary_terms.php:85
 #: app/models/ca_movements_x_collections.php:85
@@ -19486,7 +19500,8 @@ msgstr "Dates effectives"
 #: app/models/ca_loans_x_object_lots.php:85
 #: app/models/ca_loans_x_object_representations.php:85
 #: app/models/ca_loans_x_objects.php:85
-#: app/models/ca_loans_x_occurrences.php:85 app/models/ca_loans_x_places.php:85
+#: app/models/ca_loans_x_occurrences.php:85
+#: app/models/ca_loans_x_places.php:85
 #: app/models/ca_loans_x_storage_locations.php:85
 #: app/models/ca_loans_x_vocabulary_terms.php:85
 #: app/models/ca_movements_x_collections.php:85
@@ -19576,7 +19591,8 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:92
 #: app/models/ca_loans_x_object_representations.php:99
 #: app/models/ca_loans_x_objects.php:92
-#: app/models/ca_loans_x_occurrences.php:92 app/models/ca_loans_x_places.php:92
+#: app/models/ca_loans_x_occurrences.php:92
+#: app/models/ca_loans_x_places.php:92
 #: app/models/ca_loans_x_storage_locations.php:92
 #: app/models/ca_loans_x_vocabulary_terms.php:92
 #: app/models/ca_movements_x_collections.php:92
@@ -21340,7 +21356,8 @@ msgstr ""
 "Définit la table de CollectiveAccess pour les données importées. "
 "Implémentation en cours."
 
-#: app/models/ca_data_importers.php:315 app/models/ca_editor_ui_screens.php:662
+#: app/models/ca_data_importers.php:315
+#: app/models/ca_editor_ui_screens.php:662
 msgid "none"
 msgstr "aucun"
 
@@ -25655,7 +25672,7 @@ msgstr "Saisir une date de sortie de l'inventaire"
 
 #: app/models/ca_objects.php:156
 msgid "Date of disposal"
-msgstr ""
+msgstr "Date de cession"
 
 #: app/models/ca_objects.php:156
 msgid "Enter the date the deaccessioned object was disposed of."

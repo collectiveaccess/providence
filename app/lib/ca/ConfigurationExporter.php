@@ -336,6 +336,7 @@ final class ConfigurationExporter {
 					$vo_label->setAttribute("preferred", $qr_list_item_labels->get("is_preferred"));
 					$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($qr_list_item_labels->get("name_singular"))));
 					$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($qr_list_item_labels->get("name_plural"))));
+					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_list_item_labels->get("description"))));
 
 					$vo_labels->appendChild($vo_label);
 				}
@@ -345,6 +346,7 @@ final class ConfigurationExporter {
 				$vo_label->setAttribute("locale", $vs_default_locale);
 				$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($vs_idno)));
 				$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($vs_idno)));
+				$vo_label->appendChild($this->opo_dom->createElement("description",''));
 				$vo_labels->appendChild($vo_label);
 			}
 

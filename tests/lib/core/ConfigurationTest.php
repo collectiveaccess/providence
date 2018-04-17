@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($o_config->get('a_scalar_using_a_macro'), '/usr/local/fish');
 		$this->assertEquals($o_config->get('a_scalar_using_an_embedded_macro'), 'This scalar is embedded: "/usr/local/fish"');
 		$this->assertEquals($o_config->get('a_scalar_with_utf_8_chars'), 'Expreß zug: חי תהער');
-		$this->assertEquals($o_config->get('a_scalar_with_line_breaks'), "Foo\nHello\nWorld");
+		$this->assertEquals($o_config->get('a_scalar_with_line_breaks'), "Foo\nHello\nWorld\n");
 	}
 
 	public function testLists() {

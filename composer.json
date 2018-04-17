@@ -1,6 +1,6 @@
 {
   "require-dev": {
-    "phpunit/phpunit": "4.3.*",
+    "phpunit/phpunit": "5.7",
     "maximebf/debugbar": ">=1.0.0",
     "doctrine/cache": "1.4.*",
     "elasticsearch/elasticsearch": "~5.0",
@@ -12,6 +12,9 @@
     "hoa/visitor": "~1.15",
     "collectiveaccess/service-wrapper": "v1.1",
     "phpoffice/phppresentation": "dev-master",
-    "phpoffice/phpword": "v0.13.*"
+    "phpoffice/phpword": "v0.14.*",
+    "phpoffice/phpexcel": "v1.8.1",
+    "pear/file_marc": "~1.2",
+    "dompdf/dompdf": "~0.8"
   }
 }

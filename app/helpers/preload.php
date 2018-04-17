@@ -79,3 +79,6 @@ require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
 
 // initialize Tooltip manager
 TooltipManager::init();
+
+PHPExcel_Shared_Font::setTrueTypeFontPath(__CA_APP_DIR__.'/fonts/');
+PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);

@@ -2411,6 +2411,93 @@ class SearchResult extends BaseObject {
 					}
 				}
 				break;
+			case FT_VARS:
+				foreach($pa_value_list as $vn_locale_id => $va_values) {
+					foreach($va_values as $vn_i => $va_value) {
+						$d = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
+						
+						if ((isset($d['EXIF']) || isset($d['XMP']) || isset($d['IFD0'])) && (in_array(strtolower($va_path_components['subfield_name']), ['title', 'description', 'creator', 'subjects', 'rights', 'copyright', 'date', 'location', 'orientation']))) {
+							// handle EXIF specials
+							$exif_value = null;
+							switch(strtolower($va_path_components['subfield_name'])) {
+								case 'title':
+									if (isset($d['XMP']['Title'])) { $exif_value = $d['XMP']['Title']; }
+									break;
+								case 'description':
+									if (isset($d['XMP']['Description'])) { $exif_value = $d['XMP']['Description']; }
+									if (!$exif_value && isset($d['EXIF']['IFD0']['ImageDescription'])) { $exif_value = $d['EXIF']['IFD0']['ImageDescription']; }
+									break;
+								case 'creator':
+									if (isset($d['XMP']['Creator'])) { $exif_value = $d['XMP']['Creator']; }
+									if (!$exif_value && isset($d['EXIF']['IFD0']['Artist'])) { $exif_value = $d['EXIF']['IFD0']['Artist']; }
+									break;
+								case 'subjects':
+									if (isset($d['XMP']['Subjects'])) { $exif_value = $d['XMP']['Subjects']; }
+									break;
+								case 'rights':
+								case 'copyright':
+									if (isset($d['XMP']['Rights'])) { $exif_value = $d['XMP']['Rights']; }
+									if (!$exif_value && isset($d['EXIF']['IFD0']['Copyright'])) { $exif_value = $d['EXIF']['IFD0']['Copyright']; }
+									if (!$exif_value && isset($d['EXIF']['COMPUTED']['Copyright'])) { $exif_value = $d['EXIF']['COMPUTED']['Copyright']; }
+									break;
+								case 'date':
+									$exif_date = null;
+									if (isset($d['EXIF']['IFD0']['DateTime'])) { $exif_date = $d['EXIF']['IFD0']['DateTime']; }
+									if (isset($d['EXIF']['EXIF']['DateTimeOriginal'])) { $exif_date = $d['EXIF']['EXIF']['DateTimeOriginal']; }
+									if (isset($d['EXIF']['EXIF']['DateTimeDigitized'])) { $exif_date = $d['EXIF']['EXIF']['DateTimeDigitized']; }
+									
+									if($exif_date) {
+										$tmp = explode(' ', $d['EXIF']['IFD0']['DateTime']);
+										$exif_value = join('-', explode(':', $tmp[0])).' '.$tmp[1]; 
+									}
+									break;
+								case 'location':
+									if(isset($d['EXIF']['GPS']) && is_array($d['EXIF']['GPS'])) {
+										$exif_value = join(", ", caParseEXIFLatLong($d['EXIF']));
+									}
+									break;
+								case 'orientation':
+									if (isset($d['EXIF']['IFD0']['Orientation'])) {
+										switch((int)$d['EXIF']['IFD0']['Orientation']) {
+											case 1:
+												$exif_value = 0;
+												break;
+											case 8:
+												$exif_value = 90;
+												break;
+											case 3:
+												$exif_value = 180;
+												break;
+											case 6:
+												$exif_value = 270;
+												break;
+										}
+									}
+									break;
+							}
+							$d = $exif_value;
+						} else {
+							$c = $va_path_components['components']; array_shift($c); array_shift($c);
+							while(sizeof($c) > 0) {
+								$slot = array_shift($c);
+								if (isset($d[$slot])) {
+									$d = $d[$slot];
+									if (!is_array($d)) { break; }
+								} else {
+									$d = null;
+									break;
+								}
+							}
+						
+							if(!$pa_options['returnAsArray']) {
+								$d = join("; ", $d);
+							}
+						}
+						
+						$va_return_values[$vn_id][$vm_locale_id][] = $d;
+					}
+				}
+				break;
 			default:
 				// is intrinsic field in primary table
 				foreach($pa_value_list as $vn_locale_id => $va_values) {
@@ -2476,6 +2563,8 @@ class SearchResult extends BaseObject {
 	 *		length = Return all values truncated to a maximum length. [Default is null]
 	 *		truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
 	 *		ellipsis = Add ellipsis ("...") to truncated values. Values will be set to the truncated length including the ellipsis. Eg. a value truncated to 12 characters will include 9 characters of text and 3 characters of ellipsis. [Default is false]
+	 *		sort = Sort returned values. [Default is false]
+	 *		sortDirection = Direction of sort. Values are ASC (ascending) or DESC (descending). [Default is ascending]
 	 *
 	 * @return array
 	 */
@@ -2569,6 +2658,11 @@ class SearchResult extends BaseObject {
 					$va_flattened_values[] = $vs_val;
 				}
 			}	
+		}
+		
+		if (caGetOption('sort', $pa_options, null)) {
+			sort($va_flattened_values);
+			if(caGetOption('sortDirection', $pa_options, null, ['forceLowercase' => true]) == 'desc') { $va_flattened_values = array_reverse($va_flattened_values); }
 		}
 		return $va_flattened_values;
 	}

@@ -43,9 +43,6 @@ require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
-
 require_once(__CA_LIB_DIR__.'/ca/ApplicationPluginManager.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 

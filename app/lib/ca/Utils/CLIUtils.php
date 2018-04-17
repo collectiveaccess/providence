@@ -1984,9 +1984,6 @@
 		 * Load metadata dictionary
 		 */
 		public static function load_metadata_dictionary_from_excel_file($po_opts=null) {
-
-			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 
 			$t_entry = new ca_metadata_dictionary_entries();

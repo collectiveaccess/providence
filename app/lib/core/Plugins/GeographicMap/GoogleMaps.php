@@ -231,7 +231,7 @@ jQuery(document).ready(function() {
 			}
 			if ($vn_max_zoom_level) {
 				$vs_buf .= "
-					var idleMaxListener_{$vs_id} = google.maps.event.addListenerOnce(caMap_{$vs_id}.map, 'idle', function() {
+					var idleMaxListener_{$vs_id} = google.maps.event.addListener(caMap_{$vs_id}.map, 'zoom_changed', function() {
 						if (caMap_{$vs_id}.map.getZoom() > {$vn_max_zoom_level}) {
 							caMap_{$vs_id}.map.setZoom({$vn_max_zoom_level});
 						}
@@ -296,7 +296,11 @@ jQuery(document).ready(function() {
 					$vn_lon_offset = $vn_radius/111302.61697430261;
 					$va_extents = array("north" => number_format(($va_extents['north'] + $vn_lat_offset), 7, ".", ""), "south" => number_format(($va_extents['south'] - $vn_lat_offset), 7, ".", ""), "east" => number_format(($va_extents['east'] + $vn_lon_offset), 7, ".", ""), "west" => number_format(($va_extents['west'] - $vn_lon_offset), 7, ".", ""));
 				}else{
-					$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {} ));\n";
+					if(file_exists(__CA_THEME_DIR__."/assets/pawtucket/graphics/google_map_marker.png")){
+						$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {icon: '".__CA_THEME_URL__."/assets/pawtucket/graphics/google_map_marker.png'}));\n";
+					} else {
+						$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {} ));\n";
+					}
 				}
 			}
 		}
@@ -304,10 +308,18 @@ jQuery(document).ready(function() {
 		foreach($va_paths as $vn_i => $va_path) {
 			$vs_buf .= "caMap_{$vs_id}.makePath([".join(',', $va_path['pathJS'])."], '".preg_replace("![\n\r]+!", " ", addslashes($va_path['label']))."','".preg_replace("![\n\r]+!", " ", addslashes($va_path['content']))."', {strokeColor: '{$vs_path_color}', strokeWeight: {$vn_path_weight}, strokeOpacity: {$vn_path_opacity}});\n";
 		}
-		
+		$vs_marker_path = __CA_THEMES_URL__."/default/assets/pawtucket/graphics/m/m";
+		if(file_exists(__CA_THEME_DIR__."/assets/pawtucket/graphics/m")){
+			$vs_marker_path = __CA_THEME_URL__."/assets/pawtucket/graphics/m/m";
+		}elseif(file_exists(__CA_THEME_DIR__."/assets/pawtucket/graphics/m1.png")){
+			$vs_marker_path = __CA_THEME_URL__."/assets/pawtucket/graphics/m";
+		}
 		$vs_buf .= "
+				var mc_{$vs_id} = new MarkerClusterer(caMap_{$vs_id}.map, caMap_{$vs_id}_markers, {maxZoom: 14, imagePath: '".$vs_marker_path."'});
+				
+				
 				caMap_{$vs_id}.fitBounds(".$va_extents['north'].",".$va_extents['south'].",".$va_extents['east'].",".$va_extents['west'].");";
-	
+		# var mc_{$vs_id} = new MarkerClusterer(caMap_{$vs_id}.map, caMap_{$vs_id}_markers, {maxZoom: 14, imagePath: 'http://manuscriptcookbook.whirl-i-gig.com/pawtucket/themes/manuscript/assets/pawtucket/graphics/m'});
 	if (isset($pa_options['cycleRandomly']) && $pa_options['cycleRandomly']) {
 		if (isset($pa_options['cycleRandomlyInterval']) && $pa_options['cycleRandomlyInterval']) {
 			$vs_interval = $pa_options['cycleRandomlyInterval'];
@@ -340,14 +352,6 @@ jQuery(document).ready(function() {
 	
 $vs_buf .= "
 	});
-	function clickroute() { 
-		var latLng = GeoMarker_{$vs_id}.getPosition();
-		if (typeof latLng === 'undefined' ) {
-			document.getElementById('helpDiv').style.display = 'block';
-		} else {
-			caMap_{$vs_id}.map.panTo(latLng);
-		}
-	}
 </script>\n"; 
 				break;
 			# ---------------------------------
@@ -430,4 +434,3 @@ $vs_buf .= "
 	}
 	# ------------------------------------------------
 }
-?>
