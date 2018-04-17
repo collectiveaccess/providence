@@ -12,6 +12,7 @@
     "hoa/visitor": "~1.15",
     "collectiveaccess/service-wrapper": "v1.1",
     "phpoffice/phppresentation": "dev-master",
-    "phpoffice/phpword": "v0.13.*"
+    "phpoffice/phpword": "v0.13.*",
+    "phpoffice/phpexcel": "~1.8"
   }
 }
