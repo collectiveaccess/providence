@@ -8,8 +8,14 @@
  * file that was distributed with this source code.
  */
 
+/**
+ * @since      Class available since Release 2.0.0
+ */
 class Framework_TestImplementorTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @covers PHPUnit_Framework_TestCase
+     */
     public function testSuccessfulRun()
     {
         $result = new PHPUnit_Framework_TestResult;
@@ -17,7 +23,7 @@ class Framework_TestImplementorTest extends PHPUnit_Framework_TestCase
         $test = new DoubleTestCase(new Success);
         $test->run($result);
 
-        $this->assertCount(count($test), $result);
+        $this->assertEquals(count($test), count($result));
         $this->assertEquals(0, $result->errorCount());
         $this->assertEquals(0, $result->failureCount());
     }

@@ -13,11 +13,13 @@
  *
  * Uses array_replace_recursive() to check if a key value subset is part of the
  * subject array.
+ *
+ * @since Class available since Release 4.4.0
  */
 class PHPUnit_Framework_Constraint_ArraySubset extends PHPUnit_Framework_Constraint
 {
     /**
-     * @var array|Traversable
+     * @var array|ArrayAccess
      */
     protected $subset;
 
@@ -27,7 +29,7 @@ class PHPUnit_Framework_Constraint_ArraySubset extends PHPUnit_Framework_Constra
     protected $strict;
 
     /**
-     * @param array|Traversable $subset
+     * @param array|ArrayAccess $subset
      * @param bool              $strict Check for object identity
      */
     public function __construct($subset, $strict = false)
@@ -41,17 +43,12 @@ class PHPUnit_Framework_Constraint_ArraySubset extends PHPUnit_Framework_Constra
      * Evaluates the constraint for parameter $other. Returns true if the
      * constraint is met, false otherwise.
      *
-     * @param array|Traversable $other Array or Traversable object to evaluate.
+     * @param array|ArrayAccess $other Array or ArrayAccess object to evaluate.
      *
      * @return bool
      */
     protected function matches($other)
     {
-        //type cast $other & $this->subset as an array to allow
-        //support in standard array functions.
-        $other        = $this->toArray($other);
-        $this->subset = $this->toArray($this->subset);
-
         $patched = array_replace_recursive($other, $this->subset);
 
         if ($this->strict) {
@@ -84,24 +81,5 @@ class PHPUnit_Framework_Constraint_ArraySubset extends PHPUnit_Framework_Constra
     protected function failureDescription($other)
     {
         return 'an array ' . $this->toString();
-    }
-
-    /**
-     * @param array|Traversable $other
-     *
-     * @return array
-     */
-    private function toArray($other)
-    {
-        if (is_array($other)) {
-            return $other;
-        } elseif ($other instanceof ArrayObject) {
-            return $other->getArrayCopy();
-        } elseif ($other instanceof Traversable) {
-            return iterator_to_array($other);
-        }
-
-        // Keep BC even if we know that array would not be the expected one
-        return (array) $other;
     }
 }

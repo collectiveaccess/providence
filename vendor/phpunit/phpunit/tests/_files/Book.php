@@ -11,6 +11,7 @@
 /**
  * A book.
  *
+ * @since      Class available since Release 3.6.0
  */
 class Book
 {

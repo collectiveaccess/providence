@@ -4,7 +4,7 @@
     <xs:documentation source="https://phpunit.de/manual/5.7/en/appendixes.configuration.html">
       This Schema file defines the rules by which the XML configuration file of PHPUnit 5.7 may be structured.
     </xs:documentation>
-    <xs:appinfo source="https://phpunit.de/manual/5.7/en/appendixes.configuration.html"/>
+    <xs:appinfo source="http://www.phpunit.de/manual/current/en/appendixes.configuration.html"/>
   </xs:annotation>
   <xs:element name="phpunit" type="phpUnitType">
     <xs:annotation>
@@ -29,8 +29,8 @@
   <xs:complexType name="whiteListType">
     <xs:complexContent>
       <xs:extension base="filterType">
-        <xs:attribute name="addUncoveredFilesFromWhitelist" default="true" type="xs:boolean"/>
-        <xs:attribute name="processUncoveredFilesFromWhitelist" default="false" type="xs:boolean"/>
+        <xs:attribute name="addUncoveredFilesFromWhitelist" default="false" type="xs:boolean"/>
+        <xs:attribute name="processUncoveredFilesFromWhitelist" default="true" type="xs:boolean"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

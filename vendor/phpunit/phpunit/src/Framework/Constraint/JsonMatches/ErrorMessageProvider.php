@@ -10,6 +10,8 @@
 
 /**
  * Provides human readable messages for each JSON error.
+ *
+ * @since Class available since Release 3.7.0
  */
 class PHPUnit_Framework_Constraint_JsonMatches_ErrorMessageProvider
 {

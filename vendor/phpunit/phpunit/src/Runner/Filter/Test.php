@@ -8,6 +8,9 @@
  * file that was distributed with this source code.
  */
 
+/**
+ * @since Class available since Release 4.0.0
+ */
 class PHPUnit_Runner_Filter_Test extends RecursiveFilterIterator
 {
     /**
@@ -93,16 +96,12 @@ class PHPUnit_Runner_Filter_Test extends RecursiveFilterIterator
             return true;
         }
 
-        if ($test instanceof PHPUnit_Framework_WarningTestCase) {
-            $name = $test->getMessage();
-        } else {
-            $tmp = PHPUnit_Util_Test::describe($test, false);
+        $tmp = PHPUnit_Util_Test::describe($test, false);
 
-            if ($tmp[0] != '') {
-                $name = implode('::', $tmp);
-            } else {
-                $name = $tmp[1];
-            }
+        if ($tmp[0] != '') {
+            $name = implode('::', $tmp);
+        } else {
+            $name = $tmp[1];
         }
 
         $accepted = @preg_match($this->filter, $name, $matches);

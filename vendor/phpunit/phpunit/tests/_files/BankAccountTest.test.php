@@ -11,6 +11,7 @@
 /**
  * Tests for the BankAccount class.
  *
+ * @since      Class available since Release 2.3.0
  */
 class BankAccountWithCustomExtensionTest extends PHPUnit_Framework_TestCase
 {

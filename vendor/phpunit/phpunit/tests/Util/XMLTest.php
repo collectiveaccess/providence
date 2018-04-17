@@ -8,6 +8,10 @@
  * file that was distributed with this source code.
  */
 
+/**
+ * @since      Class available since Release 3.3.0
+ * @covers     PHPUnit_Util_XML
+ */
 class Util_XMLTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -68,23 +72,5 @@ class Util_XMLTest extends PHPUnit_Framework_TestCase
     public function testLoadBoolean()
     {
         PHPUnit_Util_XML::load(false);
-    }
-
-    public function testNestedXmlToVariable()
-    {
-        $xml = '<array><element key="a"><array><element key="b"><string>foo</string></element></array></element><element key="c"><string>bar</string></element></array>';
-        $dom = new DOMDocument();
-        $dom->loadXML($xml);
-
-        $expected = [
-            'a' => [
-                'b' => 'foo',
-            ],
-            'c' => 'bar',
-        ];
-
-        $actual = PHPUnit_Util_XML::xmlToVariable($dom->documentElement);
-
-        $this->assertSame($expected, $actual);
     }
 }

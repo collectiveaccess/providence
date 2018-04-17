@@ -31,6 +31,6 @@ Code Coverage Report:%w
 %s
 %w
  Summary:%w
-  Classes:%w(0/0)%w
+  Classes: 100.00% (1/1)
   Methods:%w(0/0)%w
   Lines:%w(0/0)%w

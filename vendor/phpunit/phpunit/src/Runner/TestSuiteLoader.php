@@ -10,6 +10,8 @@
 
 /**
  * An interface to define how a test suite should be loaded.
+ *
+ * @since      Interface available since Release 2.0.0
  */
 interface PHPUnit_Runner_TestSuiteLoader
 {

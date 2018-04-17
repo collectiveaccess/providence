@@ -10,6 +10,8 @@
 
 /**
  * Iterator for test suites.
+ *
+ * @since Class available since Release 3.1.0
  */
 class PHPUnit_Util_TestSuiteIterator implements RecursiveIterator
 {

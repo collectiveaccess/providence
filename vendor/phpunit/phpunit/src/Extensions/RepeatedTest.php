@@ -10,6 +10,8 @@
 
 /**
  * A Decorator that runs a test repeatedly.
+ *
+ * @since Class available since Release 2.0.0
  */
 class PHPUnit_Extensions_RepeatedTest extends PHPUnit_Extensions_TestDecorator
 {
@@ -34,7 +36,7 @@ class PHPUnit_Extensions_RepeatedTest extends PHPUnit_Extensions_TestDecorator
     {
         parent::__construct($test);
 
-        if (is_int($timesRepeat) &&
+        if (is_integer($timesRepeat) &&
             $timesRepeat >= 0) {
             $this->timesRepeat = $timesRepeat;
         } else {

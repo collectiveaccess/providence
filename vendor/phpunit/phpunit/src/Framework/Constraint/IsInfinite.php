@@ -10,6 +10,8 @@
 
 /**
  * Constraint that accepts infinite.
+ *
+ * @since      Class available since Release 5.0.0
  */
 class PHPUnit_Framework_Constraint_IsInfinite extends PHPUnit_Framework_Constraint
 {

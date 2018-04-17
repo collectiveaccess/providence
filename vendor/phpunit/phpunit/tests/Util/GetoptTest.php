@@ -8,6 +8,8 @@
  * file that was distributed with this source code.
  */
 
+/**
+ */
 class Util_GetoptTest extends PHPUnit_Framework_TestCase
 {
     public function testItIncludeTheLongOptionsAfterTheArgument()

@@ -10,6 +10,8 @@
 
 /**
  * Asserts whether or not two JSON objects are equal.
+ *
+ * @since Class available since Release 3.7.0
  */
 class PHPUnit_Framework_Constraint_JsonMatches extends PHPUnit_Framework_Constraint
 {

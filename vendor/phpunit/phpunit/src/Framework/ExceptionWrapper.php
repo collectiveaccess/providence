@@ -16,13 +16,15 @@
  *
  * Unlike PHPUnit_Framework_Exception, the complete stack of previous Exceptions
  * is processed.
+ *
+ * @since Class available since Release 4.3.0
  */
 class PHPUnit_Framework_ExceptionWrapper extends PHPUnit_Framework_Exception
 {
     /**
      * @var string
      */
-    protected $className;
+    protected $classname;
 
     /**
      * @var PHPUnit_Framework_ExceptionWrapper|null
@@ -38,7 +40,7 @@ class PHPUnit_Framework_ExceptionWrapper extends PHPUnit_Framework_Exception
         // @see http://php.net/manual/en/class.pdoexception.php#95812
         parent::__construct($e->getMessage(), (int) $e->getCode());
 
-        $this->className = get_class($e);
+        $this->classname = get_class($e);
         $this->file      = $e->getFile();
         $this->line      = $e->getLine();
 
@@ -56,9 +58,9 @@ class PHPUnit_Framework_ExceptionWrapper extends PHPUnit_Framework_Exception
     /**
      * @return string
      */
-    public function getClassName()
+    public function getClassname()
     {
-        return $this->className;
+        return $this->classname;
     }
 
     /**

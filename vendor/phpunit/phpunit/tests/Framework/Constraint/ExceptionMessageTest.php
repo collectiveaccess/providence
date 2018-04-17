@@ -8,6 +8,10 @@
  * file that was distributed with this source code.
  */
 
+/**
+ * @since      Class available since Release 4.0.20
+ * @covers     PHPUnit_Framework_Constraint_ExceptionMessage
+ */
 class ExceptionMessageTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -23,7 +27,7 @@ class ExceptionMessageTest extends PHPUnit_Framework_TestCase
      * @expectedException \Exception
      * @expectedExceptionMessage A partial
      */
-    public function testPartialMessageBegin()
+    public function testPatialMessageBegin()
     {
         throw new Exception('A partial exception message');
     }
@@ -32,7 +36,7 @@ class ExceptionMessageTest extends PHPUnit_Framework_TestCase
      * @expectedException \Exception
      * @expectedExceptionMessage partial exception
      */
-    public function testPartialMessageMiddle()
+    public function testPatialMessageMiddle()
     {
         throw new Exception('A partial exception message');
     }
@@ -41,7 +45,7 @@ class ExceptionMessageTest extends PHPUnit_Framework_TestCase
      * @expectedException \Exception
      * @expectedExceptionMessage exception message
      */
-    public function testPartialMessageEnd()
+    public function testPatialMessageEnd()
     {
         throw new Exception('A partial exception message');
     }

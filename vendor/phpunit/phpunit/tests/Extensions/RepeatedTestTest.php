@@ -8,6 +8,10 @@
  * file that was distributed with this source code.
  */
 
+/**
+ * @since      Class available since Release 2.0.0
+ * @covers     PHPUnit_Extensions_RepeatedTest
+ */
 class Extensions_RepeatedTestTest extends PHPUnit_Framework_TestCase
 {
     protected $suite;
@@ -23,28 +27,28 @@ class Extensions_RepeatedTestTest extends PHPUnit_Framework_TestCase
     public function testRepeatedOnce()
     {
         $test = new PHPUnit_Extensions_RepeatedTest($this->suite, 1);
-        $this->assertCount(2, $test);
+        $this->assertEquals(2, count($test));
 
         $result = $test->run();
-        $this->assertCount(2, $result);
+        $this->assertEquals(2, count($result));
     }
 
     public function testRepeatedMoreThanOnce()
     {
         $test = new PHPUnit_Extensions_RepeatedTest($this->suite, 3);
-        $this->assertCount(6, $test);
+        $this->assertEquals(6, count($test));
 
         $result = $test->run();
-        $this->assertCount(6, $result);
+        $this->assertEquals(6, count($result));
     }
 
     public function testRepeatedZero()
     {
         $test = new PHPUnit_Extensions_RepeatedTest($this->suite, 0);
-        $this->assertCount(0, $test);
+        $this->assertEquals(0, count($test));
 
         $result = $test->run();
-        $this->assertCount(0, $result);
+        $this->assertEquals(0, count($result));
     }
 
     public function testRepeatedNegative()

@@ -13,6 +13,8 @@ use SebastianBergmann\Comparator\ComparisonFailure;
 /**
  * A TestListener that generates a logfile of the test execution using the
  * TeamCity format (for use with PhpStorm, for instance).
+ *
+ * @since Class available since Release 5.0.0
  */
 class PHPUnit_Util_Log_TeamCity extends PHPUnit_TextUI_ResultPrinter
 {
@@ -72,6 +74,8 @@ class PHPUnit_Util_Log_TeamCity extends PHPUnit_TextUI_ResultPrinter
      * @param PHPUnit_Framework_Test    $test
      * @param PHPUnit_Framework_Warning $e
      * @param float                     $time
+     *
+     * @since Method available since Release 5.1.0
      */
     public function addWarning(PHPUnit_Framework_Test $test, PHPUnit_Framework_Warning $e, $time)
     {
@@ -322,9 +326,9 @@ class PHPUnit_Util_Log_TeamCity extends PHPUnit_TextUI_ResultPrinter
     {
         $message = '';
 
-        if ($e instanceof PHPUnit_Framework_ExceptionWrapper) {
-            if (strlen($e->getClassName()) != 0) {
-                $message = $message . $e->getClassName();
+        if (!$e instanceof PHPUnit_Framework_Exception) {
+            if (strlen(get_class($e)) != 0) {
+                $message = $message . get_class($e);
             }
 
             if (strlen($message) != 0 && strlen($e->getMessage()) != 0) {
