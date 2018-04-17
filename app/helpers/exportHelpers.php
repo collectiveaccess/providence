@@ -35,11 +35,6 @@
    */
 	require_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
-   
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
-	
-	//\PhpOffice\PhpPresentation\Autoloader::register();
 	
    # ----------------------------------------
 	/**
