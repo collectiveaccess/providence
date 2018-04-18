@@ -657,8 +657,6 @@
 				if (!isset($va_submenu_item['parameters']) || !is_array($va_submenu_item['parameters'])) { $va_submenu_item['parameters'] = array(); }
 				if (isset($va_submenu_item) && isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) {
 					$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
-				} elseif(isset($va_submenu_item['displayName']) && (sizeof(array_keys($va_submenu_item) == 1))) {
-					$vs_buf .= $va_submenu_item['displayName'];
 				} else {
 					$vs_buf .= "<a href='#'>".$va_submenu_item['displayName']."</a>";
 				}
