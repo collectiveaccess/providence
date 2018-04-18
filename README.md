@@ -11,9 +11,9 @@ CollectiveAccess is freely available under the open source GNU Public License, m
 
 ----Updating from version 1.7 or later----
 
-NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING INSTALL prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
+NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
 
-To update from a version 1.7.x installation decompress the CollectiveAccess Providence 1.7.6 tar.gz or zip file, and replace the files in your existing files with those in the update. Take care to preserve your media directory, local configuration directory (app/conf/local), any local print templates (app/printTemplates) and your setup.php file.
+To update from a version 1.7.x installation decompress the CollectiveAccess Providence 1.7.6 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (app/conf/local), any local print templates (app/printTemplates) and your setup.php file.
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
@@ -24,9 +24,9 @@ Click on the "here" link to begin the database update process. Note that 1.7.6 i
 
 ----Updating from version 1.6 or earlier----
 
-NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING INSTALL prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
+NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
 
-To update from a version 1.6.x or older installation decompress the CollectiveAccess Providence 1.7.6 tar.gz or zip file, and replace the files in your existing files with those in the update. Take care to preserve your media directory, local configuration directory (app/conf/local), and any local print templates (app/printTemplates). 
+To update from a version 1.6.x or older installation decompress the CollectiveAccess Providence 1.7.6 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (app/conf/local), and any local print templates (app/printTemplates). 
 
 Next rename your existing setup.php to another name (Eg. "setup.php-old"). Then copy the current template in setup.php-dist to setup.php. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your old setup.php file as-is. Only the format of the setup.php file has changed.
 
