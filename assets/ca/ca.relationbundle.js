@@ -95,7 +95,7 @@ var caUI = caUI || {};
 			});
 			
 			// select default
-			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + values['relationship_type_id'] + "\"]").prop('selected', true);
+			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + values['relationship_type_id'] + "\"], #" + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + values['rel_type_id'] + "\"]").prop('selected', true);
 		
 			// set current type
 			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', item_type_id);
