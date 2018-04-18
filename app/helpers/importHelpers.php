@@ -32,8 +32,6 @@
 
 	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 
 	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/TGN.php');
 	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/AAT.php');

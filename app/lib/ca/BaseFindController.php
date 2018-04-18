@@ -479,8 +479,6 @@
 			if(substr($ps_output_type, 0, 4) !== '_pdf') {
 				switch($ps_output_type) {
 					case '_xlsx':
-						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
-						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
 						$this->render('Results/xlsx_results.php');
 						return;
                     case '_docx':

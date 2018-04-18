@@ -5054,6 +5054,8 @@ if (!$vb_batch) {
  	 */
 	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null, &$pn_count=null) {
 		global $AUTH_CURRENT_USER_ID;
+		$o_dm = Datamodel::load();
+				        
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
 
@@ -5879,12 +5881,24 @@ if (!$vb_batch) {
 							
 				// filter for current?
 				if($pb_show_current_only && $t_item_rel) {
-					$qr_rels = caMakeSearchResult($t_item_rel->tableName(), [$qr_res->get($vs_key)]);
+				    if ($this->isRelationship()) {
+				        $k = $this->tableName().".".(($this->getLeftTableFieldName() == $vs_key) ? $this->getRightTableFieldName() : $this->getLeftTableFieldName());
+				        $t = $t_rel_item->tableName();
+				        $id = $qr_res->get($t_rel_item->primaryKey());
+				    } else {
+				        $k = $this->primaryKey(true);
+				        $t = $t_item_rel->tableName();
+				        $id = $qr_res->get($vs_key);
+				    }
+				    $cd = $ps_current_date_bundle;
+				    if ($cd == 'effective_date') { $cd = $t_item_rel->tableName().".{$cd}"; }
+				    
+					$qr_rels = caMakeSearchResult($t, [$id]);
 					while($qr_rels->nextHit()) {
-						foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
+						foreach($d= $qr_rels->get($cd, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
 							$va_tmp = explode("/", $vs_date);
 							if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
-							$va_rels_for_id_by_date[$qr_rels->get($this->primaryKey(true))][$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_v] = $va_rels_for_id[$vs_v];
+							$va_rels_for_id_by_date[$qr_rels->get($k)][$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_v] = $va_rels_for_id[$vs_v];
 						}
 					}
 				}
@@ -5925,6 +5939,9 @@ if (!$vb_batch) {
 			//
 			// END - non-self relation
 			//
+		}
+		if ($pb_show_current_only) {
+		    $va_rels = array_slice($va_rels, sizeof($va_rels)-1, 1);
 		}
 
 		// Apply restrictToBundleValues

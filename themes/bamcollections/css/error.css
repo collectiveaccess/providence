@@ -1,0 +1,182 @@
+@import url("//hello.myfonts.net/count/28ec2c");
+
+@font-face {font-family: 'DIN-Regular';src: url('din/28EC2C_0_0.eot');src: url('din/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('din/28EC2C_0_0.woff') format('woff'),url('din/28EC2C_0_0.ttf') format('truetype');}
+
+html, body {
+    font: 12px Helvetica, Sans-serif;
+    margin:0px;
+    padding:0px;
+    background-color:#FFFFFF;
+    height: 100%;
+    color:#333333;
+    line-height:1.3em;
+}
+
+form {
+    display:inline;
+}
+
+a, a:link, a:visited, a font { color: #134959; text-decoration: underline; }
+
+a:hover{
+    color: #1FAA99;
+}
+#box {
+    width:485px;
+    background-color: #FFFFFF;
+    text-align:left;
+    margin: 100px auto;
+    -moz-box-shadow: 0 0 5px #888;
+    -webkit-box-shadow: 0 0 5px#888;
+    box-shadow: 0 0 5px #888;
+    padding-top: 25px;
+}
+
+#errorDetails {
+    width:80%;
+    overflow-y: auto;
+    background-color: #FFFFFF;
+    text-align:left;
+    margin: 20px auto;
+    -moz-box-shadow: 0 0 5px #888;
+    -webkit-box-shadow: 0 0 5px#888;
+    box-shadow: 0 0 5px #888;
+    padding-top: 15px;
+}
+
+#logo{
+    text-align:center;
+    padding:5px 0px 5px 0px;
+}
+
+#content{
+    padding:10px 20px 20px 20px;
+}
+
+.errorPanel {
+    padding: 10px;
+    font-size: 12px;
+    background-color: #eee;
+    margin:10px 0px 0px 0px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    min-height: 25px;
+}
+
+
+.errorPanel div.errorDescription{
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.errorPanel div.errorDescription span.errorMessage {
+    font-style: italic;
+    font-size:18px;
+}
+
+H1{
+    padding:0px 0px 5px 0px;
+    font-weight:bold;
+    font-size:30px;
+    text-align:left;
+}
+
+H2{
+    padding:0px 0px 5px 0px;
+    font-weight:bold;
+    font-size:14px;
+    text-align:left;
+}
+
+.contentError {
+    font-size:14px;
+    color: red;
+    font-weight: bold;
+    text-decoration: none;
+    margin: 10px 0px 5px 0px;
+}
+
+.installStatus {
+    font-size:16px;
+    color: #828282;
+    text-align: center;
+    padding: 20px;
+    line-height:1.3em;
+}
+.contentFailure, .contentSuccess{
+    color: #333333;
+    font-size:14px;
+    text-align: center;
+    text-decoration: none;
+    margin: 20px 0px 20px 0px;
+}
+
+.contentHighlight {
+    color: #1FAA99;
+}
+
+.permissionError {
+    padding: 10px;
+    font-size: 12px;
+    background-color: #eee;
+    margin:10px 0px 0px 0px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+
+.permissionErrorIcon {
+    float: left;
+    padding-right: 10px;
+}
+
+.error{
+    text-align: center;
+    color:red;
+    padding:10px 0px 5px 0px;
+    font-family: 'DIN-Regular', helvetica, sans-serif;
+    font-size: 22px;
+    line-height: 24px;
+}
+
+
+ol.tracelist {
+    display: block;
+    list-style-type: decimal;
+    -webkit-margin-before: 1em;
+    -webkit-margin-after: 1em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 40px;
+}
+
+ol.tracelist li {
+    font-size: 12px;
+    padding: 2px 4px;
+    list-style-type: decimal;
+    margin-left: 20px;
+}
+
+a.tracelistEntry {
+    cursor: help;
+    text-decoration: none;
+    color: #999;
+}
+
+ol.paramList {
+    display: block;
+    list-style-type: decimal;
+    -webkit-margin-before: 1em;
+    -webkit-margin-after: 1em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 40px;
+}
+
+ol.paramList li {
+    font-size: 12px;
+    padding: 2px 4px;
+    list-style-type: decimal;
+    margin-left: 20px;
+}

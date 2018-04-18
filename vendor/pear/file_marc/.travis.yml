@@ -1,0 +1,9 @@
+language: php
+sudo: false
+install:
+  - pear install -f package.xml
+php:
+  - 7
+  - 5.6
+  - 5.5
+script: pear run-tests -r tests/

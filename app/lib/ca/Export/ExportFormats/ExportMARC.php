@@ -37,7 +37,7 @@ class ExportMARC extends BaseExportFormat {
 	
 	# ------------------------------------------------------
 	public function __construct(){
-		require_once(__CA_LIB_DIR__.'/core/Parsers/File_MARC/MARC.php');
+		//require_once(__CA_LIB_DIR__.'/core/Parsers/File_MARC/MARC.php');
 
 		$this->ops_name = 'MARC';
 		$this->ops_element_description = _t('Values reference a combination of MARC 21 field tags and associated indicators separated by a forward slash ("/"), e.g. "300/##". For further information on how to create a MARC mapping, please refer to the CollectiveAccess online documentation.');

@@ -1,0 +1,35 @@
+{
+    "authors": [
+        {
+            "email": "dbs@php.net",
+            "name": "Dan Scott",
+            "role": "Lead",
+            "homepage": "https://coffeecode.net"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "File": "./"
+        }
+    },
+    "description": "Supports the MAchine Readable Cataloging (MARC) file format documented at http://loc.gov/marc/",
+    "include-path": [
+        "./"
+    ],
+    "license": "LGPL-2.1",
+    "name": "pear/file_marc",
+    "support": {
+        "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=File_MARC",
+        "source": "https://github.com/pear/File_MARC"
+    },
+    "type": "library",
+    "require": {
+        "pear/pear_exception": "1.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "suggest": {
+        "pear/validate_ispn": "Install optionally via your project's composer.json"
+    }
+}

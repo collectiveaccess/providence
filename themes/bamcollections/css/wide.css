@@ -1,0 +1,2044 @@
+/*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
+html, body { 
+	font: 10px "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, Sans-serif;
+	background-color: #EDEDED;
+	margin:0px;
+	padding:0px;
+	background-image:url('../graphics/backgrounds/bg.png');
+	height: 100%;
+}
+
+form{
+	display:inline;
+}
+
+a, a:link, a:visited, a font { color: #134959; text-decoration: underline; }
+
+a:hover{
+	color: #1FAA99;
+}
+
+h2 { font-size: 13px; color: #666; }
+
+.divide{
+	height:3px;
+	background-color:#DDDDDD;
+	margin: 2px 0px 2px 0px;
+	clear: both;
+}
+
+.title { 
+	font-size: 16px;
+	font-weight: bold;
+	color: #444444;
+}
+.subTitle {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #134959;
+	margin-bottom: 5px;
+	font-weight: bold;
+	text-align: left;
+}
+
+.width {
+	width: 1000px;
+}
+#topNav {
+	background-color: #134959;
+	color: #FFFFFF;
+	font-size: 11px;
+	border: 1px solid #333333;
+	z-index:1;
+	position: fixed; 
+	top: 0px; 
+	left: 0px; 
+	width: 100%;
+	margin-left: auto; 
+	margin-right: auto;
+}
+
+#topNavContainer {
+	position: relative; 
+	padding: 0px; 
+	margin: 0px;
+}
+
+#logo {
+	background-image: url('../graphics/logos/ca_wide.png');
+	background-repeat: no-repeat;
+	width: 207px;
+	height: 27px;
+	margin:0px 7px 0px 7px;
+	float: left;
+}
+* html #logo {margin:0px 0px 0px 4px;} /* IE6 only fixes width */
+#main{
+	background-color: #DDDDDD;
+	margin:0px;
+	padding:0px;
+	text-align:left;
+}
+
+#mainContent{
+	background-color: #FFFFFF;
+	margin:0px;
+	float:left;
+	padding: 10px 0 20px;
+	width:100%;	
+	margin-left: 0px; 
+	margin-top: 30px; 
+	min-height: 1000px;
+}
+* html #mainContent { width:736px;} /* IE6 only fixes width */
+
+.clear {
+	clear: both;
+}
+
+/* --- SIDE NAVIGATION --- */
+#leftNav {
+	visibility: hidden;
+}
+
+
+/* --- FOOTER STYLES --- */
+#footerContainer {
+	position: fixed; 
+	width: 100%; 
+	bottom: 0px; 
+	left: 0px; 
+	margin-left: auto; 
+	margin-right: auto;
+}
+
+#footer{
+	background-color: #134959;
+	color: #DEDEDE;
+	font-size: 10px;
+	padding: 5px 0px 4px 0px;
+	text-align:left;
+}
+#footer div{
+	padding: 0px 0px 0px 216px;
+	text-align:left;
+	width:784px;
+	margin-left:auto;
+	margin-right: auto;
+}
+#footer a{
+	color: #DEDEDE;
+}
+#footer a:hover{
+	color: #1FAA99;
+}
+
+a.feed-icon {
+	float:right;
+	text-decoration: none;
+	font-size: 10px;
+	height:14px;
+}
+a.feed-icon img{
+	vertical-align:top;
+	margin-top:-1px;
+	margin-right:2px;
+}
+
+#leftNav .disabled {
+	opacity: 0.4;
+}
+
+/* --- SuperFish styles --- */
+
+/*** ESSENTIAL STYLES ***/
+.sf-menu, .sf-menu * {
+	margin:			0;
+	padding:		0;
+	list-style:		none;
+}
+.sf-menu {
+	line-height:	1.0;
+}
+.sf-menu ul {
+	position:		absolute;
+	top:			-999em;
+	width:			12em; /* left offset of submenus need to match (see below) */
+}
+.sf-menu ul li {
+	width:			100%;
+}
+.sf-menu li:hover {
+	visibility:		inherit; /* fixes IE7 'sticky bug' */
+}
+.sf-menu li {
+	float:			left;
+	position:		relative;
+}
+.sf-menu a {
+	display:		block;
+	position:		relative;
+}
+.sf-menu li:hover ul,
+.sf-menu li.sfHover ul {
+	left:			0;
+	top:			2.5em; /* match top ul list item height */
+	z-index:		999;
+}
+ul.sf-menu li:hover li ul,
+ul.sf-menu li.sfHover li ul {
+	top:			-999em;
+}
+ul.sf-menu li li:hover ul,
+ul.sf-menu li li.sfHover ul {
+	left:			12em; /* match ul width */
+	top:			0;
+}
+ul.sf-menu li li:hover li ul,
+ul.sf-menu li li.sfHover li ul {
+	top:			-999em;
+}
+ul.sf-menu li li li:hover ul,
+ul.sf-menu li li li.sfHover ul {
+	left:			12em; /* match ul width */
+	top:			0;
+}
+
+/*** SKIN ***/
+.sf-menu {
+	float:			right;
+	margin-bottom:	0px;
+	text-align:left;
+	border-right:	1px solid #fff;
+}
+.sf-menu a {
+	border-left:	1px solid #fff;
+	border-top:		0px solid #134959;
+	padding: 		.75em 1em;
+	text-decoration:none;
+}
+.sf-menu a, .sf-menu a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#FFFFFF;
+	font-weight:bold;
+}
+.sf-menu ul ul {
+	border-top:		1px solid #FFF;
+	border-bottom:		1px solid #FFF;
+}
+.sf-menu ul ul ul {
+	border-top:		1px solid #FFF;
+	border-bottom:		1px solid #FFF;
+}
+.sf-menu li {
+	background:		#134959;
+}
+.sf-menu li li {
+	background:		#DDDDDD;
+}
+
+.sf-menu li li li {
+	background:		#DDDDDD;
+}
+.sf-menu li li a, .sf-menu  li li a:visited, .sf-menu li li li a, .sf-menu  li li li a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#4b4a4a;
+	font-weight:bold;
+}
+.sf-menu li:hover, .sf-menu li.sfHover,
+.sf-menu a:focus, .sf-menu a:hover, .sf-menu a:active,
+.sf-menu li li a:focus, .sf-menu li li a:hover, .sf-menu li li a:active,
+.sf-menu li li li a:focus, .sf-menu li li li a:hover, .sf-menu li li li a:active{
+	background:		#4b4a4a;
+	outline:		0;
+	color: #1FAA99;
+}
+
+.sf-menu li li:hover, .sf-menu li li li:hover{
+	background:		#AAAAAA;
+}
+
+.sf-menu-selected, #leftNav h2 a.sf-menu-selected, .sf-menu li li a.sf-menu-selected, .sf-menu li li li a.sf-menu-selected{
+	color:#FFFFFF;
+	background-color: #4b4a4a;
+}
+
+a.sf-menu-disabled-selected, #leftNav h2 a.sf-menu-disabled-selected {
+	opacity: 0.5;
+	color:#FFFFFF;
+	background-color: #4b4a4a;
+}
+
+a.sf-menu-disabled {
+	opacity: 0.5;
+	color:#FFFFFF;
+}
+
+/*** arrows **/
+.sf-menu a.sf-with-ul {
+	padding-right: 	2.25em;
+	min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
+}
+.sf-sub-indicator {
+	position:		absolute;
+	display:		block;
+	right:			.75em;
+	top:			1.05em; /* IE6 only */
+	width:			10px;
+	height:			10px;
+	text-indent: 	-999em;
+	overflow:		hidden;
+	background:		url('../graphics/icons/arrows_white.png') no-repeat -10px -100px; /* 8-bit indexed alpha png. IE6 gets solid image only */
+}
+a > .sf-sub-indicator {  /* give all except IE6 the correct values */
+	top:			.8em;
+	background-position: 0 -100px; /* use translucent arrow for modern browsers*/
+}
+/* apply hovers to modern browsers */
+a:focus > .sf-sub-indicator,
+a:hover > .sf-sub-indicator,
+a:active > .sf-sub-indicator,
+li:hover > a > .sf-sub-indicator,
+li.sfHover > a > .sf-sub-indicator {
+	background-position: -10px -100px; /* arrow hovers for modern browsers*/
+}
+
+/* point right for anchors in subs */
+.sf-menu ul .sf-sub-indicator { background-position:  -10px 0; }
+.sf-menu ul a > .sf-sub-indicator { background-position:  0 0; }
+/* apply hovers to modern browsers */
+.sf-menu ul a:focus > .sf-sub-indicator,
+.sf-menu ul a:hover > .sf-sub-indicator,
+.sf-menu ul a:active > .sf-sub-indicator,
+.sf-menu ul li:hover > a > .sf-sub-indicator,
+.sf-menu ul li.sfHover > a > .sf-sub-indicator {
+	background-position: -10px 0; /* arrow hovers for modern browsers*/
+}
+
+/*** shadows for all but IE6 ***/
+.sf-shadow ul {
+	background:	url('../graphics/backgrounds/shadow.png') no-repeat bottom right;
+	padding: 0 8px 9px 0;
+	-moz-border-radius-bottomleft: 17px;
+	-moz-border-radius-topright: 17px;
+	-webkit-border-top-right-radius: 17px;
+	-webkit-border-bottom-left-radius: 17px;
+	border-top-right-radius: 17px;
+	border-bottom-left-radius: 17px;
+}
+.sf-shadow ul.sf-shadow-off {
+	background: transparent;
+}
+
+.sf-menu-search {
+	position: relative; 
+}
+
+/*** SKIN FOR "SMALL" MENUS USED WITHIN BUTTONS ***/
+.sf-small-menu .sf-menu {
+	float:			right;
+	margin-bottom:	0px;
+	text-align:left;
+	border-right:	0px solid #fff;
+}
+.sf-small-menu .sf-menu a {
+	border-left:	0px solid #fff;
+	border-top:		0px solid #cccccc;
+	padding: 		.75em 2em;
+	background: #cccccc;
+	text-decoration:none;
+}
+.sf-small-menu .sf-menu a, .sf-small-menu .sf-menu a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#000000;
+	font-weight:normal;
+}
+.sf-small-menu .sf-menu ul ul {
+	border-top:		1px solid #FFF;
+	border-bottom:		1px solid #FFF;
+}
+.sf-small-menu .sf-menu ul ul ul {
+	border-top:		1px solid #FFF;
+	border-bottom:		1px solid #FFF;
+}
+.sf-small-menu .sf-menu li {
+	background:		#eeeeee;
+}
+.sf-small-menu .sf-menu li li {
+	background:		#eeeeee;
+}
+
+.sf-small-menu .sf-menu li li li {
+	background:		#eeeeee;
+}
+.sf-small-menu .sf-menu li li a, .sf-small-menu .sf-menu  li li a:visited, .sf-small-menu .sf-menu li li li a, .sf-small-menu .sf-menu  li li li a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#4b4a4a;
+	font-weight:bold;
+}
+
+
+/*** SKIN FOR MENUS USED WITHIN HIERARCHY SCREENS ***/
+#browseTypeMenu {
+	position:relative;
+	z-index:1;
+}
+.sf-hier-menu{
+}
+.sf-hier-menu ul.sf-menu li a div {
+	display:inline;
+}
+.sf-hier-menu .sf-menu {
+	float:none;
+	margin-bottom:	0px;
+	text-align:left;
+	border-right:	0px solid #fff;
+}
+.sf-hier-menu ul.sf-menu li a{
+	padding: 		0em 2em 1em 0em;
+	background: #FFFFFF;
+	text-decoration:none;
+}
+.sf-hier-menu ul.sf-menu ul li a, .sf-hier-menu ul.sf-menu ul ul li a, .sf-hier-menu ul.sf-menu ul ul ul li a  {
+	border-left:	0px solid #fff;
+	border-top:		0px solid #cccccc;
+	padding: 		.75em 2em;
+	background: #cccccc;
+	text-decoration:none;
+}
+.sf-hier-menu .sf-menu a, .sf-hier-menu .sf-menu a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#000000;
+	font-weight:normal;
+}
+.sf-hier-menu ul.sf-menu ul li a:hover, .sf-hier-menu ul.sf-menu ul ul li a:hover, .sf-hier-menu ul.sf-menu ul ul ul li a:hover  {
+	border-left:	0px solid #fff;
+	border-top:		0px solid #cccccc;
+	padding: 		.75em 2em;
+	background: #4B4B4B;
+	text-decoration:none;
+	color:			#FFFFFF;
+}
+.sf-hier-menu .sf-menu ul ul {
+	border-top:		1px solid #FFF;
+	border-bottom:		1px solid #FFF;
+}
+.sf-hier-menu .sf-menu ul ul ul {
+	border-top:		1px solid #FFF;
+	border-bottom:		1px solid #FFF;
+}
+.sf-hier-menu .sf-menu li {
+	background:		#eeeeee;
+}
+.sf-hier-menu .sf-menu li li {
+	background:		#eeeeee;
+}
+
+.sf-hier-menu .sf-menu li li li {
+	background:		#eeeeee;
+}
+.sf-hier-menu .sf-menu li li a, .sf-hier-menu .sf-menu  li li a:visited, .sf-hier-menu .sf-menu li li li a, .sf-hier-menu .sf-menu  li li li a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#4b4a4a;
+	font-weight:bold;
+}
+
+/*** NOTIFICATIONS ***/
+
+div.notification-info-box {
+	background:	url('../graphics/icons/info.gif') no-repeat 10px 5px;
+	text-indent: 32px;
+	background-color: #eeeeee;
+	padding: 5px;
+	margin-bottom: 10px;
+	width:100%;
+}
+
+* html div.notification-info-box {  /* IE6 fix */
+	width:auto;
+}
+
+div.notification-error-box {
+	background:	url('../graphics/icons/vorsicht.gif') no-repeat 10px 5px;
+	text-indent: 32px;
+	background-color: #eeeeee;
+	padding: 5px;
+	margin-bottom: 10px;
+	width:100%;
+}
+
+* html div.notification-error-box {  /* IE6 fix */
+	width:auto;
+}
+
+div.notification-warning-box {
+	background:	url('../graphics/icons/warning.gif') no-repeat 10px 5px;
+	text-indent: 32px;
+	background-color: #eeeeee;
+	padding: 5px;
+	margin-bottom: 10px;
+	width:100%;
+}
+
+* html div.notification-warning-box {  /* IE6 fix */
+	width:auto;
+}
+
+ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box {
+	list-style-type: none;
+}
+
+li.notification-info-box {
+	font-weight: bold;
+	color: #0000cc;
+	font-size: 12px;
+	text-indent: 10px;
+}
+
+li.notification-warning-box {
+	font-weight: bold;
+	color: #cccc00;
+	font-size: 12px;
+	text-indent: 10px;
+}
+
+li.notification-error-box {
+	font-weight: bold;
+	color: #cc0000;
+	font-size: 12px;
+	text-indent: 10px;
+}
+
+div.hint {
+	color: black;
+	border: 2px solid #000000;
+	background-color: #F08080;
+	padding: 5px;
+	margin-top: 5px;
+}
+
+
+/*** FORMS ***/
+
+.sectionBox{
+	margin: 0px 0px 0px 0px;
+	padding-right: 3px;
+	padding-top: 5px;
+	margin-bottom: 10px;
+	border-top: 1px solid #999999;
+	border-bottom: 1px solid #999999;
+}
+
+/* Style for labels on standard form fields (ie. no error) */
+.formLabel {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color: #333333;
+	margin-bottom: 5px;
+	font-weight: bold;
+	text-align: left;
+}
+.bundleLabel {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #134959;
+	margin-bottom: 10px;
+	padding-top: 3px;
+	font-weight: bold;
+	text-align: left;
+}
+
+/* Style for labels on form fields where an error has occurred */
+.formLabelError {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:10px;
+	color: #cc0000;
+	margin-bottom: 5px;
+	text-align: left;
+}
+
+.bundleLabelError {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color: #cc0000;
+	margin-bottom: 5px;
+	text-align: left;
+}
+
+.quick-search-form-container {
+	background-color: #eeeeee; 
+	position: absolute; 
+	width: 230px;
+	left: -126px;
+	display: none;
+	padding: 10px;
+	z-index:10;
+	opacity: 0.95;
+	border: 1px solid #666666;
+}
+
+.quick-search-form-container input {
+	font-size: 14px;
+	width: 195px;
+}
+
+.quick-search-form-container a {
+	font-size: 12px;
+	padding: 0em 0em;
+	border: none;
+	text-decoration: none;
+	float:			none;
+	position:		static;
+	display:		inline;
+}
+
+.quick-search-form-container a:hover {
+	font-size: 12px;
+	background: none;
+	background-color: transparent;
+	outline: 0;
+	color: transparent;
+}
+
+
+/* form field tooltips */
+#tooltip {
+	position: absolute;
+	z-index: 3000;
+	border: 1px solid #111;
+	background-color: #eee;
+	padding: 5px;
+	opacity: 0.85;
+}
+#tooltip h3, #tooltip div { margin: 0; }
+
+#tooltip.pretty {
+	font-family: Arial;
+	border: none;
+	width: 210px;
+	padding:20px;
+	height: 135px;
+	opacity: 0.8;
+	background: url('../graphics/backgrounds/tooltip_box.png');
+}
+#tooltip.pretty h3 {
+	margin-bottom: 0.25em;
+	font-size: 10pt;
+	width: 220px;
+	text-align: center;
+}
+#tooltip.pretty div { width: 205px; height: 130px; text-align: left; margin: 0px; overflow: hidden;}
+
+
+/*** Button styles ***/
+div.button{
+	padding-left:10px;
+	font-size: 11px;
+}
+div.button a{
+	color: #134959;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight:bold;
+}
+
+div.button a:hover{
+	color: #1FAA99;
+}
+div.button img{
+	vertical-align:middle;
+}
+
+a.button{
+	color: #134959;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight:bold;
+}
+
+a.button:hover{
+	color: #1FAA99;
+}
+
+a.form-button, span.form-button, del.form-button{
+	display:-moz-inline-box;
+	display:inline-block;
+	cursor:pointer;
+	border:none;
+    font-size:0;
+    line-height:0;
+    
+	/*
+	for Safari, read this first
+	http://creativebits.org/webdev/safari_background_repeat_bug_fix
+	*/
+	background-position:0 0;
+	background-repeat:no-repeat;
+	height:30px;
+	text-decoration:none;
+	color:#2e523b;
+	font-style:normal;
+	margin:0 6px 0px 0;
+	padding:0 10px 0 0;	
+	vertical-align:middle;	
+	
+    padding-top: 0px; /* was -2 */
+	_position:relative;
+	_width:10px;	
+	_overflow-y:hidden;
+}
+
+a.form-button, span.form-button, del.form-button,
+a.form-button span, span.form-button button, span.form-button input, del.form-button span{
+    background-image:url('../graphics/backgrounds/form_buttons.png');
+}
+
+a.form-button span, span.form-button button, span.form-button input, del.form-button span{
+	
+	white-space:nowrap;
+	cursor:pointer;
+    color:#222;
+	display:-moz-inline-box;
+	display:inline-block;
+	line-height:1;
+    letter-spacing:0 !important;
+    font-family:"Arial" !important;
+    font-size:12px !important;
+    font-style:normal;    
+    background-color:transparent;
+	background-position:100% 0;
+	background-repeat:no-repeat;
+	height:30px;
+	padding:8px 20px 0 10px;
+	margin:0 -16px 0 10px;
+	border:none;
+	vertical-align:text-top;
+	zoom: 1;  
+	_position:relative;
+    _padding-left:0px;
+	_padding-right:12px;
+	_margin-right:-10px;	
+	_display:block;
+	_top:0;
+	_right:-5px;
+	
+}
+
+span.form-button button{
+   line-height:2.5;/*Opera need this*/
+}
+
+html.safari a.form-button span, 
+html.safari del.form-button span{
+  line-height:1.3;
+}
+
+html.safari span.form-button button{
+  line-height:2.6;
+}
+
+html.safari a.form-button:focus,
+html.safari span.form-button button:focus{
+    outline:none;
+}
+
+
+
+del.form-button{
+	/* cursor:not-allowed;	*/
+	background-position:0 -180px;
+	
+}
+
+del.form-button span{
+	cursor:default;
+    color:#aaa !important;
+	background-position:100% -180px;
+}
+
+span.form-button button, span.form-button input{
+	padding-top:0px;
+	line-height:2.5;/*Opera need this*/
+}
+
+/* Button hover style */
+
+a.form-button:hover, 
+span.form-button:hover,
+a.form-button:focus, 
+
+a.dom-button-focus, 
+span.form-button-behavior-hover{
+	background-position:0 -60px;
+	color:#222;
+	text-decoration:none;
+}
+
+a.form-button:hover span, 
+span.form-button:hover button, 
+a.form-button:focus span, 
+
+span.form-button-behavior-hover button, 
+span.form-button-behavior-hover input{
+	background-position:100% -60px;
+}
+
+a.form-button:active, a.form-button:focus span{
+	color:#444;
+}
+
+del.form-button-behavior-hover, del.form-button:hover{
+	background-position:0 -180px;
+	/* cursor:not-allowed; */
+}
+
+del.form-button-behavior-hover span, del.form-button:hover span{
+	background-position:100% -180px;
+	/* cursor:not-allowed; */
+	
+}
+
+
+div.form-header-button {
+	float: right;
+	text-align: center;
+	margin-left: 10px;
+	background-color: #eeeeee;
+	padding: 3px;
+}
+
+a.form-header-button {
+	text-decoration: none;
+	color: #000000;
+}
+
+img.form-button-left{  /** used to align images to the left **/
+	float: left; 
+	display: block;
+}
+
+* html img.form-button-left{
+	display:none;
+}
+
+/*** FORM LISTS ***/
+
+
+/* table in general */
+
+table.listtable {
+	background-color: #CDCDCD;
+	margin:10px 0pt 15px;
+	font-size: 8pt;
+	width: 100%;
+	text-align: left;
+}
+
+/* table headers */
+
+table.listtable thead tr th {
+	border: 1px solid #FFF;
+	font-size: 8pt;
+	padding: 4px 15px 4px 4px;
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+
+th.list-header-unsorted {
+	background-image: url('../graphics/icons/bg.gif');
+	background-color: #eeeeee;
+}
+
+th.list-header-nosort {
+	background-color: #eeeeee;
+}
+
+th.list-header-sorted-desc {
+	background-image: url('../graphics/icons/desc.gif');
+	background-color: #dedede;
+}
+
+th.list-header-sorted-asc {
+	background-image: url('../graphics/icons/asc.gif');
+	background-color: #cccccc;
+}
+
+/* table fields */
+
+table.listtable tbody td {
+	color: #3D3D3D;
+	padding: 4px;
+	background-color: #FFF;
+	vertical-align: top;
+}
+
+table.listtable tbody tr.odd td {
+	background-color:#f5f5f5;
+}
+
+/* misc */
+
+div.control-box {
+	background-color: #dddddd;
+	padding: 4px;
+	margin-bottom: 15px;
+	text-align: right;
+	width: 100%;
+	float: left;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+a.list-button {
+	margin-left: 3px;
+	margin-right: 3px;
+}
+
+a.list-link {
+	text-decoration: none;
+	color: #000000;
+}
+
+div.control-box-left-content {
+	float: left;
+	margin: 3px;
+}
+
+div.control-box-middle-content {
+	text-align: center;
+	margin: 10px;
+	float: left;
+	font-size:12px;
+	font-weight: bold;
+}
+
+div.control-box-right-content {
+	float: right;
+	margin: 3px;
+}
+
+div.list-filter, div.simple-search-box {
+	float: left;
+	margin: 3px;
+}
+
+div.delete-control-box {
+	margin-top: 32px;
+}
+div.delete_warning_box {
+	background:	url('../graphics/icons/warning.gif') no-repeat 10px 5px;
+	text-indent: 42px;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 5px;
+	width: 100%;
+	height: 32px;
+}
+
+/*** SEARCH FORMS ***/
+
+div.search-options-box {
+	background-color: #DDDDDD;
+	padding: 5px 5px 5px 5px;
+	width: 100%;
+}
+
+div.search-hier-browser-box {
+	width: 400px;
+	height: 100px;
+}
+
+/*** LABEL FORM ELEMENTS ***/
+
+.bundleContainer{
+	margin-top:3px;
+	background-color: #EEEEEE;
+}
+.labelInfo {
+	background-color: #EEEEEE;
+	border-bottom: 3px solid #FFFFFF;
+	margin: 0px;
+	padding: 5px;
+}
+.labelInfo #image{
+	text-align:center;
+}
+.labelInfo div{
+	margin-top:5px;
+}
+.labelInfo .form-button{
+	float:right;
+	margin: 0px;
+	padding: 0px;
+}
+.labelInfo ul, .labelInfo ul li{
+	display:list-item;
+	list-style: none;
+	margin: 0px;
+	border:none;
+}
+.labelInfo ul li a {_height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0;}
+
+.labelInfo ul li a:hover { background-color: #fff; }
+
+.labelLocale {
+	font-size: 8px;
+}
+
+.labelDisplay {
+	padding-left:10px;
+	font-size: 13px;
+	margin:auto;
+}
+
+/*** SEARCH RESULTS ***/
+
+/* searchnav is used on all result pages with pages navigation **/
+.searchNav{
+	text-align:center;
+	margin:5px 0px 3px 0px;
+	font-size:11px;
+}
+.searchNav form{
+	float:left;
+	text-align:left;
+	width:220px;
+	margin:0px;
+}
+.searchNav form input[type="text"]{
+	font-size:9px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	border:1px solid #999999;
+	padding:0px;
+	margin:0px;
+	font-weight:normal;
+	text-align:center;
+}
+.searchNav .nav{
+	float:right;
+	text-align:right;
+	width:220px;
+}
+
+div.searchNoResults {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:14px;
+	color: #134959;
+	margin-bottom: 5px;
+	font-weight: bold;
+	text-align: center;
+}
+
+div.searchSuggestion {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #134959;
+	margin-bottom: 5px;
+	text-align: center;
+}
+
+a.searchSuggestion {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #cc0000;
+	margin-bottom: 5px;
+	font-style: italic;
+	text-align: center;
+}
+
+.qlButtonContainerThumbnail{
+	width:76px;
+	font-size:11px;
+	padding: 3px 3px 3px 3px;
+	background-color: #DDDDDD;
+	position: absolute;
+	top: 95px;
+	left: 42px;
+	border:2px solid #4b4a4a;
+	display: none;
+}
+.qlButtonContainerFull{
+	width:76px;
+	font-size:11px;
+	padding: 3px 3px 3px 3px;
+	background-color: #DDDDDD;
+	position: absolute;
+	top: 110px;
+	left: 82px;
+	border:2px solid #4b4a4a;
+	display: none;
+}
+.qlButtonContainerThumbnail a, .qlButtonContainerFull a{
+	font-size:11px;
+	text-decoration: none;
+	text-transform:uppercase;
+	font-weight:bold;
+}
+.qlButtonContainerThumbnail a:hover, .qlButtonContainerFull a:hover{
+	color:#1FAA99;
+}
+
+.objectThumbnailsImageContainer {
+	position: relative;
+	background-color:#EEEEEE;
+	border:1px solid #DDDDDD;
+	width:170px;
+}
+.objectFullImageContainer {
+	position: relative;
+	background-color:#EEEEEE;
+	border:1px solid #DDDDDD;
+	width:250px;
+	margin: 10px 20px 10px 0px;
+	text-align:center;
+	float:left;
+}
+.objectFullText{
+	text-align:right;
+}
+.objectFullTextTitle{
+	text-align:right;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #134959;
+	margin-top: 10px;
+	font-weight: bold;
+}
+.objectFullTextTextBlock{
+	margin-top:5px;
+}
+
+/*** OBJECT REPRESENTATION FORM ELEMENTS ***/
+table.objectRepresentationListItem {
+	width: 100%;
+}
+
+td.objectRepresentationListItemImage {
+	width: 140px;
+	text-align: right;
+}
+
+
+/* object representation scroll window in object editor info widget */
+#objectInfoRepScrollingViewer {
+	width:170px;
+	text-align:center;
+	margin-top: 0px;
+	margin-left: 0px;
+	padding-top: 0px;
+}
+#leftNav h3 #objectInfoRepScrollingViewer{
+	width:170px;
+	text-align:center;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+#leftNav #objectInfo div #objectInfoRepScrollingViewerContainer {
+	position: relative;
+	overflow: hidden;
+	width: 170px;
+	height: 170px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+#leftNav #objectInfo div #objectInfoRepScrollingViewerImageContainer {
+	position: absolute;
+	width: 170px;
+	height: 170px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+#leftNav #objectInfo div .objectInfoRepScrollerImage {
+	position: absolute;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+#leftNav #objectInfo div #objectInfoRepScrollerImages {
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+/*** OBJECT REPRESENTATION ANNOTATION FORM ELEMENTS ***/
+table.representationAnnotationListItem {
+	width: 100%;
+}
+
+.annotationItem {
+	background-color: #EEEEEE;
+	border-bottom: 3px solid #FFFFFF;
+	margin: 0px;
+	padding: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+/* overlays (for object representations) */
+#objectRepresentationOverlay {
+	width:900px;
+	height: 620px;
+	display:none;
+	overflow: hidden;
+	
+	background-image:url(../graphics/backgrounds/overlay.png);
+}
+
+#objectRepresentationOverlay div.close {
+	background:url(../graphics/buttons/close.png) no-repeat; 
+	position:absolute; 
+	top:10px; 
+	right:10px;
+	width:36px;
+	height:36px;
+	cursor:pointer;
+}
+
+#objectRepresentationOverlayContent {
+	position: absolute;
+	top: 38px;
+	left: 38px;
+	width: 825px;
+	height: 550px;
+	overflow: auto;
+	
+	text-align: center;
+}
+
+div.objectRepresentationOverlayControls {
+	background-color: #FFFFFF;
+	margin-left: 275px;
+	margin-top: 10px;
+	padding: 3px;
+	font-size: 9px;
+	width: 350px;
+	text-align: center;
+}
+select.objectRepresentationOverlayControls {
+	font-size: 9px;
+}
+
+
+#objectInfoRepresentationOverlay {
+	width:900px;
+	height: 620px;
+	display:none;
+	overflow: hidden;
+	
+	background-image:url(../graphics/backgrounds/overlay.png);
+}
+
+#objectInfoRepresentationOverlay div.close {
+	background:url(../graphics/buttons/close.png) no-repeat; 
+	position:absolute; 
+	top:10px; 
+	right:10px;
+	width:36px;
+	height:36px;
+	cursor:pointer;
+}
+
+#objectInfoRepresentationOverlayContent {
+	position: absolute;
+	top: 38px;
+	left: 38px;
+	width: 825px;
+	height: 550px;
+	overflow: auto;
+	
+	text-align: center;
+}
+
+/* overlays (for search results QuickLook) */
+#quickLookOverlay {
+	width:900px;
+	height: 620px;
+	display:none;
+	overflow: hidden;
+	
+	background-image:url(../graphics/backgrounds/overlay.png);
+}
+
+#quickLookOverlay div.close {
+	background:url(../graphics/buttons/close.png) no-repeat; 
+	position:absolute; 
+	top:10px; 
+	right:10px;
+	width:36px;
+	height:36px;
+	cursor:pointer;
+}
+
+#quickLookOverlayContent {
+	position: absolute;
+	top: 58px;
+	left: 38px;
+	width: 830px;
+	height: 525px;
+	overflow: auto;
+	text-align: center;
+}
+#quickLookTabContainer{
+	width:403px;
+	float:left;
+	margin-left:3px;
+	text-align:left;
+}
+#quickLookImage{
+	width:400px;
+	padding:10px;
+	float:left;
+	margin-top:25px;
+	background-color:#EEEEEE;
+	border:1px solid #DDDDDD;
+}
+#quickLookTabContainer .label{
+	font-size:12px;
+	font-weight:bold;
+	color:#134959;
+}
+#quickLookTabContainer .value{
+	margin: 0px 0px 15px 15px;
+}
+#quickLookTabContainer img{
+	vertical-align:middle;
+	margin:0px 0px 5px 15px;
+}
+#quickLookTabContainer a {
+	text-decoration:none;
+	font-weight:bold;
+}
+#quickLookFooterLinks{
+	clear:left;
+	text-align:left;
+	padding: 5px 0px 0px 0px;
+}
+
+/* object representation scroll window in object search result quick look */
+#quickLookRepScrollingViewer {
+	width:400px;
+	text-align:center;
+	margin-top: 0px;
+	margin-left: 0px;
+	padding-top: 0px;
+}
+#quickLookImageNav {
+	margin-top:5px;
+	font-size:12px;
+}
+#quickLookImageNav a {
+	text-decoration:none;
+}
+
+#quickLookImage div #quickLookRepScrollingViewerContainer {
+	position: relative;
+	overflow: hidden;
+	width: 400px;
+	height: 400px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+#quickLookImage div #quickLookRepScrollingViewerImageContainer {
+	position: absolute;
+	width: 400px;
+	height: 400px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+#quickLookImage div .quickLookRepScrollerImage {
+	position: absolute;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+#quickLookImage div #quickLookRepScrollerImages {
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+/*** Entity Search Results ***/
+#entityResults .row{
+	padding:8px 5px 8px 5px;
+	border-bottom: 1px solid #DDDDDD;
+}
+#entityResults .bgRow{
+	background-color:#EEEEEE;
+}
+#entityResults a{
+	font-weight:bold;
+	color: #134959;
+	text-decoration:none;
+}
+#entityResults a:hover{
+	color: #1FAA99;
+	text-decoration:none;
+}
+
+/*** Place Search Results ***/
+#placeResults .row{
+	padding:8px 5px 8px 5px;
+	border-bottom: 1px solid #DDDDDD;
+}
+#placeResults .bgRow{
+	background-color:#EEEEEE;
+}
+#placeResults a{
+	font-weight:bold;
+	color: #134959;
+	text-decoration:none;
+}
+#placeResults a:hover{
+	color: #1FAA99;
+	text-decoration:none;
+}
+
+
+/*** Collection Search Results ***/
+#collectionResults .row{
+	padding:8px 5px 8px 5px;
+	border-bottom: 1px solid #DDDDDD;
+}
+#collectionResults .bgRow{
+	background-color:#EEEEEE;
+}
+#collectionResults a{
+	font-weight:bold;
+	color: #134959;
+	text-decoration:none;
+}
+#collectionResults a:hover{
+	color: #1FAA99;
+	text-decoration:none;
+}
+
+/*** Occurrence Search Results ***/
+#occurrenceResults .row{
+	padding:8px 5px 8px 5px;
+	border-bottom: 1px solid #DDDDDD;
+}
+#occurrenceResults .bgRow{
+	background-color:#EEEEEE;
+}
+#occurrenceResults a{
+	font-weight:bold;
+	color: #134959;
+	text-decoration:none;
+}
+#occurrenceResults a:hover{
+	color: #1FAA99;
+	text-decoration:none;
+}
+
+
+/*** List Item Search Results ***/
+#listItemResults .row{
+	padding:8px 5px 8px 5px;
+	border-bottom: 1px solid #DDDDDD;
+}
+#listItemResults .bgRow{
+	background-color:#EEEEEE;
+}
+#listItemResults a{
+	font-weight:bold;
+	color: #134959;
+	text-decoration:none;
+}
+#listItemResults a:hover{
+	color: #1FAA99;
+	text-decoration:none;
+}
+
+
+/*** General list Search Results ***/
+#listResults .row{
+	padding:8px 5px 8px 5px;
+	border-bottom: 1px solid #DDDDDD;
+}
+#listResults .bgRow{
+	background-color:#EEEEEE;
+}
+#listResults a{
+	font-weight:bold;
+	color: #134959;
+	text-decoration:none;
+}
+#listResults a:hover{
+	color: #1FAA99;
+	text-decoration:none;
+}
+
+/*** Object Lot Search Results ***/
+#objectLotResults .row{
+	padding:8px 5px 8px 5px;
+	border-bottom: 1px solid #DDDDDD;
+}
+#objectLotResults .bgRow{
+	background-color:#EEEEEE;
+}
+#objectLotResults a{
+	font-weight:bold;
+	color: #134959;
+	text-decoration:none;
+}
+#objectLotResults a:hover{
+	color: #1FAA99;
+	text-decoration:none;
+}
+
+
+/*** ATTRIBUTES FORM ELEMENTS ***/
+table.attributeListItem {
+	padding: 0px;
+	margin: 0px;
+}
+td.attributeListItem {
+	padding: 0px;
+	margin: 0px;
+}
+
+/*** EDITOR FORMS ***/
+
+/* pads bottom of editor form to clear fixed footer */
+div.editorBottomPadding {
+	height: 25px;
+}
+
+/*** FORM ELEMENTS ***/
+input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
+	font-size:12px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	border:1px solid #999999;
+	padding:3px;
+	font-weight:normal;
+}
+
+
+/******/
+/* Caution! Ensure accessibility in print and other media types... */
+@media projection, screen { /* Use class for showing/hiding tab content, so that visibility can be better controlled in different media types... */
+    .ui-tabs-hide {
+        display: none;
+    }
+}
+
+/* Hide useless elements in print layouts... */
+@media print {
+    .ui-tabs-nav {
+        display: none;
+    }
+}
+
+/* Skin */
+.ui-tabs-nav, .ui-tabs-panel {
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, Sans-serif;
+    font-size: 12px;
+    text-align:left;
+}
+.ui-tabs-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 4px;
+}
+.ui-tabs-nav:after { /* clearing without presentational markup, IE gets extra treatment */
+    display: block;
+    clear: both;
+    content: " ";
+}
+.ui-tabs-nav li {
+    float: left;
+    margin: 0 0 0 1px;
+    min-width: 84px; /* be nice to Opera */
+}
+.ui-tabs-nav a, .ui-tabs-nav a span {
+    display: block;
+    padding: 0 10px;
+    background: url(../graphics/backgrounds/tab_bw.png) no-repeat;
+}
+.ui-tabs-nav a {
+    margin: 1px 0 0; /* position: relative makes opacity fail for disabled tab in IE */
+    padding-left: 0;
+    color: #134959;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap; /* required in IE 6 */    
+    outline: 0; /* prevent dotted border in Firefox */
+}
+.ui-tabs-nav .ui-tabs-selected a {
+    position: relative;
+    top: 1px;
+    z-index: 2;
+    margin-top: 0;
+    color: #000;
+}
+.ui-tabs-nav a span {
+    width: 64px; /* IE 6 treats width as min-width */
+    min-width: 64px;
+    height: 18px; /* IE 6 treats height as min-height */
+    min-height: 18px;
+    padding-top: 6px;
+    padding-right: 0;
+}
+*>.ui-tabs-nav a span { /* hide from IE 6 */
+    width: auto;
+    height: auto;
+}
+.ui-tabs-nav .ui-tabs-selected a span {
+    padding-bottom: 1px;
+}
+.ui-tabs-nav .ui-tabs-selected a, .ui-tabs-nav a:hover, .ui-tabs-nav a:focus, .ui-tabs-nav a:active {
+    background-position: 100% -150px;
+}
+.ui-tabs-nav a, .ui-tabs-nav .ui-tabs-disabled a:hover, .ui-tabs-nav .ui-tabs-disabled a:focus, .ui-tabs-nav .ui-tabs-disabled a:active {
+    background-position: 100% -100px;
+}
+.ui-tabs-nav .ui-tabs-selected a span, .ui-tabs-nav a:hover span, .ui-tabs-nav a:focus span, .ui-tabs-nav a:active span {
+    background-position: 0 -50px;
+}
+.ui-tabs-nav a span, .ui-tabs-nav .ui-tabs-disabled a:hover span, .ui-tabs-nav .ui-tabs-disabled a:focus span, .ui-tabs-nav .ui-tabs-disabled a:active span {
+    background-position: 0 0;
+}
+.ui-tabs-nav .ui-tabs-selected a:link, .ui-tabs-nav .ui-tabs-selected a:visited, .ui-tabs-nav .ui-tabs-disabled a:link, .ui-tabs-nav .ui-tabs-disabled a:visited { /* @ Opera, use pseudo classes otherwise it confuses cursor... */
+    cursor: text;
+}
+.ui-tabs-nav a:hover, .ui-tabs-nav a:focus, .ui-tabs-nav a:active,
+.ui-tabs-nav .ui-tabs-deselectable a:hover, .ui-tabs-nav .ui-tabs-deselectable a:focus, .ui-tabs-nav .ui-tabs-deselectable a:active { /* @ Opera, we need to be explicit again here now... */
+    cursor: pointer;
+}
+.ui-tabs-disabled {
+    opacity: .4;
+    filter: alpha(opacity=40);
+}
+.ui-tabs-panel {
+    border-top: 1px solid #4B4A4A;
+    padding: 1em;
+    background: #fff; /* declare background color for container to avoid distorted fonts in IE while fading */
+}
+.ui-tabs-loading em {
+    padding: 0 0 0 20px;
+    background: url(loading.gif) no-repeat 0 50%;
+}
+
+/* Additional IE specific bug fixes... */
+* html .ui-tabs-nav { /* auto clear, @ IE 6 & IE 7 Quirks Mode */
+    display: inline-block;
+}
+*:first-child+html .ui-tabs-nav  { /* @ IE 7 Standards Mode - do not group selectors, otherwise IE 6 will ignore complete rule (because of the unknown + combinator)... */
+    display: inline-block;
+}
+
+/*** HIERARCHY BROWSER ***/
+div.hierarchyBrowser{
+	border: 1px solid #000000;
+	width: 100%;
+	height: 250px;
+	margin: 0px 0px 10px 0px;
+}
+div.hierarchyBrowserLarge{
+	border: 1px solid #000000;
+	width: 100%;
+	height: 400px;
+	margin: 0px 0px 10px 0px;
+}
+div.hierarchyBrowserContainer {
+	position: relative;
+	overflow: auto;
+	overflow-y: hidden;
+	height: 100%;
+}
+
+div.hierarchyBrowserLevel {
+	position: absolute;
+	top: 0px;
+	width: 230px;
+	height: 100%;
+	padding: 0px;
+	margin: -2px;
+	border: 1px solid #cccccc; 
+	background: #FFFFFF;
+	overflow: auto;
+}
+
+ul.hierarchyBrowserLevel {
+	padding: 3px;
+	margin: 3px;
+}
+
+li.hierarchyBrowserLevel {
+	margin-bottom: 10px;
+	border-bottom: 1px dashed #cccccc;
+	list-style-type: none;
+	text-align: left;
+}
+a.hierarchyBrowserLevel {
+	text-decoration: none;
+	font-weight: normal;
+}
+
+a.hierarchyBrowserLevelSelected {
+	color: #990000;
+	text-decoration: none;
+	font-weight: bold;
+	font-style: italic;
+}
+
+a.hierarchyBrowserLevelEditButton {
+	text-decoration: none;
+	font-weight: bold;
+}
+
+/*** hierarchy navigation on editor pages ***/
+.hierNav {
+	padding:10px;
+	color: #000000;
+	font-weight:normal;
+	size:12px;
+	line-height:1.5em;
+}
+.hierNav a {
+	color: #134959;
+	font-weight:normal;
+	text-decoration:underline;
+	
+}
+.hierNav a:hover{
+	color: #1FAA99;
+}
+.hierNav .buttonPosition{
+	float:right;
+	margin:-8px -5px 5px 10px;
+}
+.editorHierarchyBrowserContainer{
+	background-color:#EEEEEE;
+}
+.hierarchyBrowserFind{    /*** find box on editor pages ***/
+	color:#666666;
+	font-weight:normal;
+	float:right;
+	margin-right:8px;
+}
+.hierarchyBrowserMessageContainer{    /*** message above browser on editor pages ***/
+	padding: 5px 8px 5px 8px;
+	color:#000000;
+}
+.hierarchyBrowserNewLocationMessage{ /*** message above browser on editor pages dispaying new location to move record to ***/
+	color: #cc0000;
+	padding-bottom:4px;
+	height:1em;
+}
+
+/*** quick search styles ***/
+.quickSearchContentArea {
+	width: 100%; 
+	max-height: 600px;
+	overflow: auto;
+}
+
+.quickSearchFullWidthDisplay {
+	float: left; 
+	margin: 5px;
+	width: 99%;
+}
+
+.quickSearchFullWidthResults {
+	width: 100%; 
+	height: 200px; 
+	overflow: auto; 
+	padding: 2px;
+	border: 1px #999999 dotted;
+}
+
+.quickSearchHalfWidthDisplay {
+	float: left; 
+	margin: 5px;
+	width: 47%;
+}
+
+.quickSearchHalfWidthResults {
+	width: 100%; 
+	height: 200px; 
+	overflow: auto; 
+	padding: 2px;
+	border: 1px #999999 dotted;
+}
+
+.quickSearchOneThirdWidthDisplay {
+	float: left; 
+	margin: 5px;
+	width: 31%;
+}
+
+div.quickSearchHeader {
+	font-size: 16px;
+	font-weight: bold;
+}
+.quickSearchOneThirdWidthResults {
+	width: 100%; 
+	height: 200px; 
+	overflow: auto;
+	padding: 2px;
+	border: 1px #999999 dotted;
+}
+
+ul.quickSearchList {
+	padding: 3px;
+	margin: 3px;
+}
+
+li.quickSearchList {
+	margin-bottom: 10px;
+	border-bottom: 1px dashed #cccccc;
+	list-style-type: none;
+	text-align: left;
+}
+
+a.quickSearchItem {
+	text-decoration: none;
+	font-weight: normal;
+}
+
+div.quickSearchResultHeader {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+
+/*  BROWSE  */
+#browse{
+	border: 1px solid #999999;
+	padding: 5px;
+	line-height:1.5em;
+	font-size:12px;
+	margin-bottom:10px;
+}
+#browseContent{
+	float:left;
+	margin-top: 0px;
+	width: 980px;
+	font-size:14px;
+}
+
+#browseControls {
+	border: 1px solid #000000;
+	width: 980px;
+	padding: 10px;
+	margin: 10px 0px 10px 0px;
+}
+
+.browseSelectPanel {
+	position: absolute; 
+	top: 100px; 
+	left: 50%; 
+	border: 1px solid #000000; 
+	background-color: #FFFFFF; 
+	width: 900px; 
+	height: 400px; 
+	display: none;
+	margin-left: -450px;
+	padding: 7px;
+}
+
+.browseSelectPanelContentArea {
+	border: 1px solid #AAAAAA;
+}
+
+.browseSelectPanelHeader {
+	margin: 10px;
+	width: 880px;
+}
+
+.browseSelectPanelList {
+	margin: 0px;
+	width: 892px;
+	height: 324px;
+	overflow: auto;
+	border-top: 1px solid #AAAAAA;
+	padding: 3px;
+}
+
+
+td.browseSelectPanelListCell {
+	width: 20%;
+}
+
+table.browseSelectPanelListTable {
+	width: 100%;
+}
+
+div.browseSelectPanelListGroupHeading {
+	font-size: 13px;
+	font-weight: bold;
+	border-top: 1px #AAAAAA solid;
+	padding-top: 5px;
+	margin-bottom: 10px;
+}
+
+a.browseSelectPanelListGroupHeading, a.browseSelectPanelListGroupHeading:hover {
+	text-decoration: none;
+	color: #000000;
+}
+
+a.browseSelectPanelButton {
+	border: 1px solid #000000;
+	padding: 2px;
+	font-weight: bold;
+	text-decoration: none;
+	float: right;
+	margin-left: 15px;
+}
+
+a.browseSelectPanelButton:hover {
+	background-color: #333333;
+}
+
+a.browseSelectPanelLink {
+	font-size: 10px;
+}
+
+div.browseHeading {
+	font-weight: bold;
+	font-size: 14px;
+	float: left;
+}
+
+div.browseCriterion {
+	width:145px; 
+	border: 1px solid #999999; 
+	padding: 5px; 
+	height: 90px; 
+	overflow: hide;
+}
+
+.browseCriterionLabel {
+	padding: 5px; 
+	height: 40px;
+}	
+
+
+/*  SEARCH FORM EDITOR  */
+.searchFormElementEditor {
+	border: 1px dashed #aaaaaa;
+	padding: 10px;
+}
+
+.searchFormElementEditorFieldList {
+	margin-left: 25px;
+	margin-bottom: 15px;
+}
+
+.searchFormElementEditorGroupHeading {
+	color: #000000;
+	font-size: 14px;
+	margin-bottom: 5px;
+}
+
+.searchFormElementEditorRemoveGroupButton {
+	margin-right: 10px;
+}
+
+.searchFormElementEditorGroup {
+	padding: 10px 0px 10px 0px;
+	border-top: 1px dotted #aaaaaa;
+}
+
+.searchFormElementEditorAddElementButton {
+	margin-right: 10px;
+}
+
+div.searchFormEditorElementList {
+	margin-left: 25px;
+	line-height: 25px;
+	font-size: 12px;
+	color: #333333;
+	font-weight: normal;
+}
+
+select.searchFormEditorElementList {
+	margin-left: 25px;
+}
+
+div.searchFormElementEditorElement {
+	background-color: #cccccc;
+	margin: 5px 0px 5px 0px;
+	width: 350px;
+	padding: 2px;
+}
+
+.searchFormElementEditorRemoveElementButton {
+	padding: 3px;
+}
+
+div.searchFormElementEditorContainer {
+	padding: 5px 0px 0px 10px;
+}
+
+a.searchFormElementEditorAddGroupButton {
+	text-decoration: none;
+}
+
+div.searchFormElementEditorAddGroupButton {
+	padding: 10px 0px 10px 0px;
+	border-top: 1px dotted #aaaaaa;
+}
+
+/ * SEARCH FORMS */
+
+div.searchFormSelector {
+	float: right;
+	margin-bottom: 3px;
+	font-size: 9px;
+}
+
+select.searchFormSelector {
+	font-size: 9px;
+}
+
+/* Search form "group mode" */
+div.searchFormGroupModeContainer {
+	width: 610px;
+	padding: 3px;
+}
+
+div.searchFormGroupModeGroupContainer {
+	background-color: #cccccc;
+	border-top: 1px dotted #333333;
+	padding: 3px;
+}
+
+div.searchFormGroupModeGroup {
+	width: 100%;
+	background-color: #cccccc;
+	padding: 0px;
+}
+
+div.searchFormGroupModeElement {
+	float: left;
+	text-align: left;
+	padding: 5px;
+}
+
+.searchFormGroupElementModeElement {
+	float: none;
+	text-align: left;
+	background-color: transparent;
+}
+
+.searchFormGroupModeMinimizeButton {
+	float: right;
+}
+
+/* Search form "line mode" */
+
+div.searchFormLineModeContainer {
+
+}
+
+div.searchFormLineModeElementLabel {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color: #333333;
+	margin-bottom: 5px;
+	font-weight: bold;
+	text-align: left;
+	width: 160px;
+}

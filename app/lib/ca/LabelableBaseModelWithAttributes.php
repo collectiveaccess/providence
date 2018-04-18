@@ -965,7 +965,7 @@
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 	
-			$qr_res = $o_db->query($vs_sql, $x=array_merge($va_sql_params, $va_type_restriction_params));
+			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));

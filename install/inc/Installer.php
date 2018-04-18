@@ -1218,7 +1218,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_ui_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for UI {$vs_ui_code} (permission item with user name '{$vs_user}')");
@@ -1237,7 +1238,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_ui_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for UI {$vs_ui_code} (permission item with group code '{$vs_group}')");
@@ -1721,7 +1723,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_display_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for display {$vs_display_code} (permission item with user name '{$vs_user}')");
@@ -1740,7 +1743,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_display_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for display {$vs_display_code} (permission item with group code '{$vs_group}')");
@@ -1907,7 +1911,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_form_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for search form {$vs_form_code} (permission item with user name '{$vs_user}')");
@@ -1926,7 +1931,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for search form {$vs_form_code} (permission item with group code '{$vs_group}')");
