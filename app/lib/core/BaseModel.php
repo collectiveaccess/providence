@@ -110,7 +110,6 @@ require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_LIB_DIR__."/core/File.php");
 require_once(__CA_LIB_DIR__."/core/File/FileVolumes.php");
 require_once(__CA_LIB_DIR__."/core/Utils/Timer.php");
-require_once(__CA_LIB_DIR__."/core/Utils/Unicode.php");
 require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
 require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
@@ -8623,7 +8622,7 @@ $pa_options["display_form_field_tips"] = true;
 													$vn_strlen = $pa_options["maxOptionLength"];
 												}
 	
-												$vs_option_text = unicode_substr($vs_option_text, 0, $vn_strlen)."...";
+												$vs_option_text = mb_substr($vs_option_text, 0, $vn_strlen)."...";
 											}
 	
 											$vs_element .= $vs_indent.$vs_option_text.$vs_use_count.$vs_display_message."</option>\n";
@@ -8720,7 +8719,7 @@ $pa_options["display_form_field_tips"] = true;
 													($pa_options["maxOptionLength"]) &&
 													(strlen($vs_option_text) + strlen($vs_use_count) > $pa_options["maxOptionLength"])
 												)  {
-													$vs_option_text = unicode_substr($vs_option_text,0, $pa_options["maxOptionLength"] - 3 - strlen($vs_use_count))."...";
+													$vs_option_text = mb_substr($vs_option_text,0, $pa_options["maxOptionLength"] - 3 - strlen($vs_use_count))."...";
 												}
 		
 												$vs_display_message = '';
@@ -8775,7 +8774,7 @@ $pa_options["display_form_field_tips"] = true;
 											$vs_selected = ((strval($vs_value) === strval($vm_field_value)) || in_array($vs_value, $va_selection)) ? "selected='selected'" : "";
 	
 											if (($pa_options["maxOptionLength"]) && (strlen($vs_option) > $pa_options["maxOptionLength"]))  {
-												$vs_option = unicode_substr($vs_option, 0, $pa_options["maxOptionLength"] - 3)."...";
+												$vs_option = mb_substr($vs_option, 0, $pa_options["maxOptionLength"] - 3)."...";
 											}
 	
 											$vs_element.= "<option value='$vs_value' $vs_selected>".$this->escapeHTML($vs_option)."</option>\n";

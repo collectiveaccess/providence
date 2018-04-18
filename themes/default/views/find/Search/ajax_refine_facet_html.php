@@ -59,7 +59,7 @@
 </div>
 
 <div class="browseSelectPanelContentArea">
-	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 
 <?php
 	switch($vs_group_mode) {

@@ -237,7 +237,7 @@
 				);
  			}
  			
- 			$vn_strlen = unicode_strlen($ps_value);
+ 			$vn_strlen = mb_strlen($ps_value);
  			if ($vn_strlen < $va_settings['minChars']) {
  				// text is too short
  				$vs_err_msg = ($va_settings['minChars'] == 1) ? _t('%1 must be at least 1 character long', $pa_element_info['displayLabel']) : _t('%1 must be at least %2 characters long', $pa_element_info['displayLabel'], $va_settings['minChars']);

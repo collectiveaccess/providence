@@ -410,7 +410,7 @@
 				$va_results = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_objects', 57, array('limit' => 3, 'checkAccess' => $va_access_values)));
 				// break found objects out by type
 				foreach($va_results as $vn_id => $va_match_info) {
-					$vs_type = unicode_ucfirst($t_list->getItemFromListForDisplayByItemID('object_types', $va_match_info['type_id'], true));
+					$vs_type = caUcFirstUTF8Safe($t_list->getItemFromListForDisplayByItemID('object_types', $va_match_info['type_id'], true));
 					$va_data['ca_objects'][$vs_type][$vn_id] = $va_match_info;
 				}
 			}
@@ -427,7 +427,7 @@
 				$va_results = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_occurrences', 67, array('limit' => 10, 'checkAccess' => $va_access_values)));
 				// break found occurrences out by type
 				foreach($va_results as $vn_id => $va_match_info) {
-					$vs_type = unicode_ucfirst($t_list->getItemFromListForDisplayByItemID('occurrence_types', $va_match_info['type_id'], true));
+					$vs_type = caUcFirstUTF8Safe($t_list->getItemFromListForDisplayByItemID('occurrence_types', $va_match_info['type_id'], true));
 					$va_data['ca_occurrences'][$vs_type][$vn_id] = $va_match_info;
 				}
 			}
