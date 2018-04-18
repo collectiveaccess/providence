@@ -27,36 +27,35 @@ session_start();
  * ----------------------------------------------------------------------
  */ 
  	
-	 # --------------------------------------------------------------------------------------------
-	 /**
-	  * Returns theme for user agent of current request using supplied user agent ("device") mappings
-	  *
-	  * @param array $pa_theme_device_mappings Array of mappings; keys are Perl-compatible regexes to be applied to the user agent; values are the names of themes to do upon a regex match; the theme assigned to the special _default_ key is used if there are no matches
-	  * @return string Name of theme to use. If there are no matches and there is no _default_ value set in the mappings, then the string "default" will be returned. (It is assumed there is always a theme named "default" available.)
-	  */
-	function caGetPreferredThemeForCurrentDevice($pa_theme_device_mappings) {
-		if(isset($_GET['current_theme'])){
-			$_SESSION['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
-		}
-		if(isset($_SESSION['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_SESSION['current_theme'])){
-			$vs_theme = $_SESSION['current_theme'];
-			return $vs_theme;
-		}
-		$vs_default_theme = 'default';
-		if (is_array($pa_theme_device_mappings)) {
-			foreach($pa_theme_device_mappings as $vs_user_agent_regex => $vs_theme) {
-				if ($vs_user_agent_regex === '_default_') {
-					$vs_default_theme = $vs_theme; 
-					continue;
-				}
-				if (preg_match('!'.$vs_user_agent_regex.'!i', $_SERVER['HTTP_USER_AGENT'])) {
-					return $vs_theme;
-				}
-			}
-		}
-	}
+ # --------------------------------------------------------------------------------------------
+ /**
+  * Returns theme for user agent of current request using supplied user agent ("device") mappings
+  *
+  * @param array $pa_theme_device_mappings Array of mappings; keys are Perl-compatible regexes to be applied to the user agent; values are the names of themes to do upon a regex match; the theme assigned to the special _default_ key is used if there are no matches
+  * @return string Name of theme to use. If there are no matches and there is no _default_ value set in the mappings, then the string "default" will be returned. (It is assumed there is always a theme named "default" available.)
+  */
+function caGetPreferredThemeForCurrentDevice($pa_theme_device_mappings) {
+    if(isset($_GET['current_theme'])){
+        $_SESSION['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
+    }
+    if(isset($_SESSION['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_SESSION['current_theme'])){
+        $vs_theme = $_SESSION['current_theme'];
+        return $vs_theme;
+    }
+    $vs_default_theme = 'default';
+    if (is_array($pa_theme_device_mappings)) {
+        foreach($pa_theme_device_mappings as $vs_user_agent_regex => $vs_theme) {
+            if ($vs_user_agent_regex === '_default_') {
+                $vs_default_theme = $vs_theme; 
+                continue;
+            }
+            if (preg_match('!'.$vs_user_agent_regex.'!i', $_SERVER['HTTP_USER_AGENT'])) {
+                return $vs_theme;
+            }
+        }
+    }
 
-	return $vs_default_theme;
+    return $vs_default_theme;
 }
 # --------------------------------------------------------------------------------------------
  /**
