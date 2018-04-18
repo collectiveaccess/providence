@@ -62,8 +62,8 @@ Be sure to run it as a user that has write permissions on all media.
 * Installation instructions: https://docs.collectiveaccess.org/wiki/Installing_Providence
 * Upgrade instructions: https://docs.collectiveaccess.org/wiki/Upgrading_Providence
 * Release Notes:  
-** https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7
-** https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7.6
+  * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7
+  * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7.6
 * Forum: https://www.collectiveaccess.org/support/forum
 * Bug Tracker: https://clangers.collectiveaccess.org
 
