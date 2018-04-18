@@ -3282,8 +3282,11 @@ function caFileIsIncludable($ps_file) {
 	        return true;
 	    }
 	    
-	    if (caGetOption('exceptions', $pa_options, true)) {
+	    if (caGetOption('exceptions', $pa_options, false)) {
 	        throw new ApplicationException(_t('CSRF token is not valid'));
+	    }
+	    if ($nm = caGetOption('notifications', $pa_options, false)) {
+	    	$nm->addNotification(_t('CSRF token is not valid'), __NOTIFICATION_TYPE_ERROR__);
 	    }
 	    return false;   
 	}
