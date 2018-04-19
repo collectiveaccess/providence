@@ -858,8 +858,6 @@
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
                   <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
                   <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
-				  <xs:attribute name="typeRestrictions" type="xs:string" use="optional"/>
-				  <xs:attribute name="includeSubtypes" type="xs:integer" use="optional"/>
                   <xs:attribute name="color" type="colorType" use="optional"/>
                 </xs:complexType>
 
