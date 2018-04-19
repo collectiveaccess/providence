@@ -70,4 +70,4 @@ Be sure to run it as a user that has write permissions on all media.
 
 ### Other modules
 
-Pawtucket: https://github.com/collectiveaccess/pawtucket2 (The public access front-end application for Providence)
+Pawtucket2: https://github.com/collectiveaccess/pawtucket2 (The public access front-end application for Providence)
