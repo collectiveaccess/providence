@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__.'/ca/SetUniqueIdnoTrait.php'); 
 require_once(__CA_APP_DIR__.'/models/ca_set_items.php');
 require_once(__CA_APP_DIR__.'/models/ca_set_item_labels.php');
 require_once(__CA_APP_DIR__.'/models/ca_users.php');
@@ -179,6 +180,8 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 );
 
 class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
+	use SetUniqueIdnoTrait;
+
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -331,6 +334,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Overrides default implementation with code to ensure consistency of set contents
 	 */
 	public function update($pa_options=null) {
+		$this->_setUniqueIdno(['noUpdate' => true]);
 		if ($vn_rc = parent::update($pa_options)) {
 			// make sure all items have the same type as the set
 			$this->getDb()->query("
@@ -339,8 +343,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				WHERE
 					set_id = ?
 			", (int)$this->get('type_id'), (int)$this->getPrimaryKey());
-			
-			$this->_setUniqueSetCode();
 		}
 		return $vn_rc;
 	}
@@ -359,40 +361,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 		return parent::set($pa_fields, $pm_value, $pa_options);
-	}
-	# ------------------------------------------------------
-	/** 
-	 * Override addLabel() to set set_code if not specifically set by user
-	 */
-	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
-		if ($vn_rc = parent::addLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options)) {
-			$this->_setUniqueSetCode();
-		}
-		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	/** 
-	 * 
-	 */
-	private function _setUniqueSetCode() {
-		if (!$this->getPrimaryKey()) { return null; }
-		
-		$vs_set_code = trim($this->get('set_code'));
-		
-		if ((($vs_set_code_proc = preg_replace("![^A-Za-z0-9]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
-			$this->setMode(ACCESS_WRITE);
-			
-			if (!strlen($vs_set_code)) {
-				if(!($vs_set_code = $this->getLabelForDisplay())) { $vs_set_code = 'set_'.$this->getPrimaryKey(); }
-			}
-			$vs_new_set_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_set_code), 0, 50);
-			if (ca_sets::find(array('set_code' => $vs_new_set_name), array('returnAs' => 'firstId')) > 0) {
-				$vs_new_set_name .= '_'.$this->getPrimaryKey();
-			}
-			$this->set('set_code', $vs_new_set_name);
-			return $this->update();
-		}
-		return false;
 	}
 	# ------------------------------------------------------
 	/**

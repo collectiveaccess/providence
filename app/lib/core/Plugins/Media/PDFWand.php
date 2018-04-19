@@ -732,11 +732,11 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		if (($vn_quality = (int)$this->opo_config->get("document_preview_quality")) > 100) { $vn_quality = 75; }
 		$this->set('quality', $vn_quality);
 		
-		$va_files = $this->write($vs_output_file_prefix, 'image/jpeg', ['dontUseDefaultIcons' => true, 'antialiasing' => true, 'writeAllPages' => true, 'start' => $vn_start_at, 'numPages' => (($vn_tot_pages > $vn_max_number_of_pages) > $vn_max_number_of_pages) ? $vn_max_number_of_pages : $vn_tot_pages]);
+		$va_files = $this->write($vs_output_file_prefix, 'image/jpeg', ['dontUseDefaultIcons' => true, 'antialiasing' => true, 'start' => $vn_start_at, 'numPages' => (($vn_tot_pages > $vn_max_number_of_pages) > $vn_max_number_of_pages) ? $vn_max_number_of_pages : $vn_tot_pages]);
 
 		$this->set("page", 1);
 		$this->set('resolution', $vn_old_res);
-		$this->set('resolution', $vn_old_quality);
+		$this->set('quality', $vn_old_quality);
 		
 		
 		if (!sizeof($va_files)) {

@@ -69,7 +69,7 @@ class Description
         $this->bodyTemplate = $bodyTemplate;
         $this->tags = $tags;
     }
-
+    
     /**
      * Returns the tags for this DocBlock.
      *
@@ -98,7 +98,6 @@ class Description
         foreach ($this->tags as $tag) {
             $tags[] = '{' . $formatter->format($tag) . '}';
         }
-
         return vsprintf($this->bodyTemplate, $tags);
     }
 

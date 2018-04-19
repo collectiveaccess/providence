@@ -33,12 +33,12 @@ final class Example extends BaseTag
     private $isURI = false;
 
     /**
-     * @var int
+     * @var
      */
     private $startingLine;
 
     /**
-     * @var int
+     * @var
      */
     private $lineCount;
 

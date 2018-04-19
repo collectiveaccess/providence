@@ -98,6 +98,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_acl.php");
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
 		parent::__construct($pn_id);	# call superclass constructor
@@ -1682,6 +1683,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
+					// This bundle is only available when editing objects of type ca_bundle_displays
+					case 'ca_metadata_alert_rule_type_restrictions':
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
 					// 
 					case 'ca_users':
 						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of per-user access if user is not owner
@@ -1802,6 +1808,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							return null;
 						}
 						break;
+					// This bundle is only available for md alert rules
+					case 'ca_metadata_alert_triggers':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_alert_rules)) { return null; }
+
+						$vs_element .= $this->getTriggerHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+
 					# -------------------------------
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_pages_content':
@@ -4179,6 +4193,18 @@ if (!$vb_batch) {
 						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
+					// This bundle is only available for ca_bundle_displays 
+					case 'ca_bundle_display_type_restrictions':
+						if ($vb_batch) { break; } // not supported in batch mode
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------------
+					// This bundle is only available for ca_bundle_displays
+					case 'ca_metadata_alert_rule_type_restrictions':
+						if ($vb_batch) { break; } // not supported in batch mode
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------------
 					// This bundle is only available for ca_search_forms 
 					case 'ca_search_form_placements':
 						if ($vb_batch) { break; } // not supported in batch mode
@@ -4604,6 +4630,12 @@ if (!$vb_batch) {
 						}
 						break;
 					# -------------------------------
+					case 'ca_metadata_alert_triggers':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$po_request->user->canDoAction('can_use_metadata_alerts')) { break; }
+						$this->saveTriggerHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_pages_content':
 						if(is_array($va_field_list = $this->getHTMLFormElements())) {
@@ -4778,6 +4810,7 @@ if (!$vb_batch) {
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
+		$this->triggerMetadataAlerts();
 		return true;
 	}
  	# ------------------------------------------------------
@@ -7321,6 +7354,14 @@ side. For many self-relations the direction determines the nature and display te
 		
 		return $va_violations;
 	 }
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Trigger metadata alerts if there are any set up
+	 * @param array $pa_options
+	 */
+	public function triggerMetadataAlerts(array $pa_options=[]) {
+		ca_metadata_alert_triggers::fireApplicableTriggers($this, __CA_MD_ALERT_CHECK_TYPE_SAVE__);
+	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Method calls by SearchResult::get() on models when bundle to fetch is not an intrinsic but is listed in the 

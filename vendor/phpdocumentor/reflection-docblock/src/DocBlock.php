@@ -24,7 +24,7 @@ final class DocBlock
     private $description = null;
 
     /** @var Tag[] An array containing all the tags in this docblock; except inline. */
-    private $tags = [];
+    private $tags = array();
 
     /** @var Types\Context Information about the context of this DocBlock. */
     private $context = null;
@@ -55,7 +55,8 @@ final class DocBlock
         Location $location = null,
         $isTemplateStart = false,
         $isTemplateEnd = false
-    ) {
+    )
+    {
         Assert::string($summary);
         Assert::boolean($isTemplateStart);
         Assert::boolean($isTemplateEnd);
@@ -170,11 +171,11 @@ final class DocBlock
     {
         Assert::string($name);
 
-        $result = [];
+        $result = array();
 
         /** @var Tag $tag */
         foreach ($this->getTags() as $tag) {
-            if ($tag->getName() !== $name) {
+            if ($tag->getName() != $name) {
                 continue;
             }
 
@@ -197,29 +198,12 @@ final class DocBlock
 
         /** @var Tag $tag */
         foreach ($this->getTags() as $tag) {
-            if ($tag->getName() === $name) {
+            if ($tag->getName() == $name) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    /**
-     * Remove a tag from this DocBlock.
-     *
-     * @param Tag $tag The tag to remove.
-     *
-     * @return void
-     */
-    public function removeTag(Tag $tagToRemove)
-    {
-        foreach ($this->tags as $key => $tag) {
-            if ($tag === $tagToRemove) {
-                unset($this->tags[$key]);
-                break;
-            }
-        }
     }
 
     /**

@@ -136,6 +136,9 @@
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Setting up hierarchies")); }
 			$vo_installer->processMiscHierarchicalSetup();
+			
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata alerts")); }
+			$vo_installer->processMetadataAlerts();
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing post install tasks")); }
 			$vo_installer->performPostInstallTasks();
@@ -2332,7 +2335,6 @@
 					}
 					
 					if (sizeof($va_object_ids)) { 
-						print_R($va_object_ids);
 						$va_sql_wheres[] = "(oxor.object_id IN (?))";
 						$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations AS oxor ON oxor.representation_id = o_r.representation_id";
 						$va_params[] = $va_object_ids;
@@ -4038,6 +4040,39 @@
 		 * @param Zend_Console_Getopt|null $po_opts
 		 * @return bool
 		 */
+		public static function check_metadata_alerts($po_opts=null) {
+			require_once(__CA_MODELS_DIR__ . '/ca_metadata_alert_triggers.php');
+			ca_metadata_alert_triggers::firePeriodicTriggers();
+		}
+		# -------------------------------------------------------
+		public static function check_metadata_alertsParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_metadata_alertsUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_metadata_alertsShortHelp() {
+			return _t('Checks periodic metadata alert triggers');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_metadata_alertsHelp() {
+			return _t('This utility checks all periodic metadatadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function precache_simple_services($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/ca/SitePageTemplateManager.php");
 			
@@ -4114,7 +4149,7 @@
 				"username|u-s" => _t('Optional username to authenticate with.'),
 				"password|p-s" => _t('Optional password to authenticate with.'),
 			];
-		}
+        }
 		# -------------------------------------------------------
 		/**
 		 *
@@ -4496,21 +4531,21 @@
 		 *
 		 */
 		public static function regenerate_dependent_field_valuesUtilityClass() {
-			return _t('Maintenance');
-		}
+            return _t('Maintenance');
+        }
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function regenerate_dependent_field_valuesShortHelp() {
 			return _t('Regenerate template-generated values for fields that are dependent values.');
-		}
+        }
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function regenerate_dependent_field_valuesHelp() {
 			return _t('Text fields that are dependent upon other fields are only refreshed on save and import. For dependent display templates using dimensions (length, width) formatting, changes in the dimensions.conf configuration files are not automatically applied to existing values. This utility will batch update all dependent values using the current system configuration.');
-		}
+        }
 		# -------------------------------------------------------
 	}

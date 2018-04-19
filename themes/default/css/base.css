@@ -545,7 +545,8 @@ div.inspectorCheckedOut {
 #leftNav #widgets .setStats, 
 #leftNav #widgets .pawtucketStats, 
 #leftNav #widgets .groupList, 
-#leftNav #widgets .watchedItems, 
+#leftNav #widgets .watchedItems,
+#leftNav #widgets .metadataAlerts,
 #leftNav #widgets .yourDisplays, 
 #leftNav #widgets .searchForms, 
 #leftNav #widgets .comments, 
@@ -5091,6 +5092,11 @@ table.uiScreenItem .fa{
 }
 .dashboardWidgetPanelHide a {
     text-decoration: none;
+}
+
+.dashboardWidgetContentSmallNote {
+	font-size: 10px;
+	font-style: italic;
 }
 
 .dashboardColumn { width: 480px; float: left;}

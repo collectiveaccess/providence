@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,7 @@
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__.'/ca/SetUniqueIdnoTrait.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_form_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_form_type_restrictions.php');
@@ -129,6 +130,8 @@ $_ca_search_forms_settings = array(		// global
 
 
 class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
+	use SetUniqueIdnoTrait;
+
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -233,9 +236,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
-	protected $ID_NUMBERING_ID_FIELD = null;				// name of field containing user-defined identifier
-	protected $ID_NUMBERING_SORT_FIELD = null;				// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_ID_FIELD = 'form_code';		// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;			// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
 
+	
 
 	# Local config files containing specs for search elements
 	private $opo_search_config;
@@ -291,43 +296,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * Override update() to set form_code if not specifically set by user and remove all placements if type changes
 	 */
 	public function update($pa_options=null) {
+		$this->_setUniqueIdno(['noUpdate' => true]);
 		if ($this->changed('table_num')) {
 			$this->removeAllPlacements();
 		}
-
-		if($vn_rc = parent::update($pa_options)) {
-			$this->_setUniqueSetCode();
-		}
-		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	/**
-	 * Override addLabel() to set form_code if not specifically set by user
-	 */
-	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
-		if ($vn_rc = parent::addLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options)) {
-			$this->_setUniqueSetCode();
-		}
-		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	private function _setUniqueSetCode() {
-		if (!$this->getPrimaryKey()) { return null; }
-
-		if (!strlen(trim($this->get('form_code')))) {
-			$this->setMode(ACCESS_WRITE);
-			if(!($vs_label = $this->getLabelForDisplay())) { $vs_label = 'form_'.$this->getPrimaryKey(); }
-			$vs_new_form_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_label), 0, 50);
-			if (ca_search_forms::find(array('form_code' => $vs_new_form_name), array('returnAs' => 'firstId')) > 0) {
-				$vs_new_form_name .= '_'.$this->getPrimaryKey();
-			}
-			$this->set('form_code', $vs_new_form_name);
-			return $this->update();
-		}
-		return false;
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	/**

@@ -184,7 +184,7 @@
 						# -- generate mail text from template - get both the text and the html versions
 						$vs_mail_message_text = $o_view->render("mailTemplates/account_activation.tpl");
 						$vs_mail_message_html = $o_view->render("mailTemplates/account_activation_html.tpl");
-						caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html);						
+						caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html, null, null, null, ['source' => 'Account activation']);						
 					}
 
 					$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
@@ -424,7 +424,7 @@
 								# -- generate mail text from template - get both the text and the html versions
 								$vs_mail_message_text = $o_view->render("mailTemplates/account_activation.tpl");
 								$vs_mail_message_html = $o_view->render("mailTemplates/account_activation_html.tpl");
-								caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html);						
+								caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html, null, null, null, ['source' => 'Account activation']);						
 							}
 							
 						}

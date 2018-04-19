@@ -6752,31 +6752,131 @@ create table ca_user_sort_items
 
 /*==========================================================================*/
 
+create table ca_metadata_alert_rules (
+  rule_id         int unsigned      not null AUTO_INCREMENT,
+  table_num       tinyint unsigned  not null,
+  code            varchar(20)       not null,
+  settings        longtext          not null,
+  user_id			    int unsigned      null references ca_users(user_id),
+
+  primary key (rule_id),
+  index i_table_num (table_num)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_metadata_alert_rule_labels (
+  label_id		  int unsigned not null primary key auto_increment,
+  rule_id			  int unsigned null references ca_metadata_alert_rules(rule_id),
+  locale_id		  smallint unsigned not null references ca_locales(locale_id),
+  name			    varchar(255) not null,
+  name_sort		  varchar(255) not null,
+  description		text not null,
+  source_info		longtext not null,
+  is_preferred	tinyint unsigned not null,
+
+  KEY i_rule_id (rule_id),
+  KEY i_locale_id (locale_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_metadata_alert_triggers (
+  trigger_id      int unsigned      not null AUTO_INCREMENT,
+  rule_id         int unsigned      not null,
+  element_id      smallint unsigned,
+  element_filters text          	not null,
+  settings        longtext          not null,
+  trigger_type    varchar(30)       not null,
+
+  primary key (trigger_id),
+  constraint fk_alert_rules_rule_id foreign key (rule_id)
+    references ca_metadata_alert_rules (rule_id) on delete restrict on update restrict,
+
+  constraint fk_ca_metadata_alert_triggers_element_id foreign key (element_id)
+    references ca_metadata_elements (element_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_metadata_alert_rules_x_user_groups (
+  relation_id   int unsigned not null auto_increment,
+  rule_id 		  int unsigned not null references ca_metadata_alert_rules(rule_id),
+  group_id 		  int unsigned not null references ca_user_groups(group_id),
+  access 			  tinyint unsigned not null default 0,
+
+  primary key 				(relation_id),
+  index i_rule_id			(rule_id),
+  index i_group_id		(group_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_metadata_alert_rules_x_users (
+  relation_id 	int unsigned not null auto_increment,
+  rule_id 	int unsigned not null references ca_metadata_alert_rules(rule_id),
+  user_id 		int unsigned not null references ca_users(user_id),
+  access 			tinyint unsigned not null default 0,
+
+  primary key 				(relation_id),
+  index i_rule_id			(rule_id),
+  index i_user_id			(user_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_metadata_alert_rule_type_restrictions (
+  restriction_id                 int unsigned                   not null AUTO_INCREMENT,
+  type_id                        int unsigned,
+  table_num                      tinyint unsigned               not null,
+  rule_id                        int unsigned                   not null,
+  include_subtypes               tinyint unsigned               not null default 0,
+  settings                       longtext                       not null,
+  rank                           smallint unsigned              not null default 0,
+  primary key (restriction_id),
+
+  index i_rule_id			(rule_id),
+  index i_type_id				(type_id),
+  constraint fk_ca_metadata_alert_rule_type_restrictions_rule_id foreign key (rule_id)
+    references ca_metadata_alert_rules(rule_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
 create table ca_notifications (
   notification_id     int unsigned        not null AUTO_INCREMENT,
   notification_type   tinyint unsigned    not null default 0,
   datetime            int unsigned        not null,
   message             longtext,
-  is_system		        tinyint unsigned    not null default 0,
+  is_system		      tinyint unsigned    not null default 0,
+  notification_key    char(32)            not null default '',
+  extra_data          longtext            not null,
 
   primary key (notification_id),
 
   index i_datetime (datetime),
-  index i_notification_type (notification_type)
-
+  index i_notification_type (notification_type),
+  index i_notification_key (notification_key)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 /*==========================================================================*/
 
 create table ca_notification_subjects (
   subject_id      int unsigned        not null auto_increment,
   notification_id int unsigned        not null references ca_notifications(notification_id),
   was_read        tinyint unsigned    not null default 0,
+  read_on         int unsigned        null,
   table_num       tinyint unsigned    not null,
   row_id          int unsigned        not null,
-
+  delivery_email  tinyint unsigned    not null default 0,
+  delivery_email_sent_on int unsigned null,
+  delivery_inbox  tinyint unsigned    not null default 1,
+  
   primary key (subject_id),
   index i_notification_id (notification_id),
-  index i_table_num_row_id (table_num, row_id)
+  index i_table_num_row_id (table_num, row_id, read_on),
+  index i_delivery_email (delivery_email, delivery_email_sent_on),
+  index i_delivery_inbox (delivery_inbox)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
@@ -6878,5 +6978,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 153 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (153, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (154, unix_timestamp());

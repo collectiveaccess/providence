@@ -12,11 +12,11 @@
 
 namespace phpDocumentor\Reflection\DocBlock\Tags;
 
-use phpDocumentor\Reflection\DocBlock\Description;
 use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
 use phpDocumentor\Reflection\Fqsen;
-use phpDocumentor\Reflection\FqsenResolver;
+use phpDocumentor\Reflection\DocBlock\Description;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
+use phpDocumentor\Reflection\FqsenResolver;
 use Webmozart\Assert\Assert;
 
 /**
@@ -49,7 +49,8 @@ final class Covers extends BaseTag implements Factory\StaticMethod
         DescriptionFactory $descriptionFactory = null,
         FqsenResolver $resolver = null,
         TypeContext $context = null
-    ) {
+    )
+    {
         Assert::string($body);
         Assert::notEmpty($body);
 

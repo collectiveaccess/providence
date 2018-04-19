@@ -23,7 +23,7 @@ class ExampleFinder
     private $sourceDirectory = '';
 
     /** @var string[] */
-    private $exampleDirectories = [];
+    private $exampleDirectories = array();
 
     /**
      * Attempts to find the example contents for the given descriptor.

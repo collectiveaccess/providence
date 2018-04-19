@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,7 +61,7 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			'LABEL' => _t('Notification type'), 'DESCRIPTION' => _t('Indicates the type of this notification.')
 		),
 		'datetime' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
@@ -84,6 +84,24 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			'BOUNDS_VALUE' => array(0,1),
 			'REQUIRES' => array('is_administrator')
 		),
+		'notification_key' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			
+			'LABEL' => _t('MD5 hash'), 'DESCRIPTION' => _t('MD5-generated identifier for this notification.'),
+			'BOUNDS_LENGTH' => array(0,32)
+		),
+		'extra_data' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Notification-specific data', 'DESCRIPTION' => 'Additional data attached to this notification'
+		)
 	)
 );
 
@@ -239,6 +257,29 @@ class ca_notifications extends BaseModel {
 		}
 
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Make notification subject as read. An ownership check is performed when notification is attached 
+	 * to a ca_users record and a user_id is provided.
+	 *
+	 * @param int $pn_subject_id 
+	 * @param int $pn_user_id An optional user_id. If provided, notifications attached to ca_users records will only be marked as read if the subject user_id matches. [Default is null] 
+	 *
+	 * @return bool True on success
+	 */
+	public static function markAsRead($pn_subject_id, $pn_user_id=null) {
+		$t_subject = new ca_notification_subjects($pn_subject_id);
+		if($t_subject->isLoaded()) {
+			if (($t_subject->get('table_num') == 94) && ($pn_user_id) && ((int)$pn_user_id !== (int)$t_subject->get('row_id'))) { // 94 = ca_users
+				return false;
+			}
+			$t_subject->setMode(ACCESS_WRITE);
+
+			$t_subject->set('was_read', 1);
+			return $t_subject->update();
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 }

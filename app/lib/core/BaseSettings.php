@@ -105,6 +105,7 @@
 			if (!$this->isValidSetting($ps_setting)) { return $va_settings; }
 			$va_setting_info = $this->getSettingInfo($ps_setting);
 			if ($va_setting_info['displayType'] == DT_CHECKBOXES) { $pm_value = (int)$pm_value; }
+			
 			if (
 				(isset($va_setting_info['useRelationshipTypeList']) && $va_setting_info['useRelationshipTypeList'])
 				||
@@ -628,6 +629,25 @@
 					
 					
 					if ($vs_select_element) { $vs_return .= $vs_select_element; } else { return ''; }
+					break;
+				# --------------------------------------------
+				case DT_INTERVAL:
+					$va_val_tmp = explode('|', $vs_value);
+					if(isset($va_properties['prefix'])) { $vs_return .= $va_properties['prefix']; }
+					$vs_return .= caHTMLHiddenInput($vs_input_name, ['value' => $vs_value, 'id' => $vs_input_id]);
+					$vs_return .= caHTMLTextInput("{$vs_input_name}Quantity", ['size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $va_val_tmp[0], 'id' => "{$vs_input_id}Quantity"]).' ';	
+					$vs_return .= caHTMLSelect("{$vs_input_name}Units", [_t('hours') => 'HOURS', _t('days') => 'DAYS', _t('weeks') => 'WEEKS'], ['id' => "{$vs_input_id}Units"], ['value' => $va_val_tmp[1]]).' ';
+					$vs_return .= caHTMLSelect("{$vs_input_name}Direction", [_t('before') => 'BEFORE', _t('after') => 'AFTER'],['id' => "{$vs_input_id}Direction"], ['value' => $va_val_tmp[2]]);
+					if(isset($va_properties['suffix'])) { $vs_return .= $va_properties['suffix']; }
+					$vs_return .= "
+						<script type='text/javascript'>jQuery(document).ready(function() {
+							jQuery('#{$vs_input_id}Quantity, #{$vs_input_id}Units, #{$vs_input_id}Direction').on('change', function() {
+								var v = jQuery('#{$vs_input_id}Quantity').val() + '|' + jQuery('#{$vs_input_id}Units').val() + '|' + jQuery('#{$vs_input_id}Direction').val();
+								jQuery('#{$vs_input_id}').val(v);
+								console.log('{$vs_input_id}', jQuery('#{$vs_input_id}'), v);
+							});
+						}); </script>
+					";
 					break;
 				# --------------------------------------------
 				default:
