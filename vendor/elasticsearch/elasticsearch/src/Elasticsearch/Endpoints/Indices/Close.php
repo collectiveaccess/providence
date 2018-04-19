@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Indices;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Close
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Close extends AbstractEndpoint
 {
@@ -20,7 +20,7 @@ class Close extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->index) !== true) {
             throw new Exceptions\RuntimeException(
@@ -28,7 +28,7 @@ class Close extends AbstractEndpoint
             );
         }
         $index = $this->index;
-        $uri = "/$index/_close";
+        $uri   = "/$index/_close";
 
         if (isset($index) === true) {
             $uri = "/$index/_close";
@@ -40,21 +40,21 @@ class Close extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'timeout',
             'master_timeout',
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'POST';
     }

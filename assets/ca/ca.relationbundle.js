@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,10 +50,8 @@ var caUI = caUI || {};
 			var i, typeList, types = [], lists = [];
 			
 			var item_type_id = values['item_type_id'];
-			
 			// use type map to convert a child type id to the parent type id used in the restriction
 			if (options.relationshipTypes && options.relationshipTypes['_type_map'] && options.relationshipTypes['_type_map'][item_type_id]) { item_type_id = options.relationshipTypes['_type_map'][item_type_id]; }
-			
 			if (options.relationshipTypes && (typeList = options.relationshipTypes[item_type_id])) {
 				for(i=0; i < typeList.length; i++) {
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
@@ -89,6 +87,18 @@ var caUI = caUI || {};
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
 			}
+			
+			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
+			jQuery.each(types, function (i, t) {
+				var type_direction = (t.direction) ? t.direction+ "_" : '';
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
+			});
+			
+			// select default
+			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + values['relationship_type_id'] + "\"], #" + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + values['rel_type_id'] + "\"]").prop('selected', true);
+		
+			// set current type
+			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', item_type_id);
 			
 			if (caUI && caUI.utils && caUI.utils.showUnsavedChangesWarning) {
 				// Attached change handler to form elements in relationship

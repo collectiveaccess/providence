@@ -9,18 +9,19 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cluster\Settings
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
+
 class Get extends AbstractEndpoint
 {
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        $uri = "/_cluster/settings";
+        $uri   = "/_cluster/settings";
 
         return $uri;
     }
@@ -28,19 +29,19 @@ class Get extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'flat_settings',
             'master_timeout',
             'timeout',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

@@ -84,33 +84,6 @@
  			AssetLoadManager::register('panel');
             return parent::Index($pa_options);
  		}
- 		# -------------------------------------------------------
- 		/**
- 		 * QuickLook
- 		 */
- 		public function QuickLook() {
- 			$t_object = new ca_objects($vn_object_id = (int)$this->request->getParameter('object_id', pInteger));
- 			if (!($vn_representation_id = (int)$this->request->getParameter('representation_id', pInteger))) {
- 				$vn_representation_id = $t_object->getPrimaryRepresentationID();
- 			}
- 			$t_rep = new ca_object_representations($vn_representation_id);
-
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
-				// error: no viewer available
-				die("Invalid viewer");
-			}
-			
-			if(!$vn_object_id) {
-				$this->postError(1100, _t('Invalid object/representation'), 'SearchObjectsController->QuickLook');
-				return;
-			}
-
-			$this->response->addContent($vs_viewer_name::getViewerHTML(
-				$this->request, 
-				"representation:{$vn_representation_id}", 
-				['context' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_object, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
-			);
-		}
 		# -------------------------------------------------------
 		/**
 		 *

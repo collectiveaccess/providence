@@ -2,7 +2,7 @@
 
 namespace Elasticsearch\Endpoints\Cat;
 
-use Elasticsearch\Common\Exceptions;
+use Elasticsearch\Common\Exceptions\RuntimeException;
 use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
@@ -10,9 +10,9 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cat
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Snapshots extends AbstractEndpoint
 {
@@ -37,38 +37,36 @@ class Snapshots extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        if (isset($this->repository) !== true) {
-            throw new Exceptions\RuntimeException(
-                'repository is required for Cat Snapshots '
-            );
-        }
         $repository = $this->repository;
-        $uri = "/_cat/snapshots/$repository/";
+        if (isset($this->repository) === true) {
+            return "/_cat/snapshots/$repository/";
+        }
 
-        return $uri;
+        return "/_cat/snapshots/";
     }
 
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'local',
-            'ignore_unavailable',
             'master_timeout',
             'h',
             'help',
             'v',
-        ];
+            's',
+            'format',
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

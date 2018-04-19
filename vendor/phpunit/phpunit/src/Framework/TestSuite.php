@@ -1,102 +1,48 @@
 <?php
-/**
- * PHPUnit
+/*
+ * This file is part of PHPUnit.
  *
- * Copyright (c) 2001-2014, Sebastian Bergmann <sebastian@phpunit.de>.
- * All rights reserved.
+ * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- *   * Neither the name of Sebastian Bergmann nor the names of his
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @package    PHPUnit
- * @subpackage Framework
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2001-2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://www.phpunit.de/
- * @since      File available since Release 2.0.0
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 /**
  * A TestSuite is a composite of Tests. It runs a collection of test cases.
  *
- * Here is an example using the dynamic test definition.
- *
- * <code>
- * <?php
- * $suite = new PHPUnit_Framework_TestSuite;
- * $suite->addTest(new MathTest('testPass'));
- * ?>
- * </code>
- *
- * Alternatively, a TestSuite can extract the tests to be run automatically.
- * To do so you pass a ReflectionClass instance for your
- * PHPUnit_Framework_TestCase class to the PHPUnit_Framework_TestSuite
- * constructor.
- *
- * <code>
- * <?php
- * $suite = new PHPUnit_Framework_TestSuite(
- *   new ReflectionClass('MathTest')
- * );
- * ?>
- * </code>
- *
- * This constructor creates a suite with all the methods starting with
- * "test" that take no arguments.
- *
- * @package    PHPUnit
- * @subpackage Framework
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2001-2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://www.phpunit.de/
- * @since      Class available since Release 2.0.0
+ * @since Class available since Release 2.0.0
  */
 class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Framework_SelfDescribing, IteratorAggregate
 {
     /**
+     * Last count of tests in this suite.
+     *
+     * @var int|null
+     */
+    private $cachedNumTests;
+
+    /**
      * Enable or disable the backup and restoration of the $GLOBALS array.
      *
-     * @var boolean
+     * @var bool
      */
     protected $backupGlobals = null;
 
     /**
      * Enable or disable the backup and restoration of static attributes.
      *
-     * @var boolean
+     * @var bool
      */
     protected $backupStaticAttributes = null;
 
     /**
-     * @var boolean
+     * @var bool
+     */
+    private $beStrictAboutChangesToGlobalState = null;
+
+    /**
+     * @var bool
      */
     protected $runTestInSeparateProcess = false;
 
@@ -112,31 +58,31 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      *
      * @var array
      */
-    protected $groups = array();
+    protected $groups = [];
 
     /**
      * The tests in the test suite.
      *
      * @var array
      */
-    protected $tests = array();
+    protected $tests = [];
 
     /**
      * The number of tests in the test suite.
      *
-     * @var integer
+     * @var int
      */
     protected $numTests = -1;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $testCase = false;
 
     /**
      * @var array
      */
-    protected $foundClasses = array();
+    protected $foundClasses = [];
 
     /**
      * @var PHPUnit_Runner_Filter_Factory
@@ -160,8 +106,9 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      *     name of an existing class) or constructs an empty TestSuite
      *     with the given name.
      *
-     * @param  mixed                       $theClass
-     * @param  string                      $name
+     * @param mixed  $theClass
+     * @param string $name
+     *
      * @throws PHPUnit_Framework_Exception
      */
     public function __construct($theClass = '', $name = '')
@@ -253,7 +200,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * @param PHPUnit_Framework_Test $test
      * @param array                  $groups
      */
-    public function addTest(PHPUnit_Framework_Test $test, $groups = array())
+    public function addTest(PHPUnit_Framework_Test $test, $groups = [])
     {
         $class = new ReflectionClass($test);
 
@@ -261,21 +208,25 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             $this->tests[]  = $test;
             $this->numTests = -1;
 
-            if ($test instanceof PHPUnit_Framework_TestSuite &&
+            if ($test instanceof self &&
                 empty($groups)) {
                 $groups = $test->getGroups();
             }
 
             if (empty($groups)) {
-                $groups = array('__nogroup__');
+                $groups = ['default'];
             }
 
             foreach ($groups as $group) {
                 if (!isset($this->groups[$group])) {
-                    $this->groups[$group] = array($test);
+                    $this->groups[$group] = [$test];
                 } else {
                     $this->groups[$group][] = $test;
                 }
+            }
+
+            if ($test instanceof PHPUnit_Framework_TestCase) {
+                $test->setGroups($groups);
             }
         }
     }
@@ -283,7 +234,8 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     /**
      * Adds the tests from the given class to the suite.
      *
-     * @param  mixed                       $testClass
+     * @param mixed $testClass
+     *
      * @throws PHPUnit_Framework_Exception
      */
     public function addTestSuite($testClass)
@@ -299,7 +251,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             );
         }
 
-        if ($testClass instanceof PHPUnit_Framework_TestSuite) {
+        if ($testClass instanceof self) {
             $this->addTest($testClass);
         } elseif ($testClass instanceof ReflectionClass) {
             $suiteMethod = false;
@@ -321,7 +273,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             }
 
             if (!$suiteMethod && !$testClass->isAbstract()) {
-                $this->addTest(new PHPUnit_Framework_TestSuite($testClass));
+                $this->addTest(new self($testClass));
             }
         } else {
             throw new PHPUnit_Framework_Exception;
@@ -333,18 +285,16 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * as well as the separate import statements for the user's convenience.
      *
      * If the named file cannot be read or there are no new tests that can be
-     * added, a <code>PHPUnit_Framework_Warning</code> will be created instead,
+     * added, a <code>PHPUnit_Framework_WarningTestCase</code> will be created instead,
      * leaving the current test run untouched.
      *
-     * @param  string                      $filename
-     * @param  array                       $phptOptions Array with ini settings for the php instance
-     *                                                  run, key being the name if the setting,
-     *                                                  value the ini value.
+     * @param string $filename
+     *
      * @throws PHPUnit_Framework_Exception
-     * @since  Method available since Release 2.3.0
-     * @author Stefano F. Rausch <stefano@rausch-e.net>
+     *
+     * @since Method available since Release 2.3.0
      */
-    public function addTestFile($filename, $phptOptions = array())
+    public function addTestFile($filename)
     {
         if (!is_string($filename)) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(1, 'string');
@@ -352,8 +302,9 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         if (file_exists($filename) && substr($filename, -5) == '.phpt') {
             $this->addTest(
-                new PHPUnit_Extensions_PhptTestCase($filename, $phptOptions)
+                new PHPUnit_Extensions_PhptTestCase($filename)
             );
+
             return;
         }
 
@@ -367,7 +318,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
         // AFTER a child class that inherited from it. To account for that case,
         // cumulate all discovered classes, so the parent class may be found in
         // a later invocation.
-        if ($newClasses) {
+        if (!empty($newClasses)) {
             // On the assumption that test classes are defined first in files,
             // process discovered classes in approximate LIFO order, so as to
             // avoid unnecessary reflection.
@@ -378,7 +329,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
         // a PEAR/PSR-0 prefixed shortname ('NameSpace_ShortName'), or as a
         // PSR-1 local shortname ('NameSpace\ShortName'). The comparison must be
         // anchored to prevent false-positive matches (e.g., 'OtherShortName').
-        $shortname = basename($filename, '.php');
+        $shortname      = basename($filename, '.php');
         $shortnameRegEx = '/(?:^|_|\\\\)' . preg_quote($shortname, '/') . '$/';
 
         foreach ($this->foundClasses as $i => $className) {
@@ -386,7 +337,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
                 $class = new ReflectionClass($className);
 
                 if ($class->getFileName() == $filename) {
-                    $newClasses = array($className);
+                    $newClasses = [$className];
                     unset($this->foundClasses[$i]);
                     break;
                 }
@@ -417,9 +368,11 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     /**
      * Wrapper for addTestFile() that adds multiple test files.
      *
-     * @param  array|Iterator              $filenames
+     * @param array|Iterator $filenames
+     *
      * @throws PHPUnit_Framework_Exception
-     * @since  Method available since Release 2.3.0
+     *
+     * @since Method available since Release 2.3.0
      */
     public function addTestFiles($filenames)
     {
@@ -439,23 +392,33 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     /**
      * Counts the number of test cases that will be run by this test.
      *
-     * @return integer
+     * @param bool $preferCache Indicates if cache is preferred.
+     *
+     * @return int
      */
-    public function count()
+    public function count($preferCache = false)
     {
-        $numTests = 0;
+        if ($preferCache && $this->cachedNumTests !== null) {
+            $numTests = $this->cachedNumTests;
+        } else {
+            $numTests = 0;
 
-        foreach ($this as $test) {
-            $numTests += count($test);
+            foreach ($this as $test) {
+                $numTests += count($test);
+            }
+
+            $this->cachedNumTests = $numTests;
         }
 
         return $numTests;
     }
 
     /**
-     * @param  ReflectionClass             $theClass
-     * @param  string                      $name
+     * @param ReflectionClass $theClass
+     * @param string          $name
+     *
      * @return PHPUnit_Framework_Test
+     *
      * @throws PHPUnit_Framework_Exception
      */
     public static function createTest(ReflectionClass $theClass, $name)
@@ -498,50 +461,54 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
                         $className,
                         $name
                     );
-                } catch (Exception $e) {
-                    if (!($e instanceof PHPUnit_Framework_SkippedTestError || $e instanceof PHPUnit_Framework_IncompleteTestError)) {
-                        $message = sprintf(
-                            'The data provider specified for %s::%s is invalid.',
-                            $className,
-                            $name
-                        );
+                } catch (PHPUnit_Framework_IncompleteTestError $e) {
+                    $message = sprintf(
+                        'Test for %s::%s marked incomplete by data provider',
+                        $className,
+                        $name
+                    );
 
-                        $_message = $e->getMessage();
+                    $_message = $e->getMessage();
 
-                        if (!empty($_message)) {
-                            $message .= "\n" . $_message;
-                        }
-
-                        $data = self::warning($message);
-                    } elseif ($e instanceof PHPUnit_Framework_SkippedTestError) {
-                        $message = sprintf(
-                            'Test for %s::%s skipped by data provider',
-                            $className,
-                            $name
-                        );
-
-                        $_message = $e->getMessage();
-
-                        if (!empty($_message)) {
-                            $message .= "\n" . $_message;
-                        }
-
-                        $data = self::skipTest($className, $name, $message);
-                    } elseif ($e instanceof PHPUnit_Framework_IncompleteTestError) {
-                        $message = sprintf(
-                            'Test for %s::%s marked incomplete by data provider',
-                            $className,
-                            $name
-                        );
-
-                        $_message = $e->getMessage();
-
-                        if (!empty($_message)) {
-                            $message .= "\n" . $_message;
-                        }
-
-                        $data = self::incompleteTest($className, $name, $message);
+                    if (!empty($_message)) {
+                        $message .= "\n" . $_message;
                     }
+
+                    $data = self::incompleteTest($className, $name, $message);
+                } catch (PHPUnit_Framework_SkippedTestError $e) {
+                    $message = sprintf(
+                        'Test for %s::%s skipped by data provider',
+                        $className,
+                        $name
+                    );
+
+                    $_message = $e->getMessage();
+
+                    if (!empty($_message)) {
+                        $message .= "\n" . $_message;
+                    }
+
+                    $data = self::skipTest($className, $name, $message);
+                } catch (Throwable $_t) {
+                    $t = $_t;
+                } catch (Exception $_t) {
+                    $t = $_t;
+                }
+
+                if (isset($t)) {
+                    $message = sprintf(
+                        'The data provider specified for %s::%s is invalid.',
+                        $className,
+                        $name
+                    );
+
+                    $_message = $t->getMessage();
+
+                    if (!empty($_message)) {
+                        $message .= "\n" . $_message;
+                    }
+
+                    $data = self::warning($message);
                 }
 
                 // Test method with @dataProvider.
@@ -561,7 +528,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
                     $groups = PHPUnit_Util_Test::getGroups($className, $name);
 
-                    if ($data instanceof PHPUnit_Framework_Warning ||
+                    if ($data instanceof PHPUnit_Framework_WarningTestCase ||
                         $data instanceof PHPUnit_Framework_SkippedTestCase ||
                         $data instanceof PHPUnit_Framework_IncompleteTestCase) {
                         $test->addTest($data, $groups);
@@ -651,7 +618,8 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Returns the test groups of the suite.
      *
      * @return array
-     * @since  Method available since Release 3.2.0
+     *
+     * @since Method available since Release 3.2.0
      */
     public function getGroups()
     {
@@ -667,6 +635,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Set tests groups of the test case
      *
      * @param array $groups
+     *
      * @since Method available since Release 4.0.0
      */
     public function setGroupDetails(array $groups)
@@ -678,6 +647,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Runs the tests and collects their result in a TestResult.
      *
      * @param PHPUnit_Framework_TestResult $result
+     *
      * @return PHPUnit_Framework_TestResult
      */
     public function run(PHPUnit_Framework_TestResult $result = null)
@@ -705,7 +675,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
                         $this->markTestSuiteSkipped(implode(PHP_EOL, $missingRequirements));
                     }
 
-                    call_user_func(array($this->name, $beforeClassMethod));
+                    call_user_func([$this->name, $beforeClassMethod]);
                 }
             }
         } catch (PHPUnit_Framework_SkippedTestSuiteError $e) {
@@ -721,12 +691,18 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             $result->endTestSuite($this);
 
             return $result;
-        } catch (Exception $e) {
+        } catch (Throwable $_t) {
+            $t = $_t;
+        } catch (Exception $_t) {
+            $t = $_t;
+        }
+
+        if (isset($t)) {
             $numTests = count($this);
 
             for ($i = 0; $i < $numTests; $i++) {
                 $result->startTest($this);
-                $result->addError($this, $e, 0);
+                $result->addError($this, $t, 0);
                 $result->endTest($this, 0);
             }
 
@@ -742,7 +718,8 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             }
 
             if ($test instanceof PHPUnit_Framework_TestCase ||
-                $test instanceof PHPUnit_Framework_TestSuite) {
+                $test instanceof self) {
+                $test->setbeStrictAboutChangesToGlobalState($this->beStrictAboutChangesToGlobalState);
                 $test->setBackupGlobals($this->backupGlobals);
                 $test->setBackupStaticAttributes($this->backupStaticAttributes);
                 $test->setRunTestInSeparateProcess($this->runTestInSeparateProcess);
@@ -753,7 +730,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         foreach ($hookMethods['afterClass'] as $afterClassMethod) {
             if ($this->testCase === true && class_exists($this->name, false) && method_exists($this->name, $afterClassMethod)) {
-                call_user_func(array($this->name, $afterClassMethod));
+                call_user_func([$this->name, $afterClassMethod]);
             }
         }
 
@@ -765,9 +742,11 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     }
 
     /**
-     * @param  boolean                     $runTestInSeparateProcess
+     * @param bool $runTestInSeparateProcess
+     *
      * @throws PHPUnit_Framework_Exception
-     * @since  Method available since Release 3.7.0
+     *
+     * @since Method available since Release 3.7.0
      */
     public function setRunTestInSeparateProcess($runTestInSeparateProcess)
     {
@@ -782,6 +761,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Runs a test.
      *
      * @deprecated
+     *
      * @param PHPUnit_Framework_Test       $test
      * @param PHPUnit_Framework_TestResult $result
      */
@@ -803,7 +783,8 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     /**
      * Returns the test at the given index.
      *
-     * @param  integer
+     * @param  int|false
+     *
      * @return PHPUnit_Framework_Test
      */
     public function testAt($index)
@@ -829,6 +810,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Set tests of the test suite
      *
      * @param array $tests
+     *
      * @since Method available since Release 4.0.0
      */
     public function setTests(array $tests)
@@ -839,9 +821,11 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     /**
      * Mark the test suite as skipped.
      *
-     * @param  string                                  $message
+     * @param string $message
+     *
      * @throws PHPUnit_Framework_SkippedTestSuiteError
-     * @since  Method available since Release 3.0.0
+     *
+     * @since Method available since Release 3.0.0
      */
     public function markTestSuiteSkipped($message = '')
     {
@@ -890,8 +874,9 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     }
 
     /**
-     * @param  ReflectionMethod $method
-     * @return boolean
+     * @param ReflectionMethod $method
+     *
+     * @return bool
      */
     public static function isTestMethod(ReflectionMethod $method)
     {
@@ -901,27 +886,30 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         // @scenario on TestCase::testMethod()
         // @test     on TestCase::testMethod()
-        $doc_comment = $method->getDocComment();
+        $docComment = $method->getDocComment();
 
-        return strpos($doc_comment, '@test')     !== false ||
-               strpos($doc_comment, '@scenario') !== false;
+        return strpos($docComment, '@test')     !== false ||
+               strpos($docComment, '@scenario') !== false;
     }
 
     /**
-     * @param  string                    $message
-     * @return PHPUnit_Framework_Warning
+     * @param string $message
+     *
+     * @return PHPUnit_Framework_WarningTestCase
      */
     protected static function warning($message)
     {
-        return new PHPUnit_Framework_Warning($message);
+        return new PHPUnit_Framework_WarningTestCase($message);
     }
 
     /**
-     * @param  string $class
-     * @param  string $methodName
-     * @param  string $message
+     * @param string $class
+     * @param string $methodName
+     * @param string $message
+     *
      * @return PHPUnit_Framework_SkippedTestCase
-     * @since  Method available since Release 4.3.0
+     *
+     * @since Method available since Release 4.3.0
      */
     protected static function skipTest($class, $methodName, $message)
     {
@@ -929,11 +917,13 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     }
 
     /**
-     * @param  string $class
-     * @param  string $methodName
-     * @param  string $message
+     * @param string $class
+     * @param string $methodName
+     * @param string $message
+     *
      * @return PHPUnit_Framework_IncompleteTestCase
-     * @since  Method available since Release 4.3.0
+     *
+     * @since Method available since Release 4.3.0
      */
     protected static function incompleteTest($class, $methodName, $message)
     {
@@ -941,8 +931,21 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     }
 
     /**
-     * @param boolean $backupGlobals
-     * @since  Method available since Release 3.3.0
+     * @param bool $beStrictAboutChangesToGlobalState
+     *
+     * @since Method available since Release 4.6.0
+     */
+    public function setbeStrictAboutChangesToGlobalState($beStrictAboutChangesToGlobalState)
+    {
+        if (is_null($this->beStrictAboutChangesToGlobalState) && is_bool($beStrictAboutChangesToGlobalState)) {
+            $this->beStrictAboutChangesToGlobalState = $beStrictAboutChangesToGlobalState;
+        }
+    }
+
+    /**
+     * @param bool $backupGlobals
+     *
+     * @since Method available since Release 3.3.0
      */
     public function setBackupGlobals($backupGlobals)
     {
@@ -952,8 +955,9 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     }
 
     /**
-     * @param boolean $backupStaticAttributes
-     * @since  Method available since Release 3.4.0
+     * @param bool $backupStaticAttributes
+     *
+     * @since Method available since Release 3.4.0
      */
     public function setBackupStaticAttributes($backupStaticAttributes)
     {
@@ -967,7 +971,8 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Returns an iterator for this test suite.
      *
      * @return RecursiveIteratorIterator
-     * @since  Method available since Release 3.1.0
+     *
+     * @since Method available since Release 3.1.0
      */
     public function getIterator()
     {
@@ -984,7 +989,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     {
         $this->iteratorFilter = $filter;
         foreach ($this as $test) {
-            if ($test instanceof PHPUnit_Framework_TestSuite) {
+            if ($test instanceof self) {
                 $test->injectFilter($filter);
             }
         }
@@ -994,7 +999,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Template Method that is called before the tests
      * of this test suite are run.
      *
-     * @since  Method available since Release 3.1.0
+     * @since Method available since Release 3.1.0
      */
     protected function setUp()
     {
@@ -1004,7 +1009,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * Template Method that is called after the tests
      * of this test suite have finished running.
      *
-     * @since  Method available since Release 3.1.0
+     * @since Method available since Release 3.1.0
      */
     protected function tearDown()
     {

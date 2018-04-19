@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Snapshot;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Status
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Snapshot
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Status extends AbstractEndpoint
 {
@@ -58,7 +58,7 @@ class Status extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->snapshot) === true && isset($this->repository) !== true) {
             throw new Exceptions\RuntimeException(
@@ -67,8 +67,8 @@ class Status extends AbstractEndpoint
         }
 
         $repository = $this->repository;
-        $snapshot = $this->snapshot;
-        $uri = "/_snapshot/_status";
+        $snapshot   = $this->snapshot;
+        $uri        = "/_snapshot/_status";
 
         if (isset($repository) === true) {
             $uri = "/_snapshot/$repository/_status";
@@ -82,17 +82,18 @@ class Status extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'master_timeout',
-        ];
+            'ignore_unavailable'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

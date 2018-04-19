@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -125,6 +125,14 @@
 				_t('Most recently added') => 'recent'
 			)
 		),
+		'default_text' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 4,
+			'default' => '',
+			'label' => _t('Default text'),
+			'description' => _t('Text to pre-populate a newly created attribute with')
+		),
 		'canBeUsedInSearchForm' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -229,7 +237,7 @@
 				);
  			}
  			
- 			$vn_strlen = unicode_strlen($ps_value);
+ 			$vn_strlen = mb_strlen($ps_value);
  			if ($vn_strlen < $va_settings['minChars']) {
  				// text is too short
  				$vs_err_msg = ($va_settings['minChars'] == 1) ? _t('%1 must be at least 1 character long', $pa_element_info['displayLabel']) : _t('%1 must be at least %2 characters long', $pa_element_info['displayLabel'], $va_settings['minChars']);
@@ -325,6 +333,10 @@
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['UrlAttributeValue'];
+ 		}
+ 		# ------------------------------------------------------------------
+ 		public function getDefaultValueSetting() {
+ 			return 'default_text';
  		}
  		# ------------------------------------------------------------------
 		/**

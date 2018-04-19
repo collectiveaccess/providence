@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Template;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Put
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Template
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Put extends AbstractEndpoint
 {
@@ -36,7 +36,7 @@ class Put extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->id) !== true) {
             throw new Exceptions\RuntimeException(
@@ -45,7 +45,7 @@ class Put extends AbstractEndpoint
         }
 
         $templateId = $this->id;
-        $uri = "/_search/template/$templateId";
+        $uri  = "/_search/template/$templateId";
 
         return $uri;
     }
@@ -53,19 +53,15 @@ class Put extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
-            'op_type',
-            'version',
-            'version_type',
-        ];
+        return array();
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'PUT';
     }

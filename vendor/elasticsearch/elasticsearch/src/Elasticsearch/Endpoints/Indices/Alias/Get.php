@@ -9,9 +9,9 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices\Alias
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Get extends AbstractEndpoint
 {
@@ -37,11 +37,11 @@ class Get extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $index = $this->index;
         $name = $this->name;
-        $uri = "/_alias";
+        $uri   = "/_alias";
 
         if (isset($index) === true && isset($name) === true) {
             $uri = "/$index/_alias/$name";
@@ -57,20 +57,20 @@ class Get extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
             'local',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

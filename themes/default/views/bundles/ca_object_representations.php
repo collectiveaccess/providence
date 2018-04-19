@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -289,7 +289,30 @@
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>	
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
-
+<?php
+    if ($vb_batch) {
+?>
+			<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationBatchDetailEditorContainer">
+				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}rep_label_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item_label->htmlFormElement('name', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_label_{n}", 'name' => "{fieldNamePrefix}rep_label_{n}", "value" => "{rep_label}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'textAreaTagName' => 'textentry', 'width' => "75")); ?></div>
+				<br class="clear"/>
+				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}rep_type_id_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('type_id', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $va_settings, null))); ?></div>
+				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}access_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('access', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}status_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('status', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+		
+				<br class="clear"/>
+			</div>
+			<script type='text/javascript'>
+			    jQuery(document).ready(function() {
+			        jQuery('input.caObjectRepresentationDetailEditorElement, select.caObjectRepresentationDetailEditorElement, textarea.caObjectRepresentationDetailEditorElement').prop('disabled', true);
+			        jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').on('click', '.caObjectRepresentationBatchDetailEditorElementEnable', function(e) {
+			            var n = jQuery(this).attr('name').replace("_enabled", "");
+			            jQuery('#' + n).attr('disabled', !jQuery(this).prop('checked'));
+			        }); 
+			    });
+			</script>
+<?php
+    } else {
+?>
 			<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}type_id_{n}'), $va_settings)) : _t('Add representation'); ?></h2>
 
 			<span class="formLabelError">{error}</span>
@@ -300,7 +323,7 @@
 			<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationNewDetailEditorContainer">
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item_label->htmlFormElement('name', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_label_{n}", 'name' => "{fieldNamePrefix}rep_label_{n}", "value" => "{rep_label}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'textAreaTagName' => 'textentry', 'width' => "75")); ?></div>
 				<br class="clear"/>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('type_id', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('type_id', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $va_settings, null))); ?></div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('status', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
 		
@@ -369,7 +392,9 @@
 				});
 			</script>
 	</div>
-			
+<?php
+    } 
+?>	
 </div>
 <?php
 	print TooltipManager::getLoadHTML('bundle_ca_object_representations');
@@ -467,7 +492,7 @@
 			enableOnNewIDList: [],
 			showEmptyFormsOnLoad: 1,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
-			isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,
+			isSortable: <?php print !$vb_read_only &&!$vb_batch ? "true" : "false"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList',
 			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
 			
@@ -477,8 +502,8 @@
 			
 			extraParams: { exact: 1 },
 			
-			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			minRepeats: <?php print $vb_batch ? 1 : caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?php print $vb_batch ? 1 : caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
 			
 			totalValueCount: <?php print (int)$vn_rep_count; ?>,
 			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',

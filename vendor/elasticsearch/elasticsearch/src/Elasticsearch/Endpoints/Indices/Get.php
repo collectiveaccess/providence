@@ -2,21 +2,43 @@
 
 namespace Elasticsearch\Endpoints\Indices;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Get
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Get
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Get extends AbstractEndpoint
 {
     private $feature;
+
+    /**
+     * @throws \Elasticsearch\Common\Exceptions\RuntimeException
+     * @return string
+     */
+    public function getURI()
+    {
+        if (isset($this->index) !== true) {
+            throw new Exceptions\RuntimeException(
+                'index is required for Get'
+            );
+        }
+        $index   = $this->index;
+        $feature = $this->feature;
+        $uri     = "/$index";
+
+        if (isset($feature) === true) {
+            $uri = "/$index/$feature";
+        }
+
+        return $uri;
+    }
 
     public function setFeature($feature)
     {
@@ -34,46 +56,23 @@ class Get extends AbstractEndpoint
     }
 
     /**
-     * @throws \Elasticsearch\Common\Exceptions\RuntimeException
-     * @return string
-     */
-    protected function getURI()
-    {
-        if (isset($this->index) !== true) {
-            throw new Exceptions\RuntimeException(
-                'index is required for Get'
-            );
-        }
-        $index = $this->index;
-        $feature = $this->feature;
-        $uri = "/$index";
-
-        if (isset($feature) === true) {
-            $uri = "/$index/$feature";
-        }
-
-        return $uri;
-    }
-
-    /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'local',
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-            'flat_settings',
-            'human',
-        ];
+            'human'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

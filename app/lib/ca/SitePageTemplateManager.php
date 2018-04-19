@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/ToolsManager.php : 
+ * app/lib/ca/SitePageTemplateManager.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2016-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage AppPlugin
+ * @subpackage ContentManagement
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
@@ -89,6 +89,7 @@
   			$va_config = self::getTemplateConfig()->get('fields');
   			foreach($va_tags as $vs_tag) {
   				if (in_array($vs_tag, $va_restricted_tag_names)) { continue; }
+  				if (preg_match("!^media:!", $vs_tag)) { continue; }
   				if (!is_array($va_tags_with_info[$vs_tag] = $va_config[$vs_tag])) {
   					$va_tags_with_info[$vs_tag] = [];
   				}
@@ -99,6 +100,8 @@
   			
   			if ($t_template->load(['template_code' => $vs_template_name])) {
   				$t_template->setMode(ACCESS_WRITE);
+  				
+  				$t_template->purify(false);
   				$t_template->set([
   					'template' => $vs_template_content,
   					'tags' => $va_tags_with_info,
@@ -108,6 +111,7 @@
   				if (!$t_template->numErrors()) { $vn_template_update_count++; }
   			} else {
   				$t_template->setMode(ACCESS_WRITE);
+  				$t_template->purify(false);
   				$t_template->set([
   					'template_code' => $vs_template_name,
   					'title' => $vs_template_name,

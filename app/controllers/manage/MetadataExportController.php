@@ -209,7 +209,7 @@ class MetadataExportController extends ActionController {
 	# -------------------------------------------------------
 	public function ProcessDestination() {
 		$o_config = Configuration::load();
-		$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
+		$va_alt_dest = $o_config->get('exporter_alternate_destinations');
 		$this->getView()->setVar('exporter_alternate_destinations', $va_alt_dest);
 
 		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
@@ -217,7 +217,7 @@ class MetadataExportController extends ActionController {
 
 		$o_session = $this->getRequest()->getSession();
 
-		if(!($vs_tmp_file = $o_session->getVar('export_file'))) {
+		if(!($vs_tmp_file = $o_session->getVar('export_file')) && !($vs_tmp_data = $o_session->getVar('export_data'))) {
 			return; //@todo error handling
 		}
 		if(!($vs_content_type = $o_session->getVar('export_content_type'))) {
@@ -228,7 +228,6 @@ class MetadataExportController extends ActionController {
 		$this->getView()->setVar('export_content_type', $vs_content_type);
 
 		$vs_dest_code = $this->getRequest()->getParameter('destination', pString);
-
 		// catch plain old file download request and download as binary
 		if($vs_dest_code == 'file_download') {
 			$this->render('export/download_export_binary.php');
@@ -240,28 +239,39 @@ class MetadataExportController extends ActionController {
 		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
 			if(is_array($va_alt_dest[$vs_dest_code])) {
 				$va_dest = $va_alt_dest[$vs_dest_code];
-				// github is the only type we support atm
-				if(!isset($va_dest['type']) || ($va_dest['type'] != 'github')) { return; }
-				if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
-				$this->getView()->setVar('dest_display_name', $va_dest['display']);
+				// Github and ResourceSpace accepted formats
+				if(isset($va_dest['type']) && ($va_dest['type'] == 'github')) {
+					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
+					$this->getView()->setVar('dest_display_name', $va_dest['display']);
 
-				if(isset($va_dest['base_dir']) && strlen($va_dest['base_dir'])>0) {
-					$vs_git_path = preg_replace('!/+!','/', $va_dest['base_dir'].'/'.$vs_filename);
-				} else {
-					$vs_git_path = $vs_filename;
+					if(isset($va_dest['base_dir']) && strlen($va_dest['base_dir'])>0) {
+						$vs_git_path = preg_replace('!/+!','/', $va_dest['base_dir'].'/'.$vs_filename);
+					} else {
+						$vs_git_path = $vs_filename;
+					}
+
+					if(caUploadFileToGitHub(
+						$va_dest['username'], $va_dest['token'], $va_dest['owner'], $va_dest['repository'],
+						$vs_git_path, $vs_tmp_file, $va_dest['branch'], (bool)$va_dest['update_existing']
+					)) {
+						$vb_success = true;
+					}
+				}
+				if(isset($va_dest['type']) && ($va_dest['type'] == 'ResourceSpace')) {
+					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
+					$this->getView()->setVar('dest_display_name', $va_dest['display']);
+
+					if(caExportDataToResourceSpace($va_dest['user'], $va_dest['api_key'], $va_dest['base_api_url'], $vs_tmp_file)){
+						$vb_success = true;
+					}
+
 				}
 
-				if(caUploadFileToGitHub(
-					$va_dest['username'], $va_dest['token'], $va_dest['owner'], $va_dest['repository'],
-					$vs_git_path, $vs_tmp_file, $va_dest['branch'], (bool)$va_dest['update_existing']
-				)) {
-					$vb_success = true;
-				}
 			}
 		}
 
 		$this->getView()->setVar('alternate_destination_success', $vb_success);
-
+		unlink($vs_tmp_file);
 		$this->render('export/download_feedback_html.php');
 	}
 	# -------------------------------------------------------

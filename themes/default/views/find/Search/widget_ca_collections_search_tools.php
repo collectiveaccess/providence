@@ -46,7 +46,7 @@
 		foreach(array_reverse($va_search_history, true) as $vs_search => $va_search_info) {
 			$SELECTED = ($vs_cur_search == $va_search_info['display']) ? 'SELECTED="1"' : '';
 			$vs_display = strip_tags($va_search_info['display']);
-			if (unicode_strlen($vs_display) > 25) {
+			if (mb_strlen($vs_display) > 25) {
 				$vs_display = strip_tags(mb_substr($vs_display, 0, 22)).'...';
 			}
 			print "<option value='".htmlspecialchars($vs_search, ENT_QUOTES, 'UTF-8')."' {$SELECTED}>".$vs_display." (".$va_search_info['hits'].")</option>\n";

@@ -18,7 +18,7 @@ class Intl extends AbstractStringWrapper
      *
      * @var string[]
      */
-    protected static $encodings = array('UTF-8');
+    protected static $encodings = ['UTF-8'];
 
     /**
      * Get a list of supported character encodings
@@ -37,7 +37,7 @@ class Intl extends AbstractStringWrapper
      */
     public function __construct()
     {
-        if (!extension_loaded('intl')) {
+        if (! extension_loaded('intl')) {
             throw new Exception\ExtensionNotLoadedException(
                 'PHP extension "intl" is required for this wrapper'
             );

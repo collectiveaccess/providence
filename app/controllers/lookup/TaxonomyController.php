@@ -41,7 +41,7 @@
 			$ps_query = trim($this->request->getParameter('term', pString));
 			$vo_conf = Configuration::load();
 			$va_items = array();
-			if (unicode_strlen($ps_query) >= 3) {
+			if (mb_strlen($ps_query) >= 3) {
 				try {
 					/* // ITIS
 					$i = 0;

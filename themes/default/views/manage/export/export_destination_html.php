@@ -28,8 +28,9 @@
 
 $vs_filename = ($this->getVar('file_name') ? $this->getVar('file_name') : $vn_id);
 $va_destinations = $this->getVar('exporter_alternate_destinations');
-
+$vs_tmp_file = "File: ".$this->getVar('export_file');
 print "<h2>"._t("The export has been processed. Configure your download below.")."</h2>\n";
+print $vs_tmp_file;
 ?>
 <table>
 	<tr>
@@ -43,10 +44,10 @@ print "<h2>"._t("The export has been processed. Configure your download below.")
 <?php
 			if(is_array($va_destinations)) {
 				foreach($va_destinations as $vs_code => $va_dest) {
-					if(!isset($va_dest['type']) || ($va_dest['type'] != 'github')) { continue; } // we only support github atm
+					if(!isset($va_dest['type']) || !in_array($va_dest['type'], ['github', 'ResourceSpace'])) { continue; } // we only support github and ResourceSpace atm
 					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
 
-					print "<div>".caJSButton($this->request, __CA_NAV_ICON_UPDATE__, $va_dest['display'], $vs_code, array('onclick' => 'caProcessDestination("'.$vs_code.'"); return false;'))."<div/>\n";
+						print "<div>".caJSButton($this->request, __CA_NAV_ICON_UPDATE__, $va_dest['display'], $vs_code, array('onclick' => 'caProcessDestination("'.$vs_code.'"); return false;'))."<div/>\n";
 				}
 			}
 ?>
@@ -70,6 +71,8 @@ print "<h2>"._t("The export has been processed. Configure your download below.")
 			window.location.href = "<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>?file_name=" + encodeURIComponent(file_name) + "&destination=file_download";
 		} else { // for other destinations like github, load async
 			jQuery('#caExporterDestinationFeedback').html("<?php print caBusyIndicatorIcon($this->request); ?>");
+			console.log(file_name);
+			console.log(dest_code);
 			jQuery("#caExporterDestinationFeedback").load('<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>', { file_name : file_name, destination : dest_code });
 		}
 	}

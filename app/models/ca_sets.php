@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -561,6 +561,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			allUsers =
 	 *			publicUsers =
 	 *			name = 
+	 *          byUser = return sets grouped by user with access. The array will be key'ed by sortable user name. Each entry includes a 'user' array with information about the user and a 'sets' array with the list of sets that user has access to. [Default is false]
+	 *
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
 	public function getSets($pa_options=null) {
@@ -572,6 +574,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pb_set_ids_only = isset($pa_options['setIDsOnly']) ? (bool)$pa_options['setIDsOnly'] : false;
 		$pb_omit_counts = isset($pa_options['omitCounts']) ? (bool)$pa_options['omitCounts'] : false;
 		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
+		
+		$pb_by_user = caGetOption('byUser', $pa_options, null);
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
 
@@ -785,49 +789,73 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
 			}
-			return $va_sets;
-		} else {
-			if ($pb_set_ids_only) {
-				// get sets
-				$qr_res = $o_db->query("
-					SELECT ".join(', ', $va_sql_selects)."
-					FROM ca_sets cs
-					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
-					LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
-					".join("\n", $va_extra_joins)."
-					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-					".join(' AND ', $va_sql_wheres)."
-					ORDER BY csl.name
-				", $va_sql_params);
-				return $qr_res->getAllFieldValues("set_id");
-			} else {
-				$qr_res = $o_db->query("
-					SELECT ".join(', ', $va_sql_selects)."
-					FROM ca_sets cs
-					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
-					LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
-					LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
-					".join("\n", $va_extra_joins)."
-					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-					".join(' AND ', $va_sql_wheres)."
-					ORDER BY csl.name
-				", $va_sql_params);
-				$t_list = new ca_lists();
-				$va_sets = array();
-				while($qr_res->nextRow()) {
-					$vn_table_num = $qr_res->get('table_num');
-					if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
-						$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
-					}
-					
-					$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
-					
-					$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
-				}
-
-				return $va_sets;
+			
+			if ($pb_by_user) {
+			    $va_sets_by_user = [];
+			    $va_sets = caExtractValuesByUserLocale($va_sets);
+			    foreach($va_sets as $va_set) {
+			        $va_users = $this->getUsers(['row_id' => $va_set['set_id']]);
+			        
+			        $vs_user_key = strtolower(str_pad(substr($va_set['lname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad(substr($va_set['fname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad($va_set['user_id'], 10, '0', STR_PAD_LEFT));
+			        if (!isset($va_sets_by_user[$vs_user_key]['user'])) {
+			            $va_sets_by_user[$vs_user_key]['user'] = [
+			                'user_id' => $va_set['user_id'], 'user_name' => $va_set['user_name'],
+			                'fname' => $va_set['fname'], 'lname' => $va_set['lname'],
+			                'email' => $va_set['email']
+			            ];
+			        }
+			        $va_sets_by_user[$vs_user_key]['sets'][] = $va_set;
+			        
+			        foreach($va_users as $va_user) {
+			            $vs_user_key = strtolower(str_pad(substr($va_user['lname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad(substr($va_user['fname'], 0, 20), 20, ' ', STR_PAD_RIGHT).str_pad($va_user['user_id'], 10, '0', STR_PAD_LEFT));
+			            $va_sets_by_user[$vs_user_key]['user'] = $va_user;
+			            $va_sets_by_user[$vs_user_key]['sets'][] = $va_set;
+			        }
+			    }
+			    ksort($va_sets_by_user);
+			    return $va_sets_by_user;
 			}
 			
+			return $va_sets;
+		} elseif ($pb_set_ids_only) {
+			// get sets
+			$qr_res = $o_db->query("
+				SELECT ".join(', ', $va_sql_selects)."
+				FROM ca_sets cs
+				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
+				".join("\n", $va_extra_joins)."
+				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+				".join(' AND ', $va_sql_wheres)."
+				ORDER BY csl.name
+			", $va_sql_params);
+			return $qr_res->getAllFieldValues("set_id");
+		} else {
+			$qr_res = $o_db->query("
+				SELECT ".join(', ', $va_sql_selects)."
+				FROM ca_sets cs
+				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
+				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
+				".join("\n", $va_extra_joins)."
+				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+				".join(' AND ', $va_sql_wheres)."
+				ORDER BY csl.name
+			", $va_sql_params);
+			$t_list = new ca_lists();
+			$va_sets = array();
+			while($qr_res->nextRow()) {
+				$vn_table_num = $qr_res->get('table_num');
+				if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
+					$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
+				}
+				
+				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
+				
+				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
+			}
+
+			return $va_sets;
 		}
 	}
 	# ------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,8 +55,10 @@ class ExportCSV extends BaseExportFormat {
 		
 		foreach($pa_data as $pa_item){
 			$vn_column = intval($pa_item['element']);
-			$va_csv[$vn_column] = $pa_item['text'];
+			$va_csv[$vn_column][] = $pa_item['text'];
 		}
+		$vs_delimiter = caGetOption('delimiter', $pa_options, '; ');
+		$va_csv = array_map(function($v) use ($vs_delimiter) { return is_array($v) ? join($vs_delimiter, $v) : $v; }, $va_csv);
 		
 		if(!sizeof($va_csv)) { return ''; }
 
@@ -93,10 +95,10 @@ class ExportCSV extends BaseExportFormat {
 
 			$vs_element = $va_item['element'];
 			if(!is_numeric($vs_element)){
-				$va_errors[] = _t("Element %1 is not numeric",$vs_element);
+				//$va_errors[] = _t("Element %1 is not numeric",$vs_element);
 			}
 			if(intval($vs_element) <= 0){
-				$va_errors[] = _t("Element %1 is not a positive number",$vs_element);	
+				//$va_errors[] = _t("Element %1 is not a positive number",$vs_element);	
 			}
 
 			if(sizeof($t_item->getHierarchyChildren())>0){

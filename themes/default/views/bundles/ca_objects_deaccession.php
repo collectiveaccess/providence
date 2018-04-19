@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,6 +57,10 @@
 				<div id='<?php print $vs_id_prefix; ?>DeaccessionContainer' <?php print ((bool)$t_subject->get('is_deaccessioned') ? "" : "style='display: none;'"); ?>>
 <?php
 	print $t_subject->htmlFormElement('deaccession_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_date", 'id' => "{$vs_id_prefix}DeaccessionDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only));
+	
+	if ($this->request->config->get('deaccession_use_disposal_date')) {
+	    print $t_subject->htmlFormElement('deaccession_disposal_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_disposal_date", 'id' => "{$vs_id_prefix}DeaccessionDisposalDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only));
+    }
 	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA"._t('Type')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID", 'readonly' => $vb_read_only));
 ?>
 	<br class="clear"/>
@@ -79,6 +83,7 @@
 	}
 	jQuery(document).ready(function() {
 		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDate').datepicker({constrainInput: false});
+		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDisposalDate').datepicker({constrainInput: false});
 	});
 </script>
 <?php

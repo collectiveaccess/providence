@@ -64,7 +64,7 @@
 			// Generate form
 			//
 			
-			print "<div class='dashboardWidgetHeading'>".unicode_ucfirst($o_dm->getTableProperty($t_form->get('table_num'), 'NAME_PLURAL')).": ".$t_form->getLabelForDisplay()."</div>\n";
+			print "<div class='dashboardWidgetHeading'>".caUcFirstUTF8Safe($o_dm->getTableProperty($t_form->get('table_num'), 'NAME_PLURAL')).": ".$t_form->getLabelForDisplay()."</div>\n";
 			
 			$va_form_element_list = $this->getVar('form_elements');
 			$va_flds = array();

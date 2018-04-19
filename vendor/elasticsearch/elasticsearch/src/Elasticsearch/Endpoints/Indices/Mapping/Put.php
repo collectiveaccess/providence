@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Indices\Mapping;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Put
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices\Mapping
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Put extends AbstractEndpoint
 {
@@ -37,7 +37,7 @@ class Put extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->type) !== true) {
             throw new Exceptions\RuntimeException(
@@ -46,7 +46,7 @@ class Put extends AbstractEndpoint
         }
         $index = $this->index;
         $type = $this->type;
-        $uri = "/_mapping/$type";
+        $uri   = "/_mapping/$type";
 
         if (isset($index) === true && isset($type) === true) {
             $uri = "/$index/$type/_mapping";
@@ -60,24 +60,24 @@ class Put extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
+            'ignore_conflicts',
             'timeout',
             'master_timeout',
-            'ignore_conflicts',
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-            'update_all_types',
-        ];
+            'update_all_types'
+        );
     }
 
     /**
      * @return array
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      */
-    protected function getBody()
+    public function getBody()
     {
         if (isset($this->body) !== true) {
             throw new Exceptions\RuntimeException('Body is required for Put Mapping');
@@ -89,7 +89,7 @@ class Put extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'PUT';
     }

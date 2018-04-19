@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Cluster\Settings;
 
-use Elasticsearch\Common\Exceptions;
 use Elasticsearch\Endpoints\AbstractEndpoint;
+use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Put
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cluster\Settings
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Put extends AbstractEndpoint
 {
@@ -36,9 +36,9 @@ class Put extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
-        $uri = "/_cluster/settings";
+        $uri   = "/_cluster/settings";
 
         return $uri;
     }
@@ -46,19 +46,17 @@ class Put extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'flat_settings',
-            'master_timeout',
-            'timeout',
-        ];
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'PUT';
     }

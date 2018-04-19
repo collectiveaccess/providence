@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,10 +89,15 @@ if (!$this->request->isAjax()) {
 <?php
 	print $this->render('sets/paging_controls_html.php');
 ?>
+	<?php print caFormTag($this->request, 'Algebra', 'algebraSetForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => true, 'submitOnReturn' => false]); ?>
+		<div id="algebraSetControls">
+			<?php print _t("Create new set %1 from the %2 of %3 selected sets", "<input type='text' size='10' name='algebra_set_name' id='algebraSetName'/>", caHTMLSelect("algebra_set_operation", [_t("combination") => "UNION", _t("intersection") => "INTERSECTION", _t("difference") => "DIFFERENCE"]), '<span id="selectedSetCount"></span>');?>  <?php print caFormSubmitButton($this->request, __CA_NAV_ICON_ADD__, '', 'algebraSetForm', ['size' => 1]); ?>
+		</div>
 	
 	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
+				<th class="list-header-nosort"> </th>
 				<th class="<?php print (($vs_current_sort == "name") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
 					<?php print caNavLink($this->request, _t('Name'), '', 'manage', 'Set', 'ListSets', array('sort' => 'name', 'direction' => ((($vs_current_sort == "name") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
@@ -123,12 +128,15 @@ if (!$this->request->isAjax()) {
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody id="setListBody">
 <?php
 	if (sizeof($va_set_list)) {
 		foreach($va_set_list as $va_set) {
 ?>
 			<tr>
+				<td>
+					<input type="checkbox" class="algebraSetSelector set-table-<?php print $va_set["table_num"]; ?>" name="algebra_set_id[]" data-table_num="<?php print $va_set["table_num"]; ?>" value="<?php print $va_set["set_id"]; ?>">
+				</td>
 				<td>
 					<div class="caItemListName"><?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
 				</td>
@@ -189,6 +197,8 @@ if (!$this->request->isAjax()) {
 ?>
 		</tbody>
 	</table>
+	
+	</form>
 </div>
 <?php
 if (!$this->request->isAjax()) {
@@ -199,3 +209,32 @@ if (!$this->request->isAjax()) {
 <?php
 }
 ?>
+<script type="text/javascript">
+	function caUpdateSetAlgebraForm() {
+	
+	}
+	
+	var caAlgebraSetTableNum = null;
+	jQuery(document).ready(function() {
+		jQuery('#algebraSetControls').hide();
+		jQuery('#selectedSetCount').html(0);
+		
+		jQuery('#setListBody').on('click', '.algebraSetSelector', function(e) {
+			var c = jQuery('.algebraSetSelector:checked').length;
+			
+			if (c > 1) {
+				jQuery('#algebraSetControls').show(100);
+				jQuery('#selectedSetCount').html(c);
+			} else {
+				if (c == 1) {
+					caAlgebraSetTableNum = jQuery('.algebraSetSelector:checked').data('table_num');
+					jQuery(".algebraSetSelector").hide();
+					jQuery(".set-table-" + caAlgebraSetTableNum).show();
+				} else {
+					jQuery(".algebraSetSelector").show();
+				}
+				jQuery('#algebraSetControls').hide(100);
+			}
+		});
+	});
+</script>

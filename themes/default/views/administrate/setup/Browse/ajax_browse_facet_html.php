@@ -66,7 +66,7 @@
 		# ------------------------------------------------------------
 		case 'hierarchical';
 ?>
-	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
 	<div id="hierarchyBrowserContainer">
 		<div id="hierarchyBrowser" class='hierarchyBrowser'>
@@ -126,7 +126,7 @@
 		# ------------------------------------------------------------
 		case 'none':
 ?>
-	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
 
 	<div class="browseSelectPanelList">
@@ -164,7 +164,7 @@
 ?>
 
 	<div class="browseSelectPanelHeader">
-	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 
 <?php 
 	$vs_g = null;

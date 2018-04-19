@@ -66,7 +66,7 @@ class WordpressRSSReader extends BaseXMLDataReader {
 	/**
 	 *
 	 */
-	protected $ops_root_tag = 'item';
+	protected $ops_root_tag = 'rss';
 
 	/**
 	 * Merge attributes of row-level tag into record as regular values?

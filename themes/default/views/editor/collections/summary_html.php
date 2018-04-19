@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,7 @@
  */
  	$t_item 				= $this->getVar('t_subject');
 	$vn_item_id 			= $this->getVar('subject_id');
-
+	
 	$t_display 				= $this->getVar('t_display');
 	$va_placements 			= $this->getVar("placements");
 ?>
@@ -73,7 +73,7 @@
 
 
 		if ($t_item->get('ca_collections.children.collection_id')) {
-			print "<div class='heading' style='margin-bottom:10px;'>".$t_item->get('ca_collections.type_id', array('convertCodesToDisplayText' => true))." Contents</div>";
+			print "<div class='heading' style='margin-bottom:10px;'>"._t("%1 contents", $t_item->get('ca_collections.type_id', array('convertCodesToDisplayText' => true)))."</div>";
 			//
 			if (
 				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_summary_sort_values')) && !sizeof($va_sort_fields))
@@ -89,8 +89,8 @@
 			) {
 				$vs_template = "<l>^ca_collections.preferred_labels.name</l> (^ca_collections.idno)";
 			}
-
-			$va_hierarchy = $t_item->hierarchyWithTemplate($vs_template, array('collection_id' => $vn_item_id, 'sort' => $va_sort_fields));
+			
+			$va_hierarchy = $t_item->hierarchyWithTemplate($vs_template, array('collection_id' => $vn_item_id, 'sort' => $va_sort_fields, 'objectTemplate' => $t_item->getAppConfig()->get('ca_objects_hierarchy_summary_display_settings')));
 			foreach($va_hierarchy as $vn_i => $va_hierarchy_item) {
 				$vs_margin = $va_hierarchy_item['level']*20;
 				print "<div style='margin-left:".$vs_margin."px;margin-bottom:10px;'><i class='fa fa-angle-right' ></i> ".$va_hierarchy_item['display']."</div>";

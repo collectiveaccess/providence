@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,15 +64,6 @@
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
-
-	print "<div class='bundleSubLabel'>";	
-	if(sizeof($this->getVar('initialValues'))) {
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
-	}
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
-	}
-	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
@@ -81,6 +72,15 @@
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
+	print "<div class='bundleSubLabel'>";	
+	if(sizeof($this->getVar('initialValues'))) {
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
+	}
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+	}
+	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
+
 	//
 	// Template to generate display for existing items
 	//
@@ -102,10 +102,9 @@
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_places', array(), array('display' => '_display', 'makeLink' => false));
+			print caGetRelationDisplayString($this->request, 'ca_places', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix));
 ?>
 			</span>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 		</div>
 <?php
@@ -116,10 +115,9 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_places', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true));
+			print caGetRelationDisplayString($this->request, 'ca_places', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix));
 ?>
 			</span>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {

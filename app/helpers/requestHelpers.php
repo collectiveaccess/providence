@@ -1,4 +1,5 @@
 <?php
+session_start();
 /* ----------------------------------------------------------------------
  * app/helpers/requestHelpers.php : utility functions for handling incoming requests
  * ----------------------------------------------------------------------
@@ -7,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +36,13 @@
 	  * @return string Name of theme to use. If there are no matches and there is no _default_ value set in the mappings, then the string "default" will be returned. (It is assumed there is always a theme named "default" available.)
 	  */
 	function caGetPreferredThemeForCurrentDevice($pa_theme_device_mappings) {
+		if(isset($_GET['current_theme'])){
+			$_SESSION['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
+		}
+		if(isset($_SESSION['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_SESSION['current_theme'])){
+			$vs_theme = $_SESSION['current_theme'];
+			return $vs_theme;
+		}
 		$vs_default_theme = 'default';
 		if (is_array($pa_theme_device_mappings)) {
 			foreach($pa_theme_device_mappings as $vs_user_agent_regex => $vs_theme) {
@@ -76,6 +84,17 @@
 	}
 	# --------------------------------------------------------------------------------------------
 	 /**
+	  * Return true if system is configured to alternate identifers (a metadata element) rather than internal numeric CA primary keys
+	  * in urls when referring to a specific record
+	  *
+	  * @return bool
+	  */
+	function caUseAltIdentifierInUrls($ps_table) {
+		$o_config = Configuration::load();
+		return (bool)$o_config->get('use_alternate_identifiers_in_urls_for_'.$ps_table) ? $o_config->get('use_alternate_identifiers_in_urls_for_'.$ps_table) : false;
+	}
+	# --------------------------------------------------------------------------------------------
+	 /**
 	  * 
 	  *
 	  * @return string
@@ -92,4 +111,3 @@
  		return isset($va_url_names_to_tables[$ps_name]) ? $va_url_names_to_tables[$ps_name] : null;
 	}
 	# ---------------------------------------------------------------------------------------------
- ?>

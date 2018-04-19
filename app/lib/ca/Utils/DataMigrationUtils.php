@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -713,18 +713,37 @@
 					}
 					foreach($va_values as $va_value) {
 						if (is_array($va_value)) {
+						    if (($vs_delimiter = caGetOption('delimiter', $va_value, null)) && !sizeof(array_filter($va_value, function($v) { return is_array($v); }))) {
+						        $va_split_values = $va_expanded_values = [];
+						        foreach($va_value as $vs_k => $vs_v) {
+						            if(is_array($vs_v)) { continue; }
+						            if(in_array($vs_k, ['delimiter', 'matchOn'])) { continue; }
+						            
+						            $va_split_values[$vs_k] = explode($vs_delimiter, $vs_v);
+						       }
+						       foreach($va_split_values as $vs_k => $va_v) {
+						            foreach($va_v as $vn_i => $vs_v) {
+						                $va_expanded_values[$vn_i][$vs_k] = trim($vs_v);
+						            }
+						       }
+						    } else {
+						        $va_expanded_values = [$va_value];
+						    }
+						    
 							// array of values (complex multi-valued attribute)
-							$pt_instance->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
+							foreach($va_expanded_values as $va_v) {
+                                $pt_instance->addAttribute(
+                                    array_merge($va_v, array(
+                                        'locale_id' => $pn_locale_id
+                                    )), $vs_element, null, ['skipExistingValues' => true, 'matchOn' => caGetOption('matchOn', $va_values, null)]);
+                            }
 						} else {
 							// scalar value (simple single value attribute)
 							if ($va_value) {
 								$pt_instance->addAttribute(array(
 									'locale_id' => $pn_locale_id,
 									$vs_element => $va_value
-								), $vs_element);
+								), $vs_element, null, ['skipExistingValues' => true, 'matchOn' => caGetOption('matchOn', $va_values, null)]);
 							}
 						}
 						if ($vb_separate_updates) {
@@ -1080,14 +1099,18 @@
 				if($t_instance->hasField('media') && ($t_instance->getFieldInfo('media', 'FIELD_TYPE') == FT_MEDIA) && isset($pa_values['media']) && $pa_values['media']) {
 					if(is_array($pa_values['media'])) { $pa_values['media'] = array_shift($pa_values['media']); }
 					if (($pb_match_media_without_ext) && !isURL($pa_values['media']) && !file_exists($pa_values['media'])) {
-						$vs_dirname = pathinfo($pa_values['media'], PATHINFO_DIRNAME);
+						$vs_dirname = trim(pathinfo(escapeshellcmd($pa_values['media']), PATHINFO_DIRNAME));
 						$vs_filename = preg_replace('!\.[A-Za-z0-9]{1,4}$!', '', pathinfo($pa_values['media'], PATHINFO_BASENAME));
 						
 						$vs_original_path = $pa_values['media'];
 						
 						$pa_values['media'] = null;
 						
-						$va_files_in_dir = caGetDirectoryContentsAsList($vs_dirname, true, false, false, false);	
+				        $o_config = Configuration::load();
+						$vs_import_dir = $o_config->get('batch_media_import_root_directory');
+						$vb_allow_any_directory = (bool)$o_config->get('allow_import_of_media_from_any_directory');
+						
+						$va_files_in_dir = caGetDirectoryContentsAsList(($vb_allow_any_directory && $vs_dirname) ? $vs_dirname : $vs_import_dir, true, false, false, false);	
 						foreach($va_files_in_dir as $vs_filepath) {
 							if ($o_log) { $o_log->logDebug(_t("Trying media %1 in place of %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
 							if (pathinfo($vs_filepath, PATHINFO_FILENAME) == $vs_filename) {

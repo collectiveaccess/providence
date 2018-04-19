@@ -33,10 +33,7 @@
  /**
   *
   */
-
 	require_once(__CA_LIB_DIR__.'/core/Parsers/IDataParser.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 	
 	/**
 	 * Utility class for parsing data in delimited text files (eg. tab-delimited or CSV files)

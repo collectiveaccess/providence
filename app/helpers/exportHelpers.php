@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,12 +34,6 @@
    *
    */
 	require_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
-   
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
-	
-	\PhpOffice\PhpPresentation\Autoloader::register();
 	
    # ----------------------------------------
 	/**
@@ -133,13 +127,14 @@
 		
 		
 		$o_view->setVar('result', $po_result);
+		$o_view->setVar('t_set', caGetOption('set', $pa_options, null));
 		$o_view->setVar('criteria_summary', caGetOption('criteriaSummary', $pa_options, ''));
 		
 		$vs_table = $po_result->tableName();
 		
 		$vs_type = null;
 		if (!(bool)$o_config->get('disable_pdf_output') && substr($ps_template, 0, 5) === '_pdf_') {
-			$va_template_info = caGetPrintTemplateDetails('results', substr($ps_template, 5));
+			$va_template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $pa_options, 'results'), substr($ps_template, 5));
 			$vs_type = 'pdf';
 		} elseif (!(bool)$o_config->get('disable_pdf_output') && (substr($ps_template, 0, 9) === '_display_')) {
 			$vn_display_id = substr($ps_template, 9);
@@ -150,6 +145,7 @@
 				$o_view->setVar('display', $t_display);
 				
 				$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
+				$o_view->setVar('display_list', $va_placements);
 				foreach($va_placements as $vn_placement_id => $va_display_item) {
 					$va_settings = caUnserializeForDatabase($va_display_item['settings']);
 				
@@ -171,7 +167,7 @@
 			} else {
 				throw new ApplicationException(_t("Invalid format %1", $ps_template));
 			}
-			$va_template_info = caGetPrintTemplateDetails('results', 'display');
+			$va_template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $pa_options, 'results'), 'display');
 			$vs_type = 'pdf';
 		} elseif(!(bool)$o_config->get('disable_export_output')) {
 			// Look it up in app.conf export_formats
@@ -425,7 +421,7 @@
 				//
 				// PDF output
 				//
-				caExportViewAsPDF($o_view, $va_template_info, caGetOption('filename', $va_template_info, 'export_results.pdf'), []);
+				caExportViewAsPDF($o_view, $va_template_info, ($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results.pdf'), []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
 		
@@ -512,7 +508,7 @@
 			$vb_printed_properly = true;
 		} catch (Exception $e) {
 			$vb_printed_properly = false;
-			throw new ApplicationException(_t("Could not generate PDF"));
+			throw new ApplicationException(_t("Could not generate PDF: ".$e->getMessage()));
 		}
 		
 		return $vb_printed_properly;

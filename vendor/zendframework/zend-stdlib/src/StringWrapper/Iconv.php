@@ -19,7 +19,7 @@ class Iconv extends AbstractStringWrapper
      * @var string[]
      * @link http://www.gnu.org/software/libiconv/
      */
-    protected static $encodings = array(
+    protected static $encodings = [
         // European languages
         'ASCII',
         'ISO-8859-1',
@@ -195,7 +195,7 @@ class Iconv extends AbstractStringWrapper
         // Platform specifics
         'ATARIST',
         'RISCOS-LATIN1',
-    );
+    ];
 
     /**
      * Get a list of supported character encodings
@@ -214,7 +214,7 @@ class Iconv extends AbstractStringWrapper
      */
     public function __construct()
     {
-        if (!extension_loaded('iconv')) {
+        if (! extension_loaded('iconv')) {
             throw new Exception\ExtensionNotLoadedException(
                 'PHP extension "iconv" is required for this wrapper'
             );

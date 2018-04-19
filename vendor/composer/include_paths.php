@@ -6,7 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    $vendorDir . '/phpunit/php-file-iterator',
-    $vendorDir . '/phpunit/phpunit',
-    $vendorDir . '/symfony/yaml',
+    $vendorDir . '/pear/file_marc',
+    $vendorDir . '/pear/pear_exception',
 );

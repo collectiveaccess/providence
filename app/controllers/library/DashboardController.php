@@ -122,12 +122,16 @@
 				$qr_objects = caMakeSearchResult('ca_objects', $va_object_ids);
 				while($qr_objects->nextHit()) {
 					foreach($va_group_bys as $vn_i => $vs_group_by) {
-						if (is_array($va_attrs = $qr_objects->get($vs_group_by, array('returnAsArray' => true, 'returnWithStructure' => true, 'convertCodesToDisplayText' => true)))) {
+						if (is_array($va_attrs = $qr_objects->get($vs_group_by, array( 'returnWithStructure' => true, 'convertCodesToDisplayText' => true)))) {
 							if (!sizeof($va_attrs)) { $va_count['?']++; break; }
 							foreach($va_attrs as $vn_attr_id => $va_vals) {
-								foreach($va_vals as $vn_val_id => $va_val) {
-									$va_counts[$va_val[$va_group_by_elements[$vn_i]]]++;
-								}
+							    if(is_array($va_vals)) {
+                                    foreach($va_vals as $vn_val_id => $va_val) {
+                                        $va_counts[$va_val[$va_group_by_elements[$vn_i]]]++;
+                                    }
+                                } else {
+                                    $va_counts[$va_vals]++;
+                                }
 							}
 							
 							break;
