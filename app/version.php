@@ -6,4 +6,4 @@
 	define('__CollectiveAccess_Schema_Rev__', 153);
 
 	# Release type
-	define('__CollectiveAccess_Release_Type__', 'GIT');
+	define('__CollectiveAccess_Release_Type__', 'RELEASE');
