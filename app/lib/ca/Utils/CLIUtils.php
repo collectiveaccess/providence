@@ -3356,9 +3356,6 @@
 		 * Load metadata dictionary
 		 */
 		public static function load_chenhall_nomenclature($po_opts=null) {
-
-			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 			require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 
