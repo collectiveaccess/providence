@@ -4761,6 +4761,7 @@ class BaseModel extends BaseObject {
 							}
 							$va_preview_frame_list = $m->writePreviews(
 								array(
+								    'writeAllPages' => true,
 									'width' => $m->get("width"), 
 									'height' => $m->get("height"),
 									'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
@@ -4774,7 +4775,6 @@ class BaseModel extends BaseObject {
 									'outputDirectory' => __CA_APP_DIR__.'/tmp'
 								)
 							);
-							
 							if (is_array($va_preview_frame_list)) {
 								foreach($va_preview_frame_list as $vn_time => $vs_frame) {
 									$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
