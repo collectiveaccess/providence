@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -632,7 +632,6 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { return []; }
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
-				
 				$vn_parent_id = $va_row['parent_id'];
 				$va_hier[$vn_parent_id][] = $va_row['type_id'];
 				
@@ -645,7 +644,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					
 					// skip type if record type is set, it has a subtype set and it's not in our list
 					if ($pn_type_id && ($va_subtypes_to_check && !sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids)))) { continue; }
-					$vs_subtype = $va_row['sub_type_right_id'];
+					$va_subtypes = ($va_row['sub_type_right_id'] > 0) ? ((bool)$va_row['include_subtypes_right'] ? caMakeTypeIDList($vs_right_table_name, [$va_row['sub_type_right_id']]) : [$va_row['sub_type_right_id']]) : null;
 					
 					$vs_key = ((strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']);
 					
@@ -657,7 +656,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					
 					// skip type if record type is set, it has a subtype set and it's not in our list
 					if ($pn_type_id && ($va_subtypes_to_check && !sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids)))) { continue; }
-					$vs_subtype = $va_row['sub_type_left_id'];	
+					$va_subtypes = ($va_row['sub_type_left_id'] > 0) ? ((bool)$va_row['include_subtypes_left'] ? caMakeTypeIDList($vs_left_table_name, [$va_row['sub_type_left_id']]) : [$va_row['sub_type_left_id']]) : null;
 					
 					$va_row['typename'] = $va_row['typename_reverse'];
 					
@@ -665,17 +664,19 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				
 				}
 				unset($va_row['typename_reverse']);		// we pass the typename adjusted for direction in '_display', so there's no need to include typename_reverse in the returned values
-				if (!$vs_subtype) { $vs_subtype = 'NULL'; }
+				if (!$va_subtypes) { $va_subtypes = ['NULL']; }
 				
 				$vn_type_id = $va_row['type_id'];
-				$va_types[$vn_parent_id][$vs_subtype][$vs_key][$vn_type_id][$va_row['locale_id']] = $va_row;
+				foreach($va_subtypes as $vs_subtype) {
+				    $va_types[$vn_parent_id][$vs_subtype][$vs_key][$vn_type_id][$va_row['locale_id']] = $va_row;
+				}
 			}
 			
 			$va_types = $this->_processRelationshipHierarchy($vn_root_id, $va_hier, $va_types, 1);
 		
 			$va_processed_types = array('_type_map' => []);
 			$va_subtype_lookups = [];
-		
+			
 			foreach($va_types as $vs_subtype => $va_types_by_subtype) {
 				$va_types_by_locale = [];
 				foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
