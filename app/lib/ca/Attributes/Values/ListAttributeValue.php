@@ -183,6 +183,17 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Value delimiter'),
 		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values when used in a display.')
+	),
+	'restrictToTypes' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'useList' => 'list_item_types',
+		'width' => 35, 'height' => 5,
+		'takesLocale' => false,
+		'multiple' => 1,
+		'default' => '',
+		'label' => _t('Restrict to types'),
+		'description' => _t('Restricts display to items of the specified type(s). Leave all unchecked for no restriction.')
 	)
 );
 
