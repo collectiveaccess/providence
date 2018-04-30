@@ -587,7 +587,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
                         }
                         $va_properties['options'] = $va_select_opts;
                     } 
-                } 
+                }
 
 				$vm_value = $this->getSetting($ps_setting);
 
@@ -602,7 +602,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				if (isset($va_properties['refreshOnChange']) && (bool)$va_properties['refreshOnChange']) {
 					$va_attr['onchange'] = "caSetElementsSettingsForm({ {$vs_input_name} : jQuery(this).val() }); return false;";
 				}
-				$vs_return .= caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
+				
+				if($va_properties['useList']) {
+                	$t_list = new ca_lists($va_properties['useList']);
+					if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
+					$vs_return .= $t_list->getListAsHTMLFormElement($va_properties['useList'], $vs_input_name, $va_attr, $va_opts);
+                } else {
+					$vs_return .= caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
+				}
 				break;
 			# --------------------------------------------
 			default:
