@@ -2472,7 +2472,7 @@
 						}
 
 						foreach($va_groups as $vs_group) {
-							$vs_group = unicode_ucfirst($vs_group);
+							$vs_group = caUcFirstUTF8Safe($vs_group);
 							$vs_alpha_key = '';
 							foreach($va_label_order_by_fields as $vs_f) {
 								$vs_alpha_key .= $va_item[$vs_f];

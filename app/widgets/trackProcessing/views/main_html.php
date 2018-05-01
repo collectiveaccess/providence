@@ -75,7 +75,7 @@
 ?>
 				<tr>
 					<td>
-						<?php print "<h2>"._t('By <em>%1</em>', unicode_strtolower($va_job['handler_name']))."</h2>"; ?>
+						<?php print "<h2>"._t('By <em>%1</em>', mb_strtolower($va_job['handler_name']))."</h2>"; ?>
 						
 						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
@@ -105,7 +105,7 @@
 ?>
 				<tr>
 					<td>
-						<?php print "<h2>"._t('For <em>%1</em>', unicode_strtolower($va_job['handler_name']))."</h2>"; ?>
+						<?php print "<h2>"._t('For <em>%1</em>', mb_strtolower($va_job['handler_name']))."</h2>"; ?>
 						
 						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
@@ -133,7 +133,7 @@
 		?>
 				<tr>
 					<td>
-						<?php print "<h2>"._t('By <em>%1</em>', unicode_strtolower($va_job['handler_name']))."</h2>"; ?>
+						<?php print "<h2>"._t('By <em>%1</em>', mb_strtolower($va_job['handler_name']))."</h2>"; ?>
 						
 						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>

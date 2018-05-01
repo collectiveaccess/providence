@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2017 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -67,13 +67,6 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$this->prepopulateFields($pa_params['instance']);
 		}
 		return true;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Get plugin user actions
-	 */
-	static public function getRoleActionList() {
-		return array();
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

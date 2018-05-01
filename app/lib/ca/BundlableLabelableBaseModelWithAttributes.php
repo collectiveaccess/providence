@@ -98,6 +98,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_acl.php");
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
 		parent::__construct($pn_id);	# call superclass constructor
@@ -1682,6 +1683,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
+					// This bundle is only available when editing objects of type ca_bundle_displays
+					case 'ca_metadata_alert_rule_type_restrictions':
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
 					// 
 					case 'ca_users':
 						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of per-user access if user is not owner
@@ -1802,6 +1808,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							return null;
 						}
 						break;
+					// This bundle is only available for md alert rules
+					case 'ca_metadata_alert_triggers':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_alert_rules)) { return null; }
+
+						$vs_element .= $this->getTriggerHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+
 					# -------------------------------
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_pages_content':
@@ -1963,7 +1977,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					default:
 						if ($va_tmp[0] !== $this->tableName()) {
-							return unicode_ucfirst($t_instance->getDisplayLabel($ps_field)).$vs_suffix;
+							return caUcFirstUTF8Safe($t_instance->getDisplayLabel($ps_field)).$vs_suffix;
 						}
 						break;
 					# --------------------
@@ -4179,6 +4193,18 @@ if (!$vb_batch) {
 						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
+					// This bundle is only available for ca_bundle_displays 
+					case 'ca_bundle_display_type_restrictions':
+						if ($vb_batch) { break; } // not supported in batch mode
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------------
+					// This bundle is only available for ca_bundle_displays
+					case 'ca_metadata_alert_rule_type_restrictions':
+						if ($vb_batch) { break; } // not supported in batch mode
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------------
 					// This bundle is only available for ca_search_forms 
 					case 'ca_search_form_placements':
 						if ($vb_batch) { break; } // not supported in batch mode
@@ -4605,6 +4631,12 @@ $this->update();
 						}
 						break;
 					# -------------------------------
+					case 'ca_metadata_alert_triggers':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$po_request->user->canDoAction('can_use_metadata_alerts')) { break; }
+						$this->saveTriggerHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_pages_content':
 						if(is_array($va_field_list = $this->getHTMLFormElements())) {
@@ -4779,6 +4811,7 @@ $this->update();
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
+		$this->triggerMetadataAlerts();
 		return true;
 	}
  	# ------------------------------------------------------
@@ -5022,6 +5055,8 @@ $this->update();
  	 */
 	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null, &$pn_count=null) {
 		global $AUTH_CURRENT_USER_ID;
+		$o_dm = Datamodel::load();
+				        
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
 
@@ -5847,12 +5882,24 @@ $this->update();
 							
 				// filter for current?
 				if($pb_show_current_only && $t_item_rel) {
-					$qr_rels = caMakeSearchResult($t_item_rel->tableName(), [$qr_res->get($vs_key)]);
+				    if ($this->isRelationship()) {
+				        $k = $this->tableName().".".(($this->getLeftTableFieldName() == $vs_key) ? $this->getRightTableFieldName() : $this->getLeftTableFieldName());
+				        $t = $t_rel_item->tableName();
+				        $id = $qr_res->get($t_rel_item->primaryKey());
+				    } else {
+				        $k = $this->primaryKey(true);
+				        $t = $t_item_rel->tableName();
+				        $id = $qr_res->get($vs_key);
+				    }
+				    $cd = $ps_current_date_bundle;
+				    if ($cd == 'effective_date') { $cd = $t_item_rel->tableName().".{$cd}"; }
+				    
+					$qr_rels = caMakeSearchResult($t, [$id]);
 					while($qr_rels->nextHit()) {
-						foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
+						foreach($d= $qr_rels->get($cd, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
 							$va_tmp = explode("/", $vs_date);
 							if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
-							$va_rels_for_id_by_date[$qr_rels->get($this->primaryKey(true))][$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_v] = $va_rels_for_id[$vs_v];
+							$va_rels_for_id_by_date[$qr_rels->get($k)][$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_v] = $va_rels_for_id[$vs_v];
 						}
 					}
 				}
@@ -5893,6 +5940,9 @@ $this->update();
 			//
 			// END - non-self relation
 			//
+		}
+		if ($pb_show_current_only) {
+		    $va_rels = array_slice($va_rels, sizeof($va_rels)-1, 1);
 		}
 
 		// Apply restrictToBundleValues
@@ -7305,6 +7355,14 @@ side. For many self-relations the direction determines the nature and display te
 		
 		return $va_violations;
 	 }
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Trigger metadata alerts if there are any set up
+	 * @param array $pa_options
+	 */
+	public function triggerMetadataAlerts(array $pa_options=[]) {
+		ca_metadata_alert_triggers::fireApplicableTriggers($this, __CA_MD_ALERT_CHECK_TYPE_SAVE__);
+	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Method calls by SearchResult::get() on models when bundle to fetch is not an intrinsic but is listed in the 

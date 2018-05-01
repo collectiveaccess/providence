@@ -158,6 +158,8 @@
 				return false;
 			}
 			
+			$this->setAsChanged($pb_is_preferred ? 'preferred_labels' : 'nonpreferred_labels');
+			
 			/**
 			 * Execute "processLabelsAfterChange" if it is defined in a sub-class. This allows model-specific
 			 * functionality to be executed after a successful change to labels. For instance, if a sub-class caches labels
@@ -247,6 +249,8 @@
 					$this->errors = $t_label->errors;
 					return false;
 				}
+				
+				$this->setAsChanged($pb_is_preferred ? 'preferred_labels' : 'nonpreferred_labels');
 				return $t_label->getPrimaryKey();
 			} catch (DatabaseException $e) {
 				$this->postError($e->getNumber(), $e->getMessage());
@@ -274,6 +278,8 @@
 			}
 			
  			if (!$t_label->load($pn_label_id)) { return null; }
+ 			$vb_is_preferred = (bool)$t_label->get('is_preferred');
+ 			
  			if (!($t_label->get($this->primaryKey()) == $this->getPrimaryKey())) { return null; }
  			
  			$t_label->setMode(ACCESS_WRITE);
@@ -288,6 +294,8 @@
 				$this->errors = array_merge($this->errors, $t_label->errors);
 				return false;
 			}
+			
+			$this->setAsChanged($vb_is_preferred ? 'preferred_labels' : 'nonpreferred_labels');
 			
 			/**
 			 * @see LabelableBaseModelWithAttributes::addLabel()
@@ -335,6 +343,7 @@
 							}
 						}
  						$vb_ret &= $this->removeLabel($va_label['label_id'], $pa_options);
+ 						$this->setAsChanged((bool)$va_label['is_preferred'] ? 'preferred_labels' : 'nonpreferred_labels');
  					}
  				}
  			}
@@ -956,7 +965,7 @@
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 	
-			$qr_res = $o_db->query($vs_sql, $x=array_merge($va_sql_params, $va_type_restriction_params));
+			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));

@@ -2764,12 +2764,13 @@ class ca_users extends BaseModel {
 		));
 
 		global $g_request;
-		caSendMessageUsingView($g_request,
+		caSendMessageUsingView(
+			$g_request,
 			$this->get('email'),
 			__CA_ADMIN_EMAIL__,
 			"[{$vs_app_name}] "._t("Information regarding your account"),
 			'account_deactivated.tpl',
-			array()
+			[], null, null, ['source' => 'Account deactivation']
 		);
 	}
 	# ----------------------------------------
@@ -2792,16 +2793,17 @@ class ca_users extends BaseModel {
 		$vs_user_email = $this->get('email');
 		$vs_app_name = $this->getAppConfig()->get("app_name");
 
-		return caSendMessageUsingView($g_request,
+		return caSendMessageUsingView(
+			$g_request,
 			$vs_user_email,
 			__CA_ADMIN_EMAIL__,
 			"[{$vs_app_name}] "._t("Information regarding your password"),
 			'forgot_password.tpl',
-			array(
+			[
 				'password_reset_token' => $ps_password_reset_token,
 				'user_name' => $this->get('user_name'),
 				'site_host' => $this->getAppConfig()->get('site_host'),
-			)
+			], null, null, ['source' => 'Password reset']
 		);
 	}
 	# ----------------------------------------

@@ -3731,6 +3731,54 @@
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="metadata_alert_rule_config_ui" type="ca_metadata_alert_rules">
+      <labels>
+        <label locale="en_US">
+          <name>Metadata alert rule editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Metadata alert rule name</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_metadata_alert_triggers">
+              <bundle>ca_metadata_alert_triggers</bundle>
+            </placement>
+            <placement code="ca_users">
+              <bundle>ca_users</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Recipient users</setting>
+                <setting name="add_label" locale="en_US">Add user</setting>
+              </settings>
+            </placement>
+            <placement code="ca_user_groups">
+              <bundle>ca_user_groups</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Recipient user groups</setting>
+                <setting name="add_label" locale="en_US">Add group</setting>
+              </settings>
+            </placement>
+            <placement code="ca_metadata_alert_rule_type_restrictions">
+              <bundle>ca_metadata_alert_rule_type_restrictions</bundle>
+            </placement>
+            <placement code="code">
+              <bundle>code</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
     <userInterface code="tour_editor_ui" type="ca_tours">
       <labels>
         <label locale="en_US">

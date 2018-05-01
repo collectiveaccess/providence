@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,7 @@
  	AssetLoadManager::register('setEditorUI');
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$va_items 				= $this->getVar('items');
+	$va_items 				= caSanitizeArray($this->getVar('items'), ['removeNonCharacterData' => false]);
 	$t_set 					= $this->getVar('t_set');
 	$vn_set_id 				= $t_set->getPrimaryKey();
 	$t_row 					= $this->getVar('t_row');

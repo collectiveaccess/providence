@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -122,6 +122,17 @@
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
 			'description' => _t('Delimiter to use between multiple values when used in a display.')
+		),
+		'restrictToTypes' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'useList' => 'object_representation_types',
+			'width' => 35, 'height' => 5,
+			'takesLocale' => false,
+			'multiple' => 1,
+			'default' => '',
+			'label' => _t('Restrict to types'),
+			'description' => _t('Restricts display to items of the specified type(s). Leave all unchecked for no restriction.')
 		)
 	);
  
@@ -152,4 +163,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

@@ -67,7 +67,8 @@
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
 			$t_subject = isset($pa_data['t_subject']) ? $pa_data['t_subject'] : null;
 			$t_media = isset($pa_data['t_media']) ? $pa_data['t_media'] : $t_subject;
-				
+			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+			
 			// Controls
 			$vs_controls = '';
 			if ($t_subject) {
@@ -85,10 +86,10 @@
 				$vs_controls .= "<div class='objectInfo'>{$vs_media_overlay_titlebar_text}</div>";
 			}
 			if ($t_subject && $t_instance && is_a($t_instance, 'ca_object_representations')) {
-				if (($vn_num_media = $t_media->getRepresentationCount()) > 1) {
+				if (($vn_num_media = $t_media->getRepresentationCount(['checkAccess' => $pa_check_access])) > 1) {
 					$vs_controls .= "<div class='repNav'>";
 				
-					$va_ids = array_keys($t_media->getRepresentationIDs());
+					$va_ids = array_keys($t_media->getRepresentationIDs(['checkAccess' => $pa_check_access]));
 					$vn_rep_index = array_search($t_instance->getPrimaryKey(), $va_ids);
 				
 					$vs_context = $po_request->getParameter('context', pString);

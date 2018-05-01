@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,7 +103,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('relationship types') => 79,
 					_t('site pages') => 235,
 					_t('user interfaces') => 101,
-					_t('user interface screens') => 100
+					_t('user interface screens') => 100,
+					_t('metadata alert rules') => 238
 				)
 		),
 		'color' => array(
@@ -1398,6 +1399,101 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray), ['includeSubtypes' => $po_request->getParameter('type_restriction_include_subtypes', pInteger)]);
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $ps_path_to_template
+	 * @param string $ps_screen_name
+	 * @param array $pa_options Options include"
+	 *		replace = replace any existing placements. [Default is true]
+	 *		restrictions = an array of type restrictions to apply to the sdreen. [Default is null]
+	 *
+	 * @return bool
+	 */
+	public function createScreenFromPawtucketDetailTemplate($ps_path_to_template, $ps_screen_name, array $pa_options=null) {
+		global $g_ui_locale;
+		if (!($vn_ui_id = $this->getPrimaryKey())) { return null; }
+		if(!($vs_template_content = file_get_contents($ps_path_to_template))) { return null; }
+		$va_tags = caGetTemplateTags($vs_template_content, ['ignoreQuotes' => true]);
+		
+		$pb_replace = caGetOption('replace', $pa_options, true);
+		
+		$vs_screen_code = trim(preg_replace("![^A-Za-z0-9_]+!", "_", mb_strtolower($ps_screen_name)));
+		
+		// load screen?
+		if (
+			!($t_screen = ca_editor_ui_screens::find(['idno' => $ps_screen_name], ['returnAs' => 'firstModelInstance']))
+			&&
+			!($t_screen = ca_editor_ui_screens::find(['idno' => $vs_screen_code], ['returnAs' => 'firstModelInstance']))
+		) {
+			// create screen
+			if (!($t_screen = $this->addScreen($ps_screen_name, $g_ui_locale, $vs_screen_code))) {
+				return false;
+			}
+		}
+		
+		$va_bundles = [];
+		
+		$o_dm = Datamodel::load();
+		$t_instance = $o_dm->getInstanceByTableNum($this->get('editor_type'), true);
+		$vs_table = $t_instance->tableName();
+		
+		$pa_type_restriction_ids = null;
+		if(is_array($pa_type_restrictions = caGetOption('restrictions', $pa_options, null)) && sizeof($pa_type_restrictions)) {
+			$pa_type_restriction_ids = caMakeTypeIDList($vs_table, $pa_type_restrictions);
+			$pa_type_restrictions = caMakeTypeList($vs_table, $pa_type_restriction_ids);
+		}
+		
+		if ($pb_replace) { $t_screen->removeAllPlacements(); }
+		$t_screen->removeAllTypeRestrictions();
+		
+		$vn_type_restriction_id = $vs_type_restriction = null;
+		
+		if (is_array($pa_type_restriction_ids) && sizeof($pa_type_restriction_ids)) {
+			foreach($pa_type_restriction_ids as $vn_type_restriction_id) {
+				$t_screen->addTypeRestriction($vn_type_restriction_id);
+			}
+		} elseif(preg_match("!^{$vs_table}_(.*)_html$!", pathinfo($ps_path_to_template, PATHINFO_FILENAME), $m) && ($vn_type_restriction_id = $t_instance->getTypeIDForCode($vs_type_restriction = $m[1]))) {
+			$t_screen->addTypeRestriction($vn_type_restriction_id);
+			$pa_type_restrictions = [$vs_type_restriction];
+		}
+		
+		foreach($va_tags as $vs_tag) {
+			$vs_tag = array_shift(explode("%", $vs_tag));
+			$va_tag = explode('.', $vs_tag);
+		
+			if ($va_tag[0] == $vs_table) {
+				if ($t_instance->isValidBundle($vs_tag)) {	//related
+					$va_bundles[$vs_tag] = preg_replace("![^A-Za-z0-9_]+!", "_", $vs_tag);
+				} elseif($t_instance->isValidBundle($va_tag[1])) {	// label?
+					$va_bundles[$va_tag[1]] = preg_replace("![^A-Za-z0-9_]+!", "_", $va_tag[1]);
+				} elseif($t_instance->hasElement($va_tag[1])) {	// metadata element
+					$va_bundles["ca_attribute_".$va_tag[1]] = preg_replace("![^A-Za-z0-9_]+!", "_", $va_tag[0].'_'.$va_tag[1]);
+				}
+			} elseif ($o_dm->getTableNum($va_tag[0])) {
+				// related?
+				if ($t_instance->isValidBundle($va_tag[0])) {	//related
+					$va_bundles[$va_tag[0]] = $va_tag[0];
+				}
+			}
+			
+		}
+		
+		foreach($va_bundles as $vs_bundle_name => $vs_placement_code) {
+			$t_screen->addPlacement($vs_bundle_name, "screen_{$vn_screen_id}_{$vs_bundle_name}", [], $pn_rank=null, $pa_options=null);
+		}
+		
+		$va_bundles_for_return = array_map(function($v) {
+			return str_replace("ca_attribute_", "", $v);
+		}, array_keys($va_bundles));
+		
+		return [	
+			'screen' => $ps_screen_name, 'screen_idno' => $vs_screen_code, 
+			'type_restrictions' => $pa_type_restrictions,
+			'replace' => $pb_replace, 'bundles' => $va_bundles_for_return
+		];
 	}
 	# ----------------------------------------
 }

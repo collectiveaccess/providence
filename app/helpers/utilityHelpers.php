@@ -3282,8 +3282,11 @@ function caFileIsIncludable($ps_file) {
 	        return true;
 	    }
 	    
-	    if (caGetOption('exceptions', $pa_options, true)) {
+	    if (caGetOption('exceptions', $pa_options, false)) {
 	        throw new ApplicationException(_t('CSRF token is not valid'));
+	    }
+	    if ($nm = caGetOption('notifications', $pa_options, false)) {
+	    	$nm->addNotification(_t('CSRF token is not valid'), __NOTIFICATION_TYPE_ERROR__);
 	    }
 	    return false;   
 	}
@@ -3612,9 +3615,10 @@ function caFileIsIncludable($ps_file) {
 	# ----------------------------------------
 	/**
 	 * Get list of (enabled) primary tables as table_num => table_name mappings
+	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
 	 * @return array
 	 */
-	function caGetPrimaryTables() {
+	function caGetPrimaryTables($pb_include_rel_tables=false) {
 		$o_conf = Configuration::load();
 		$va_ret = [];
 		foreach([
@@ -3636,15 +3640,27 @@ function caFileIsIncludable($ps_file) {
 				$va_ret[$vn_table_num] = $vs_table_name;
 			}
 		}
+
+		if($pb_include_rel_tables) {
+			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
+			$t_rel = new ca_relationship_types();
+			$va_rels = $t_rel->getRelationshipsUsingTypes();
+
+			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
+				$va_ret[$vn_table_num] = $va_rel_table_info['table'];
+			}
+		}
+
 		return $va_ret;
 	}
 	# ----------------------------------------
 	/**
 	 * Get CA primary tables (objects, entities, etc.) for HTML select, i.e. as Display Name => Table Num mapping
+	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
 	 * @return array
 	 */
-	function caGetPrimaryTablesForHTMLSelect() {
-		$va_tables = caGetPrimaryTables();
+	function caGetPrimaryTablesForHTMLSelect($pb_include_rel_tables=false) {
+		$va_tables = caGetPrimaryTables($pb_include_rel_tables);
 		$o_dm = Datamodel::load();
 		$va_ret = [];
 		foreach($va_tables as $vn_table_num => $vs_table) {
@@ -3756,6 +3772,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
 		$va_tags = [];
+		$vb_ignore_quotes = caGetOption('ignoreQuotes', $pa_options, false);
 
 		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = $vb_is_ca_get_ref = false;
 		$vs_tag = '';
@@ -3785,45 +3802,34 @@ function caFileIsIncludable($ps_file) {
 				case ' ':
 				case ',':
 				case '<':
-					if ($vb_in_tag) {
-                        if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
-                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
-                            $vs_tag = '';
-                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
-                        } else {
-                            $vs_tag .= $vs_char;
-                        }
-                    }
-					break;
-				case ')':
-				    if ($vb_in_tag) {
-                        if (!$vb_in_single_quote && !$vb_in_double_quote && !preg_match("![/]+!", $vs_tag)) {  // paren is not part of tag unless it's expath
-                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
-                            $vs_tag = '';
-                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
-                        } else {
-                            $vs_tag .= $vs_char;
-                        }
-                    }
-				    break;
-				case '"':
-					if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
-						$vb_in_double_quote = true;
-						$vs_tag .= $vs_char;
-					} elseif($vb_in_tag && $vb_in_double_quote) {
-						$vs_tag .= $vs_char;
-						$vb_in_double_quote = false;
-					} elseif($vb_in_tag) {
+					if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
 						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 						$vs_tag = '';
 						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+					} else {
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case '"':
+					if (!$vb_ignore_quotes) {
+						if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
+							$vb_in_double_quote = true;
+							$vs_tag .= $vs_char;
+						} elseif($vb_in_tag && $vb_in_double_quote) {
+							$vs_tag .= $vs_char;
+							$vb_in_double_quote = false;
+						} elseif($vb_in_tag) {
+							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+							$vs_tag = '';
+							$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+						}
 					}
 					break;
 				case "'":
-					if ($vb_in_tag) {
-                        $vb_in_single_quote = !$vb_in_single_quote;
-                        $vs_tag .= $vs_char;
-                    }
+					if (!$vb_ignore_quotes) {
+						$vb_in_single_quote = !$vb_in_single_quote;
+						$vs_tag .= $vs_char;
+					}
 					break;
 				default:
 					if ($vb_in_tag) {
@@ -3831,7 +3837,7 @@ function caFileIsIncludable($ps_file) {
 							$vb_is_ca_get_ref = true;
 						}
 						if ($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char))) {
-							$va_tags[] = $vs_tag;
+							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
 							$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
 						} else {
@@ -3862,7 +3868,7 @@ function caFileIsIncludable($ps_file) {
 
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
-		return $va_tags;
+		return array_filter($va_tags, "strlen");
 	}
 	# ----------------------------------------
 	/**

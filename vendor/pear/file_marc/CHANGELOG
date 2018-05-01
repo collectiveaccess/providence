@@ -1,0 +1,160 @@
+1.2.0
+  * Support injection of extended Record class (thanks Dan Michael O. Heggø!)
+  * Support regular expression matching of subfields (thanks Waldemar Bartikowski!)
+  * Fix deletion of multiple subfields at once (thanks Dan Michael O. Heggø!)
+
+1.1.5
+  * Drop support for PHP 5.3 and 5.4
+
+1.1.4
+  * Fix insertField() behaviour, which could truncate records (reported by Andreas Roussos)
+  * Docs correction for Data_Field (thanks Daniel Walter)
+
+1.1.3
+  * Add a getContents() convenience method, contributed by Carsten Klee
+
+1.1.2
+  * Fetch pear_exception from Packagist [danmichaelo]
+
+1.1.1
+  * Add MARC-in-JSON serialization fix for subfield 0 json_encode() limitation
+    (thanks to Bill Dueber for reporting the bug)
+
+1.1.0
+  * Enable namespaces in MARCXML handling (thanks Carsten Klee!)
+  * Remove skip check for Structures/Linked_List
+
+1.0.2
+* Update MARC_Lint set of rules (thanks Demian Katz!) 
+
+1.0.1
+* Fix bug in MARC binary serialization of subfields with value '0'.
+  Thanks to Mark Jordan (mjordan@sfu.ca) for the bug report.
+
+1.0.0
+* First stable release!
+
+0.8.0-beta
+* Drop Structures_LinkedList dependency in favour of SplDoublyLinkedList.
+  This bumps the minimum PHP version up to 5.2.0.
+
+0.7.3-beta
+* Merge patch from Karen Coombs (librarywebchic@gmail.com) adding default
+  namespace to record elements
+
+0.7.2-beta
+* Fix bug #19845 - Record::toXML() returns nothing
+
+0.7.1-beta
+* Make Validate_ISPN an optional dependency
+
+0.6.2-beta
+* Improve handling of bad leader data, including declared length and overly
+  long leaders in MARCXML
+
+0.6.1-beta
+* Correct layout per bug #17704
+
+0.6.0-beta
+* Add two flavours of JSON output from File_MARC_Record: toJSON() and
+  toJSONHash()
+
+0.5.2-beta
+* Enable File_MARC_Record to be invoked with a null constructor again, useful
+  for building MARC records from scratch
+* Add a test to check that the null constructor works to avoid future
+  regressions
+
+0.5.1-beta
+* Explicitly cast results to strings to avoid returning XML objects when
+  File_MARCXML is in effect; problem doesn't show up in the PHP CLI, but does
+  cause problems on the Web
+
+0.5.0-beta
+* Drop MARCFLAT as it is unmaintained and, to my knowledge, unused
+* Add the ability to generate a proper collection of MARCXML records
+* Factor out some of the common toXML()-related methods to a new base class
+* Add tests of the new toXML() functionality for both MARC and MARCXML sources
+
+0.4.4-beta
+* Enable MARCXML to handle bad tags, to match MARC
+* Handle corner case where only one indicator might have been provided
+
+0.4.3-beta
+* Fix bug #16783 - handle bad MARC tags via warnings instead of bubbling an
+  exception all the way up
+
+0.4.2-beta
+* Fix bug #16642 - MARCXML files return keys of an invalid type
+
+0.4.1-beta
+* Fix suggested by Dan Field (surfrdan @ gmail.com) for addWarnings() typo
+
+0.4.0-beta
+* Add formatField() convenience method to File_MARC_Field (courtesy Mark
+  Matienzo @ matienzo.org)
+* Move from split() to explode() to avoid PHP 5.3 deprecation warning
+  (courtesy bertrand.zuchuat @ rero.ch
+
+0.3.0-beta
+* Add isControlField() and isDataField() convenience methods to File_MARC_Field
+
+0.2.3-beta
+* Handle single-record MARC21XML files with "record" as the root element
+
+0.1.1-alpha
+* Add File_MARC_Record::toXML() method for generating MARCXML output
+* Add File_MARCXML class for reading MARCXML source
+* Add tests for MARCXML methods
+
+0.1.0-alpha
+* Split each class out into its own file
+* Do not return anything from constructors
+
+0.0.9-alpha
+* Separate getFields() from getField(), getSubfields() from getSubfield()
+  to avoid forcing users to test is_array() after every call
+* Add addWarnings() / getWarnings() for records to avoid throwing an
+  exception for a non-fatal error
+* Fix examples, touch up phpdoc in preparation for call for votes
+
+0.0.8-alpha
+* Switch to PEAR_Exception for error handling
+
+0.0.7-alpha
+* Implement useful key() overrides for key=>value iteration through
+  fields and subfields 
+* Adjust to new Structures_LinkedList_Double names
+
+0.0.6-alpha
+* Remove package globals, define class constants & static vars instead
+* Change addField/Subfield() to append..(), prepend...(), and insert...()
+
+0.0.5-alpha
+* Work towards a more consistent API (delete getAllSubfields)
+* Make PCRE expressions in getFields() and deleteFields() optional.
+* Make duplicate() actually return a deep copy of a record.
+* Stronger, better, faster (now with typehints)
+* Iterate with foreach() everywhere now
+
+0.0.4-alpha
+* Adjust to Structures_Linked_List package name change and minor API changes
+* Adhere to PEAR CS (thanks PHP_CodeSniffer!)
+* Correct sloppy use of references (thanks E_STRICT!)
+* Okay, this time real error handling using PEAR_ErrorStack
+* Prepare first package for PEPR
+
+0.0.3-alpha
+* Split MARC into separate File_MARC and Structure_Linked_List packages (with corresponding renaming of classes and constants)
+* Adopt PEAR naming conventions (s/MARC/File_MARC/)
+* Initial stab at PEAR_ErrorStack error handling
+
+0.0.2-alpha
+* Fix marc_004.phpt: explicitly compare object references with === operator
+* Document all constants.
+* Fix MARC_Field::deleteSubfield() function
+* Add this ChangeLog
+
+0.0.1-alpha
+* First publicly available release, based on MARC decoding algorithm from
+the emilda.org php-marc package with a completely new API and class hierarchy

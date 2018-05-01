@@ -217,11 +217,13 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$t_instance = self::elementTypeToInstance($this->getType());
 
-		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth'));
+		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'restrictToTypes'));
 		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
 
 		if ($pa_options['request']) {
-			if($vs_restrict_to_type = caGetOption('restrictTo'.$this->ops_name_singular.'TypeIdno', $pa_element_info['settings'], null)) {
+			if($va_restrict_to_types = array_filter(caGetOption('restrictToTypes', $va_settings, []), function($v) { return strlen($v); })) { 
+				$va_params = array('max' => 50, 'types' => join(";", $va_restrict_to_types));
+			} elseif($vs_restrict_to_type = caGetOption('restrictTo'.$this->ops_name_singular.'TypeIdno', $pa_element_info['settings'], null)) {
 				$va_params = array('max' => 50, 'type' => $vs_restrict_to_type);
 			} else {
 				$va_params = array('max' => 50);

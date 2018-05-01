@@ -474,7 +474,10 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 			$t_instance = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
 	 			if (!$t_instance || !$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
 	 			$vs_name = $t_instance->getProperty('NAME_PLURAL');
-	 			$va_relationship_tables[$t_instance->tableNum()] = array('name' => $vs_name);
+	 			$va_relationship_tables[$t_instance->tableNum()] = array(
+	 				'name' => $vs_name,
+					'table' => $vs_table
+				);
 	 		}
 	 	}
 	 	return $va_relationship_tables;
@@ -702,6 +705,14 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * Override insert() to set table_num to whatever the parent is
 	 */
 	public function insert($pa_options=null) {
+		if ($vn_parent_id = $this->get('parent_id')) {
+			$t_root_rel_type = new ca_relationship_types($vn_parent_id);
+		
+			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
+				$this->set('table_num', $vn_table_num);
+			}
+		}
+		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction($o_trans = new Transaction($this->getDb()));
@@ -709,25 +720,6 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			$o_trans = $this->getTransaction();
 		}
-		
-		if ($vn_parent_id = $this->get('parent_id')) {
-			$t_root_rel_type = new ca_relationship_types($vn_parent_id);
-		
-			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
-				$this->set('table_num', $vn_table_num);
-			}
-		} elseif(caGetOption('insertRoot', $pa_options, false) && !($t_root_rel_type = ca_relationship_types::find(['type_code' => 'root_for_'.$this->get('table_num'), 'table_num' => $this->get('table_num')], ['returnAs' => 'firstModelInstance']))) {
-		    $t_root_rel_type = new ca_relationship_types();
-		    $t_root_rel_type->setMode(ACCESS_WRITE);
-		    $t_root_rel_type->set('table_num', $this->get('table_num'));
-		    $t_root_rel_type->set('type_code', 'root_for_'.$this->get('table_num'));
-		    if(!$t_root_rel_type->insert(['insertRoot' => true])) {
-		        $this->errors = $t_root_rel_type->errors;
-		        if ($vb_we_set_transaction) { $o_trans->rollback(); }
-		        return false;
-		    }
-		}
-		if ($t_root_rel_type) { $this->set('parent_id', $t_root_rel_type->getPrimaryKey()); }
 		if ($this->get('is_default')) {
 			$o_trans->getDb()->query("
 				UPDATE ca_relationship_types 

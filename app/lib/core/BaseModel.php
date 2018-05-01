@@ -74,6 +74,7 @@ define("DT_COUNTRY_LIST", 13);
 define("DT_STATEPROV_LIST", 14);
 define("DT_LOOKUP", 15);
 define("DT_FILE_BROWSER", 16);
+define("DT_INTERVAL", 17);
 
 # ------------------------------------------------------------------------------------
 # --- Access mode constants
@@ -110,7 +111,6 @@ require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_LIB_DIR__."/core/File.php");
 require_once(__CA_LIB_DIR__."/core/File/FileVolumes.php");
 require_once(__CA_LIB_DIR__."/core/Utils/Timer.php");
-require_once(__CA_LIB_DIR__."/core/Utils/Unicode.php");
 require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
 require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
@@ -170,6 +170,11 @@ class BaseModel extends BaseObject {
 	 * @access protected
 	 */
 	protected $_FIELD_VALUE_CHANGED;
+
+	/**
+	 * @access protected
+	 */
+	protected $_FIELD_VALUE_DID_CHANGE;
 
 	/**
 	 * @access private
@@ -365,6 +370,12 @@ class BaseModel extends BaseObject {
 	 * 
 	 */
 	static $s_field_value_arrays_for_IDs_cache = array();
+
+	/**
+	 * When was this instance instantiated or load()-ed?
+	 * @var int
+	 */
+	protected $opn_instantiated_at = 0;
 	
 	/**
 	 * Constructor
@@ -376,6 +387,7 @@ class BaseModel extends BaseObject {
 	 * @return BaseModel
 	 */
 	public function __construct($pn_id=null, $pb_use_cache=true) {
+		$this->opn_instantiated_at = time();
 		$vs_table_name = $this->tableName();
 		
 		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$vs_table_name]['FIELDS']) {
@@ -395,7 +407,7 @@ class BaseModel extends BaseObject {
 		$this->_SET_FILES = array();
 		$this->_MEDIA_VOLUMES = MediaVolumes::load();
 		$this->_FILE_VOLUMES = FileVolumes::load();
-		$this->_FIELD_VALUE_CHANGED = array();
+		$this->_FIELD_VALUE_CHANGED = $this->_FIELD_VALUE_DID_CHANGE = array();
 
 		if ($vs_locale = $this->_CONFIG->get("locale")) {
 			$this->ops_locale = $vs_locale;
@@ -615,7 +627,9 @@ class BaseModel extends BaseObject {
 	 */
 	public function getChangedFieldValuesArray() {
 		$va_fieldnames = array_keys($this->_FIELD_VALUES);
-
+		$va_fieldnames[] = 'preferred_labels';
+		$va_fieldnames[] = 'nonpreferred_labels';
+		
 		$va_changed_field_values_array = array();
 		foreach($va_fieldnames as $vs_fieldname) {
 			if($this->changed($vs_fieldname)) {
@@ -643,6 +657,24 @@ class BaseModel extends BaseObject {
 	 */
 	public function changed($ps_field) {
 		return isset($this->_FIELD_VALUE_CHANGED[$ps_field]) ? $this->_FIELD_VALUE_CHANGED[$ps_field] : null;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Check if the content of a field changed prior to the last insert or update.
+	 *
+	 * @param string $ps_field field name
+	 * @return bool
+	 */
+	public function didChange($ps_field) {
+		return isset($this->_FIELD_VALUE_DID_CHANGE[$ps_field]) ? $this->_FIELD_VALUE_DID_CHANGE[$ps_field] : null;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Has this instance changed and saved since it's been loaded?
+	 * @return bool
+	 */
+	public function hasChangedSinceLoad() {
+		return ($this->getLastChangeTimestampAsInt() >= $this->opn_instantiated_at);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1896,6 +1928,7 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES = BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id];
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
+			$this->opn_instantiated_at = time();
 			return true;
 		}
 		
@@ -1996,6 +2029,7 @@ class BaseModel extends BaseObject {
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
 			}
+			$this->opn_instantiated_at = time();
 			return true;
 		} else {
 			if (!is_array($pm_id)) {
@@ -2592,6 +2626,7 @@ class BaseModel extends BaseObject {
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
+					$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
 					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
@@ -3181,6 +3216,8 @@ class BaseModel extends BaseObject {
 				}
 
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+				
+				$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 				$this->_FIELD_VALUE_CHANGED = array();
 				
 				// Update instance cache
@@ -4762,6 +4799,7 @@ class BaseModel extends BaseObject {
 							}
 							$va_preview_frame_list = $m->writePreviews(
 								array(
+								    'writeAllPages' => true,
 									'width' => $m->get("width"), 
 									'height' => $m->get("height"),
 									'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
@@ -4775,7 +4813,6 @@ class BaseModel extends BaseObject {
 									'outputDirectory' => __CA_APP_DIR__.'/tmp'
 								)
 							);
-							
 							if (is_array($va_preview_frame_list)) {
 								foreach($va_preview_frame_list as $vn_time => $vs_frame) {
 									$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
@@ -8623,7 +8660,7 @@ $pa_options["display_form_field_tips"] = true;
 													$vn_strlen = $pa_options["maxOptionLength"];
 												}
 	
-												$vs_option_text = unicode_substr($vs_option_text, 0, $vn_strlen)."...";
+												$vs_option_text = mb_substr($vs_option_text, 0, $vn_strlen)."...";
 											}
 	
 											$vs_element .= $vs_indent.$vs_option_text.$vs_use_count.$vs_display_message."</option>\n";
@@ -8720,7 +8757,7 @@ $pa_options["display_form_field_tips"] = true;
 													($pa_options["maxOptionLength"]) &&
 													(strlen($vs_option_text) + strlen($vs_use_count) > $pa_options["maxOptionLength"])
 												)  {
-													$vs_option_text = unicode_substr($vs_option_text,0, $pa_options["maxOptionLength"] - 3 - strlen($vs_use_count))."...";
+													$vs_option_text = mb_substr($vs_option_text,0, $pa_options["maxOptionLength"] - 3 - strlen($vs_use_count))."...";
 												}
 		
 												$vs_display_message = '';
@@ -8775,7 +8812,7 @@ $pa_options["display_form_field_tips"] = true;
 											$vs_selected = ((strval($vs_value) === strval($vm_field_value)) || in_array($vs_value, $va_selection)) ? "selected='selected'" : "";
 	
 											if (($pa_options["maxOptionLength"]) && (strlen($vs_option) > $pa_options["maxOptionLength"]))  {
-												$vs_option = unicode_substr($vs_option, 0, $pa_options["maxOptionLength"] - 3)."...";
+												$vs_option = mb_substr($vs_option, 0, $pa_options["maxOptionLength"] - 3)."...";
 											}
 	
 											$vs_element.= "<option value='$vs_value' $vs_selected>".$this->escapeHTML($vs_option)."</option>\n";
@@ -11206,6 +11243,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		restrictToTypes = array of type names or type_ids to restrict to. Only items with a type_id in the list will be returned.
 	 *		hasRepresentations = if set when model is for ca_objects views are only returned when the object has at least one representation.
 	 *		checkAccess = an array of access values to filter only. Items will only be returned if the item's access setting is in the array.
+	 *		restrictByIntrinsic = an associative array of intrinsic fields and values to sort returned records on
 	 * @return bool True on success, false on error
 	 */
 	public function getRandomItems($pn_limit=10, $pa_options=null) {
@@ -11222,6 +11260,11 @@ $pa_options["display_form_field_tips"] = true;
 		$va_wheres = array();
 		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && ($this->hasField('access'))) {
 			$va_wheres[] = $vs_table_name.'.access IN ('.join(',', $pa_options['checkAccess']).')';
+		}
+		if(is_array($pa_options['restrictByIntrinsic']) && sizeof($pa_options['restrictByIntrinsic'])){
+			foreach($pa_options['restrictByIntrinsic'] as $vs_intrinsic_field => $vs_intrinsic_value){
+				$va_wheres[] = $vs_table_name.'.'.$vs_intrinsic_field.' = '.$vs_intrinsic_value;
+			}
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
@@ -11615,6 +11658,7 @@ $pa_options["display_form_field_tips"] = true;
 						} else {
 							$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
 						}
+						if (is_null($vm_value) && !$t_instance->getFieldInfo($vs_field, 'IS_NULL')) { $vs_op = '='; }
 					}
 
 					if (is_null($vm_value)) {
@@ -11631,7 +11675,6 @@ $pa_options["display_form_field_tips"] = true;
 					}
 				}
 			}
-			
 			if(!sizeof($va_sql_wheres)) { return null; }
 		}
 				
@@ -11781,16 +11824,27 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Attach notification to currently loaded row
+	 *
 	 * @param int $pn_type Indicates notification type
 	 * @param string $ps_message
 	 * @param bool $pb_system Indicates if this notification is global and can be seen and interacted with by everyone, system-wide
 	 * @param array $pa_options
-	 * 		datetime - timestamp for notification -- defaults to now
-	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y] pairs to add as additional subjects
-	 * @return bool sucess or not
+	 * 		datetime = Date/time for notification. [Default is now]
+	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y, deliverByEmail => true/false, deliverToInbox => true/false] pairs to add as additional subjects. [Default is null]
+	 *		key = Optional unique md5 signature for notification. This should be unique to the situation in which the notification was generated. [Default is null]
+	 *		data = Additional data to attach to the notification. Data can be in the form of a scalar value or array and will be serialized. [Default is null]
+	 *		deliverByEmail = Deliver notification by email if possible. [Default is false]
+	 *		deliverToInbox = Deliver notification to user's dashboard inbox. [Default is true]
+	 *
+	 * @return bool True on success
 	 */
 	public function addNotification($pn_type, $ps_message, $pb_system=false, array $pa_options=[]) {
 		$vb_we_set_transaction = false;
+				
+		$vs_app_name = $this->getAppConfig()->get('app_display_name');
+		$vs_sender_email = $this->getAppConfig()->get('notification_email_sender');
+		
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
@@ -11801,9 +11855,13 @@ $pa_options["display_form_field_tips"] = true;
 		$t_notification->setMode(ACCESS_WRITE);
 		$t_notification->set('notification_type', $pn_type);
 		$t_notification->set('message', $ps_message);
-		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
+		$t_notification->set('datetime', caGetOption('datetime', $pa_options, _t('now')));
 		$t_notification->set('is_system', $pb_system ? 1 : 0);
-
+		$t_notification->set('notification_key', caGetOption('key', $pa_options, null));
+		
+		if ($pm_data = caGetOption('data', $pa_options, null)) {
+			$t_notification->set('extra_data', $pm_data);
+		}
 		$t_notification->insert();
 
 		if(!$t_notification->getPrimaryKey()) {
@@ -11820,6 +11878,8 @@ $pa_options["display_form_field_tips"] = true;
 			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
 			$t_subject->set('table_num', $this->tableNum());
 			$t_subject->set('row_id', $this->getPrimaryKey());
+			$t_subject->set('delivery_email', $vb_send_email = caGetOption('deliverByEmail', $pa_options, 0));
+			$t_subject->set('delivery_inbox', caGetOption('deliverToInbox', $pa_options, 1));
 
 			$t_subject->insert();
 
@@ -11827,6 +11887,14 @@ $pa_options["display_form_field_tips"] = true;
 				$this->errors = array_merge($this->errors, $t_subject->errors);
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 				return false;
+			}
+					
+			// Send email immediately when queue is not enabled
+			if ((!defined("__CA_QUEUE_ENABLED__") || !__CA_QUEUE_ENABLED__) && (bool)$vb_send_email && $this->hasField('email') && ($vs_to_email = $this->get('email'))) {
+				if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, $this->getAppConfig()->get('notification_email_subject'), "notification.tpl", ['notification' => $ps_message, 'sent_on' => time()],null, null, ['source' => 'Notification'])) {
+					$t_subject->set('delivery_email_sent_on', _t('now'));
+					$t_subject->update();
+				} // caSendMessageUsingView logs failures
 			}
 		}
 
@@ -11837,6 +11905,8 @@ $pa_options["display_form_field_tips"] = true;
 				if(!is_array($va_subject) || !isset($va_subject['table_num']) || !isset($va_subject['row_id'])) {
 					continue;
 				}
+				
+				if(!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($va_subject['table_num'], true))) { continue; }
 
 				$t_subject = new ca_notification_subjects();
 				$t_subject->setMode(ACCESS_WRITE);
@@ -11844,6 +11914,8 @@ $pa_options["display_form_field_tips"] = true;
 				$t_subject->set('notification_id', $t_notification->getPrimaryKey());
 				$t_subject->set('table_num', $va_subject['table_num']);
 				$t_subject->set('row_id', $va_subject['row_id']);
+				$t_subject->set('delivery_email', $vb_send_email = caGetOption('deliverByEmail', $va_subject, 0));
+				$t_subject->set('delivery_inbox', caGetOption('deliverToInbox', $va_subject, 1));
 
 				$t_subject->insert();
 
@@ -11852,6 +11924,13 @@ $pa_options["display_form_field_tips"] = true;
 					if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 					return false;
 				}
+				// Send email immediately when queue is not enabled
+				if ((!defined("__CA_QUEUE_ENABLED__") || !__CA_QUEUE_ENABLED__) && (bool)$vb_send_email && $t_instance->hasField('email') && ($t_instance->load($va_subject['row_id'])) &&  ($vs_to_email = $t_instance->get('email'))) {
+					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, $this->getAppConfig()->get('notification_email_subject'), "notification.tpl", ['notification' => $ps_message, 'datetime' => time(), 'datetime_display' => caGetLocalizedDate()], null, null, ['source' => 'Notification'])) {
+						$t_subject->set('delivery_email_sent_on', _t('now'));
+						$t_subject->update();
+					} // caSendMessageUsingView logs failures
+				}
 			}
 		}
 
@@ -11859,26 +11938,77 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Get notifications pertaining to current row
-	 * @param array $pa_options
-	 * 			table_num -
-	 * 			row_id -
-	 * 			includeRead -
 	 *
-	 * @return array
+	 *
+	 * @param int $pn_type Indicates notification type
+	 * @param string $ps_key Unique md5 signature for notification.
+	 *
+	 * @return mixed Integer, non-zero subject_id if exists; false if notification does not exist, null if error (Eg. no row is loaded)
+	 */
+	public function notificationExists($pn_type, $ps_key) {
+		if (!($vn_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT n.notification_id, ns.subject_id
+			FROM ca_notifications n
+			INNER JOIN ca_notification_subjects AS ns ON n.notification_id = ns.notification_id
+			WHERE
+				n.notification_type = ? AND n.notification_key = ? AND ns.table_num = ? AND ns.row_id = ? 
+		", [$pn_type, $ps_key, $this->tableNum(), $vn_id]);
+		
+		while($qr_res->nextRow()) {
+			return $qr_res->get('subject_id');
+		}
+		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get notifications pertaining to current row. Notifications are return in order posted (oldest first).
+	 *
+	 * @param array $pa_options
+	 * 		table_num = Table number to apply notification to. [Default is the table number of this model]
+	 * 		row_id = row_id to apply notification to. [Default is the currently loaded row]
+	 * 		includeRead = Include notifications marked as read or sent. [Default is false]
+	 *		deliverByEmail = Return notifications marked for delivery by email. [Default is null - don't filter]
+	 *		deliverToInbox = Return notifications marked for deliery to user's dashboard inbox. [Default is null - don't filter]
+	 *			
+	 * @return array Array of notifications indexed by notification subject_id. Each value is an array of notification content.
 	 */
 	public function getNotifications(array $pa_options = []) {
 		$t_notification = new ca_notifications();
 
 		$pn_table_num = caGetOption('table_num', $pa_options, $this->tableNum());
 		$pn_row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
+		if(!$pn_row_id || !$pn_table_num) { return false; }
+
+		
+		$vb_email = caGetOption('deliverByEmail', $pa_options, null);
+		$vb_inbox = caGetOption('deliverToInbox', $pa_options, null);
+		
+		
 		$va_additional_wheres = []; $vs_additional_wheres = '';
 
+		$va_params = [$pn_table_num, $pn_row_id];
 		if(!caGetOption('includeRead', $pa_options, false)) {
-			$va_additional_wheres[] = 'ca_notification_subjects.was_read = 0';
+			if ($vb_inbox) {
+				$va_additional_wheres[] = '(ns.was_read = 0 AND ns.delivery_inbox = 1)';
+			} elseif($vb_email) {
+				$va_additional_wheres[] = '(ns.delivery_email_sent_on IS NULL AND ns.delivery_email = 1)';
+			} else {
+				$va_additional_wheres[] = '((ns.was_read = 0 AND ns.delivery_inbox = 1) or (ns.delivery_email_sent_on IS NULL AND ns.delivery_email = 1))';
+			}
 		}
-
-		if(!$pn_row_id || !$pn_table_num) { return false; }
+		
+		if (!is_null($vb_email)) {
+			$va_additional_wheres[] = "ns.delivery_email = ?";
+			$va_params[] = $vb_email ? 1 : 0;
+		}
+		if (!is_null($vb_inbox)) {
+			$va_additional_wheres[] = "ns.delivery_inbox = ?";
+			$va_params[] = $vb_inbox ? 1 : 0;
+		}
+		
 
 		if(sizeof($va_additional_wheres)) {
 			$vs_additional_wheres = ' AND ' . join(' AND ', $va_additional_wheres);
@@ -11887,15 +12017,16 @@ $pa_options["display_form_field_tips"] = true;
 
 		$qr_notifications = $this->getDb()->query("
 			SELECT DISTINCT
-				ca_notifications.notification_id, ca_notifications.message,
-				ca_notifications.notification_type, ca_notifications.datetime,
-				ca_notification_subjects.subject_id
-			FROM ca_notification_subjects, ca_notifications
-			WHERE ca_notification_subjects.notification_id = ca_notifications.notification_id
-			AND ca_notification_subjects.table_num = ?
-			AND ca_notification_subjects.row_id = ?
+				n.notification_id, n.message,
+				n.notification_type, n.datetime, n.extra_data,
+				ns.subject_id, ns.read_on, ns.delivery_email_sent_on
+			FROM ca_notifications n
+			INNER JOIN ca_notification_subjects AS ns ON n.notification_id = ns.notification_id
+			WHERE 
+				ns.table_num = ? AND ns.row_id = ?
 			{$vs_additional_wheres}
-		", $pn_table_num, $pn_row_id);
+			ORDER BY n.datetime
+		", $va_params);
 
 
 		$va_types = array_flip($t_notification->getFieldInfo('notification_type')['BOUNDS_CHOICE_LIST']);
@@ -11904,10 +12035,65 @@ $pa_options["display_form_field_tips"] = true;
 			$va_row = $qr_notifications->getRow();
 			// translate for display
 			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
+			$va_row['extra_data'] = caUnserializeForDatabase($va_row['extra_data']);
+			
+			$va_row['datetime_display'] = $va_row['datetime'] ? caGetLocalizedDate($va_row['datetime']) : null;
+			$va_row['read_on_display'] = $va_row['read_on'] ? caGetLocalizedDate($va_row['read_on']) : null;
+			$va_row['delivery_email_sent_on_display'] = $va_row['delivery_email_sent_on'] ? caGetLocalizedDate($va_row['delivery_email_sent_on']) : null;
 
-			$va_return[$qr_notifications->get('notification_id')] = $va_row;
+			$va_return[$qr_notifications->get('subject_id')] = $va_row;
 		}
 
+		return $va_return;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return unsent email notifications. Notifications are return in order posted (oldest first)
+	 *
+	 * @param array $pa_options No options are currently available.
+	 *			
+	 * @return array Array of notifications indexed by notification subject_id. Each value is an array of notification content.
+	 */
+	static public function getQueuedEmailNotifications(array $pa_options = []) {
+		$o_dm = Datamodel::load();
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name = get_called_class()))) { return null; }
+		$vn_table_num = $t_instance->tableNum();
+		$vs_pk = $t_instance->primaryKey();
+		
+		$o_db = $t_instance->getDb();
+		$t_notification = new ca_notifications();
+		
+		$va_fields = array_map(function($v) { return "t.{$v}"; }, array_keys(array_filter($t_instance->getFieldsArray(), function($v) { if (!in_array($v['FIELD_TYPE'], [FT_VARS]) && !in_array($v['DISPLAY_TYPE'], [DT_OMIT])) { return $v; } })));
+	
+		$vs_field_sql = sizeof($va_fields) ? ", ".join(", ", $va_fields) : "";
+		$qr_notifications = $o_db->query("
+			SELECT DISTINCT
+				n.notification_id, n.message,
+				n.notification_type, n.datetime, n.extra_data,
+				ns.subject_id, ns.read_on, ns.delivery_email_sent_on {$vs_field_sql}
+			FROM ca_notifications n
+			INNER JOIN ca_notification_subjects AS ns ON n.notification_id = ns.notification_id
+			INNER JOIN {$vs_table_name} AS t ON t.{$vs_pk} = ns.row_id
+			WHERE 
+				ns.table_num = ? AND ns.delivery_email = 1 AND ns.delivery_email_sent_on IS NULL
+			ORDER BY n.datetime
+		", [$vn_table_num]);
+
+
+		$va_types = array_flip($t_notification->getFieldInfo('notification_type')['BOUNDS_CHOICE_LIST']);
+		$va_return = [];
+		while($qr_notifications->nextRow()) {
+			$va_row = $qr_notifications->getRow();
+			// translate for display
+			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
+			$va_row['extra_data'] = caUnserializeForDatabase($va_row['extra_data']);
+			
+			$va_row['datetime_display'] = $va_row['datetime'] ? caGetLocalizedDate($va_row['datetime']) : null;
+			$va_row['read_on_display'] = $va_row['read_on'] ? caGetLocalizedDate($va_row['read_on']) : null;
+			$va_row['delivery_email_sent_on_display'] = $va_row['delivery_email_sent_on'] ? caGetLocalizedDate($va_row['delivery_email_sent_on']) : null;
+
+			$va_return[$qr_notifications->get('subject_id')] = $va_row;
+		}
 		return $va_return;
 	}
 	# ------------------------------------------------------

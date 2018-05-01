@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
-require_once(__CA_MODELS_DIR__.'/ca_notification_subjects.php');
+require_once(__CA_MODELS_DIR__.'/ca_notifications.php');
 
 class NotificationsController extends ActionController {
 	# -------------------------------------------------------
@@ -37,14 +37,8 @@ class NotificationsController extends ActionController {
 	public function markAsRead() {
 		$pn_subject_id = $this->getRequest()->getParameter('subject_id', pInteger);
 		if(!$pn_subject_id) { return false; }
-
-		$t_subject = new ca_notification_subjects();
-
-		if($t_subject->load($pn_subject_id)) {
-			$t_subject->setMode(ACCESS_WRITE);
-
-			$t_subject->set('was_read', 1);
-			$t_subject->update();
+		if (!ca_notifications::markAsRead($pn_subject_id, $this->request)) {
+			$this->notification->addNotification(_t("Could not mark notification as read"), __NOTIFICATION_TYPE_ERROR__);
 		}
 	}
 	# -------------------------------------------------------

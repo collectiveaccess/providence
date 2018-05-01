@@ -53,7 +53,7 @@ class GeoNamesController extends ActionController {
 
 		
 		$va_items = array();
-		if (unicode_strlen($ps_query) >= 3) {
+		if (mb_strlen($ps_query) >= 3) {
 			$vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
 			$t_locale = new ca_locales($g_ui_locale_id);
 			$vs_lang = $t_locale->get("language");

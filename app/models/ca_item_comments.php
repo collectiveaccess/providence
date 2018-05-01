@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -346,7 +346,7 @@ class ca_item_comments extends BaseModel {
 		if (!$this->getPrimaryKey()) { return null; }
 		$this->setMode(ACCESS_WRITE);
 		$this->set('moderated_by_user_id', $pn_user_id);
-		$this->set('moderated_on', 'now');
+		$this->set('moderated_on', _t('now'));
 		return $this->update();
 	}
 	# ------------------------------------------------------

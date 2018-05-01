@@ -2368,6 +2368,25 @@ class SearchResult extends BaseObject {
 					}
 				}
 				break;
+			case FT_VARS:
+				$va_array_path = array_slice($va_path_components['components'], 2);
+				foreach($pa_value_list as $vn_locale_id => $va_values) {
+					foreach($va_values as $id => $va_value) {
+						$vn_id = $va_value[$vs_pk];
+						$v = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
+						foreach($va_array_path as $p) {
+							if (!isset($v[$p])) { break; }
+							$v = $v[$p];
+						}
+						
+						if (is_array($v) && !$pa_options['returnAsArray']) {
+							// force arrays to strings
+							$v = join(caGetOption('delimiter', $pa_options, '; '), $v);
+						}
+						$va_return_values[$vn_id][$vn_locale_id][] = $v;
+					}
+				}
+				break;
 			case FT_MEDIA:
 				if(!($vs_version = $va_path_components['subfield_name'])) {
 					$vs_version = "largeicon"; // TODO: fix
@@ -2563,6 +2582,8 @@ class SearchResult extends BaseObject {
 	 *		length = Return all values truncated to a maximum length. [Default is null]
 	 *		truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
 	 *		ellipsis = Add ellipsis ("...") to truncated values. Values will be set to the truncated length including the ellipsis. Eg. a value truncated to 12 characters will include 9 characters of text and 3 characters of ellipsis. [Default is false]
+	 *		sort = Sort returned values. [Default is false]
+	 *		sortDirection = Direction of sort. Values are ASC (ascending) or DESC (descending). [Default is ascending]
 	 *
 	 * @return array
 	 */
@@ -2656,6 +2677,11 @@ class SearchResult extends BaseObject {
 					$va_flattened_values[] = $vs_val;
 				}
 			}	
+		}
+		
+		if (caGetOption('sort', $pa_options, null)) {
+			sort($va_flattened_values);
+			if(caGetOption('sortDirection', $pa_options, null, ['forceLowercase' => true]) == 'desc') { $va_flattened_values = array_reverse($va_flattened_values); }
 		}
 		return $va_flattened_values;
 	}

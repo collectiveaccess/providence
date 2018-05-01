@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017 Whirl-i-Gig
+ * Copyright 2017-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,9 +33,7 @@
 /**
  *
  */
-
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+ 
 require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 use Guzzle\Http\Client;
@@ -62,7 +60,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
         $o_config = Configuration::load();
 
         if (!$va_api_credentials = caGetOption('resourceSpaceAPIs', $pa_options, null)) {
-			$va_api_credentials= $o_config->get('resourcespace_apis');
+			if (!is_array($va_api_credentials = $o_config->get('resourcespace_apis'))) { $va_api_credentials = []; }
         }
 
         $this->opa_api_credentials = array();

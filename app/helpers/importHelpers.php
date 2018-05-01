@@ -32,8 +32,6 @@
 
 	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 
 	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/TGN.php');
 	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/AAT.php');
@@ -1032,7 +1030,11 @@
 							        $vn_c++;
 							        continue(2);
 								} else {
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
+								    if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
+								        $va_val['media']['media'] = $vs_item;
+								    } else {
+									    $va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
+									}
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
