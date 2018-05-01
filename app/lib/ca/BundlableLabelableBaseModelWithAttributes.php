@@ -4600,8 +4600,9 @@ if (!$vb_batch) {
 					case 'ca_object_circulation_status':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-						$this->set('circulation_status_id', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}ca_object_circulation_status", pInteger));
-
+						$this->set('circulation_status_id', $x=$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}ca_object_circulation_status", pInteger));
+print "SET TO $x<br>\n";
+$this->update();
 						break;
 					# -------------------------------
 					// This bundle is only available items for batch editing on representable models
