@@ -254,7 +254,7 @@ class ca_attributes extends BaseModel {
 		$this->set('row_id', $pn_row_id);
 		
 		$this->setMode(ACCESS_WRITE);
-		$this->insert();
+		$this->insert($pa_options);
 		
 		if ($this->numErrors()) {
 			if ($vb_web_set_transaction) {

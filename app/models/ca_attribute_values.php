@@ -318,7 +318,7 @@ class ca_attribute_values extends BaseModel {
 		
 	
 			if (!$this->numErrors()) {
-				return $this->insert();
+				return $this->insert($pa_options);
 			} else {
 				return false;
 			}

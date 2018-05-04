@@ -274,9 +274,9 @@
  			if (
  				(is_array($ps_value) && $ps_value['_uploaded_file'] && file_exists($ps_value['tmp_name']) && (filesize($ps_value['tmp_name']) > 0))
  				||
- 				($vb_is_file_path = file_exists($ps_value))
+ 				(is_string($ps_value) && ($vb_is_file_path = file_exists($ps_value)))
  				||
- 				($vb_is_file_path = isURL($ps_value))
+ 				(is_string($ps_value) && ($vb_is_file_path = isURL($ps_value)))
  				||
  				(is_string($ps_value) && ($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value)))
  			) {

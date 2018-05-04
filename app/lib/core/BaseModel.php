@@ -2571,7 +2571,7 @@ class BaseModel extends BaseObject {
 						$vs_sql  = "";
 						if (sizeof($va_media_fields) > 0) {
 							foreach($va_media_fields as $f) {
-								if($vs_msql = $this->_processMedia($f, array('delete_old_media' => false))) {
+								if($vs_msql = $this->_processMedia($f, array('delete_old_media' => false, 'batch' => caGetOption('batch', $pa_options, false)))) {
 									$vs_sql .= $vs_msql;
 								}
 							}
@@ -3078,7 +3078,7 @@ class BaseModel extends BaseObject {
 						case (FT_MEDIA):
 							$va_limit_to_versions = caGetOption("updateOnlyMediaVersions", $pa_options, null);
 							
-							if ($vs_media_sql = $this->_processMedia($vs_field, array('processingMediaForReplication' => caGetOption('processingMediaForReplication', $pa_options, false), 'these_versions_only' => $va_limit_to_versions))) {
+							if ($vs_media_sql = $this->_processMedia($vs_field, array('processingMediaForReplication' => caGetOption('processingMediaForReplication', $pa_options, false), 'these_versions_only' => $va_limit_to_versions, 'batch' => caGetOption('batch', $pa_options, false)))) {
 								$vs_sql .= $vs_media_sql;
 								$vn_fields_that_have_been_set++;
 							} else {
@@ -4274,9 +4274,14 @@ class BaseModel extends BaseObject {
 						if(strlen($va_matches[1])>0){
 							$va_parts = explode("/",$this->_SET_FILES[$ps_field]['tmp_name']);
 							$vs_new_filename = sys_get_temp_dir()."/".$va_parts[sizeof($va_parts)-1].".".$va_matches[1];
-							if (!move_uploaded_file($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename)) {
-								rename($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename);
-							}
+							if (caGetOption('batch', $pa_options, false)) {
+							    copy($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename);
+							} else {
+                                if (!move_uploaded_file($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename)) {
+                                    rename($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename);
+                                }
+                            }
+							
 							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_new_filename;
 							$vb_renamed_tmpfile = true;
 						}
@@ -12270,6 +12275,7 @@ $pa_options["display_form_field_tips"] = true;
 
 		$vs_order_by = '';
 		if ($t_item_rel && $t_item_rel->hasField('rank')) {
+			$va_selects[] = $t_item_rel->tableName().'.rank';
 			$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
 		} else {
 			if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
