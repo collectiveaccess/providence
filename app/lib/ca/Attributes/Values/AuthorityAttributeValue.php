@@ -221,7 +221,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
 
 		if ($pa_options['request']) {
-			if($va_restrict_to_types = array_filter(caGetOption('restrictToTypes', $va_settings, []), function($v) { return strlen($v); })) { 
+			if($va_restrict_to_types = array_filter(caGetOption('restrictToTypes', $va_settings, [], ['castTo' => 'array']), function($v) { return strlen($v); })) { 
 				$va_params = array('max' => 50, 'types' => join(";", $va_restrict_to_types));
 			} elseif($vs_restrict_to_type = caGetOption('restrictTo'.$this->ops_name_singular.'TypeIdno', $pa_element_info['settings'], null)) {
 				$va_params = array('max' => 50, 'type' => $vs_restrict_to_type);
