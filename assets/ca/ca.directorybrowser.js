@@ -341,21 +341,16 @@ var caUI = caUI || {};
 							var moreButton = '';
 							var item_id_for_css = item['item_id'].replace(/[^A-Za-z0-9_\-]+/g, '_');
 							if ((that.openDirectoryIcon) && (item.type == 'DIR')) {
-								if (childCount > 0) {
-									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open' >" + that.openDirectoryIcon + "</a></div>";
-								} else {
-									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open'  style='opacity: 0.3;'>" + (that.disabledDirectoryIcon ? that.disabledDirectoryIcon : that.openDirectoryIcon) + "</a></div>";
-								}
+								moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open' >" + that.openDirectoryIcon + "</a></div>";
 							}
-							
 							
 							if ((item.type == 'FILE') && (!that.allowFileSelection)) {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "' style='opacity: 0.5;'>" + icon +  item.name + "</a></li>"
+									"<li class='" + that.className + "'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "' style='opacity: 0.5;'>" + icon + "&nbsp;&nbsp;" + item.name + "</a></li>"
 								);
 							} else {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "'>" + icon +  item.name + countText + "</a></li>"
+									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "'>" + icon + "&nbsp;&nbsp;" + item.name + countText + "</a></li>"
 								);
 							}
 							
