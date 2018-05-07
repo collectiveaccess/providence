@@ -150,6 +150,14 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"video/x-matroska"					=> "WebM",
 		"video/x-dv"						=> "DIF (DV)"
 	);
+	
+	#
+	# Alternative extensions for supported types
+	#
+	var $alternative_extensions = [
+		"mp4" => "video/mp4",
+		"qt" => "video/quicktime"
+	];
 
 	# ------------------------------------------------
 	/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -215,6 +215,13 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/dng"		=> "image/x-adobe-dng"
 	);
 	
+	#
+	# Alternative extensions for supported types
+	#
+	var $alternative_extensions = [
+		'tif' => 'image/tiff',
+		'jpeg' => 'image/jpeg'
+	];	
 	
 	# ------------------------------------------------
 	public function __construct() {

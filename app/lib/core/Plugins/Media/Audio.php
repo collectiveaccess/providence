@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2015 Whirl-i-Gig
+ * Copyright 2006-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,6 +141,14 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"audio/ogg"							=> "Ogg Vorbis",
 		"audio/x-flac"						=> "FLAC"
 	);
+	
+	#
+	# Alternative extensions for supported types
+	#
+	var $alternative_extensions = [
+		'aif' => 'audio/x-aiff',
+		'wave' => "audio/x-wave"
+	];
 
 
 	# ------------------------------------------------

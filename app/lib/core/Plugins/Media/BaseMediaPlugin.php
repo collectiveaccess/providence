@@ -132,7 +132,7 @@ class BaseMediaPlugin extends WLPlug  {
 	 * @return array List of file extensions
 	 */
 	public function getImportExtensions() {
-		return array_values($this->info['IMPORT']);
+		return array_merge(array_values($this->info['IMPORT']), array_keys(is_array($this->alternative_extensions) ? $this->alternative_extensions : []));
 	}
 	# ------------------------------------------------
 	/**

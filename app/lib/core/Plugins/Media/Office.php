@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -140,6 +140,11 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"text/html" 					=> "HTML",
 		"text/plain" 					=> "TXT"
 	);
+	
+	#
+	# Alternative extensions for supported types
+	#
+	var $alternative_extensions = [];
 	
 	/**
 	 * Cache Office -> PDF file conversions across invocations in current request

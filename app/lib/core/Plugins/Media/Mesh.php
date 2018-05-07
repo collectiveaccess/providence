@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,6 +112,11 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		"text/prs.wavefront-obj" 		=> "OBJ",
 		"application/ctm" 				=> "CTM"
 	);
+	
+	#
+	# Alternative extensions for supported types
+	#
+	var $alternative_extensions = [];
 	
 	# ------------------------------------------------
 	public function __construct() {

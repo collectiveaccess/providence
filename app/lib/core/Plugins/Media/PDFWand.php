@@ -131,6 +131,11 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		"application/postscript" => "Postscript"
 	);
 	
+	#
+	# Alternative extensions for supported types
+	#
+	var $alternative_extensions = [];
+	
 	/**
 	 * Per-request caching of information extracted from read PDFs
 	 */
