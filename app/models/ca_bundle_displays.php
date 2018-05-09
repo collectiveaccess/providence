@@ -2012,7 +2012,7 @@ if (!$pb_omit_editing_info) {
 							case 3:
 								// For regular relationships just evaluate the template relative to the relationship record
 								// this way the template can reference interstitial data
-								$vs_val = $po_result->getWithTemplate($vs_unit_tag.$vs_template."</unit>", $pa_options);
+								$vs_val = $po_result->getWithTemplate(caGetOption('showCurrentOnly', $pa_options, true) ? $vs_template : $vs_unit_tag.$vs_template."</unit>", $pa_options);
 								break;
 							case 2:
 								$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
