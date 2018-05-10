@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -199,6 +199,23 @@ var caUI = caUI || {};
  
 				return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
 			};
+			
+			//
+			// https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+			//
+			caUI.utils.hexToRgb = function(hex, format=null) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                var colors = result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+                
+                if (format) {
+                    return format.replace(/%r/, colors.r).replace(/%g/, colors.g).replace(/%b/, colors.b);
+                }
+                return colors;
+            };
 			
 			
 			//
