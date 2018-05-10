@@ -495,6 +495,8 @@
 			// Get level sort direction
 			if (!in_array($vs_sort_dir = strtolower($o_config->get($this->ops_tablename.'_hierarchy_browser_sort_direction')), array('asc', 'desc'))) { $vs_sort_dir = 'asc'; }
 			
+			$vn_count = 0;
+			
  			// Generate list for each ID
  			foreach($pa_ids as $pn_id) {
  				$va_json_data = array('_primaryKey' => 'item_id');
@@ -539,6 +541,7 @@
 											$va_item['access'] = $vn_access;
 											$va_item['is_enabled'] = $qr_res->get('ca_list_items.is_enabled');
 											$va_json_data[$vn_item_id] = $va_item;
+											$vn_count++;
 										}
 									}
 									break;
@@ -562,19 +565,17 @@
 								$va_hierarchy_list = $t_item->getHierarchyList(true);
 							
 								$vn_last_id = null;
-								$vn_c = 0;
 								foreach($va_hierarchy_list as $vn_i => $va_item) {
 									if (!in_array($vn_i, $va_hier_ids)) { continue; }	// only show hierarchies that have items in browse result
-									if ($vn_start <= $vn_c) {
-										$va_item['item_id'] = $va_item[$t_item->primaryKey()];
-										if (!isset($va_facet[$va_item['item_id']]) && ($vn_root == $va_item['item_id'])) { continue; }
-										if(is_array($va_access_values) && isset($va_item['access']) && (!in_array($va_item['access'], $va_access_values))) { continue; }
-										unset($va_item['parent_id']);
-										unset($va_item['label']);
-										$va_json_data[$va_item['item_id']] = $va_item;
-										$vn_last_id = $va_item['item_id'];
-									}
-									$vn_c++;
+				
+                                    $va_item['item_id'] = $va_item[$t_item->primaryKey()];
+                                    if (!isset($va_facet[$va_item['item_id']]) && ($vn_root == $va_item['item_id'])) { continue; }
+                                    if(is_array($va_access_values) && isset($va_item['access']) && (!in_array($va_item['access'], $va_access_values))) { continue; }
+                                    unset($va_item['parent_id']);
+                                    unset($va_item['label']);
+                                    $va_json_data[$va_item['item_id']] = $va_item;
+                                    $vn_last_id = $va_item['item_id'];
+                                    
 									if (!is_null($vn_max_items_per_page) && ($vn_c >= ($vn_max_items_per_page + $vn_start))) { break; }
 								}
 								if (sizeof($va_json_data) == 2) {	// if only one hierarchy root (root +  _primaryKey in array) then don't bother showing it
@@ -591,14 +592,16 @@
 							$va_children = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 							$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_children);
 							$qr_res = caMakeSearchResult($vs_rel_table = $t_item->tableName(), $va_children);
-		
+		                    $vn_count += $qr_res->numHits();
 						
 							$vs_pk = $t_item->primaryKey();
 							if ($qr_res) {
 								// expand facet
 								$va_ancestors = $t_item->getHierarchyAncestorsForIDs(array_keys($va_facet), array('returnAs' => 'ids'));
 								
+								$vn_c = 0;
 								while($qr_res->nextHit()) {
+								    if ($vn_start > $vn_c) { $vn_c++; continue; }
 									$vn_parent_id = $qr_res->get("{$vs_rel_table}.parent_id");
 									$vn_item_id = $qr_res->get("{$vs_rel_table}.{$vs_pk}");
 									
@@ -609,6 +612,8 @@
 									$va_item['name'] = $qr_res->get("{$vs_rel_table}.preferred_labels");
 									$va_item['children'] = (isset($va_child_counts[$vn_item_id]) && $va_child_counts[$vn_item_id]) ? $va_child_counts[$vn_item_id] : 0;
 									$va_json_data[$vn_item_id] = $va_item;
+									
+									$vn_c++;
 								}
 							}
 							
@@ -643,7 +648,7 @@
 					if ($vs_sort_dir == 'desc') { $va_v = array_reverse($va_v); }
 					$va_json_data = array_merge($va_json_data, $va_v);
 				}
-				$va_json_data['_itemCount'] = sizeof($va_json_data);
+				$va_json_data['_itemCount'] = $vn_count;
 				$va_json_data['_sortOrder'] = array_keys($va_json_data);
 				$va_json_data['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  				
