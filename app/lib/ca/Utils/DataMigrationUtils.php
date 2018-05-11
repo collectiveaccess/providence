@@ -870,6 +870,8 @@
 			$vs_table_display_name 			= $t_instance->getProperty('NAME_SINGULAR');
 			$vs_table_class 				= $t_instance->tableName();
 			$vs_label_display_fld 			= $t_instance->getLabelDisplayField();
+			
+			if(!is_array($pa_label)) { $pa_label[$vs_label_display_fld] = $pa_label; }
 			$vs_label 						= $pa_label[$vs_label_display_fld];
 			
 			$pb_output_errors 				= caGetOption('outputErrors', $pa_options, false);

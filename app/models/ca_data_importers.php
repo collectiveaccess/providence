@@ -2265,7 +2265,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// Process data in subject record
 				//
 				//print_r($va_content_tree);
-				#die("END\n\n");
+				//die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -2672,8 +2672,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 								$t_subject->clearErrors();
 						try {
-						        
-								$vs_name = isset($va_element_data['preferred_labels']['name']) ? $va_element_data['preferred_labels']['name'] : (isset($va_element_data['name']['name']) ? $va_element_data['name']['name'] : $va_element_data['name']);
+						    
+						        $vs_rel_label_display_fld = 'name';
+						        if ($t_rel = $o_dm->getInstanceByTableName($vs_table_name, true)) {
+						            $vs_rel_label_display_fld = $t_rel->getLabelDisplayField();
+						        }
+						
+						        $vs_name = '['._t('BLANK').']';
+						        if(isset($va_element_data['preferred_labels'][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data['preferred_labels'][$vs_rel_label_display_fld]; }
+						        elseif(isset($va_element_data['preferred_labels']) ) { $vs_name = $va_element_data['preferred_labels']; }
+						        elseif(isset($va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]; }
+						        elseif(isset($va_element_data[$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data[$vs_rel_label_display_fld]; }
+						        elseif(isset($va_element_data) && !is_array($va_element_data) && strlen($va_element_data)) { $vs_name = $va_element_data; }
 
 								switch($vs_table_name) {
 									case 'ca_objects':
