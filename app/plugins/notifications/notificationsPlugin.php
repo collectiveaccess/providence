@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
- 	require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
+ 	require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
  	require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_triggers.php');
 	
 	class notificationsPlugin extends BaseApplicationPlugin {

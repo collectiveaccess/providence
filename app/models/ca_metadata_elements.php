@@ -34,10 +34,10 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/ca/ITakesSettings.php');
-require_once(__CA_LIB_DIR__.'/ca/LabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/ITakesSettings.php');
+require_once(__CA_LIB_DIR__.'/LabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
-require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(

@@ -34,10 +34,10 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
-require_once(__CA_LIB_DIR__."/ca/Import/RefineryManager.php");
+require_once(__CA_LIB_DIR__."/Import/RefineryManager.php");
 
 define("__CA_DATA_IMPORTER_DESTINATION_INTRINSIC__", 0);
 define("__CA_DATA_IMPORTER_DESTINATION_ATTRIBUTE__", 1);

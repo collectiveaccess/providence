@@ -34,17 +34,17 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 
-require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
+require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 
-require_once(__CA_LIB_DIR__.'/ca/ApplicationPluginManager.php');
-require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+require_once(__CA_LIB_DIR__.'/ApplicationPluginManager.php');
+require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 
 BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 	'NAME_SINGULAR' 	=> _t('data exporter'),
@@ -1377,7 +1377,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_exporters::$s_exporter_cache = array();
 		ca_data_exporters::$s_exporter_item_cache = array();
 
-		require_once(__CA_LIB_DIR__.'/core/Search/SearchResult.php');
+		require_once(__CA_LIB_DIR__.'/Search/SearchResult.php');
 		if(!($po_result instanceof SearchResult)) { return false; }
 		if(!($t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code))) { return false; }
 		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0) { return false; }

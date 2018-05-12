@@ -34,8 +34,8 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_tours.php');
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 require_once(__CA_APP_DIR__.'/helpers/tourHelpers.php');

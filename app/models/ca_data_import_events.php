@@ -34,7 +34,7 @@
    *
    */
 
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+	require_once(__CA_LIB_DIR__.'/Datamodel.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_import_event_log.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_import_items.php');
 

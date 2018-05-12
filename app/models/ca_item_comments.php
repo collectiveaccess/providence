@@ -34,8 +34,8 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(

@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_watch_list'] = array(
@@ -205,7 +205,7 @@ class ca_watch_list extends BaseModel {
 	 *
 	 */
 	public function getWatchedItems($pn_user_id, $pn_table_num = null, $pa_options=null){
-		require_once(__CA_LIB_DIR__.'/core/ApplicationChangeLog.php');
+		require_once(__CA_LIB_DIR__.'/ApplicationChangeLog.php');
 		
 		if(!$pn_user_id) { return null; }
 		

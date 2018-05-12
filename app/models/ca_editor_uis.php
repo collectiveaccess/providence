@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_type_restrictions.php');
 
@@ -846,7 +846,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	# ----------------------------------------
 	/**
 	 *	Return navigation configuration fragment suitable for insertion into the navigation.conf structure.
-	 *	Can be used by lib/core/AppNavigation to dynamically insert navigation for screens into navigation tree
+	 *	Can be used by lib/AppNavigation to dynamically insert navigation for screens into navigation tree
 	 *
 	 * @param RequestHTTP $po_request
 	 * @param int $pn_type_id

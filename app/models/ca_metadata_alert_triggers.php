@@ -33,7 +33,7 @@
 /**
  *
  */
-require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Base.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Base.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(

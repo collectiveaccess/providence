@@ -38,7 +38,7 @@ define('__CA_ALERT_RULE_NO_ACCESS__', 0);
 define('__CA_ALERT_RULE_ACCESS_NOTIFICATION__', 1);
 define('__CA_ALERT_RULE_ACCESS_ACCESS_EDIT__', 2);
 
-require_once(__CA_LIB_DIR__.'/ca/SetUniqueIdnoTrait.php'); 
+require_once(__CA_LIB_DIR__.'/SetUniqueIdnoTrait.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_type_restrictions.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_labels.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules_x_user_groups.php');
