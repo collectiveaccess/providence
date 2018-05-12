@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/OccurrenceBrowse.php : ca_occurrences faceted browse
+ * app/lib/Browse/OccurrenceBrowse.php : ca_occurrences faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/OccurrenceBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/OccurrenceBrowseResult.php');
  
 	class OccurrenceBrowse extends BaseBrowse {
 		# ----------------------------------------------------------------------

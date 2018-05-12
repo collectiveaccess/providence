@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugGeographicMaps.php : interface for geographic map classes
+ * app/lib/Plugins/IWLPlugGeographicMaps.php : interface for geographic map classes
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

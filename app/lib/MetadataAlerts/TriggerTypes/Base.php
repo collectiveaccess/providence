@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/MetadataAlerts/TriggerTypes/Base.php
+ * app/lib/MetadataAlerts/TriggerTypes/Base.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,8 +32,8 @@
 
 namespace CA\MetadataAlerts\TriggerTypes;
 
-require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Modification.php');
-require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Date.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Modification.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Date.php');
 
 define('__CA_MD_ALERT_CHECK_TYPE_SAVE__', 0);
 define('__CA_MD_ALERT_CHECK_TYPE_PERIODIC__', 1);

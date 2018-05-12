@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
+require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 abstract class AbstractSearchQueryTest extends BaseTestWithData {

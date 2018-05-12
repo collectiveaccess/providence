@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/TaskQueue.php : class for managing deferred tasks queue
+ * app/lib/TaskQueue.php : class for managing deferred tasks queue
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,14 +34,14 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/BaseObject.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
-require_once(__CA_LIB_DIR__."/core/ApplicationVars.php");
-require_once(__CA_LIB_DIR__."/core/Utils/ProcessStatus.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/BaseObject.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
+require_once(__CA_LIB_DIR__."/Db.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+require_once(__CA_LIB_DIR__."/ApplicationVars.php");
+require_once(__CA_LIB_DIR__."/Utils/ProcessStatus.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_MODELS_DIR__."/ca_task_queue.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 

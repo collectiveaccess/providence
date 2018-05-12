@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Controller/AppController/AppControllerPlugin.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
 
 class ContentCaching extends AppControllerPlugin {
 	# -------------------------------------------------------

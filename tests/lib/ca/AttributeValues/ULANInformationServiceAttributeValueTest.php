@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/AttributeValues/ULANInformationServiceAttributeValueTest.php
+ * tests/lib/AttributeValues/ULANInformationServiceAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

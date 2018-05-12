@@ -25,10 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
+	require_once(__CA_LIB_DIR__.'/Datamodel.php');
  
 	class recentlyCreatedWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------

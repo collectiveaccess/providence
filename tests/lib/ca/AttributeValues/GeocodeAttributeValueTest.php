@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/AttributeValues/GeocodeAttributeValueTest.php
+ * tests/lib/AttributeValues/GeocodeAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/ca/Attributes/Values/GeocodeAttributeValue.php");
+require_once(__CA_LIB_DIR__."/Attributes/Values/GeocodeAttributeValue.php");
 
 class GeocodeAttributeValueTest extends PHPUnit_Framework_TestCase {
 

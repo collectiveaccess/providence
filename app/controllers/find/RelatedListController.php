@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
+require_once(__CA_LIB_DIR__."/BaseSearchController.php");
 require_once(__CA_APP_DIR__ . '/helpers/browseHelpers.php');
 
 class RelatedListController extends BaseSearchController {

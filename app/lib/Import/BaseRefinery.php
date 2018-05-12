@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseRefinery.php : 
+ * app/lib/BaseRefinery.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
+ 	require_once(__CA_LIB_DIR__.'/ApplicationVars.php'); 	
  	require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  

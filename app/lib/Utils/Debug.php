@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Utils/Debug.php :
+ * app/lib/Utils/Debug.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

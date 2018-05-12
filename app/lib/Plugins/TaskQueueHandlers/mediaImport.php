@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/TaskQueueHandlers/mediaImport.php :
+ * app/lib/Plugins/TaskQueueHandlers/mediaImport.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,14 +34,14 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugTaskQueueHandler.php");
-require_once(__CA_LIB_DIR__.'/core/Db.php');
-require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__.'/core/Zend/Mail.php');
-require_once(__CA_LIB_DIR__.'/ca/BatchProcessor.php');
+require_once(__CA_LIB_DIR__."/Db/Transaction.php");
+require_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
+require_once(__CA_LIB_DIR__.'/Db.php');
+require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__.'/Zend/Mail.php');
+require_once(__CA_LIB_DIR__.'/BatchProcessor.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');

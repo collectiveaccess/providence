@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/MetadataAlerts/TriggerTypes/Date.php
+ * app/lib/MetadataAlerts/TriggerTypes/Date.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/RepresentationAnnotationSearchResult.php :
+ * app/lib/Search/RepresentationAnnotationSearchResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
+include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
 
 class RepresentationAnnotationSearchResult extends BaseSearchResult {
 	# -------------------------------------
@@ -125,10 +125,10 @@ class RepresentationAnnotationSearchResult extends BaseSearchResult {
 	 */
  	public function loadProperties($ps_type, $pa_parameters=null) {
  		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+ 		if (!file_exists(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
  			return false;
  		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+ 		include_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
  		
  		$this->opo_annotations_properties = new $vs_classname;
  		$this->opo_annotations_properties->setPropertyValues(is_array($pa_parameters) ? $pa_parameters : array_shift($this->get('ca_representation_annotations.props', array('unserialize' => true, 'returnWithStructure' => true, 'returnAsArray' => true))));

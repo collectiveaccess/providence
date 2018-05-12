@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/MovementBrowseResult.php :
+ * app/lib/Browse/MovementBrowseResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
 
 class MovementBrowseResult extends BaseSearchResult {
 	# -------------------------------------

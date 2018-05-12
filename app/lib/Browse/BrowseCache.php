@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/BrowseCache.php : Caching for BrowseEngine
+ * app/lib/Browse/BrowseCache.php : Caching for BrowseEngine
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
+require_once(__CA_LIB_DIR__.'/Zend/Cache.php');
 
 class BrowseCache {
 	# ------------------------------------------------------

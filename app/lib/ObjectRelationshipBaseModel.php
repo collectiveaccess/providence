@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/ObjectRelationshipBaseModel.php :
+ * app/lib/ObjectRelationshipBaseModel.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+ require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  

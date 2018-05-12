@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Sync/LogEntry/Attribute.php
+ * app/lib/Sync/LogEntry/Attribute.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,7 +32,7 @@
 
 namespace CA\Sync\LogEntry;
 
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
 class Attribute extends Base {

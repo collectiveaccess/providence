@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/RepresentationAnnotationPropertyCoders/IRepresentationAnnotationPropertyCoder.php : 
+ * app/lib/RepresentationAnnotationPropertyCoders/IRepresentationAnnotationPropertyCoder.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

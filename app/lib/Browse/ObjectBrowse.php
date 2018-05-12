@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/ObjectBrowse.php : ca_objects faceted browse
+ * app/lib/Browse/ObjectBrowse.php : ca_objects faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/ObjectBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/ObjectBrowseResult.php');
  
 	class ObjectBrowse extends BaseBrowse {
 		# ------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/ObjectRepresentationSearch.php :
+ * app/lib/Search/ObjectRepresentationSearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearch.php");
-include_once(__CA_LIB_DIR__."/ca/Search/ObjectRepresentationSearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearch.php");
+include_once(__CA_LIB_DIR__."/Search/ObjectRepresentationSearchResult.php");
 include_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class ObjectRepresentationSearch extends BaseSearch {

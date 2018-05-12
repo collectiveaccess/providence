@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/ListItemBrowse.php : ca_list_items faceted browse
+ * app/lib/Browse/ListItemBrowse.php : ca_list_items faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/ListItemBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/ListItemBrowseResult.php');
  
 	class ListItemBrowse extends BaseBrowse {
 		# ------------------------------------------------------

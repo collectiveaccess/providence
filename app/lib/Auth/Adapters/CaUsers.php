@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/Adapters/CaUsers.php : default authentication backend
+ * app/lib/Auth/Adapters/CaUsers.php : default authentication backend
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
-require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
+require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/Auth/PasswordHash.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
 class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {

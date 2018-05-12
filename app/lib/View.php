@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/View.php : 
+ * app/lib/View.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/BaseObject.php");
+require_once(__CA_LIB_DIR__."/BaseObject.php");
  
 class View extends BaseObject {
 	# -------------------------------------------------------

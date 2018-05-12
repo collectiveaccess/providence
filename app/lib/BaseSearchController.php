@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseSearchController.php : base controller for search interface
+ * app/lib/BaseSearchController.php : base controller for search interface
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,12 +33,12 @@
  /**
   *
   */
-	require_once(__CA_LIB_DIR__."/ca/BaseRefineableSearchController.php");
-	require_once(__CA_LIB_DIR__."/ca/Browse/ObjectBrowse.php");
-	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+	require_once(__CA_LIB_DIR__."/BaseRefineableSearchController.php");
+	require_once(__CA_LIB_DIR__."/Browse/ObjectBrowse.php");
+	require_once(__CA_LIB_DIR__."/Datamodel.php");
 	require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
-	require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
+	require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');
  	
  	class BaseSearchController extends BaseRefineableSearchController {
  		# -------------------------------------------------------

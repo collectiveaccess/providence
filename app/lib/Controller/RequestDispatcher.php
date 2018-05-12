@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Controller/RequestDispatcher.php :
+ * app/lib/Controller/RequestDispatcher.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,12 +34,12 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/BaseObject.php");
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Response/ResponseHTTP.php");
-require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/BaseObject.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
+require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
+require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
 class RequestDispatcher extends BaseObject {
 	# -------------------------------------------------------

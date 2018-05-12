@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Media/Office.php :
+ * app/lib/Plugins/Media/Office.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,12 +38,12 @@
  * Plugin for processing Microsoft Word and Excel documents
  */
  
-require_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Media.php");
+require_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
+require_once(__CA_LIB_DIR__."/Media.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/UnZipFile.php");
+require_once(__CA_LIB_DIR__."/Parsers/UnZipFile.php");
 
 class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();

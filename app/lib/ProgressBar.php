@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/ProgressBar.php :
+ * app/lib/ProgressBar.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
 
 class ProgressBar {
 	# -------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Datamodel.php : 
+ * app/lib/Datamodel.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Utils/Graph.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
+require_once(__CA_LIB_DIR__."/Utils/Graph.php");
 
 
 class Datamodel {

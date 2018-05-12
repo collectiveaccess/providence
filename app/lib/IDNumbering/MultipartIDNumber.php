@@ -30,11 +30,11 @@
  * ----------------------------------------------------------------------
  */
  
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/ca/IDNumbering/IDNumber.php");
-require_once(__CA_LIB_DIR__."/ca/IDNumbering/IIDNumbering.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/Db.php");
+require_once(__CA_LIB_DIR__."/IDNumbering/IDNumber.php");
+require_once(__CA_LIB_DIR__."/IDNumbering/IIDNumbering.php");
 require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 
 class MultipartIDNumber extends IDNumber {

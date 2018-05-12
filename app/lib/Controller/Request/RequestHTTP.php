@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Controller/Request/RequestHTTP.php :
+ * app/lib/Controller/Request/RequestHTTP.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
  /**
   *
   */
-require_once(__CA_LIB_DIR__."/core/Controller/Request.php");
+require_once(__CA_LIB_DIR__."/Controller/Request.php");
 
 # ----------------------------------------
 # Authorization constants

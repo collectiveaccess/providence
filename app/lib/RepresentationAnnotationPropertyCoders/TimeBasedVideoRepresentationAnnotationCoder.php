@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/RepresentationAnnotationPropertyCoders/TimeBasedVideoRepresentationAnnotationCoder.php : 
+ * app/lib/RepresentationAnnotationPropertyCoders/TimeBasedVideoRepresentationAnnotationCoder.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
  /**
   *
   */
- 	require_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/TimeBasedRepresentationAnnotationCoder.php');
+ 	require_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/TimeBasedRepresentationAnnotationCoder.php');
 
 	class TimeBasedVideoRepresentationAnnotationCoder extends TimeBasedRepresentationAnnotationCoder implements IRepresentationAnnotationPropertyCoder {
 	# ------------------------------------------------------------------

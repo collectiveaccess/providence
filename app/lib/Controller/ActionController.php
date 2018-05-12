@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Controller/ActionController.php :
+ * app/lib/Controller/ActionController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,11 +34,11 @@
   *
   */
  
-require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php');
-require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/core/View.php');
-require_once(__CA_LIB_DIR__.'/core/Controller/Request/NotificationManager.php');
+require_once(__CA_LIB_DIR__.'/ApplicationVars.php');
+require_once(__CA_LIB_DIR__.'/BaseObject.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/View.php');
+require_once(__CA_LIB_DIR__.'/Controller/Request/NotificationManager.php');
 
 class ActionController extends BaseObject {
 	# -------------------------------------------------------

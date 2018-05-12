@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.utils.js
+ * js/ca.utils.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

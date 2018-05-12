@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/MediaReplication/BaseMediaReplicationPlugIn.php : 
+ * app/lib/Plugins/MediaReplication/BaseMediaReplicationPlugIn.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMediaReplication.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMediaReplication.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
 
 define('__CA_MEDIA_REPLICATION_STATUS_UNKNOWN__', 0);
 define('__CA_MEDIA_REPLICATION_STATUS_UPLOADING__', 1);

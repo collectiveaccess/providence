@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/TaskQueueHandlers/as3mirror.php :
+ * app/lib/Plugins/TaskQueueHandlers/as3mirror.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -39,13 +39,13 @@
  * via FTP. Note that this plugin only supports FTP, not SFTP, rsync or other protocols.
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugTaskQueueHandler.php");
-include_once(__CA_LIB_DIR__."/core/Media.php");
-include_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
+include_once(__CA_LIB_DIR__."/Media.php");
+include_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
+include_once(__CA_LIB_DIR__."/Datamodel.php");
+include_once(__CA_LIB_DIR__."/ApplicationError.php");
+include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 	
 	class WLPlugTaskQueueHandlerftpmirror Extends WLPlug Implements IWLPlugTaskQueueHandler {
 		# --------------------------------------------------------------------------------

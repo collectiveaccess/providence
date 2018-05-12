@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Visualizer/BaseCurrencyConversionPlugin.php : 
+ * app/lib/Plugins/Visualizer/BaseCurrencyConversionPlugin.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugCurrencyConversion.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugCurrencyConversion.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
 
 abstract class BaseCurrencyConversionPlugin Extends WLPlug {
 	# ------------------------------------------------

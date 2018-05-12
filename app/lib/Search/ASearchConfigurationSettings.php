@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Search/SearchConfigurationSettings.php : 
+ * app/lib/Search/SearchConfigurationSettings.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

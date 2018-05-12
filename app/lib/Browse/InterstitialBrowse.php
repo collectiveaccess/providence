@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/InterstitialBrowse.php : ca_entities faceted browse
+ * app/lib/Browse/InterstitialBrowse.php : ca_entities faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/InterstitialBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/InterstitialBrowseResult.php');
  
 	class InterstitialBrowse extends BaseBrowse {
 		# ------------------------------------------------------

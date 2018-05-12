@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Utils/Graph.php :
+ * app/lib/Utils/Graph.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
 	
 # ----------------------------------------------------------------------
 

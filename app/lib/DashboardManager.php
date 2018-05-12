@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/DashboardManager.php :
+ * app/lib/DashboardManager.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/WidgetManager.php');
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
+ 	require_once(__CA_LIB_DIR__.'/WidgetManager.php');
+ 	require_once(__CA_LIB_DIR__.'/ApplicationVars.php'); 	
  
 	class DashboardManager {
 		# -------------------------------------------------------

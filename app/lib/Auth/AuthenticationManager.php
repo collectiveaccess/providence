@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/AuthenticationManager.php :
+ * app/lib/Auth/AuthenticationManager.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
 
 class AuthenticationManager {
 	/**
@@ -58,7 +58,7 @@ class AuthenticationManager {
 
 			$vs_auth_adapter = (!is_null($ps_adapter)) ? $ps_adapter : $o_auth_config->get('auth_adapter');
 
-			$vs_auth_adapter_file = __CA_LIB_DIR__."/core/Auth/Adapters/".$vs_auth_adapter.".php";
+			$vs_auth_adapter_file = __CA_LIB_DIR__."/Auth/Adapters/".$vs_auth_adapter.".php";
 			if(file_exists($vs_auth_adapter_file)) {
 				require_once($vs_auth_adapter_file);
 

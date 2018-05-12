@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/ContainerAttributeValue.php :
+ * app/lib/Attributes/Values/ContainerAttributeValue.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,9 +35,9 @@
  */
 define("__CA_ATTRIBUTE_VALUE_CONTAINER__", 0);
 
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
 global $_ca_attribute_settings;
 

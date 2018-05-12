@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/LCSHAttributeValue.php : 
+ * app/lib/Attributes/Values/LCSHAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,14 +35,14 @@
   */
   	define("__CA_ATTRIBUTE_VALUE_LCSH__", 13);
   	
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__."/core/Zend/Http/Client.php");
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Feed.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Feed/Atom.php');
- 	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
+	require_once(__CA_LIB_DIR__."/Zend/Http/Client.php");
+ 	require_once(__CA_LIB_DIR__.'/Zend/Feed.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Feed/Atom.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
  	
  	global $_ca_attribute_settings;
  		

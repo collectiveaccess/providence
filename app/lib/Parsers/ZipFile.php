@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/ZipFile.php : 
+ * app/lib/Parsers/ZipFile.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

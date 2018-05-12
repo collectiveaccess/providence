@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/SortValueReloadingProgress.php : 
+ * app/lib/SortValueReloadingProgress.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -36,7 +36,7 @@
   * after the web UI page has been sent to the client
   */
  
- 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
+ 	require_once(__CA_LIB_DIR__.'/Controller/AppController/AppControllerPlugin.php');
  
 	class SortValueReloadingProgress extends AppControllerPlugin {
 		# -------------------------------------------------------

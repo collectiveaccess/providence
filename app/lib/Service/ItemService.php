@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/ItemService.php
+ * app/lib/Service/ItemService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
+require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class ItemService extends BaseJSONService {

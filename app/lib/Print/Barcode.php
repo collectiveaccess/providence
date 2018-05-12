@@ -28,7 +28,7 @@
 # Mods (c) 2008 Whirl-i-Gig
 #
 
-require_once(__CA_LIB_DIR__.'/core/Parsers/PEAR.php');
+require_once(__CA_LIB_DIR__.'/Parsers/PEAR.php');
 
 /**
  * Image_Barcode class
@@ -72,7 +72,7 @@ class Barcode extends PEAR
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $type)) {
             return PEAR::raiseError('Invalid barcode type ' . $type);
         }
-        if (!include_once(__CA_LIB_DIR__.'/core/Print/Barcode/' . $type . '.php')) {
+        if (!include_once(__CA_LIB_DIR__.'/Print/Barcode/' . $type . '.php')) {
             return PEAR::raiseError($type . ' barcode is not supported');
         }
 

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Export/BaseExportRefinery.php : 
+ * app/lib/Export/BaseExportRefinery.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
+ 	require_once(__CA_LIB_DIR__.'/ApplicationVars.php'); 	
  
 	abstract class BaseExportRefinery {
 		# -------------------------------------------------------

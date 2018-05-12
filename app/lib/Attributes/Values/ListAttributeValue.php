@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/ListAttributeValue.php :
+ * app/lib/Attributes/Values/ListAttributeValue.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,8 +35,8 @@
  */
 define("__CA_ATTRIBUTE_VALUE_LIST__", 3);
 
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+ require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 global $_ca_attribute_settings;

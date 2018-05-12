@@ -33,9 +33,9 @@ define("__CA_MEDIA_REPLICATION_STATE_COMPLETE__", 4);	// replication target has 
 define("__CA_MEDIA_REPLICATION_STATE_ERROR__", 5);	// replication failed
 
 
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/core/Media/MediaVolumes.php');
-	require_once(__CA_LIB_DIR__.'/core/Media/MediaProcessingSettings.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+	require_once(__CA_LIB_DIR__.'/Media/MediaVolumes.php');
+	require_once(__CA_LIB_DIR__.'/Media/MediaProcessingSettings.php');
 
 	class MediaReplicator {
 		# --------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ define("__CA_MEDIA_REPLICATION_STATE_ERROR__", 5);	// replication failed
 			$o_viz = new MediaReplicator();
 			
 			MediaReplicator::$s_plugin_names = array();
-			$r_dir = opendir(__CA_APP_DIR__.'/core/Plugins/MediaReplication');
+			$r_dir = opendir(__CA_APP_DIR__.'/Plugins/MediaReplication');
 			while (($vs_plugin = readdir($r_dir)) !== false) {
 				if ($vs_plugin == "BaseMediaReplicationPlugin.php") { continue; }
 				if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $vs_plugin, $va_matches)) {
@@ -187,9 +187,9 @@ define("__CA_MEDIA_REPLICATION_STATE_ERROR__", 5);	// replication failed
 		 */
 		public function getMediaReplicationPlugin($ps_plugin_name) {
 			if (preg_match('![^A-Za-z0-9_\-]+!', $ps_plugin_name)) { return null; }
-			if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/MediaReplication/'.$ps_plugin_name.'.php')) { return null; }
+			if (!file_exists(__CA_LIB_DIR__.'/Plugins/MediaReplication/'.$ps_plugin_name.'.php')) { return null; }
 		
-			require_once(__CA_LIB_DIR__.'/core/Plugins/MediaReplication/'.$ps_plugin_name.'.php');
+			require_once(__CA_LIB_DIR__.'/Plugins/MediaReplication/'.$ps_plugin_name.'.php');
 			$vs_plugin_classname = 'WLPlugMediaReplication'.$ps_plugin_name;
 			return new $vs_plugin_classname;
 		}	

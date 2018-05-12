@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media.php :
+ * app/lib/Media.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-require_once (__CA_LIB_DIR__."/core/Configuration.php");
-require_once (__CA_LIB_DIR__."/core/BaseObject.php");
+require_once (__CA_LIB_DIR__."/Configuration.php");
+require_once (__CA_LIB_DIR__."/BaseObject.php");
 
 define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
 define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
@@ -69,7 +69,7 @@ class Media extends BaseObject {
 	# Methods
 	# ----------------------------------------------------------
 	public function __construct($pb_no_cache=false) { 
-		if (!Media::$plugin_path) { Media::$plugin_path = __CA_LIB_DIR__.'/core/Plugins/Media'; }
+		if (!Media::$plugin_path) { Media::$plugin_path = __CA_LIB_DIR__.'/Plugins/Media'; }
 		
 		if (!(Media::$s_file_extension_to_plugin_map = CompositeCache::contains('media_file_extension_to_plugin_map'))) {
 			CompositeCache::save('media_file_extension_to_plugin_map', $this->getPluginImportFileExtensionMap());

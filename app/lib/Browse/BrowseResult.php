@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/BrowseResult.php :
+ * app/lib/Browse/BrowseResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
  
- include_once(__CA_LIB_DIR__.'/core/Datamodel.php');
- include_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
- include_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngineResult.php');
+ include_once(__CA_LIB_DIR__.'/Datamodel.php');
+ include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+ include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
 
 class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------

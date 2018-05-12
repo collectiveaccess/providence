@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/ca/SiteComments.php : 
+ * app/lib/SiteComments.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseObject.php');
  	require_once(__CA_MODELS_DIR__.'/ca_item_comments.php');
  
 	class SiteComments extends BaseObject {

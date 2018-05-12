@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Import/DataReaderManager.php : 
+ * app/lib/Import/DataReaderManager.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
  
 	class DataReaderManager {
 		# -------------------------------------------------------
@@ -61,7 +61,7 @@
 		public static function initDataReaders() {
 			if (DataReaderManager::$s_data_reader_manager_did_do_reader_init) { return true; }
 			
-			$vs_base_reader_dir = __CA_LIB_DIR__.'/ca/Import/DataReaders';
+			$vs_base_reader_dir = __CA_LIB_DIR__.'/Import/DataReaders';
 			
 			$va_readers = DataReaderManager::getDataReaderNames();
 			foreach($va_readers as $vs_reader) {
@@ -108,7 +108,7 @@
 		 * Returns names of all readers
 		 */
 		public static function getDataReaderNames() {
-			$vs_base_reader_dir = __CA_LIB_DIR__.'/ca/Import/DataReaders';
+			$vs_base_reader_dir = __CA_LIB_DIR__.'/Import/DataReaders';
 			
 			$va_readers = array();
 			if (is_resource($r_dir = opendir($vs_base_reader_dir))) {

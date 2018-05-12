@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/MovementSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/MovementBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/MovementSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/MovementBrowse.php");
  	
  	class SearchMovementsController extends BaseSearchController {
  		# -------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/AttributeValues/WikipediaInformationServiceAttributeValueTest.php
+ * tests/lib/AttributeValues/WikipediaInformationServiceAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

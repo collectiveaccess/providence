@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/BaseSettings.php :
+ * app/lib/BaseSettings.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- 	require_once(__CA_LIB_DIR__.'/core/View.php');
+ 	require_once(__CA_LIB_DIR__.'/View.php');
  
 	class BaseSettings {
 		# ------------------------------------------------------

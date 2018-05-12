@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Logging/Searchlog.php :
+ * app/lib/Logging/Searchlog.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-include_once(__CA_LIB_DIR__."/core/Logging/BaseLogger.php");
+include_once(__CA_LIB_DIR__."/Logging/BaseLogger.php");
 
 class Searchlog extends BaseLogger {
 	# ----------------------------------------

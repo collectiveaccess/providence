@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/MovementBrowse.php : ca_movements faceted browse
+ * app/lib/Browse/MovementBrowse.php : ca_movements faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/MovementBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/MovementBrowseResult.php');
  
 	class MovementBrowse extends BaseBrowse {
 		# ------------------------------------------------------

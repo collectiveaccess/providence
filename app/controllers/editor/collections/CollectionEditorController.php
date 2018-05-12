@@ -27,8 +27,8 @@
  */
  
  	require_once(__CA_MODELS_DIR__."/ca_collections.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/CollectionSearch.php");
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/CollectionSearch.php");
  	
  
  	class CollectionEditorController extends BaseEditorController {

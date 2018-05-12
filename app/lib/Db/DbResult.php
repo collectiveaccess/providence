@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db/DbResult.php :
+ * app/lib/Db/DbResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,13 +34,13 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/core/Db/DbBase.php");
+include_once(__CA_LIB_DIR__."/Db/DbBase.php");
 
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/Media/MediaInfoCoder.php");
-include_once(__CA_LIB_DIR__."/core/File/FileInfoCoder.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");
+include_once(__CA_LIB_DIR__."/Datamodel.php");
+include_once(__CA_LIB_DIR__."/Media/MediaInfoCoder.php");
+include_once(__CA_LIB_DIR__."/File/FileInfoCoder.php");
+include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
+include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
 
 /**
  * Database abstraction results class (supercedes ancient Db_Sql class)

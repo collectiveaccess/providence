@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/ApplicationMonitor.php : miscellaneous functions
+ * app/lib/ApplicationMonitor.php : miscellaneous functions
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -37,7 +37,7 @@
    	if (!defined('__CA_MICROTIME_START_OF_REQUEST__')) { define("__CA_MICROTIME_START_OF_REQUEST__", microtime()); }
    	if (!defined('__CA_BASE_MEMORY_USAGE__')) { define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true)); }
    	
-   require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+   require_once(__CA_LIB_DIR__.'/Configuration.php');
    
 	class ApplicationMonitor {
 		# ------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/ObjectComponentController.php : 
+ * app/lib/ObjectComponentController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,11 +35,11 @@
   */
  
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
-	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__."/Datamodel.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
+	require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
  
  	class ObjectComponentController extends ActionController {
  		# -------------------------------------------------------

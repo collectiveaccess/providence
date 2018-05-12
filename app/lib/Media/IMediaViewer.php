@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/IMediaViewer.php :
+ * app/lib/Media/IMediaViewer.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/ModelSettings.php :
+ * app/lib/ModelSettings.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/BaseSettings.php');
-require_once(__CA_LIB_DIR__.'/core/View.php');
+require_once(__CA_LIB_DIR__.'/BaseSettings.php');
+require_once(__CA_LIB_DIR__.'/View.php');
 
 class ModelSettings extends BaseSettings {
 	# ------------------------------------------------------

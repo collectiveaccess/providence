@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Print/PDFRenderer.php : 
+ * app/lib/Print/PDFRenderer.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -195,7 +195,7 @@
 			if (is_array(PDFRenderer::$s_plugin_codes)) { return PDFRenderer::$s_plugin_codes; }
 			
 			PDFRenderer::$s_plugin_codes = array();
-			$r_dir = opendir(__CA_LIB_DIR__.'/core/Plugins/PDFRenderer');
+			$r_dir = opendir(__CA_LIB_DIR__.'/Plugins/PDFRenderer');
 			while (($vs_plugin = readdir($r_dir)) !== false) {
 				if ($vs_plugin == "BasePDFRendererPlugin.php") { continue; }
 				if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $vs_plugin, $va_matches)) {
@@ -216,9 +216,9 @@
 		 */
 		public function getPDFRendererPlugin($ps_plugin_code) {
 			if (preg_match('![^A-Za-z0-9_\-]+!', $ps_plugin_code)) { return null; }
-			if (!file_exists(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/{$ps_plugin_code}.php")) { return null; }
+			if (!file_exists(__CA_LIB_DIR__."/Plugins/PDFRenderer/{$ps_plugin_code}.php")) { return null; }
 		
-			require_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/{$ps_plugin_code}.php");
+			require_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/{$ps_plugin_code}.php");
 			$vs_plugin_classname = "WLPlugPDFRenderer{$ps_plugin_code}";
 			return new $vs_plugin_classname;
 		}

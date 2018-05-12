@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/StorageLocationSearch.php :
+ * app/lib/Search/StorageLocationSearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearch.php");
-include_once(__CA_LIB_DIR__."/ca/Search/StorageLocationSearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearch.php");
+include_once(__CA_LIB_DIR__."/Search/StorageLocationSearchResult.php");
 
 class StorageLocationSearch extends BaseSearch {
 	# ----------------------------------------------------------------------

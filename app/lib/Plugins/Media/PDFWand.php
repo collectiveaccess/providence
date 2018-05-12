@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Media/PDFWand.php :
+ * app/lib/Plugins/Media/PDFWand.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,10 +38,10 @@
  * Plugin for processing PDF documents
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
-include_once(__CA_LIB_DIR__."/core/Media.php");
+include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
+include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {

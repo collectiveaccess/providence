@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/SqlSearchConfigurationSettings.php :
+ * app/lib/Plugins/SearchEngine/SqlSearchConfigurationSettings.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -40,9 +40,9 @@ define('__CA_SQLSEARCH_RUNNING_MYSQL__',4001);
 define('__CA_SQLSEARCH_TABLES_EXIST__',4002);
 # ------------------------------------------------
 
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/core/Search/SearchBase.php');
-require_once(__CA_LIB_DIR__.'/core/Search/ASearchConfigurationSettings.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/Search/SearchBase.php');
+require_once(__CA_LIB_DIR__.'/Search/ASearchConfigurationSettings.php');
 # ------------------------------------------------
 class SqlSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------

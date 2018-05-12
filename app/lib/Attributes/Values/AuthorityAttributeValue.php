@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/AuthorityAttributeValue.php :
+ * app/lib/Attributes/Values/AuthorityAttributeValue.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/BaseObject.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 
 abstract class AuthorityAttributeValue extends AttributeValue {
@@ -353,43 +353,43 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		$vs_table = $o_dm->getTableName($pm_table_name_or_num);
 		switch($vs_table) {
 			case 'ca_list_items':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ListAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/ListAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_LIST__;
 				break;
 			case 'ca_objects':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ObjectsAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/ObjectsAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_OBJECTS__;
 				break;
 			case 'ca_entities':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/EntitiesAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/EntitiesAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_ENTITIES__;
 				break;
 			case 'ca_places':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/PlacesAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/PlacesAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_PLACES__;
 				break;
 			case 'ca_occurrences':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/OccurrencesAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/OccurrencesAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_OCCURRENCES__;
 				break;
 			case 'ca_collections':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/CollectionsAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/CollectionsAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_COLLECTIONS__;
 				break;
 			case 'ca_loans':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/LoansAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/LoansAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_LOANS__;
 				break;
 			case 'ca_movements':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/MovementsAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/MovementsAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_MOVEMENTS__;
 				break;
 			case 'ca_storage_locations':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/StorageLocationsAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/StorageLocationsAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__;
 				break;
 			case 'ca_object_lots':
-				require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ObjectLotsAttributeValue.php");
+				require_once(__CA_LIB_DIR__."/Attributes/Values/ObjectLotsAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_OBJECTLOTS__;
 				break;
 		}

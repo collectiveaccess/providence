@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Integer.php :
+ * app/lib/Plugins/SearchEngine/ElasticSearch/FieldTypes/Integer.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,7 +32,7 @@
 
 namespace ElasticSearch\FieldTypes;
 
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
 
 class Integer extends GenericElement {
 

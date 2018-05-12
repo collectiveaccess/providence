@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/ApplicationToolSettings.php :
+ * app/lib/ApplicationToolSettings.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- 	require_once(__CA_LIB_DIR__.'/core/BaseSettings.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseSettings.php');
  
 	class ApplicationToolSettings extends BaseSettings {
 		# ------------------------------------------------------

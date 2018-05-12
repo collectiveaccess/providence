@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseFeedController.php : base controller for RSS and Atom feeds
+ * app/lib/BaseFeedController.php : base controller for RSS and Atom feeds
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
   
-	require_once(__CA_LIB_DIR__."/core/Zend/Feed.php");
+	require_once(__CA_LIB_DIR__."/Zend/Feed.php");
  	
 	class BaseFeedController extends ActionController {
 		# -------------------------------------------------------

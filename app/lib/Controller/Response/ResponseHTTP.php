@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Controller/Response/ResponseHTTP.php :
+ * app/lib/Controller/Response/ResponseHTTP.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__.'/core/Controller/Response.php');
+require_once(__CA_LIB_DIR__.'/Controller/Response.php');
 
 class ResponseHTTP extends Response {
 	# -------------------------------------------------------

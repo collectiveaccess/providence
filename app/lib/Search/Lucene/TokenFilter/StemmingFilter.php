@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Search/Lucene/TokenFilter/StemmingFilter.php : 
+ * app/lib/Search/Lucene/TokenFilter/StemmingFilter.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
 
-include_once(__CA_LIB_DIR__.'/core/Search/Common/Stemmer/SnoballStemmer.php');
-include_once(__CA_LIB_DIR__.'/core/Zend/Search/Lucene/Analysis/TokenFilter.php');
-include_once(__CA_LIB_DIR__.'/core/Search/Common/Language/LanguageDetection.php');
+include_once(__CA_LIB_DIR__.'/Search/Common/Stemmer/SnoballStemmer.php');
+include_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Analysis/TokenFilter.php');
+include_once(__CA_LIB_DIR__.'/Search/Common/Language/LanguageDetection.php');
 
 
 class StemmingFilter extends Zend_Search_Lucene_Analysis_TokenFilter

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/StorageLocationBrowse.php : ca_storage_locations faceted browse
+ * app/lib/Browse/StorageLocationBrowse.php : ca_storage_locations faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/StorageLocationBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/StorageLocationBrowseResult.php');
  
 	class StorageLocationBrowse extends BaseBrowse {
 		# ------------------------------------------------------

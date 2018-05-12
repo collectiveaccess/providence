@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/IIIFService.php
+ * app/lib/Service/IIIFService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
  
- require_once(__CA_LIB_DIR__."/core/Media.php");
- require_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
+ require_once(__CA_LIB_DIR__."/Media.php");
+ require_once(__CA_LIB_DIR__."/Parsers/TilepicParser.php");
  require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
  require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
 

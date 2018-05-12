@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php :
+ * app/lib/Attributes/Values/GeoNamesAttributeValue.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,11 +35,11 @@
   */
   define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
   
- require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+ require_once(__CA_LIB_DIR__.'/Configuration.php');
+ require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+ require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+ require_once(__CA_LIB_DIR__.'/Configuration.php');
+ require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
  require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
 

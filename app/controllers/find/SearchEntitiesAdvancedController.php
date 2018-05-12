@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseAdvancedSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/EntitySearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/EntityBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseAdvancedSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/EntitySearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/EntityBrowse.php");
 	require_once(__CA_MODELS_DIR__."/ca_entities.php");
 	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	

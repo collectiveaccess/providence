@@ -443,7 +443,7 @@ class Zend_Json_Encoder
      * Solar Framework by Paul M. Jones
      *
      * @link   http://solarphp.com/
-     * @link   http://svn.solarphp.com/core/trunk/Solar/Json.php
+     * @link   http://svn.solarphp.com/trunk/Solar/Json.php
      * @param  string $value
      * @return string
      */

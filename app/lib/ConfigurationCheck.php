@@ -34,9 +34,9 @@
   *
   */
   
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
-require_once(__CA_LIB_DIR__.'/ca/GenericVersionUpdater.php');
+require_once(__CA_LIB_DIR__."/Configuration.php");
+require_once(__CA_LIB_DIR__."/Db/Transaction.php");
+require_once(__CA_LIB_DIR__.'/GenericVersionUpdater.php');
 
 
  	define('__CA_SCHEMA_UPDATE_ERROR__', 0);

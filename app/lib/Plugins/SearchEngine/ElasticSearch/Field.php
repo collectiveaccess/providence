@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearch/Field.php :
+ * app/lib/Plugins/SearchEngine/ElasticSearch/Field.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

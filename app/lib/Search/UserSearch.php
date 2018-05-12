@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/UserSearch.php :
+ * app/lib/Search/UserSearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearch.php");
-include_once(__CA_LIB_DIR__."/ca/Search/UserSearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearch.php");
+include_once(__CA_LIB_DIR__."/Search/UserSearchResult.php");
 
 class UserSearch extends BaseSearch {
 	# ----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Media/Gmagick.php :
+ * app/lib/Plugins/Media/Gmagick.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,16 +38,16 @@
  * Plugin for processing images using GraphicsMagick via the Gmagick PECL extension
 */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
+include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
+include_once(__CA_LIB_DIR__."/Parsers/TilepicParser.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
+include_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/XMPParser.php");
 
-include_once(__CA_LIB_DIR__."/core/Plugins/Media/GraphicsMagick.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/Media/ImageMagick.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/Media/Imagick.php");
+include_once(__CA_LIB_DIR__."/Plugins/Media/GraphicsMagick.php");
+include_once(__CA_LIB_DIR__."/Plugins/Media/ImageMagick.php");
+include_once(__CA_LIB_DIR__."/Plugins/Media/Imagick.php");
 
 class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/File.php : 
+ * app/lib/File.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-require_once (__CA_LIB_DIR__."/core/Configuration.php");
-require_once (__CA_LIB_DIR__."/core/BaseObject.php");
+require_once (__CA_LIB_DIR__."/Configuration.php");
+require_once (__CA_LIB_DIR__."/BaseObject.php");
 
 class File extends BaseObject {
 	# ----------------------------------------------------------

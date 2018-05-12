@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugFileFormat.php :
+ * app/lib/Plugins/IWLPlugFileFormat.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

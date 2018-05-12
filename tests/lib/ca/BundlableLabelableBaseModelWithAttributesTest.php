@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/BundlableLabelableBaseModelWithAttributesTests.php : table access class for table ca_users
+ * tests/lib/BundlableLabelableBaseModelWithAttributesTests.php : table access class for table ca_users
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@
  */
 require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
+require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
 
 class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_TestCase {
 

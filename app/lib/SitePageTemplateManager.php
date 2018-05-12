@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/SitePageTemplateManager.php : 
+ * app/lib/SitePageTemplateManager.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
  /**
   *
   */
-  require_once(__CA_LIB_DIR__."/core/View.php");
+  require_once(__CA_LIB_DIR__."/View.php");
   require_once(__CA_MODELS_DIR__."/ca_site_templates.php");
   
   class SitePageTemplateManager {

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/OccurrencesAttributeValue.php : 
+ * app/lib/Attributes/Values/OccurrencesAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,7 +35,7 @@
   */
   	define("__CA_ATTRIBUTE_VALUE_OCCURRENCES__", 24);
   	
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
  
  	global $_ca_attribute_settings;

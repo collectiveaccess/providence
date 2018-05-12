@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/SyncableBaseModel.php : common functions for syncable models
+ * app/lib/SyncableBaseModel.php : common functions for syncable models
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

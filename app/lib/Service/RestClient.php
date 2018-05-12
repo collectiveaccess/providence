@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/RestClient.php
+ * app/lib/Service/RestClient.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
   
-require_once(__CA_LIB_DIR__."/core/Zend/Rest/Client.php");
+require_once(__CA_LIB_DIR__."/Zend/Rest/Client.php");
 
 class RestClient extends Zend_Rest_Client {
 	# -------------------------------------------------------

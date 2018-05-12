@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BundlableLabelableBaseModelWithAttributes.php : base class for models that take application of bundles
+ * app/lib/BundlableLabelableBaseModelWithAttributes.php : base class for models that take application of bundles
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,14 +34,14 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
-require_once(__CA_LIB_DIR__."/ca/DeduplicateBaseModel.php");
-require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
-require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__."/DeduplicateBaseModel.php");
+require_once(__CA_LIB_DIR__."/LabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/Plugins/SearchEngine/CachedResult.php");
+require_once(__CA_LIB_DIR__."/Search/SearchResult.php");
 
-require_once(__CA_LIB_DIR__."/ca/IDNumbering.php");
+require_once(__CA_LIB_DIR__."/IDNumbering.php");
 require_once(__CA_APP_DIR__."/helpers/accessHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
 
@@ -6321,7 +6321,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
-		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php'); }
+		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/Search/'.$vs_search_result_class.'.php'); }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		/** @var BaseSearchResult $o_res */
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
@@ -6357,7 +6357,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
-		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
+		require_once(__CA_LIB_DIR__.'/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
 		$o_res->init($o_data, array());

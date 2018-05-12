@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php :
+ * app/lib/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,7 +32,7 @@
 
 namespace ElasticSearch\FieldTypes;
 
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
 
 class GenericElement extends FieldType {
 

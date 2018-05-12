@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Visualizer/WLPlugVisualizerStoryMapJS.php : visualizes data as a storymap
+ * app/lib/Plugins/Visualizer/WLPlugVisualizerStoryMapJS.php : visualizes data as a storymap
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,8 +33,8 @@
   /**
     *
     */
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugVisualizer.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/Visualizer/BaseVisualizerPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugVisualizer.php");
+include_once(__CA_LIB_DIR__."/Plugins/Visualizer/BaseVisualizerPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 
 class WLPlugVisualizerStoryMapJS Extends BaseVisualizerPlugIn Implements IWLPlugVisualizer {

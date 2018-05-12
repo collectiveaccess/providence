@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.uniquenesschecker.js
+ * js/ca.uniquenesschecker.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/EntitySearch.php :
+ * app/lib/Search/EntitySearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearch.php");
-include_once(__CA_LIB_DIR__."/ca/Search/EntitySearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearch.php");
+include_once(__CA_LIB_DIR__."/Search/EntitySearchResult.php");
 
 class EntitySearch extends BaseSearch {
 

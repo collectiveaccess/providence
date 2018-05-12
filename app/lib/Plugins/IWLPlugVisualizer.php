@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugVisualizer.php : interface for visualization classes
+ * app/lib/Plugins/IWLPlugVisualizer.php : interface for visualization classes
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

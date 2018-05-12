@@ -27,7 +27,7 @@
  * by Adobe Blaze DS. For and example of deserialization please review the BlazeDS
  * source tree.
  *
- * @see        http://opensource.adobe.com/svn/opensource/blazeds/trunk/modules/core/src/java/flex/messaging/io/amf/
+ * @see        http://opensource.adobe.com/svn/opensource/blazeds/trunk/modules/src/java/flex/messaging/io/amf/
  * @package    Zend_Amf
  * @subpackage Parse
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)

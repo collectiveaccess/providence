@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/TimecodeParser.php : 
+ * app/lib/Parsers/TimecodeParser.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -47,7 +47,7 @@
  * FT_TIMECODE fields.
  *
  */
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
 
 
 class TimecodeParser {

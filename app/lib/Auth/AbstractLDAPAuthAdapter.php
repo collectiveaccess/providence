@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/AbstractLDAPAuthAdapter.php : Abstract base class for LDAP adapters
+ * app/lib/Auth/AbstractLDAPAuthAdapter.php : Abstract base class for LDAP adapters
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
-require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
+require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/Auth/PasswordHash.php');
 
 abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	/**

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/MediaViewerManager.php :
+ * app/lib/Media/MediaViewerManager.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
  *
  */
  
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
  
 	class MediaViewerManager {
 		# -------------------------------------------------------
@@ -60,7 +60,7 @@
 		 * Loads viewers
 		 */
 		public static function initViewers() {
-			MediaViewerManager::$s_media_viewer_plugin_dir = __CA_LIB_DIR__.'/core/Media/MediaViewers';	// set here for compatibility with PHP 5.5 and earlier
+			MediaViewerManager::$s_media_viewer_plugin_dir = __CA_LIB_DIR__.'/Media/MediaViewers';	// set here for compatibility with PHP 5.5 and earlier
 			
 			if (MediaViewerManager::$s_manager_did_do_init) { return true; }
 			

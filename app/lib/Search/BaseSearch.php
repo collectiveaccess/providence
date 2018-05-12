@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/BaseSearch.php : Base class for ca_* searches
+ * app/lib/Search/BaseSearch.php : Base class for ca_* searches
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
   
-include_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
+include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
  
 	class BaseSearch extends SearchEngine {
 		# -------------------------------------------------------

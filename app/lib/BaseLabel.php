@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseLabel.php : Base class for ca_*_labels models
+ * app/lib/BaseLabel.php : Base class for ca_*_labels models
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
-	require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+ 	require_once(__CA_LIB_DIR__.'/BaseModel.php');
+ 	require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
+	require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
  
 	class BaseLabel extends BaseModel {
 		# -------------------------------------------------------

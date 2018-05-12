@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Sync/LogEntry/Label.php
+ * app/lib/Sync/LogEntry/Label.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,7 +32,7 @@
 
 namespace CA\Sync\LogEntry;
 
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
 
 class Label extends Base {
 

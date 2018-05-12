@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearch.php :
+ * app/lib/Plugins/SearchEngine/ElasticSearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,16 +30,16 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngine.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearchResult.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/BaseSearchPlugin.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearchResult.php');
 
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Field.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Mapping.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Query.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Field.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Mapping.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Query.php');
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------

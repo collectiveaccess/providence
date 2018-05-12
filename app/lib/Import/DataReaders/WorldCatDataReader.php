@@ -34,8 +34,8 @@
  *
  */
 
-	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
-	require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
+	require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
+	require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
 	
 	// Pull in Guzzle library (web services client)
 	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');

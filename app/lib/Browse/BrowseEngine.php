@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/BrowseEngine.php : Base class for browse interfaces
+ * app/lib/Browse/BrowseEngine.php : Base class for browse interfaces
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,24 +33,24 @@
  /**
   *
   */
- 	require_once(__CA_LIB_DIR__.'/core/BaseFindEngine.php');
- 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CollectionsAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/EntitiesAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LoansAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/MovementsAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectLotsAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectsAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/OccurrencesAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/PlacesAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/StorageLocationsAttributeValue.php');
-	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ListAttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BrowseResult.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BrowseCache.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseFindEngine.php');
+ 	require_once(__CA_LIB_DIR__.'/Datamodel.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/CollectionsAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/EntitiesAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/LoansAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/MovementsAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectLotsAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectRepresentationsAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectsAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/OccurrencesAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/PlacesAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/StorageLocationsAttributeValue.php');
+	require_once(__CA_LIB_DIR__.'/Attributes/Values/ListAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BrowseCache.php');
+ 	require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
  	require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 

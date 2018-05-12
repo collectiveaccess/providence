@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/SearchJSONService.php
+ * app/lib/Service/SearchJSONService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
  *
  */
 
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
+require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
 
 class SearchJSONService extends BaseJSONService {
 	# -------------------------------------------------------

@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.seteditor.js
+ * js/ca.seteditor.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

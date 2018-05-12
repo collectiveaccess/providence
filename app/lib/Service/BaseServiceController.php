@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/BaseServiceController.php : base controller for service interfaces
+ * app/lib/Service/BaseServiceController.php : base controller for service interfaces
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

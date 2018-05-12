@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Export/BaseExportFormat.php :
+ * app/lib/Export/BaseExportFormat.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,11 +34,11 @@
   *
   */
 
- 	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportXML.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportMARC.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportCSV.php');
-	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportExifTool.php');
-    require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportJSON.php');
+ 	require_once(__CA_LIB_DIR__.'/Export/ExportFormats/ExportXML.php');
+ 	require_once(__CA_LIB_DIR__.'/Export/ExportFormats/ExportMARC.php');
+ 	require_once(__CA_LIB_DIR__.'/Export/ExportFormats/ExportCSV.php');
+	require_once(__CA_LIB_DIR__.'/Export/ExportFormats/ExportExifTool.php');
+    require_once(__CA_LIB_DIR__.'/Export/ExportFormats/ExportJSON.php');
 
 	abstract class BaseExportFormat {
 		# -------------------------------------------------------

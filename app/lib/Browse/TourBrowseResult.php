@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/TourBrowseResult.php :
+ * app/lib/Browse/TourBrowseResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
 
 class TourBrowseResult extends BaseSearchResult {
 	# -------------------------------------

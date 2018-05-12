@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/CurrencyAttributeValue.php : 
+ * app/lib/Attributes/Values/CurrencyAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -36,14 +36,14 @@
  	
  	define("__CA_ATTRIBUTE_VALUE_CURRENCY__", 6);
  	 	
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Locale.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Locale/Data.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Locale/Format.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Locale.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Locale/Data.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Locale/Format.php');
  
  	global $_ca_attribute_settings;
  	

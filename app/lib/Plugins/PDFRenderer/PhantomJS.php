@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/PDFRenderer/PhantomJS.php : renders HTML as PDF using PhantomJS
+ * app/lib/Plugins/PDFRenderer/PhantomJS.php : renders HTML as PDF using PhantomJS
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 class WLPlugPDFRendererPhantomJS Extends BasePDFRendererPlugIn Implements IWLPlugPDFRenderer {
@@ -104,7 +104,7 @@ class WLPlugPDFRendererPhantomJS Extends BasePDFRendererPlugIn Implements IWLPlu
 		file_put_contents($vs_content_path = caMakeGetFilePath("phantomjs", "html"), $ps_content); 
 		$vs_output_path = caMakeGetFilePath("phantomjs", "pdf");
 		
-		exec($x=$this->ops_phantom_path." ".__CA_LIB_DIR__."/core/Print/phantomjs/rasterise.js ".caEscapeShellArg($vs_content_path)." ".caEscapeShellArg($vs_output_path)." {$this->ops_page_size} {$this->ops_page_orientation}  {$this->ops_margin_right} {$this->ops_margin_bottom} {$this->ops_margin_left}", $va_output, $vn_return);	
+		exec($x=$this->ops_phantom_path." ".__CA_LIB_DIR__."/Print/phantomjs/rasterise.js ".caEscapeShellArg($vs_content_path)." ".caEscapeShellArg($vs_output_path)." {$this->ops_page_size} {$this->ops_page_orientation}  {$this->ops_margin_right} {$this->ops_margin_bottom} {$this->ops_margin_left}", $va_output, $vn_return);	
 
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $pa_options, false)) {

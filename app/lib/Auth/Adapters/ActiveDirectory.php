@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/Adapters/ActiveDirectoryAdapter.php : Microsoft AD authentication backend
+ * app/lib/Auth/Adapters/ActiveDirectoryAdapter.php : Microsoft AD authentication backend
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Auth/AbstractLDAPAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/Auth/AbstractLDAPAuthAdapter.php');
 
 class ActiveDirectoryAuthAdapter extends AbstractLDAPAuthAdapter {
 	# --------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/DataImportParser.php : 
+ * app/lib/Parsers/DataImportParser.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
  /**
   *
   */
-	require_once(__CA_LIB_DIR__.'/core/Parsers/IDataParser.php');
+	require_once(__CA_LIB_DIR__.'/Parsers/IDataParser.php');
 	
 	/**
 	 * Utility class for parsing data in delimited text files (eg. tab-delimited or CSV files)

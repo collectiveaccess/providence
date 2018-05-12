@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/IDNumbering/SMFMultipartIDNumber.php : plugin to generate id numbers for Musées de France
+ * app/lib/IDNumbering/SMFMultipartIDNumber.php : plugin to generate id numbers for Musées de France
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,12 +30,12 @@
  */
  
 
-	require_once(__CA_LIB_DIR__ . "/core/Configuration.php");
-	require_once(__CA_LIB_DIR__ . "/core/Datamodel.php");
-	require_once(__CA_LIB_DIR__ . "/core/Db.php");
-	require_once(__CA_LIB_DIR__ . "/core/ApplicationVars.php");
-	require_once(__CA_LIB_DIR__ . "/ca/IDNumbering/IDNumber.php");
-	require_once(__CA_LIB_DIR__ . "/ca/IDNumbering/IIDNumbering.php");
+	require_once(__CA_LIB_DIR__ . "/Configuration.php");
+	require_once(__CA_LIB_DIR__ . "/Datamodel.php");
+	require_once(__CA_LIB_DIR__ . "/Db.php");
+	require_once(__CA_LIB_DIR__ . "/ApplicationVars.php");
+	require_once(__CA_LIB_DIR__ . "/IDNumbering/IDNumber.php");
+	require_once(__CA_LIB_DIR__ . "/IDNumbering/IIDNumbering.php");
 	require_once(__CA_APP_DIR__ . "/helpers/navigationHelpers.php");
 	
 	class SMFMultipartIDNumber extends IDNumber implements IIDNumbering {

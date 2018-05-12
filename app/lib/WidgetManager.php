@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/WidgetManager.php : 
+ * app/lib/WidgetManager.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
  
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/ApplicationVars.php'); 	
  
 	class WidgetManager {
 		# -------------------------------------------------------

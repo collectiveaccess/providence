@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/IDataParser.php : 
+ * app/lib/Parsers/IDataParser.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

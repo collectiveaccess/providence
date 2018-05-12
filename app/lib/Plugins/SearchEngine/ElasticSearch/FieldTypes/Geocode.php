@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Geocode.php :
+ * app/lib/Plugins/SearchEngine/ElasticSearch/FieldTypes/Geocode.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,8 +32,8 @@
 
 namespace ElasticSearch\FieldTypes;
 
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeocodeAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/GeocodeAttributeValue.php');
 
 class Geocode extends GenericElement {
 	public function __construct($ps_table_name, $ps_element_code) {

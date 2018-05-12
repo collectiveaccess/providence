@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Cache/CompositeCache.php : provides simple combination of on-disk and in-memory caching
+ * app/lib/Cache/CompositeCache.php : provides simple combination of on-disk and in-memory caching
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php');
-require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
+require_once(__CA_LIB_DIR__.'/Cache/MemoryCache.php');
+require_once(__CA_LIB_DIR__.'/Cache/ExternalCache.php');
 
 class CompositeCache {
 	# ------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/AAT.php :
+ * app/lib/Plugins/InformationService/AAT.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseGettyLODServicePlugin.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseGettyLODServicePlugin.php");
 
 global $g_information_service_settings_AAT;
 $g_information_service_settings_AAT = array();

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/Adapters/ExternalDB.php : External database authentication backend
+ * app/lib/Auth/Adapters/ExternalDB.php : External database authentication backend
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
-require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
+require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/Auth/PasswordHash.php');
 
 class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------

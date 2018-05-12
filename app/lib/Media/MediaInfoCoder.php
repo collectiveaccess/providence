@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/MediaInfoCoder.php :
+ * app/lib/Media/MediaInfoCoder.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Media.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
+require_once(__CA_LIB_DIR__."/Media.php");
+require_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 

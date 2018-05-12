@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/ItemCommentSearch.php :
+ * app/lib/Search/ItemCommentSearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearch.php");
-include_once(__CA_LIB_DIR__."/ca/Search/ItemCommentSearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearch.php");
+include_once(__CA_LIB_DIR__."/Search/ItemCommentSearchResult.php");
 
 class ItemCommentSearch extends BaseSearch {
 	# ----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SMS/WLPlugSMSSendHub.php : generates SMS messages via SendHub API
+ * app/lib/Plugins/SMS/WLPlugSMSSendHub.php : generates SMS messages via SendHub API
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugSMS.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/SMS/BaseSMSPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugSMS.php");
+include_once(__CA_LIB_DIR__."/Plugins/SMS/BaseSMSPlugin.php");
 include_once(__CA_MODELS_DIR__."/ca_users.php");
 
 class WLPlugSMSSendHub Extends BaseSMSPlugin Implements IWLPlugSMS {

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/TimeCodeAttributeValue.php : 
+ * app/lib/Attributes/Values/TimeCodeAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,9 +35,9 @@
   */
   	define("__CA_ATTRIBUTE_VALUE_TIMECODE__", 10);
  	
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimecodeParser.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Parsers/TimecodeParser.php');
  
  	global $_ca_attribute_settings;
  	$_ca_attribute_settings['TimecodeAttributeValue'] = array(		// global

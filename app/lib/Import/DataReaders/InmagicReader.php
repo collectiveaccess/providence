@@ -34,7 +34,7 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
+require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
 class InmagicReader extends BaseXMLDataReader {

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/CurrencyConversion/EuroBank.php :
+ * app/lib/Plugins/CurrencyConversion/EuroBank.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-	require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/BaseCurrencyConversionPlugin.php");
-	require_once(__CA_LIB_DIR__."/core/Zend/Currency.php");
+	require_once(__CA_LIB_DIR__."/Plugins/CurrencyConversion/BaseCurrencyConversionPlugin.php");
+	require_once(__CA_LIB_DIR__."/Zend/Currency.php");
 	
 	class WLPlugCurrencyConversionEuroBank Extends BaseCurrencyConversionPlugIn implements IWLPlugCurrencyConversion {
 		# ------------------------------------------------

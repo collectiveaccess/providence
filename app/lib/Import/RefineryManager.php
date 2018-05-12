@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Import/RefineryManager.php : 
+ * app/lib/Import/RefineryManager.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
  
 	class RefineryManager {
 		# -------------------------------------------------------

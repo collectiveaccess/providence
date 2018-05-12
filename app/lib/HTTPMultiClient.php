@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/HTTPMultiClient.php : 
+ * app/lib/HTTPMultiClient.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,7 +35,7 @@
   */
   
   include_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
-  include_once(__CA_LIB_DIR__.'/core/HTTPMultiClientResult.php');
+  include_once(__CA_LIB_DIR__.'/HTTPMultiClientResult.php');
 	
 class HTTPMultiClient {
 	# -------------------------------------------------------------------

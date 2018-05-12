@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.displaytemplateparser.js
+ * js/ca.displaytemplateparser.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

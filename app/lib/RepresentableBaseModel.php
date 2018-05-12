@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/RepresentableBaseModel.php :
+ * app/lib/RepresentableBaseModel.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+ require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  
 	class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/GeographicMap/BaseGeographicMapPlugIn.php : base class for geographic map plugins
+ * app/lib/Plugins/GeographicMap/BaseGeographicMapPlugIn.php : base class for geographic map plugins
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,10 +34,10 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugGeographicMap.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
-include_once(__CA_LIB_DIR__."/core/GeographicMap.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugGeographicMap.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
+include_once(__CA_LIB_DIR__."/GeographicMap.php");
 include_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 
 abstract class BaseGeographicMapPlugIn Extends WLPlug {

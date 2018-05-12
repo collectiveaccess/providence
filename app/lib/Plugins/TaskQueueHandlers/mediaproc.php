@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/TaskQueueHandlers/mediaproc.php :
+ * app/lib/Plugins/TaskQueueHandlers/mediaproc.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,14 +38,14 @@
  * TaskQueue handler plugin for deferred processing of uploaded media in FT_MEDIA fields
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugTaskQueueHandler.php");
-include_once(__CA_LIB_DIR__."/core/Media.php");
-include_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
-include_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
+include_once(__CA_LIB_DIR__."/Media.php");
+include_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
+include_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
+include_once(__CA_LIB_DIR__."/Datamodel.php");
+include_once(__CA_LIB_DIR__."/ApplicationError.php");
+include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 	
 	class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueueHandler {
 		# --------------------------------------------------------------------------------

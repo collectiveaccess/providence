@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Search/SearchEngine.php : Base class for searches
+ * app/lib/Search/SearchEngine.php : Base class for searches
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -29,20 +29,20 @@
 # ----------------------------------------------------------------------
 # --- Import classes
 # ----------------------------------------------------------------------
-require_once(__CA_LIB_DIR__."/core/Search/SearchBase.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
-require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
-require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
-require_once(__CA_LIB_DIR__."/core/Search/SearchCache.php");
-require_once(__CA_LIB_DIR__."/core/Logging/Searchlog.php");
-require_once(__CA_LIB_DIR__."/core/Utils/Timer.php");
+require_once(__CA_LIB_DIR__."/Search/SearchBase.php");
+require_once(__CA_LIB_DIR__."/Zend/Search/Lucene.php");
+require_once(__CA_LIB_DIR__."/Plugins/SearchEngine/CachedResult.php");
+require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
+require_once(__CA_LIB_DIR__."/Search/SearchResult.php");
+require_once(__CA_LIB_DIR__."/Search/SearchCache.php");
+require_once(__CA_LIB_DIR__."/Logging/Searchlog.php");
+require_once(__CA_LIB_DIR__."/Utils/Timer.php");
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 
-require_once(__CA_LIB_DIR__."/core/Search/Common/Parsers/LuceneSyntaxParser.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Search/Query.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Search/Query/Boolean.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Search/Query/Term.php");
+require_once(__CA_LIB_DIR__."/Search/Common/Parsers/LuceneSyntaxParser.php");
+require_once(__CA_LIB_DIR__."/Zend/Search/Lucene/Search/Query.php");
+require_once(__CA_LIB_DIR__."/Zend/Search/Lucene/Search/Query/Boolean.php");
+require_once(__CA_LIB_DIR__."/Zend/Search/Lucene/Search/Query/Term.php");
 
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');
@@ -1016,10 +1016,10 @@ class SearchEngine extends SearchBase {
 	public static function checkPluginConfiguration() {
 		$o_config = Configuration::load();
 		$ps_plugin_name = $o_config->get('search_engine_plugin');
-		if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php')) {
+		if (!file_exists(__CA_LIB_DIR__.'/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php')) {
 			return null;
 		}
-		require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php');
+		require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php');
 		$ps_classname = $ps_plugin_name."ConfigurationSettings";
 
 		return new $ps_classname;
@@ -1033,10 +1033,10 @@ class SearchEngine extends SearchBase {
 	public static function getPluginEngineName() {
 		$o_config = Configuration::load();
 		$ps_plugin_name = $o_config->get('search_engine_plugin');
-		if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php')) {
+		if (!file_exists(__CA_LIB_DIR__.'/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php')) {
 			return null;
 		}
-		require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php');
+		require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/'.$ps_plugin_name.'ConfigurationSettings.php');
 		$ps_classname = $ps_plugin_name."ConfigurationSettings";
 		$o_instance = new $ps_classname;
 		return $o_instance->getEngineName();
@@ -1066,7 +1066,7 @@ class SearchEngine extends SearchBase {
 		$o_dm = Datamodel::load();
 		
 		if (!($ps_plugin_name = $o_config->get('search_engine_plugin'))) { return null; }
-		if (!@require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'.php')) { return null; }
+		if (!@require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/'.$ps_plugin_name.'.php')) { return null; }
 		$ps_classname = 'WLPlugSearchEngine'.$ps_plugin_name;
 		if (!($o_engine =  new $ps_classname)) { return null; }
 	

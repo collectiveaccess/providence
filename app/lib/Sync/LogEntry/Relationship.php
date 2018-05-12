@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Sync/LogEntry/Relationship.php
+ * app/lib/Sync/LogEntry/Relationship.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@ namespace CA\Sync\LogEntry;
 
 use Hoa\Core\Exception\Exception;
 
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
 
 class Relationship extends Base {
 

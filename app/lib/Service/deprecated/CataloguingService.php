@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/CataloguingService.php
+ * app/lib/Service/CataloguingService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
-require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+require_once(__CA_LIB_DIR__."/Service/BaseService.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
 
 class CataloguingService extends BaseService {
 	# -------------------------------------------------------

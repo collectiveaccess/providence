@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/DeduplicateBaseModel.php :
+ * app/lib/DeduplicateBaseModel.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/PDFRenderer/domPDF.php : renders HTML as PDF using domPDF
+ * app/lib/Plugins/PDFRenderer/domPDF.php : renders HTML as PDF using domPDF
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 use Dompdf\Dompdf;

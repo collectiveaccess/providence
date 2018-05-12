@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseBrowseController.php : base controller for browse interface
+ * app/lib/BaseBrowseController.php : base controller for browse interface
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-	require_once(__CA_LIB_DIR__."/ca/BaseFindController.php");
-	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+	require_once(__CA_LIB_DIR__."/BaseFindController.php");
+	require_once(__CA_LIB_DIR__."/Datamodel.php");
 	require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
  	require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');

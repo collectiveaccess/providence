@@ -1,6 +1,6 @@
  <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/MediaReplication/WLPlugMediaReplicationVimeo.php : replicates media to Vimeo
+ * app/lib/Plugins/MediaReplication/WLPlugMediaReplicationVimeo.php : replicates media to Vimeo
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,12 +34,12 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
+include_once(__CA_LIB_DIR__."/Parsers/getid3/getid3.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMediaReplication.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/MediaReplication/BaseMediaReplicationPlugin.php");
-include_once(__CA_LIB_DIR__."/core/Vimeo/vimeo.php");
-require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMediaReplication.php");
+include_once(__CA_LIB_DIR__."/Plugins/MediaReplication/BaseMediaReplicationPlugin.php");
+include_once(__CA_LIB_DIR__."/Vimeo/vimeo.php");
+require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 
 class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	# ------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Export/ExportRefineryManager.php : 
+ * app/lib/Export/ExportRefineryManager.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportRefinery.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/Export/BaseExportRefinery.php');
  
 	class ExportRefineryManager {
 		# -------------------------------------------------------
@@ -59,7 +59,7 @@
 			if (ExportRefineryManager::$s_did_do_refinery_init) { return true; }
 			
 			$o_config = Configuration::load();
-			$vs_base_refinery_dir = __CA_LIB_DIR__.'/ca/Export/ExportRefineries';
+			$vs_base_refinery_dir = __CA_LIB_DIR__.'/Export/ExportRefineries';
 			
 			$va_refinery_dirs = ExportRefineryManager::getRefineryNames();
 			foreach($va_refinery_dirs as $vs_refinery_dir) {
@@ -97,7 +97,7 @@
 		 * Returns names of all refineries
 		 */
 		public static function getRefineryNames() {
-			$vs_base_refinery_dir = __CA_LIB_DIR__.'/ca/Export/ExportRefineries';
+			$vs_base_refinery_dir = __CA_LIB_DIR__.'/Export/ExportRefineries';
 			
 			$va_refinery_dirs = array();
 			if (is_resource($r_dir = opendir($vs_base_refinery_dir))) {

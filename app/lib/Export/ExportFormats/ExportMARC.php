@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
+require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 
 class ExportMARC extends BaseExportFormat {
 	# ------------------------------------------------------

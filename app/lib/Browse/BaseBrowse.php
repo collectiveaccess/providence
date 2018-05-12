@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/BaseBrowse.php : Base class for ca_* browses
+ * app/lib/Browse/BaseBrowse.php : Base class for ca_* browses
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
   
-include_once(__CA_LIB_DIR__."/ca/Browse/BrowseEngine.php");
+include_once(__CA_LIB_DIR__."/Browse/BrowseEngine.php");
   
 	class BaseBrowse extends BrowseEngine {
 		# -------------------------------------------------------

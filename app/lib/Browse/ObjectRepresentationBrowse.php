@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/ObjectRepresentationBrowse.php : ca_objects faceted browse
+ * app/lib/Browse/ObjectRepresentationBrowse.php : ca_objects faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/ObjectRepresentationBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/ObjectRepresentationBrowseResult.php');
  
 	class ObjectRepresentationBrowse extends BaseBrowse {
 		# ------------------------------------------------------

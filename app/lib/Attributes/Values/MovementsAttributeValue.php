@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/MovementsAttributeValue.php : 
+ * app/lib/Attributes/Values/MovementsAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,7 +35,7 @@
   */
   	define("__CA_ATTRIBUTE_VALUE_MOVEMENTS__", 28);
   	
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_MODELS_DIR__.'/ca_movements.php');
  
  	global $_ca_attribute_settings;

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/GenericVersionUpdater.php : 
+ * app/lib/GenericVersionUpdater.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/ca/BaseVersionUpdater.php');
+ require_once(__CA_LIB_DIR__.'/BaseVersionUpdater.php');
  
 	class GenericVersionUpdater extends BaseVersionUpdater {
 		# -------------------------------------------------------

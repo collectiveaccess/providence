@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/IAttributeValue.php : 
+ * app/lib/Attributes/Values/IAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  	
- 	require_once(__CA_LIB_DIR__.'/core/Error/IErrorSetter.php');
+ 	require_once(__CA_LIB_DIR__.'/Error/IErrorSetter.php');
  
 	interface IAttributeValue extends IErrorSetter {
 		// $pa_value_array is used to initialize the value object by calling loadValueFromRow() and

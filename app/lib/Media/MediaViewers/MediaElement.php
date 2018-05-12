@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/MediaViewers/MediaElement.php :
+ * app/lib/Media/MediaViewers/MediaElement.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
  *
  */
  
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/core/Media/IMediaViewer.php');
-	require_once(__CA_LIB_DIR__.'/core/Media/BaseMediaViewer.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+	require_once(__CA_LIB_DIR__.'/Media/IMediaViewer.php');
+	require_once(__CA_LIB_DIR__.'/Media/BaseMediaViewer.php');
  
 	class MediaElement extends BaseMediaViewer implements IMediaViewer {
 		# -------------------------------------------------------

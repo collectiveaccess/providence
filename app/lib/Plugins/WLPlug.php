@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/WLPlug.php :
+ * app/lib/Plugins/WLPlug.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/BaseObject.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/BaseObject.php");
 
 class WLPlug extends BaseObject {
 	# ------------------------------------------------------------------------

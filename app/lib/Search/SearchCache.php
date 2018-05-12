@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Search/SearchCache.php : Caching for SearchEngine
+ * app/lib/Search/SearchCache.php : Caching for SearchEngine
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
+require_once(__CA_LIB_DIR__.'/Zend/Cache.php');
 
 class SearchCache {
 	# ------------------------------------------------------

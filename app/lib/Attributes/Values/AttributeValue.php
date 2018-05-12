@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/AttributeValue.php :
+ * app/lib/Attributes/Values/AttributeValue.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/BaseObject.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 
 abstract class AttributeValue extends BaseObject {

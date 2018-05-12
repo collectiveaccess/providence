@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/GeographicMapItem.php : class for map items (points and paths)
+ * app/lib/GeographicMapItem.php : class for map items (points and paths)
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

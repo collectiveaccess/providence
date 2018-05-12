@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/BaseObject.php :
+ * app/lib/BaseObject.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- 	require_once(__CA_LIB_DIR__.'/core/Error/IErrorSetter.php');
+ 	require_once(__CA_LIB_DIR__.'/Error/IErrorSetter.php');
  
 	class BaseObject implements IErrorSetter {
 		# ------------------------------------------------------------------

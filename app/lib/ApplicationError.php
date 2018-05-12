@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/ApplicationError.php : 
+ * app/lib/ApplicationError.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
 
 /**
  * Standard error handling class. Each Error instance represents a single error that has occurred.
@@ -146,10 +146,10 @@ class ApplicationError {
 			}
 		}
 		if (!$vs_error_definitions_loaded) {
-			$vs_error_definitions_loaded = $this->setErrorDefinitionFile(__CA_LIB_DIR__."/core/Error/errors.".$this->ops_locale);
+			$vs_error_definitions_loaded = $this->setErrorDefinitionFile(__CA_LIB_DIR__."/Error/errors.".$this->ops_locale);
 		}
 		if (!$vs_error_definitions_loaded) {
-			$vs_error_definitions_loaded = $this->setErrorDefinitionFile(__CA_LIB_DIR__."/core/Error/errors.en_us");
+			$vs_error_definitions_loaded = $this->setErrorDefinitionFile(__CA_LIB_DIR__."/Error/errors.en_us");
 		}
 		if (!$vs_error_definitions_loaded) {
 			die("Error.php: Couldn't load error definitions!\n");

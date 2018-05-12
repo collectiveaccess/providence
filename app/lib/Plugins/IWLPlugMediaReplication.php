@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugMediaReplication.php : interface for Media Replication classes
+ * app/lib/Plugins/IWLPlugMediaReplication.php : interface for Media Replication classes
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

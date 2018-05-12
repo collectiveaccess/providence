@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Controller/AppController.php :
+ * app/lib/Controller/AppController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
  
-include_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
-include_once(__CA_LIB_DIR__."/core/Controller/RequestDispatcher.php");
-include_once(__CA_LIB_DIR__."/core/Controller/ApplicationException.php");
+include_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
+include_once(__CA_LIB_DIR__."/Controller/RequestDispatcher.php");
+include_once(__CA_LIB_DIR__."/Controller/ApplicationException.php");
 
 global $g_app_controller;
 $g_app_controller = null;

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Search/SearchResult.php : implements interface to results from a search
+ * app/lib/Search/SearchResult.php : implements interface to results from a search
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -37,13 +37,13 @@
 # ----------------------------------------------------------------------
 # --- Import classes
 # ----------------------------------------------------------------------
-include_once(__CA_LIB_DIR__."/core/BaseObject.php");
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/Media/MediaInfoCoder.php");
-include_once(__CA_LIB_DIR__."/core/File/FileInfoCoder.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");
-include_once(__CA_LIB_DIR__."/core/ApplicationChangeLog.php");
+include_once(__CA_LIB_DIR__."/BaseObject.php");
+include_once(__CA_LIB_DIR__."/Datamodel.php");
+include_once(__CA_LIB_DIR__."/Media/MediaInfoCoder.php");
+include_once(__CA_LIB_DIR__."/File/FileInfoCoder.php");
+include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
+include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
+include_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
 include_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 

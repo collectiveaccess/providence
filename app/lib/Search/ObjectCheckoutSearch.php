@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/ObjectCheckoutSearch.php :
+ * app/lib/Search/ObjectCheckoutSearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-include_once(__CA_LIB_DIR__."/ca/Search/BaseSearch.php");
-include_once(__CA_LIB_DIR__."/ca/Search/ObjectCheckoutSearchResult.php");
+include_once(__CA_LIB_DIR__."/Search/BaseSearch.php");
+include_once(__CA_LIB_DIR__."/Search/ObjectCheckoutSearchResult.php");
 
 class ObjectCheckoutSearch extends BaseSearch {
 	# ----------------------------------------------------------------------

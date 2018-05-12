@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/IDNumbering/IDNumber.php : base class for id number processing plugins
+ * app/lib/IDNumbering/IDNumber.php : base class for id number processing plugins
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
   
-	require_once(__CA_LIB_DIR__."/core/Configuration.php");
-	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-	require_once(__CA_LIB_DIR__."/ca/IDNumbering/IIDNumbering.php");
+	require_once(__CA_LIB_DIR__."/Configuration.php");
+	require_once(__CA_LIB_DIR__."/Datamodel.php");
+	require_once(__CA_LIB_DIR__."/IDNumbering/IIDNumbering.php");
 	
 	abstract class IDNumber implements IIDNumbering {
 		# -------------------------------------------------------

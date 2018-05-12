@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/MediaVolumes.php :
+ * app/lib/Media/MediaVolumes.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
 
 $_MEDIA_VOLUME_INSTANCE_CACHE = null;
 

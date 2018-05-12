@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/Remote/Base.php
+ * app/lib/Media/Remote/Base.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,8 +32,8 @@
 
 namespace CA\Media\Remote;
 
-require_once(__CA_LIB_DIR__.'/core/Media/Remote/Flickr.php');
-require_once(__CA_LIB_DIR__.'/core/Media/Remote/File.php');
+require_once(__CA_LIB_DIR__.'/Media/Remote/Flickr.php');
+require_once(__CA_LIB_DIR__.'/Media/Remote/File.php');
 
 abstract class Base {
 

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/TimeExpressionParser.php : 
+ * app/lib/Parsers/TimeExpressionParser.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
 /**
  * Constant for expression that will parse as current date/time independent of current locale.
@@ -3127,9 +3127,9 @@ class TimeExpressionParser {
 	# Language
 	# -------------------------------------------------------------------
 	public function setLanguage($ps_iso_code) {
-		if (file_exists(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang')) {
+		if (file_exists(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang')) {
 			$this->ops_language = $ps_iso_code;
-			$this->opo_language_settings = Configuration::load(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang');
+			$this->opo_language_settings = Configuration::load(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang');
 			if (!$this->opo_language_settings->getAssoc('monthTable')) {
 				return false;
 			} 
@@ -3160,7 +3160,7 @@ class TimeExpressionParser {
 	 * @return Configuration Settings for the specified locale or null if the locale is not defined.
 	 */
 	static public function getSettingsForLanguage($ps_iso_code) {
-		$vs_config_path = __CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
+		$vs_config_path = __CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
 		if(!file_exists($vs_config_path)) { return null; }
 		
 		return Configuration::load($vs_config_path);

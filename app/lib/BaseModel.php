@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/BaseModel.php :
+ * app/lib/BaseModel.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -98,29 +98,29 @@ define("__CA_MEDIA_QUEUED_ICON__", 'queued');
 # ----------------------------------------------------------------------
 # --- Import classes
 # ----------------------------------------------------------------------
-require_once(__CA_LIB_DIR__."/core/BaseObject.php");
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/ApplicationChangeLog.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Media.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
-require_once(__CA_LIB_DIR__."/core/File.php");
-require_once(__CA_LIB_DIR__."/core/File/FileVolumes.php");
-require_once(__CA_LIB_DIR__."/core/Utils/Timer.php");
-require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
-require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
+require_once(__CA_LIB_DIR__."/BaseObject.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
+require_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
+require_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
+require_once(__CA_LIB_DIR__."/Db.php");
+require_once(__CA_LIB_DIR__."/Media.php");
+require_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
+require_once(__CA_LIB_DIR__."/File.php");
+require_once(__CA_LIB_DIR__."/File/FileVolumes.php");
+require_once(__CA_LIB_DIR__."/Utils/Timer.php");
+require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
+require_once(__CA_LIB_DIR__."/Db/Transaction.php");
+require_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
-require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
-require_once(__CA_LIB_DIR__.'/core/Media/Remote/Base.php');
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/MediaContentLocationIndexer.php");
+require_once(__CA_LIB_DIR__.'/MediaReplicator.php');
+require_once(__CA_LIB_DIR__.'/Media/Remote/Base.php');
 
 /**
  * Base class for all database table classes. Implements database insert/update/delete
@@ -12451,7 +12451,7 @@ $pa_options["display_form_field_tips"] = true;
 }
 
 // includes for which BaseModel must already be defined
-require_once(__CA_LIB_DIR__."/core/TaskQueue.php");
+require_once(__CA_LIB_DIR__."/TaskQueue.php");
 require_once(__CA_APP_DIR__.'/models/ca_lists.php');
 require_once(__CA_APP_DIR__.'/models/ca_guids.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/BaseFindEngine.php : base controller for all "find" operations (search & browse)
+ * app/lib/BaseFindEngine.php : base controller for all "find" operations (search & browse)
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
   /**
   *
   */
- 	require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseObject.php');
  	require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
  	
 	class BaseFindEngine extends BaseObject {

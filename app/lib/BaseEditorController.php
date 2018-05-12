@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseEditorController.php :
+ * app/lib/BaseEditorController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -40,14 +40,14 @@ require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 require_once(__CA_MODELS_DIR__."/ca_attributes.php");
 require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
 require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
-require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
-require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
-require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
-require_once(__CA_LIB_DIR__.'/core/Logging/Downloadlog.php');
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/ResultContext.php");
+require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
+require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');
+require_once(__CA_LIB_DIR__.'/Logging/Downloadlog.php');
 
 define('__CA_SAVE_AND_RETURN_STACK_SIZE__', 30);
 

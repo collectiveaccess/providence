@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Error/IErrorSetter.php : 
+ * app/lib/Error/IErrorSetter.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Controller/Request/NotificationManager.php :
+ * app/lib/Controller/Request/NotificationManager.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

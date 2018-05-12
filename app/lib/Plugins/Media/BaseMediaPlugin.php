@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Media/BaseMediaPlugin.php :
+ * app/lib/Plugins/Media/BaseMediaPlugin.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,8 +38,8 @@
  * Base media processing plugin
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 class BaseMediaPlugin extends WLPlug  {

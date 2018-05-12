@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugSearchEngine.php :
+ * app/lib/Plugins/IWLPlugSearchEngine.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

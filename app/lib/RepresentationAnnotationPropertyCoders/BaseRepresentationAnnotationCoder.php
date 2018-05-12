@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/RepresentationAnnotationPropertyCoders/BaseRepresentationAnnotationCoder.php : 
+ * app/lib/RepresentationAnnotationPropertyCoders/BaseRepresentationAnnotationCoder.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,9 +33,9 @@
  /**
   *
   */
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
- 	require_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/IRepresentationAnnotationPropertyCoder.php');
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseObject.php');
+ 	require_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/IRepresentationAnnotationPropertyCoder.php');
  	
 	abstract class BaseRepresentationAnnotationCoder extends BaseObject implements IRepresentationAnnotationPropertyCoder {
 		# ------------------------------------------------------------------

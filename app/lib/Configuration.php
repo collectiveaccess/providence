@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Configuration.php :
+ * app/lib/Configuration.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/Remote/File.php
+ * app/lib/Media/Remote/File.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,7 +32,7 @@
 
 namespace CA\Media\Remote;
 
-require_once(__CA_LIB_DIR__.'/core/Media/Remote/Base.php');
+require_once(__CA_LIB_DIR__.'/Media/Remote/Base.php');
 
 class File extends Base {
 

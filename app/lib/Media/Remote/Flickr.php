@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/Remote/Flickr.php
+ * app/lib/Media/Remote/Flickr.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,8 +32,8 @@
 
 namespace CA\Media\Remote;
 
-require_once(__CA_LIB_DIR__.'/core/Media/Remote/Base.php');
-require_once(__CA_LIB_DIR__.'/core/Flickr/phpFlickr.php');
+require_once(__CA_LIB_DIR__.'/Media/Remote/Base.php');
+require_once(__CA_LIB_DIR__.'/Flickr/phpFlickr.php');
 
 class Flickr extends Base {
 

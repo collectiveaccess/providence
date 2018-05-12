@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/StorageLocationsAttributeValue.php : 
+ * app/lib/Attributes/Values/StorageLocationsAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,7 +35,7 @@
   */
   	define("__CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__", 26);
   	
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
  
  	global $_ca_attribute_settings;

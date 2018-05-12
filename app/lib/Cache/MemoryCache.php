@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Cache/MemoryCache.php : provides fast in-memory caching
+ * app/lib/Cache/MemoryCache.php : provides fast in-memory caching
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

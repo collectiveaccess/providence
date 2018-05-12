@@ -26,20 +26,20 @@
  * ----------------------------------------------------------------------
  */
  	
- 	require_once(__CA_LIB_DIR__."/core/Configuration.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseFindController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectLotSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/EntitySearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/PlaceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/OccurrenceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/CollectionSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/StorageLocationSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/LoanSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/MovementSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/TourSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/TourStopSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/QuickSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Configuration.php");
+ 	require_once(__CA_LIB_DIR__."/BaseFindController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectLotSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/EntitySearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/PlaceSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/OccurrenceSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/CollectionSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/StorageLocationSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/LoanSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/MovementSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/TourSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/TourStopSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/QuickSearch.php");
  	
  	require_once(__CA_MODELS_DIR__."/ca_lists.php");
  	

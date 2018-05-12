@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/SMS.php : send SMS text messages
+ * app/lib/SMS.php : send SMS text messages
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
  /**
   *
   */
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
  
  class SMS {
  	# -------------------------------------------------------------------
@@ -68,9 +68,9 @@
  		$o_config = Configuration::load();
  		$vs_plugin_name = $o_config->get('sms_plugin');
  		
- 		if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/SMS/'.$vs_plugin_name.'.php')) { die("SMS plugin {$vs_plugin_name} does not exist"); }
+ 		if (!file_exists(__CA_LIB_DIR__.'/Plugins/SMS/'.$vs_plugin_name.'.php')) { die("SMS plugin {$vs_plugin_name} does not exist"); }
  		
- 		require_once(__CA_LIB_DIR__.'/core/Plugins/SMS/'.$vs_plugin_name.'.php');
+ 		require_once(__CA_LIB_DIR__.'/Plugins/SMS/'.$vs_plugin_name.'.php');
  		
  		$vs_plugin_classname = 'WLPlugSMS'.$vs_plugin_name;
  		SMS::$plugin = new $vs_plugin_classname;

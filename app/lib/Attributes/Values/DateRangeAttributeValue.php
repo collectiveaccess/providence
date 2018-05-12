@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/DateRangeAttributeValue.php : 
+ * app/lib/Attributes/Values/DateRangeAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,9 +35,9 @@
   */
   	define("__CA_ATTRIBUTE_VALUE_DATERANGE__", 2);
  	
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
  
  	global $_ca_attribute_settings;
  	

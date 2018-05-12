@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Controller/Response.php :
+ * app/lib/Controller/Response.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/RepresentationAnnotationPropertyCoders/TimeBasedRepresentationAnnotationCoder.php : 
+ * app/lib/RepresentationAnnotationPropertyCoders/TimeBasedRepresentationAnnotationCoder.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,9 +33,9 @@
  /**
   *
   */
- 	require_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/IRepresentationAnnotationPropertyCoder.php');
- 	require_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/BaseRepresentationAnnotationCoder.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimecodeParser.php');
+ 	require_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/IRepresentationAnnotationPropertyCoder.php');
+ 	require_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/BaseRepresentationAnnotationCoder.php');
+ 	require_once(__CA_LIB_DIR__.'/Parsers/TimecodeParser.php');
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  	
 	class TimeBasedRepresentationAnnotationCoder extends BaseRepresentationAnnotationCoder implements IRepresentationAnnotationPropertyCoder {

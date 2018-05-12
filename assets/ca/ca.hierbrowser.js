@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.hierbrowser.js
+ * js/ca.hierbrowser.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

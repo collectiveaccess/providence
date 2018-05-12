@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/ExpressionParser/ExpressionVisitor.php :
+ * app/lib/Parsers/ExpressionParser/ExpressionVisitor.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

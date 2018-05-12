@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/SearchService.php
+ * app/lib/Service/SearchService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
   
-require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
+require_once(__CA_LIB_DIR__."/Service/BaseService.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 
@@ -67,7 +67,7 @@ class SearchService extends BaseService {
 			throw new SoapFault("Server","Invalid type [{$type}]");
 		}
 
-		require_once(__CA_LIB_DIR__."/ca/Search/{$ps_class}.php");
+		require_once(__CA_LIB_DIR__."/Search/{$ps_class}.php");
 		require_once(__CA_MODELS_DIR__."/{$type}.php");
 		$vo_search = new $ps_class();
 		$t_instance = new $type();
@@ -133,7 +133,7 @@ class SearchService extends BaseService {
 			throw new SoapFault("Server","Invalid type [{$type}]");
 		}
 
-		require_once(__CA_LIB_DIR__."/ca/Search/{$ps_class}.php");
+		require_once(__CA_LIB_DIR__."/Search/{$ps_class}.php");
 		require_once(__CA_MODELS_DIR__."/{$type}.php");
 		$vo_search = new $ps_class();
 		$t_instance = new $type();

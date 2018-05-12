@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/OAIPMHService.php
+ * app/lib/Service/OAIPMHService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,8 +38,8 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
-require_once(__CA_LIB_DIR__."/ca/Export/OAIPMH/OaiIdentifier.php");
+require_once(__CA_LIB_DIR__."/Service/BaseService.php");
+require_once(__CA_LIB_DIR__."/Export/OAIPMH/OaiIdentifier.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");

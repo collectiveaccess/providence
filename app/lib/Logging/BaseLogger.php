@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Logging/BaseLogger.php :
+ * app/lib/Logging/BaseLogger.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,11 +34,11 @@
   *
   */
  
-include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/Db.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
+include_once(__CA_LIB_DIR__."/ApplicationError.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
+include_once(__CA_LIB_DIR__."/Datamodel.php");
+include_once(__CA_LIB_DIR__."/Db.php");
+include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
 
 
 class BaseLogger {

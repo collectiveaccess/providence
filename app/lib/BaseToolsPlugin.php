@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseToolsPlugin.php : 
+ * app/lib/BaseToolsPlugin.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__.'/ca/BaseApplicationPlugin.php');
+require_once(__CA_LIB_DIR__.'/BaseApplicationPlugin.php');
  
 	abstract class BaseToolsPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------

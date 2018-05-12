@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Logging/Eventlog.php :
+ * app/lib/Logging/Eventlog.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-include_once(__CA_LIB_DIR__."/core/Logging/BaseLogger.php");
+include_once(__CA_LIB_DIR__."/Logging/BaseLogger.php");
 
 # ----------------------------------------------------------------------
 class Eventlog extends BaseLogger {

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db.php : 
+ * app/lib/Db.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,13 +34,13 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Db/DbBase.php");
-require_once(__CA_LIB_DIR__."/core/Db/DbStatement.php");
-require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
+require_once(__CA_LIB_DIR__."/Db/DbBase.php");
+require_once(__CA_LIB_DIR__."/Db/DbStatement.php");
+require_once(__CA_LIB_DIR__."/Db/DbResult.php");
 
-require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/ApplicationError.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
 
 /**
  * Provides an abstracted interface to SQL databases.
@@ -137,7 +137,7 @@ class Db extends DbBase {
 		$vs_dbtype = $pa_options["type"];
 		$vs_dbclass = "Db_$vs_dbtype";
 		if (!is_a($this->opo_db, $vs_dbclass)) {
-			@require_once(__CA_LIB_DIR__."/core/Db/".$vs_dbtype.".php");
+			@require_once(__CA_LIB_DIR__."/Db/".$vs_dbtype.".php");
 			if (class_exists($vs_dbclass)) {
 				if (($this->opo_db = new $vs_dbclass())) {
 					if ($this->opo_db->connect($this, $pa_options)) {

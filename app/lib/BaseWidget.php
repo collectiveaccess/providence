@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseWidget.php : 
+ * app/lib/BaseWidget.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
  
-	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
+	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/ApplicationVars.php'); 	
  
 	abstract class BaseWidget implements IWidget {
 		# -------------------------------------------------------

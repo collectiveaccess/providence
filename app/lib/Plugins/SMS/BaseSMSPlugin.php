@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SMS/BaseSMSPlugIn.php : 
+ * app/lib/Plugins/SMS/BaseSMSPlugIn.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugSMS.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugSMS.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
 
 abstract class BaseSMSPlugIn Extends WLPlug {
 	// properties for this plugin instance

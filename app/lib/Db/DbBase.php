@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db/DbBase.php :
+ * app/lib/Db/DbBase.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
 
-require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
+require_once(__CA_LIB_DIR__.'/BaseObject.php');
 /**
  * Provides common error handling methods
  */

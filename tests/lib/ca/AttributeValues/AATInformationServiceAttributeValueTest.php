@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/AttributeValues/AATInformationServiceAttributeValueTest.php
+ * tests/lib/AttributeValues/AATInformationServiceAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

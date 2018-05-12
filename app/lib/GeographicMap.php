@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/GeographicMap.php : generates maps with user-provided data
+ * app/lib/GeographicMap.php : generates maps with user-provided data
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/core/GeographicMapItem.php');
+ require_once(__CA_LIB_DIR__.'/GeographicMapItem.php');
  
  class GeographicMap {
  	# -------------------------------------------------------------------
@@ -45,9 +45,9 @@
  		$o_config = Configuration::load();
  		$vs_plugin_name = $o_config->get('mapping_plugin');
  		
- 		if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/GeographicMap/'.$vs_plugin_name.'.php')) { throw new ApplicationException("Mapping plugin {$vs_plugin_name} does not exist"); }
+ 		if (!file_exists(__CA_LIB_DIR__.'/Plugins/GeographicMap/'.$vs_plugin_name.'.php')) { throw new ApplicationException("Mapping plugin {$vs_plugin_name} does not exist"); }
  		
- 		require_once(__CA_LIB_DIR__.'/core/Plugins/GeographicMap/'.$vs_plugin_name.'.php');
+ 		require_once(__CA_LIB_DIR__.'/Plugins/GeographicMap/'.$vs_plugin_name.'.php');
  		$vs_plugin_classname = 'WLPlugGeographicMap'.$vs_plugin_name;
  		$this->opo_mapping_engine = new $vs_plugin_classname;
  		$this->opo_mapping_engine->setDimensions($pn_width, $pn_height);

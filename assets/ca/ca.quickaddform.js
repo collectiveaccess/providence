@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.quickaddform.js
+ * js/ca.quickaddform.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

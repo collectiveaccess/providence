@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Search/SearchIndexer.php : indexing of content for search
+ * app/lib/Search/SearchIndexer.php : indexing of content for search
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,11 +34,11 @@
  *
  */
 
-require_once(__CA_LIB_DIR__."/core/Search/SearchBase.php");
-require_once(__CA_LIB_DIR__.'/core/Utils/Graph.php');
-require_once(__CA_LIB_DIR__.'/core/Utils/Timer.php');
-require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
+require_once(__CA_LIB_DIR__."/Search/SearchBase.php");
+require_once(__CA_LIB_DIR__.'/Utils/Graph.php');
+require_once(__CA_LIB_DIR__.'/Utils/Timer.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIProgressBar.php');
+require_once(__CA_LIB_DIR__.'/Zend/Cache.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Visualizer/WLPlugVisualizerMap.php : visualizes data as a map 
+ * app/lib/Plugins/Visualizer/WLPlugVisualizerMap.php : visualizes data as a map 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugGeographicMap.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/Visualizer/BaseVisualizerPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugGeographicMap.php");
+include_once(__CA_LIB_DIR__."/Plugins/Visualizer/BaseVisualizerPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 
 class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisualizer {

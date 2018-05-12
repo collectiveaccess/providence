@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Sync/LogEntry/Base.php
+ * app/lib/Sync/LogEntry/Base.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,12 +32,12 @@
 
 namespace CA\Sync\LogEntry;
 
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Attribute.php');
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/AttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Bundlable.php');
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Relationship.php');
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Label.php');
-require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Representation.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Attribute.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Bundlable.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Relationship.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Label.php');
+require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Representation.php');
 
 abstract class Base {
 

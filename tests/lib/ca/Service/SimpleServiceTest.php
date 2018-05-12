@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/Service/SimpleServiceTest.php
+ * tests/lib/Service/SimpleServiceTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@
  */
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
-require_once(__CA_LIB_DIR__.'/ca/Service/SimpleService.php');
+require_once(__CA_LIB_DIR__.'/Service/SimpleService.php');
 
 /**
  * Class SimpleServiceTest

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseRepresentationRelationship.php :
+ * app/lib/BaseRepresentationRelationship.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+ require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  
 	class BaseRepresentationRelationship extends BaseRelationshipModel {

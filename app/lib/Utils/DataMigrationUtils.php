@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Utils/DataMigrationUtils.php :
+ * app/lib/Utils/DataMigrationUtils.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -548,7 +548,7 @@
 			}
 			if (!$vs_locale && defined('__CA_DEFAULT_LOCALE__')) { $vs_locale = __CA_DEFAULT_LOCALE__; }
 		
-			if (file_exists($vs_lang_filepath = __CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils/'.$vs_locale.'.lang')) {
+			if (file_exists($vs_lang_filepath = __CA_LIB_DIR__.'/Utils/DataMigrationUtils/'.$vs_locale.'.lang')) {
 				/** @var Configuration $o_config */
 				$o_config = Configuration::load($vs_lang_filepath);
 				$va_titles = $o_config->getList('titles');

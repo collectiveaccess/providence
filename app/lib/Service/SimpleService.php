@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/SimpleService.php
+ * app/lib/Service/SimpleService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/ca/Browse/BrowseEngine.php");
+require_once(__CA_LIB_DIR__."/Browse/BrowseEngine.php");
 require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");
 
 class SimpleService {

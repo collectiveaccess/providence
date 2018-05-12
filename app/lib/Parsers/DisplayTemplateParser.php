@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/DisplayTemplateParser.php : 
+ * app/lib/Parsers/DisplayTemplateParser.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
  
-require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
 
  
 class DisplayTemplateParser {

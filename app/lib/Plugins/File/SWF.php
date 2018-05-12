@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/File/SWF.php :
+ * app/lib/Plugins/File/SWF.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -39,8 +39,8 @@
  * File format plugin that attempts to detect SWF (Flash) files
  */
  
-require_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugFileFormat.php");
+require_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugFileFormat.php");
 
 class WLPlugFileSWF Extends WLPlug Implements IWLPlugFileFormat {
   var $errors = array();

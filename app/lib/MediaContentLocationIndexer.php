@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/MediaContentLocationIndexer.php :
+ * app/lib/MediaContentLocationIndexer.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,7 +38,7 @@
  * Base media processing plugin
  */
 
-include_once(__CA_LIB_DIR__."/core/Db.php");
+include_once(__CA_LIB_DIR__."/Db.php");
 
 class MediaContentLocationIndexer  {
 	# ------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/AttributeValues/TGNInformationServiceAttributeValueTest.php
+ * tests/lib/AttributeValues/TGNInformationServiceAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

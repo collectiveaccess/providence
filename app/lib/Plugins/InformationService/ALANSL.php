@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/ALANSL.php :
+ * app/lib/Plugins/InformationService/ALANSL.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -40,8 +40,8 @@ use Guzzle\Cache\DoctrineCacheAdapter;
 use Guzzle\Plugin\Cache\CachePlugin;
 use Guzzle\Plugin\Cache\DefaultCacheStorage;
 
-require_once(__CA_LIB_DIR__ . "/core/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__ . "/core/Plugins/InformationService/BaseInformationServicePlugin.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 global $g_information_service_settings_ala_nsl_search_fields;
 

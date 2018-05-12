@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/PlyToStl.php : converts 3d models in *.ply format to *.stl
+ * app/lib/Parsers/PlyToStl.php : converts 3d models in *.ply format to *.stl
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
  
-require_once(__CA_LIB_DIR__.'/core/Db.php');
+require_once(__CA_LIB_DIR__.'/Db.php');
  
 class PlyToStl {
 	# ------------------------------------------------

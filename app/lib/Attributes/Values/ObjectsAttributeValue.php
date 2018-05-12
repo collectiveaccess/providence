@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/ObjectsAttributeValue.php : 
+ * app/lib/Attributes/Values/ObjectsAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,7 +35,7 @@
   */
   	define("__CA_ATTRIBUTE_VALUE_OBJECTS__", 29);
   	
- 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
+ 	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  
  	global $_ca_attribute_settings;

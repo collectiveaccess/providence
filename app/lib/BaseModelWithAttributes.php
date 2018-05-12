@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/BaseModelWithAttributes.php :
+ * app/lib/BaseModelWithAttributes.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,13 +34,13 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/core/ITakesAttributes.php');
- require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
- require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
+ require_once(__CA_LIB_DIR__.'/ITakesAttributes.php');
+ require_once(__CA_LIB_DIR__.'/BaseModel.php');
+ require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
  require_once(__CA_APP_DIR__.'/models/ca_attributes.php');
  require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
  require_once(__CA_APP_DIR__.'/models/ca_metadata_type_restrictions.php');
- require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
+ require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
 
  
 	class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
@@ -2441,17 +2441,17 @@
 		 * @return int
 		 */
 		public static function getAuthorityElementDatatypeList() {
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CollectionsAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/EntitiesAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LoansAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/MovementsAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectLotsAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectsAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/OccurrencesAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/PlacesAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/StorageLocationsAttributeValue.php');
-			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ListAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/CollectionsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/EntitiesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/LoansAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/MovementsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectLotsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectRepresentationsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/OccurrencesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/PlacesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/StorageLocationsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/ListAttributeValue.php');
 			
 			return array(
 				'ca_objects' => __CA_ATTRIBUTE_VALUE_OBJECTS__, 'ca_object_lots' => __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, 'ca_entities' => __CA_ATTRIBUTE_VALUE_ENTITIES__, 'ca_places' => __CA_ATTRIBUTE_VALUE_PLACES__, 'ca_occurrences' => __CA_ATTRIBUTE_VALUE_OCCURRENCES__, 'ca_collections' => __CA_ATTRIBUTE_VALUE_COLLECTIONS__, 'ca_storage_locations' => __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__, 'ca_list_items' => __CA_ATTRIBUTE_VALUE_LIST__, 'ca_loans' => __CA_ATTRIBUTE_VALUE_LOANS__, 'ca_movements' => __CA_ATTRIBUTE_VALUE_MOVEMENTS__, 'ca_object_representations' => __CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__

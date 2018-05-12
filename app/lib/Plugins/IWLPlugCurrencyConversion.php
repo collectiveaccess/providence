@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugCurrencyConversion.php :
+ * app/lib/Plugins/IWLPlugCurrencyConversion.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/WLPlugInformationServiceWorldCat.php :
+ * app/lib/Plugins/InformationService/WLPlugInformationServiceWorldCat.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,9 +35,9 @@
     */
 
 
-require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Feed.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
+require_once(__CA_LIB_DIR__."/Zend/Feed.php");
 
 use Guzzle\Http\Client;
 

@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
+require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 require_once(__CA_MODELS_DIR__.'/ca_data_exporter_items.php');
 

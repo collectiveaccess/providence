@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Cache/CAFileSystemCache.php : extension of doctrine fs cache
+ * app/lib/Cache/CAFileSystemCache.php : extension of doctrine fs cache
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

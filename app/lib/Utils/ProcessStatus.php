@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Utils/ProcessStatus.php :
+ * app/lib/Utils/ProcessStatus.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

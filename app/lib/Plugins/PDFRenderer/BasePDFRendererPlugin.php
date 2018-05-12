@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/PDFRenderer/BasePDFRendererPlugin.php : base class for PDFRenderer plugins
+ * app/lib/Plugins/PDFRenderer/BasePDFRendererPlugin.php : base class for PDFRenderer plugins
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,10 +34,10 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugPDFRenderer.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
-include_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugPDFRenderer.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
+include_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 
 abstract class BasePDFRendererPlugin Extends WLPlug {
 	# ------------------------------------------------

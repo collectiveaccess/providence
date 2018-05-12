@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/GeographicMap/WLPlugGeographicMapGoogleMaps.php : generates maps via GoogleMaps API
+ * app/lib/Plugins/GeographicMap/WLPlugGeographicMapGoogleMaps.php : generates maps via GoogleMaps API
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugGeographicMap.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/GeographicMap/BaseGeographicMapPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugGeographicMap.php");
+include_once(__CA_LIB_DIR__."/Plugins/GeographicMap/BaseGeographicMapPlugin.php");
 
 class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements IWLPlugGeographicMap {
 	

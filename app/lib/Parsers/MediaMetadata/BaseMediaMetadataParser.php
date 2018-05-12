@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/MediaMetadata/XMPMediaMetadata.php : 
+ * app/lib/Parsers/MediaMetadata/XMPMediaMetadata.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

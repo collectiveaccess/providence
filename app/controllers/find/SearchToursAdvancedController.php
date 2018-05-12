@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseAdvancedSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/TourSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/TourBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseAdvancedSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/TourSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/TourBrowse.php");
 	require_once(__CA_MODELS_DIR__."/ca_tours.php");
  	
  	class SearchToursAdvancedController extends BaseAdvancedSearchController {

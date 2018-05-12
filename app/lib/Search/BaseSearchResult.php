@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Search/BaseSearchResult.php : Base class for ca_* search results
+ * app/lib/Search/BaseSearchResult.php : Base class for ca_* search results
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
   
- require_once(__CA_LIB_DIR__.'/core/Search/SearchResult.php');
+ require_once(__CA_LIB_DIR__.'/Search/SearchResult.php');
  require_once(__CA_MODELS_DIR__.'/ca_lists.php');
  require_once(__CA_MODELS_DIR__.'/ca_locales.php');
  

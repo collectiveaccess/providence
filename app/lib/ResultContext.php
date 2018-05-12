@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/ResultContext.php :
+ * app/lib/ResultContext.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
- 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
- 	require_once(__CA_LIB_DIR__.'/core/View.php');
+ 	require_once(__CA_LIB_DIR__.'/Controller/AppController/AppControllerPlugin.php');
+ 	require_once(__CA_LIB_DIR__.'/View.php');
  
 	class AjaxFooter extends AppControllerPlugin {
 		# -------------------------------------------------------

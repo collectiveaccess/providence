@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Attribute.php : 
+ * app/lib/Attributes/Attribute.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,27 +34,27 @@
   *
   */
  	
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ContainerAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/TextAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/DateRangeAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ListAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeocodeAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/UrlAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CurrencyAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LengthAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/WeightAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/TimeCodeAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IntegerAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/NumericAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LCSHAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeoNamesAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/FileAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/MediaAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/TaxonomyAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/InformationServiceAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/FloorplanAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ColorAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/ContainerAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/TextAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/DateRangeAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/ListAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/GeocodeAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/UrlAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/CurrencyAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/LengthAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/WeightAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/TimeCodeAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IntegerAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/NumericAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/LCSHAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/GeoNamesAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/FileAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/MediaAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/TaxonomyAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/InformationServiceAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/FloorplanAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/ColorAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
  
 	class Attribute {
  		# ------------------------------------------------------------------
@@ -179,12 +179,12 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  			
  			$va_types = Attribute::getAttributeTypes();
  			if (isset($va_types[$pn_datatype])) {
- 				// we look for a class in lib/ca/Attributes/Values with the datatype name + 'AttributeValue'
+ 				// we look for a class in lib/Attributes/Values with the datatype name + 'AttributeValue'
  				$vs_classname = $va_types[$pn_datatype].'AttributeValue';
  				
  				if(!class_exists($vs_classname)) {
- 					if (!file_exists(__CA_LIB_DIR__.'/ca/Attributes/Values/'.$vs_classname.'.php')) { return null; }
- 					include_once(__CA_LIB_DIR__.'/ca/Attributes/Values/'.$vs_classname.'.php');
+ 					if (!file_exists(__CA_LIB_DIR__.'/Attributes/Values/'.$vs_classname.'.php')) { return null; }
+ 					include_once(__CA_LIB_DIR__.'/Attributes/Values/'.$vs_classname.'.php');
  				}
  				return Attribute::$s_instance_cache[$pn_datatype] = new $vs_classname($pa_value_array);
  			}

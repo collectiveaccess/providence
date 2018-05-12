@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php :
+ * app/lib/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -36,13 +36,13 @@ define('__CA_ELASTICSEARCH_SETTING_RUNNING__',5001);
 /* does the index exist? */
 define('__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__',5002);
 # ------------------------------------------------
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Search/SearchBase.php');
-require_once(__CA_LIB_DIR__.'/core/Search/ASearchConfigurationSettings.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Http/Client.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Http/Response.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Search/SearchBase.php');
+require_once(__CA_LIB_DIR__.'/Search/ASearchConfigurationSettings.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
+require_once(__CA_LIB_DIR__.'/Zend/Http/Client.php');
+require_once(__CA_LIB_DIR__.'/Zend/Http/Response.php');
 # ------------------------------------------------
 class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------

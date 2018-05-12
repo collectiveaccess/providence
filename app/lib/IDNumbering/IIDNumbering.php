@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/IDNumbering/IIDNumbering.php : interface specification for id number plugin
+ * app/lib/IDNumbering/IIDNumbering.php : interface specification for id number plugin
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

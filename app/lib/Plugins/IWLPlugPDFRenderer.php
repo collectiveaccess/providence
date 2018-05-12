@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugPDFRenderer.php : interface for PDFRenderer classes
+ * app/lib/Plugins/IWLPlugPDFRenderer.php : interface for PDFRenderer classes
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

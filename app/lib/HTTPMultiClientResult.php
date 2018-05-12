@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/HTTPMultiClientResult.php : 
+ * app/lib/HTTPMultiClientResult.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

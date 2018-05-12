@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Search/Common/Language/LanguageDetection.php : 
+ * app/lib/Search/Common/Language/LanguageDetection.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -66,13 +66,13 @@ class LanguageDetection {
 		
 		if (is_array($LANGUAGE_DETECTION_LM_DATA) && sizeof($LANGUAGE_DETECTION_LM_DATA) > 0) { return true; }
 		
-		if ($r_dir = opendir(__CA_LIB_DIR__.'/core/Search/Common/Language/fingerprints')) {
+		if ($r_dir = opendir(__CA_LIB_DIR__.'/Search/Common/Language/fingerprints')) {
 		
 			$LANGUAGE_DETECTION_LM_DATA = array();
 			while (false !== ($vs_filename = readdir($r_dir))) {
-				if (is_file(__CA_LIB_DIR__.'/core/Search/Common/Language/fingerprints/'.$vs_filename) && ($vs_filename[0] != '.')) {
+				if (is_file(__CA_LIB_DIR__.'/Search/Common/Language/fingerprints/'.$vs_filename) && ($vs_filename[0] != '.')) {
 					$vs_language = basename($vs_filename, ".lm");
-					$r_file = fopen(__CA_LIB_DIR__.'/core/Search/Common/Language/fingerprints/'.$vs_filename, 'r');
+					$r_file = fopen(__CA_LIB_DIR__.'/Search/Common/Language/fingerprints/'.$vs_filename, 'r');
 					for ($vn_i=0; $vn_i < $this->opn_num_ngram_in_lm; $vn_i++) {
 						$vs_line = fgets($r_file);
 						$va_parts = explode(" ", $vs_line);

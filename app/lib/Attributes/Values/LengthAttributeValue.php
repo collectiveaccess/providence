@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/LengthAttributeValue.php : 
+ * app/lib/Attributes/Values/LengthAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,10 +35,10 @@
   */
 define("__CA_ATTRIBUTE_VALUE_LENGTH__", 8);
 
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
-require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');	
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');	
 
 global $_ca_attribute_settings;
 

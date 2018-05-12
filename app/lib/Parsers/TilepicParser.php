@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/TilepicParser.php : 
+ * app/lib/Parsers/TilepicParser.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/Utils/Timer.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/Utils/Timer.php");
+include_once(__CA_LIB_DIR__."/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 define("LIBRARY_GD", 0);

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/BrowseService.php
+ * app/lib/Service/BrowseService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
-require_once(__CA_LIB_DIR__."/ca/Browse/BrowseEngine.php");
+require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
+require_once(__CA_LIB_DIR__."/Browse/BrowseEngine.php");
 
 class BrowseService extends BaseJSONService {
 	# -------------------------------------------------------
@@ -174,7 +174,7 @@ class BrowseService extends BaseJSONService {
 	# --------------------------------------------------
 	private function initBrowseWithUserFacets() {
 		$ps_class = $this->mapTypeToSearchClassName($this->getTableName());
-		require_once(__CA_LIB_DIR__."/ca/Browse/{$ps_class}.php");
+		require_once(__CA_LIB_DIR__."/Browse/{$ps_class}.php");
 
 		$o_browse = new $ps_class();
 		$va_post = $this->getRequestBodyArray();

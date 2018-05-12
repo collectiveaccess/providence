@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Parsers/ExpressionParser.php : 
+ * app/lib/Parsers/ExpressionParser.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser/ExpressionVisitor.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser/ExpressionVisitor.php');
 
 class ExpressionParser {
 
@@ -58,7 +58,7 @@ class ExpressionParser {
 
 		if(!self::$s_compiler) {
 			self::$s_compiler = Hoa\Compiler\Llk::load(
-				new Hoa\File\Read(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser/ExpressionGrammar.pp')
+				new Hoa\File\Read(__CA_LIB_DIR__.'/Parsers/ExpressionParser/ExpressionGrammar.pp')
 			);
 		}
 		if(!self::$s_visitor) {

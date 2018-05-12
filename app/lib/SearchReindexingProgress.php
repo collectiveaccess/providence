@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/SearchReindexingProgress.php : AppController plugin to add page shell around content
+ * app/lib/SearchReindexingProgress.php : AppController plugin to add page shell around content
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -36,7 +36,7 @@
   * after the web UI page has been sent to the client
   */
  
- 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
+ 	require_once(__CA_LIB_DIR__.'/Controller/AppController/AppControllerPlugin.php');
  
 	class SearchReindexingProgress extends AppControllerPlugin {
 		# -------------------------------------------------------

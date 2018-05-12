@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Browse/ObjectLotBrowse.php : ca_object_lots faceted browse
+ * app/lib/Browse/ObjectLotBrowse.php : ca_object_lots faceted browse
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,8 +34,8 @@
   *
   */
   
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Browse/ObjectLotBrowseResult.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+ 	require_once(__CA_LIB_DIR__.'/Browse/ObjectLotBrowseResult.php');
  
 	class ObjectLotBrowse extends BaseBrowse {
 		# ------------------------------------------------------

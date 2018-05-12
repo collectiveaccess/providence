@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/Wikipedia.php :
+ * app/lib/Plugins/InformationService/Wikipedia.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,8 +35,8 @@
     */ 
     
     
-require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 global $g_information_service_settings_Wikipedia;
 $g_information_service_settings_Wikipedia = array(

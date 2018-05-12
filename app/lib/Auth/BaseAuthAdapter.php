@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/BaseAuthAdapter.php : base class for authentication adapters
+ * app/lib/Auth/BaseAuthAdapter.php : base class for authentication adapters
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Auth/IAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/Auth/IAuthAdapter.php');
 
 abstract class BaseAuthAdapter implements IAuthAdapter {
 

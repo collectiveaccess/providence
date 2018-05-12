@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/File/FileMimeTypes.php : 
+ * app/lib/File/FileMimeTypes.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

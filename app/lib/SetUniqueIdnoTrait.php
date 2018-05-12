@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/SetUniqueIdnoTrait.php : 
+ * app/lib/SetUniqueIdnoTrait.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

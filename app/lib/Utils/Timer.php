@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Utils/Timer.php :
+ * app/lib/Utils/Timer.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/InformationServiceManager.php.php : 
+ * app/lib/InformationServiceManager.php.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
   *
   */
  
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
  
 	class InformationServiceManager {
 		# -------------------------------------------------------
@@ -60,7 +60,7 @@
 		public static function initInformationServices() {
 			if (InformationServiceManager::$s_information_service_manager_did_do_init) { return true; }
 			
-			$vs_base_service_dir = __CA_LIB_DIR__.'/core/Plugins/InformationService';
+			$vs_base_service_dir = __CA_LIB_DIR__.'/Plugins/InformationService';
 			
 			$va_services = InformationServiceManager::getInformationServiceNames();
 			foreach($va_services as $vs_service) {
@@ -98,7 +98,7 @@
 		 * Returns names of all readers
 		 */
 		public static function getInformationServiceNames() {
-			$vs_base_service_dir = __CA_LIB_DIR__.'/core/Plugins/InformationService';
+			$vs_base_service_dir = __CA_LIB_DIR__.'/Plugins/InformationService';
 			
 			$va_services = array();
 			if (is_resource($r_dir = opendir($vs_base_service_dir))) {

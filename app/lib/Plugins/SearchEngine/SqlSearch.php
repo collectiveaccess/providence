@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/SqlSearch.php :
+ * app/lib/Plugins/SearchEngine/SqlSearch.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,17 +34,17 @@
   *
   */
 
- require_once(__CA_LIB_DIR__.'/core/Db.php');
- require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
- require_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
- require_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngine.php');
- require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/SqlSearchResult.php'); 
- require_once(__CA_LIB_DIR__.'/core/Search/Common/Stemmer/SnoballStemmer.php');
- require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+ require_once(__CA_LIB_DIR__.'/Db.php');
+ require_once(__CA_LIB_DIR__.'/Configuration.php');
+ require_once(__CA_LIB_DIR__.'/Datamodel.php');
+ require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+ require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
+ require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearchResult.php'); 
+ require_once(__CA_LIB_DIR__.'/Search/Common/Stemmer/SnoballStemmer.php');
+ require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
  require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
- require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
+ require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/BaseSearchPlugin.php');
 
 class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------

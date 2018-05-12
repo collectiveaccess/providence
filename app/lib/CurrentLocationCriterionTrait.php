@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/CurrentLocationCriterionTrait.php : 
+ * app/lib/CurrentLocationCriterionTrait.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

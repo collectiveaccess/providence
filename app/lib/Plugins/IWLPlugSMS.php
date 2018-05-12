@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugSMS.php : interface for SMS classes
+ * app/lib/Plugins/IWLPlugSMS.php : interface for SMS classes
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

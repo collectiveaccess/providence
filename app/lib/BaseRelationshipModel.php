@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/BaseRelationshipModel.php :
+ * app/lib/BaseRelationshipModel.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,8 +33,8 @@
  /**
   *
   */
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_LIB_DIR__.'/core/IRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/IRelationshipModel.php');
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');

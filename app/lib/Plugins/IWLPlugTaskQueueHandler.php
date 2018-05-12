@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugTaskQueueHandler.php :
+ * app/lib/Plugins/IWLPlugTaskQueueHandler.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

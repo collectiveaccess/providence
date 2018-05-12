@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/WLPlugInformationServiceCollectiveAccess.php :
+ * app/lib/Plugins/InformationService/WLPlugInformationServiceCollectiveAccess.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,8 +35,8 @@
     */
 
 
-require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 use Guzzle\Http\Client;
 

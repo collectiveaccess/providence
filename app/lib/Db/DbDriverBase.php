@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db/DbDriverBase.php :
+ * app/lib/Db/DbDriverBase.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

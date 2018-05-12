@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Search/SearchBase.php : Base class for search
+ * app/lib/Search/SearchBase.php : Base class for search
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,10 +34,10 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/BaseFindEngine.php");
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
+require_once(__CA_LIB_DIR__."/BaseFindEngine.php");
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/Db.php");
 	
 	class SearchBase extends BaseFindEngine {
 		# ------------------------------------------------
@@ -82,9 +82,9 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				$o_config = Configuration::load();
 				$ps_plugin_name = $o_config->get('search_engine_plugin');
 			}
-			if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'.php')) { return null; }
+			if (!file_exists(__CA_LIB_DIR__.'/Plugins/SearchEngine/'.$ps_plugin_name.'.php')) { return null; }
 			
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'.php');
+			require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/'.$ps_plugin_name.'.php');
 			
 			$ps_classname = 'WLPlugSearchEngine'.$ps_plugin_name;
 			return new $ps_classname($po_db);

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/IAuthAdapter.php : interface for authentication adapters
+ * app/lib/Auth/IAuthAdapter.php : interface for authentication adapters
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

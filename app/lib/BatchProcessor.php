@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BatchProcessor.php :
+ * app/lib/BatchProcessor.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -39,13 +39,13 @@
  	require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
-	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
-	require_once(__CA_LIB_DIR__."/core/Logging/Batchlog.php");
-	require_once(__CA_LIB_DIR__."/core/SMS.php");
-	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+ 	require_once(__CA_LIB_DIR__."/Datamodel.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
+	require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+	require_once(__CA_LIB_DIR__."/Logging/Batchlog.php");
+	require_once(__CA_LIB_DIR__."/SMS.php");
+	require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 
 	class BatchProcessor {
 		# ----------------------------------------

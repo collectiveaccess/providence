@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearchResult.php :
+ * app/lib/Plugins/SearchEngine/ElasticSearchResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,9 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
-include_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-include_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
-include_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngineResult.php');
+include_once(__CA_LIB_DIR__.'/Datamodel.php');
+include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
 
 class WLPlugSearchEngineElasticSearchResult extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
