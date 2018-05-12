@@ -34,13 +34,13 @@
    *
    */
    	
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
-require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
+require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 	# ------------------------------------------------------------------------------------------------
 	/**

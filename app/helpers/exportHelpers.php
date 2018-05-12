@@ -33,7 +33,7 @@
  /**
    *
    */
-	require_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
+	require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 	
    # ----------------------------------------
 	/**
