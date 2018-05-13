@@ -271,7 +271,10 @@ class Session {
 		if(isset($this->opa_session_vars['session_end_timestamp'])) {
 			$vn_session_lifetime = abs(((int) $this->opa_session_vars['session_end_timestamp']) - time());
 		} else {
-			$vn_session_lifetime = 24 * 60 * 60;
+			$vn_session_lifetime = 86400;	// 24 hours
+		}
+		if ($vn_session_lifetime > 31536000) {		// max 365 days
+			$vn_session_lifetime = 86400;
 		}
 		
 		// Get old vars
