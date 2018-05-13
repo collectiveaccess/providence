@@ -115,7 +115,6 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		if ($vn_cur_pos < 0) { $vn_cur_pos = 0; }
 		$po_data->seek(0);
 		
-		$o_dm = Datamodel::load();
 		
 		//
 		// Make sure sources actually exist
@@ -123,7 +122,7 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		$va_sources = $pa_viz_settings['sources'];
 		foreach($va_sources as $vs_source_code => $va_source_info) {
 			$va_tmp = explode('.', $va_source_info['data']);
-			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) { unset($va_sources[$vs_source_code]); continue; } 
+			if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { unset($va_sources[$vs_source_code]); continue; } 
 			if (!$t_instance->hasField($va_tmp[1]) && (!$t_instance->hasElement($va_tmp[1]))) { unset($va_sources[$vs_source_code]); }
 		}
 		

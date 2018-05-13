@@ -203,7 +203,6 @@ class ca_data_import_events extends BaseModel {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		$this->opo_datamodel = Datamodel::load();
 		
 		parent::__construct($pn_id);	# call superclass constructor
 	}
@@ -242,7 +241,7 @@ class ca_data_import_events extends BaseModel {
 			$vs_typecode = 'I';
 		}
 		
-		$vn_table_num = $this->opo_datamodel->getTableNum($pm_table_name_or_num);
+		$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		
 		$this->opo_data_import_item = new ca_data_import_items();
 		
@@ -345,7 +344,7 @@ class ca_data_import_events extends BaseModel {
 	 */
 	public function getLastUpdateTimestamp($pm_table_name_or_num, $pn_row_id) {
 		if (!($vn_event_id = $this->getPrimaryKey())) { return null; } 
-		$vn_table_num = $this->opo_datamodel->getTableNum((int)$pm_table_name_or_num);
+		$vn_table_num = Datamodel::getTableNum((int)$pm_table_name_or_num);
 		
 		$o_db = $this->getDb();
 		

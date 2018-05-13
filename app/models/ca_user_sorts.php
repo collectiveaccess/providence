@@ -322,7 +322,7 @@ class ca_user_sorts extends BaseModel {
 	# ------------------------------------------------------
 	public static function getAvailableSortsForTable($pn_table_num) {
 		if(!is_numeric($pn_table_num)) {
-			$pn_table_num = Datamodel::load()->getTableNum($pn_table_num);
+			$pn_table_num = Datamodel::getTableNum($pn_table_num);
 		}
 
 		if(!$pn_table_num) { return array(); }

@@ -980,8 +980,7 @@
 			    $t_val = new ca_attribute_values((int)$va_tmp[1]);
 			    if (!$t_val->isLoaded()) { return null; }
 			    $t_attr = new ca_attributes($t_val->get('attribute_id'));
-			    $o_dm = Datamodel::load();
-			    $vs_table_name  = $o_dm->getTableName($t_attr->get('table_num'));
+			    $vs_table_name  = Datamodel::getTableName($t_attr->get('table_num'));
 			    $vn_subject_id = (int)$t_attr->get('row_id');
 			    if (!($t_subject = $vs_table_name::find($vn_subject_id, $pa_options))) { return null; } // table::find() performs checkAccess
 			    
@@ -1034,8 +1033,7 @@
 	    
 	    $vs_table = isset($va_map[strtolower($ps_type)]) ? $va_map[strtolower($ps_type)] : null;
 	    if ($vs_table && caGetOption('returnInstance', $pa_options, false)) {
-	        $o_dm = Datamodel::load();
-	        return $o_dm->getInstanceByTableName($vs_table, true);
+	        return Datamodel::getInstanceByTableName($vs_table, true);
 	    } 
 	
 	    return $vs_table;

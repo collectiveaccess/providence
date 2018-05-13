@@ -561,8 +561,7 @@
 	function caGetPrintFormatsListAsHTMLForSetItemBundles($ps_id_prefix, $po_request, $pt_set, $pa_row_ids) {
 	    require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 	
-		$o_dm = Datamodel::load();
-		$vs_set_table = $o_dm->getTableName($pt_set->get("table_num"));
+		$vs_set_table = Datamodel::getTableName($pt_set->get("table_num"));
 		$va_formats = caGetAvailablePrintTemplates('sets', ['showOnlyIn' => 'set_item_bundle', 'table' => $vs_set_table, 'type' => null]);
 		
 		if(!is_array($va_formats) || (sizeof($va_formats) == 0)) { return ''; }

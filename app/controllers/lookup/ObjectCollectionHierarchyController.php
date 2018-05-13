@@ -228,7 +228,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 */
 	protected function GetHierarchyLevelData($pa_ids) {
 
-		$vo_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		$t_object = new ca_objects();
 
@@ -478,8 +477,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 * Returned data is JSON format
 	 */
 	public function GetHierarchyAncestorList() {
-		$vo_dm = Datamodel::load();
-
 		$pn_id = $this->request->getParameter('id', pString);
 
 		$va_params = $this->getItemIDComponents($pn_id, 'ca_objects');

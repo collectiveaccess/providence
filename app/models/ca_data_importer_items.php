@@ -554,7 +554,6 @@ class ca_data_importer_items extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public function getDestinationType() {
-		$vo_dm = Datamodel::load();
 		$vs_destination = $this->get("destination");
 		
 		$t_importer = new ca_data_importers($this->get("importer_id"));

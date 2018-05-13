@@ -42,9 +42,8 @@
 			$vs_table = $va_tmp[0];
 			$vs_field = $va_tmp[1];
 			
-			$o_dm = Datamodel::load();
 			
-			if (!($t_table = $o_dm->getInstanceByTableName($vs_table, true))) {
+			if (!($t_table = Datamodel::getInstanceByTableName($vs_table, true))) {
 				// bad table name
 				print _t("Invalid table name");
 				return null;

@@ -173,8 +173,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 			#
 			# Update record
 			#		
-			$o_dm =& Datamodel::load();
-			if ($table_obj = $o_dm->getTableInstance($table)) {
+			if ($table_obj = Datamodel::getInstance($table)) {
 				if ($table_obj->hasField($field)) {
 					if ($table_obj->load($id)) {
 						$md = $table_obj->get($field);

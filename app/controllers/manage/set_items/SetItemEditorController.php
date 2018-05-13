@@ -73,7 +73,7 @@
  				
  			if ($t_set_item->getPrimaryKey()) {
  				
- 				$t_row_instance = $this->opo_datamodel->getInstanceByTableNum($t_set->get('table_num'), true);
+ 				$t_row_instance = Datamodel::getInstanceByTableNum($t_set->get('table_num'), true);
  				$t_row_instance->load($t_set_item->get('row_id'));
  				
  				$this->view->setVar('t_row_instance', $t_row_instance);

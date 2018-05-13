@@ -60,7 +60,6 @@
  		 *
  		 */
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			$this->datamodel = Datamodel::load();
  			
  			$this->appConfig = Configuration::load();
  			

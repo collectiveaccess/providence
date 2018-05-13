@@ -60,7 +60,7 @@
 		
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');	
 		
-			$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, $this->getAppDatamodel()->getTableName($this->get('table_num'))));
+			$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
 			$o_view->setVar('t_subject', $this);
 			
 			$vn_object_id = ($this->getLeftTableName() == 'ca_objects') ? $this->get($this->getLeftTableFieldName()) : $this->get($this->getRightTableFieldName());

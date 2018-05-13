@@ -233,13 +233,6 @@ class BaseModel extends BaseObject {
 	protected $_TRANSLATIONS;
 
 	/**
-	 * local Datamodel object
-	 *
-	 * @access protected
-	 */
-	protected $_DATAMODEL = null;
-
-	/**
 	 * contains current Transaction object
 	 *
 	 * @access protected
@@ -401,7 +394,6 @@ class BaseModel extends BaseObject {
 		$this->field_conflicts = array();
 
 		$this->_CONFIG = Configuration::load();
-		$this->_DATAMODEL = Datamodel::load();
 		$this->_TRANSLATIONS = Configuration::load(__CA_CONF_DIR__."/translations.conf");
 		$this->_FILES_CLEAR = array();
 		$this->_SET_FILES = array();
@@ -459,16 +451,6 @@ class BaseModel extends BaseObject {
 	 */
 	public function getAppConfig() {
 		return $this->_CONFIG;
-	}
-	
-	/**
-	 * Convenience method to return application datamodel object. This is the same object
-	 * you'd get if you instantiated a Datamodel() object
-	 *
-	 * @return Datamodel
-	 */
-	public function getAppDatamodel() {
-		return $this->_DATAMODEL;
 	}
 	/**
 	 * Get character set from configuration file. Defaults to
@@ -816,7 +798,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if (($va_tmp[1] == 'parent') && ($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+							$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 							if (!$t_instance->load($vn_parent_id)) {
 								return ($vb_return_as_array) ? array() : null;
 							} else {
@@ -859,7 +841,7 @@ class BaseModel extends BaseObject {
 								$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 								
 								if (is_array($va_children_ids) && sizeof($va_children_ids)) {
-									$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+									$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 									
 									if (($va_tmp[1] == $this->primaryKey()) && !$vs_sort) {
 										foreach($va_children_ids as $vn_child_id) {
@@ -1266,13 +1248,12 @@ class BaseModel extends BaseObject {
 	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
 	 */
 	static public function getIDsForIdnos($pa_idnos, $pa_options=null) {
-	    $o_dm = Datamodel::load();
 	    if (!is_array($pa_idnos) && strlen($pa_idnos)) { $pa_idnos = [$pa_idnos]; }
 	    
 	    $pa_access_values = caGetOption('checkAccess', $pa_options, null);
 		
 		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table_name, true))) { return null; }
 		
 	    $pa_idnos = array_map(function($v) { return (string)$v; }, $pa_idnos);
 	    
@@ -1760,7 +1741,7 @@ class BaseModel extends BaseObject {
 	 * @return int table number
 	 */
 	public function tableNum() {
-		return $this->_DATAMODEL->getTableNum($this->TABLE);
+		return Datamodel::getTableNum($this->TABLE);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1770,7 +1751,7 @@ class BaseModel extends BaseObject {
 	 * @return int field number
 	 */
 	public function fieldNum($ps_field) {
-		return $this->_DATAMODEL->getFieldNum($this->TABLE, $ps_field);
+		return Datamodel::getFieldNum($this->TABLE, $ps_field);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1879,10 +1860,9 @@ class BaseModel extends BaseObject {
 		if (!sizeof($pa_ids)) { return array(); }
 		$va_value_arrays = array();
 		
-		$o_dm = Datamodel::load();
 		
 		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name, true))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table_name, true))) { return false; }
 		$vs_pk = $t_instance->primaryKey();
 		
 		// first check cache
@@ -1952,7 +1932,7 @@ class BaseModel extends BaseObject {
 				# support case where fieldname is in format table.fieldname
 				if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
 					if ($va_matches[1] != $this->tableName()) {
-						if ($this->_DATAMODEL->tableExists($va_matches[1])) {
+						if (Datamodel::tableExists($va_matches[1])) {
 							$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $va_matches[1]), "BaseModel->load()");
 							return false;
 						} else {
@@ -2264,7 +2244,7 @@ class BaseModel extends BaseObject {
 				$this->set($this->getProperty('HIERARCHY_RIGHT_INDEX_FLD'), $va_hier_indexing['right']);
 			}
 			
-			$va_many_to_one_relations = $this->_DATAMODEL->getManyToOneRelations($this->tableName());
+			$va_many_to_one_relations = getManyToOneRelations($this->tableName());
 
 			$va_need_to_set_rank_for = array();
 			foreach($this->FIELDS as $vs_field => $va_attr) {
@@ -2307,7 +2287,7 @@ class BaseModel extends BaseObject {
 							($vs_field_value == "") || ($vs_field_value === null)
 						)
 					)) {
-						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
+						if ($t_many_table = Datamodel::getInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
 								$o_trans = $this->getTransaction();
 								$t_many_table->setTransaction($o_trans);
@@ -2857,7 +2837,7 @@ class BaseModel extends BaseObject {
 			}
 
 			$vs_sql = "UPDATE ".$this->TABLE." SET ";
-			$va_many_to_one_relations = $this->_DATAMODEL->getManyToOneRelations($this->tableName());
+			$va_many_to_one_relations = Datamodel::getManyToOneRelations($this->tableName());
 
 			$vn_fields_that_have_been_set = 0;
 			foreach ($this->FIELDS as $vs_field => $va_attr) {
@@ -2895,7 +2875,7 @@ class BaseModel extends BaseObject {
 				if (isset($va_many_to_one_relations[$vs_field]) && $va_many_to_one_relations[$vs_field]) {
 					# Nothing to verify if key is null
 					if (!(($va_attr["IS_NULL"]) && ($vs_field_value == ""))) {
-						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
+						if ($t_many_table = Datamodel::getInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
 								$o_trans = $this->getTransaction();
 								$t_many_table->setTransaction($o_trans);
@@ -3194,7 +3174,7 @@ class BaseModel extends BaseObject {
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
 						//$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
-						$t_instance = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+						$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 						if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 						foreach($va_rebuild_hierarchical_index as $vn_child_id) {
 							if ($vn_child_id == $this->getPrimaryKey()) { continue; }
@@ -3405,7 +3385,7 @@ class BaseModel extends BaseObject {
 			}
 
 			# --- Check ->many and many<->many relations
-			$va_one_to_many_relations = $this->_DATAMODEL->getOneToManyRelations($this->tableName());
+			$va_one_to_many_relations = Datamodel::getOneToManyRelations($this->tableName());
 
 
 			#
@@ -3420,7 +3400,7 @@ class BaseModel extends BaseObject {
 						if (isset($pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]]) && $pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]]) { continue; }
 
 						# do any records exist?
-						$t_related = $this->_DATAMODEL->getTableInstance($vs_many_table);
+						$t_related = Datamodel::getInstance($vs_many_table);
 						$o_trans = $this->getTransaction();
 						$t_related->setTransaction($o_trans);
 						$qr_record_check = $o_db->query("
@@ -5957,7 +5937,7 @@ class BaseModel extends BaseObject {
 		} elseif ($vn_num_bits == 2) {
 			if ($va_bundle_bits[0] == $this->tableName()) {
 				return $this->hasField($va_bundle_bits[1]);
-			} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel->getInstanceByTableName($va_bundle_bits[0], true))) {
+			} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
 				return $t_rel->hasBundle($ps_bundle, $pn_type_id);
 			} else {
 				return false;
@@ -6555,9 +6535,9 @@ class BaseModel extends BaseObject {
 			if (is_array($va_subject_config)) {
 				if(is_array($va_subject_config['FOREIGN_KEYS'])) {
 					foreach($va_subject_config['FOREIGN_KEYS'] as $vs_field) {
-						$va_relationships = $this->_DATAMODEL->getManyToOneRelations($this->tableName(), $vs_field);
+						$va_relationships = Datamodel::getManyToOneRelations($this->tableName(), $vs_field);
 						if ($va_relationships['one_table']) {
-							$vn_table_num = $this->_DATAMODEL->getTableNum($va_relationships['one_table']);
+							$vn_table_num = Datamodel::getTableNum($va_relationships['one_table']);
 							if (!isset($va_subjects[$vn_table_num]) || !is_array($va_subjects[$vn_table_num])) { $va_subjects[$vn_table_num] = array(); }
 							
 							if (($vn_id = $this->get($vs_field)) > 0) {
@@ -6575,7 +6555,7 @@ class BaseModel extends BaseObject {
 					
 					foreach($va_subject_config['RELATED_TABLES'] as $vs_dest_table => $va_path_to_dest) {
 
-						$t_dest = $this->_DATAMODEL->getTableInstance($vs_dest_table);
+						$t_dest = Datamodel::getInstance($vs_dest_table);
 						if (!$t_dest) { continue; }
 
 						$vn_dest_table_num = $t_dest->tableNum();
@@ -6587,7 +6567,7 @@ class BaseModel extends BaseObject {
 
 						$vs_sql = "SELECT ".$vs_dest_table.".".$vs_dest_primary_key." FROM ".$this->tableName()."\n";
 						foreach($va_path_to_dest as $vs_ltable) {
-							$va_relations = $this->_DATAMODEL->getRelationships($vs_cur_table, $vs_ltable);
+							$va_relations = Datamodel::getRelationships($vs_cur_table, $vs_ltable);
 
 							$vs_sql .= "INNER JOIN $vs_ltable ON $vs_cur_table.".$va_relations[$vs_cur_table][$vs_ltable][0][0]." = $vs_ltable.".$va_relations[$vs_cur_table][$vs_ltable][0][1]."\n";
 							$vs_cur_table = $vs_ltable;
@@ -7120,7 +7100,7 @@ class BaseModel extends BaseObject {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vs_table_name = $this->tableName();
 		
-		$t_instance = (!$pn_id) ? $this : $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), false);
+		$t_instance = (!$pn_id) ? $this : Datamodel::getInstanceByTableNum($this->tableNum(), false);
 		if (!$pn_id && $this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 		
 		if ($this->isHierarchical()) {
@@ -7183,7 +7163,7 @@ class BaseModel extends BaseObject {
 						if (isset($pa_options['additionalTableJoinType']) && ($pa_options['additionalTableJoinType'] === 'LEFT')) {
 							$ps_additional_table_join_type = 'LEFT';
 						}
-						if (is_array($va_rel = $this->getAppDatamodel()->getOneToManyRelations($vs_table_name, $ps_additional_table_to_join))) {
+						if (is_array($va_rel = Datamodel::getOneToManyRelations($vs_table_name, $ps_additional_table_to_join))) {
 							// one-many rel
 							$va_sql_joins[] = "{$ps_additional_table_join_type} JOIN {$ps_additional_table_to_join} ON {$vs_table_name}".'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
 						} else {
@@ -7377,7 +7357,7 @@ class BaseModel extends BaseObject {
 		
 		$t_instance = null;
 		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
-			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
+			$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 			if (!$t_instance->load($pn_id)) { return null; }
 		} else {
 			$t_instance = $this;
@@ -7522,14 +7502,14 @@ class BaseModel extends BaseObject {
 			$va_sql_joins = array();
 			$vs_additional_table_to_join_group_by = '';
 			if ($ps_additional_table_to_join){ 
-				if (is_array($va_rel = $this->getAppDatamodel()->getOneToManyRelations($this->tableName(), $ps_additional_table_to_join))) {
+				if (is_array($va_rel = Datamodel::getOneToManyRelations($this->tableName(), $ps_additional_table_to_join))) {
 					// one-many rel
 					$va_sql_joins[] = $ps_additional_table_join_type." JOIN {$ps_additional_table_to_join} ON ".$this->tableName().'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
 				} else {
 					// TODO: handle many-many cases
 				}
 				
-				$t_additional_table_to_join = $this->_DATAMODEL->getTableInstance($ps_additional_table_to_join);
+				$t_additional_table_to_join = Datamodel::getInstance($ps_additional_table_to_join);
 				$vs_additional_table_to_join_group_by = ', '.$ps_additional_table_to_join.'.'.$t_additional_table_to_join->primaryKey();
 			}
 			$vs_sql_joins = join("\n", $va_sql_joins);
@@ -7784,11 +7764,11 @@ class BaseModel extends BaseObject {
 			
 			$va_sql_joins = array();
 			if ($ps_additional_table_to_join){ 
-				$va_path = $this->getAppDatamodel()->getPath($vs_table_name, $ps_additional_table_to_join);
+				$va_path = Datamodel::getPath($vs_table_name, $ps_additional_table_to_join);
 			
 				switch(sizeof($va_path)) {
 					case 2:
-						$va_rels = $this->getAppDatamodel()->getRelationships($vs_table_name, $ps_additional_table_to_join);
+						$va_rels = Datamodel::getRelationships($vs_table_name, $ps_additional_table_to_join);
 						$va_sql_joins[] = $ps_additional_table_join_type." JOIN {$ps_additional_table_to_join} ON ".$vs_table_name.'.'.$va_rels[$ps_additional_table_to_join][$vs_table_name][0][1]." = {$ps_additional_table_to_join}.".$va_rels[$ps_additional_table_to_join][$vs_table_name][0][0];
 						break;
 					case 3:
@@ -8513,7 +8493,7 @@ $pa_options["display_form_field_tips"] = true;
 						}
 						if ($vs_list_code) {
 							
-							$va_many_to_one_relations = $this->_DATAMODEL->getManyToOneRelations($this->tableName());
+							$va_many_to_one_relations = Datamodel::getManyToOneRelations($this->tableName());
 							
 							if ($va_many_to_one_relations[$ps_field]) {
 								$vs_key = 'item_id';
@@ -8560,12 +8540,12 @@ $pa_options["display_form_field_tips"] = true;
 							// -----
 							// from related table
 							// -----
-							$va_many_to_one_relations = $this->_DATAMODEL->getManyToOneRelations($this->tableName());
+							$va_many_to_one_relations = Datamodel::getManyToOneRelations($this->tableName());
 							if (isset($va_many_to_one_relations[$ps_field]) && $va_many_to_one_relations[$ps_field]) {
 								#
 								# Use foreign  key to populate <select>
 								#
-								$o_one_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$ps_field]["one_table"]);
+								$o_one_table = Datamodel::getInstance($va_many_to_one_relations[$ps_field]["one_table"]);
 								$vs_one_table_primary_key = $o_one_table->primaryKey();
 	
 								if ($o_one_table->isHierarchical()) {
@@ -9204,7 +9184,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function getMandatoryFields() {
 		$va_fields = $this->getFormFields(true);
 		
-		$va_many_to_one_relations = $this->_DATAMODEL->getManyToOneRelations($this->tableName());
+		$va_many_to_one_relations = Datamodel::getManyToOneRelations($this->tableName());
 		$va_mandatory_fields = array();
 		foreach($va_fields as $vs_field => $va_info) {
 			if (isset($va_info['IDENTITY']) && $va_info['IDENTITY']) { continue;}	
@@ -9287,7 +9267,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (!is_numeric($pn_rel_id)) {
-			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
@@ -9433,7 +9413,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (!is_numeric($pn_rel_id)) {
-			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
@@ -9651,7 +9631,7 @@ $pa_options["display_form_field_tips"] = true;
 					$va_sql_params[] = $pa_type_ids; $va_sql_params[] = $pa_type_ids;
 				} else {
 					$vs_target_table_name = ($t_item_rel->getLeftTableName() == $this->tableName()) ? $t_item_rel->getRightTableName()  : $t_item_rel->getLeftTableName() ;
-					$vs_target_table_pk = $this->getAppDatamodel()->primaryKey($vs_target_table_name);
+					$vs_target_table_pk = Datamodel::primaryKey($vs_target_table_name);
 					
 					$vs_join_sql = "INNER JOIN {$vs_target_table_name} AS t ON t.{$vs_target_table_pk} = r.{$vs_target_table_pk}\n";
 				
@@ -9743,7 +9723,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$vs_item_pk = $this->primaryKey();
 		
-		if (!($t_rel_item = $this->getAppDatamodel()->getTableInstance($va_rel_info['related_table_name']))) {	// related item
+		if (!($t_rel_item = Datamodel::getInstance($va_rel_info['related_table_name']))) {	// related item
 			return null;
 		}
 		
@@ -9846,7 +9826,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$vs_item_pk = $this->primaryKey();
 		
-		if (!($t_rel_item = $this->getAppDatamodel()->getTableInstance($va_rel_info['related_table_name']))) {	// related item
+		if (!($t_rel_item = Datamodel::getInstance($va_rel_info['related_table_name']))) {	// related item
 			return null;
 		}
 		
@@ -9955,7 +9935,7 @@ $pa_options["display_form_field_tips"] = true;
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
 		}
 		if (is_numeric($pm_rel_table_name_or_num)) {
-			$vs_related_table_name = $this->getAppDataModel()->getTableName($pm_rel_table_name_or_num);
+			$vs_related_table_name = Datamodel::getTableName($pm_rel_table_name_or_num);
 		} else {
 			$vs_related_table_name = $pm_rel_table_name_or_num;
 		}
@@ -9964,21 +9944,21 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vs_table == $vs_related_table_name) {
 			// self relations
 			if ($vs_self_relation_table = $this->getSelfRelationTableName()) {
-				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, $pb_use_cache);
+				$t_item_rel = Datamodel::getInstanceByTableName($vs_self_relation_table, $pb_use_cache);
 			} else {
 				return null;
 			}
 		} else {
-			$va_path = array_keys($this->getAppDatamodel()->getPath($vs_table, $vs_related_table_name));
+			$va_path = array_keys(Datamodel::getPath($vs_table, $vs_related_table_name));
 			
 			switch(sizeof($va_path)) {
 				case 3:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
+					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], $pb_use_cache);
 					break;
 				case 2:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
-					if (!sizeof($va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($vs_table, $va_path[1]))) {
-						$va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($va_path[1], $vs_table);
+					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], $pb_use_cache);
+					if (!sizeof($va_rel_keys = Datamodel::getOneToManyRelations($vs_table, $va_path[1]))) {
+						$va_rel_keys = Datamodel::getOneToManyRelations($va_path[1], $vs_table);
 					}
 					break;
 				default:
@@ -10032,7 +10012,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (!is_numeric($pn_rel_id)) {
-			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
@@ -10160,7 +10140,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return mixed Array of table names for which this row has at least one relationship, with keys set to table names and values set to the number of relationships per table.
 	 */
 	public function hasRelationships($pa_options=null) {
-		$va_one_to_many_relations = $this->_DATAMODEL->getOneToManyRelations($this->tableName());
+		$va_one_to_many_relations = Datamodel::getOneToManyRelations($this->tableName());
 
 		if (is_array($va_one_to_many_relations)) {
 			$o_db = $this->getDb();
@@ -10171,7 +10151,7 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
 				foreach($va_info as $va_relationship) {
 					# do any records exist?
-					$vs_rel_pk = $this->_DATAMODEL->primaryKey($vs_many_table);
+					$vs_rel_pk = Datamodel::primaryKey($vs_many_table);
 					
 					$qr_record_check = $o_db->query($x="
 						SELECT {$vs_rel_pk}
@@ -10851,8 +10831,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
 		}
 		
-		$o_dm = Datamodel::load();
-		if (!($vn_table_num = $o_dm->getTableNum(get_called_class()))) { return null; }
+		if (!($vn_table_num = Datamodel::getTableNum(get_called_class()))) { return null; }
 		
 		$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
 		$qr_comments = $o_db->query("
@@ -11432,8 +11411,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return string idno value, null if id does not exist or false if id exists but fails checkAccess checks
 	 */
 	public static function getIdnoForID($pn_id, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		if (($t_instance = $o_dm->getTableInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = new Db();
 			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
 			
@@ -11813,14 +11791,13 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool
 	 */
 	public static function exists($pm_id, $pa_options=null) {	
-		$o_dm = Datamodel::load();
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		if (is_numeric($pm_id) && $pm_id > 0) {
-			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
+			$vn_c = self::find([Datamodel::primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
 			if ($vn_c > 0) { return true; }
 		}
 		
-		if (!caGetOption('idOnly', $pa_options, false) && ($vs_idno_fld = $o_dm->getTableProperty(get_called_class(), 'ID_NUMBERING_ID_FIELD'))) {
+		if (!caGetOption('idOnly', $pa_options, false) && ($vs_idno_fld = Datamodel::getTableProperty(get_called_class(), 'ID_NUMBERING_ID_FIELD'))) {
 			$vn_c = self::find([$vs_idno_fld => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
 			if ($vn_c > 0) { return true; }
 		}
@@ -11911,7 +11888,7 @@ $pa_options["display_form_field_tips"] = true;
 					continue;
 				}
 				
-				if(!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($va_subject['table_num'], true))) { continue; }
+				if(!($t_instance = Datamodel::getInstanceByTableNum($va_subject['table_num'], true))) { continue; }
 
 				$t_subject = new ca_notification_subjects();
 				$t_subject->setMode(ACCESS_WRITE);
@@ -12060,8 +12037,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return array Array of notifications indexed by notification subject_id. Each value is an array of notification content.
 	 */
 	static public function getQueuedEmailNotifications(array $pa_options = []) {
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name = get_called_class()))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table_name = get_called_class()))) { return null; }
 		$vn_table_num = $t_instance->tableNum();
 		$vs_pk = $t_instance->primaryKey();
 		
@@ -12167,26 +12143,26 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
 
 		if (is_numeric($pm_rel_table_name_or_num)) {
-			if(!($vs_related_table_name = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num))) { return null; }
+			if(!($vs_related_table_name = Datamodel::getTableName($pm_rel_table_name_or_num))) { return null; }
 		} else {
 			if (sizeof($va_tmp = explode(".", $pm_rel_table_name_or_num)) > 1) {
 				$pm_rel_table_name_or_num = array_shift($va_tmp);
 			}
-			if (!($o_instance = $this->getAppDatamodel()->getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
+			if (!($o_instance = Datamodel::getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
 			$vs_related_table_name = $pm_rel_table_name_or_num;
 		}
 
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
-		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $vs_related_table_name)))) {
+		switch(sizeof($va_path = array_keys(Datamodel::getPath($this->tableName(), $vs_related_table_name)))) {
 			case 3:
-				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
-				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[2]);
+				$t_item_rel = Datamodel::getInstance($va_path[1]);
+				$t_rel_item = Datamodel::getInstance($va_path[2]);
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
 				break;
 			case 2:
 				$t_item_rel = null;
-				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$t_rel_item = Datamodel::getInstance($va_path[1]);
 				$vs_key = $t_rel_item->primaryKey();
 				break;
 			default:
@@ -12261,7 +12237,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 
 		foreach($va_path as $vs_join_table) {
-			$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
+			$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 			$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 			$vs_cur_table = $vs_join_table;
 		}
@@ -12439,7 +12415,6 @@ $pa_options["display_form_field_tips"] = true;
 		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
 		unset($this->o_db);
 		unset($this->_CONFIG);
-		unset($this->_DATAMODEL);
 		unset($this->_MEDIA_VOLUMES);
 		unset($this->_FILE_VOLUMES);
 		unset($this->opo_app_plugin_manager);

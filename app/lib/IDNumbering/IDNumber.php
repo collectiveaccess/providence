@@ -87,7 +87,6 @@
 		 * Initialize and load configuration files
 		 */
 		public function __construct() {
-			$this->opo_datamodel = Datamodel::load();
 			$this->opo_config = Configuration::load();
 		}
 		# -------------------------------------------------------

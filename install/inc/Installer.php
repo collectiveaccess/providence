@@ -432,7 +432,6 @@ class Installer {
 	public function loadSchema($f_callback=null) {
 
 		$vo_config = Configuration::load();
-		$vo_dm = Datamodel::load();
 		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
 			$this->opo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
 			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
@@ -716,7 +715,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
-		$vo_dm = Datamodel::load();
 		$t_rel_types = new ca_relationship_types();
 		$t_list = new ca_lists();
 
@@ -926,7 +924,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
-		$vo_dm = Datamodel::load();
 		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
 
 		$t_placement = new ca_editor_ui_bundle_placements();
@@ -1286,9 +1283,6 @@ class Installer {
 			$va_list_item_ids[$vs_type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
 		}
 
-		$vo_dm = Datamodel::load();
-
-
 		foreach($va_rel_tables as $vs_table => $vo_rel_table) {
 			$vn_table_num = $vo_dm->getTableNum($vs_table);
 			$this->logStatus(_t('Processing relationship types for table %1', $vs_table));
@@ -1337,8 +1331,6 @@ class Installer {
 	}
 	# --------------------------------------------------
 	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids) {
-		$o_dm = Datamodel::load();
-
 		// nuke caches to be safe
 		ca_relationship_types::$s_relationship_type_id_cache = [];
 		ca_relationship_types::$s_relationship_type_table_cache = [];
@@ -1400,7 +1392,7 @@ class Installer {
 				||
 				($vs_left_subtype_code = trim((string) $vo_type->subTypeLeft))
 			) {
-				$t_obj = $o_dm->getTableInstance($ps_left_table);
+				$t_obj = Datamodel::getInstance($ps_left_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $vs_left_subtype_code, $vs_type_code));
@@ -1430,7 +1422,7 @@ class Installer {
 				||
 				($vs_right_subtype_code = trim((string) $vo_type->subTypeRight))
 			) {
-				$t_obj = $o_dm->getTableInstance($ps_right_table);
+				$t_obj = Datamodel::getInstance($ps_right_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $vs_right_subtype_code, $vs_type_code));
@@ -1607,8 +1599,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
 
 		$o_config = Configuration::load();
-
-		$vo_dm = Datamodel::load();
 
 		$va_displays = [];
 		if($this->ops_base_name) { // "merge" profile and its base
@@ -1795,8 +1785,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 
 		$o_config = Configuration::load();
-		$vo_dm = Datamodel::load();
-
 		$va_forms = [];
 		if($this->ops_base_name) { // "merge" profile and its base
 			if($this->opo_base->searchForms) {
@@ -2141,8 +2129,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_metadata_alert_triggers.php");
 
 		$o_config = Configuration::load();
-		$vo_dm = Datamodel::load();
-
 		$va_md_alerts = [];
 		if($this->ops_base_name) { // "merge" profile and its base
 			if($this->opo_base->metadataAlerts) {

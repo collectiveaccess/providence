@@ -49,7 +49,6 @@ class MediaProcessingSettings {
 	# ---------------------------------------------------
 	public function __construct($m_table='', $ps_field_name) {
 		$this->opo_config = Configuration::load();
-		$this->opo_datamodel = Datamodel::load();
 		
 		if ($m_table && $ps_field_name) { $this->loadSettings($m_table, $ps_field_name); }
 	}
@@ -57,7 +56,7 @@ class MediaProcessingSettings {
 	public function loadSettings($m_table, $ps_field_name) {
 		if (!is_object($m_table)) {
 			// if it's not a table instance, try using $m_table as a table name
-			if (!($t_table = $this->opo_datamodel->getInstanceByTableName($m_table, true))) { 
+			if (!($t_table = Datamodel::getInstanceByTableName($m_table, true))) { 
 				return false; 
 			}
 		} else {

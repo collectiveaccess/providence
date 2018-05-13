@@ -49,11 +49,10 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 	protected $ops_subject_pk;
 	# -------------------------------------------------------
 	public function __construct($pa_hits, $pn_table_num) {
-		$this->opo_datamodel = Datamodel::load();
 		
 		$this->opn_subject_tablenum = $pn_table_num;
 		
-		$this->ops_subject_pk = $this->opo_datamodel->getTablePrimaryKeyName($pn_table_num);
+		$this->ops_subject_pk = Datamodel::primaryKey($pn_table_num);
 		$this->setHits(array_values($pa_hits));
 	}
 	# -------------------------------------------------------

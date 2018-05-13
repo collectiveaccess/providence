@@ -523,8 +523,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
 		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
 
-		$o_dm = $this->getAppDatamodel();
-		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return []; }
+		if ($pm_table_name_or_num && !($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return []; }
 
 		$o_db = $this->getDb();
 
@@ -536,8 +535,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_params = [];
 		$va_access_wheres = [];
 		if ($pn_user_id) {
-			$o_dm = $this->getAppDatamodel();
-			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
+			$t_user = Datamodel::getInstanceByTableName('ca_users', true);
 			$t_user->load($pn_user_id);
 
 			if ($t_user->getPrimaryKey()) {
@@ -681,7 +679,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!sizeof($pa_form_ids = array_filter($pa_form_ids, "intval"))) { return null; }
 		$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
 		
-		$o_dm = Datamodel::load();
 		$t_form = new ca_search_forms();
 		
 		$qr_res = $o_db->query("
@@ -695,7 +692,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_names = [];
 		while($qr_res->nextRow()) {
-			$t_instance = $o_dm->getInstanceByTableNum($qr_res->get('table_num'), true);
+			$t_instance = Datamodel::getInstanceByTableNum($qr_res->get('table_num'), true);
 			$va_restriction_names = array_map(function($v) { return caUcFirstUTF8Safe(caGetListItemByIDForDisplay($v['type_id'], !$vb_use_singular)); }, $t_form->getTypeRestrictions(null, ['form_id' => $qr_res->get('form_id')]));
 			
 			switch($t_instance->tableName()) {
@@ -797,11 +794,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->get('table_num'); }
-		$pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num);
+		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
 
-		$t_instance = $this->_DATAMODEL->getInstanceByTableNum($pm_table_name_or_num, true);
-		$va_search_settings = $this->opo_search_indexing_config->getAssoc($this->_DATAMODEL->getTableName($pm_table_name_or_num));
+		$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
+		$va_search_settings = $this->opo_search_indexing_config->getAssoc(Datamodel::getTableName($pm_table_name_or_num));
 
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
@@ -915,7 +912,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				} else {
 					// related table
 					if ($this->getAppConfig()->get($vs_table.'_disable')) { continue; }
-					$t_table = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
+					$t_table = Datamodel::getInstanceByTableName($vs_table, true);
 					if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
 						if ($this->getAppConfig()->get($vs_subject_table.'_disable')) { continue; }
 					}
@@ -1053,9 +1050,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			return [];
 		}
 
-		if (!($pn_table_num = $this->_DATAMODEL->getTableNum($this->get('table_num')))) { return null; }
+		if (!($pn_table_num = Datamodel::getTableNum($this->get('table_num')))) { return null; }
 
-		$t_instance = $this->_DATAMODEL->getInstanceByTableNum($pn_table_num, true);
+		$t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true);
 
 		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = []; }
 
@@ -1125,11 +1122,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_form_contents = $this->getPlacements();
 
-		$o_dm = Datamodel::load();
 		$va_output = [];
 
-		if (!($vs_form_table_name = $o_dm->getTableName($this->get('table_num')))) { return null; }
-		$t_subject = $o_dm->getInstanceByTableName($vs_form_table_name, true);
+		if (!($vs_form_table_name = Datamodel::getTableName($this->get('table_num')))) { return null; }
+		$t_subject = Datamodel::getInstanceByTableName($vs_form_table_name, true);
 
 		foreach($va_form_contents as $vn_i => $va_element) {
 
@@ -1175,9 +1171,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			$va_tmp = explode('.', $vs_field = $va_element['bundle_name']);
-			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+			if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
 				// is this an access point?
-				$va_search_settings = $this->opo_search_indexing_config->getAssoc($this->_DATAMODEL->getTableName($vs_form_table_name));
+				$va_search_settings = $this->opo_search_indexing_config->getAssoc(Datamodel::getTableName($vs_form_table_name));
 				$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : [];
 
 				if (isset($va_access_points[$va_tmp[0]])) {
@@ -1337,7 +1333,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 
-		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, $this->_DATAMODEL->getTableName($this->get('table_num'))));
+		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
 		$o_view->setVar('t_form', $this);
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);
@@ -1438,7 +1434,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
 		if (!is_array($pa_settings)) { $pa_settings = []; }
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
 			$va_rel_type_list = $t_instance->getRelationshipTypes();
@@ -1520,7 +1516,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
 			$va_type_list = $t_instance->getRelationshipTypes();
@@ -1629,7 +1625,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
 
 		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
 			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])

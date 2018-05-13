@@ -61,7 +61,6 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
  			
  			$t_display = new ca_bundle_displays($vn_display_id = $this->_getDisplayID());
  			$this->view->setVar('bundle_displays', caExtractValuesByUserLocale($t_display->getBundleDisplays(array('user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_EDIT_ACCESS__)), null, array()));

@@ -88,10 +88,8 @@ class SimpleService {
 	 * @throws Exception
 	 */
 	private static function runDetailEndpoint($pa_config, $po_request) {
-		$o_dm = Datamodel::load();
-
 		// load instance
-		$t_instance = $o_dm->getInstance($pa_config['table']);
+		$t_instance = Datamodel::getInstance($pa_config['table']);
 		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
 			throw new Exception('Invalid table');
 		}
@@ -138,10 +136,8 @@ class SimpleService {
 	 * @throws Exception
 	 */
 	private static function runSitePageEndpoint($pa_config, $po_request) {
-		$o_dm = Datamodel::load();
-
 		// load instance
-		$t_instance = $o_dm->getInstance('ca_site_pages');
+		$t_instance = Datamodel::getInstance('ca_site_pages');
 		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
 			throw new Exception('invalid table');
 		}
@@ -183,12 +179,11 @@ class SimpleService {
 	 * @throws Exception
 	 */
 	private static function runSearchEndpoint($pa_config, $po_request) {
-		$o_dm = Datamodel::load();
 		
 		$vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
 
 		// load blank instance
-		$t_instance = $o_dm->getInstance($pa_config['table']);
+		$t_instance = Datamodel::getInstance($pa_config['table']);
 		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
 			throw new Exception('Invalid table');
 		}
@@ -260,12 +255,11 @@ class SimpleService {
 	 * @throws Exception
 	 */
 	private static function runRefineableSearchEndpoint($pa_config, $po_request) {
-		$o_dm = Datamodel::load();
 		
 		$vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
 
 		// load blank instance
-		$t_instance = $o_dm->getInstance($pa_config['table']);
+		$t_instance = Datamodel::getInstance($pa_config['table']);
 		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
 			throw new Exception('Invalid table');
 		}

@@ -56,7 +56,6 @@
 		 * @param Db $po_db A database client object to use rather than creating a new connection. [Default is to create a new database connection]
 		 */
 		public function __construct($po_db=null) {			
-			$this->opo_datamodel = Datamodel::load();
 	
 			$this->opo_db = $po_db ? $po_db : new Db();
 		}
@@ -204,9 +203,8 @@
 		public function filterHitsByACL($pa_hits, $pn_table_num, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__) {
 			if (!sizeof($pa_hits)) { return $pa_hits; }
 			if (!(int)$pn_user_id) { $pn_user_id = 0; }
-			$o_dm = Datamodel::load();
 			$o_conf = Configuration::load();
-			if (!($t_table = $o_dm->getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
 
 			$t_user = new ca_users($pn_user_id);
 			if ($t_user->canDoAction('is_administrator')) { return $pa_hits; }
@@ -281,7 +279,7 @@
 		 * @return array
 		 */
 		public function sortHits(&$pa_hits, $ps_table, $pm_field, $ps_direction='asc', $pa_options=null) {
-			if (!$t_table = $this->opo_datamodel->getInstanceByTableName($ps_table, true)) { return null; } // invalid table
+			if (!$t_table = Datamodel::getInstanceByTableName($ps_table, true)) { return null; } // invalid table
 			$vs_table_pk = $t_table->primaryKey();
 			$vn_table_num = $t_table->tableNum();
 			
@@ -310,7 +308,7 @@
 				$vs_bundle = $va_sort_tmp[0];
 				
 				list($vs_field_table, $vs_field, $vs_subfield) = explode(".", $vs_bundle);
-				if (!($t_instance = $this->opo_datamodel->getInstanceByTableName($vs_field_table, true))) { break; }
+				if (!($t_instance = Datamodel::getInstanceByTableName($vs_field_table, true))) { break; }
 					
 				// Transform preferred_labels
 				if ($vs_field == 'preferred_labels') {
@@ -367,8 +365,8 @@
 					$qr_sort = $this->opo_db->query($vs_sql, array($vn_table_num, (int)$vs_rel_type, $pa_hits));
 					
 				} else {
-					$t_rel = $this->opo_datamodel->getInstanceByTableName($vs_field_table, true);
-					$va_path = $this->opo_datamodel->getPath($ps_table, $vs_field_table);
+					$t_rel = Datamodel::getInstanceByTableName($vs_field_table, true);
+					$va_path = Datamodel::getPath($ps_table, $vs_field_table);
 			
 					$vs_is_preferred_sql = null;
 					$va_joins = array();
@@ -378,7 +376,7 @@
 						$vs_last_table = null;
 						// generate related joins
 						foreach($va_path as $vs_table => $va_info) {
-							$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+							$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 			                $vb_has_deleted = $t_instance->hasField('deleted');
 							$vs_rel_type_sql = $vs_item_type_sql = null;
 							if($t_instance->isRelationship() && $vs_rel_type) {
@@ -394,9 +392,9 @@
 							$vs_deleted_sql = $vb_has_deleted ? " AND {$vs_table}.deleted = 0 " : "";
 							
 							if ($vs_last_table) {
-								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
+								$va_rels = Datamodel::getOneToManyRelations($vs_last_table, $vs_table);
 								if (!sizeof($va_rels)) {
-									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
+									$va_rels = Datamodel::getOneToManyRelations($vs_table, $vs_last_table);
 								}
 								if ($vs_table == $va_rels['one_table']) {
 									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql.$vs_item_type_sql.$vs_deleted_sql;
@@ -407,7 +405,7 @@
 							$vs_last_table = $vs_table;
 						}
 					} else {
-						$va_rels = $this->opo_datamodel->getRelationships($ps_table, $vs_field_table);
+						$va_rels = Datamodel::getRelationships($ps_table, $vs_field_table);
 						if (!$va_rels) { break; }		// field is not valid
 
 						if ($t_rel->hasField($vs_field)) { // intrinsic in related table
@@ -648,8 +646,8 @@
 		}
 		# ------------------------------------------------------------------
 		private function _mapRowIDsForPathLength2($pn_original_table_num, $pn_target_table, $pa_hits, $pa_options=null) {
-			if(!($t_original_table = $this->opo_datamodel->getInstance($pn_original_table_num, true))) { return false; }
-			if(!($t_target_table = $this->opo_datamodel->getInstance($pn_target_table, true))) { return false; }
+			if(!($t_original_table = Datamodel::getInstance($pn_original_table_num, true))) { return false; }
+			if(!($t_target_table = Datamodel::getInstance($pn_target_table, true))) { return false; }
 
 			$va_sql_params = [];
 
@@ -662,16 +660,16 @@
 			$vs_original_table = $t_original_table->tableName();
 			$vs_target_table = $t_target_table->tableName();
 
-			$va_path = $this->opo_datamodel->getPath($pn_original_table_num, $pn_target_table);
+			$va_path = Datamodel::getPath($pn_original_table_num, $pn_target_table);
 			if(sizeof($va_path) != 2) { return false; }
 
 			// get relationships to build join
-			$va_relationships = $this->opo_datamodel->getRelationships($vs_original_table, $vs_target_table);
+			$va_relationships = Datamodel::getRelationships($vs_original_table, $vs_target_table);
 
 			$vs_primary_id_sql = '';
 			if(is_array($va_primary_ids) && (sizeof($va_primary_ids) > 0)) {
 				// assuming this is being used to sort on interstitials, we just need a WHERE on the keys on the other side of that target table
-				$va_tmp = $this->opo_datamodel->getRelationships($vs_target_table, $vs_resolve_links_using);
+				$va_tmp = Datamodel::getRelationships($vs_target_table, $vs_resolve_links_using);
 				if(isset($va_tmp[$vs_resolve_links_using][$vs_target_table][0][1])) {
 					$vs_primary_id_sql = "AND {$vs_target_table}.{$va_tmp[$vs_resolve_links_using][$vs_target_table][0][1]} IN (?)";
 					$va_sql_params[] = $va_primary_ids;

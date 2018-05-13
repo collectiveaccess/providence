@@ -96,7 +96,6 @@
 		 */
 		public function hookRenderMenuBar($pa_menu_bar) {
 			if ($o_req = $this->getRequest()) {
-				$o_dm = Datamodel::load();
 				$va_activity_lists = array();
 				foreach(array(
 					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
@@ -109,7 +108,7 @@
 				
 					if (sizeof($va_activity_list) == 0) { continue; }
 					
-					$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+					$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 					$va_labels = $t_instance->getPreferredDisplayLabelsForIDs(array_keys($va_activity_list));
 					
 					if ($vs_table_name === 'ca_occurrences') {

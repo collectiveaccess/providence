@@ -108,7 +108,6 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 	require_once(__CA_LIB_DIR__.'/Db.php');
 	require_once(__CA_LIB_DIR__.'/Datamodel.php');
 	
-	$o_dm = Datamodel::load();
 	
 	// Check setup.php settings
 	// ...

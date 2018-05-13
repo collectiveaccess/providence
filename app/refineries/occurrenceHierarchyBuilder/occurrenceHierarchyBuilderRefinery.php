@@ -63,8 +63,7 @@
 			
 			$t_mapping = caGetOption('mapping', $pa_options, null);
 			if ($t_mapping) {
-				$o_dm = Datamodel::load();
-				if ($t_mapping->get('table_num') != $o_dm->getTableNum('ca_occurrences')) { 
+				if ($t_mapping->get('table_num') != Datamodel::getTableNum('ca_occurrences')) { 
 					if ($o_log) {
 						$o_log->logError(_t("occurrenceHierarchyBuilder refinery may only be used in imports to ca_occurrences"));
 					}

@@ -861,12 +861,11 @@
 		private static function _getID($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
-			$o_dm = Datamodel::load();
 			
 			/** @var KLogger $o_log */
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
-			if (!$t_instance = $o_dm->getInstanceByTableName($ps_table, true))  { return null; }
+			if (!$t_instance = Datamodel::getInstanceByTableName($ps_table, true))  { return null; }
 			$vs_table_display_name 			= $t_instance->getProperty('NAME_SINGULAR');
 			$vs_table_class 				= $t_instance->tableName();
 			$vs_label_display_fld 			= $t_instance->getLabelDisplayField();
@@ -1073,7 +1072,7 @@
 
 				// If we're creating a new item, it's probably a good idea to *NOT* use a
 				// BaseModel instance from cache, because those cannot change their type_id
-				if (!$t_instance = $o_dm->getInstanceByTableName($ps_table, false))  { return null; }
+				if (!$t_instance = Datamodel::getInstanceByTableName($ps_table, false))  { return null; }
 				
 				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 					$t_instance->setTransaction($pa_options['transaction']);
@@ -1173,7 +1172,7 @@
 
 				$vb_attr_errors = false;
 				if (($vb_force_update = caGetOption('forceUpdate', $pa_options, false)) || ($vb_return_instance = caGetOption('returnInstance', $pa_options, false))) {
-					if (!$t_instance = $o_dm->getInstanceByTableName($vs_table_class, false))  { return null; }
+					if (!$t_instance = Datamodel::getInstanceByTableName($vs_table_class, false))  { return null; }
 					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_instance->setTransaction($pa_options['transaction']); }
 					
 					$vb_has_attr = false;

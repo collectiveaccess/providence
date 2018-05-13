@@ -56,7 +56,6 @@ class BaseJSONService {
 	public function __construct($po_request,$ps_table=""){
 		$this->opo_request = $po_request;
 		$this->ops_table = $ps_table;
-		$this->opo_dm = Datamodel::load();
 		$this->opa_errors = array();
 		
 		$this->ops_method = $this->opo_request->getRequestMethod();
@@ -156,7 +155,7 @@ class BaseJSONService {
 
 		$vb_include_deleted = intval($this->opo_request->getParameter("include_deleted",pInteger));
 
-		$t_instance = $this->opo_dm->getInstanceByTableName($ps_table);
+		$t_instance = Datamodel::getInstanceByTableName($ps_table);
 
 		if ($pn_id && !is_numeric($pn_id) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && preg_match("!^[A-Za-z0-9_\-\.,\[\]]+$!", $pn_id)) {
 			// User is loading by idno

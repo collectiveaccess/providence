@@ -372,12 +372,10 @@ class ReplicationService {
 			}
 		}
 
-		$o_dm = Datamodel::load();
-
 		$va_report = [];
 		foreach($pa_tables as $vs_table) {
 			// this makes sure the class is required/included
-			$t_instance = $o_dm->getInstance($vs_table);
+			$t_instance = Datamodel::getInstance($vs_table);
 			if(!$t_instance) { continue; }
 
 			if(class_exists($vs_table) && method_exists($vs_table, 'listPotentialDupes') && method_exists($vs_table, 'mergeRecords')) {

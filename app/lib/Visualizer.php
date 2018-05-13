@@ -135,8 +135,7 @@
 			$vs_viz_plugin = $va_viz_settings['plugin'];
 			if($o_viz = $this->getVisualizationPlugin($vs_viz_plugin)) {
 				$va_ids = array();
-				$o_dm = Datamodel::load();
-				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+				$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 				$vs_pk = $t_instance->primaryKey();
 				
 				foreach($this->opa_data as $o_data) {
@@ -187,8 +186,7 @@
 			if($o_viz = $this->getVisualizationPlugin($vs_viz_plugin)) {
 			
 				$va_ids = array();
-				$o_dm = Datamodel::load();
-				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+				$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 				$vs_pk = $t_instance->primaryKey();
 				
 				foreach($this->opa_data as $o_data) {

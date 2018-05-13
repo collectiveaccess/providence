@@ -91,7 +91,6 @@ class Replicator {
 	}
 	
 	public function replicate() {
-	    $o_dm = Datamodel::load();
 	    
 		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
@@ -273,7 +272,7 @@ print "START REP AT $pn_replicated_log_id\n";
 								foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
 								   
 								    $vb_subject_exists_on_target = is_array($va_guid_already_exists[$va_source_log_subject['guid']]);
-								    $vb_subject_is_relationship = $o_dm->isRelationship($va_source_log_subject['subject_table_num']);
+								    $vb_subject_is_relationship = Datamodel::isRelationship($va_source_log_subject['subject_table_num']);
 								   
 								    $vb_have_access_to_subject = true;
 								    if ($pa_filter_on_access_settings) {
@@ -365,9 +364,9 @@ print "START REP AT $pn_replicated_log_id\n";
                                                             if ($v == $vs_missing_guid) { return false; }
                                                             if(preg_match("!([A-Za-z0-9_]+)_guid$!", $k, $matches)) {
                                                                 if(
-                                                                    is_array($o_dm->getFieldInfo($va_missing_entry['logged_table_num'], $matches[1]))
+                                                                    is_array(Datamodel::getFieldInfo($va_missing_entry['logged_table_num'], $matches[1]))
                                                                     ||
-                                                                    is_array($o_dm->getFieldInfo($va_missing_entry['logged_table_num'], $matches[1].'_id'))
+                                                                    is_array(Datamodel::getFieldInfo($va_missing_entry['logged_table_num'], $matches[1].'_id'))
                                                                 ) { 
                                                                     if (in_array($va_missing_entry['logged_table_num'], [3,4])) { // && (in_array($matches[1], ['row', 'row_id']))) {
                                                                          return false;
@@ -696,7 +695,6 @@ print "START REP AT $pn_replicated_log_id\n";
 	 * 
 	 */
 	public function compare() {
-		$o_dm = Datamodel::load();
 		
 		if ($qr_res = ca_objects::find(['access' => [">", 0]], ['returnAs' => 'searchResult'])) {
 		//if ($qr_res = ca_objects::find(['idno' => 'C.2007.27.1'], ['returnAs' => 'searchResult'])) {
@@ -738,7 +736,7 @@ print "START REP AT $pn_replicated_log_id\n";
 							$vn_count++;
 							if (!isset($va_resp[$vs_guid])) { 
 								$va_info = ca_guids::getInfoForGUID($vs_guid);
-								print "[ERROR] Missing record for {$vs_guid} [".$o_dm->getTableName($va_info['table_num'])."/".$va_info['row_id']."]\n";
+								print "[ERROR] Missing record for {$vs_guid} [".Datamodel::getTableName($va_info['table_num'])."/".$va_info['row_id']."]\n";
 							} else {
 								print "[$vn_count] GOT $vs_guid\n";
 							

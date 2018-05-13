@@ -190,7 +190,6 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
  			
  			$t_comments = new ca_item_comments();
  			$this->view->setVar('unmoderated_comment_count', ($t_comments->getUnmoderatedCommentCount()));

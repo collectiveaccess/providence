@@ -1077,7 +1077,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$va_inital_values = array();
 		if (sizeof($va_items = $this->getAnnotations())) {
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName("{$vs_annotation_table}", true);
+			$t_rel = Datamodel::getInstanceByTableName("{$vs_annotation_table}", true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
 				if (!($vs_label = $va_item['label'])) { $vs_label = ''; }

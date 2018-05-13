@@ -200,7 +200,6 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
  			
  			$t_group = new ca_user_groups();
  			$this->view->setVar('group_count', $t_group->getGroupCount($this->request->user->getUserID()));

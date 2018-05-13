@@ -77,7 +77,7 @@ class Datamodel {
 			Datamodel::$opo_graph = new Graph();
 			
 			# add tables
-			if (!$va_tables = $o_datamodel->getAssoc("tables")) { $va_tables = []; }
+			if (!$va_tables = Datamodel::getAssoc("tables")) { $va_tables = []; }
 			foreach($va_tables as $vs_table => $vn_num) {
 				Datamodel::$opo_graph->addNode($vs_table);
 				Datamodel::$opo_graph->addAttribute("num", $vn_num, $vs_table);
@@ -86,7 +86,7 @@ class Datamodel {
 			}
 			
 			# add relationships
-			if (!$va_relationships = $o_datamodel->getList("relationships")) { $va_relationships = []; }
+			if (!$va_relationships = Datamodel::getList("relationships")) { $va_relationships = []; }
 
 			foreach($va_relationships as $vs_relationship) {
 				$va_keys = preg_split("/[\t ]*=[\t ]*/", $vs_relationship);

@@ -36,7 +36,6 @@
 	$vs_controller_name = $this->getVar('controller_name');
 	$vs_widget_id = $this->getVar('widget_id');
 	
-	$o_dm = Datamodel::load();
 	
 	if (!$vn_form_id) {
 		//
@@ -64,7 +63,7 @@
 			// Generate form
 			//
 			
-			print "<div class='dashboardWidgetHeading'>".caUcFirstUTF8Safe($o_dm->getTableProperty($t_form->get('table_num'), 'NAME_PLURAL')).": ".$t_form->getLabelForDisplay()."</div>\n";
+			print "<div class='dashboardWidgetHeading'>".caUcFirstUTF8Safe(Datamodel::getTableProperty($t_form->get('table_num'), 'NAME_PLURAL')).": ".$t_form->getLabelForDisplay()."</div>\n";
 			
 			$va_form_element_list = $this->getVar('form_elements');
 			$va_flds = array();

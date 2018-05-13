@@ -284,7 +284,6 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			//
 			// Init
 			//
-			$o_datamodel = Datamodel::load();
 			$va_change_types = array(
 				'I' => _t('Added'),
 				'U' => _t('Edited'),
@@ -292,7 +291,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			);
 			
 			$vs_label_table_name = $vs_label_display_name = '';
-			$t_item = $o_datamodel->getInstanceByTableNum($pn_table_num, true);
+			$t_item = Datamodel::getInstanceByTableNum($pn_table_num, true);
 			
 			$vs_label_table_name = $vn_label_table_num = $vs_label_display_name = null;
 			if (method_exists($t_item, 'getLabelTableName') && $t_item->getLabelTableInstance()) {
@@ -345,7 +344,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						// row (ca_objects_x_entities is the "logged" table), but the subject is ca_objects since it's only in the context of the
 						// object (and probably the ca_entities row as well) that you can about the change.
 						//		
-						$t_obj = $o_datamodel->getInstanceByTableNum($va_log_entry['logged_table_num'], true);	// get instance for logged table
+						$t_obj = Datamodel::getInstanceByTableNum($va_log_entry['logged_table_num'], true);	// get instance for logged table
 						if (!$t_obj) { continue; }
 						
 						$vs_subject_display_name = '???';
@@ -359,7 +358,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								$vn_subject_row_id = $va_log_entry['subject_row_id'];
 							}
 							
-							if ($t_subject = $o_datamodel->getInstanceByTableNum($vn_subject_table_num, true)) {
+							if ($t_subject = Datamodel::getInstanceByTableNum($vn_subject_table_num, true)) {
 								if ($t_subject->load($vn_subject_row_id)) {
 									if (method_exists($t_subject, 'getLabelForDisplay')) {
 										$vs_subject_display_name = $t_subject->getLabelForDisplay(false);
@@ -393,10 +392,10 @@ require_once(__CA_LIB_DIR__."/Db.php");
 									//
 									if (!$vs_value) { continue; }
 									if (sizeof($va_disp_fields)) {
-										$va_rel = $o_datamodel->getManyToOneRelations($t_obj->tableName(), $vs_field);
+										$va_rel = Datamodel::getManyToOneRelations($t_obj->tableName(), $vs_field);
 										$va_rel_values = array();
 											
-										if ($t_rel_obj = $o_datamodel->getTableInstance($va_rel['one_table'], true)) {
+										if ($t_rel_obj = Datamodel::getInstance($va_rel['one_table'], true)) {
 											$t_rel_obj->load($vs_value);
 											
 											foreach($va_disp_fields as $vs_display_field) {
@@ -408,14 +407,14 @@ require_once(__CA_LIB_DIR__."/Db.php");
 									}
 								} else {
 									// Is field a foreign key?
-									$va_keys = $o_datamodel->getManyToOneRelations($t_obj->tableName(), $vs_field);
+									$va_keys = Datamodel::getManyToOneRelations($t_obj->tableName(), $vs_field);
 									if (sizeof($va_keys)) {
 										// yep, it's a foreign key
 										$va_rel_values = array();
 										
 										if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $va_keys['one_table'])) { continue; }	// does user have access to this bundle?
 								
-										if ($t_rel_obj = $o_datamodel->getTableInstance($va_keys['one_table'], true)) {
+										if ($t_rel_obj = Datamodel::getInstance($va_keys['one_table'], true)) {
 											if ($t_rel_obj->load($vs_value)) {
 												if (method_exists($t_rel_obj, 'getLabelForDisplay')) {
 													$vs_proc_val = $t_rel_obj->getLabelForDisplay(false);
@@ -528,19 +527,19 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						
 						// ---------------------------------------------------------------
 						// is this a related (many-many) row?
-						$va_keys = $o_datamodel->getOneToManyRelations($t_item->tableName(), $t_obj->tableName());
+						$va_keys = Datamodel::getOneToManyRelations($t_item->tableName(), $t_obj->tableName());
 						if (sizeof($va_keys) > 0) {
 							if (method_exists($t_obj, 'getLeftTableNum')) {
 								if ($t_obj->getLeftTableNum() == $t_item->tableNum()) {
 									// other side of rel is on right
-									$t_related_table = $o_datamodel->getInstanceByTableNum($t_obj->getRightTableNum(), true);
+									$t_related_table = Datamodel::getInstanceByTableNum($t_obj->getRightTableNum(), true);
 									$t_related_table->load($va_log_entry['snapshot'][$t_obj->getRightTableFieldName()]);
 								} else {
 									// other side of rel is on left
-									$t_related_table = $o_datamodel->getInstanceByTableNum($t_obj->getLeftTableNum(), true);
+									$t_related_table = Datamodel::getInstanceByTableNum($t_obj->getLeftTableNum(), true);
 									$t_related_table->load($va_log_entry['snapshot'][$t_obj->getLeftTableFieldName()]);
 								}
-								$t_rel = $o_datamodel->getInstanceByTableNum($t_obj->tableNum(), true);
+								$t_rel = Datamodel::getInstanceByTableNum($t_obj->tableNum(), true);
 								
 								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $t_related_table->tableName())) { continue; }	// does user have access to this bundle?
 							
@@ -600,8 +599,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
  		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
  		
  		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+ 			$pn_table_num = (int)Datamodel::getTableNum($pm_table_name_or_num);
  		} else {
  			$pn_table_num = (int)$pm_table_name_or_num;
  		}
@@ -636,8 +634,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
  		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
  		
  		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+ 			$pn_table_num = (int)Datamodel::getTableNum($pm_table_name_or_num);
  		} else {
  			$pn_table_num = (int)$pm_table_name_or_num;
  		}
@@ -722,8 +719,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
  		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
  		
  		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+ 			$pn_table_num = (int)Datamodel::getTableNum($pm_table_name_or_num);
  		} else {
  			$pn_table_num = (int)$pm_table_name_or_num;
  		}
@@ -758,8 +754,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	public function getEarliestTimestampForIDs($pm_table_name_or_num, $pa_row_ids=null) {
  		
  		if (!is_numeric($pm_table_name_or_num)) {
- 			$o_dm = Datamodel::load();
- 			$pn_table_num = (int)$o_dm->getTableNum($pm_table_name_or_num);
+ 			$pn_table_num = (int)Datamodel::getTableNum($pm_table_name_or_num);
  		} else {
  			$pn_table_num = (int)$pm_table_name_or_num;
  		}
@@ -801,10 +796,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 	 * @return array Change log data
  	 */
  	public function getDeletions($pm_table_name_or_num, $pa_options=null) {
- 		$o_dm = Datamodel::load();
- 		$vn_table_num = $o_dm->getTableNum($pm_table_name_or_num);
- 		$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
- 		$t_subject = $o_dm->getInstanceByTableNum($vn_table_num, true);
+ 		$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
+ 		$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
+ 		$t_subject = Datamodel::getInstanceByTableNum($vn_table_num, true);
  		
 		$pa_datetime_range = (isset($pa_options['range']) && is_array($pa_options['range'])) ? $pa_options['range'] : null;
 		$pn_max_num_entries_returned = (isset($pa_options['limit']) && (int)$pa_options['limit']) ? (int)$pa_options['limit'] : 0;

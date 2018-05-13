@@ -158,8 +158,6 @@ class ItemService extends BaseJSONService {
 
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
-		$o_dm = Datamodel::load();
-
 		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 
 		$va_return = array();
@@ -307,7 +305,7 @@ class ItemService extends BaseJSONService {
 			//
 
 			$va_related_items = $t_instance->get($vs_get_spec, $va_get_options);
-			$t_rel_instance = $o_dm->getInstance($vs_rel_table);
+			$t_rel_instance = Datamodel::getInstance($vs_rel_table);
 
 			if(is_array($va_related_items) && sizeof($va_related_items)>0) {
 				if($t_rel_instance instanceof RepresentableBaseModel) {
@@ -847,7 +845,7 @@ class ItemService extends BaseJSONService {
 		
         if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
+            if($t_set_table =  Datamodel::getInstanceByTableNum($vn_table_num)) {
                 $vs_set_table = $t_set_table->tableName();
                 foreach($pa_data["set_content"] as $vs_idno) {
                     if ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId'])) {
@@ -1008,7 +1006,7 @@ class ItemService extends BaseJSONService {
 		
 		if(($ps_table == 'ca_sets') && is_array($va_post["set_content"]) && sizeof($va_post["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  $this->opo_dm->getInstanceByTableNum($vn_table_num)) {
+            if($t_set_table =  Datamodel::getInstanceByTableNum($vn_table_num)) {
                 $vs_set_table = $t_set_table->tableName();
                 
                $va_current_set_item_ids = $t_instance->getItems(['returnRowIdsOnly' => true]);

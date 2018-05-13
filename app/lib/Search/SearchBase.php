@@ -56,7 +56,6 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 * @param bool $pb_load_engine if set to true (default is false) we don't attempt to load an engine instance. this is useful if you just want to use SearchBase for the utility methods
 		 */
 		public function __construct($po_db=null, $ps_engine=null, $pb_load_engine=true) {
-			$this->opo_datamodel = Datamodel::load();
 			$this->opo_app_config = Configuration::load();
 			$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
 			$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');			
@@ -129,7 +128,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key];
 			}
 			if (is_numeric($pm_subject_table)) {
-				$vs_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+				$vs_subject_table = Datamodel::getTableName($pm_subject_table);
 			} else {
 				$vs_subject_table = $pm_subject_table;
 			}
@@ -138,7 +137,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				$vs_content_table = $vs_subject_table;
 			} else {
 				if (is_numeric($pm_content_table)) {
-					$vs_content_table = $this->opo_datamodel->getTableName($pm_content_table);
+					$vs_content_table = Datamodel::getTableName($pm_content_table);
 				} else {
 					$vs_content_table = $pm_content_table;
 				}
@@ -149,7 +148,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 	
 			$va_fields_to_index = $va_info[$vs_content_table]['fields'];
 	
-			$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_content_table, false);
+			$t_subject = Datamodel::getInstanceByTableName($vs_content_table, false);
 			
 			if (caGetOption('intrinsicOnly', $pa_options, false)) {
 				unset($va_fields_to_index['_metadata']);
@@ -212,7 +211,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 */
 		public function getRelatedIndexingTables($pm_subject_table) {
 			if (is_numeric($pm_subject_table)) {
-				$pm_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
 			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
 				return null;
@@ -221,7 +220,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			unset($va_info['_access_points']);
 			
 			$vs_label_table = null;
-			if (($t_instance = $this->opo_datamodel->getInstanceByTableName($pm_subject_table, true)) && (method_exists($t_instance, 'getLabelTableName'))) {
+			if (($t_instance = Datamodel::getInstanceByTableName($pm_subject_table, true)) && (method_exists($t_instance, 'getLabelTableName'))) {
 				$vs_label_table = $t_instance->getLabelTableName();
 			}
 			
@@ -240,10 +239,10 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 */
 		public function getTableIndexingInfo($pm_subject_table, $pm_content_table) {
 			if (is_numeric($pm_subject_table)) {
-				$pm_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
 			if (is_numeric($pm_content_table)) {
-				$pm_content_table = $this->opo_datamodel->getTableName($pm_content_table);
+				$pm_content_table = Datamodel::getTableName($pm_content_table);
 			}
 			if(!is_array($va_info = $this->opo_search_indexing_config->get($pm_subject_table))) {
 				return null;
@@ -274,10 +273,10 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 */
 		public function getFieldOptions($pm_subject_table, $pm_content_table, $ps_fieldname) {
 			if (is_numeric($pm_subject_table)) {
-				$pm_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
 			if (is_numeric($pm_content_table)) {
-				$pm_content_table = $this->opo_datamodel->getTableName($pm_content_table);
+				$pm_content_table = Datamodel::getTableName($pm_content_table);
 			}
 			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
 				return null;
@@ -294,7 +293,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 */
 		public function getAccessPoints($pm_subject_table) {
 			if (is_numeric($pm_subject_table)) {
-				$pm_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
 			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
 				return null;
@@ -316,7 +315,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 */
 		public function getAccessPointInfo($pm_subject_table, $ps_access_point) {
 			if (is_numeric($pm_subject_table)) {
-				$pm_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
 			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
 				return null;
@@ -333,7 +332,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 * @return BaseModel A model instance or null if the table is invalid
 		 */
 		public function getTableInstance($pm_table_name_or_num) {
-			return $this->opo_datamodel->getInstance($pm_table_name_or_num, true);
+			return Datamodel::getInstance($pm_table_name_or_num, true);
 		}
 		# ------------------------------------------------------------------
 	}

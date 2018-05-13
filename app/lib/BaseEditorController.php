@@ -68,7 +68,6 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('openlayers');
 		AssetLoadManager::register('3dmodels');
 
-		$this->opo_datamodel = Datamodel::load();
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
 	}
@@ -124,7 +123,7 @@ class BaseEditorController extends ActionController {
 		if($vn_above_id) {
 			// Convert "above" id (the id of the record we're going to make the newly created record parent of
 			// to parent_id, by getting the parent of the "above" record, so the inspector can display the name of the parent
-			if (($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name)) && $t_instance->load($vn_above_id)) {
+			if (($t_instance = Datamodel::getInstanceByTableName($this->ops_table_name)) && $t_instance->load($vn_above_id)) {
 				$vn_parent_id = $t_instance->get($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'));
 				$this->request->setParameter($vs_parent_id_fld, $vn_parent_id);
 				$this->view->setVar('parent_id', $vn_parent_id);
@@ -148,7 +147,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('_context_id', $t_subject->get($vs_idno_context_field));
 			} else {
 				if ($vn_parent_id > 0) {
-					$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+					$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
 					if ($t_parent->load($vn_parent_id)) {
 						$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
 					}
@@ -235,7 +234,7 @@ class BaseEditorController extends ActionController {
 
 		if($vn_above_id) {
 			// Convert "above" id (the id of the record we're going to make the newly created record parent of
-			if (($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name)) && $t_instance->load($vn_above_id)) {
+			if (($t_instance = Datamodel::getInstanceByTableName($this->ops_table_name)) && $t_instance->load($vn_above_id)) {
 				$vn_parent_id = $t_instance->get($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'));
 				$this->request->setParameter($vs_parent_id_fld, $vn_parent_id);
 				$this->view->setVar('parent_id', $vn_parent_id);
@@ -244,7 +243,7 @@ class BaseEditorController extends ActionController {
 
 		// relate existing records via Save() link
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
-			if($this->opo_datamodel->tableExists($vs_rel_table)) {
+			if(Datamodel::tableExists($vs_rel_table)) {
 				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
 			}
@@ -268,7 +267,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('_context_id', $vn_context_id = $t_subject->get($vs_idno_context_field));
 			} else {
 				if ($vn_parent_id > 0) {
-					$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+					$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
 					if ($t_parent->load($vn_parent_id)) {
 						$this->view->setVar('_context_id', $vn_context_id = $t_parent->get($vs_idno_context_field));
 					}
@@ -314,7 +313,7 @@ class BaseEditorController extends ActionController {
 
 				// relate newly created record if requested
 				if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
-					if($this->opo_datamodel->tableExists($vs_rel_table)) {
+					if(Datamodel::tableExists($vs_rel_table)) {
 						Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 						$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id);
 					}
@@ -329,7 +328,7 @@ class BaseEditorController extends ActionController {
 				// If "above_id" is set then, we want to load the record pointed to by it and set its' parent to be the newly created record
 				// The newly created record's parent is already set to be the current parent of the "above_id"; the net effect of all of this
 				// is to insert the newly created record between the "above_id" record and its' current parent.
-				if ($vn_above_id && ($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true)) && $t_instance->load($vn_above_id)) {
+				if ($vn_above_id && ($t_instance = Datamodel::getInstanceByTableName($this->ops_table_name, true)) && $t_instance->load($vn_above_id)) {
 					$t_instance->setMode(ACCESS_WRITE);
 					$t_instance->set('parent_id', $vn_subject_id);
 					$t_instance->update();
@@ -521,7 +520,7 @@ class BaseEditorController extends ActionController {
 						$t_subject->moveAuthorityElementReferences($vn_remap_id);
 
 						if ($vn_c > 0) {
-							$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+							$t_target = Datamodel::getInstanceByTableName($this->ops_table_name);
 							$t_target->load($vn_remap_id);
 							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 						}
@@ -529,11 +528,11 @@ class BaseEditorController extends ActionController {
 						// move children
 						if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
 							if (!$t_target) {
-								$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+								$t_target = Datamodel::getInstanceByTableName($this->ops_table_name);
 								$t_target->load($vn_remap_id);
 							}
 							
-							$t_child = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+							$t_child = Datamodel::getInstanceByTableName($this->ops_table_name);
 							$vn_child_count = 0;
 							foreach($va_children as $vn_child_id) {
 								$t_child->load($vn_child_id);
@@ -554,7 +553,7 @@ class BaseEditorController extends ActionController {
 				$t_subject->deleteAuthorityElementReferences();
 				
 				if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
-					$t_child = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+					$t_child = Datamodel::getInstanceByTableName($this->ops_table_name);
 					$vn_child_count = 0;
 					foreach($va_children as $vn_child_id) {
 						$t_child->load($vn_child_id);
@@ -1124,7 +1123,7 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
-		$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
 		if (!$vn_subject_id || !$t_subject->load($vn_subject_id)) {
@@ -1179,7 +1178,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('after_id', $vn_after_id = $this->request->getParameter('after_id', pInteger));
 				$t_subject->set($vs_parent_id_fld, $vn_parent_id);
 
-				$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+				$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
 				if (
 					$t_parent->load($vn_parent_id)
 					&&
@@ -1236,7 +1235,7 @@ class BaseEditorController extends ActionController {
 	 * @return array List of types with subtypes ready for inclusion in a menu spec
 	 */
 	public function _genTypeNav($pa_params) {
-		$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
+		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 
 		$t_list = new ca_lists();
 		$t_list->load(array('list_code' => $t_subject->getTypeListCode()));
@@ -1611,8 +1610,7 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
 	 */
 	public function info($pa_parameters) {
-		$o_dm 				= Datamodel::load();
-		$t_item 			= $o_dm->getInstanceByTableName($this->ops_table_name, true);
+		$t_item 			= Datamodel::getInstanceByTableName($this->ops_table_name, true);
 		$vs_pk 				= $t_item->primaryKey();
 		if ($vs_label_table 	= $t_item->getLabelTableName()) {
 			$t_label 			= $t_item->getLabelTableInstance();
@@ -1837,7 +1835,7 @@ class BaseEditorController extends ActionController {
 			$t_instance = new ca_attribute_values($pn_value_id);
 			$t_instance->useBlobAsMediaField(true);
 			$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
+			$t_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 			$t_subject->load($t_attr->get('row_id'));
 						
 			if (!$t_subject->isReadable($this->request)) { 
@@ -1987,7 +1985,7 @@ class BaseEditorController extends ActionController {
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$t_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$t_subject->load($t_attr->get('row_id'));
 				
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -1997,7 +1995,7 @@ class BaseEditorController extends ActionController {
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$t_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$t_subject->load($t_attr->get('row_id'));
 				
 				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)]));
@@ -2433,7 +2431,7 @@ class BaseEditorController extends ActionController {
 				$t_download_log->log(array(
 						"user_id" => $this->request->getUserID(), 
 						"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
-						"table_num" => $this->opo_datamodel->getTableNum($this->ops_table_name), 
+						"table_num" => Datamodel::getTableNum($this->ops_table_name), 
 						"row_id" => $vn_child_id, 
 						"representation_id" => $pn_representation_id ? $pn_representation_id : null, 
 						"download_source" => "providence"
@@ -2476,13 +2474,13 @@ class BaseEditorController extends ActionController {
 		if (!$t_attr_val->getPrimaryKey()) { return; }
 		$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
 
-		$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_table_name);
+		$vn_table_num = Datamodel::getTableNum($this->ops_table_name);
 		if ($t_attr->get('table_num') !=  $vn_table_num) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
 		$t_element = new ca_metadata_elements($t_attr->get('element_id'));
-		$this->request->setParameter($this->opo_datamodel->getTablePrimaryKeyName($vn_table_num), $t_attr->get('row_id'));
+		$this->request->setParameter(Datamodel::primaryKey($vn_table_num), $t_attr->get('row_id'));
 
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 		$ps_version = $this->request->getParameter('version', pString);
@@ -2531,7 +2529,7 @@ class BaseEditorController extends ActionController {
 		$t_download_log->log(array(
 				"user_id" => $this->request->getUserID(), 
 				"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
-				"table_num" => $this->opo_datamodel->getTableNum($this->ops_table_name), 
+				"table_num" => Datamodel::getTableNum($this->ops_table_name), 
 				"row_id" => $vn_subject_id, 
 				"representation_id" => null, 
 				"download_source" => "providence"
@@ -2601,7 +2599,7 @@ class BaseEditorController extends ActionController {
 		}
 
 		$vs_table_name = $this->getRequest()->getParameter('table', pString);
-		$t_instance = $this->getAppDatamodel()->getInstance($vs_table_name, true);
+		$t_instance = Datamodel::getInstance($vs_table_name, true);
 
 		$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
 		$va_sort_keys = explode(',', $this->getRequest()->getParameter('sortKeys', pString));

@@ -106,11 +106,10 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	 * @return BaseBrowse
 	 */
 	function caGetBrowseInstance($pm_table_name_or_num, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		
-		$vs_table = (is_numeric($pm_table_name_or_num)) ? $o_dm->getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
+		$vs_table = (is_numeric($pm_table_name_or_num)) ? Datamodel::getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
 		
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { return null; }
 		if ($t_instance->isRelationship()) { 
 			require_once(__CA_LIB_DIR__.'/Browse/InterstitialBrowse.php');
 			return new InterstitialBrowse(null, null, $vs_table);

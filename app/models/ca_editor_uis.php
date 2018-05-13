@@ -241,7 +241,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			$t_rel = new ca_relationship_types();
 			$va_rels = $t_rel->getRelationshipsUsingTypes();
 			
-			$o_dm = Datamodel::load();
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
 				BaseModel::$s_ca_models_definitions['ca_editor_uis']['FIELDS']['editor_type']['BOUNDS_CHOICE_LIST'][$va_rel_table_info['name']] = $vn_table_num;
 			}
@@ -312,11 +311,10 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	static public function loadDefaultUI($pm_table_name_or_num, $po_request, $pn_type_id=null, $pa_options=null) {
 		if (isset(ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id])) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id]; }
 		
-		$o_dm = Datamodel::load();
 		if (is_numeric($pm_table_name_or_num)) {
-			$t_instance = $o_dm->getInstanceByTableNum($pm_table_name_or_num, true);
+			$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
 		} else {
-			$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
+			$t_instance = Datamodel::getInstanceByTableName($pm_table_name_or_num, true);
 		}
 		if (!$t_instance) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false; }
 			
@@ -390,7 +388,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_id}/{$pn_type_id}");
 		if (isset(self::$s_screen_cache[$vs_cache_key])) { return self::$s_screen_cache[$vs_cache_key]; }
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
 		if($t_instance instanceof BaseRelationshipModel) {
 			$va_types = $t_instance->getRelationshipTypes();
@@ -914,8 +912,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 * Get simple UI list (restricted by user)
 	 */
 	public static function getUIList($pm_table=null, $pn_user_id=null, $pn_type_id=null){
-		$o_dm = Datamodel::load();
-		$pn_table_num = $o_dm->getTableNum($pm_table);
+		$pn_table_num = Datamodel::getTableNum($pm_table);
 		if ($pn_user_id) { $vs_key = $pn_user_id; } else { $vs_key = "_all_"; }
 		if (ca_editor_uis::$s_available_ui_cache[$pm_table.'/'.$pn_user_id]) { return ca_editor_uis::$s_available_ui_cache[$pm_table.'/'.$pn_user_id]; }
 		$o_db = new Db();
@@ -1154,7 +1151,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_ui_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
 		if (!is_array($pa_settings)) { $pa_settings = []; }
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return false; }
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
 			$va_rel_type_list = $t_instance->getRelationshipTypes();
@@ -1236,7 +1233,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return false; }
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
 			$va_type_list = $t_instance->getRelationshipTypes();
@@ -1371,7 +1368,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('editor_type')))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($vn_table_num = $this->get('editor_type')))) { return null; }
 
 		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
 			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
@@ -1436,8 +1433,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_bundles = [];
 		
-		$o_dm = Datamodel::load();
-		$t_instance = $o_dm->getInstanceByTableNum($this->get('editor_type'), true);
+		$t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type'), true);
 		$vs_table = $t_instance->tableName();
 		
 		$pa_type_restriction_ids = null;
@@ -1472,7 +1468,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				} elseif($t_instance->hasElement($va_tag[1])) {	// metadata element
 					$va_bundles["ca_attribute_".$va_tag[1]] = preg_replace("![^A-Za-z0-9_]+!", "_", $va_tag[0].'_'.$va_tag[1]);
 				}
-			} elseif ($o_dm->getTableNum($va_tag[0])) {
+			} elseif (Datamodel::getTableNum($va_tag[0])) {
 				// related?
 				if ($t_instance->isValidBundle($va_tag[0])) {	//related
 					$va_bundles[$va_tag[0]] = $va_tag[0];

@@ -46,7 +46,6 @@ class ElementsController extends BaseEditorController {
 	public function Index() {
 		AssetLoadManager::register('tableList');
 	
-		$vo_dm = Datamodel::load();
 		$va_elements = ca_metadata_elements::getRootElementsAsList(null, null, true, true);
 		$this->view->setVar('element_list',$va_elements);
 		$this->view->setVar('attribute_types', Attribute::getAttributeTypes());

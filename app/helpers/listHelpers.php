@@ -517,8 +517,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @return array Returns an array keys by type_id with type information, or null if the table is invalid.
 	 */
 	function caGetTypeList($pm_table_name_or_num, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		if (($t_instance = $o_dm->getInstance($pm_table_name_or_num)) && (method_exists($t_instance, "getTypeList"))) {
+		if (($t_instance = Datamodel::getInstance($pm_table_name_or_num)) && (method_exists($t_instance, "getTypeList"))) {
 			if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_instance->setTransaction($o_trans); }
 			return $t_instance->getTypeList($pa_options);
 		}
@@ -533,8 +532,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @return string|null
 	 */
 	function caGetLabelTypeList($pm_table_name_or_num, $pb_preferred = true) {
-		$o_dm = Datamodel::load();
-		$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+		$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 
 		$o_conf = Configuration::load();
 		return $o_conf->get($pb_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list");

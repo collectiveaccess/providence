@@ -49,7 +49,6 @@ class TourService extends BaseService {
 	# -------------------------------------------------------
 	public function  __construct($po_request) {
 		parent::__construct($po_request);
-		$this->opo_dm = Datamodel::load();
 	}
 	# -------------------------------------------------------
 	/**
@@ -505,7 +504,7 @@ class TourService extends BaseService {
 	}
 	# -------------------------------------------------------
 	private function getRelTableName($ps_left_table,$ps_right_table){
-		$va_relationships = $this->opo_dm->getPath($ps_left_table, $ps_right_table);
+		$va_relationships = Datamodel::getPath($ps_left_table, $ps_right_table);
 		unset($va_relationships[$ps_left_table]);
 		unset($va_relationships[$ps_right_table]);
 		if(sizeof($va_relationships)==1){

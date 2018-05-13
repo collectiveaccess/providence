@@ -65,7 +65,6 @@
  			AssetLoadManager::register('panel');
  			
  			
- 			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
  		}
@@ -165,7 +164,7 @@
  			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();
  			
- 			if (!$t_subject = $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true)) {
+ 			if (!$t_subject = Datamodel::getInstanceByTableNum($t_importer->get('table_num'), true)) {
  				return $this->Index();
  			}
  			
@@ -274,7 +273,6 @@
  		 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
  		 */
  		public function info($pa_parameters) {
- 			$o_dm 				= Datamodel::load();
  			$t_importer = $this->getImporterInstance(false);
  			$this->view->setVar('t_item', $t_importer);
 			$this->view->setVar('result_context', $this->opo_result_context);

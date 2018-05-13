@@ -107,7 +107,7 @@
  			//
  			// Set useful values we'll need later
  			//
-			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			$vb_criteria_have_changed = $this->opo_browse->criteriaHaveChanged();
 			
 			// Get elements of result context
@@ -155,7 +155,7 @@
  				$va_facet_info = $this->opo_browse->getInfoForFacet($va_tmp[0]);
  				
  				if ($this->request->config->get('redirect_to_'.$va_facet_info['table'].'_detail_if_is_first_facet')) {
- 					$t_table = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table'], true);
+ 					$t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true);
  					
  					$va_newmuseum_hack_occurrence_type_ids = $this->request->config->getList('newmuseum_hack_browse_should_redirect_occurrence_types_to_object_details');
  					if (is_array($va_newmuseum_hack_occurrence_type_ids) && sizeof($va_newmuseum_hack_occurrence_type_ids) && ($va_facet_info['table'] == 'ca_occurrences')) {
@@ -425,7 +425,7 @@
  			
  			// generate type menu and type value list for related authority table facet
  			if ($va_facet_info['type'] === 'authority') {
-				$t_model = $this->opo_datamodel->getTableInstance($va_facet_info['table']);
+				$t_model = Datamodel::getInstance($va_facet_info['table']);
 				if (method_exists($t_model, "getTypeList")) {
 					$this->view->setVar('type_list', $t_model->getTypeList());
 				}
@@ -436,7 +436,7 @@
 				$this->view->setVar('t_item', $t_model);
 			}
 			
-			$this->view->setVar('t_subject', $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true));
+			$this->view->setVar('t_subject', Datamodel::getInstanceByTableName($this->ops_tablename, true));
 				
 			$this->opo_result_context->saveContext();
 			if (isset($pa_options['view']) && $pa_options['view']) { 
@@ -460,7 +460,7 @@
  			if(!is_array($va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name))) { return null; }
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
- 			$t_item = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table']);
+ 			$t_item = Datamodel::getInstanceByTableName($va_facet_info['table']);
  			
  			// Get list of level parents to generate lists for (we 
 			$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
@@ -472,7 +472,7 @@
 				$vn_max_items_per_page = null;
 			}
 			
-			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);	// browse target
+			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);	// browse target
 			
 			$o_config = Configuration::load();
 			
@@ -585,7 +585,7 @@
 							}
 						}
 						if ($vn_id) {
-							$t_item = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table']);
+							$t_item = Datamodel::getInstanceByTableName($va_facet_info['table']);
 							$t_item->load($vn_id);
 							
 							$vn_c = 0;
@@ -699,7 +699,7 @@
  					$va_facet_info['table'] = $this->ops_tablename;
  					// fall through to default case
  				default:
-					$t_item = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table']);
+					$t_item = Datamodel::getInstanceByTableName($va_facet_info['table']);
 					$t_item->load($pn_id);
 					
 					if (method_exists($t_item, "getHierarchyList")) { 

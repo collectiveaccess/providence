@@ -655,8 +655,7 @@ class MultipartIDNumber extends IDNumber {
 		$vn_type_id = null;
 		$vs_type_limit_sql = '';
 		
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return 'ERR'; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { return 'ERR'; }
 		if ((bool)$va_element_info['sequence_by_type']) {
 			$vs_type = $this->getType();
 			if ($vs_type == '__default__') {

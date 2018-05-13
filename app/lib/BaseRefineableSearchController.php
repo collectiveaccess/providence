@@ -107,7 +107,7 @@
  			
  			// generate type menu and type value list for related authority table facet
  			if ($va_facet_info['type'] === 'authority') {
-				$t_model = $this->opo_datamodel->getTableInstance($va_facet_info['table']);
+				$t_model = Datamodel::getInstance($va_facet_info['table']);
 				if (method_exists($t_model, "getTypeList")) {
 					$this->view->setVar('type_list', $t_model->getTypeList());
 				}
@@ -116,7 +116,7 @@
 				$this->view->setVar('relationship_type_list', $t_rel_types->getRelationshipInfo($va_facet_info['relationship_table']));
 				
 				$this->view->setVar('t_item', $t_model);
-				$this->view->setVar('t_subject', $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true));
+				$this->view->setVar('t_subject', Datamodel::getInstanceByTableName($this->ops_tablename, true));
 			}
 			
  			$this->render('Search/ajax_refine_facet_html.php');
@@ -144,7 +144,7 @@
 				$vn_max_items_per_page = null;
 			}
 			
-			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 			
 			$o_config = Configuration::load();
 			if (!(is_array($va_sorts = $o_config->getList($this->ops_tablename.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
@@ -227,7 +227,7 @@
 					default:
 						if(!$vn_id) {
 							$va_hier_ids = $this->opo_browse->getHierarchyIDsForFacet($ps_facet_name, array('checkAccess' => $va_access_values));
-							$t_item = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table']);
+							$t_item = Datamodel::getInstanceByTableName($va_facet_info['table']);
 							$t_item->load($vn_id);
 							$vn_id = $vn_root = $t_item->getHierarchyRootID();
 							$va_hierarchy_list = $t_item->getHierarchyList(true);

@@ -48,7 +48,6 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 	
 	# -------------------------------------------------------
 	public function __construct($pa_hits, $pn_table_num) {
-		$this->opo_datamodel = Datamodel::load();
 		$this->opn_subject_tablenum = $pn_table_num;
 		
 		$this->setHits($pa_hits);
@@ -58,7 +57,7 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		$this->opa_hits = $pa_hits;
 		$this->opn_current_row = -1;
 		if (sizeof($this->opa_hits)) {
-			$this->opo_subject_instance = $this->opo_datamodel->getInstanceByTableNum($this->opn_subject_tablenum, true);
+			$this->opo_subject_instance = Datamodel::getInstanceByTableNum($this->opn_subject_tablenum, true);
 			$this->ops_subject_primary_key = $this->opo_subject_instance->primaryKey();
 			$this->ops_subject_table_name = $this->opo_subject_instance->tableName();
 		}

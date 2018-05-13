@@ -94,7 +94,7 @@
 			global $g_ui_locale_id;
 
 			$ps_table = $this->getRequest()->getParameter('set_table', pString);
-			if(!($t_instance = Datamodel::load()->getInstance($ps_table, true))) {
+			if(!($t_instance = Datamodel::getInstance($ps_table, true))) {
 				$this->opo_notification_manager->addNotification(_t("Invalid table"), __NOTIFICATION_TYPE_ERROR__);
 				$this->ListItems();
 				return;

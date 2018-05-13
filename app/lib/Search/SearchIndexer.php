@@ -109,13 +109,13 @@ class SearchIndexer extends SearchBase {
 	 * Returns a list of tables the require indexing
 	 */
 	public function getIndexedTables() {
-		$va_table_names = $this->opo_datamodel->getTableNames();
+		$va_table_names = Datamodel::getTableNames();
 
 		$o_db = $this->opo_db;
 		$va_tables_to_index = $va_tables_by_size = array();
 		foreach($va_table_names as $vs_table) {
-			$vn_table_num = $this->opo_datamodel->getTableNum($vs_table);
-			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+			$vn_table_num = Datamodel::getTableNum($vs_table);
+			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 			$va_fields_to_index = $this->getFieldsToIndex($vn_table_num);
 			if (!is_array($va_fields_to_index) || (sizeof($va_fields_to_index) == 0)) {
 				continue;
@@ -171,13 +171,13 @@ class SearchIndexer extends SearchBase {
 
 			$va_table_names = array();
 			foreach($pa_table_names as $vs_table) {
-				if ($this->opo_datamodel->tableExists($vs_table)) {
-					$vn_num = $this->opo_datamodel->getTableNum($vs_table);
+				if (Datamodel::tableExists($vs_table)) {
+					$vn_num = Datamodel::getTableNum($vs_table);
 					if($pb_display_progress) {
 						print _t("\nTRUNCATING %1\n\n", $vs_table);
 					}
 					$this->opo_engine->truncateIndex($vn_num);
-					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+					$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 					$va_table_names[$vn_num] = array('name' => $vs_table, 'num' => $vn_num, 'displayName' => $t_instance->getProperty('NAME_PLURAL'));
 				}
 			}
@@ -205,7 +205,7 @@ class SearchIndexer extends SearchBase {
 
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
-			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 
 			$vn_table_num = $t_instance->tableNum();
 
@@ -323,7 +323,7 @@ class SearchIndexer extends SearchBase {
 	 * @return mixed True on success, null if the table is invalid or no ids are specified.
 	 */
 	public function reindexRows($pm_table_name_or_num, $pa_ids, $pa_options=null) {
-		if(!($t_instance = $this->opo_datamodel->getInstance($pm_table_name_or_num))) { return null; }
+		if(!($t_instance = Datamodel::getInstance($pm_table_name_or_num))) { return null; }
 		if (!is_array($pa_ids) && !sizeof($pa_ids)) { return null; }
 
 		$va_element_ids = null;
@@ -567,8 +567,8 @@ class SearchIndexer extends SearchBase {
 		$vb_initial_reindex_mode = $pb_reindex_mode;
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
-		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_table_num);
-		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
+		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
+		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
 		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
 
 		// Prevent endless recursive reindexing
@@ -766,7 +766,7 @@ class SearchIndexer extends SearchBase {
 							$va_content[$t_item->get('idno')] = true;
 						}  else {
 							// is this field related to something?
-							if (is_array($va_rels = $this->opo_datamodel->getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field])) {
+							if (is_array($va_rels = Datamodel::getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field])) {
 								if (isset($va_rels[$vs_field])) {
 									if ($pa_changed_fields[$vs_field]) {
 										$pb_reindex_mode = true;	// trigger full reindex of record so it reflects text of related item (if so indexed)
@@ -834,10 +834,10 @@ class SearchIndexer extends SearchBase {
 					$vn_private = 0;
 					$va_queries = [];
 
-					$vn_related_table_num = $this->opo_datamodel->getTableNum($vs_related_table);
-					$vs_related_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_related_table_num);
+					$vn_related_table_num = Datamodel::getTableNum($vs_related_table);
+					$vs_related_pk = Datamodel::primaryKey($vn_related_table_num);
 
-					$t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_related_table_num, true);
+					$t_rel = Datamodel::getInstanceByTableNum($vn_related_table_num, true);
 					$t_rel->setDb($this->getDb());
 
 					$va_params = null;
@@ -853,7 +853,7 @@ class SearchIndexer extends SearchBase {
 						// Check for configured "private" relationships
 						$va_private_rel_types = null;
 						foreach($va_linking_table_config as $vs_linking_table => $va_linking_config) {
-							if (is_array($va_linking_config) && sizeof($va_linking_config) && isset($va_linking_config['PRIVATE']) && $this->opo_datamodel->isRelationship($vs_linking_table)) {
+							if (is_array($va_linking_config) && sizeof($va_linking_config) && isset($va_linking_config['PRIVATE']) && Datamodel::isRelationship($vs_linking_table)) {
 								$va_private_rel_types = caMakeRelationshipTypeIDList($vs_linking_table, $va_linking_config['PRIVATE'], []);
 								break;
 							}
@@ -989,7 +989,7 @@ class SearchIndexer extends SearchBase {
 											if (((isset($va_rel_field_info['INDEX_AS_IDNO']) && $va_rel_field_info['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_rel_field_info)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
 												// specialized identifier (idno) processing; uses IDNumbering plugin to generate searchable permutations of identifier
 												$va_values = $o_idno->getIndexValues($vs_fld_data, $va_rel_field_info);
-												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field)), $vn_id = $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = Datamodel::getFieldNum($vs_related_table, $vs_rel_field)), $vn_id = $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 												$this->_genIndexInheritance($t_subject, $t_rel, "I{$vn_fn}", $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 											} elseif (((isset($va_rel_field_info['INDEX_AS_MIMETYPE']) && $va_rel_field_info['INDEX_AS_MIMETYPE']) || in_array('INDEX_AS_MIMETYPE', $va_rel_field_info))) {
 												// specialized mimetype processing
@@ -998,14 +998,14 @@ class SearchIndexer extends SearchBase {
 													$va_values[] = $vs_typename;
 												}
 												// Index mimetype as-is
-												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field)), $vn_id = $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'DONT_TOKENIZE' => true)));
+												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = Datamodel::getFieldNum($vs_related_table, $vs_rel_field)), $vn_id = $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'DONT_TOKENIZE' => true)));
 												
 												// Index typename
-												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field)), $vn_id = $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = Datamodel::getFieldNum($vs_related_table, $vs_rel_field)), $vn_id = $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 												$this->_genIndexInheritance($t_subject, $t_rel, "I{$vn_fn}", $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 											} else {
 												// regular intrinsic
-												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field)), $vn_rid = $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+												$this->opo_engine->indexField($vn_related_table_num, 'I'.($vn_fn = Datamodel::getFieldNum($vs_related_table, $vs_rel_field)), $vn_rid = $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 												$this->_genIndexInheritance($t_subject, $t_rel, "I{$vn_fn}", $pn_subject_row_id, $vn_rid, [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 											}
 										}
@@ -1035,7 +1035,7 @@ class SearchIndexer extends SearchBase {
 													    $vn_label_id = $va_label['label_id'];
 
 														foreach($va_label_info['related']['fields'] as $vs_label_field => $va_config) {
-															$this->opo_engine->indexField($vn_label_table_num, 'I'.($vn_fn = $this->opo_datamodel->getFieldNum($vn_label_table_num, $vs_label_field)), $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+															$this->opo_engine->indexField($vn_label_table_num, 'I'.($vn_fn = Datamodel::getFieldNum($vn_label_table_num, $vs_label_field)), $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 															$this->_genIndexInheritance($t_subject, $t_label, "I{$vn_fn}", $pn_subject_row_id, $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
 														}
 													}
@@ -1127,7 +1127,7 @@ class SearchIndexer extends SearchBase {
 
 				foreach($va_row_ids_to_reindex_by_table as $vn_rel_table_num => $va_rel_row_ids) {
 					$va_rel_row_ids = array_unique($va_rel_row_ids);
-					if ($t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_table_num, true)) {
+					if ($t_rel = Datamodel::getInstanceByTableNum($vn_rel_table_num, true)) {
 						$t_rel->setDb($this->getDb());
 						if (method_exists($t_rel, "getApplicableElementCodes")) {
 							if (is_array($va_element_ids = array_keys($t_rel->getApplicableElementCodes(null, false, false))) && sizeof($va_element_ids)) {
@@ -1142,7 +1142,7 @@ class SearchIndexer extends SearchBase {
 					$vn_rel_type_id = $va_row_to_reindex['relationship_type_id'];
 					$vn_private = $va_row_to_reindex['private'];
 					
-					$t_rel = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
+					$t_rel = Datamodel::getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
 					$t_rel->setDb($this->getDb());
 
 					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
@@ -1151,14 +1151,14 @@ class SearchIndexer extends SearchBase {
 					
 					if ($va_row_to_reindex['field_name'] == '_count') {
 						foreach( $va_row_to_reindex['row_ids'] as $vn_subject_row_id) {
-							$this->_doCountIndexing($this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['table_num'], true), $vn_subject_row_id, $t_rel, false);
+							$this->_doCountIndexing(Datamodel::getInstanceByTableNum($va_row_to_reindex['table_num'], true), $vn_subject_row_id, $t_rel, false);
 						}
 					}
 
 					if (((isset($va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) && $va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_row_to_reindex['indexing_info']))) {
 						if (!is_array($va_row_to_reindex['row_ids'])) { continue; }
 
-						$t_label = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
+						$t_label = Datamodel::getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
 						$t_label->setDb($this->getDb());
 
 						foreach($va_row_to_reindex['row_ids'] as $vn_row_id) {
@@ -1197,7 +1197,7 @@ class SearchIndexer extends SearchBase {
 															$vs_value_to_index .= " ; ".$vs_additional_value;
 														}
 													}
-													if ($t_rel = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['table_num'], true)) {
+													if ($t_rel = Datamodel::getInstanceByTableNum($va_row_to_reindex['table_num'], true)) {
 														$this->opo_engine->indexField($va_row_to_reindex['table_num'], "A{$vn_sub_element_id}", $va_row_to_reindex['field_row_id'], [$vs_value_to_index], array_merge($va_row_to_reindex['indexing_info'], array('PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id)));
 														$this->_genIndexInheritance($t_subject, $t_rel, "A{$vn_sub_element_id}", $pn_subject_row_id, $va_row_to_reindex['field_row_id'], [$vs_value_to_index], array_merge($va_row_to_reindex['indexing_info'], array('PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id)));
 													}
@@ -1208,7 +1208,7 @@ class SearchIndexer extends SearchBase {
 											$va_sub_elements = $this->opo_metadata_element->getElementsInSet($vs_element_code);
 
 											foreach($va_sub_elements as $vn_i => $va_element_info) {
-												if ($t_rel = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['table_num'], true)) {
+												if ($t_rel = Datamodel::getInstanceByTableNum($va_row_to_reindex['table_num'], true)) {
 													$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$va_element_info['element_id'], $va_row_to_reindex['field_row_id'], [''], array_merge($va_row_to_reindex['indexing_info'], array('PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id)));
 													$this->_genIndexInheritance($t_subject, $t_rel, 'A'.$va_element_info['element_id'], $pn_subject_row_id, $va_row_to_reindex['field_row_id'], [''], array_merge($va_row_to_reindex['indexing_info'], array('PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id)));
 												}
@@ -1298,7 +1298,7 @@ class SearchIndexer extends SearchBase {
 				foreach($va_rows_to_reindex as $va_row_to_reindex) {
 					if(isset($va_rows_seen[$va_row_to_reindex['table_num']][$va_row_to_reindex['row_id']])) { continue; }
 					if ((!$t_dep) || ($t_dep->tableNum() != $va_row_to_reindex['table_num'])) {
-						$t_dep = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['table_num']);
+						$t_dep = Datamodel::getInstanceByTableNum($va_row_to_reindex['table_num']);
 					}
 
 					$vb_support_attributes = is_subclass_of($t_dep, 'BaseModelWithAttributes') ? true : false;
@@ -1599,7 +1599,7 @@ class SearchIndexer extends SearchBase {
 	 * this for you during delete().)
 	 */
 	public function startRowUnIndexing($pn_subject_table_num, $pn_subject_row_id) {
-		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_table_num);
+		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
 		$va_deps = $this->getDependencies($vs_subject_tablename);
 
 		$va_indexed_tables = $this->getIndexedTables();
@@ -1633,7 +1633,7 @@ class SearchIndexer extends SearchBase {
 		// if dependencies have not been set at this point -- either by startRowUnindexing
 		// (which may have been skipped) or by passing the dependencies option -- then get them now
 		if(!$this->opa_dependencies_to_update) {
-			$va_deps = $this->getDependencies($this->opo_datamodel->getTableName($pn_subject_table_num));
+			$va_deps = $this->getDependencies(Datamodel::getTableName($pn_subject_table_num));
 			$this->opa_dependencies_to_update = $this->_getDependentRowsForSubject($pn_subject_table_num, $pn_subject_row_id, $va_deps);
 		}
 
@@ -1641,7 +1641,7 @@ class SearchIndexer extends SearchBase {
 		$this->opo_engine->removeRowIndexing($pn_subject_table_num, $pn_subject_row_id);
 
 		if (is_array($this->opa_dependencies_to_update)) {
-			$t_subject = $this->opo_datamodel->getInstanceByTableNum($pn_subject_table_num, true);
+			$t_subject = Datamodel::getInstanceByTableNum($pn_subject_table_num, true);
 			
 			if (!$vb_can_do_incremental_indexing) {
 				$va_seen_items = array();
@@ -1653,7 +1653,7 @@ class SearchIndexer extends SearchBase {
 				}
 				$va_field_values = array();
 				foreach($va_id_list as $vn_table_num => $va_row_ids) {
-					if($t_instance = $this->opo_datamodel->getInstanceByTableNum($vn_table_num, true)) {
+					if($t_instance = Datamodel::getInstanceByTableNum($vn_table_num, true)) {
 						$va_field_values[$vn_table_num] = $t_instance->getFieldValuesForIDs(array_keys($va_row_ids));
 					}
 				}
@@ -1665,7 +1665,7 @@ class SearchIndexer extends SearchBase {
 					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], null, null, null, $va_item['relationship_type_id']);
 
 					$this->indexRow($va_item['table_num'], $va_item['row_id'], $va_field_values[$va_item['table_num']][$va_item['row_id']]);
-					$this->_doCountIndexing($this->opo_datamodel->getInstanceByTableNum($va_item['table_num'], true), $va_item['row_id'], $t_subject, false);
+					$this->_doCountIndexing(Datamodel::getInstanceByTableNum($va_item['table_num'], true), $va_item['row_id'], $t_subject, false);
 				
 					$va_seen_items[$va_item['table_num']][$va_item['row_id']] = true;
 				}
@@ -1678,7 +1678,7 @@ class SearchIndexer extends SearchBase {
 					
 					// Remove existing count index and recreate
 					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, 0, $va_item['relationship_type_id']);
-					$this->_doCountIndexing($this->opo_datamodel->getInstanceByTableNum($va_item['table_num'], true), $va_item['row_id'], $t_subject, false);
+					$this->_doCountIndexing(Datamodel::getInstanceByTableNum($va_item['table_num'], true), $va_item['row_id'], $t_subject, false);
 				
 				}
 			}
@@ -1724,15 +1724,15 @@ class SearchIndexer extends SearchBase {
 	 */
 	private function _getDependentRowsForSubject($pn_subject_table_num, $pn_subject_row_id, $va_deps, $pa_changed_field_nums=null) {
 		$va_dependent_rows = array();
-		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_table_num);
+		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
 
-		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
+		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
 		$vs_subject_pk = $t_subject->primaryKey();
 
 // Loop through dependent tables
 
 		foreach($va_deps as $vs_dep_table) {
-			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
+			$t_dep 				= Datamodel::getInstanceByTableName($vs_dep_table, true);
 			if (!$t_dep) { continue; }
 			$vs_dep_pk 			= $t_dep->primaryKey();
 			$vn_dep_table_num 	= $t_dep->tableNum();
@@ -1753,7 +1753,7 @@ class SearchIndexer extends SearchBase {
 					//
 					// dependency for 'related' indexing; translate dependency into a set of self-relations
 					//
-					$t_self_rel = $this->opo_datamodel->getInstanceByTableName($vs_self_rel_table_name, true);
+					$t_self_rel = Datamodel::getInstanceByTableName($vs_self_rel_table_name, true);
 					$va_params = [$pn_subject_row_id, $pn_subject_row_id];
 					
 					$vs_sql_joins = $vs_delete_sql = '';
@@ -1921,9 +1921,9 @@ class SearchIndexer extends SearchBase {
 // update indexing for each relationship
 				foreach($va_rel_tables_to_index_list as $vs_rel_table) {
 					$va_indexing_info = $this->getTableIndexingInfo($vn_dep_table_num, $vs_rel_table);
-					$vn_rel_table_num = $this->opo_datamodel->getTableNum(preg_replace("/\.related$/", "", $vs_rel_table));
-					$vn_rel_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_rel_table_num);
-					$t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_table_num, true);
+					$vn_rel_table_num = Datamodel::getTableNum(preg_replace("/\.related$/", "", $vs_rel_table));
+					$vn_rel_pk = Datamodel::primaryKey($vn_rel_table_num);
+					$t_rel = Datamodel::getInstanceByTableNum($vn_rel_table_num, true);
 					$t_rel->setDb($this->getDb());
 
 					if (is_array($va_indexing_info['tables']) && (sizeof($va_indexing_info['tables']))) {
@@ -1961,7 +1961,7 @@ class SearchIndexer extends SearchBase {
 						// Check for configured "private" relationships
 						$va_private_rel_types = null;
 						foreach($va_linking_tables_config as $vs_linking_table => $va_linking_config) {
-							if (is_array($va_linking_config) && sizeof($va_linking_config) && isset($va_linking_config['PRIVATE']) && $this->opo_datamodel->isRelationship($vs_linking_table)) {
+							if (is_array($va_linking_config) && sizeof($va_linking_config) && isset($va_linking_config['PRIVATE']) && Datamodel::isRelationship($vs_linking_table)) {
 								$va_private_rel_types = caMakeRelationshipTypeIDList($vs_linking_table, $va_linking_config['PRIVATE'], []);
 								break;
 							}
@@ -2012,8 +2012,8 @@ class SearchIndexer extends SearchBase {
 											if(!is_array($va_references) || (sizeof($va_references) == 0)) { continue; }
 
 											$va_element_fields_to_index = $this->getFieldsToIndex($vn_element_table_num, $vn_element_table_num);
-											$vs_element_table_name = $t_dep->getAppDatamodel()->getTableName($vn_element_table_num);
-											$vs_element_table_pk = $t_dep->getAppDatamodel()->getTablePrimaryKeyName($vn_element_table_num);
+											$vs_element_table_name = Datamodel::getTableName($vn_element_table_num);
+											$vs_element_table_pk = Datamodel::getTablePrimaryKeyName($vn_element_table_num);
 
 											$qr_field_data = $this->opo_db->query("
 												SELECT *
@@ -2088,10 +2088,10 @@ class SearchIndexer extends SearchBase {
 		if(true) { //!MemoryCache::contains($vs_key, 'SearchIndexerRelatedRowsJoins')) {
 			$vs_left_table = $vs_select_table = preg_replace("/\.related$/", "", array_shift($pa_tables));
 
-			$t_select = $this->opo_datamodel->getInstanceByTableName($vs_select_table, true);
+			$t_select = Datamodel::getInstanceByTableName($vs_select_table, true);
 			$vs_select_pk = $t_select->primaryKey();
 			
-			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
+			$t_subject = Datamodel::getInstanceByTableName($ps_subject_tablename, true);
 			$vs_subject_pk = $t_subject->primaryKey();
 			
 			$va_joins = array();
@@ -2109,8 +2109,8 @@ class SearchIndexer extends SearchBase {
 				
 				$vs_t = null;
 			
-				$t_left_table = $this->opo_datamodel->getInstanceByTableName($vs_left_table, true);
-				$t_right_table = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true);
+				$t_left_table = Datamodel::getInstanceByTableName($vs_left_table, true);
+				$t_right_table = Datamodel::getInstanceByTableName($vs_right_table, true);
 				
 				$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
 				$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
@@ -2127,10 +2127,10 @@ class SearchIndexer extends SearchBase {
 
 						if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 							if ($va_key_spec['right_table_num']) {
-								$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
+								$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_left_table);
 								$vs_t = $vs_right_table;
 							} else {
-								$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
+								$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['left_table_num']} = ".Datamodel::getTableNum($vs_right_table);
 								$vs_t = $vs_left_table;
 							}
 						}
@@ -2146,17 +2146,17 @@ class SearchIndexer extends SearchBase {
 
 						if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 							if ($va_key_spec['right_table_num']) {
-								$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
+								$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_right_table);
 								$vs_t = $vs_left_table;
 							} else {
-								$vs_join .= " AND {$vs_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
+								$vs_join .= " AND {$vs_alias}.{$va_key_spec['left_table_num']} = ".Datamodel::getTableNum($vs_left_table);
 								$vs_t = $vs_right_table;
 							}
 						}
 						$vs_join .= ')';
 					}
-					$vs_left = $this->opo_datamodel->getTablePrimaryKeyName($vs_left_table);
-					$vs_right = $this->opo_datamodel->getTablePrimaryKeyName($vs_right_table);
+					$vs_left = Datamodel::primaryKey($vs_left_table);
+					$vs_right = Datamodel::primaryKey($vs_right_table);
 					
 					if (isset($va_field_names[$vs_left])) { unset($va_flds[$va_field_names[$vs_left]]); }
 					$va_flds[$va_field_names[$vs_left] = "{$vs_prev_alias}.{$vs_left}"] = true;
@@ -2166,10 +2166,10 @@ class SearchIndexer extends SearchBase {
 
 					$va_joins[] = $vs_join;
 
-				} elseif ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
+				} elseif ($va_rel = Datamodel::getOneToManyRelations($vs_left_table, $vs_right_table)) {
 					$vs_t = $va_rel['many_table'];
 					
-					$vs_many = $this->opo_datamodel->getTablePrimaryKeyName($va_rel['many_table']);
+					$vs_many = Datamodel::primaryKey($va_rel['many_table']);
 					if (isset($va_field_names[$vs_many] )) { unset($va_flds[$va_field_names[$vs_many]]); }
 					$va_flds[$va_field_names[$vs_many] = "{$vs_alias}.{$vs_many}"] = true;
 					
@@ -2185,10 +2185,10 @@ class SearchIndexer extends SearchBase {
 					} else {
 						$va_joins[] = "INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
 					}
-				} elseif ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
+				} elseif ($va_rel = Datamodel::getOneToManyRelations($vs_right_table, $vs_left_table)) {
 					$vs_t = $va_rel['one_table'];
 					
-					$vs_one = $this->opo_datamodel->getTablePrimaryKeyName($va_rel['one_table']);
+					$vs_one = Datamodel::primaryKey($va_rel['one_table']);
 					
 					if (isset($va_field_names[$vs_one])) { unset($va_flds[$va_field_names[$vs_one]]); }
 					$va_flds[$va_field_names[$vs_one] = "{$vs_alias}.{$vs_one}"] = true;
@@ -2208,7 +2208,7 @@ class SearchIndexer extends SearchBase {
 				}
 
 				// Add relationship type with "rel_type_id" alias to distinguish it from record type_id fields (eg. ca_objects.type_id);
-				if (($t_table = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && ($t_table->isRelationship() && $t_table->hasField('type_id'))) {
+				if (($t_table = Datamodel::getInstanceByTableName($vs_right_table, true)) && ($t_table->isRelationship() && $t_table->hasField('type_id'))) {
 					$va_flds["{$vs_alias}.type_id rel_type_id"] = true;
 				}
 				$vs_left_table = $vs_right_table;
@@ -2218,7 +2218,7 @@ class SearchIndexer extends SearchBase {
 			
 			
 			// Add fields being indexed 
-			if ($t_indexed_table = $this->opo_datamodel->getInstanceByTableName($ps_table_to_index, true)) {
+			if ($t_indexed_table = Datamodel::getInstanceByTableName($ps_table_to_index, true)) {
 				foreach($pa_fields_to_index as $vs_f => $va_field_info) {
 					if (!$t_indexed_table->hasField($vs_f)) { continue; }
 					if (in_array($t_indexed_table->getFieldInfo($vs_f, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS, FT_DATERANGE, FT_HISTORIC_DATERANGE, FT_TIMERANGE))) { continue; }
@@ -2347,7 +2347,7 @@ class SearchIndexer extends SearchBase {
 						foreach($va_table_list as $vs_tablename) {
 							$o_graph->addNode($vs_tablename);
 							if ($vs_last_table) {
-								if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_tablename, $vs_last_table)) {		// determining direction of relationship (directionality is from the "many" table to the "one" table
+								if ($va_rel = Datamodel::getOneToManyRelations($vs_tablename, $vs_last_table)) {		// determining direction of relationship (directionality is from the "many" table to the "one" table
 									$o_graph->addRelationship($vs_tablename, $vs_last_table, 10, true);
 								} else {
 									$o_graph->addRelationship($vs_last_table, $vs_tablename, 10, true);
@@ -2377,7 +2377,7 @@ class SearchIndexer extends SearchBase {
 		}
 
 		// Is this a self relation?
-		$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_table, true);
+		$t_subject = Datamodel::getInstanceByTableName($ps_subject_table, true);
 		if (method_exists($t_subject, 'isSelfRelationship') && $t_subject->isSelfRelationship()) {
 			$va_deps[] = $t_subject->getLeftTableName();
 		}
@@ -2407,7 +2407,7 @@ class SearchIndexer extends SearchBase {
 		if (!$pb_force_related && ($vs_subject_tablename == $vs_related_table)) {
 			// self-relation
 			if (!($vs_self_rel_table_name = $pt_rel->getSelfRelationTableName())) { return null; }
-			$t_self_rel = $this->opo_datamodel->getInstanceByTableName($vs_self_rel_table_name, true);
+			$t_self_rel = Datamodel::getInstanceByTableName($vs_self_rel_table_name, true);
 			$va_proc_field_list = array();
 			
 			$va_self_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_subject_tablename);
@@ -2513,9 +2513,9 @@ class SearchIndexer extends SearchBase {
 							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['right_key']} = {$vs_prev_alias}.{$va_key_spec['left_key']}".$vs_rel_type_res_sql;
 							if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 								if ($va_key_spec['right_table_num']) {
-									$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
+									$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_left_table);
 								} else {
-									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
+									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['left_table_num']} = ".Datamodel::getTableNum($vs_right_table);
 								}
 							}
 							$vs_join .= ")";
@@ -2524,20 +2524,20 @@ class SearchIndexer extends SearchBase {
 							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['left_key']} = {$vs_prev_alias}.{$va_key_spec['right_key']}".$vs_rel_type_res_sql;
 							if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 								if ($va_key_spec['right_table_num']) {
-									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
+									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_right_table);
 								} else {
-									$vs_join .= " AND {$vs_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
+									$vs_join .= " AND {$vs_alias}.{$va_key_spec['left_table_num']} = ".Datamodel::getTableNum($vs_left_table);
 								}
 							}
 							$vs_join .= ")";
 						}
 
-						if (($pt_rel_instance = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
+						if (($pt_rel_instance = Datamodel::getInstanceByTableName($vs_right_table, true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
 							$vs_rel_type_id_fld = "{$va_alias}.type_id";
 						}
 						$va_joins[] = $vs_join;
 					} else {
-						if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
+						if ($va_rel = Datamodel::getOneToManyRelations($vs_left_table, $vs_right_table)) {
 							$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
 							$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
 						
@@ -2545,8 +2545,8 @@ class SearchIndexer extends SearchBase {
 								$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
 							}
 						
-							if($this->opo_datamodel->isSelfRelationship($va_rel['many_table'])) {
-								$t_self_rel = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
+							if(Datamodel::isSelfRelationship($va_rel['many_table'])) {
+								$t_self_rel = Datamodel::getInstanceByTableName($va_rel['many_table'], true);
 							
 								$va_joins[] = array(
 												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql,
@@ -2558,7 +2558,7 @@ class SearchIndexer extends SearchBase {
 								}
 							
 							} else {
-								if (($pt_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
+								if (($pt_rel_instance = Datamodel::getInstanceByTableName($va_rel['many_table'], true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
 									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
 								} elseif(($vn_t > 0) && ($vs_related_table == $va_rel['many_table']) && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types) && $pt_rel_instance->hasField('type_id'))  {
 								    $vs_type_id_fld = "{$vs_alias}.type_id";
@@ -2566,7 +2566,7 @@ class SearchIndexer extends SearchBase {
 								}
 								$va_joins[] = "INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
 							}
-						} elseif ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
+						} elseif ($va_rel = Datamodel::getOneToManyRelations($vs_right_table, $vs_left_table)) {
 							$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
 							$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
 						
@@ -2574,8 +2574,8 @@ class SearchIndexer extends SearchBase {
 								$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
 							}
 						
-							if($this->opo_datamodel->isSelfRelationship($va_rel['many_table'])) {
-								$t_self_rel = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
+							if(Datamodel::isSelfRelationship($va_rel['many_table'])) {
+								$t_self_rel = Datamodel::getInstanceByTableName($va_rel['many_table'], true);
 							
 								$va_joins[] = array(
 												"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql,
@@ -2586,7 +2586,7 @@ class SearchIndexer extends SearchBase {
 									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
 								}
 							} else {
-								if (($pt_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['one_table'], true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
+								if (($pt_rel_instance = Datamodel::getInstanceByTableName($va_rel['one_table'], true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
 									$vs_rel_type_id_fld = "{$vs_prev_alias}.type_id";
 								} elseif(($vn_t > 0) && ($vs_related_table == $va_rel['one_table']) && is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types) && $pt_rel_instance->hasField('type_id'))  {
 								    $vs_type_id_fld = "{$vs_alias}.type_id";

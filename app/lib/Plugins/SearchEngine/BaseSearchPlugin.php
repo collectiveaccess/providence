@@ -106,7 +106,6 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 		
 		$this->opo_config = Configuration::load();
 		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
-		$this->opo_datamodel = Datamodel::load();
 		$this->ops_encoding = $this->opo_config->get('character_set');
 		
 		$this->opo_db = $po_db ? $po_db : new Db();
