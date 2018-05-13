@@ -49,7 +49,7 @@ class MemoryCache {
 		if(isset(self::$opa_caches[$ps_namespace][$ps_key])) {
 			return self::$opa_caches[$ps_namespace][$ps_key];
 		} else {
-			return false;
+			return null;
 		}
 	}
 	# ------------------------------------------------

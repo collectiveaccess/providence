@@ -3413,7 +3413,7 @@ function caFileIsIncludable($ps_file) {
 			||
 			($vn_setup_mtime != CompositeCache::fetch('setup_php_mtime'))
 		) {
-			CompositeCache::save('setup_php_mtime', $vn_setup_mtime, 'default', 0);
+			CompositeCache::save('setup_php_mtime', $vn_setup_mtime, 'default');
 			return true;
 		}
 

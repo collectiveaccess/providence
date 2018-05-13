@@ -39,7 +39,7 @@ class CompositeCache {
 	 * Fetches an entry from the cache.
 	 * @param string $ps_key
 	 * @param string $ps_namespace
-	 * @return mixed The cached data or FALSE, if no cache entry exists for the given key.
+	 * @return mixed The cached data or NULL, if no cache entry exists for the given key.
 	 */
 	public static function fetch($ps_key, $ps_namespace='default') {
 		if(MemoryCache::contains($ps_key, $ps_namespace)) {
@@ -54,7 +54,7 @@ class CompositeCache {
 			return $vm_data;
 		}
 
-		return false;
+		return null;
 	}
 	# ------------------------------------------------
 	/**

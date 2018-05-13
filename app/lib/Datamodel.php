@@ -589,14 +589,16 @@ class Datamodel {
              //define rel table
              $rel_table  = $ps_left_table . "_x_" . str_replace("ca_","",$ps_left_table);
              if (!Datamodel::getInstanceByTableName($rel_table, true)) {
-             	return [];		// self relation doesn't exist
+             	$va_path = [];		// self relation doesn't exist
              }
-             return array($ps_left_table=>Datamodel::getTableNum($ps_left_table),$rel_table=>Datamodel::getTableNum($rel_table));
-        }
+             $va_path = array($ps_left_table=>Datamodel::getTableNum($ps_left_table),$rel_table=>Datamodel::getTableNum($rel_table));
+        } else {
+ 			$va_path = Datamodel::$opo_graph->getPath($ps_left_table, $ps_right_table);
+ 		}
+ 		if (!is_array($va_path)) { $va_path = []; }
  		
- 		$vs_path = Datamodel::$opo_graph->getPath($ps_left_table, $ps_right_table);
-		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $vs_path, 'DatamodelPaths');
- 		return $vs_path;
+		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $va_path, 'DatamodelPaths');
+ 		return $va_path;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
