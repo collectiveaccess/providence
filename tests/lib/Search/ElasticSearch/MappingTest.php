@@ -39,7 +39,7 @@ class MappingTest extends PHPUnit_Framework_TestCase {
 		$o_mapping = new ElasticSearch\Mapping();
 		$va_fields = $o_mapping->getFieldsToIndex('ca_objects');
 		$this->assertInternalType('array', $va_fields);
-		$this->assertEquals(94, sizeof($va_fields));
+		$this->assertEquals(122, sizeof($va_fields));
 
 		foreach($va_fields as $vs_fld => $va_options) {
 			$this->assertRegExp("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
@@ -49,8 +49,14 @@ class MappingTest extends PHPUnit_Framework_TestCase {
 	public function testGetElementIDsForTable() {
 		$o_mapping = new ElasticSearch\Mapping();
 
-		$va_element_ids = $o_mapping->getElementIDsForTable('ca_objects');
-
+		//$va_element_ids = $o_mapping->getElementIDsForTable('ca_objects');
+		$va_element_ids = array_reduce(array_keys($o_mapping->getFieldsToIndex('ca_objects')), function($c, $v) { 
+			if(preg_match("!^ca_objects.A([\d]+)$!", $v, $m)) {
+				$c[] = $m[1];
+			}
+			return $c;
+		 }, []);
+		 
 		foreach(array_keys(ca_metadata_elements::getElementsAsList(true, 'ca_objects')) as $vn_element_id) {
 			$this->assertTrue(in_array($vn_element_id, $va_element_ids), "Expected element id {$vn_element_id} to be part of " . print_r($va_element_ids, true));
 		}

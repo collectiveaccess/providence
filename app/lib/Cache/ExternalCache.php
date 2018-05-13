@@ -35,9 +35,14 @@ require_once(__CA_LIB_DIR__."/Cache/MemoryCache.php");
 class ExternalCache {
 	# ------------------------------------------------
 	/**
-	 * @var Doctrine\Common\Cache\CacheProvider
+	 * 
 	 */
-	private static $opo_cache;
+	private static $cache;
+	
+	/**
+	 *
+	 */
+	private static $invalidation_method = null;
 	# ------------------------------------------------
 	/**
 	 * Initialize cache for given namespace if necessary
@@ -48,7 +53,7 @@ class ExternalCache {
 		if(self::cacheExists()) {
 			return true;
 		} else {
-			if(self::$opo_cache = self::getCacheObject()) {
+			if(self::$cache = self::getCacheObject()) {
 				return true;
 			} else {
 				return false;
@@ -61,7 +66,20 @@ class ExternalCache {
 	 * @return bool
 	 */
 	private static function cacheExists() {
-		return (isset(self::$opo_cache) && (self::$opo_cache instanceof Stash\Pool));
+		return (isset(self::$cache) && (self::$cache instanceof Stash\Pool));
+	}
+	# ------------------------------------------------
+	/**
+	 * Set cache invalidation mode. See http://www.stashphp.com/Invalidation.html for a description
+	 * of each method. The default is Invalidation::PRECOMPUTE which is the best choice for most.
+	 * most situations. Invalidation::NONE is required for testing with short TTL's to avoid
+	 * side effects from "cache stampede" protection.
+	 * @return bool
+	 */
+	public static function setInvalidationMode($pn_method) {
+		if (!in_array($pn_method, [Stash\Invalidation::NONE, Stash\Invalidation::PRECOMPUTE, Stash\Invalidation::OLD, Stash\Invalidation::VALUE, Stash\Invalidation::SLEEP])) { return false; }
+		self::$invalidation_method = $pn_method;
+		return true;
 	}
 	# ------------------------------------------------
 	/**
@@ -91,8 +109,8 @@ class ExternalCache {
 	 * @return Doctrine\Common\Cache\CacheProvider
 	 */
 	private static function getCache() {
-		if(isset(self::$opo_cache)) {
-			return self::$opo_cache;
+		if(isset(self::$cache)) {
+			return self::$cache;
 		} else {
 			return null;
 		}
@@ -111,6 +129,7 @@ class ExternalCache {
 		self::checkParameters($ps_namespace, $ps_key);
 
 		$item = self::getCache()->getItem(self::makeKey($ps_key, $ps_namespace));
+		if(!is_null(self::$invalidation_method)) { $item->setInvalidationMethod(self::$invalidation_method); }
 		return $item->isMiss() ? null : $item->get();
 	}
 	# ------------------------------------------------
@@ -154,6 +173,7 @@ class ExternalCache {
 		self::checkParameters($ps_namespace, $ps_key);
 		
 		$item = self::getCache()->getItem(self::makeKey($ps_key, $ps_namespace));
+		if(!is_null(self::$invalidation_method)) { $item->setInvalidationMethod(self::$invalidation_method); }
 		return !$item->isMiss();
 	}
 	# ------------------------------------------------
@@ -183,7 +203,7 @@ class ExternalCache {
 			self::getCache()->clear();
 		} catch(UnexpectedValueException $e) {
 			// happens during the installer pre tasks when we just purge everything in app/tmp without asking.
-			// At that point we have existing objects in self::$opo_cache that can't deal with that.
+			// At that point we have existing objects in self::$cache that can't deal with that.
 			// We do nothing here because the directory is re-created automatically the next time someone
 			// tries to access the cache.
 		}

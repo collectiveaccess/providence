@@ -38,6 +38,7 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 	public function setUp() {
 		ExternalCache::flush('default'); // might have side-effects on other tests?
 		ExternalCache::flush('barNamespace');
+		ExternalCache::setInvalidationMode(Stash\Invalidation::NONE);
 	}
 
 	public function testAccessNonExistingItem(){
@@ -212,14 +213,14 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testTTL() {
-		ExternalCache::save('foo', array(), 'barNamespace', 3);
+		ExternalCache::save('foo', array(), 'barNamespace', 1);
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'The key we just set should exist');
 
 		$vm_ret = ExternalCache::fetch('foo', 'barNamespace');
 		$this->assertEquals(array(), $vm_ret, 'The value we set should be returned');
 
-		sleep(4);
+		sleep(2);
 
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'The key should have expired by now');

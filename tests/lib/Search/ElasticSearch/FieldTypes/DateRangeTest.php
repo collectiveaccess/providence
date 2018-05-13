@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,32 +36,30 @@ require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/Date
 class DateRangeTest extends PHPUnit_Framework_TestCase {
 	public function testDateRanges() {
 		$o_range = new ElasticSearch\FieldTypes\DateRange(
-			'ca_objects', 'dates_value',
-			'2015/02/28 to 2015/03/01'
+			'ca_objects', 'dates_value'
 		);
 
-		$va_ret = $o_range->getDocumentFragment();
+		$va_ret = $o_range->getIndexingFragment('2015/02/28 to 2015/03/01', []);
 
 		$this->assertEquals(array(
-			'ca_objects.dates_value_text' => '2015/02/28 to 2015/03/01',
-			'ca_objects.dates_value' => array(
+			'ca_objects/dates_value_text' => '2015/02/28 to 2015/03/01',
+			'ca_objects/dates_value' => array(
 				0 => '2015-02-28T00:00:00Z',
 				1 => '2015-03-01T23:59:59Z'
 			)
 		), $va_ret);
 
 		$o_range = new ElasticSearch\FieldTypes\DateRange(
-			'ca_objects', 'dates_value',
-			'after 2012'
+			'ca_objects', 'dates_value'
 		);
 
-		$va_ret = $o_range->getDocumentFragment();
+		$va_ret = $o_range->getIndexingFragment('after 2012', []);
 
 		$this->assertEquals(array(
-			'ca_objects.dates_value_text' => 'after 2012',
-			'ca_objects.dates_value' => array(
+			'ca_objects/dates_value_text' => 'after 2012',
+			'ca_objects/dates_value' => array(
 				0 => '2012-01-01T00:00:00Z',
-				1 => '292278993-12-31T23:59:59Z'
+				1 => '9999-12-31T23:59:59Z'
 			)
 		), $va_ret);
 	}

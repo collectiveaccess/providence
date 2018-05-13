@@ -161,6 +161,7 @@ class Mapping {
 				$va_rewritten_fields[$ps_table.'.A'.$va_matches[1]] = $va_field_options;
 			} else {
 				$vn_i = $this->getDatamodel()->getFieldNum($ps_table, $vs_field_name);
+				if (!$vn_i) { continue; }
 
 				$va_rewritten_fields[$ps_table.'.I' . $vn_i] = $va_field_options;
 			}
@@ -174,6 +175,7 @@ class Mapping {
 					$va_rewritten_fields[$vs_related_table.'.A'.$va_matches[1]] = $va_related_table_field_options;
 				} else {
 					$vn_i = $this->getDatamodel()->getFieldNum($vs_related_table, $vs_related_table_field);
+					if (!$vn_i) { continue; }
 
 					$va_rewritten_fields[$vs_related_table.'.I' . $vn_i] = $va_related_table_field_options;
 				}
