@@ -42,10 +42,10 @@ class CompositeCacheTest extends PHPUnit_Framework_TestCase {
 	public function testAccessNonExistingItem(){
 
 		$vm_ret = CompositeCache::fetch('foo', 'barNamespace');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = CompositeCache::fetch('bar');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = CompositeCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
@@ -61,13 +61,13 @@ class CompositeCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		$vm_ret = CompositeCache::fetch('bar', 'barNamespace');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = CompositeCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		$vm_ret = CompositeCache::fetch('bar');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 	}
 
 	public function testSetAndfetch() {
@@ -147,7 +147,7 @@ class CompositeCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($vm_ret, 'Removing an existing key should return true');
 
 		$vm_ret = CompositeCache::fetch('foo');
-		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
+		$this->assertNull($vm_ret, 'Should not return anything after deleting');
 
 		$vm_ret = CompositeCache::contains('foo');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');

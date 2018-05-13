@@ -43,10 +43,10 @@ class MemoryCacheTest extends PHPUnit_Framework_TestCase {
 	public function testAccessNonExistingItem(){
 
 		$vm_ret = MemoryCache::fetch('foo', 'barNamespace');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = MemoryCache::fetch('bar');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
@@ -67,13 +67,13 @@ class MemoryCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		$vm_ret = MemoryCache::fetch('bar', 'barNamespace');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		$vm_ret = MemoryCache::fetch('bar');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 	}
 
 	public function testSetAndfetch() {
@@ -133,7 +133,7 @@ class MemoryCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($vm_ret, 'Removing an existing key should return true');
 
 		$vm_ret = MemoryCache::fetch('foo');
-		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
+		$this->assertNull($vm_ret, 'Should not return anything after deleting');
 
 		$vm_ret = MemoryCache::contains('foo');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
