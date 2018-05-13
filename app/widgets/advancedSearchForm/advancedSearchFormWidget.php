@@ -102,10 +102,10 @@
 			
 			$this->opo_view->setVar("t_form",$t_form);
 			if($t_form->haveAccessToForm($this->getRequest()->user->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__)){
-				$vo_result_context = new ResultContext($this->getRequest(), $vo_dm->getTableName($t_form->get("table_num")), "advanced_search");
+				$vo_result_context = new ResultContext($this->getRequest(), Datamodel::getTableName($t_form->get("table_num")), "advanced_search");
 				$va_form_data = $vo_result_context->getParameter('form_data');
 					
-				$this->opo_view->setVar("controller_name",$this->getAdvancedSearchControllerNameForTable($vo_dm->getTableName($t_form->get("table_num"))));
+				$this->opo_view->setVar("controller_name",$this->getAdvancedSearchControllerNameForTable(Datamodel::getTableName($t_form->get("table_num"))));
 				$this->opo_view->setVar('form_data', $va_form_data);
 				$this->opo_view->setVar('form_elements', $t_form->getHTMLFormElements($this->getRequest(), $va_form_data));
 			} else {

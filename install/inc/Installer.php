@@ -438,7 +438,7 @@ class Installer {
 			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
 
-		$va_ca_tables = $vo_dm->getTableNames();
+		$va_ca_tables = Datamodel::getTableNames();
 
 		$qr_tables = $this->opo_db->query("SHOW TABLES");
 
@@ -746,11 +746,11 @@ class Installer {
 				foreach($vo_element->typeRestrictions->children() as $vo_restriction) {
 					$vs_restriction_code = self::getAttribute($vo_restriction, "code");
 
-					if (!($vn_table_num = $vo_dm->getTableNum((string)$vo_restriction->table))) {
+					if (!($vn_table_num = Datamodel::getTableNum((string)$vo_restriction->table))) {
 						$this->addError("Invalid table specified for restriction $vs_restriction_code in element $vs_element_code");
 						return false;
 					}
-					$t_instance = $vo_dm->getTableInstance((string)$vo_restriction->table);
+					$t_instance = Datamodel::getInstance((string)$vo_restriction->table);
 					$vn_type_id = null;
 					$vs_type = trim((string)$vo_restriction->type);
 
@@ -946,7 +946,7 @@ class Installer {
 
 		foreach($va_uis as $vs_ui_code => $vo_ui) {
 			$vs_type = self::getAttribute($vo_ui, "type");
-			if (!($vn_type = $vo_dm->getTableNum($vs_type))) {
+			if (!($vn_type = Datamodel::getTableNum($vs_type))) {
 				$this->addError("Invalid type {$vs_type} for UI code {$vs_ui_code}");
 				return false;
 			}
@@ -954,7 +954,7 @@ class Installer {
 			$this->logStatus(_t('Processing user interface with code %1', $vs_ui_code));
 
 			// model instance of UI type
-			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
+			$t_instance = Datamodel::getInstanceByTableNum($vn_type);
 
 			// create ui row
 			if(!($t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
@@ -1284,10 +1284,10 @@ class Installer {
 		}
 
 		foreach($va_rel_tables as $vs_table => $vo_rel_table) {
-			$vn_table_num = $vo_dm->getTableNum($vs_table);
+			$vn_table_num = Datamodel::getTableNum($vs_table);
 			$this->logStatus(_t('Processing relationship types for table %1', $vs_table));
 
-			$t_rel_table = $vo_dm->getTableInstance($vs_table);
+			$t_rel_table = Datamodel::getInstance($vs_table);
 
 			if (!method_exists($t_rel_table, 'getLeftTableName')) {
 				continue;
@@ -1627,7 +1627,7 @@ class Installer {
 			$vs_display_code = self::getAttribute($vo_display, "code");
 			$vb_system = self::getAttribute($vo_display, "system");
 			$vs_table = self::getAttribute($vo_display, "type");
-			$vn_table_num = $vo_dm->getTableNum($vs_table);
+			$vn_table_num = Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing display with code %1', $vs_display_code));
 
@@ -1650,7 +1650,7 @@ class Installer {
 
 			$t_display->set("display_code", $vs_display_code);
 			$t_display->set("is_system", $vb_system);
-			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
+			$t_display->set("table_num",Datamodel::getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 
 			$this->_processSettings($t_display, $vo_display->settings);
@@ -1812,10 +1812,10 @@ class Installer {
 			$vs_form_code = self::getAttribute($vo_form, "code");
 			$vb_system = self::getAttribute($vo_form, "system");
 			$vs_table = self::getAttribute($vo_form, "type");
-			if (!($t_instance = $vo_dm->getInstanceByTableName($vs_table, true))) { continue; }
+			if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
 			if ($o_config->get($vs_table.'_disable')) { continue; }
-			$vn_table_num = (int)$vo_dm->getTableNum($vs_table);
+			$vn_table_num = (int)Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing search form with code %1', $vs_form_code));
 
@@ -2155,10 +2155,10 @@ class Installer {
 		foreach($va_md_alerts as $vo_md_alert) {
 			$vs_alert_code = self::getAttribute($vo_md_alert, "code");
 			$vs_table = self::getAttribute($vo_md_alert, "type");
-			if (!($t_instance = $vo_dm->getInstanceByTableName($vs_table, true))) { continue; }
+			if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
 			if ($o_config->get($vs_table.'_disable')) { continue; }
-			$vn_table_num = (int)$vo_dm->getTableNum($vs_table);
+			$vn_table_num = (int)Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing metadata alert with code %1', $vs_alert_code));
 

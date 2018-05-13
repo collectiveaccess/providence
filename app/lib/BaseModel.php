@@ -2244,7 +2244,7 @@ class BaseModel extends BaseObject {
 				$this->set($this->getProperty('HIERARCHY_RIGHT_INDEX_FLD'), $va_hier_indexing['right']);
 			}
 			
-			$va_many_to_one_relations = getManyToOneRelations($this->tableName());
+			$va_many_to_one_relations = Datamodel::getManyToOneRelations($this->tableName());
 
 			$va_need_to_set_rank_for = array();
 			foreach($this->FIELDS as $vs_field => $va_attr) {

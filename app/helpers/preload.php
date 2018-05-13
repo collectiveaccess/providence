@@ -42,8 +42,6 @@ require_once(__CA_LIB_DIR__."/Cache/MemoryCache.php"); // is used in utilityHelp
 require_once(__CA_LIB_DIR__."/Cache/ExternalCache.php"); // is used in utilityHelpers
 require_once(__CA_LIB_DIR__."/Cache/CompositeCache.php"); // is used in utilityHelpers
 require_once(__CA_LIB_DIR__."/Zend/Registry.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
-Datamodel::load();
 
 require_once(__CA_LIB_DIR__."/Utils/Debug.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
@@ -78,6 +76,10 @@ require_once(__CA_LIB_DIR__.'/Cache/MemoryCache.php');
 
 require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
 require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
+
+
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+Datamodel::load();
 
 // initialize Tooltip manager
 TooltipManager::init();

@@ -451,7 +451,7 @@
 			$pn_id 					=  $this->request->getParameter('id', pInteger);
 			$pa_within_fields	=  $this->request->getParameter('withinFields', pArray); 
 			
-			if (!($t_instance = $vo_dm->getInstanceByTableNum($pn_table_num, true))) {
+			if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) {
 				return null;	// invalid table number
 			}
 			

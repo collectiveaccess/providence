@@ -509,7 +509,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_ids[] = $vn_id = $va_row['importer_id'];
 			$va_importers[$vn_id] = $va_row;
 			
-			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
+			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num'], true);
 			$va_importers[$vn_id]['importer_type'] = $t_instance->getProperty('NAME_PLURAL');
 			$va_importers[$vn_id]['type'] = $va_settings['type'];
 			$va_importers[$vn_id]['type_for_display'] = $t_instance->getTypeName($va_settings['type']);

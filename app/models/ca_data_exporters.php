@@ -553,7 +553,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_exporters[$vn_id] = $va_row;
 
-			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
+			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num'], true);
 			$va_exporters[$vn_id]['exporter_type'] = $t_instance->getProperty('NAME_PLURAL');
 			$va_exporters[$vn_id]['exporter_type_singular'] = $t_instance->getProperty('NAME_SINGULAR');
 

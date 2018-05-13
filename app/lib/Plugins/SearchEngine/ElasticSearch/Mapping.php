@@ -45,10 +45,6 @@ class Mapping {
 	 * @var \SearchBase
 	 */
 	protected $opo_search_base;
-	/**
-	 * @var \Datamodel
-	 */
-	protected $opo_datamodel;
 
 	/**
 	 * @var \Db
@@ -123,13 +119,6 @@ class Mapping {
 	}
 
 	/**
-	 * @return \Datamodel
-	 */
-	protected function getDatamodel() {
-		return $this->opo_datamodel;
-	}
-
-	/**
 	 * @return \Db
 	 */
 	public function getDb() {
@@ -150,7 +139,7 @@ class Mapping {
 	 * @return array
 	 */
 	public function getFieldsToIndex($ps_table) {
-		if(!Datamodel::tableExists($ps_table)) { return array(); }
+		if(!\Datamodel::tableExists($ps_table)) { return array(); }
 		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true, 'includeNonRootElements' => true));
 		if(!is_array($va_table_fields)) { return array(); }
 
@@ -159,7 +148,7 @@ class Mapping {
 			if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_field_name, $va_matches)) {
 				$va_rewritten_fields[$ps_table.'.A'.$va_matches[1]] = $va_field_options;
 			} else {
-				$vn_i = Datamodel::getFieldNum($ps_table, $vs_field_name);
+				$vn_i = \Datamodel::getFieldNum($ps_table, $vs_field_name);
 				if (!$vn_i) { continue; }
 
 				$va_rewritten_fields[$ps_table.'.I' . $vn_i] = $va_field_options;
@@ -173,7 +162,7 @@ class Mapping {
 				if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_related_table_field, $va_matches)) {
 					$va_rewritten_fields[$vs_related_table.'.A'.$va_matches[1]] = $va_related_table_field_options;
 				} else {
-					$vn_i = Datamodel::getFieldNum($vs_related_table, $vs_related_table_field);
+					$vn_i = \Datamodel::getFieldNum($vs_related_table, $vs_related_table_field);
 					if (!$vn_i) { continue; }
 
 					$va_rewritten_fields[$vs_related_table.'.I' . $vn_i] = $va_related_table_field_options;
@@ -321,9 +310,9 @@ class Mapping {
 	 * @return array
 	 */
 	public function getConfigForIntrinsic($ps_table, $pn_field_num, $pa_indexing_config) {
-		$vs_field_name = Datamodel::getFieldName($ps_table, $pn_field_num);
+		$vs_field_name = \Datamodel::getFieldName($ps_table, $pn_field_num);
 		if(!$vs_field_name) { return array(); }
-		$t_instance = Datamodel::getInstance($ps_table);
+		$t_instance = \Datamodel::getInstance($ps_table);
 
 		$va_field_options = array(
 			$ps_table.'/'.$vs_field_name => array(

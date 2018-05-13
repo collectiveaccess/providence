@@ -2013,7 +2013,7 @@ class SearchIndexer extends SearchBase {
 
 											$va_element_fields_to_index = $this->getFieldsToIndex($vn_element_table_num, $vn_element_table_num);
 											$vs_element_table_name = Datamodel::getTableName($vn_element_table_num);
-											$vs_element_table_pk = Datamodel::getTablePrimaryKeyName($vn_element_table_num);
+											$vs_element_table_pk = Datamodel::primaryKey($vn_element_table_num);
 
 											$qr_field_data = $this->opo_db->query("
 												SELECT *
