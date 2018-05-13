@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/Wikipedia.php");
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/Wikipedia.php");
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 class WikipediaInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {

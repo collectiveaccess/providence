@@ -15,7 +15,7 @@
 	if ($argv[1]) {
 		$_SERVER['HTTP_HOST'] = $argv[1];
 		require_once("./setup.php");
-		require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
+		require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
 		
 		$o_si = new SearchIndexer();
 		print "[REINDEXING] ".__CA_APP_DISPLAY_NAME__."\n";

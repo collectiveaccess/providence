@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/AttributeValues/AATInformationServiceAttributeValueTest.php
+ * tests/lib/Controller/ControllerTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,14 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/AAT.php");
-require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+require_once(__CA_LIB_DIR__.'/Controller/AppController.php');
 
-class AATInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
+class ControllerTest extends PHPUnit_Framework_TestCase {
 
-	public function testGetDisplayLabelFromLookupText() {
-		$o_service = new WLPlugInformationServiceAAT();
-		$this->assertEquals('dump trucks', $o_service->getDisplayValueFromLookupText('[300022372] dump trucks [trucks, cargo vehicles by form]'));
+
+	public function testRequestDispatch() {
+
 	}
+
 }
+?>

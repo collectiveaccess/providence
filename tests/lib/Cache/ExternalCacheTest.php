@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/core/Cache/ExternalCacheTest.php: External cache test cases
+ * tests/lib/Cache/ExternalCacheTest.php: External cache test cases
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@
  */
 
 
-require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
+require_once(__CA_LIB_DIR__.'/Cache/ExternalCache.php');
 
 class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 
@@ -43,10 +43,10 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 	public function testAccessNonExistingItem(){
 
 		$vm_ret = ExternalCache::fetch('foo', 'barNamespace');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = ExternalCache::fetch('bar');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
@@ -67,13 +67,13 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		$vm_ret = ExternalCache::fetch('bar', 'barNamespace');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
 		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		$vm_ret = ExternalCache::fetch('bar');
-		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
+		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 	}
 
 	public function testSetAndfetch() {
@@ -133,7 +133,7 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($vm_ret, 'Removing an existing key should return true');
 
 		$vm_ret = ExternalCache::fetch('foo');
-		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
+		$this->assertNull($vm_ret, 'Should not return anything after deleting');
 
 		$vm_ret = ExternalCache::contains('foo');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
@@ -212,21 +212,21 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testTTL() {
-		ExternalCache::save('foo', array(), 'barNamespace', 1);
+		ExternalCache::save('foo', array(), 'barNamespace', 3);
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'The key we just set should exist');
 
 		$vm_ret = ExternalCache::fetch('foo', 'barNamespace');
 		$this->assertEquals(array(), $vm_ret, 'The value we set should be returned');
 
-		sleep(1);
+		sleep(4);
 
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'The key should have expired by now');
 	}
 
 	public function testLongerTTL() {
-		ExternalCache::save('foo', array(), 'barNamespace', 2);
+		ExternalCache::save('foo', array(), 'barNamespace', 3);
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'The key we just set should exist');
 
@@ -238,7 +238,7 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'The key should still be there');
 
-		sleep(1);
+		sleep(3);
 
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'The key should have expired by now');

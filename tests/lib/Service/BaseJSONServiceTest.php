@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/core/Service/BaseJSONServiceTest.php
+ * tests/lib/Service/BaseJSONServiceTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,8 +30,8 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
-require_once(__CA_LIB_DIR__."/core/Controller/Response/ResponseHTTP.php");
+require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
+require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 
 class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------

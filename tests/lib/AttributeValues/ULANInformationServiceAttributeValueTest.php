@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/core/Models/DatamodelTest.php
+ * tests/lib/AttributeValues/ULANInformationServiceAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,28 +29,30 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/ULAN.php");
 
-class DatamodelTest extends PHPUnit_Framework_TestCase {
-	public function testInstantiateAllModels() {
-		$o_dm = Datamodel::load();
+class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
-		$va_tables = $o_dm->getTableNames();
+	public function testBasic() {
+		$o_service = new WLPlugInformationServiceULAN();
+		$va_return = $o_service->lookup(array(), 'Keith Haring');
+		$this->assertEquals(1, sizeof($va_return['results']));
+	}
 
-		foreach($va_tables as $vs_table) {
-			// we do multiple calls to get some cache hits
-			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
-			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table, true));
+	public function testGetExtendedInfo() {
+		$o_service = new WLPlugInformationServiceULAN();
+		$vm_ret = $o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/ulan/500024253');
 
-			$vn_table_num = $o_dm->getTableNum($vs_table);
+		$this->assertArrayHasKey('display', $vm_ret);
+		$this->assertInternalType('string', $vm_ret['display']);
+		$this->assertNotEmpty($vm_ret['display']);
+	}
 
-			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableNum($vn_table_num));
-			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableNum($vn_table_num, true));
+	public function testGetIndexingInfo() {
+		$o_service = new WLPlugInformationServiceULAN();
+		$vm_ret = $o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/ulan/500024253');
 
-			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vs_table));
-			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vs_table, true));
-			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vn_table_num));
-			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vn_table_num, true));
-		}
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertGreaterThan(0, sizeof($vm_ret));
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/AttributeValues/ULANInformationServiceAttributeValueTest.php
+ * tests/lib/AttributeValues/AATInformationServiceAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -29,30 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/ULAN.php");
+require_once(__CA_LIB_DIR__."/Plugins/InformationService/AAT.php");
+require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
-class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
+class AATInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
-	public function testBasic() {
-		$o_service = new WLPlugInformationServiceULAN();
-		$va_return = $o_service->lookup(array(), 'Keith Haring');
-		$this->assertEquals(1, sizeof($va_return['results']));
-	}
-
-	public function testGetExtendedInfo() {
-		$o_service = new WLPlugInformationServiceULAN();
-		$vm_ret = $o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/ulan/500024253');
-
-		$this->assertArrayHasKey('display', $vm_ret);
-		$this->assertInternalType('string', $vm_ret['display']);
-		$this->assertNotEmpty($vm_ret['display']);
-	}
-
-	public function testGetIndexingInfo() {
-		$o_service = new WLPlugInformationServiceULAN();
-		$vm_ret = $o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/ulan/500024253');
-
-		$this->assertInternalType('array', $vm_ret);
-		$this->assertGreaterThan(0, sizeof($vm_ret));
+	public function testGetDisplayLabelFromLookupText() {
+		$o_service = new WLPlugInformationServiceAAT();
+		$this->assertEquals('dump trucks', $o_service->getDisplayValueFromLookupText('[300022372] dump trucks [trucks, cargo vehicles by form]'));
 	}
 }

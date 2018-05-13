@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/core/Cache/MemoryCacheTest.php: Memory cache test cases
+ * tests/lib/Cache/MemoryCacheTest.php: Memory cache test cases
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@
  */
 
 
-require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php');
+require_once(__CA_LIB_DIR__.'/Cache/MemoryCache.php');
 
 class MemoryCacheTest extends PHPUnit_Framework_TestCase {
 

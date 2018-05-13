@@ -31,7 +31,7 @@
  */
 
 require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
-require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
+require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
 
 /**
  * Class RelatedAttributeValueSearchQueryTest

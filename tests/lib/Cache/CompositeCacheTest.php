@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/core/Cache/CompositeCacheTest.php: Composite cache test cases
+ * tests/lib/Cache/CompositeCacheTest.php: Composite cache test cases
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@
  */
 
 
-require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
+require_once(__CA_LIB_DIR__.'/Cache/CompositeCache.php');
 
 class CompositeCacheTest extends PHPUnit_Framework_TestCase {
 

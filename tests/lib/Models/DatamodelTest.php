@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/core/Controller/ControllerTest.php
+ * tests/lib/Models/DatamodelTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -29,14 +29,28 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
 
-class ControllerTest extends PHPUnit_Framework_TestCase {
+class DatamodelTest extends PHPUnit_Framework_TestCase {
+	public function testInstantiateAllModels() {
+		$o_dm = Datamodel::load();
 
+		$va_tables = $o_dm->getTableNames();
 
-	public function testRequestDispatch() {
+		foreach($va_tables as $vs_table) {
+			// we do multiple calls to get some cache hits
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table, true));
 
+			$vn_table_num = $o_dm->getTableNum($vs_table);
+
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableNum($vn_table_num));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableNum($vn_table_num, true));
+
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vs_table));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vs_table, true));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vn_table_num));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vn_table_num, true));
+		}
 	}
-
 }
-?>
