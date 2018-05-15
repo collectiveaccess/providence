@@ -190,13 +190,13 @@
  			}
  			
             $id = '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}';
-            $vs_element = "<input name='{$id}' type='hidden' value='' id='{$id}'/>\n";
+            $vs_element = "<input name='{$id}' type='hidden' value='{{".$pa_element_info['element_id']."}}' id='{$id}'/>\n";
             
             if (isset($va_settings['showHexValueText']) && (bool)$va_settings['showHexValueText']) {
-                $vs_element .= "<div class='' id='{$id}_hexdisplay'>#{{".$pa_element_info['element_id']."}}</div>";  
+                $vs_element .= "<div class='colorpickerText' id='{$id}_hexdisplay'>#{{".$pa_element_info['element_id']."}}</div>";  
             }
             if (isset($va_settings['showRGBValueText']) && (bool)$va_settings['showRGBValueText']) {
-                $vs_element .= "<div class='' id='{$id}_rgbdisplay'></div>";  
+                $vs_element .= "<div class='colorpickerText' id='{$id}_rgbdisplay'></div>";  
             }
              $vs_element .= "<div id='{$id}_colorchip' class='colorpicker_chip {$vs_class}' style='background-color: #{{".$pa_element_info['element_id']."}}; width: {$vs_width}; height: {$vs_height};'><!-- empty --></div>";
            

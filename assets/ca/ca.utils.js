@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca.utils.js
+ * js/ca/ca.utils.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -211,7 +211,7 @@ var caUI = caUI || {};
                     b: parseInt(result[3], 16)
                 } : null;
                 
-                if (format) {
+                if (format && colors) {
                     return format.replace(/%r/, colors.r).replace(/%g/, colors.g).replace(/%b/, colors.b);
                 }
                 return colors;
