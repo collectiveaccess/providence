@@ -308,12 +308,8 @@ class Datamodel {
 	 * @return null|BaseModel
 	 */
 	public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
-		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$ps_table])) { return Datamodel::$s_instance_cache[$ps_table]; }		// keep instances in statics for speed
 		if(!$ps_table) { return null; }
-
-		if($pb_use_cache && MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
-			return MemoryCache::fetch($ps_table, 'DatamodelModelInstance');
-		}
+		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$ps_table])) { return Datamodel::$s_instance_cache[$ps_table]; }		// keep instances in statics for speed
 		
 		if(Datamodel::$opo_graph->hasNode($ps_table)) {
 			if(!MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
@@ -321,10 +317,10 @@ class Datamodel {
 				require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
 			}
 			$t_instance = new $ps_table;
-			if($pb_use_cache) { MemoryCache::save($ps_table, $t_instance, 'DatamodelModelInstance'); Datamodel::$s_instance_cache[$t_instance->tableNum()] = Datamodel::$s_instance_cache[$ps_table] = $t_instance; }
+			if($pb_use_cache) { Datamodel::$s_instance_cache[$t_instance->tableNum()] = Datamodel::$s_instance_cache[$ps_table] = $t_instance; }
 			return $t_instance;
 		} else {
-			MemoryCache::save($ps_table, null, 'DatamodelModelInstance');
+			Datamodel::$s_instance_cache[$ps_table] = null;
 			return null;
 		}
 	}
