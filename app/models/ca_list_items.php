@@ -657,6 +657,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			if ($vb_we_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
 		}
+		ExternalCache::flush('listItems');
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -684,6 +685,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
 			$this->_setSettingsForList();
 		}
+		ExternalCache::flush('listItems');
 		return $vn_rc;
 	}
 	# ------------------------------------------------------------------
@@ -738,6 +740,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		if ($o_trans) { $o_trans->rollback(); }
 		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+		ExternalCache::flush('listItems');
 		return false;
 	}
 	# ------------------------------------------------------
