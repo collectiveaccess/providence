@@ -59,14 +59,15 @@ $g_translations = Configuration::load(__CA_CONF_DIR__."/translations.conf");
 
 $g_translation_strings = $g_translations->get('strings');
 $g_translation_replacements = $g_translations->get('replacements');
+$g_translation_cache = [];
 
 function _t($ps_key) {
 	if(!$ps_key) { return ''; }
-	global $_, $g_translation_strings, $g_translation_replacements;
+	global $_, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
 	
 	if (isset($g_translation_strings[$ps_key])) { return $g_translation_strings[$ps_key]; }
 	
-	if(!MemoryCache::contains($ps_key, 'translation')) {
+	if(!isset($g_translation_cache[$ps_key])) {
 		if (is_array($_)) {
 			$vs_str = $ps_key;
 			foreach($_ as $o_locale) {
@@ -87,9 +88,9 @@ function _t($ps_key) {
 		    $vs_str = str_replace(array_keys($g_translation_replacements), array_values($g_translation_replacements), $vs_str);
 		}
 		
-		MemoryCache::save($ps_key, $vs_str, 'translation');
+		$g_translation_cache[$ps_key] = $vs_str;
 	} else {
-		$vs_str = MemoryCache::fetch($ps_key, 'translation');
+		$vs_str = $g_translation_cache[$ps_key];
 	}
 
 	if (sizeof($va_args = func_get_args()) > 1) {
@@ -106,10 +107,10 @@ function _t($ps_key) {
  **/
 function _p($ps_key) {
 	if(!$ps_key) { return; }
-	global $_;
+	global $_, $g_translation_cache;
 
-	if (!sizeof(func_get_args()) && MemoryCache::contains($ps_key, 'translation')) {
-		print MemoryCache::fetch($ps_key, 'translation'); return;
+	if (!sizeof(func_get_args()) & isset($g_translation_cache[$ps_key])) {
+		print $g_translation_cache[$ps_key]; return;
 	}
 
 	if (is_array($_)) {
@@ -135,7 +136,7 @@ function _p($ps_key) {
 		}
 	}
 
-	MemoryCache::save($ps_key, $vs_str, 'translation');
+	$g_translation_cache[$ps_key] = $vs_str;
 	print $vs_str;
 	return;
 }
@@ -3253,7 +3254,7 @@ function caFileIsIncludable($ps_file) {
 	        
 	        
 	        $po_request->session->setVar('csrf_tokens', $va_tokens);
-	        $po_request->session->save();
+	        //$po_request->session->save();
 	    }
 	    return $vs_token;
 	}

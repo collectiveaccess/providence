@@ -300,6 +300,10 @@
 	 * @return array List of numeric type_ids
 	 */
 	function caMakeTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
+		if (!is_array($pa_types)) { $pa_types = []; }
+		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, $pa_types), "caMakeTypeIDList:{$pm_table_name_or_num}");
+		if (ExternalCache::contains($vs_cache_key, 'listItems')) { return ExternalCache::fetch($vs_cache_key, 'listItems'); }
 		if (is_numeric($pm_table_name_or_num)) {
 			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 		} else {
@@ -309,7 +313,9 @@
 		if (!$t_instance) { return null; }	// bad table
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
-		return caMakeItemIDList($vs_type_list_code, $pa_types, $pa_options);
+		$va_ret = caMakeItemIDList($vs_type_list_code, $pa_types, $pa_options);
+		ExternalCache::save($vs_cache_key, $va_ret, 'listItems');
+		return $va_ret;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -329,8 +335,11 @@
 	 * @return array List of numeric item_ids
 	 */
 	function caMakeItemIDList($pm_list_code_or_id, $pa_item_idnos, $pa_options=null) {
-		if (!is_array($pa_item_idnos) && !sizeof($pa_item_idnos)) { return array(); }
+		if (!is_array($pa_item_idnos) && !strlen($pa_item_idnos)) { return []; }
 		if (!is_array($pa_item_idnos)) { $pa_item_idnos = [$pa_item_idnos]; }
+		if (!is_array($pa_options)) { $pa_options = []; }
+		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, $pa_item_idnos), "caMakeItemIDList:{$pm_list_code_or_id}");
+		if (ExternalCache::contains($vs_cache_key, 'listItems')) { return ExternalCache::fetch($vs_cache_key, 'listItems'); }
 		
 		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	
@@ -338,7 +347,7 @@
 			$pa_options['noChildren'] = true;
 		}
 		
-		$va_item_ids = array();
+		$va_item_ids = [];
 		$t_list = new ca_lists();
 		$t_item = new ca_list_items();
 		
@@ -366,7 +375,10 @@
 				}
 			}
 		}
-		return array_keys($va_item_ids);
+		$va_ret = array_keys($va_item_ids);
+		ExternalCache::save($vs_cache_key, $va_ret, 'listItems');
+		
+		return $va_ret;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
