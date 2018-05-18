@@ -992,7 +992,7 @@ class Configuration {
 	 */
 	public function __destruct() {
 		if(isset(Configuration::$s_have_to_write_config_cache) && Configuration::$s_have_to_write_config_cache) {
-			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default');
+			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 3600 * 3600 * 30);
 			self::$s_have_to_write_config_cache = false;
 		}
 	}
