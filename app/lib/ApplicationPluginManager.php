@@ -192,7 +192,7 @@
 			
 				$va_actions = array_merge($va_actions, call_user_func(array($vs_plugin_classname, 'getRoleActionList')));
 			}
-			CompositeCache::save('role_action_list', $va_actions, 'ApplicationPluginManager');
+			CompositeCache::save('role_action_list', $va_actions, 'ApplicationPluginManager', 3600 * 24 * 30);
 			return $va_actions;
 		}
 		# -------------------------------------------------------
