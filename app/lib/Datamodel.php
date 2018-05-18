@@ -128,7 +128,7 @@ class Datamodel {
 			}
 
 			$va_graph_data = Datamodel::$opo_graph->getInternalData();
-			ExternalCache::save('ca_datamodel_graph', $va_graph_data);
+			ExternalCache::save('ca_datamodel_graph', $va_graph_data, 'default', 3600 * 24 * 30);
 		}
 	}
 	# --------------------------------------------------------------------------------------------
@@ -597,7 +597,7 @@ class Datamodel {
  		}
  		if (!is_array($va_path)) { $va_path = []; }
  		
-		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $va_path, 'DatamodelPaths');
+		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $va_path, 'DatamodelPaths', 3600 * 24 * 30);
  		return $va_path;
 	}
 	# --------------------------------------------------------------------------------------------
@@ -610,7 +610,7 @@ class Datamodel {
 		}
 
 		$va_relationships = Datamodel::$opo_graph->getAttribute("relationships", $ps_left_table, $ps_right_table);
-		MemoryCache::save("{$ps_left_table}/{$ps_right_table}", $va_relationships, 'DatamodelRelationships');
+		MemoryCache::save("{$ps_left_table}/{$ps_right_table}", $va_relationships, 'DatamodelRelationships', 3600 * 24 * 30);
 		
 		return $va_relationships;
 	}
