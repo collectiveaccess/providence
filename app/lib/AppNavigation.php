@@ -317,8 +317,7 @@
 				$va_nav_info = $va_revised_nav_info;
 			}
 			
-			$vo_session = $this->opo_request->session;
-			if (((time() - $vo_session->getVar('ca_nav_menubar_cache_lasttime')) < 600) && (intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($vs_menu_cache = $vo_session->getVar('ca_nav_menubar_cache'))) { return $vs_menu_cache; }
+			if (((time() - Session::getVar('ca_nav_menubar_cache_lasttime')) < 600) && (intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($vs_menu_cache = Session::getVar('ca_nav_menubar_cache'))) { return $vs_menu_cache; }
 			
 			$vs_buf = '';
 			$vs_cur_selection = $this->getDestinationAsNavigationPath();
@@ -335,8 +334,8 @@
 				}
 				$vs_buf .= "</li>\n";
 			}
-			$vo_session->setVar('ca_nav_menubar_cache', $vs_buf); 
-			$vo_session->setVar('ca_nav_menubar_cache_lasttime', time()); 
+			Session::setVar('ca_nav_menubar_cache', $vs_buf); 
+			Session::setVar('ca_nav_menubar_cache_lasttime', time()); 
 			return $vs_buf;
 		}
 		# -------------------------------------------------------
@@ -352,8 +351,7 @@
 				$va_nav_info = $va_revised_nav_info;
 			}
 			
-			$vo_session = $this->opo_request->session;
-			if ((intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($va_menu_cache = $vo_session->getVar('ca_nav_menubar_link_cache'))) { return $va_menu_cache; }
+			if ((intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($va_menu_cache = Session::getVar('ca_nav_menubar_link_cache'))) { return $va_menu_cache; }
 			
 			$vs_cur_selection = $this->getDestinationAsNavigationPath();
 			
@@ -363,7 +361,7 @@
 				
 				$va_links[] = caNavLink($this->opo_request, $va_menu['displayName'], '', trim($va_menu['default']['module']), trim($va_menu['default']['controller']), trim($va_menu['default']['action']));
 			}
-			$vo_session->setVar('ca_nav_menubar_link_cache', $va_links); 
+			Session::setVar('ca_nav_menubar_link_cache', $va_links); 
 			return $va_links;
 		}
 		# -------------------------------------------------------
@@ -372,10 +370,9 @@
 		 */
 		public function getHTMLSideNav($ps_css_id) {
 			$vs_dest = $this->getDestination();
-			$vo_session = $this->opo_request->session;
 			
 			if (intval($this->opo_config->get('do_menu_bar_caching')) > 0) {
-				$va_sidebar_cache = $vo_session->getVar('ca_nav_sidebar_cache');
+				$va_sidebar_cache = Session::getVar('ca_nav_sidebar_cache');
 				if (isset($va_sidebar_cache[$vs_dest])) { return $va_sidebar_cache[$vs_dest]; }
 			}
 			
@@ -591,7 +588,7 @@
 				// menu item to the last used navigation item for the menu item
 				//
 				if (isset($pa_navinfo[$vs_nav]['remember_last_used_navigation']) && $pa_navinfo[$vs_nav]['remember_last_used_navigation']) {
-					$va_nav_defaults = $this->opo_request->session->getVar('ca_app_nav_defaults');	// get stored defaults - contains the last used navigation items keyed by base path
+					$va_nav_defaults = Session::getVar('ca_app_nav_defaults');	// get stored defaults - contains the last used navigation items keyed by base path
 					if (isset($va_nav_defaults[$ps_base_path.'/'.$vs_nav])) {
 						$va_tmp = explode('/', $ps_base_path);		// get components of base path
 						array_push($va_tmp, $vs_nav);				// add on current nav location
@@ -724,11 +721,11 @@
 					TooltipManager::add("#".$pa_attributes['id'], (sizeof($pa_iteminfo['typeRestrictions']) == 1) ? _t("For type <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])) : _t("For types <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])));
 				}
 				if ($ps_cur_selection == $ps_base_path.'/'.$ps_key) {
-					if (!is_array($va_nav_defaults = $this->opo_request->session->getVar('ca_app_nav_defaults'))) {
+					if (!is_array($va_nav_defaults = Session::getVar('ca_app_nav_defaults'))) {
 						$va_nav_defaults = array();
 					}
 					$va_nav_defaults[$ps_base_path] = $ps_key;
-					$this->opo_request->session->setVar('ca_app_nav_defaults', $va_nav_defaults);
+					Session::setVar('ca_app_nav_defaults', $va_nav_defaults);
 				}
 			}
 			return $vs_buf;
@@ -743,7 +740,7 @@
 				if(count($va_tmp)==2) {
 					switch($va_tmp[0]) {
 						case 'session':
-							$vs_value = $this->opo_request->session->getVar($va_tmp[1]);
+							$vs_value = Session::getVar($va_tmp[1]);
 							break;
 						case 'parameter':
 							$vs_value = $this->opo_request->getParameter($va_tmp[1], pString);
@@ -783,7 +780,7 @@
 			if(count($va_tmp)==2) {
 				switch($va_tmp[0]) {
 					case 'session':
-						$vs_value = $this->opo_request->session->getVar($va_tmp[1]);
+						$vs_value = Session::getVar($va_tmp[1]);
 						break;
 					case 'parameter':
 						$vs_value = $this->opo_request->getParameter($va_tmp[1], pString);
@@ -833,9 +830,9 @@
 						break;
 					case 'session':
 						if (isset($va_tmp[2])) {
-							$vs_value = ($this->opo_request->session->getVar($va_tmp[1]) == $va_tmp[2]) ? true : false;
+							$vs_value = (Session::getVar($va_tmp[1]) == $va_tmp[2]) ? true : false;
 						} else {
-							$vs_value = $this->opo_request->session->getVar($va_tmp[1]) ? true : false;
+							$vs_value = Session::getVar($va_tmp[1]) ? true : false;
 						}
 						break;
 					case 'action':
@@ -896,9 +893,8 @@
 		# Caching
 		# -------------------------------------------------------
 		static function clearMenuBarCache($po_request) {
-			$vo_session = $po_request->session;
-			$vo_session->setVar('ca_nav_menubar_cache', null);
-			$vo_session->getVar('ca_nav_sidebar_cache', null);
+			Session::setVar('ca_nav_menubar_cache', null);
+			Session::getVar('ca_nav_sidebar_cache', null);
 		}
 		# -------------------------------------------------------
 	}

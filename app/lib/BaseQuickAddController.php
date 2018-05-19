@@ -377,7 +377,7 @@
 					$this->request->setParameter($t_subject->primaryKey(), $vn_subject_id, 'GET');
 					$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 					$this->view->setVar('subject_id', $vn_subject_id);
-					$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
+					Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
 					
 					// Set ACL for newly created record
 					if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {

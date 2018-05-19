@@ -185,7 +185,7 @@ class BaseEditorController extends ActionController {
 
 		if ($vn_subject_id) {
 			// set last edited
-			$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
+			Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
 		}
 
 		# trigger "EditItem" hook
@@ -197,7 +197,7 @@ class BaseEditorController extends ActionController {
 
 		// save where we are in session, for "Save and return" button
 		if($vn_subject_id) { // don't save "empty" / new record editor location. pk has to be set
-			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			$va_save_and_return = Session::getVar('save_and_return_locations');
 			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
 
 			$va_save = array(
@@ -206,7 +206,7 @@ class BaseEditorController extends ActionController {
 				'url_path' => $this->getRequest()->getFullUrlPath()
 			);
 
-			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
+			Session::setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
 		}
 
 		// if we came here through a rel link, show save and return button
@@ -309,7 +309,7 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($t_subject->primaryKey(), $vn_subject_id, 'GET');
 				$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 				$this->view->setVar('subject_id', $vn_subject_id);
-				$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
+				Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
 
 				// relate newly created record if requested
 				if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
@@ -394,7 +394,7 @@ class BaseEditorController extends ActionController {
 		// redirect back to previous item on stack if it's a valid "save and return" request
 		$vb_has_errors = (is_array($va_errors) && (sizeof($va_errors) > 0)); // don't redirect back when there were form errors
 		if(((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) && !$vb_has_errors) {
-			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			$va_save_and_return = Session::getVar('save_and_return_locations');
 			if(is_array($va_save_and_return)) {
 				// get rid of all the navigational steps in the current item
 				do {
@@ -421,7 +421,7 @@ class BaseEditorController extends ActionController {
 
 		// save where we are in session for "Save and return" button
 		if($vn_subject_id) {
-			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			$va_save_and_return = Session::getVar('save_and_return_locations');
 			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
 
 			$va_save = array(
@@ -430,7 +430,7 @@ class BaseEditorController extends ActionController {
 				// dont't direct back to Save action
 				'url_path' => str_replace('/Save/', '/Edit/', $this->getRequest()->getFullUrlPath())
 			);
-			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
+			Session::setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
 		}
 
 		// if we came here through a rel link, show save and return button
@@ -615,7 +615,7 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($t_subject->primaryKey(), null, 'PATH');
 
 				// set last browse id for hierarchy browser
-				$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_parent_id);
+				Session::setVar($this->ops_table_name.'_browse_last_id', $vn_parent_id);
 
 				// Clear out row_id so sidenav is disabled
 				$this->request->setParameter($t_subject->primaryKey(), null, 'POST');
@@ -673,7 +673,7 @@ class BaseEditorController extends ActionController {
 		}
 
 		// save where we are in session, for "Save and return" button
-		$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+		$va_save_and_return = Session::getVar('save_and_return_locations');
 		if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
 
 		$va_save = array(
@@ -682,7 +682,7 @@ class BaseEditorController extends ActionController {
 			'url_path' => $this->getRequest()->getFullUrlPath()
 		);
 
-		$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
+		Session::setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
 
 		$this->view->setVar('bundle_displays', $va_displays);
 		$this->view->setVar('t_display', $t_display);

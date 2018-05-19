@@ -144,7 +144,7 @@
  				$this->setContext($this->opo_browse->getContext());
  				
  				$t_table = Datamodel::getInstance($this->ops_tablename);
-				if ($this->request->session->getVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_item_id') != $vn_item_id) {
+				if (Session::getVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_item_id') != $vn_item_id) {
 					$this->opo_browse->removeAllCriteria();	
 				}
 				
@@ -160,7 +160,7 @@
 				if ($vs_limit_facet_name) {
 					$this->opo_browse->addCriteria($vs_limit_facet_name, array($vn_item_id));
 					$this->opo_browse->execute(array('checkAccess' => $va_access_values));
-					$this->request->session->setVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_browse_id', $this->opo_browse->getBrowseID());
+					Session::setVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_browse_id', $this->opo_browse->getBrowseID());
 					$this->view->setVar('show_browse', true);
 					
 					//
@@ -200,11 +200,11 @@
 					$this->view->setVar('browse_criteria', $va_browse_criteria);
 				} else {
 					// not configured for browse
-					$this->request->session->setVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_browse_id', null);
+					Session::setVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_browse_id', null);
 					$this->view->setVar('show_browse', false);
 				}
  			}
- 			$this->request->session->setVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_item_id', $vn_item_id);
+ 			Session::setVar($this->ops_tablename.'_'.$this->ops_appname.'_detail_current_item_id', $vn_item_id);
  			
  			# Next and previous navigation
  			$opo_result_context = new ResultContext($this->request, $this->ops_tablename, ResultContext::getLastFind($this->request, $this->ops_tablename));
@@ -401,7 +401,7 @@
  			if ($this->request->getParameter('clear', pInteger)) {
  				$this->opo_browse->removeAllCriteria();
  				$this->opo_browse->execute(array('checkAccess' => $va_access_values));
- 				$this->request->session->setVar($this->ops_tablename.'_'.$this->ops_context.'_current_browse_id', $this->opo_browse->getBrowseID());
+ 				Session::setVar($this->ops_tablename.'_'.$this->ops_context.'_current_browse_id', $this->opo_browse->getBrowseID());
  			} else {
  				if ($this->request->getParameter('modify', pString)) {
  					$vm_id = $this->request->getParameter('id', pString);

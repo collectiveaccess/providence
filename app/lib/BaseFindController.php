@@ -86,8 +86,8 @@
 				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
 					
 					if ($pb_type_restriction_has_changed) {
-						$this->request->session->setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
-					} elseif($vn_type_id = $this->request->session->getVar($this->ops_tablename.'_type_id')) {
+						Session::setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
+					} elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
 						$this->opn_type_restriction_id = $vn_type_id;
 					}
 					

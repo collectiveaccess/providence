@@ -55,7 +55,7 @@
 			
 			$va_tmp = $this->getNotifications(true);
 			array_push($va_tmp, array('message' => $ps_message, 'type' => $pn_type));
-			 $this->opo_request->session->setVar('_user_notifications', $va_tmp);
+			Session::setVar('_user_notifications', $va_tmp);
 			return true;
 		}
 		# -------------------------------------------------------
@@ -64,7 +64,7 @@
 		}
 		# -------------------------------------------------------
 		public function &getNotifications($pb_dont_remove=false) {
-			$va_tmp = $this->opo_request->session->getVar('_user_notifications');
+			$va_tmp = Session::getVar('_user_notifications');
 			if (!is_array($va_tmp)) { $va_tmp = array(); }
 			if (!$pb_dont_remove) {
 				$this->clearNotifications();
@@ -73,7 +73,7 @@
 		}
 		# -------------------------------------------------------
 		public function clearNotifications() {
-			 $this->opo_request->session->setVar('_user_notifications', array());
+			 Session::setVar('_user_notifications', array());
 		}
 		# -------------------------------------------------------
 	}

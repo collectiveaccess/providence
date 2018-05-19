@@ -59,9 +59,9 @@
  			$ps_search 		= $this->request->getParameter('search', pString);
  			$ps_sort 		= $this->request->getParameter('sort', pString);
  			
- 			if (!$ps_search) { $ps_search = $this->request->session->getVar('quick_search_last_search'); }
+ 			if (!$ps_search) { $ps_search = Session::getVar('quick_search_last_search'); }
  			if (!in_array($ps_sort, array('name', 'idno', 'relevance'))) {
- 				if (!$ps_sort = $this->request->session->getVar('quick_search_last_sort')) {
+ 				if (!$ps_sort = Session::getVar('quick_search_last_sort')) {
  					$ps_sort = 'name';
  				}
  			}
@@ -123,13 +123,13 @@
  			
  			// note last quick search
  			if ($ps_search) {
- 				$this->request->session->setVar('quick_search_last_search', $ps_search);
+ 				Session::setVar('quick_search_last_search', $ps_search);
  			}
  			if($ps_sort) {
- 				$this->request->session->setVar('quick_search_last_sort', $ps_sort);
+ 				Session::setVar('quick_search_last_sort', $ps_sort);
  			}
  			$this->view->setVar('search', $ps_search);
- 			$this->view->setVar('sort', $this->request->session->getVar('quick_search_last_sort'));
+ 			$this->view->setVar('sort', Session::getVar('quick_search_last_sort'));
  					
  			$this->view->setVar('maxNumberResults', $this->opn_num_results_per_item_type);
  			

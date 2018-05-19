@@ -235,7 +235,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		$vs_default_facet = caGetOption('defaultFacet', $pa_options, null);
 		
 		$o_browse_config = caGetBrowseConfig();
-		$vs_key = '';//$po_request->session->getVar('objects_last_browse_id');
+		$vs_key = '';//Session::getVar('objects_last_browse_id');
 		
 		if (!($va_browse_info = caGetInfoForBrowseType($vs_browse_type))) {
 			// invalid browse type – throw error

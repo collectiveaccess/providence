@@ -214,7 +214,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 			//
 			// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
 			// is part of a browser initialization
-			$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
+			Session::setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
 		}
 
 		$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_level_data);

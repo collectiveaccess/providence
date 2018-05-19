@@ -54,7 +54,7 @@
 		 */
 		public function hookEditItem($pa_params) {
 			if (($pa_params['id'] > 0) && ($o_req = $this->getRequest())) {
-				if (!is_array($va_activity_list = $o_req->session->getVar($pa_params['table_name'].'_history_id_list'))) {
+				if (!is_array($va_activity_list = Session::getVar($pa_params['table_name'].'_history_id_list'))) {
 					$va_activity_list = array();
 				}
 				
@@ -76,7 +76,7 @@
 					'idno' => $pa_params['instance']->get('idno'),
 				);
 				
-				$o_req->session->setVar($pa_params['table_name'].'_history_id_list', $va_activity_list);
+				Session::setVar($pa_params['table_name'].'_history_id_list', $va_activity_list);
 			}
 			return $pa_params;
 		}
@@ -95,11 +95,11 @@
 		 */
 		public function hookDeleteItem($pa_params) {
 			if ($o_req = $this->getRequest()) {
-				if (!is_array($va_activity_list = $o_req->session->getVar($pa_params['table_name'].'_history_id_list'))) {
+				if (!is_array($va_activity_list = Session::getVar($pa_params['table_name'].'_history_id_list'))) {
 					$va_activity_list = array();
 				}
 				unset($va_activity_list[$pa_params['id']]);
-				$o_req->session->setVar($pa_params['table_name'].'_history_id_list', $va_activity_list);
+				Session::setVar($pa_params['table_name'].'_history_id_list', $va_activity_list);
 				
 				AppNavigation::clearMenuBarCache($o_req);
 			}
@@ -122,7 +122,7 @@
 					'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items', 'ca_sets', 'ca_tours', 'ca_tour_stops'
 				) as $vs_table_name) {
 					$va_activity_menu_list = array();
-					if (!is_array($va_activity_list = $o_req->session->getVar($vs_table_name.'_history_id_list'))) {
+					if (!is_array($va_activity_list = Session::getVar($vs_table_name.'_history_id_list'))) {
 						$va_activity_list = array();
 					}
 				

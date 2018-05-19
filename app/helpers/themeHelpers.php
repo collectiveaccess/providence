@@ -1241,7 +1241,7 @@ jQuery(document).ready(function() {
 	 * 
 	 */
 	function caGetComparisonList($po_request, $ps_table, $pa_options=null) {
-		if (!is_array($va_comparison_list = $po_request->session->getVar("{$ps_table}_comparison_list"))) { $va_comparison_list = []; }
+		if (!is_array($va_comparison_list = Session::getVar("{$ps_table}_comparison_list"))) { $va_comparison_list = []; }
 		
 		// Get title template from config
 		$va_compare_config = $po_request->config->get('compare_images');
