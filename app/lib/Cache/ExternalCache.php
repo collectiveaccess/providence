@@ -154,7 +154,6 @@ class ExternalCache {
 		$pool = self::getCache();
 		$item = $pool->getItem(self::makeKey($ps_key, $ps_namespace));
 		$item->expiresAfter((!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
-		
 		$item->set($pm_data);
 		$pool->save($item);
 		return true;
@@ -197,9 +196,14 @@ class ExternalCache {
 	 * Flush cache
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function flush() {
+	public static function flush($ps_namespace=null) {
 		try {
 			if(!self::init()) { return false; }
+			
+			if ($ps_namespace) {
+				self::getCache()->deleteItem($ps_namespace);
+			}
+			
 			self::getCache()->clear();
 		} catch(UnexpectedValueException $e) {
 			// happens during the installer pre tasks when we just purge everything in app/tmp without asking.
@@ -275,8 +279,7 @@ class ExternalCache {
 			define('__CA_REDIS_DB__', 0);
 		}
 		
-		
-		$driver = new Stash\Driver\Redis(['servers' => [__CA_REDIS_HOST__, __CA_REDIS_PORT__], 'database' => __CA_REDIS_DB__]);
+		$driver = new Stash\Driver\Redis(['servers' => [[__CA_REDIS_HOST__, __CA_REDIS_PORT__]], 'database' => __CA_REDIS_DB__]);
 		return new Stash\Pool($driver);
 	}
 	# ------------------------------------------------

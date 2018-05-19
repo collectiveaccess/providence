@@ -56,7 +56,7 @@
 		 */
 		public function __construct($po_request, $pm_table_name_or_num, $ps_find_type, $ps_find_subtype=null) {
 			$this->opo_request = $po_request;
-			if (!($vs_table_name = ResultContext::getTableName($pm_table_name_or_num))) { return null; }
+			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			
 			$this->ops_table_name = $vs_table_name;
 			$this->ops_find_type = $ps_find_type;
@@ -152,13 +152,12 @@
 		 * @return bool
 		 */
 		public function setSearchExpressionForDisplay($ps_display_expression) {
-			$o_semi = $this->getSemiPersistentStorageInstance();
-			$va_expressions_for_display = $o_semi->getVar('expressions_for_display');
+			$va_expressions_for_display = Session::getVar('expressions_for_display');
 			
 			if (!$va_expressions_for_display[$vs_current_expression = $this->getSearchExpression(true)] || ($vs_current_expression != $ps_display_expression)) {
 				$va_expressions_for_display[$vs_current_expression] = $ps_display_expression;
 			}
-			$o_semi->setVar('expressions_for_display', $va_expressions_for_display);
+			Session::setVar('expressions_for_display', $va_expressions_for_display);
 			
 			return true;
 		}
@@ -169,8 +168,7 @@
 		 * @return string
 		 */
 		public function getSearchExpressionForDisplay($ps_search_expression=null) {
-			$o_semi = $this->getSemiPersistentStorageInstance();
-			$va_expressions_for_display = $o_semi->getVar('expressions_for_display');
+			$va_expressions_for_display = Session::getVar('expressions_for_display');
 			//$va_expressions_for_display = array_merge($va_expressions_for_display, $this->getContextValue('expressions_for_display'));
 			
 			if($ps_search_expression && isset($va_expressions_for_display[$ps_search_expression])) { return $va_expressions_for_display[$ps_search_expression]; }	// return display expression for specified search expression if defined
@@ -648,8 +646,8 @@
 				}
 			}
 			
-			$o_storage->setVar('result_last_context_'.$this->ops_table_name, $this->ops_find_type.($this->ops_find_subtype ? '/'.$this->ops_find_subtype : ''), array('volatile' => true));	
-			$o_storage->setVar('result_last_context_'.$this->ops_table_name.'_action', $pb_set_action ? $vs_action : null);
+			Session::setVar('result_last_context_'.$this->ops_table_name, $this->ops_find_type.($this->ops_find_subtype ? '/'.$this->ops_find_subtype : ''), array('volatile' => true));	
+			Session::setVar('result_last_context_'.$this->ops_table_name.'_action', $pb_set_action ? $vs_action : null);
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -666,16 +664,16 @@
 		 * @return string - the find type of the last find operation for this table
 		 */
 		static public function getLastFind($po_request, $pm_table_name_or_num, $pa_options=null) {
-			if (!($vs_table_name = ResultContext::getTableName($pm_table_name_or_num))) { return null; }
+			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			$o_storage = ResultContext::_persistentStorageInstance($po_request);
 			
 			if (caGetOption('noSubtype', $pa_options, false)) {
-				$vs_find_tag = $o_storage->getVar('result_last_context_'.$vs_table_name);
+				$vs_find_tag = Session::getVar('result_last_context_'.$vs_table_name);
 				
 				$va_find_tag = explode('/', $vs_find_tag);
 				return $va_find_tag[0];
 			} 
-			return $o_storage->getVar('result_last_context_'.$vs_table_name);
+			return Session::getVar('result_last_context_'.$vs_table_name);
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -686,10 +684,10 @@
 		 * @return ResultContext - result context from the last find operation for this table
 		 */
 		static public function getResultContextForLastFind($po_request, $pm_table_name_or_num) {
-			if (!($vs_table_name = ResultContext::getTableName($pm_table_name_or_num))) { return null; }
+			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			$o_storage = ResultContext::_persistentStorageInstance($po_request);
 			
-			$va_tmp = explode('/', $o_storage->getVar('result_last_context_'.$vs_table_name));
+			$va_tmp = explode('/', Session::getVar('result_last_context_'.$vs_table_name));
 		
 			return new ResultContext($po_request, $vs_table_name, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
 		}
@@ -703,7 +701,7 @@
 		 * @return string - a URL that will link back to the results for the last find operation
 		 */
 		static public function getResultsUrlForLastFind($po_request, $pm_table_name_or_num, $pa_params=null) {
-			if (!($vs_table_name = ResultContext::getTableName($pm_table_name_or_num))) { return null; }
+			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			
 			$vs_last_find = ResultContext::getLastFind($po_request, $pm_table_name_or_num);
 			$va_tmp = explode('/', $vs_last_find);
@@ -714,7 +712,7 @@
 			if (!$va_nav) { return false; }
 			
 			$o_storage = ResultContext::_persistentStorageInstance($po_request);
-			if (!($vs_action = $o_storage->getVar('result_last_context_'.$vs_table_name.'_action'))) {
+			if (!($vs_action = Session::getVar('result_last_context_'.$vs_table_name.'_action'))) {
 				$vs_action = $va_nav['action'];
 			}
 			
@@ -733,7 +731,7 @@
 		 * @return string - an HTML link that will link back to the results for the last find operation
 		 */ 
 		static public function getResultsLinkForLastFind($po_request, $pm_table_name_or_num, $ps_content, $ps_class=null, $pa_params=null, $pa_attributes=null) {
-			if (!($vs_table_name = ResultContext::getTableName($pm_table_name_or_num))) { return null; }
+			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			
 			$vs_last_find = ResultContext::getLastFind($po_request, $pm_table_name_or_num);
 			$va_tmp = explode('/', $vs_last_find);
@@ -755,7 +753,7 @@
 				$va_nav = call_user_func_array( "{$vs_controller_class}::".$va_nav['action'] , array($po_request, $vs_table_name) );
 			
 				$o_storage = ResultContext::_persistentStorageInstance($po_request);
-				if (!($vs_action = $o_storage->getVar('result_last_context_'.$vs_table_name.'_action'))) {
+				if (!($vs_action = Session::getVar('result_last_context_'.$vs_table_name.'_action'))) {
 					$vs_action = $va_nav['action'];
 				}
 			} else {
@@ -862,43 +860,80 @@
 			if(!($vs_find_subtype = $ps_find_subtype)) {
 				$vs_find_subtype = $this->ops_find_subtype;
 			}
-			$o_storage = $this->getPersistentStorageInstance();
-			$o_semi_storage = $this->getSemiPersistentStorageInstance();
 			
-			if ($ps_find_type) {
-				if(
-					(!is_array($va_semi = $o_semi_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
-					&&
-					(!is_array($va_semi = $o_semi_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
-				) {
-					$va_semi = array();
+			if ($o_storage = $this->getPersistentStorageInstance()) {
+				if ($ps_find_type) {
+					if(
+						(!is_array($va_semi = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
+						&&
+						(!is_array($va_semi = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
+					) {
+						$va_semi = [];
+					}
+					if (
+						(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
+						&&
+						(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
+					) { 
+						$va_context = [];
+					}
+					return array_merge($va_context, $va_semi); 
 				}
-				if (
-					(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
-					&&
-					(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
-				) { 
-					$va_context = array();
-				}
-				return array_merge($va_context, $va_semi); 
-			}
 			
-			if (!$this->opa_context) { 
-				if(
-					(!is_array($va_semi = $o_semi_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
-					&&
-					(!is_array($va_semi = $o_semi_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
-				){
-					$va_semi = array();
+				if (!$this->opa_context) { 
+					if(
+						(!is_array($va_semi = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
+						&&
+						(!is_array($va_semi = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
+					){
+						$va_semi = [];
+					}
+					if(
+						(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
+						&&
+						(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
+					) { 
+						$va_context = [];
+					}
+					$this->opa_context = array_merge($va_semi, $va_context); 
 				}
-				if(
-					(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
-					&&
-					(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
-				) { 
-					$va_context = array();
+
+			} else {
+				if ($ps_find_type) {
+					if(
+						(!is_array($va_semi = Session::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
+						&&
+						(!is_array($va_semi = Session::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
+					) {
+						$va_semi = [];
+					}
+					if (
+						(!is_array($va_context = Session::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
+						&&
+						(!is_array($va_context = Session::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
+					) { 
+						$va_context = [];
+					}
+					return array_merge($va_context, $va_semi); 
 				}
-				$this->opa_context = array_merge($va_semi, $va_context); 
+			
+				if (!$this->opa_context) { 
+					if(
+						(!is_array($va_semi = Session::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
+						&&
+						(!is_array($va_semi = Session::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
+					){
+						$va_semi = [];
+					}
+					if(
+						(!is_array($va_context = Session::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
+						&&
+						(!is_array($va_context = Session::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
+					) { 
+						$va_context = [];
+					}
+					$this->opa_context = array_merge($va_semi, $va_context); 
+				}
 			}
 			return $this->opa_context;
 		}
@@ -949,20 +984,19 @@
 			unset($va_context['page']);
 			
 			$o_storage = $this->getPersistentStorageInstance();
-			$o_storage->setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : ""), $va_context);
+			Session::setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : ""), $va_context);
 			
 			// Note find type/subtype combo in list of "used find types" in type/subtype format
 			// This is used by ResultContext::getAvailableFindTypes() to return all available combinations 
-			if (!is_array($va_used_find_types = $o_storage->getVar('used_find_types'))) { $va_used_find_types = array(); }
+			if (!is_array($va_used_find_types = Session::getVar('used_find_types'))) { $va_used_find_types = array(); }
 			$va_used_find_types[$vs_find_type.($vs_find_subtype ? "/{$vs_find_subtype}" : "")] = 1;
-			$o_storage->setVar('used_find_types', $va_used_find_types);
+			Session::setVar('used_find_types', $va_used_find_types);
 			
-			$o_semi_storage = $this->getSemiPersistentStorageInstance();
-			if (!is_array($va_existing_semi_context = $o_semi_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : "")))) {
+			if (!is_array($va_existing_semi_context = Session::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : "")))) {
 				$va_existing_semi_context = array();
 			}
 			$va_semi_context = array_merge($va_existing_semi_context, $va_semi_context);
-			$o_semi_storage->setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : ""), $va_semi_context);
+			Session::setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : ""), $va_semi_context);
 			
 			return true;
 		}
@@ -975,7 +1009,7 @@
 		public function getAvailableFindTypes() {
 			$o_storage = $this->getPersistentStorageInstance();
 			
-			if (!is_array($va_findtypes = $o_storage->getVar('used_find_types'))) { $va_findtypes = array(); }
+			if (!is_array($va_findtypes = Session::getVar('used_find_types'))) { $va_findtypes = array(); }
 			
 			return array_keys($va_findtypes);
 		}
@@ -1112,42 +1146,9 @@
 		 */
 		static function _persistentStorageInstance($po_request) {
 			if ($po_request->isLoggedIn() && (!(bool)$po_request->config->get('always_use_session_based_storage_for_find_result_contexts'))) {
- 				$o_storage = $po_request->getUser();
- 			} else {
- 				$o_storage = $po_request->getSession();
- 			}
- 			return $o_storage;
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * Returns object to use for semi-persistent (session) storage of search/browse parameters via setVar() and getVar()
-		 * This is always a Session object
-		 *
-		 * @return Session The storage object
-		 */
-		protected function getSemiPersistentStorageInstance() {
-			return ResultContext::_semipersistentStorageInstance($this->opo_request);
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * Returns semi-persistent storage object supporting getVar()/setVar() interface
-		 * This is always a Session object
-		 *
-		 * @param RequestHTTP $po_request The current request
-		 * @return Session The storage object
-		 */
-		static function _semipersistentStorageInstance($po_request) {
-			return $po_request->getSession();
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * Returns table name for table number (or name)
-		 *
-		 * @param $pm_table_name_or_num - table name or num of result context (eg. what kind of item is the find result composed of?)
-		 * @return string - table name
-		 */
-		static function getTableName($pm_table_name_or_num) {
-			return Datamodel::getTableName($pm_table_name_or_num);
+ 				return $po_request->getUser();
+ 			} 
+ 			return null;
 		}
 		# ------------------------------------------------------------------
 	}

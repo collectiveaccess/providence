@@ -39,27 +39,43 @@ require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/Db.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
+register_shutdown_function("Session::save");
+
 class Session {
 	# ----------------------------------------
 	# --- Properties
 	# ----------------------------------------
-	private $domain = ""; 	# domain session is registered to (eg. "www.whirl-i-gig.com"); blank means domain cookie was set from
-	private $lifetime = 0;	# session lives for $lifetime minutes; session exists for entire browser session if 0
-	private $name = "";		# application name
+	/**
+	 *
+	 */
+	private static $domain = ""; 	# domain session is registered to (eg. "www.whirl-i-gig.com"); blank means domain cookie was set from
+	
+	/**
+	 *
+	 */
+	private static $lifetime = 0;	# session lives for $lifetime minutes; session exists for entire browser session if 0
+	
+	/**
+	 *
+	 */
+	private static $name = "";		# application name
 
-	private $start_time = 0;	# microtime session object was created - used for page performance measurements
+	/**
+	 *
+	 */
+	private static $start_time = 0;	# microtime session object was created - used for page performance measurements
 
 	/**
 	 * In-memory session var storage
 	 * @var array
 	 */
-	private $opa_session_vars = [];
+	public static $s_session_vars = [];
 	
 	/**
 	 *
 	 *
 	 */
-	private $opa_changed_vars = [];
+	public static $s_changed_vars = [];
 	
 	# ----------------------------------------
 	# --- Constructor
@@ -68,62 +84,56 @@ class Session {
 	 * @param string $ps_app_name An app name to use if no app name is configured in the application configuration file.
 	 * @param bool $pb_dont_create_new_session No new session will be created if set to true. Default is false.
 	 */
-	public function __construct($ps_app_name=null, $pb_dont_create_new_session=false) {
+	public static function init($ps_app_name=null, $pb_dont_create_new_session=false) {
  		$o_config = Configuration::load();
 		# --- Init
 		if (defined("__CA_MICROTIME_START_OF_REQUEST__")) {
-			$this->start_time = __CA_MICROTIME_START_OF_REQUEST__;
+			Session::$start_time = __CA_MICROTIME_START_OF_REQUEST__;
 		} else {
-			$this->start_time = microtime();
+			Session::$start_time = microtime();
 		}
 		
 		# --- Read configuration
-		$this->name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
-		$this->domain = $o_config->get("session_domain");
-		$this->lifetime = (int) $o_config->get("session_lifetime");
+		Session::$name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
+		Session::$domain = $o_config->get("session_domain");
+		Session::$lifetime = (int) $o_config->get("session_lifetime");
 
-		if(!$this->lifetime) {
-			$this->lifetime = 3600 * 24 * 7;
+		if(!Session::$lifetime) {
+			Session::$lifetime = 3600 * 24 * 7;
 		}
 		
 		if (!$pb_dont_create_new_session) {
 			// try to get session ID from cookie. if that doesn't work, generate a new one
-			if (!($vs_session_id = $this->getSessionID())) {
+			if (!($session_id = self::getSessionID())) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
-				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = caGenerateGUID(), $this->lifetime ? time() + $this->lifetime : null, $vs_cookiepath); }
+				if (!caIsRunFromCLI()) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
-			if($this->getSessionID() && ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
-				$this->opa_session_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
-			} else {
-				$this->opa_session_vars = array();
-				if($this->getSessionID()) {
-					ExternalCache::delete($this->getSessionID(), 'SessionVars');
+			if($session_id && ExternalCache::contains($session_id, 'SessionVars')) {
+				if(!is_array(Session::$s_session_vars = unserialize(gzuncompress(ExternalCache::fetch($session_id, 'SessionVars'))))) {
+					Session::$s_session_vars = [];
 				}
-				$this->opa_changed_vars['session_end_timestamp'] = true;
-				$this->opa_session_vars['session_end_timestamp'] = time() + $this->lifetime;
+			} else {
+				Session::$s_session_vars = [];
+				if($session_id) {
+					ExternalCache::delete($session_id, 'SessionVars');
+				}
+				Session::$s_changed_vars['session_end_timestamp'] = true;
+				Session::$s_session_vars['session_end_timestamp'] = time() + Session::$lifetime;
 			}
 
 			// kill session if it has ended or we don't have a timestamp
 			if(
-				!isset($this->opa_session_vars['session_end_timestamp'])
+				!isset(Session::$s_session_vars['session_end_timestamp'])
 				||
-				(is_numeric($this->opa_session_vars['session_end_timestamp']) && (time() > $this->opa_session_vars['session_end_timestamp']))
+				(is_numeric(Session::$s_session_vars['session_end_timestamp']) && (time() > Session::$s_session_vars['session_end_timestamp']))
 			) {
-				$this->opa_session_vars = $this->opa_changed_vars['session_end_timestamp'] = array();
-				ExternalCache::delete($this->getSessionID(), 'SessionVars');
+				Session::$s_session_vars = Session::$s_changed_vars['session_end_timestamp'] = array();
+				ExternalCache::delete($session_id, 'SessionVars');
 			}
 		}
-	}
-	# ----------------------------------------
-	/**
-	 * Destructor: Save session variables to permanent storage
-	 */
-	public function __destruct() {
-		if($this->getSessionID() && is_array($this->opa_session_vars) && (sizeof($this->opa_session_vars) > 0)) {
-			$this->save();	
-		}
+		return $session_id;
 	}
 	# ----------------------------------------
 	/**
@@ -133,11 +143,11 @@ class Session {
 	 * @return string|bool The token, false if
 	 * @throws Exception
 	 */
-	public function getServiceAuthToken($pb_dont_create_new_token=false) {
-		if(!$this->getSessionID()) { return false; }
+	static public function getServiceAuthToken($pb_dont_create_new_token=false) {
+		if(!($session_id = self::getSessionID())) { return false; }
 
-		if(ExternalCache::contains($this->getSessionID(), 'SessionIDToServiceAuthTokens')) {
-			return ExternalCache::fetch($this->getSessionID(), 'SessionIDToServiceAuthTokens');
+		if(ExternalCache::contains($session_id, 'SessionIDToServiceAuthTokens')) {
+			return ExternalCache::fetch($session_id, 'SessionIDToServiceAuthTokens');
 		}
 
 		if($pb_dont_create_new_token) { return false; }
@@ -152,8 +162,8 @@ class Session {
 		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
-		ExternalCache::save($this->getSessionID(), $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);
-		ExternalCache::save($vs_token, $this->getSessionID(), 'ServiceAuthTokensToSessionID', 60 * 60 * 2);
+		ExternalCache::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);
+		ExternalCache::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', 60 * 60 * 2);
 
 		return $vs_token;
 	}
@@ -175,7 +185,7 @@ class Session {
 		$vs_session_id = ExternalCache::fetch($ps_token, 'ServiceAuthTokensToSessionID');
 		$_COOKIE[$vs_app_name] = $vs_session_id;
 
-		return new Session($vs_app_name);
+		return Session::init($vs_app_name);
 	}
 	# ----------------------------------------
 	# --- Methods
@@ -183,26 +193,27 @@ class Session {
 	/**
 	 * Returns client's session_id. 
 	 */
-	public function getSessionID() {
-		return isset($_COOKIE[$this->name]) ? $_COOKIE[$this->name] : null;
+	public static function getSessionID() {
+		return isset($_COOKIE[Session::$name]) ? $_COOKIE[Session::$name] : null;
 	}
 	# ----------------------------------------
 	/**
 	 * Removes session. Session key is no longer valid after this operation.
 	 * Useful for logging out users (destroying the session destroys the login)
 	 */
-	public function deleteSession() {
+	 public static function deleteSession() {
+		if(!($session_id = self::getSessionID())) { return false; }
 		// nuke service token caches
-		if($vs_token = $this->getServiceAuthToken(true)) {
+		if($vs_token = self::getServiceAuthToken(true)) {
 			ExternalCache::delete($vs_token, 'ServiceAuthTokensToSessionID');
 		}
-		ExternalCache::delete($this->getSessionID(), 'SessionIDToServiceAuthTokens');
+		ExternalCache::delete($session_id, 'SessionIDToServiceAuthTokens');
 
 		if (isset($_COOKIE[session_name()])) {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
 		}
 		// Delete session data
-		ExternalCache::delete($this->getSessionID(), 'SessionVars');
+		ExternalCache::delete($session_id, 'SessionVars');
 		session_destroy();
 	}
 	# ----------------------------------------
@@ -215,10 +226,10 @@ class Session {
 	 * 		URL_ENCODE_INPUT =
 	 * @return bool
 	 */
-	public function setVar($ps_key, $pm_val, $pa_options=null) {
+	public static function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($ps_key && $this->getSessionID()) {
+		if ($ps_key && self::getSessionID()) {
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
 				if (is_string($pm_val)) {
 					$vm_val = html_entity_decode($pm_val);
@@ -232,8 +243,8 @@ class Session {
 					$vm_val = $pm_val;
 				}
 			}
-			$this->opa_changed_vars[$ps_key] = true;
-			$this->opa_session_vars[$ps_key] = $vm_val;
+			Session::$s_changed_vars[$ps_key] = true;
+			Session::$s_session_vars[$ps_key] = $vm_val;
 			return true;
 		}
 		return false;
@@ -243,61 +254,56 @@ class Session {
 	 * Delete session variable
 	 * @param string $ps_key
 	 */
-	public function delete($ps_key) {
-		$this->opa_changed_vars[$ps_key] = true;
-		unset($this->opa_session_vars[$ps_key]);
+	public static function delete($ps_key) {
+		Session::$s_changed_vars[$ps_key] = true;
+		unset(Session::$s_session_vars[$ps_key]);
 	}
 	# ----------------------------------------
 	/**
 	 * Get value of session variable. Var may be number, string or array.
 	 */
-	public function getVar($ps_key) {
-		if(!$this->getSessionID()) { return null; }
+	public static function getVar($ps_key) {
+		if(!self::getSessionID()) { return null; }
 
-		return isset($this->opa_session_vars[$ps_key]) ? $this->opa_session_vars[$ps_key] : null;
+		return isset(Session::$s_session_vars[$ps_key]) ? Session::$s_session_vars[$ps_key] : null;
 	}
 	# ----------------------------------------
 	/**
 	 * Return names of all session vars
 	 */
-	public function getVarKeys() {
-		return is_array($this->opa_session_vars) ? array_keys($this->opa_session_vars) : array();
+	public static function getVarKeys() {
+		return is_array(Session::$s_session_vars) ? array_keys(Session::$s_session_vars) : array();
 	}
 	# ----------------------------------------
 	/**
 	 * Save changes to session variables to persistent storage
 	 */
-	public function save() {
-		if(isset($this->opa_session_vars['session_end_timestamp'])) {
-			$vn_session_lifetime = abs(((int) $this->opa_session_vars['session_end_timestamp']) - time());
+	public static function save() {
+		if(!($session_id = self::getSessionID())) { return false; }
+		if(isset(Session::$s_session_vars['session_end_timestamp'])) {
+			$vn_session_lifetime = abs(((int) Session::$s_session_vars['session_end_timestamp']) - time());
 		} else {
 			$vn_session_lifetime = 86400;	// 24 hours
 		}
-		if ($vn_session_lifetime > 31536000) {		// max 365 days
-			$vn_session_lifetime = 86400;
+		if ($vn_session_lifetime > (86400 * 30)) {		// max 30 days
+			$vn_session_lifetime = 86400 * 30;
 		}
 		
 		// Get old vars
-		$va_current_values = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
-		foreach(array_keys($this->opa_changed_vars) as $vs_key) {
-			$va_current_values[$vs_key] = $this->opa_session_vars[$vs_key];
+		if (!is_array($va_current_values = @unserialize(@gzuncompress(ExternalCache::fetch($session_id, 'SessionVars'))))) {
+			$va_current_values = [];
 		}
 		
-		ExternalCache::save($this->getSessionID(), $va_current_values, 'SessionVars', $vn_session_lifetime);
-	}
-	# ----------------------------------------
-	/**
-	 * Close session
-	 */
-	public function close() {
-		// NOOP
+		$va_current_values = array_merge($va_current_values, Session::$s_session_vars);
+		
+		ExternalCache::save($session_id, @gzcompress(@serialize($va_current_values)), 'SessionVars', $vn_session_lifetime);
 	}
 	# ----------------------------------------
 	# --- Page performance
 	# ----------------------------------------
 	# Return number of seconds since request processing began
-	public function elapsedTime($pn_decimal_places=4) {
-		list($sm, $st) = explode(" ", $this->start_time);
+	public static function elapsedTime($pn_decimal_places=4) {
+		list($sm, $st) = explode(" ", Session::$start_time);
 		list($em, $et) = explode(" ",microtime());
 
 		return sprintf("%4.{$pn_decimal_places}f", (($et+$em) - ($st+$sm)));

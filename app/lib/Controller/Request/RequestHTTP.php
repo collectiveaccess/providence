@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,16 +44,18 @@ define("__AUTH_NO_ACCESS__", 2);
 
 class RequestHTTP extends Request {
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	private $opb_is_dispatched;
  		
 	/**
-	 * Current session object. If you need to set session variables you may
-	 * do so using Session object method calls on the object referenced by this property
+	 * Current session_id
 	 *
-	 * @var Session
+	 * @var session
 	 * @access public
 	 */
-	public $session;
+	public $session_id;
 	
 	/**
 	 * User object for currently logged in user. Will be undefined if no user is logged in.
@@ -151,7 +153,7 @@ class RequestHTTP extends Request {
 
 		// plain old session
 		if(!$this->session) {
-			$this->session = new Session($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
+			$this->session = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
 		}
 		
 		if (!isset($pa_options["no_authentication"]) || !$pa_options["no_authentication"]) {
@@ -280,8 +282,8 @@ class RequestHTTP extends Request {
 		$this->ops_raw_post_data = $ps_post_data;
 	}
 	# -------------------------------------------------------
-	public function getSession() {
-		return $this->session;
+	public function getSessionID() {
+		return $this->session_id;
 	}
 	# -------------------------------------------------------
 	public function getUser() {
@@ -610,13 +612,12 @@ class RequestHTTP extends Request {
 	# -------------------------------------------------------
  	/**
 	 *
-	 * Saves changes to session, user objects and sends asynchronous request for search indexing
+	 * Saves changes to user object and sends asynchronous request for search indexing
 	 * You should call this at the end of every request to ensure that user and session variables are saved.
 	 *
 	 * @access public
 	 */
 	function close() {
-		$this->session->close();
 		if (is_object($this->user)) {
 			$this->user->close();
 		}
@@ -743,7 +744,7 @@ class RequestHTTP extends Request {
 			//
 			// is a user already logged in?
 			//
-			if ($vn_user_id = $this->session->getVar($vs_app_name."_user_id")) {				// does session have a user attached to it?
+			if ($vn_user_id = Session::getVar($vs_app_name."_user_id")) { 				// does session have a user attached to it?
 				// user is already logged in
 
 				$this->user = new ca_users($vn_user_id);		// add user object
@@ -756,7 +757,7 @@ class RequestHTTP extends Request {
 				
 				if ($vb_login_successful) {
 																								// Login was successful
-					$this->session->setVar($vs_app_name."_lastping",time());					// set last time we heard from client in session
+					Session::setVar($vs_app_name."_lastping",time());					// set last time we heard from client in session
 					$this->user->setLastPing(time());	
 					$AUTH_CURRENT_USER_ID = $vn_user_id;
 					//$this->user->close(); ** will be called externally **
@@ -826,14 +827,14 @@ class RequestHTTP extends Request {
 		} else {		
 			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".$_SERVER["HTTP_USER_AGENT"]));
 		
-			$this->session->setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
-			$this->session->setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
-			$this->session->setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
-			$this->session->setVar($vs_app_name."_lastping",time());
+			Session::setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
+			Session::setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
+			Session::setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
+			Session::setVar($vs_app_name."_lastping",time());
 			
-			$this->session->setVar("screen_width",isset($_REQUEST["_screen_width"]) ? intval($_REQUEST["_screen_width"]): 0);
-			$this->session->setVar("screen_height",isset($_REQUEST["_screen_height"]) ? intval($_REQUEST["_screen_height"]) : 0);
-			$this->session->setVar("has_pdf_plugin",isset($_REQUEST["_has_pdf_plugin"]) ? intval($_REQUEST["_has_pdf_plugin"]) : 0);
+			Session::setVar("screen_width",isset($_REQUEST["_screen_width"]) ? intval($_REQUEST["_screen_width"]): 0);
+			Session::setVar("screen_height",isset($_REQUEST["_screen_height"]) ? intval($_REQUEST["_screen_height"]) : 0);
+			Session::setVar("has_pdf_plugin",isset($_REQUEST["_has_pdf_plugin"]) ? intval($_REQUEST["_has_pdf_plugin"]) : 0);
 			
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
@@ -874,8 +875,7 @@ class RequestHTTP extends Request {
 	public function deauthenticate() {
 		if ($this->isLoggedIn()) {
 			$vs_app_name = $this->config->get("app_name");
-			$this->session->setVar($vs_app_name."_user_id",'');
-			//$this->session->deleteSession();
+			Session::setVar("{$vs_app_name}_user_id", "");
 			$this->user = null;
 		}
 	}
