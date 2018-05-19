@@ -269,7 +269,8 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_READ_ACCESS__, 'omitCounts' => true))));
+ 			$this->view->setVar('available_editable_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
 
 			if(strlen($this->ops_tablename)>0){
 				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
@@ -600,31 +601,36 @@
 				
 					$pn_set_id = $this->request->getParameter('set_id', pInteger);
 					$t_set = new ca_sets($pn_set_id);
-					$this->view->setVar('set_id', $pn_set_id);
-					$this->view->setVar('set_name', $t_set->getLabelForDisplay());
-					$this->view->setVar('error', '');
-				
-					if ($t_set->getPrimaryKey() && ($t_set->get('table_num') == $t_instance->tableNum())) {
-						$va_item_ids = $t_set->getItemRowIDs(array('user_id' => $this->request->getUserID()));
 					
-						$va_row_ids_to_add = array();
-						foreach($pa_row_ids as $vn_row_id) {
-							if (!$vn_row_id) { continue; }
-							if (isset($va_item_ids[$vn_row_id])) { $vn_dupe_item_count++; continue; }
+					if ($t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+						$this->view->setVar('set_id', $pn_set_id);
+						$this->view->setVar('set_name', $t_set->getLabelForDisplay());
+						$this->view->setVar('error', '');
+				
+						if ($t_set->getPrimaryKey() && ($t_set->get('table_num') == $t_instance->tableNum())) {
+							$va_item_ids = $t_set->getItemRowIDs(array('user_id' => $this->request->getUserID()));
+					
+							$va_row_ids_to_add = array();
+							foreach($pa_row_ids as $vn_row_id) {
+								if (!$vn_row_id) { continue; }
+								if (isset($va_item_ids[$vn_row_id])) { $vn_dupe_item_count++; continue; }
 							
-							$va_item_ids[$vn_row_id] = 1;
-							$va_row_ids_to_add[$vn_row_id] = 1;
-							$vn_added_items_count++;
+								$va_item_ids[$vn_row_id] = 1;
+								$va_row_ids_to_add[$vn_row_id] = 1;
+								$vn_added_items_count++;
 						
-						}
+							}
 				
-						if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add), ['user_id' => $this->request->getUserID()])) === false) {
-							$this->view->setVar('error', join('; ', $t_set->getErrors()));
-						}
+							if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add), ['user_id' => $this->request->getUserID()])) === false) {
+								$this->view->setVar('error', join('; ', $t_set->getErrors()));
+							}
 					
+						} else {
+							$this->view->setVar('error', _t('Invalid set'));
+						}
 					} else {
-						$this->view->setVar('error', _t('Invalid set'));
-					}
+                    	$this->view->setVar('error', _t('Access denied'));
+                	}
 				}
 			} else {
 				$this->view->setVar('error', _t('You cannot edit sets'));
@@ -908,7 +914,8 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_READ_ACCESS__))));
+ 			$this->view->setVar('available_editable_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			
