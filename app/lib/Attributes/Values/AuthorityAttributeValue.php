@@ -77,7 +77,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 *			forDuplication = Forces value suitable duplication of the record. This is almost always the numeric primary key ID for the related authority record. [Default is false]
 	 *			includeID = Include numeric primary key ID at end of display text, surrounded by brackets (Eg. [353]) [Default is false]
 	 *			template =  Display template for format returned value with. Template is evaluated related to the related authority record. [Default is null]
-	 *          checkAccess = 
+	 *          checkAccess = Only return list items with a specified access value. [Default is null; no filtering performed]
 	 * @return string The value
 	 */
 	public function getDisplayValue($pa_options=null) {

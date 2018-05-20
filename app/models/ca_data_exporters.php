@@ -1567,7 +1567,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(strlen($vs_wrap_after)>0) {
 			$vs_export = $vs_export."\n".$vs_wrap_after;
 		}
-
+		
 		return $vs_export;
 	}
 	# ------------------------------------------------------
@@ -1828,6 +1828,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['path'] = true;
 		}
 		
+		if ($va_filter_types = $t_exporter_item->getSetting('filterTypes')) {
+		    $va_get_options['filterTypes'] = is_array($va_filter_types) ? $va_filter_types : [$va_filter_types];
+		}
+		
 		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');
 		$va_expr_tags = caGetTemplateTags($vs_skip_if_expr);
 
@@ -2002,7 +2006,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		} else if($vs_template) {
 			// templates without source are probably just static text, but you never know
-			// -> run them through processor anyways
+			// -> run them through processor anyway
 			$vs_proc_template = caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), array());
 
 			$o_log->logDebug(_t("Current mapping has no source but a template '%1'. Value from extracted via template processor is '%2'", $vs_template, $vs_proc_template));
