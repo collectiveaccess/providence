@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,7 @@
 define("__CA_ATTRIBUTE_VALUE_LIST__", 3);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 global $_ca_attribute_settings;
@@ -232,20 +232,22 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * @param array Optional array of options. Supported options include:
 	 * 			list_id = if set then the numeric item_id value is translated into label text in the current locale. If not set then the numeric item_id is returned.
 	 *			useSingular = If list_id is set then by default the returned text is the plural label. Setting this option to true will force use of the singular label. [Default is false]
-	 *			showHierarchy = If true then hierarchical parents of list item will be returned and hierarchical options described below will be used to control the output [Default is false]
 	 *			returnIdno = If true list item idno is returned rather than preferred label [Default is false]
 	 *			idsOnly = Return numeric item_id only [Default is false]
 	 *			alwaysReturnItemID = Synonym for idsOnly [Default is false]
 	 *			output = List item value return. Valid values are text [display text], idno [identifier; same as returnIdno option], value [numeric item_id; same as idsOnly option]. [Default is "value"]
 	 *			transaction = transaction to get list item information in the context of [Default is false]
+	 *          checkAccess = Only return list items with a specified access value. [Default is null; no filtering performed]
 	 *
 	 *			HIERARCHICAL OPTIONS:
-	 *				direction - For hierarchy specifications (eg. ca_objects.hierarchy) this determines the order in which the hierarchy is returned. ASC will return the hierarchy root first while DESC will return it with the lowest node first. Default is ASC.
-	 *				top - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the root down. Default is to not limit.
-	 *				bottom - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the lowest node up. Default is to not limit.
-	 * 				hierarchicalDelimiter - Text to place between items in a hierarchy for a hierarchical specification (eg. ca_objects.hierarchy) when returning as a string
-	 *				removeFirstItems - If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted. Default is zero (don't delete anything).
-	 *				transaction = the transaction to execute database actions within. [Default is null]
+	 *			    showHierarchy = Return hierarchical parents of list item. Hierarchical options described below are used to control the output. [Default is false]
+	 *				direction = For hierarchy specifications (eg. ca_objects.hierarchy) this determines the order in which the hierarchy is returned. ASC will return the hierarchy root first while DESC will return it with the lowest node first. Default is ASC.
+	 *				top = For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the root down. Default is to not limit.
+	 *				bottom = For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the lowest node up. Default is to not limit.
+	 * 				hierarchicalDelimiter = Text to place between items in a hierarchy for a hierarchical specification (eg. ca_objects.hierarchy) when returning as a string
+	 *				removeFirstItems = If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted. Default is zero (don't delete anything).
+	 *				transaction = The transaction to execute database actions within. [Default is null]
+	 *              filterTypes = Filter hierarchy showing only item with specified types. Implies showHierarchy option. [Default is null]
 	 *
 	 * @return string The value
 	 */
@@ -269,28 +271,42 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
 			if (!in_array(ca_lists::getAccessForItemID($this->opn_item_id), $pa_options['checkAccess'])) { return null; }
 		}
-
-		if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
-			return caGetListItemIdno($this->opn_item_id, $pa_options);
-		}
-		if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
-			return caGetListItemByIDForDisplay($this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
+		
+		if (isset($pa_options['filterTypes']) && $pa_options['filterTypes']) {
+			if(!is_array($pa_options['filterTypes'])) { $pa_options['filterTypes'] = [$pa_options['filterTypes']]; }
+			$pa_options['showHierarchy'] = true;
 		}
 
-		if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {
-			$vb_ids_only = isset($pa_options['alwaysReturnItemID']) ? (bool)$pa_options['alwaysReturnItemID'] : false;
-		}
 
-		if ($vb_ids_only) { return (int)$this->opn_item_id; }
+        if(!$pa_options['showHierarchy']) {
+            if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
+                return caGetListItemIdno($this->opn_item_id, $pa_options);
+            }
+            if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
+                return caGetListItemByIDForDisplay($this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
+            }
+
+            if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {
+                $vb_ids_only = isset($pa_options['alwaysReturnItemID']) ? (bool)$pa_options['alwaysReturnItemID'] : false;
+            }
+
+            if ($vb_ids_only) { return (int)$this->opn_item_id; }
+        }
 
 		$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
+		if ($pa_options['showHierarchy'] && !$vn_list_id) {
+			$t_item = new ca_list_items();
+		    $t_item->load((int)$this->opn_item_id);
+		    $vn_list_id = $t_item->get('list_id');
+		}
+		
 		if ($vn_list_id > 0) {
 			$t_list = new ca_lists();
 
 			if ($o_trans = (isset($pa_options['transaction']) ? $pa_options['transaction'] : null)) {
 				$t_list->setTransaction($o_trans);
 			}
-			$t_item = new ca_list_items();
+			if (!$t_item) { $t_item = new ca_list_items(); }
 			if ($pa_options['showHierarchy'] || $vb_return_idno) {
 				if ($o_trans) { $t_item->setTransaction($o_trans); }
 			}
@@ -299,7 +315,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 			// do we need to get the hierarchy?
 			if ($pa_options['showHierarchy']) {
-				$t_item->load((int)$this->opn_item_id);
+				if (!$t_item->isLoaded()) { $t_item->load((int)$this->opn_item_id); }
+				
+				if (is_array($pa_options['filterTypes'])) {
+				    return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('filterTypes' => $pa_options['filterTypes'], 'delimiter' => ' ➔ ', $pa_options)));
+				} 
+				
 				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('delimiter' => ' ➔ ', $pa_options)));
 			}
 

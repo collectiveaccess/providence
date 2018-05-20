@@ -990,6 +990,7 @@ class SearchResult extends BaseObject {
 	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
  	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
 	 * 			hierarchyDelimiter = Characters to place in between separate hiearchy levels. Defaults to the 'delimiter' option.
+	 *          filterTypes = A list of types. Only hierarchy items with specified types will be returned. [Default is null]
  	 *
 	 *		[Front-end access control]		
 	 *			checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
@@ -1008,6 +1009,8 @@ class SearchResult extends BaseObject {
 			$pa_options['template'] = null;
 			$pa_options['returnAsSearchResult'] = false;
 		}
+		
+		if($pa_options['filterTypes'] && !is_array($pa_options['filterTypes'])) { $pa_options['filterTypes'] = [$pa_options['filterTypes']]; }
 		
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
 		
@@ -1294,17 +1297,36 @@ class SearchResult extends BaseObject {
 							if (!$va_path_components['related']) {
 								$va_ancestor_id_list = array($va_ancestor_id_list);
 							}
-							$va_hier_list = array();
+							$va_hier_list = [];
+							$filter_by_types = $type_spec = null;
+							
+							if (
+							    method_exists($t_instance, 'getTypeFieldName') && 
+							    ($type_id_fld = $t_instance->getTypeFieldName()) && 
+							    is_array($pa_options['filterTypes']) &&
+							    (sizeof($pa_options['filterTypes']) > 0)
+							) {
+							    $filter_by_types = caMakeTypeIDList($va_path_components['table_name'], $pa_options['filterTypes']);
+						        $type_spec = join('.', [$va_path_components['table_name'], $type_id_fld]);
+							}
+							
 							foreach($va_ancestor_id_list as $va_ancestor_ids) {
 								if($vn_remove_first_items > 0) {
 									$va_ancestor_ids = array_slice($va_ancestor_ids, $vn_remove_first_items);
 								}
 						
-								$va_hier_item = array();
+								$va_hier_item = [];
 								if ($qr_hier = caMakeSearchResult($va_path_components['table_name'], $va_ancestor_ids, $pa_options)) {
 							
 									while($qr_hier->nextHit()) {
-										$va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes']));
+									    if (is_array($filter_by_types) && sizeof($filter_by_types)) {
+                                            if (!is_array($type_struct = $qr_hier->get($type_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'])))) { continue; }
+                                  
+                                            $type_id = array_shift(array_shift($type_struct));
+                                            if (!in_array($type_id, $filter_by_types)) { continue; }
+                                        }
+									    
+									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes']));;
 									}
 									if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 										$va_hier_item = array_slice($va_hier_item, 0, $vn_max_levels_from_top, true);
@@ -1321,7 +1343,7 @@ class SearchResult extends BaseObject {
 					$va_acc = [];
 					foreach($va_hier_list as $vn_h => $va_hier_item) {
 						if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item); }
-					
+				
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
 						} elseif($this->ops_table_name == $va_path_components['table_name']) {
