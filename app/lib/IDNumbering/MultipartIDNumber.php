@@ -692,7 +692,7 @@ class MultipartIDNumber extends IDNumber {
 			if ($qr_res->numRows()) {
 				while($qr_res->nextRow()) {
 					$va_tmp = $this->explodeValue($qr_res->get($vs_field));
-					if(is_numeric($va_tmp[$vn_i])) {
+					if(is_numeric($va_tmp[$vn_i]) && (intval($va_tmp[$vn_i]) < pow(2,30))) {
 						$vn_num = intval($va_tmp[$vn_i]) + 1;
 						break;
 					}
