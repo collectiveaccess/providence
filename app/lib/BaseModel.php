@@ -11425,6 +11425,30 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return primary key id value for idno value. If more than one primary key exists for the idno, the first id found is returned.
+	 *
+	 * @param string $ps_idno Identifier value
+	 * @param array $pa_options Options include:
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return int primary key id value, null if idno does not exist or false if id exists but fails checkAccess checks
+	 */
+	public static function getIDForIdno($ps_idno, $pa_options=null) {
+		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+			$o_db = new Db();
+			$vs_pk = $t_instance->primaryKey();
+			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ?", [$ps_idno]);
+			
+			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+			if ($qr_res->nextRow()) {
+			    if ((is_array($pa_check_access) && (sizeof($pa_check_access) > 0) ) && $t_instance->hasField('access') &&  !in_array($qr_res->get('access'), $pa_check_access)) { return false; }
+				return $qr_res->get($vs_pk);
+			}
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Find row(s) with fields having values matching specific values. 
 	 * Results can be returned as model instances, numeric ids or search results (when possible).
 	 *
