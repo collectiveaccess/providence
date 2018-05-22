@@ -1833,9 +1833,16 @@
 		# ------------------------------------------------------------------
 		// --- Retrieval
 		# ------------------------------------------------------------------
-		// returns an array of all attributes attached to the current row
+		/**
+		 * Returns an array of all attributes attached to the current row
+		 *
+		 * @param array $pa_options Options include:
+		 *      row_id = Row to fetch attributes for. If omitted the currently loaded row is used. [Default is null]
+		 *
+		 * @return array list of attribute values
+		 */
 		public function getAttributes($pa_options=null, $pa_element_ids=null) {
-			if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
+			if (!($vn_row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey()))) { return null; }
 			
 			if (is_array($pa_element_ids) && sizeof($pa_element_ids)) {
 				$va_element_ids = $pa_element_ids;
