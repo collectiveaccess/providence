@@ -202,6 +202,8 @@ print "START REP AT $pn_replicated_log_id\n";
 				$vn_retry_count = 0;
 				$vn_max_retry_count = 1;
 				$pb_ok = true;
+				
+				$va_seen_primaries = [];
 				while(true) { // use chunks of 10 entries until something happens (success/err)
 				    $vn_last_log_id = null;
 				
@@ -217,7 +219,7 @@ print "START REP AT $pn_replicated_log_id\n";
 						->addGetParameter('pushMediaTo', $vs_push_media_to)
 						->request()->getRawData();
 
-                    $va_prepend_log_entries = $va_filtered_log_entries = null;
+                    $va_filtered_log_entries = null;
 					if (
 						(bool)$this->opo_replication_conf->get('sources')[$vs_source_key]['push_missing']
 						||
@@ -247,12 +249,14 @@ print "START REP AT $pn_replicated_log_id\n";
 											->request();
 						$va_access_by_guid = $o_access_by_guid->getRawData();
 
+                        // List of log entries to push
 					    $va_filtered_log_entries = [];
+					    
 						$va_source_log_entries_for_missing_guids = [];
 						$va_source_log_entries_for_missing_guids_seen_guids = [];
+						$va_guids_to_skip = [];
 						
 						foreach($va_source_log_entries as $vn_log_id => $va_source_log_entry) {
-						   // $this->log(_t("PROCESS log_id %1", $vn_log_id), Zend_Log::DEBUG);
 						    $vn_last_log_id = $vn_log_id;
 							$vb_logged_exists_on_target = is_array($va_guid_already_exists[$va_source_log_entry['guid']]);
 						    if ($pa_filter_on_access_settings && ($va_access_by_guid[$va_source_log_entry['guid']] !== '?') && !in_array($va_access_by_guid[$va_source_log_entry['guid']], $pa_filter_on_access_settings) && !$vb_logged_exists_on_target) {
@@ -260,15 +264,14 @@ print "START REP AT $pn_replicated_log_id\n";
 						        continue;
 						    }
 						    
-						    
-						    $va_missing_guids = [];
-						    $va_direct_guids = [];
+						    $va_missing_guids = []; // List of guids missing on target that we'll need to replicate to synthesize subject
 						    if (!$vb_logged_exists_on_target) {
-						        $va_missing_guids[] = $va_source_log_entry['guid'];
-						        $va_direct_guids[$va_source_log_entry['guid']] = true;
+						        $va_missing_guids[] = $va_source_log_entry['guid']; // add changed "source" row to replication list
 						    }
-						   // print_R($va_source_log_entry);
+						    
 							if (is_array($va_source_log_entry['subjects'])) {
+							    // Loop through subjects of source (changed) row looking for items to replicate
+							    // (Eg. a change to an object-entity relationship should cause both object and entity to be replicated if they otherwise meet replication requirements)
 								foreach($va_source_log_entry['subjects'] as $va_source_log_subject) {
 								   
 								    $vb_subject_exists_on_target = is_array($va_guid_already_exists[$va_source_log_subject['guid']]);
@@ -289,14 +292,14 @@ print "START REP AT $pn_replicated_log_id\n";
                                     //
                                     if (!$vb_have_access_to_subject && $vb_subject_exists_on_target) {
                                         // Should delete from target as it's not public any longer
-                                        //print $x="DELETE ".$va_source_log_subject['guid']."\n";
-                                         //$this->log($x, Zend_Log::DEBUG);
                                         $va_filtered_log_entries[$vn_log_id] = $va_source_log_entry;
                                     } elseif($vb_subject_exists_on_target) {
                                         // Should update on server...
                                         // ... which means pushing change
-                                        //print $x="UPDATE ".$va_source_log_subject['guid']."\n";
-                                         //$this->log($x, Zend_Log::DEBUG);
+                                        $va_filtered_log_entries[$vn_log_id] = $va_source_log_entry;
+                                    } elseif($vb_have_access_to_subject && $va_seen_primaries[$va_source_log_subject['guid']]) {
+                                        // already seen this one
+                                        $this->log(_t("PASSING ON ".$va_source_log_subject['guid']. " BECAUSE WE'VE ALREADY SEEN IT: %1/%2", ($vb_have_access_to_subject ? "HAVE ACCESS" : "NO ACCESS"), ($vb_subject_exists_on_target ? "EXISTS ON TARGET" : "DOES NOT EXIST ON TARGET")), Zend_Log::DEBUG);
                                         $va_filtered_log_entries[$vn_log_id] = $va_source_log_entry;
                                     } elseif($vb_have_access_to_subject && !$vb_subject_exists_on_target) {
                                         // keep in filtered log
@@ -306,30 +309,30 @@ print "START REP AT $pn_replicated_log_id\n";
                                         // Should insert on server...
                                         // ... which means synthesizing log from current state
                                         
-                                        print $x="INSERT ".$va_source_log_subject['guid']."\n";
-                                         $this->log($x, Zend_Log::DEBUG);
-                                         
-                                        //$this->log(print_R($va_source_log_entry, true), Zend_Log::DEBUG);
+                                        $this->log("INSERT ".$va_source_log_subject['guid'], Zend_Log::DEBUG);
+                                        $va_seen_primaries[$va_source_log_subject['guid']] = true;
                                         
-                                        $va_missing_guids[] = $va_source_log_subject['guid'];
-                                        $va_direct_guids[$va_source_log_subject['guid']] = true;
+                                        $va_missing_guids[] = $va_source_log_subject['guid'];   // add subject to list of guids to replicate
                 
-
+                                        // find dependencies for rows to replicate that are not already present on the target
                                         while((sizeof($va_missing_guids) > 0)) { 
                                             $vs_missing_guid = array_shift($va_missing_guids);
                                             if ($va_source_log_entries_for_missing_guids_seen_guids[$vs_missing_guid]) { 
-                                                //if (!$va_direct_guids[$vs_missing_guid]) {
-                                                    $t = $va_source_log_entries_for_missing_guids[$vs_missing_guid];
-                                                    unset($va_source_log_entries_for_missing_guids[$vs_missing_guid]);
-                                                    $va_source_log_entries_for_missing_guids[$vs_missing_guid] = $t;
-                                                    $this->log("MOVED $vs_missing_guid", Zend_Log::DEBUG);
-                                                    print "MOVED $vs_missing_guid\n";
-                                               // }
+                                                // If we've already seen this guid then move it to the end of the list
+                                                // Since the queue is pushed in reverse we're actually pushing this towards
+                                                // the *beginning*, allowing it to be in place for those rows which depend upon it
+                                                $va_entry_tmp = $va_source_log_entries_for_missing_guids[$vs_missing_guid];
+                                                unset($va_source_log_entries_for_missing_guids[$vs_missing_guid]);
+                                                $va_source_log_entries_for_missing_guids[$vs_missing_guid] = $va_entry_tmp;
+                                                $this->log(_t("MOVED %1", $vs_missing_guid), Zend_Log::DEBUG);
+                                                print "MOVED {$vs_missing_guid}\n";
+                                                
                                                 continue; 
                                             } 
                                             
+                                            // Pull log for "missing" guid we need to replicate on target
                                             $this->log(_t("Getting log for missing guid %1", $vs_missing_guid), Zend_Log::DEBUG);
-                                            $va_log = $o_source->setEndpoint('getlog')
+                                            $va_log_for_missing_guid = $o_source->setEndpoint('getlog')
                                                 ->clearGetParameters()
                                                 ->addGetParameter('forGUID', $vs_missing_guid)
                                                 ->addGetParameter('skipIfExpression', $vs_skip_if_expression)
@@ -339,26 +342,34 @@ print "START REP AT $pn_replicated_log_id\n";
                                                 ->addGetParameter('excludeMetadata', $vs_exclude_metadata)
                                                 ->addGetParameter('pushMediaTo', $vs_push_media_to)
                                                 ->request()->getRawData();
-                                            if (is_array($va_log)) {
+                                                
+                                            if (is_array($va_log_for_missing_guid)) {
                                                 $va_dependent_guids = [];
-                                                $va_attr_guids = [];
-                        
+            
+                                                // Check access settings for dependent rows; we only want to replicate rows that
+                                                // meet the configured access requirements (Eg. public rows only)
                                                 $o_access_for_dependent = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
                                                                     ->addGetParameter('access', $vs_access)
-                                                                    ->setRequestBody(array_unique(caExtractArrayValuesFromArrayOfArrays($va_log, 'guid')))
+                                                                    ->setRequestBody(array_unique(caExtractArrayValuesFromArrayOfArrays($va_log_for_missing_guid, 'guid')))
                                                                     ->request();
                                                 $va_access_for_dependent = $o_access_for_dependent->getRawData();
-                                                $va_filtered_log = [];
-                                                foreach($va_log as $va_missing_entry) {
-                                                    if ($va_missing_entry['log_id'] >= $pn_start_replicated_id) { continue; }
+                                                
+                                                $va_filtered_log_for_missing_guid = [];  
+                                                foreach($va_log_for_missing_guid as $va_missing_entry) {
+                                                    if ($va_missing_entry['log_id'] >= $pn_start_replicated_id) { 
+                                                        // Skip rows in the future - the regular sync process will take care of those. 
+                                                        // All we do here is bring the target "up to date"
+                                                        continue; 
+                                                    }
                                                     if ($pa_filter_on_access_settings && ($va_access_for_dependent[$va_missing_entry['guid']] !== '?') && !in_array($va_access_for_dependent[$va_missing_entry['guid']], $pa_filter_on_access_settings)) {
                                                         // skip rows for which we have no access
                                                         continue;
                                                     }
-                                                    if ($va_missing_entry['log_id'] == 1) { continue; }
+                                                    if ($va_missing_entry['log_id'] == 1) { continue; } // 1 is not a valid log_id
                                                     
-                                                    $va_filtered_log[$va_missing_entry['log_id']] = $va_missing_entry;
-                            
+                                                    $va_filtered_log_for_missing_guid[$va_missing_entry['log_id']] = $va_missing_entry;
+                           
+                                                    // Add guids for dependencies referenced by this log entry
                                                     if(is_array($va_missing_entry['snapshot'])) {
                                                         $va_dependent_guids = array_unique(array_merge($va_dependent_guids, array_values(array_filter($va_missing_entry['snapshot'], function($v, $k) use ($va_missing_entry, $o_dm, $vs_missing_guid) { 
                                                             if ($v == $vs_missing_guid) { return false; }
@@ -368,17 +379,24 @@ print "START REP AT $pn_replicated_log_id\n";
                                                                     ||
                                                                     is_array(Datamodel::getFieldInfo($va_missing_entry['logged_table_num'], $matches[1].'_id'))
                                                                 ) { 
-                                                                    if (in_array($va_missing_entry['logged_table_num'], [3,4])) { // && (in_array($matches[1], ['row', 'row_id']))) {
-                                                                         return false;
-                                                                    } else {
+                                                                    //if (($va_missing_entry['logged_table_num'] == 3) || (($va_missing_entry['logged_table_num'] == 4) && (in_array($matches[1], ['row', 'row_id'])))) {
+                                                                   // if (in_array($va_missing_entry['logged_table_num'], [3, 4])) {
+                                                                    //     return false;
+                                                                   // } else {
                                                                         return true; 
-                                                                    }
+                                                                   // }
                                                                 }
                                                             }
                                                             return false;
                                                         }, ARRAY_FILTER_USE_BOTH))));
+                                                       // print "DEPENDENT GUIDS FOR ".$va_missing_entry['guid']." ARE ";
+                                                        //print_R($va_dependent_guids);
                                                     }
                                                 }
+                                                
+                                                // Check for presence and access of dependencies on target
+                                                //      We will only replicate rows meeting access requirements and not already on the target
+                                                //
                                                 if(sizeof($va_dependent_guids) > 0) {
                                                     $o_guids_exist_for_dependencies = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
                                                                         ->setRequestBody($va_dependent_guids)
@@ -386,39 +404,44 @@ print "START REP AT $pn_replicated_log_id\n";
                                                     $va_guids_exist_for_dependencies = $o_guids_exist_for_dependencies->getRawData();
                                                     
                                                     $va_dependent_guids = array_keys(array_filter($va_guids_exist_for_dependencies, function($v) { return !is_array($v); }));
-                                                    
+                                                   
                                                     $this->log("Added deps [".join("; ", array_diff($va_missing_guids, $va_dependent_guids))."] for $vs_missing_guid", Zend_Log::DEBUG);
                                                     
-                                                    $va_missing_guids = array_filter($va_missing_guids, function($v) use ($va_dependent_guids) { return !in_array($v, $va_dependent_guids);});
-                                                    $va_missing_guids = array_unique(array_merge($va_missing_guids, $va_dependent_guids));
-                                                    
+                                                    //$va_missing_guids = array_filter($va_missing_guids, function($v) use ($va_dependent_guids) { return !in_array($v, $va_dependent_guids);});  // remove dependencies from "missing" list
+                                                    $va_missing_guids = array_unique(array_merge($va_missing_guids, $va_dependent_guids));  // add dependent guid lists to "missing" list; this will forcing dependencies to be processed through this loop
+                                          
                                                     if (is_array($pa_filter_on_access_settings)) {
+                                                        // Filter missing guid list using access criteria
                                                         $o_access_for_missing = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
                                                                             ->addGetParameter('access', $vs_access)
                                                                             ->setRequestBody($va_missing_guids)
                                                                             ->request();
                                                         $va_access_for_missing = $o_access_for_missing->getRawData();
                                                         $va_missing_guids = array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return (($v == '?') || (in_array($v, $pa_filter_on_access_settings))); }));
+                                                        $va_guids_to_skip = array_merge($va_guids_to_skip, array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return !in_array($v, $pa_filter_on_access_settings); })));
+                                                        //print_R($va_access_for_missing);
+                                                        //print "skip"; print_R($va_guids_to_skip);
                                                     }
                                                 } 
                                                 //$va_missing_guids = array_filter($va_missing_guids, function($v) use ($va_source_log_entries_for_missing_guids_seen_guids) { return !isset($va_source_log_entries_for_missing_guids_seen_guids[$v]); });
                                                 // print "missing =";print_R($va_missing_guids);
                         
-                                                if (!$pa_filter_on_access_settings) { $va_filtered_log = $va_log; }
-                    $this->log(_t("GOT %1 entries for %2", sizeof($va_filtered_log), $vs_missing_guid), Zend_Log::DEBUG);
-                    //$this->log(_t("%1", print_R($va_filtered_log, true)), Zend_Log::DEBUG);
+                                               // if (!$pa_filter_on_access_settings) { $va_filtered_log_for_missing_guid = $va_log_for_missing_guid; }
+                   
+                    $this->log(_t("GOT %1 entries for %2", sizeof($va_filtered_log_for_missing_guid), $vs_missing_guid), Zend_Log::DEBUG);
+                    $this->log(_t("%1", print_R($va_filtered_log_for_missing_guid, true)), Zend_Log::DEBUG);
                     
                                                 if(sizeof($va_dependent_guids) == 0) {                                                    
-                                                    // has no outstanding dependencies so push it now
-                                                    $this->log(_t("Immediately pushing %1 missing entries for %2", sizeof($va_filtered_log), $vs_missing_guid), Zend_Log::DEBUG);
-                                                    
+                                                    // Missing guid has no outstanding dependencies so push it immediately
+                                                    $this->log(_t("Immediately pushing %1 missing entries for %2", sizeof($va_filtered_log_for_missing_guid), $vs_missing_guid), Zend_Log::DEBUG);
+                                                
                                                     $va_has_attr_guids = [];
-                                                    while(sizeof($va_filtered_log) > 0) {
+                                                    while(sizeof($va_filtered_log_for_missing_guid) > 0) {
                                                         $va_entries = [];
                                                         $vn_first_missing_log_id = null;
                             
-                                                        while(sizeof($va_filtered_log) > 0) {
-                                                            $va_log_entry = array_shift($va_filtered_log);
+                                                        while(sizeof($va_filtered_log_for_missing_guid) > 0) {
+                                                            $va_log_entry = array_shift($va_filtered_log_for_missing_guid);
                                                             $vn_mlog_id = $va_log_entry['log_id'];
                                                             if (!$vn_mlog_id) { 
                                                                 $this->log(_t("Skipped entry because it lacks a log_id %1", print_R($va_log_entry, true)), Zend_Log::DEBUG);
@@ -449,7 +472,17 @@ print "START REP AT $pn_replicated_log_id\n";
                                                                         ->addGetParameter('pushMediaTo', $vs_push_media_to)
                                                                         ->request()->getRawData();
                                                                     if (is_array($va_attr_log)) {
-                                                                        $va_entries = array_merge($va_entries, $va_attr_log);
+                                                                        //$va_entries = array_merge($va_entries, $va_attr_log);
+                                                                        $acc = [];
+                                                                        foreach($va_attr_log as $l => $x) {
+                                                                            if (!$va_seen[$x['log_id']]) {
+                                                                                $va_seen[$x['log_id']] = $x['guid'];
+                                                                                $va_entries[$x['log_id']] = $acc[$x['log_id']] = $x;
+                                                                                // mark as seen so we don't process the same thing twice
+                                                                                $va_source_log_entries_for_missing_guids_seen_guids[$x['guid']] = true;
+                                                                            }
+                                                                        }
+                                                                        $this->log(_t("Adding %3 unpushed attribute log entries starting with %1 for %2 for immediate push.", $vn_first_missing_log_id, $vs_missing_guid, sizeof($acc)), Zend_Log::DEBUG);
                                                                     }
                                                                 }
                                                             }
@@ -457,31 +490,41 @@ print "START REP AT $pn_replicated_log_id\n";
                                                             if (!$vn_first_missing_log_id) { $vn_first_missing_log_id = $vn_mlog_id; }
                             
                                                             $va_entries[$vn_mlog_id] = $va_log_entry;
+                                                            
+                                                            // mark as seen so we don't process the same thing twice
+                                                            $va_source_log_entries_for_missing_guids_seen_guids[$va_log_entry['guid']] = true;
                                                             if ((sizeof($va_entries) >= 10) || (sizeof($va_source_log_entries_for_missing_guid) == 0)) { break; }
                                                         }
+                                                        
+                                                        ksort($va_entries);
                         
                                                         $this->log(_t("Immediately pushing missing log entries starting with %1 for %2. %3", $vn_first_missing_log_id, $vs_missing_guid, print_R($va_entries, true)), Zend_Log::DEBUG);
                                                         $o_backlog_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
                                                             ->addGetParameter('system_guid', $vs_source_system_guid)
                                                             ->setRequestBody($va_entries)
                                                             ->request();
-                                                        //print_R($va_entries);
+                                                       // print_R($va_entries);
                                                         //print_r($o_backlog_resp);
                                                     }
                                                 } else {
-                                                    $va_source_log_entries_for_missing_guids[$vs_missing_guid] = $va_filtered_log;
+                                                    // Missing guid has dependencies 
+                                                    //      Queue it for replication
+                                                    $va_source_log_entries_for_missing_guids[$vs_missing_guid] = $va_filtered_log_for_missing_guid;
+                                                    
+                                                    // mark as seen so we don't process the same thing twice
+                                                    $va_source_log_entries_for_missing_guids_seen_guids[$vs_missing_guid] = true;
                                                 }
-                                                //print "GOT ".sizeof($va_filtered_log)." Missing log entries for $vs_missing_guid\n";
+                                                print "GOT ".sizeof($va_filtered_log_for_missing_guid)." missing log entries for $vs_missing_guid\n";
                                             } else {
                                                 $this->log(_t("No log for %1.", $vs_guid), Zend_Log::DEBUG);
                                             }
                                             
-                                            $va_source_log_entries_for_missing_guids_seen_guids[$vs_missing_guid] = true;
-                                        }
+                                        }   // end missing guid loop
                                     }
-                                }								
+                                }	// end subject loop							
 							}
-						}
+						}       // end source log entry loop
+						
 						//ksort($va_source_log_entries_for_missing_guids, SORT_NUMERIC);
                         if(sizeof($va_source_log_entries_for_missing_guids)) {
                             $va_source_log_entries_for_missing_guids = array_reverse($va_source_log_entries_for_missing_guids);
@@ -495,18 +538,20 @@ print "START REP AT $pn_replicated_log_id\n";
 						        foreach($va_source_log_entries_for_missing_guid as $x) {
                                     if(is_array($x['subjects'])) {
                                         foreach($x['subjects'] as $dep_subject) {
-                                            if (!isset($va_source_log_entries_for_missing_guids[$dep_subject['guid']])) { continue; }
+                                            if (!isset($va_source_log_entries_for_missing_guids[$dep_subject['guid']])) { 
+                                                print "SKIP DEP SUBJ ".$dep_subject['guid']."\n";
+                                                continue; 
+                                            }
                                             $va_dependency_list[$x['guid']][$dep_subject['guid']] = true;
                                         }
                                     }
                                 }
 						    }
-						   // print "DEP LIST";
-						  //  print_R($va_dependency_list);
-						    
+						   //print "DEP LIST";
+						   // print_R($va_dependency_list);
+						  
 						    $va_seen = [];
                             foreach($va_source_log_entries_for_missing_guids as $vs_missing_guid => $va_source_log_entries_for_missing_guid) {
-                                //print_r($va_source_log_entries_for_missing_guids);
                                 $this->log(_t("Pushing %1 missing entries for %2", sizeof($va_source_log_entries_for_missing_guid), $vs_missing_guid), Zend_Log::DEBUG);
                                 while(sizeof($va_source_log_entries_for_missing_guid) > 0) {
                                     $va_entries = [];
@@ -524,6 +569,21 @@ print "START REP AT $pn_replicated_log_id\n";
                                             $this->log(_t("Skipped %1 because it's in the future", $vn_mlog_id),Zend_Log::DEBUG);
                                             continue; 
                                         }
+                                        
+                                        foreach($va_log_entry['snapshot'] as $k => $v) {
+                                            if ($k == 'locale_id_guid') { continue; }
+                                            if (in_array($v, $va_guids_to_skip)) { 
+                                                if (preg_match("!parent!", $k)) {
+                                                    print "REMOVE BAD HIERARCHY PARENT ID $k => $v\n";
+                                                    unset($va_log_entry['snapshot'][$k]);
+                                                    unset($va_log_entry['snapshot'][str_replace("_guid", "", $k)]);
+                                                } else {
+                                                    print "SKIP log entry because dependency {$v}/{$k} is not available\n";  
+                                                    continue(2); 
+                                                }
+                                            }
+                                        }
+                                        
                                         unset($va_dependency_list[$va_log_entry['guid']][$vs_missing_guid]);
                                         if (sizeof($va_dependency_list[$va_log_entry['guid']]) > 0) { 
                                             print "SKIP ".$va_log_entry['log_id']."/".$va_log_entry['guid']." FOR $vs_missing_guid because it still has deps: ".join("; ", array_keys($va_dependency_list[$va_log_entry['guid']]))."\n";
@@ -556,8 +616,14 @@ print "START REP AT $pn_replicated_log_id\n";
                                                     ->request()->getRawData();
                                                 $va_attr_log = array_filter($va_attr_log, function($v) { return !$v['SKIP']; });
                                                 if (is_array($va_attr_log) && sizeof($va_attr_log)) {
-                                                    //print "FEH ADD ".print_R($va_attr_log, true);
-                                                    $va_entries = array_merge($va_entries, $va_attr_log);
+                                                    $acc = [];
+                                                    foreach($va_attr_log as $l => $x) {
+                                                        if (!$va_seen[$x['log_id']]) {
+                                                            $va_seen[$x['log_id']] = $x['guid'];
+                                                            $va_entries[$x['log_id']] = $acc[$x['log_id']] = $x;
+                                                        }
+                                                    }
+                                                    $this->log(_t("Adding %3 unpushed attribute log entries starting with %1 for %2.", $vn_first_missing_log_id, $vs_missing_guid, sizeof($acc)), Zend_Log::DEBUG);
                                                 }
                                             }
                                         }
@@ -565,8 +631,9 @@ print "START REP AT $pn_replicated_log_id\n";
                                         $va_entries[$vn_mlog_id] = $va_log_entry;
                                         if ((sizeof($va_entries) >= 10) || (sizeof($va_source_log_entries_for_missing_guid) == 0)) { break; }
                                     }
+                                    ksort($va_entries);
                                 
-                                    $this->log(_t("Pushing missing log entries starting with %1 for %2.", $vn_first_missing_log_id, $vs_missing_guid), Zend_Log::DEBUG);
+                                    $this->log(_t("Pushing %3 missing log entries starting with %1 for %2. [%4]", $vn_first_missing_log_id, $vs_missing_guid, sizeof($va_entries), print_R($va_entries, true)), Zend_Log::DEBUG);
                                     $o_backlog_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
                                         ->addGetParameter('system_guid', $vs_source_system_guid)
                                         ->setRequestBody($va_entries)
