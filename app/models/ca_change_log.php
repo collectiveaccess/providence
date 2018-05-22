@@ -242,6 +242,9 @@ class ca_change_log extends BaseModel {
 	 */
 	public static function getLog($pn_from, $pn_limit=null, $pa_options=null, &$pa_media=null) {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
+		require_once(__CA_MODELS_DIR__ . '/ca_locales.php');
+
+		$o_dm = Datamodel::load();
 
 		if(!is_null($pn_limit)) {
 			$vs_limit_sql = "LIMIT $pn_limit";
@@ -433,6 +436,10 @@ class ca_change_log extends BaseModel {
 								$va_snapshot = ['SKIP' => true];
 								continue(2);
 							}
+							break;
+						case 'locale_id':
+						    $va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow('ca_locales', $vm_val);
+						    $va_snapshot['locale_code'] = ca_locales::IDToCode($vm_val);
 							break;
 						default:
 						deflabel:
