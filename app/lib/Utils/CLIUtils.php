@@ -4581,7 +4581,6 @@
             require_once(__CA_MODELS_DIR__."/ca_locales.php");
             
 			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();	
-			$o_db = new Db();
 			
 			$va_tables = Datamodel::getTableNames();
 		    
