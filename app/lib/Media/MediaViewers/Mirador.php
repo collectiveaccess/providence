@@ -73,6 +73,7 @@
 		public static function getViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				if ($t_instance = caGetOption('t_instance', $pa_data, null)) {
+				    $t_subject = caGetOption('t_subject', $pa_data, null);
 				
 					$va_display = caGetOption('display', $pa_data, []);
 					
@@ -82,7 +83,9 @@
 						$vs_media_fld = 'value_blob';
 					} else {
 						throw new ApplicationException(_t('Could not derive media dimensions'));
-					}
+					}		
+									
+					$va_labels = [];
 					
 					$pa_data['width'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'WIDTH');
 					$pa_data['height'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'HEIGHT');
@@ -96,8 +99,17 @@
 						$vn_root_id = $pa_data['t_subject']->getHierarchyRootID();
 						$va_ids = array_filter($va_ids, function($v) use ($vn_root_id) { return $v != $vn_root_id; });
 						$va_reps = $pa_data['t_subject']->getPrimaryMediaForIDs($va_ids, ['small', $vs_display_version, 'original']);
+
+		                if (sizeof($va_rep_ids = array_keys($va_reps))) {
+		                    $qr_reps = caMakeSearchResult('ca_object_representations', $va_rep_ids);
+		                    while($qr_reps->nextHit()) {
+		                        $va_labels[$qr_reps->get('ca_object_representations.representation_id')] = $qr_reps->get(($t_subject ? $t_subject->tableName() : 'ca_object_representations').'.preferred_labels');
+		                    }
+		                }
+						
 						foreach($va_reps as $va_rep) {
 							$pa_data['resources'][] = [
+								'title' => str_replace("["._t('BLANK')."]", "", $va_labels[$va_rep['representation_id']]),
 								'representation_id' => $va_rep['representation_id'],
 								'preview_url' => $va_rep['urls']['small'],
 								'url' => $va_rep['urls'][$vs_display_version],
@@ -108,8 +120,14 @@
 						}
 					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_mirador_for_image_list_length && ($va_reps = $pa_data['t_subject']->getRepresentations(['small', $vs_display_version, 'original'], null, [])) && (sizeof($va_reps) >= $vn_use_mirador_for_image_list_length)) {
 						$t_rep = new ca_object_representations();
-						$va_labels = $t_rep->getPreferredDisplayLabelsForIDs(caExtractArrayValuesFromArrayOfArrays($va_reps, 'representation_id'));
-		
+						
+		                if (sizeof($va_rep_ids = array_keys($va_reps))) {
+		                    $qr_reps = caMakeSearchResult('ca_object_representations', $va_rep_ids);
+		                    while($qr_reps->nextHit()) {
+		                        $va_labels[$qr_reps->get('ca_object_representations.representation_id')] = $qr_reps->get(($t_subject ? $t_subject->tableName() : 'ca_object_representations').'.preferred_labels');
+		                    }
+		                }
+		                
 						foreach($va_reps as $va_rep) {
 							$pa_data['resources'][] = [
 								'title' => str_replace("["._t('BLANK')."]", "", $va_labels[$va_rep['representation_id']]),
@@ -122,11 +140,23 @@
 							];
 						}
 					} else {
+					    $vs_title = $t_subject->get('preferred_labels');
+					    if (is_a($t_instance, 'ca_attribute_values')) {
+					        $t_attr = new ca_attributes($t_instance->get('attribute_id'));
+					        $vals = $t_attr->getAttributeValues();
+					        foreach($vals as $val) {
+					            if ($val->getDatatype() == __CA_ATTRIBUTE_VALUE_TEXT__) {
+					                $vs_title = caTruncateStringWithEllipsis(strip_tags($val->getDisplayValue()), 160);
+					                break;
+					            }
+					        }
+					    }
+					
 						$pa_data['resources'][] = [
-							'url' => $pa_data['t_instance']->getMediaUrl($vs_media_fld, $vs_display_version)
+						    'title' => $vs_title,
+							'url' => $t_instance->getMediaUrl($vs_media_fld, $vs_display_version)
 						];
 					}
-					
 					
 					$o_view->setVar('t_subject', $pa_data['t_subject']);
 					$o_view->setVar('t_instance', $t_instance);
