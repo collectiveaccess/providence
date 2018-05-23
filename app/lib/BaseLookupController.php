@@ -287,7 +287,7 @@
 					$vs_rank_fld = $t_item->getProperty('RANK');
 					
 					if (is_array($va_item_ids = $t_item->getHierarchyChildren($t_item->getPrimaryKey(), array('idsOnly' => true))) && sizeof($va_item_ids)) {
-						$qr_children = $t_item->makeSearchResult($t_item->tableName(), $va_item_ids);
+						$qr_children = $t_item->makeSearchResult($t_item->tableName(), $va_item_ids, ['sort' => $va_sorts, 'sortDirection' => $vs_sort_dir]);
 						$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_item_ids);
 
 						if (!($vs_item_template = trim($o_config->get("{$vs_table_name}_hierarchy_browser_display_settings")))) {
@@ -299,6 +299,7 @@
 						}
 						$vn_c = 0;
 
+                        if ($vn_start >0) { $qr_children->seek($vn_start); }
 						while($qr_children->nextHit()) {
 							$va_tmp = array(
 								$vs_pk => $vn_id = $qr_children->get($this->ops_table_name.'.'.$vs_pk),
@@ -320,46 +321,13 @@
 							if(strlen($vs_enabled = $qr_children->get('is_enabled')) > 0) {
 								$va_tmp['is_enabled'] = $vs_enabled;
 							}
-
-							if (is_array($va_sorts)) {
-								$vs_sort_acc = array();
-								foreach($va_sorts as $vs_sort) {
-									$vs_sort_val = $qr_children->get($vs_sort, array('sortable' => true));
-									$vs_sort_acc[] = (is_numeric($vs_sort_val)) ? sprintf("%08d", $vs_sort_val) : $vs_sort_val;
-								}
-								$va_tmp['sort'] = join(";", $vs_sort_acc);
-							}
 							$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
 							$vn_c++;
+							
+							if ($vn_c > $vn_max_items_per_page) { break; }
 						}
 
 						$va_items_for_locale = caExtractValuesByUserLocale($va_items);
-					}
-
-					$va_sorted_items = array();
-					foreach($va_items_for_locale as $vn_id => $va_node) {
-						$vs_key = caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name']))))."_".$vn_id;
-						
-						if (isset($va_node['sort']) && $va_node['sort']) {
-							$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
-						} else {
-							if ($vs_rank_fld && ($vs_rank = sprintf("%08d", $va_node[$vs_rank_fld]))) {
-								$va_sorted_items[$vs_rank][$vs_key] = $va_node;
-							} else {
-								$va_sorted_items[$vs_key][$vs_key] = $va_node;
-							}
-						}
-					}
-					ksort($va_sorted_items);
-					if ($vs_sort_dir == 'desc') { $va_sorted_items = array_reverse($va_sorted_items); }
-					$va_items_for_locale = array();
-
-					$va_sorted_items = array_slice($va_sorted_items, $vn_start, $vn_max_items_per_page);
-
-					foreach($va_sorted_items as $vs_k => $va_v) {
-						ksort($va_v);
-						if ($vs_sort_dir == 'desc') { $va_v = array_reverse($va_v); }
-						$va_items_for_locale = array_merge($va_items_for_locale, $va_v);
 					}
 				}
 
