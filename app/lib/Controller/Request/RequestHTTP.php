@@ -148,12 +148,12 @@ class RequestHTTP extends Request {
 		if(($this->ops_script_name=="service.php") && isset($_GET['authToken']) && (strlen($_GET['authToken']) > 0)) {
 			$vs_token = preg_replace("/[^a-f0-9]/", "", $_GET['authToken']); // sanitize
 
-			$this->session = Session::restoreFromServiceAuthToken($vs_token, $vs_app_name);
+			$this->session_id = Session::restoreFromServiceAuthToken($vs_token, $vs_app_name);
 		}
 
 		// plain old session
-		if(!$this->session) {
-			$this->session = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
+		if(!$this->session_id) {
+			$this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
 		}
 		
 		if (!isset($pa_options["no_authentication"]) || !$pa_options["no_authentication"]) {
