@@ -502,12 +502,17 @@ class Installer {
 		}
 		if($this->ops_base_name) {
 			$va_locales = [];
-			foreach($this->opo_profile->locales->children() as $vo_locale) {
-				$va_locales[] = $vo_locale;
+			foreach($this->opo_profile->locales->children() as $vo_locale) {				
+				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
+				if (isset($va_locales[$key])) { continue; }
+				$va_locales[$key] = $vo_locale;
 			}
 			foreach($this->opo_base->locales->children() as $vo_locale) {
-				$va_locales[] = $vo_locale;
+				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
+				if (isset($va_locales[$key])) { continue; }
+				$va_locales[$key] = $vo_locale;
 			}
+			$va_locales = array_values($va_locales);
 		} else {
 			$va_locales = $this->opo_profile->locales->children();
 		}
@@ -527,8 +532,10 @@ class Installer {
 			$t_locale->set('country', $vs_country);
 			$t_locale->set('language', $vs_language);
 			if($vs_dialect) $t_locale->set('dialect', $vs_dialect);
-			$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
-
+			
+			if (!is_null($vb_dont_use_for_cataloguing)) {
+				$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
+			}
 			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
