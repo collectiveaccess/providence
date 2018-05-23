@@ -4510,9 +4510,7 @@
 		}
 		# -------------------------------------------------------
 		public static function regenerate_dependent_field_valuesParamList() {
-			return [
-				
-			];
+			return [];
 		}
 		# -------------------------------------------------------
 		/**
@@ -4534,6 +4532,125 @@
 		 */
 		public static function regenerate_dependent_field_valuesHelp() {
 			return _t('Text fields that are dependent upon other fields are only refreshed on save and import. For dependent display templates using dimensions (length, width) formatting, changes in the dimensions.conf configuration files are not automatically applied to existing values. This utility will batch update all dependent values using the current system configuration.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function print_system_guid($po_opts=null) {
+		    if (defined("__CA_SYSTEM_GUID__")) {
+			    CLIUtils::addMessage(_t("System GUID is %1", __CA_SYSTEM_GUID__));
+			} else {
+			    CLIUtils::addError(_t("No system GUID is defined"));
+			}
+			return true;
+		}
+		# -------------------------------------------------------
+		public static function print_system_guidParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function print_system_guidUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function print_system_guidShortHelp() {
+			return _t('Print system GUID value used for replication.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function print_system_guidHelp() {
+			return _t('Print the system GUID value used for replication operations to the console. The system GUID uniquely identifies a CollectiveAccess installation.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function check_relationship_type_roots($po_opts=null) {
+            require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
+            require_once(__CA_MODELS_DIR__."/ca_locales.php");
+            
+			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();	
+			$o_db = new Db();
+			
+			$va_tables = Datamodel::getTableNames();
+		    
+		    $c = 0;
+			foreach($va_tables as $vs_table) {
+				if (!preg_match('!_x_!', $vs_table)) { continue; }
+				require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
+				if (!($t_table = new $vs_table)) { continue; }
+				if (!$t_table->hasField('type_id')) { continue; }
+				$vs_pk = $t_table->primaryKey();
+				$vn_table_num = $t_table->tableNum();
+				
+				// Create root ca_relationship_types row for table
+				if (!$t_root = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num], ['returnAs' => 'firstModelInstance'])) {
+				    $t_root = new ca_relationship_types();
+					$t_root->logChanges(false);
+					$t_root->setMode(ACCESS_WRITE);
+					$t_root->set('table_num', $vn_table_num);
+					$t_root->set('type_code', 'root_for_table_'.$vn_table_num);
+					$t_root->set('rank', 1);
+					$t_root->set('is_default', 0);
+					$t_root->set('parent_id', null);
+					$t_root->insert();
+					
+					if ($t_root->numErrors()) {
+						 CLIUtils::addError(_t("Could not create root for relationship %1: %2", $vs_table, join('; ', $t_root->getErrors())));
+						continue;
+					}
+					$t_root->addLabel(
+						array(
+							'typename' => 'Root for table '.$vn_table_num,
+							'typename_reverse' => 'Root for table '.$vn_table_num
+						), $vn_locale_id, null, true
+					);
+					if ($t_root->numErrors()) {
+						CLIUtils::addError(_t("Could not add label to root for relationship %1: %2", $vs_table, join('; ', $t_root->getErrors())));
+						continue;
+					}
+					CLIUtils::addMessage(_t('Added root for %1', $vs_table));
+					$c++;
+				}
+			}
+			
+			CLIUtils::addMessage(($c == 1) ? _t("Recreated %1 root record", $c) : _t("Recreated %1 root records", $c));
+		}
+		# -------------------------------------------------------
+		public static function check_relationship_type_rootsParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_relationship_type_rootsUtilityClass() {
+            return _t('Maintenance');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_relationship_type_rootsShortHelp() {
+			return _t('Check for and repair missing relationship type root records.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_relationship_type_rootsHelp() {
+			return _t('Each relationship has a hierarchy of relationship types defined. Each type hierarchy must have a root record. Root records are normally created during system installation, but may be missing due to accidental deletion or failure to create during system updates. This command will check for presence of require root records and recreate missing roots as required.');
         }
 		# -------------------------------------------------------
 	}
