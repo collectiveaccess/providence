@@ -3096,9 +3096,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="fr_FR">Titre</setting>
+                <setting name="label" locale="fr_FR">Titre</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un titre</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un titre</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3117,9 +3117,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="fr_FR">Autres titres</setting>
+                <setting name="label" locale="fr_FR">Autres titres</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un autre titre</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un autre titre</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_work_description">
@@ -3191,8 +3191,8 @@
             <placement code="ca_object_lots">
               <bundle>ca_object_lots</bundle>
               <settings>
-                <setting name="label" locale="en_US">Part of lot:</setting>
-                <setting name="label" option="fr_FR">Partie du lot</setting>
+                <setting name="label" locale="en_US">Part of lot</setting>
+                <setting name="label" locale="fr_FR">Partie du lot</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3226,9 +3226,9 @@
               <bundle>ca_storage_locations</bundle>
               <settings>
                 <setting name="label" locale="en_US">Current storage location</setting>
-                <setting name="label" option="fr_FR">Emplacement courant</setting>
+                <setting name="label" locale="fr_FR">Emplacement courant</setting>
                 <setting name="add_label" locale="en_US">Add storage location</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un emplacement</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un emplacement</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_past_storage_locations">
@@ -3301,9 +3301,9 @@
               <bundle>ca_attribute_lcsh_terms</bundle>
               <settings>
                 <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="label" option="fr_FR">Vedettes matières Bibliothèque du Congrès</setting>
+                <setting name="label" locale="fr_FR">Vedettes matières Bibliothèque du Congrès</setting>
                 <setting name="add_label" locale="en_US">Add new subject heading</setting>
-                <setting name="add_label" option="fr_FR">Ajouter une nouvelle vedette matière</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter une nouvelle vedette matière</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3334,9 +3334,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="fr_FR">Nom</setting>
+                <setting name="label" locale="fr_FR">Nom</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un nom</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3352,9 +3352,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate name</setting>
-                <setting name="label" option="fr_FR">Autre nom</setting>
+                <setting name="label" locale="fr_FR">Autre nom</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un autre nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un autre nom</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_lifespan">
@@ -3448,7 +3448,7 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="fr_FR">Titre</setting>
+                <setting name="label" locale="fr_FR">Titre</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3467,7 +3467,7 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="fr_FR">Autres titres</setting>
+                <setting name="label" locale="fr_FR">Autres titres</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_date">
@@ -3501,7 +3501,7 @@
               <bundle>ca_attribute_external_link</bundle>
               <settings>
                 <setting name="add_label" locale="en_US">Add external link</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un lien externe</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un lien externe</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3568,9 +3568,9 @@
               <bundle>ca_attribute_lcsh_terms</bundle>
               <settings>
                 <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="label" option="fr_FR">Vedettes matières Bibliothèque du Congrès</setting>
+                <setting name="label" locale="fr_FR">Vedettes matières Bibliothèque du Congrès</setting>
                 <setting name="add_label" locale="en_US">Add new subject heading</setting>
-                <setting name="add_label" option="fr_FR">Ajouter une nouvelle vedette matière</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter une nouvelle vedette matière</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3604,9 +3604,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="fr_FR">Nom</setting>
+                <setting name="label" locale="fr_FR">Nom</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un nom</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3682,9 +3682,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="label" option="fr_FR">Autres noms</setting>
+                <setting name="label" locale="fr_FR">Autres noms</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un autre nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un autre nom</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3715,7 +3715,7 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="fr_FR">Titre</setting>
+                <setting name="label" locale="fr_FR">Titre</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3731,7 +3731,7 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="fr_FR">Autres titres</setting>
+                <setting name="label" locale="fr_FR">Autres titres</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_date">
@@ -3786,9 +3786,9 @@
               <bundle>ca_attribute_lcsh_terms</bundle>
               <settings>
                 <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="label" option="fr_FR">Vedettes matières Bibliothèque du Congrès</setting>
+                <setting name="label" locale="fr_FR">Vedettes matières Bibliothèque du Congrès</setting>
                 <setting name="add_label" locale="en_US">Add new subject heading</setting>
-                <setting name="add_label" option="fr_FR">Ajouter une nouvelle vedette matière</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter une nouvelle vedette matière</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3834,9 +3834,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="fr_FR">Nom</setting>
+                <setting name="label" locale="fr_FR">Nom</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un nom</setting>
               </settings>
             </placement>
             <placement code="idno_stub">
@@ -3849,9 +3849,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="label" option="fr_FR">Autres noms</setting>
+                <setting name="label" locale="fr_FR">Autres noms</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un autre nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un autre nom</setting>
               </settings>
             </placement>
             <placement code="extent">
@@ -3927,9 +3927,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="fr_FR">Nom</setting>
+                <setting name="label" locale="fr_FR">Nom</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un nom</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -4030,18 +4030,18 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="fr_FR">Titre</setting>
+                <setting name="label" locale="fr_FR">Titre</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un titre</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un titre</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="label" option="fr_FR">Autres noms</setting>
+                <setting name="label" locale="fr_FR">Autres noms</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un autre nom</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un autre nom</setting>
               </settings>
             </placement>
             <placement code="media">
@@ -4132,9 +4132,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="fr_FR">Titre</setting>
+                <setting name="label" locale="fr_FR">Titre</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un titre</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un titre</setting>
               </settings>
             </placement>
             <placement code="ca_representation_annotation_properties">
@@ -4204,9 +4204,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="fr_FR">Autres titres</setting>
+                <setting name="label" locale="fr_FR">Autres titres</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
-                <setting name="add_label" option="fr_FR">Ajouter un autre titre</setting>
+                <setting name="add_label" locale="fr_FR">Ajouter un autre titre</setting>
               </settings>
             </placement>
           </bundlePlacements>

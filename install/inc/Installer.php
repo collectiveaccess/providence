@@ -92,7 +92,7 @@ class Installer {
 		$this->opb_overwrite = $pb_overwrite;
 		$this->opb_debug = $pb_debug;
 
-		$this->opa_locales = array();
+		$this->opa_locales = [];
 
 		$this->opo_db = new Db();
 
@@ -311,7 +311,7 @@ class Installer {
 		$va_old_label_ids = array_flip($t_instance->getLabelIDs());
 
 		foreach($po_labels->children() as $vo_label) {
-			$va_label_values = array();
+			$va_label_values = [];
 			$vs_locale = self::getAttribute($vo_label, "locale");
 			$vn_locale_id = $pa_locales[$vs_locale];
 
@@ -502,13 +502,18 @@ class Installer {
 			$this->opa_locales[$vs_code] = $va_locale['locale_id'];
 		}
 		if($this->ops_base_name) {
-			$va_locales = array();
-			foreach($this->opo_profile->locales->children() as $vo_locale) {
-				$va_locales[] = $vo_locale;
+			$va_locales = [];
+			foreach($this->opo_profile->locales->children() as $vo_locale) {				
+				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
+				if (isset($va_locales[$key])) { continue; }
+				$va_locales[$key] = $vo_locale;
 			}
 			foreach($this->opo_base->locales->children() as $vo_locale) {
-				$va_locales[] = $vo_locale;
+				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
+				if (isset($va_locales[$key])) { continue; }
+				$va_locales[$key] = $vo_locale;
 			}
+			$va_locales = array_values($va_locales);
 		} else {
 			$va_locales = $this->opo_profile->locales->children();
 		}
@@ -528,8 +533,10 @@ class Installer {
 			$t_locale->set('country', $vs_country);
 			$t_locale->set('language', $vs_language);
 			if($vs_dialect) $t_locale->set('dialect', $vs_dialect);
-			$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
-
+			
+			if (!is_null($vb_dont_use_for_cataloguing)) {
+				$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
+			}
 			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
@@ -554,7 +561,7 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 
 		if($this->ops_base_name) { // "merge" profile and its base
-			$va_lists = array();
+			$va_lists = [];
 			foreach($this->opo_base->lists->children() as $vo_list) {
 				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
 			}
