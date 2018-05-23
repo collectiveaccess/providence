@@ -5937,7 +5937,12 @@ if (!$vb_batch) {
 			//
 		}
 		if ($pb_show_current_only) {
-		    $va_rels = array_slice($va_rels, sizeof($va_rels)-1, 1);
+		    $va_tmp = [];
+		    foreach(array_reverse($va_rels) as $rel) {
+		        if(isset($va_tmp[$rel['row_id']])) { continue; }
+		        $va_tmp[$rel['row_id']] = $rel;
+		    }
+		    $va_rels = array_values($va_tmp);
 		}
 
 		// Apply restrictToBundleValues
