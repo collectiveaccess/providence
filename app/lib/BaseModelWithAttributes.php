@@ -525,7 +525,7 @@
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 
 				$va_index_options = array('isNewRow' => true);
-				if(caGetOption('queueIndexing', $pa_options, false)) {
+				if(caGetOption('queueIndexing', $pa_options, true)) {
 					$va_index_options['queueIndexing'] = true;
 				}
 				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, $va_index_options);
@@ -574,7 +574,7 @@
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 
 				$va_index_options = array();
-				if(caGetOption('queueIndexing', $pa_options, false)) {
+				if(caGetOption('queueIndexing', $pa_options, true)) {
 					$va_index_options['queueIndexing'] = true;
 				}
 				

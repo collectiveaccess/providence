@@ -484,14 +484,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 
 	protected $FIELDS;
 	
-	
-	/**
-	 * Cache for object use data
-	 * 
-	 * @see ca_objects::getObjectHistory()
-	 */
-	static $s_object_use_cache = array();
-	
 	/**
 	 * Cache for current location type configuration data
 	 *
@@ -873,7 +865,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $pa_options, array('object_id' => $this->getPrimaryKey())));
 		
 		$pb_no_cache 				= caGetOption('noCache', $pa_options, false);
-		if (!$pb_no_cache && isset(ca_objects::$s_object_use_cache[$vs_cache_key])) { return ca_objects::$s_object_use_cache[$vs_cache_key]; }
+		if (!$pb_no_cache && ExternalCache::contains($vs_cache_key, "objectHistory")) { return ExternalCache::fetch($vs_cache_key, "objectHistory"); }
 		
 		$pb_display_label_only 		= caGetOption('displayLabelOnly', $pa_options, false);
 		
@@ -1341,11 +1333,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$va_history = array_slice($va_history, 0, $pn_limit);
 		}
 		
-		if(sizeof(ca_objects::$s_object_use_cache[$vs_cache_key]) > 100) {
-			 ca_objects::$s_object_use_cache[$vs_cache_key] = array_slice(ca_objects::$s_object_use_cache[$vs_cache_key], 0, 50);
-		} 
-		
-		return ca_objects::$s_object_use_cache[$vs_cache_key] = $va_history;
+		ExternalCache::save($vs_cache_key, $va_history, "objectHistory");
+		return $va_history;
  	}
  	# ------------------------------------------------------
  	/**
@@ -1988,14 +1977,15 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 * @return bool
  	 */
  	private function relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $pa_options=null) {
- 		return true; //	TODO: fix checking - currently doesn't always trigger as it should
+ 		ExternalCache::flush("objectHistory");
  		if(!$pn_rel_id) { return true; }	// null record means we are batch deleting so go ahead and recalculate
  		
  		if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
- 		if (($vs_table_name = $t_instance->tableName()) !== 'ca_storage_locations') {
+ 		if ((($vs_table_name = $t_instance->tableName())) !== 'ca_storage_locations') {
  			$pm_type_id = $t_instance->getTypeID($pn_rel_id);
  		}
- 		
+ 		//print "FOR $pm_rel_table_name_or_num/$pm_type_id<br>\n";
+ 		print_R(ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id));
  		if (ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id)) { return true; }
  		return false;
  	}

@@ -3412,7 +3412,6 @@ class BaseModel extends BaseObject {
 						
 						$pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]] = true;
 
-						//print "FOR ".$vs_many_table.'/'.$va_relationship["many_table_field"].":".$qr_record_check->numRows()."<br>\n";
 						if ($qr_record_check->numRows() > 0) {
 							if ($pb_delete_related) {
 								while($qr_record_check->nextRow()) {
