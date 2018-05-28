@@ -1119,7 +1119,8 @@
 			if (is_object(self::$storage)) {
 				return self::$storage->setVar($key, $value, $options);
 			} else {
-				return self::$storage::setVar($key, $value, $options);
+				$s = self::$storage;
+				return $s::setVar($key, $value, $options);
 			}
 		}
 		
@@ -1130,7 +1131,8 @@
 			if (is_object(self::$storage)) {
 				return self::$storage->getVar($key);
 			} else {
-				return self::$storage::getVar($key, $value, $options);
+				$s = self::$storage;
+				return$s::getVar($key, $value, $options);
 			}
 		}
 	}
