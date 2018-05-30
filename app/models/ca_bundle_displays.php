@@ -1366,7 +1366,15 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			$va_additional_settings = array(
-				
+				'format' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)
 			);
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
