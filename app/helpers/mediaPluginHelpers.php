@@ -538,6 +538,9 @@
 		$va_mappings = $o_metadata_config->getAssoc('import_mappings');
 		$vs_tablename = $po_instance->tableName();
 
+        if (!isset($pa_metadata['system']['filename']) && ($vs_original_filename = $po_instance->get('original_filename'))) {
+            $pa_metadata['system']['filename'] = $vs_original_filename;
+        }
 
 		// set extracted georef?
  		$va_georef_elements = $o_metadata_config->getList('extract_embedded_exif_georeferencing_to');
@@ -636,7 +639,6 @@
 				}
 			}
 		}
-
 
 		if (!isset($va_mappings[$po_instance->tableName()])) { return $vb_did_mapping; }
 		$va_mapping = $va_mappings[$vs_tablename];
