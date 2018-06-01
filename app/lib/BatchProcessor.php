@@ -398,7 +398,7 @@
 					$vs_idno = $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'));
 
  					$t_subject->set('type_id', $pn_type_id, array('allowSettingOfTypeID' => true));
- 					$t_subject->update();
+ 					$t_subject->update(['queueIndexing' => true]);
 
 					$o_log->addItem($vn_row_id, $va_record_errors = $t_subject->errors());
 
