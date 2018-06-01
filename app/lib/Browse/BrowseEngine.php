@@ -3622,10 +3622,10 @@
 										$qr_res = caMakeSearchResult($vs_hier_table_name, $va_hier_ids);
 									}
 									
+									$vs_template = strip_tags(isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels");
+	
 									while($qr_res->nextHit()) {
 										$vn_id = $qr_res->getPrimaryKey();
-
-										$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
 
 										if (isset($va_collapse_map[$vs_table_name]) && isset($va_collapse_map[$vs_table_name][$vs_loc_subclass]) && $va_collapse_map[$vs_table_name][$vs_loc_subclass]) {
 											if (!($vs_label = $va_collapse_map[$vs_table_name][$vs_loc_subclass])) { continue; }
