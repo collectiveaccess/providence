@@ -3244,23 +3244,19 @@
 					        $va_params[] = $va_container_ids[$vs_container_code];
 					    }
 						$vs_sql = "
-							SELECT COUNT(*) as _count, ca_attribute_values.value_longtext1, ca_attribute_values.value_decimal1, ca_attribute_values.value_longtext2, ca_attribute_values.value_integer1, ca_attributes.attribute_id
+							SELECT COUNT(*) as _count, ca_attribute_values.value_longtext1, ca_attribute_values.value_decimal1, ca_attribute_values.value_longtext2, ca_attribute_values.value_integer1
 							FROM ca_attributes
 
 							{$vs_join_sql}
 							WHERE
 								ca_attribute_values.element_id = ? {$vs_where_sql} {$vs_container_sql}
-						    GROUP BY value_longtext1, value_decimal1, value_longtext2, value_integer1, ca_attributes.attribute_id
+						    GROUP BY value_longtext1, value_decimal1, value_longtext2, value_integer1
 						";
 						$qr_res = $this->opo_db->query($vs_sql, $va_params);
 
-						$va_values = array();
-
-
-						$va_list_items = null;
-
-
-						$va_suppress_values = null;
+						$va_values = [];
+                        $va_list_items = $va_suppress_values = null;
+						
 						if ($va_facet_info['suppress'] && !is_array($va_facet_info['suppress'])) {
 							$va_facet_info['suppress'] = array($va_facet_info['suppress']);
 						}
