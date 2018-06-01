@@ -2595,7 +2595,7 @@ class BaseModel extends BaseObject {
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						$va_index_options = array('isNewRow' => true);
-						if(caGetOption('queueIndexing', $pa_options, false)) {
+						if(caGetOption('queueIndexing', $pa_options, true)) {
 							$va_index_options['queueIndexing'] = true;
 						}
 
@@ -3165,7 +3165,7 @@ class BaseModel extends BaseObject {
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
 						$va_index_options = array();
-						if(caGetOption('queueIndexing', $pa_options, false)) {
+						if(caGetOption('queueIndexing', $pa_options, true)) {
 							$va_index_options['queueIndexing'] = true;
 						}
 
@@ -3279,7 +3279,7 @@ class BaseModel extends BaseObject {
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);;
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
