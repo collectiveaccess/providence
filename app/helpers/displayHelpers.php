@@ -304,7 +304,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
 				
 				foreach($va_tables as $vs_table) {
-					$va_items = $t_instance->getRelatedItems($vs_table);
+					if (!is_array($va_items = $t_instance->getRelatedItems($vs_table))) { $va_items = []; }
 					
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {

@@ -87,7 +87,7 @@
 		$vs_bundle_preview = $vs_display_template ? $t_instance->getWithTemplate($vs_display_template) : $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
 	}
 
-	if (sizeof($va_attribute_list)) {
+	if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 		$va_item_ids = array();
 		foreach ($va_attribute_list as $o_attr) {
 			$va_initial_values[$o_attr->getAttributeID()] = array();

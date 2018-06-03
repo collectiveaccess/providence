@@ -427,6 +427,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_default_list_item_id_cache = [];
 	function caGetDefaultItemID($ps_list_code, $pa_options=null) {
 		global $g_default_list_item_id_cache;
+		if (!is_array($pa_options)) { $pa_options = []; }
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list_code);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
