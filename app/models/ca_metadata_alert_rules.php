@@ -534,7 +534,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			}
 		}
 
-		if (($pn_user_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
+		if (($pn_user_access == __CA_ALERT_RULE_ACCESS_NOTIFICATION__)) {
 			$va_sql_access_wheres[] = "(mar.is_system = 1)";
 		}
 

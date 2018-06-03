@@ -792,9 +792,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_type_name			= method_exists($t_item, "getTypeName") ? $t_item->getTypeName() : '';
 		if (!$vs_type_name) { $vs_type_name = $t_item->getProperty('NAME_SINGULAR'); }
 		
-		$va_reps 				= $po_view->getVar('representations');
-		
-		
+		if (!is_array($va_reps = $po_view->getVar('representations'))) { $va_reps = []; }		
 		
 		if ($t_item->isHierarchical()) {
 			$va_ancestors 		= $po_view->getVar('ancestors');
