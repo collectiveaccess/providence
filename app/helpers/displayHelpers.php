@@ -4458,7 +4458,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	    global $g_request;
 	    if (!$po_request) { $po_request = $g_request; }
 	    if (!$po_request) { return []; }
-	    if (!is_array($pa_tables) && !sizeof($pa_tables)) {
+	    if (!is_array($pa_tables) || !sizeof($pa_tables)) {
 	        $pa_tables = ['ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
 	    }
 	    

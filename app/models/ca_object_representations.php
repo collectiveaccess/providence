@@ -713,6 +713,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$va_rep_props = $this->getMediaInfo('media', 'original');
  		$vn_timecode_offset = isset($va_rep_props['PROPERTIES']['timecode_offset']) ? (float)$va_rep_props['PROPERTIES']['timecode_offset'] : 0;
  		
+ 		$va_annotation_ids = [];
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
  			$va_annotation_ids[] = $va_tmp['annotation_id'];

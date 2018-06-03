@@ -624,7 +624,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 		if (!is_numeric($pn_id)) {
 	 			$va_non_numerics[] = $pn_id;
 	 		} else {
-	 			$va_ids = (int)$pn_id;
+	 			$va_ids = [(int)$pn_id];
 	 		}
 	 	}
 	 	if (!sizeof($va_ids)) { return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $pa_ids; }
