@@ -82,7 +82,7 @@ class DisplayTemplateParser {
 						try {
 							$va_row_ids = DisplayTemplateParser::_getRelativeIDsForRowIDs($ps_tablename, $vs_relative_to, $pa_row_ids, 'related', $va_get_options);
 				
-							if (!sizeof($va_row_ids)) { return; }
+							if (!is_array($va_row_ids) || !sizeof($va_row_ids)) { return; }
 							$qr_res = caMakeSearchResult($ps_tablename, $va_row_ids, $va_search_result_opts);
 							if (!$qr_res) { return; }
 

@@ -68,6 +68,18 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
  		
  		# ------------------------------------------------------------------
  		public function __construct($pa_values=null) {
+ 		
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectLotsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/EntitiesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/PlacesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/CollectionsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/OccurrencesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/LoansAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/MovementsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/ObjectRepresentationsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/Attributes/Values/StorageLocationsAttributeValue.php');
+			
  			$this->opa_values = array();
  			
  			if (is_array($pa_values)) {
@@ -206,3 +218,4 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
  		}
  		# ------------------------------------------------------------------
 	}
+	
