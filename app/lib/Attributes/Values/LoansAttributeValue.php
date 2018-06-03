@@ -33,8 +33,6 @@
  /**
   *
   */
-  	define("__CA_ATTRIBUTE_VALUE_LOANS__", 27);
-  	
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_MODELS_DIR__.'/ca_loans.php');
  

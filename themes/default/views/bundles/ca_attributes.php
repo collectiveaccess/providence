@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 	$vs_id_prefix 				= 	$this->getVar('placement_code').$this->getVar('id_prefix');
 	$vs_error_source_code 		= 	$this->getVar('error_source_code');
 	$vs_render_mode 			=	$this->getVar('render_mode');
@@ -97,12 +96,18 @@
 				
 				if ($va_failed_updates[$vn_attr_id] && !in_array($o_value->getDatatype(), array(
 					__CA_ATTRIBUTE_VALUE_LCSH__, 
-					__CA_ATTRIBUTE_VALUE_PLACE__,
-					__CA_ATTRIBUTE_VALUE_OCCURRENCE__,
+					__CA_ATTRIBUTE_VALUE_OBJECTS__,
+					__CA_ATTRIBUTE_VALUE_OBJECTLOTS__,
+					__CA_ATTRIBUTE_VALUE_ENTITIES__,
+					__CA_ATTRIBUTE_VALUE_PLACES__,
+					__CA_ATTRIBUTE_VALUE_OCCURRENCES__,
+					__CA_ATTRIBUTE_VALUE_COLLECTIONS__,
+					__CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__,
+					__CA_ATTRIBUTE_VALUE_LOANS__,
+					__CA_ATTRIBUTE_VALUE_MOVEMENTS__,
 					__CA_ATTRIBUTE_VALUE_TAXONOMY__,
 					__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__,
 					__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__,
-					__CA_ATTRIBUTE_VALUE_ENTITIES__
 				))) {
 					// copy value from failed update into form (so user can correct it)
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
