@@ -557,6 +557,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current location'));
+		$this->BUNDLES['ca_objects_location_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current location date'));
+		
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 		$this->BUNDLES['ca_object_checkouts'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object checkouts'));
@@ -2278,6 +2280,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 		switch($ps_bundle_name) {
 			case 'ca_objects_location':
+			case 'ca_objects_location_date':
 				
 				if ((method_exists($this, "getObjectHistory")) && (is_array($va_bundle_settings = $this->_processObjectHistoryBundleSettings(['useAppConfDefaults' => true]))) && (sizeof($va_bundle_settings) > 0)) {
 					$t_object = new ca_objects($pn_row_id);
@@ -2293,7 +2296,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
                                 return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
                             }
                         } 
-						return $va_current_location['display'];
+                        return ($ps_bundle_name == 'ca_objects_location_date') ? $va_current_location['date'] : $va_current_location['display'];
 					}
 				} elseif (method_exists($this, "getLastLocationForDisplay")) {
 					// If no ca_objects_history bundle is configured then display the last storage location
