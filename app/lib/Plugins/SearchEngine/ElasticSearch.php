@@ -480,44 +480,46 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$vs_table_name = Datamodel::getTableName($pn_subject_tablenum);
 		// if the field table num is set, we only remove content for this field and don't nuke the entire record!
 		if($pn_field_tablenum) {
-			foreach($pm_field_nums as $ps_content_fieldnum) {
-				$o_field = new ElasticSearch\Field($pn_field_tablenum, $ps_content_fieldnum);
-				$va_fragment = $o_field->getIndexingFragment('');
+			if (is_array($pm_field_nums)) {
+				foreach($pm_field_nums as $ps_content_fieldnum) {
+					$o_field = new ElasticSearch\Field($pn_field_tablenum, $ps_content_fieldnum);
+					$va_fragment = $o_field->getIndexingFragment('');
 
-				// fetch the record
-				try {
-					$va_record = $this->getClient()->get([
-						'index' => $this->getIndexName(),
-						'type' => $vs_table_name,
-						'id' => $pn_subject_row_id
-					])['_source'];
-				} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-					// record is gone?
-					unset($this->opa_update_content_buffer[$vs_table_name][$pn_subject_row_id]);
-					continue;
-				}
+					// fetch the record
+					try {
+						$va_record = $this->getClient()->get([
+							'index' => $this->getIndexName(),
+							'type' => $vs_table_name,
+							'id' => $pn_subject_row_id
+						])['_source'];
+					} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+						// record is gone?
+						unset($this->opa_update_content_buffer[$vs_table_name][$pn_subject_row_id]);
+						continue;
+					}
 
-				foreach($va_fragment as $vs_key => $vm_val) {
-					if(isset($va_record[$vs_key])) {
-						// find the index for this content row id in our _content_ids index list
-						$va_values = $va_record[$vs_key];
-						$va_indexes = $va_record[$vs_key.'_content_ids'];
-						if(is_array($va_indexes)) {
-							$vn_index = array_search($pn_content_row_id, $va_indexes);
-							// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
-							unset($va_values[$vn_index]);
-							unset($va_indexes[$vn_index]);
-						} else {
-							if(sizeof($va_values) == 1) {
-								$va_values = array();
-								$va_indexes = array();
+					foreach($va_fragment as $vs_key => $vm_val) {
+						if(isset($va_record[$vs_key])) {
+							// find the index for this content row id in our _content_ids index list
+							$va_values = $va_record[$vs_key];
+							$va_indexes = $va_record[$vs_key.'_content_ids'];
+							if(is_array($va_indexes)) {
+								$vn_index = array_search($pn_content_row_id, $va_indexes);
+								// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
+								unset($va_values[$vn_index]);
+								unset($va_indexes[$vn_index]);
+							} else {
+								if(sizeof($va_values) == 1) {
+									$va_values = array();
+									$va_indexes = array();
+								}
 							}
-						}
 
-						// we reindex both value and index arrays here, starting at 0
-						// json_encode seems to treat something like array(1=>'foo') as object/hash, rather than a list .. which is not good
-						$this->opa_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = array_values($va_values);
-						$this->opa_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = array_values($va_indexes);
+							// we reindex both value and index arrays here, starting at 0
+							// json_encode seems to treat something like array(1=>'foo') as object/hash, rather than a list .. which is not good
+							$this->opa_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = array_values($va_values);
+							$this->opa_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = array_values($va_indexes);
+						}
 					}
 				}
 			}
