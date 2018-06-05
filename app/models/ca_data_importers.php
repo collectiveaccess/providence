@@ -2376,24 +2376,28 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 					if (sizeof($va_nonpreferred_label_mapping_ids) && ($t_subject->getNonPreferredLabelCount() > 0)) {
-						$vb_remove_labels = true;
-						foreach($va_nonpreferred_label_mapping_ids as $vn_nonpreferred_label_mapping_id => $vs_fld) {
-							if ($va_mapping_items[$vn_nonpreferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
-						}
-						if ($vb_remove_labels) {
-							$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__, ['locales' => [$vn_locale_id]]);
-							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-								if ($vs_import_error_policy == 'stop') {
-									$o_log->logAlert(_t('Import stopped due to import error policy'));
-							
-									$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-						
-									if ($o_trans) { $o_trans->rollback(); }
-									return false;
-								}
-							}
-						}
+						if (preg_match("!^merge!", $vs_existing_record_policy)) {
+						    $vb_remove_labels = false;
+						} else {
+                            $vb_remove_labels = true;
+                            foreach($va_nonpreferred_label_mapping_ids as $vn_nonpreferred_label_mapping_id => $vs_fld) {
+                                if ($va_mapping_items[$vn_nonpreferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+                            }
+                            if ($vb_remove_labels) {
+                                $t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__, ['locales' => [$vn_locale_id]]);
+                                if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+                                    ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+                                    if ($vs_import_error_policy == 'stop') {
+                                        $o_log->logAlert(_t('Import stopped due to import error policy'));
+                            
+                                        $o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+                        
+                                        if ($o_trans) { $o_trans->rollback(); }
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
 					}
 				
 					$o_log->logDebug(_t('Updated idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
