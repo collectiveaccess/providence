@@ -515,7 +515,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$t_exporter = new ca_data_exporters();
 
-		$va_sql_params = array();
+		$va_sql_params = $va_sql_wheres = [];
 		if((int)$pn_table_num) {
 			$va_sql_wheres[] = "(de.table_num = ?)";
 			$va_sql_params[] = (int)$pn_table_num;

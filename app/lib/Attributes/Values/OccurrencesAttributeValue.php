@@ -33,8 +33,6 @@
  /**
   *
   */
-  	define("__CA_ATTRIBUTE_VALUE_OCCURRENCES__", 24);
-  	
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
  

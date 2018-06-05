@@ -455,7 +455,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$ps_table = (isset($pa_options['table'])) ? $pa_options['table'] : null;
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 
-		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __ca_search_form_READ_ACCESS__)) {
+		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __CA_SEARCH_FORM_READ_ACCESS__)) {
 			return [];
 		}
 

@@ -676,6 +676,8 @@ class SearchResult extends BaseObject {
 		}
 		if (!$t_instance || !$t_rel_instance) { return; }
 		
+		$va_order_bys = array();
+			
 		if ($ps_tablename != $this->ops_table_name) {
 			$va_fields = $this->opa_tables[$ps_tablename]['fieldList'];
 			$va_fields[] = $this->ops_table_name.'.'.$this->ops_table_pk;
@@ -700,7 +702,6 @@ class SearchResult extends BaseObject {
 			
 			$vs_left_table = $this->ops_table_name;
 
-			$va_order_bys = array();
 			foreach($va_linking_tables as $vs_right_table) {
 				$vs_join_eq = '';
 				if (($va_rels = Datamodel::getOneToManyRelations($vs_left_table)) && is_array($va_rels[$vs_right_table])) {

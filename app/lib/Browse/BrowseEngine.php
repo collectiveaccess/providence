@@ -2297,7 +2297,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$va_facets_with_content = array();
 			$o_results = $this->getResults();
-			$va_criteria = $this->getCriteria();
+			if (!is_array($va_criteria = $this->getCriteria())) { $va_criteria = []; }
 
 			if (($o_results->numHits() > 1) || !sizeof($va_criteria)) {
 				$va_facets = $this->getFacetList();
@@ -2563,7 +2563,7 @@
 
 			$va_all_criteria = $this->getCriteria();
 
-			$va_criteria = $this->getCriteria($ps_facet_name);
+			if (!is_array($va_criteria = $this->getCriteria($ps_facet_name))) { $va_criteria = []; }
 
 			$va_facet_info = $this->opa_browse_settings['facets'][$ps_facet_name];
 
@@ -2953,6 +2953,7 @@
 					if (!($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true))) { break; }
 					if (!($t_label = $t_item->getLabelTableInstance())) { break; }
 					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+					if (!is_array($va_exclude_types = $va_facet_info['exclude_types'])) { $va_exclude_types = array(); }
 					
 					if(sizeof($va_label_order_by_fields = isset($va_facet_info['order_by_label_fields']) ? $va_facet_info['order_by_label_fields'] : [])) {
 					    $va_label_order_by_fields = array_map(function($v) { return "l.{$v}"; }, $va_label_order_by_fields);
@@ -3244,23 +3245,19 @@
 					        $va_params[] = $va_container_ids[$vs_container_code];
 					    }
 						$vs_sql = "
-							SELECT COUNT(*) as _count, ca_attribute_values.value_longtext1, ca_attribute_values.value_decimal1, ca_attribute_values.value_longtext2, ca_attribute_values.value_integer1, ca_attributes.attribute_id
+							SELECT COUNT(*) as _count, ca_attribute_values.value_longtext1, ca_attribute_values.value_decimal1, ca_attribute_values.value_longtext2, ca_attribute_values.value_integer1
 							FROM ca_attributes
 
 							{$vs_join_sql}
 							WHERE
 								ca_attribute_values.element_id = ? {$vs_where_sql} {$vs_container_sql}
-						    GROUP BY value_longtext1, value_decimal1, value_longtext2, value_integer1, ca_attributes.attribute_id
+						    GROUP BY value_longtext1, value_decimal1, value_longtext2, value_integer1
 						";
 						$qr_res = $this->opo_db->query($vs_sql, $va_params);
 
-						$va_values = array();
-
-
-						$va_list_items = null;
-
-
-						$va_suppress_values = null;
+						$va_values = [];
+                        $va_list_items = $va_suppress_values = null;
+						
 						if ($va_facet_info['suppress'] && !is_array($va_facet_info['suppress'])) {
 							$va_facet_info['suppress'] = array($va_facet_info['suppress']);
 						}

@@ -628,7 +628,7 @@
 							$vs_buf .= "</li>\n";
 						}
 					} else {
-						if(sizeof($va_defaults) == 0) { 
+						if(is_array($va_defaults) && (sizeof($va_defaults) == 0)) { 
 							$vs_buf .= "<li class='disabled'>".$vs_display_name."<li>\n";
 						} else {
 							$vs_buf .= "<li ".(($vs_last_selected_path_item == $vs_nav) ? 'class="sf-menu-selected"' : '').">".caNavLink($this->opo_request, $vs_display_name, (($vs_last_selected_path_item == $vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params)."<li>\n";
@@ -815,7 +815,7 @@
 		}
 		# -------------------------------------------------------
 		private function _evaluateRequirements(&$pa_requirements) {
-			if(sizeof($pa_requirements) == 0) { return true; }	// empty requirements means anyone may access the nav item
+			if(!is_array($pa_requirements) || (is_array($pa_requirements) && (sizeof($pa_requirements) == 0))) { return true; }	// empty requirements means anyone may access the nav item
 			$vs_result = $vs_value = null;
 			foreach($pa_requirements as $vs_requirement => $vs_boolean) {
 				$vs_boolean = (strtoupper($vs_boolean) == "AND")  ? "AND" : "OR";

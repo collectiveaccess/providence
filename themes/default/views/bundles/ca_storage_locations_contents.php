@@ -55,7 +55,7 @@
 	//
 	// Template to generate display for existing items
 	//
-
+    if (!$va_settings['displayTemplate']) { $va_settings['displayTemplate'] = "<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)"; }
 	switch($va_settings['list_format']) {
 		case 'list':
 

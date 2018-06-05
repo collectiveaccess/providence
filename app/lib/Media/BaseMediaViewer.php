@@ -124,7 +124,7 @@
 						$vs_controls .= caHTMLHiddenInput("download", array('value' => 1));
 						$vs_controls .= "</form>\n";
 						
-						if (sizeof($va_ids) > 1) {
+						if (is_array($va_ids) && (sizeof($va_ids) > 1)) {
 							$vs_controls .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".caNavLink($po_request, _t('Download all')." ".caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), 'xxx', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]);
 						}
 						

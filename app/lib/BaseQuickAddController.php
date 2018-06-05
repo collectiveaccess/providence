@@ -435,7 +435,7 @@
  				$va_name = array();
  			}
  			$va_response = array(
- 				'status' => sizeof($va_error_list) ? 10 : 0,
+ 				'status' => (is_array($va_error_list) && sizeof($va_error_list)) ? 10 : 0,
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
