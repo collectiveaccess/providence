@@ -26,10 +26,11 @@
  * ----------------------------------------------------------------------
  */
 
-    require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
+    require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
     require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 	require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+	require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
 
 	class iDigBioExportPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------
@@ -116,7 +117,7 @@
             $ve_mainLink = $xml->createElement("link", $this->opo_config->get('urlRoot').$this->opo_config->get('rssPublicPath').$rssFile.".xml");
             $channel->appendChild($ve_mainLink);
             foreach($va_collections as $vs_collection_code => $va_collection){
-                $vs_file_name = $this->getCSVExport($va_collection, $vs_collection_code, $rssDirectory, $va_collection['recordtype']);
+                $vs_file_name = $this->getCSVExport($va_collection, $vs_collection_code, $rssDirectory, $va_collection['type']);
 
                 $tempItem = $xml->createElement('item');
                 foreach($va_collection['rss_fields'] as $vs_field => $vs_value){
@@ -134,7 +135,10 @@
                 
                 //Move EML file and create link
                 $vs_eml_filename = basename($va_collection['eml_file']);
-                copy($va_collection['eml_file'], $rssDirectory.'/eml/'.$vs_eml_filename);
+                if(!file_exists($rssDirectory.'eml/')){
+                    mkdir($rssDirectory.'eml/');
+                }
+                copy($va_collection['eml_file'], $rssDirectory.'eml/'.$vs_eml_filename);
                 $ve_eml = $xml->createElement('ipt:eml', $publicURL.'eml/'.$vs_eml_filename);
                 $tempItem->appendChild($ve_eml);
                 $channel->appendChild($tempItem);
@@ -166,24 +170,31 @@
 			$vs_file_name_extension = '_collection_data.csv';
 			
 			//Extract relevant info from collection config
-			$va_filters = $va_collection['filters'];
+			$vs_query = $va_collection['filterQuery'];
 			$vf_exporter = $va_collection['exporter'];
 			$vs_exporter_dir = $va_collection['exporter_directory'];
 			
             // Search collections get all specimens flagged for publication
+            $o_search = new ObjectSearch();
             if($vs_type != 'multimedia'){
-                $va_search_result = ca_objects::find($va_filters, ['returnAs' => 'searchResult']);
+                $qr_search_result = $o_search->search($vs_query);
             } else {
                 $va_mediaIDs = [];
-                $va_records = ca_objects::find($va_filters, ['returnAs' => 'modelInstances']);
-                foreach($va_records as $vo_record){
+                $qr_search_result = $o_search->search($vs_query);
+                while($qr_search_result->nextHit()){
+                    $vo_record = new ca_objects($qr_search_result->get("object_id"));
                     $va_repIDs = $vo_record->getRepresentationIDs();
                     $va_mediaIDs = array_merge($va_mediaIDs, array_keys($va_repIDs));
                 }
-                $va_search_result = caMakeSearchResult("ca_object_representations", $va_mediaIDs);
+                if(count($va_mediaIDs) > 0){
+                    $qr_search_result = caMakeSearchResult("ca_object_representations", $va_mediaIDs);
+                }
             }
 			$vs_file_name = $vs_collection_code.$vs_file_name_extension;
             // Move current export file to archive, labelling it with the previous week's date
+            if(!file_exists($vs_rss_dir.'exportArchive')){
+                mkdir($vs_rss_dir.'exportArchive');
+            }
             if(file_exists($vs_rss_dir.$vs_file_name)){
                 $vs_file_mod_time = date("Ymd\_H:i:s\_", filemtime($vs_rss_dir.$vs_file_name));
                 rename($vs_rss_dir.$vs_file_name, $vs_rss_dir.'exportArchive/'.$vs_file_mod_time.$vs_file_name);
@@ -192,7 +203,7 @@
             $va_errors = [];
             $vo_exporter = ca_data_exporters::loadExporterFromFile($vs_exporter_dir.'/'.$vf_exporter, $va_errors);
             $vs_exporter_code = $vo_exporter->get('exporter_code');
-            ca_data_exporters::exportRecordsFromSearchResult($vs_exporter_code, $va_search_result, $vs_rss_dir.$vs_file_name, ['logLevel' => KLogger::DEBUG, 'logDirectory' => __CA_BASE_DIR__.'/app/plugins/iDigBioExport/logs', 'showCLIProgressBar' => True]);
+            ca_data_exporters::exportRecordsFromSearchResult($vs_exporter_code, $qr_search_result, $vs_rss_dir.$vs_file_name, ['logLevel' => KLogger::DEBUG, 'logDirectory' => __CA_BASE_DIR__.'/app/plugins/iDigBioExport/logs', 'showCLIProgressBar' => True]);
 
             return $vs_file_name;
         }
