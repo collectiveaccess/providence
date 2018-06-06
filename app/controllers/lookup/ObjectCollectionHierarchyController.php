@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
-require_once(__CA_LIB_DIR__."/ca/Search/ObjectSearch.php");
-require_once(__CA_LIB_DIR__."/ca/Search/CollectionSearch.php");
+require_once(__CA_LIB_DIR__."/BaseLookupController.php");
+require_once(__CA_LIB_DIR__."/Search/ObjectSearch.php");
+require_once(__CA_LIB_DIR__."/Search/CollectionSearch.php");
 
 class ObjectCollectionHierarchyController extends BaseLookupController {
 	# -------------------------------------------------------
@@ -37,7 +37,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	protected $ops_search_class = 'CollectionSearch';
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		if ($this->ops_search_class) { require_once(__CA_LIB_DIR__."/ca/Search/".$this->ops_search_class.".php"); }
+		if ($this->ops_search_class) { require_once(__CA_LIB_DIR__."/Search/".$this->ops_search_class.".php"); }
 		require_once(__CA_MODELS_DIR__."/".$this->ops_table_name.".php");
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		$this->opo_item_instance = new $this->ops_table_name();
@@ -214,7 +214,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 			//
 			// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
 			// is part of a browser initialization
-			$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
+			Session::setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
 		}
 
 		$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_level_data);
@@ -228,7 +228,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 */
 	protected function GetHierarchyLevelData($pa_ids) {
 
-		$vo_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		$t_object = new ca_objects();
 
@@ -245,7 +244,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 			$vn_item_count = 0;
 
-			$t_item = $vo_dm->getInstanceByTableName($vs_table, true);
+			$t_item = Datamodel::getInstanceByTableName($vs_table, true);
 			$vs_label_table_name = $t_item->getLabelTableName();
 			$vs_label_display_field_name = $t_item->getLabelDisplayField();
 			$vs_pk = $t_item->primaryKey();
@@ -262,7 +261,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 				$vs_table = $va_params['table'];
 				$vn_id = $va_params['id'];
 				$vn_start = $va_params['start'];
-				$t_item = $vo_dm->getInstanceByTableName($vs_table, true);
+				$t_item = Datamodel::getInstanceByTableName($vs_table, true);
 
 				$vs_label_table_name = $t_item->getLabelTableName();
 				$vs_label_display_field_name = $t_item->getLabelDisplayField();
@@ -478,8 +477,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 * Returned data is JSON format
 	 */
 	public function GetHierarchyAncestorList() {
-		$vo_dm = Datamodel::load();
-
 		$pn_id = $this->request->getParameter('id', pString);
 
 		$va_params = $this->getItemIDComponents($pn_id, 'ca_objects');
@@ -487,7 +484,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 		$vn_id = $va_params['id'];
 		$vn_start = $va_params['start'];
 
-		$t_item = $vo_dm->getInstanceByTableName($vs_table, true);
+		$t_item = Datamodel::getInstanceByTableName($vs_table, true);
 		$t_item->load($vn_id);
 		$va_ancestors = [];
 		if ($t_item->getPrimaryKey()) {

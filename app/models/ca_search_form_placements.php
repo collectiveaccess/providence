@@ -34,7 +34,7 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_editor_search_form_placement_settings;
 $_ca_editor_search_form_placement_settings = array(		// global

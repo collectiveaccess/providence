@@ -246,7 +246,7 @@ class ca_bookmark_folders extends BaseModel {
 		foreach($va_rows as $vn_table_num => $va_bookmark_list) {
 			//foreach($va_bookmark_list as $vn_bookmark_id => $vn_row_id
 			$va_row_ids = array_keys($va_bookmark_list);
-			$t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num, true);
+			$t_instance = Datamodel::getInstanceByTableNum($vn_table_num, true);
 			$va_labels = $t_instance->getPreferredDisplayLabelsForIDs($va_row_ids);
 			foreach($va_labels as $vn_row_id => $vs_label) {
 				$va_bookmarks[$va_bookmark_list[$vn_row_id]]['label'] = $vs_label;
@@ -460,14 +460,13 @@ class ca_bookmark_folders extends BaseModel {
 	 * @return int Corresponding table number or null if table does not exist
 	 */
 	private function _getTableNum($pm_table_name_or_num) {
-		$o_dm = $this->getAppDatamodel();
 		if (!is_numeric($pm_table_name_or_num)) {
-			$vn_table_num = $o_dm->getTableNum($pm_table_name_or_num);
+			$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		} else {
 			$vn_table_num = $pm_table_name_or_num;
 		}
 		
-		if (!$o_dm->getInstanceByTableNum($vn_table_num, true)) {
+		if (!Datamodel::getInstanceByTableNum($vn_table_num, true)) {
 			// table name or number is not valid
 			return null;
 		}

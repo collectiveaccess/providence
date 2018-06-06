@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php');
+require_once(__CA_LIB_DIR__.'/ApplicationVars.php');
 
 try{
 	$o_app_vars = new ApplicationVars();

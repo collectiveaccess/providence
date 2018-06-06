@@ -27,8 +27,8 @@
  */
  
  	require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
-	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+	require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
  
  	class ObjectLotEditorController extends BaseEditorController {
  		# -------------------------------------------------------

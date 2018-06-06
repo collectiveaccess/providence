@@ -33,7 +33,7 @@
 /**
  *
  */
-require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Base.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Base.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
@@ -459,12 +459,11 @@ class ca_metadata_alert_triggers extends BaseModel {
 	 */
 	public static function tablesWithRules() {
 		$o_db = new Db();
-		$o_dm = Datamodel::load();
 	
 		$va_table_list = [];
 		$qr_table_nums = $o_db->query("SELECT DISTINCT table_num FROM ca_metadata_alert_rules");
 		while($qr_table_nums->nextRow()) {
-			$va_table_list[$vn_table_num = $qr_table_nums->get('table_num')] = $o_dm->getTableName($vn_table_num);
+			$va_table_list[$vn_table_num = $qr_table_nums->get('table_num')] = Datamodel::getTableName($vn_table_num);
 		}
 		return $va_table_list;
 	}

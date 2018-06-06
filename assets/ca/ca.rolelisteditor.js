@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.rolelistbundle.js
+ * js/ca.rolelistbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

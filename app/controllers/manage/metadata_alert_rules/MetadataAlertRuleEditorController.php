@@ -27,7 +27,7 @@
  */
  
  	require_once(__CA_MODELS_DIR__."/ca_metadata_alert_rules.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
  	
  
  	class MetadataAlertRuleEditorController extends BaseEditorController {

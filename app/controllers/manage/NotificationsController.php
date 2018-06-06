@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
 require_once(__CA_MODELS_DIR__.'/ca_notifications.php');
 
 class NotificationsController extends ActionController {

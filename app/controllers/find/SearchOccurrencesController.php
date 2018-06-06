@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/OccurrenceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/OccurrenceBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/OccurrenceSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/OccurrenceBrowse.php");
  	
  	class SearchOccurrencesController extends BaseSearchController {
  		# -------------------------------------------------------

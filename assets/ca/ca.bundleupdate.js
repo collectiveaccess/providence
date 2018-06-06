@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.bundleupdatemanager.js
+ * js/ca.bundleupdatemanager.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

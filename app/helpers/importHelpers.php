@@ -30,12 +30,12 @@
  * ----------------------------------------------------------------------
  */
 
-	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
-	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+	require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
+	require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 
-	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/TGN.php');
-	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/AAT.php');
-	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/ULAN.php');
+	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/TGN.php');
+	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/AAT.php');
+	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/ULAN.php');
 
 	# ---------------------------------------
 	/**
@@ -249,8 +249,7 @@
 			caProcessRefineryRelatedMultiple($o_refinery_instance, $va_item, $pa_source_data, null, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
 		
 			if (is_array($va_val['_related_related'])) {
-				$o_dm = Datamodel::load();
-				$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+				$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
 				if ($t_subject->load($vn_id)) {
 					foreach($va_val['_related_related'] as $vs_table => $va_rels) { 
 						foreach($va_rels as $va_rel) {
@@ -417,10 +416,9 @@
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		
 		if (is_array($pa_item['settings']["{$ps_refinery_name}_interstitial"])) {
-			$o_dm = Datamodel::load();
-			if (!($ps_import_tablename = $o_dm->getTableName($pm_import_tablename_or_num))) { return null; }
-			if (!($ps_target_tablename = $o_dm->getTableName($pm_target_tablename_or_num))) { return null; }
-			if (!($t_target = $o_dm->getInstanceByTableName($ps_target_tablename, true))) { return null; }
+			if (!($ps_import_tablename = Datamodel::getTableName($pm_import_tablename_or_num))) { return null; }
+			if (!($ps_target_tablename = Datamodel::getTableName($pm_target_tablename_or_num))) { return null; }
+			if (!($t_target = Datamodel::getInstanceByTableName($ps_target_tablename, true))) { return null; }
 			if ($o_trans) { $t_target->setTransaction($o_trans); }
 			$va_attr_vals = array();
 					
@@ -429,7 +427,7 @@
 				
 				$vs_linking_table = null;
 				if ($ps_import_tablename != $ps_target_tablename) {
-					$va_path = $o_dm->getPath($ps_import_tablename, $ps_target_tablename);
+					$va_path = Datamodel::getPath($ps_import_tablename, $ps_target_tablename);
 					$va_path_tables = array_keys($va_path);
 					$vs_linking_table = $va_path_tables[1];
 				} else {
@@ -472,8 +470,7 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		
-		$o_dm = Datamodel::load();
-		$t_rel_instance = $o_dm->getInstanceByTableName($ps_related_table, true);
+		$t_rel_instance = Datamodel::getInstanceByTableName($ps_related_table, true);
 		
 		global $g_ui_locale_id;
 		$va_attr_vals = array();
@@ -637,7 +634,6 @@
 		global $g_ui_locale_id;
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
-		$o_dm = Datamodel::load();
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
 		$o_log = caGetOption('log', $pa_options, null);
@@ -695,7 +691,7 @@
 		
 		$va_vals = [];  // value list for all items
 		$vn_c = 0;
-		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return array(); }
+		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return array(); }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$vs_label_fld = $t_instance->getLabelDisplayField();
@@ -836,7 +832,7 @@
 		
 						// Set attributes
 						//      $va_attr_vals = directly attached attributes for item
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 			
@@ -870,7 +866,7 @@
 					}
 					
 					// Try to pull idno from reader if it's not explicitly set to give us something to match on
-					if (($o_reader instanceof CollectiveAccessDataReader) && ($vs_table_idno_fld = $o_dm->getTableProperty($ps_table, 'ID_NUMBERING_ID_FIELD')) && in_array($vs_table_idno_fld, $pa_options['matchOn']) && !isset($va_val[$vs_table_idno_fld])) { 
+					if (($o_reader instanceof CollectiveAccessDataReader) && ($vs_table_idno_fld = Datamodel::getTableProperty($ps_table, 'ID_NUMBERING_ID_FIELD')) && in_array($vs_table_idno_fld, $pa_options['matchOn']) && !isset($va_val[$vs_table_idno_fld])) { 
 						$va_idno_value_list = $o_reader->get("{$ps_table}.{$vs_table_idno_fld}", ['returnAsArray' => true]);
 						if (isset($va_idno_value_list[$vn_i]) && strlen($va_idno_value_list[$vn_i])) { $va_val[$vs_table_idno_fld] = $va_idno_value_list[$vn_i]; }
 					}
@@ -1008,7 +1004,7 @@
 							        $vs_name = pathinfo($vs_item, PATHINFO_FILENAME);
 							    }
 							    
-								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name; }
+								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['._t('BLANK').']'; }
 					
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && ((isset($va_val['media']['media']) && ($va_val['media']['media'])) || $vs_item)) {
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
@@ -1030,7 +1026,11 @@
 							        $vn_c++;
 							        continue(2);
 								} else {
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
+								    if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
+								        $va_val['media']['media'] = $vs_item;
+								    } else {
+									    $va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
+									}
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;

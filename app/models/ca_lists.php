@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_APP_DIR__.'/models/ca_list_items.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
@@ -233,7 +233,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected $SUPPORTS_ACL = true;
 	
-	static $s_list_item_cache = array();
 	static $s_list_id_cache = array();
 	static $s_list_code_cache = array();
 	static $s_list_item_display_cache = array();			// cache for results of getItemFromListForDisplayByItemID()
@@ -300,8 +299,20 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$this->errors = array_merge($this->errors, $t_item_root->errors);
 				return false;
 			}
+			
+			ExternalCache::flush('listItems');
 		}
 		
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($pa_options=null) {
+		if ($vn_rc = parent::update($pa_options)) {
+			ExternalCache::flush('listItems');
+		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -325,6 +336,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 			}
+			
+			ExternalCache::flush('listItems');
 		}
 
 		return $vn_rc;
@@ -505,9 +518,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('list_id' => $vn_list_id)));
 
-		if (!$pb_dont_cache && is_array(ca_lists::$s_list_item_cache[$vs_cache_key])) {
-			return(ca_lists::$s_list_item_cache[$vs_cache_key]);
+		if (!$pb_dont_cache && ExternalCache::contains($vs_cache_key, 'listItems')) { 
+			return ExternalCache::fetch($vs_cache_key, 'listItems');
 		}
+		
 		$t_list = new ca_lists($vn_list_id);
 		$pn_type_id = isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null;
 		$pn_sort = isset($pa_options['sort']) ? (int)$pa_options['sort'] : $t_list->get('default_sort');
@@ -517,7 +531,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$t_list_item = new ca_list_items($pn_item_id);
-		if (!$t_list_item->getPrimaryKey() || ($t_list_item->get('list_id') != $vn_list_id)) { return null; }
+		if (!$t_list_item->getPrimaryKey() || ($t_list_item->get('list_id') != $vn_list_id)) { 
+			ExternalCache::save($vs_cache_key, null, 'listItems');
+			return null; 
+		}
 
 		$vs_hier_sql = '';
 		if ($t_list_item->getPrimaryKey()) {
@@ -606,6 +623,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
+				ExternalCache::save($vs_cache_key, $va_items, 'listItems');
 				return $va_items;
 			}
 			
@@ -631,6 +649,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_items as $vn_item_id => $va_row) {
 					$va_labels[$vn_item_id] = $va_row['name_plural'];
 				}
+				ExternalCache::save($vs_cache_key, $va_labels, 'listItems');
 				return $va_labels;
 			}
 		} else {
@@ -695,7 +714,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$va_items = $pa_sorted_items;
 		}
 		
-		ca_lists::$s_list_item_cache[$vs_cache_key] = $va_items;
+		ExternalCache::save($vs_cache_key, $va_items, 'listItems');
 		return $va_items;
 	}
 	# ------------------------------------------------------
@@ -1564,8 +1583,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_in_use_list = null;
 		if ($pa_options['inUse'] && (int)$pa_options['element_id'] && $pa_options['table']) {
-			$o_dm = Datamodel::load();
-			if ($t_instance = $o_dm->getInstance($pa_options['table'], true)) {
+			if ($t_instance = Datamodel::getInstance($pa_options['table'], true)) {
 				$va_params = array((int)$pa_options['element_id']);
 				if(is_array($pa_check_access) && sizeof($pa_check_access)) {
 					$va_params[] = $pa_check_access;
@@ -1905,17 +1923,22 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Returns item_id of root node for list
 	 */
 	public function getRootListItemID($pm_list_name_or_id=null) {
+		//if (ExternalCache::contains($pm_list_name_or_id, 'listRootIDs')) { return ExternalCache::fetch($pm_list_name_or_id, 'listRootIDs'); }
 		if($pm_list_name_or_id) {
 			$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		} else {
 			$vn_list_id = $this->getPrimaryKey();
 		}
-		if (!$vn_list_id) { return null; }
+		if (!$vn_list_id) { return null; } 
 		
 		$t_items = new ca_list_items();
 		$t_items->load(array('list_id' => $vn_list_id, 'parent_id' => null));
+		$vn_id = $t_items->getPrimaryKey();
 		
-		return $t_items->getPrimaryKey();
+		ExternalCache::save($pm_list_name_or_id, $vn_id, 'listRootIDs');
+		ExternalCache::save($vn_list_id, $vn_id, 'listRootIDs');
+		
+		return $vn_id;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1956,11 +1979,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		transaction = Transaction to execute list query within. [Default=null]
 	 * @return array
 	 */
-	static public function getListCodes($pa_options=null) {
+	static public function getListCodes($pa_options=null) {		
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
+		if (ExternalCache::contains($vs_cache_key, 'listCodes')) { return ExternalCache::fetch($vs_cache_key, 'listCodes'); }
+		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		$o_db = $t_list->getDb();
-		
+
 		$qr_lists = $o_db->query("
 			SELECT cl.list_id, cl.list_code
 			FROM ca_lists cl
@@ -1972,6 +1998,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$va_lists[$qr_lists->get('list_id')] = $qr_lists->get('list_code');
 		}
 		ksort($va_lists);
+		
+		ExternalCache::save($vs_cache_key, $va_lists, 'listCodes');
 		return $va_lists;
 	}
 	# ---------------------------------------------------------------------------------------------

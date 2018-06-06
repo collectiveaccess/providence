@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+ 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  
  	//
@@ -41,9 +41,8 @@
 			
 			$va_tmp = explode('.', $ps_bundle);
 			
-			$o_dm = Datamodel::load();
 			
-			if (!($t_table = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+			if (!($t_table = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
 				// bad table name
 				print _t("Invalid table name");
 				return null;
@@ -109,7 +108,6 @@
 			
 			$va_tmp = explode('.', $ps_bundle);
 			
-			$o_dm = Datamodel::load();
 			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $va_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
 				print _t("You do not have access to this bundle");
 				return null;

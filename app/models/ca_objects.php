@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,12 +34,13 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
-require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/BaseObjectLocationModel.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
+require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
@@ -483,14 +484,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 
 	protected $FIELDS;
 	
-	
-	/**
-	 * Cache for object use data
-	 * 
-	 * @see ca_objects::getObjectHistory()
-	 */
-	static $s_object_use_cache = array();
-	
 	/**
 	 * Cache for current location type configuration data
 	 *
@@ -564,6 +557,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current location'));
+		$this->BUNDLES['ca_objects_location_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current location date'));
+		
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 		$this->BUNDLES['ca_object_checkouts'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object checkouts'));
@@ -864,7 +859,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 */
  	public function getObjectHistory($pa_bundle_settings=null, $pa_options=null) {
  		global $g_ui_locale;
- 		$o_dm = Datamodel::load();
  		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
@@ -873,7 +867,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $pa_options, array('object_id' => $this->getPrimaryKey())));
 		
 		$pb_no_cache 				= caGetOption('noCache', $pa_options, false);
-		if (!$pb_no_cache && isset(ca_objects::$s_object_use_cache[$vs_cache_key])) { return ca_objects::$s_object_use_cache[$vs_cache_key]; }
+		if (!$pb_no_cache && ExternalCache::contains($vs_cache_key, "objectHistory")) { return ExternalCache::fetch($vs_cache_key, "objectHistory"); }
 		
 		$pb_display_label_only 		= caGetOption('displayLabelOnly', $pa_options, false);
 		
@@ -914,7 +908,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (is_array($va_date_elements) && sizeof($va_date_elements)) {
 					foreach($va_date_elements as $vs_date_element) {
 						$va_date_bits = explode('.', $vs_date_element);
-						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
+						$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $t_lot->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $t_lot->get($vs_date_spec, array('sortable' => true))),
@@ -982,7 +976,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 						$va_date_bits = explode('.', $vs_date_element);
-						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_loans.{$vs_date_element}";
+						$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_loans.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_loans->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_loans->get($vs_date_spec, array('sortable' => true))),
@@ -1055,7 +1049,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 						$va_date_bits = explode('.', $vs_date_element);
-						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_movements.{$vs_date_element}";
+						$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_movements.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_movements->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_movements->get($vs_date_spec, array('sortable' => true))),
@@ -1130,7 +1124,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 						$va_date_bits = explode('.', $vs_date_element);	
-						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_occurrences.{$vs_date_element}";
+						$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_occurrences.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_occurrences->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_occurrences->get($vs_date_spec, array('sortable' => true))),
@@ -1203,7 +1197,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 						$va_date_bits = explode('.', $vs_date_element);
-						$vs_date_spec = ($o_dm->tableExists($va_date_bits[0])) ? $vs_date_element : "ca_collections.{$vs_date_element}";
+						$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_collections.{$vs_date_element}";
 						$va_dates[] = array(
 							'sortable' => $qr_collections->get($vs_date_spec, array('sortable' => true)),
 							'bounds' => explode("/", $qr_collections->get($vs_date_spec, array('sortable' => true))),
@@ -1341,11 +1335,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$va_history = array_slice($va_history, 0, $pn_limit);
 		}
 		
-		if(sizeof(ca_objects::$s_object_use_cache[$vs_cache_key]) > 100) {
-			 ca_objects::$s_object_use_cache[$vs_cache_key] = array_slice(ca_objects::$s_object_use_cache[$vs_cache_key], 0, 50);
-		} 
-		
-		return ca_objects::$s_object_use_cache[$vs_cache_key] = $va_history;
+		ExternalCache::save($vs_cache_key, $va_history, "objectHistory");
+		return $va_history;
  	}
  	# ------------------------------------------------------
  	/**
@@ -1584,8 +1575,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		//
  		// Directly query the date attribute for performance
  		// 
- 		$o_dm = Datamodel::load();
- 		$vn_movements_table_num = (int)$o_dm->getTableNum("ca_movements");
+ 		$vn_movements_table_num = (int)Datamodel::getTableNum("ca_movements");
  		
  		$o_db = $this->getDb();
  		$qr_res = $o_db->query("
@@ -1989,13 +1979,15 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 * @return bool
  	 */
  	private function relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $pa_options=null) {
+ 		ExternalCache::flush("objectHistory");
  		if(!$pn_rel_id) { return true; }	// null record means we are batch deleting so go ahead and recalculate
  		
- 		if (!($t_instance = $this->getAppDatamodel()->getInstance($pm_rel_table_name_or_num, true))) { return null; }
- 		if (($vs_table_name = $t_instance->tableName()) !== 'ca_storage_locations') {
+ 		if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
+ 		if ((($vs_table_name = $t_instance->tableName())) !== 'ca_storage_locations') {
  			$pm_type_id = $t_instance->getTypeID($pn_rel_id);
  		}
- 		
+ 		//print "FOR $pm_rel_table_name_or_num/$pm_type_id<br>\n";
+ 		print_R(ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id));
  		if (ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id)) { return true; }
  		return false;
  	}
@@ -2065,8 +2057,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 */
  	private function setCurrentLocationForBrowse($pm_current_loc_class, $pm_current_loc_subclass, $pn_current_loc_id, $pa_options=null) {
  		if (!$this->getPrimaryKey()) { return null; }
- 		if ($vn_table_num = $this->getAppDatamodel()->getTableNum($pm_current_loc_class)) {
- 			$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
+ 		if ($vn_table_num = Datamodel::getTableNum($pm_current_loc_class)) {
+ 			$t_instance = Datamodel::getInstanceByTableNum($vn_table_num, true);
  			if (!caGetOption('dontCheckID', $pa_options, false)) {
  				if (!$t_instance->load(array($t_instance->primaryKey() => $pn_current_loc_id, 'deleted' => 0))) {
  					return false;
@@ -2125,7 +2117,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		
  		if (isset(ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key])) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key]; }
  		$o_config = Configuration::load();
- 		$o_dm = Datamodel::load();
  		
  		$va_map = $o_config->getAssoc('current_location_criteria');
  		
@@ -2134,7 +2125,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  			unset($va_map['ca_storage_locations']);
  		}
  		
- 		if (!($t_instance = $o_dm->getInstance($pm_current_loc_class, true))) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null; }
+ 		if (!($t_instance = Datamodel::getInstance($pm_current_loc_class, true))) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null; }
  		$vs_table_name = $t_instance->tableName();
  		
  		if (isset($va_map[$vs_table_name])) {
@@ -2289,6 +2280,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 		switch($ps_bundle_name) {
 			case 'ca_objects_location':
+			case 'ca_objects_location_date':
 				
 				if ((method_exists($this, "getObjectHistory")) && (is_array($va_bundle_settings = $this->_processObjectHistoryBundleSettings(['useAppConfDefaults' => true]))) && (sizeof($va_bundle_settings) > 0)) {
 					$t_object = new ca_objects($pn_row_id);
@@ -2300,12 +2292,11 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
                         
                         $va_path_components = caGetOption('pathComponents', $pa_options, null);
                         if (is_array($va_path_components) && $va_path_components['subfield_name']) {
-                            $o_dm = Datamodel::load();
-                            if (($t_loc = $o_dm->getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
+                            if (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
                                 return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
                             }
                         } 
-						return $va_current_location['display'];
+                        return ($ps_bundle_name == 'ca_objects_location_date') ? $va_current_location['date'] : $va_current_location['display'];
 					}
 				} elseif (method_exists($this, "getLastLocationForDisplay")) {
 					// If no ca_objects_history bundle is configured then display the last storage location

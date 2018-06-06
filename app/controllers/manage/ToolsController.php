@@ -36,8 +36,8 @@
  
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/importHelpers.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
- 	require_once(__CA_LIB_DIR__."/ca/ToolsManager.php");
+ 	require_once(__CA_LIB_DIR__."/Datamodel.php");
+ 	require_once(__CA_LIB_DIR__."/ToolsManager.php");
 
  
  	class ToolsController extends ActionController {
@@ -58,7 +58,6 @@
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			$this->opo_datamodel = Datamodel::load();
  			$this->opo_tools_manager = new ToolsManager();
  		}
  		# -------------------------------------------------------

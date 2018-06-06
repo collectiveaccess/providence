@@ -27,8 +27,8 @@
  */
 
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
-	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+	require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 	require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
 
  	class SetEditorController extends BaseEditorController {
@@ -145,7 +145,7 @@
 
  			$pn_row_id = $this->request->getParameter('row_id', pInteger);
 
- 			$t_row = $this->opo_datamodel->getInstanceByTableNum($pn_table_num, true);
+ 			$t_row = Datamodel::getInstanceByTableNum($pn_table_num, true);
  			if (!($t_row->load($pn_row_id))) {
  				$va_errors[] = _t("Row_id is invalid");
  			}
@@ -184,7 +184,6 @@
 		 */
 		public function getSetMedia() {
 			set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
-			$o_dm = Datamodel::load();
 			$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
 			if (!$t_set->getPrimaryKey()) {
 				$this->notification->addNotification(_t('No set defined'), __NOTIFICATION_TYPE_ERROR__);
@@ -199,8 +198,8 @@
 				return false;
 			}
 
-			$vs_subject_table = $o_dm->getTableName($t_set->get('table_num'));
-			$t_instance = $o_dm->getInstanceByTableName($vs_subject_table);
+			$vs_subject_table = Datamodel::getTableName($t_set->get('table_num'));
+			$t_instance = Datamodel::getInstanceByTableName($vs_subject_table);
 
 			$qr_res = $vs_subject_table::createResultSet($va_record_ids);
 			$qr_res->filterNonPrimaryRepresentations(false);
@@ -287,7 +286,6 @@
 		public function exportSetItems() {
 			set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
 			
-			$o_dm = Datamodel::load();
 			$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
 			if (!$t_set->getPrimaryKey()) {
 				$this->notification->addNotification(_t('No set defined'), __NOTIFICATION_TYPE_ERROR__);
@@ -302,8 +300,8 @@
 				return false;
 			}
 
-			$vs_subject_table = $o_dm->getTableName($t_set->get('table_num'));
-			$t_instance = $o_dm->getInstanceByTableName($vs_subject_table);
+			$vs_subject_table = Datamodel::getTableName($t_set->get('table_num'));
+			$t_instance = Datamodel::getInstanceByTableName($vs_subject_table);
 
 			$qr_res = $vs_subject_table::createResultSet($va_record_ids);
 			$qr_res->filterNonPrimaryRepresentations(false);

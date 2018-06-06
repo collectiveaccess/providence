@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_objects'] = array(

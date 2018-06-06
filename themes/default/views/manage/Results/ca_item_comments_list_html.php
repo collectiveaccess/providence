@@ -29,7 +29,6 @@
 	$vn_items_per_page = $this->getVar('current_items_per_page');
 	
 	
-	$o_dm = Datamodel::load();
 	$i = 0;
 	$vn_item_count = 0;
 	
@@ -73,7 +72,7 @@
 
 <?php	
 		while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($vo_result->get('ca_item_comments.table_num'), true))) {
+			if (!($t_table = Datamodel::getInstanceByTableNum($vo_result->get('ca_item_comments.table_num'), true))) {
 				continue;
 			}
 ?>

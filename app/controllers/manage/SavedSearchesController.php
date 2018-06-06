@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+ 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
  	
  	class SavedSearchesController extends ActionController {
  		# -------------------------------------------------------
@@ -50,7 +50,7 @@
 				}
 			}
 			$this->view->setVar("saved_searches", $va_searches);
-			$this->request->session->setVar('saved_search_count', $vn_c);
+			Session::setVar('saved_search_count', $vn_c);
 			if(sizeof($va_searches) == 0){
  				$this->notification->addNotification(_t("There are no saved searches"), __NOTIFICATION_TYPE_INFO__);
  			}
@@ -87,7 +87,7 @@
  		 * 
  		 */
  		public function Info() {
- 			$this->view->setVar('search_count', $this->request->session->getVar('saved_search_count'));
+ 			$this->view->setVar('search_count', Session::getVar('saved_search_count'));
  			return $this->render('widget_saved_searches_info_html.php', true);
  		}
  		# -------------------------------------------------------

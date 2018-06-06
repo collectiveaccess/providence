@@ -164,7 +164,7 @@
 <?php
 } else {
 		$vn_use_as_root_id = 'null';
-		if (sizeof($va_settings['restrict_to_lists']) == 1) {
+		if (is_array($va_settings['restrict_to_lists']) && (sizeof($va_settings['restrict_to_lists']) == 1)) {
 			$t_item = new ca_list_items();
 			if ($t_item->load(array('list_id' => $va_settings['restrict_to_lists'][0], 'parent_id' => null))) {
 				$vn_use_as_root_id = $t_item->getPrimaryKey();
@@ -211,7 +211,7 @@
 						
 						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 						
-						//initItemID: <?php print (int)$this->request->session->getVar('ca_places_browse_last_id'); ?>,
+						//initItemID: <?php print (int)Session::getVar('ca_places_browse_last_id'); ?>,
 						useAsRootID: <?php print $vn_use_as_root_id; ?>,
 						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						

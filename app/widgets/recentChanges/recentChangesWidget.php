@@ -25,11 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationChangeLog.php');
- 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/ApplicationChangeLog.php');
+ 	require_once(__CA_LIB_DIR__.'/Datamodel.php');
+ 	require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
  
 	class recentChangesWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
@@ -45,7 +45,6 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentChangesWidget.conf');
-			$this->opo_datamodel = Datamodel::load();
 		}
 		# -------------------------------------------------------
 		/**
@@ -70,7 +69,7 @@
 			parent::renderWidget($ps_widget_id, $pa_settings);
 			$this->opo_view->setVar('change_log', new ApplicationChangeLog());
 			
-			if ($t_table = $this->opo_datamodel->getInstanceByTableName($pa_settings['display_type'], true)) {
+			if ($t_table = Datamodel::getInstanceByTableName($pa_settings['display_type'], true)) {
 				$this->opo_view->setVar('table_num', $t_table->tableNum()); 	
 				$this->opo_view->setVar('table_name_plural', $t_table->getProperty('NAME_PLURAL')); 	
 				

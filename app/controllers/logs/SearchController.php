@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_LIB_DIR__.'/core/Logging/Searchlog.php');
+ 	require_once(__CA_LIB_DIR__.'/Logging/Searchlog.php');
 
  	class SearchController extends ActionController {
  		# -------------------------------------------------------

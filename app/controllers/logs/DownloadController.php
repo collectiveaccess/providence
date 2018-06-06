@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_LIB_DIR__.'/core/Logging/Downloadlog.php');
+ 	require_once(__CA_LIB_DIR__.'/Logging/Downloadlog.php');
 
  	class DownloadController extends ActionController {
  		# -------------------------------------------------------
@@ -34,7 +34,6 @@
  		# -------------------------------------------------------
  		public function Index() {
  			AssetLoadManager::register('tableList');
- 			$o_dm = $this->getAppDatamodel();
  			$t_download_log = new Downloadlog();
  			
  			$va_download_list = array();
@@ -60,8 +59,8 @@
 					$va_row_id_by_table_num[$va_download["table_num"]][] = $va_download["row_id"];
 				}
 				foreach($va_row_id_by_table_num as $vn_table_num => $va_row_ids){
-					$t_table = $o_dm->getInstanceByTableNum($vn_table_num, true);
-					$va_tables[$vn_table_num]['name'] = $o_dm->getTableName($vn_table_num);
+					$t_table = Datamodel::getInstanceByTableNum($vn_table_num, true);
+					$va_tables[$vn_table_num]['name'] = Datamodel::getTableName($vn_table_num);
 					$va_tables[$vn_table_num]['displayname'] = $t_table->getProperty('NAME_SINGULAR');
 					$va_record_labels_by_table_num[$vn_table_num] = $t_table->getPreferredDisplayLabelsForIDs($va_row_ids);
 				}

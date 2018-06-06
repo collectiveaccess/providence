@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/ULAN.php');
+require_once(__CA_LIB_DIR__.'/Plugins/InformationService/ULAN.php');
 require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
 require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
 

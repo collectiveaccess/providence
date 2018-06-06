@@ -34,7 +34,6 @@
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	
-		$o_dm = Datamodel::load();
 ?>
 <div id="scrollingResults">
 
@@ -94,7 +93,7 @@
 			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
 				<td>
 <?php
-						if ($t_rel = $o_dm->getInstanceByTableNum($vo_result->get('table_num'), true)) {
+						if ($t_rel = Datamodel::getInstanceByTableNum($vo_result->get('table_num'), true)) {
 							print ' (<i>'.$t_rel->getProperty('NAME_SINGULAR').'</i>)';
 						}
 ?>

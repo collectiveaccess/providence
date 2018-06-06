@@ -218,7 +218,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 		$vo_relationship_type->setMode(ACCESS_WRITE);
 		$vo_relationship_type->set(array(
 				'type_code' => self::_getIdno($ps_code_base),
-				'table_num' => $vo_relationship_type->getAppDatamodel()->getTableNum($ps_table_name)
+				'table_num' => Datamodel::getTableNum($ps_table_name)
 		));
 		$vo_relationship_type->insert();
 		$vo_relationship_type->addLabel(

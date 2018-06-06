@@ -161,8 +161,7 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 				
 			<table class='caUseHistoryUpdateLocationMetadata'><?php 
 				if(is_array($va_storage_location_elements) && sizeof($va_storage_location_elements)) {
-					$o_dm = Datamodel::load();
-					$t_rel = $o_dm->getInstanceByTableName('ca_objects_x_storage_locations', true);		
+					$t_rel = Datamodel::getInstanceByTableName('ca_objects_x_storage_locations', true);		
 					foreach($va_storage_location_elements as $vs_element) {
 						print "<tr>";
 						if ($t_rel->hasField($vs_element)) {

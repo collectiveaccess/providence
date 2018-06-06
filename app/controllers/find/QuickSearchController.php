@@ -26,20 +26,20 @@
  * ----------------------------------------------------------------------
  */
  	
- 	require_once(__CA_LIB_DIR__."/core/Configuration.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseFindController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectLotSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/EntitySearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/PlaceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/OccurrenceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/CollectionSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/StorageLocationSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/LoanSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/MovementSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/TourSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/TourStopSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/QuickSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Configuration.php");
+ 	require_once(__CA_LIB_DIR__."/BaseFindController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectLotSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/EntitySearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/PlaceSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/OccurrenceSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/CollectionSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/StorageLocationSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/LoanSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/MovementSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/TourSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/TourStopSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/QuickSearch.php");
  	
  	require_once(__CA_MODELS_DIR__."/ca_lists.php");
  	
@@ -59,9 +59,9 @@
  			$ps_search 		= $this->request->getParameter('search', pString);
  			$ps_sort 		= $this->request->getParameter('sort', pString);
  			
- 			if (!$ps_search) { $ps_search = $this->request->session->getVar('quick_search_last_search'); }
+ 			if (!$ps_search) { $ps_search = Session::getVar('quick_search_last_search'); }
  			if (!in_array($ps_sort, array('name', 'idno', 'relevance'))) {
- 				if (!$ps_sort = $this->request->session->getVar('quick_search_last_sort')) {
+ 				if (!$ps_sort = Session::getVar('quick_search_last_sort')) {
  					$ps_sort = 'name';
  				}
  			}
@@ -123,13 +123,13 @@
  			
  			// note last quick search
  			if ($ps_search) {
- 				$this->request->session->setVar('quick_search_last_search', $ps_search);
+ 				Session::setVar('quick_search_last_search', $ps_search);
  			}
  			if($ps_sort) {
- 				$this->request->session->setVar('quick_search_last_sort', $ps_sort);
+ 				Session::setVar('quick_search_last_sort', $ps_sort);
  			}
  			$this->view->setVar('search', $ps_search);
- 			$this->view->setVar('sort', $this->request->session->getVar('quick_search_last_sort'));
+ 			$this->view->setVar('sort', Session::getVar('quick_search_last_sort'));
  					
  			$this->view->setVar('maxNumberResults', $this->opn_num_results_per_item_type);
  			

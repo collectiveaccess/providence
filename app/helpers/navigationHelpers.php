@@ -949,11 +949,10 @@
 	 * @return string
 	 */
 	function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		$pb_quick_add = caGetOption('quick_add', $pa_options, false);
 
@@ -1126,11 +1125,10 @@
 	 *		type_id = type_id of item to get detail for
 	 */
 	function caDetailUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $ps_table;
@@ -1200,12 +1198,11 @@
 	 *		intrinsic = Checks value of instrinsic field and return list of primary keys that use the specified value
 	 */
 	function caJSONLookupServiceUrl($po_request, $ps_table, $pa_attributes=null) {
-		$o_dm = Datamodel::load();
 		
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		
 		$vs_pk = $t_table->primaryKey();
