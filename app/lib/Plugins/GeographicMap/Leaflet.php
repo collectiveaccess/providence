@@ -264,7 +264,7 @@ $vs_buf .= "
 			var c = localStorage.getItem('leafletLastPos');
 			if (c) {
 				var coord = c.split(/,/);
-				map.setView(coord, 6, {animate: false});
+				map.setView(coord, 12, {animate: false});
 			} else {
 				map.setZoom(2, {animate: false});
 			}
