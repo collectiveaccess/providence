@@ -197,10 +197,9 @@ class MetadataExportController extends ActionController {
 			file_put_contents($vs_tmp_file, $vs_export);
 
 			// Store file name and exporter data in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
-			$o_session = $this->getRequest()->getSession();
-			$o_session->setVar('export_file', $vs_tmp_file);
-			$o_session->setVar('export_content_type', $t_exporter->getContentType());
-			$o_session->setVar('exporter_id', $t_exporter->getPrimaryKey());
+			Session::setVar('export_file', $vs_tmp_file);
+			Session::setVar('export_content_type', $t_exporter->getContentType());
+			Session::setVar('exporter_id', $t_exporter->getPrimaryKey());
 
 			$this->render('export/export_destination_html.php');
 		}
@@ -214,12 +213,10 @@ class MetadataExportController extends ActionController {
 		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
 		$this->getView()->setVar('file_name', $vs_filename);
 
-		$o_session = $this->getRequest()->getSession();
-
-		if(!($vs_tmp_file = $o_session->getVar('export_file')) && !($vs_tmp_data = $o_session->getVar('export_data'))) {
+		if(!($vs_tmp_file = Session::getVar('export_file')) && !($vs_tmp_data = Session::getVar('export_data'))) {
 			return; //@todo error handling
 		}
-		if(!($vs_content_type = $o_session->getVar('export_content_type'))) {
+		if(!($vs_content_type = Session::getVar('export_content_type'))) {
 			return; // @todo error handling
 		}
 
@@ -301,9 +298,8 @@ class MetadataExportController extends ActionController {
 	 */
 	public function SetupBatchExport() {
 		$o_conf = Configuration::load();
-		$o_session = $this->getRequest()->getSession();
 
-		if(!($vn_exporter_id = $o_session->getVar('exporter_id'))) {
+		if(!($vn_exporter_id = Session::getVar('exporter_id'))) {
 			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3420?r='.urlencode($this->getRequest()->getFullUrlPath()));
 			return;
 		}
