@@ -236,7 +236,7 @@ $vs_buf .= "
 		
 		map.on('moveend', function(e) {
 			var c = map.getCenter();
-			localStorage.setItem('lastPos', [c.lat, c.lng]);
+			localStorage.setItem('leafletLastPos', c.lat + ',' + c.lng);
 		});
 		
 		var f = re.exec(map_{$vs_id}_loc_str);
@@ -261,7 +261,7 @@ $vs_buf .= "
 				}
 			});
 		} else {
-			var c = localStorage.getItem('lastPos');
+			var c = localStorage.getItem('leafletLastPos');
 			if (c) {
 				var coord = c.split(/,/);
 				map.setView(coord, 6, {animate: false});
