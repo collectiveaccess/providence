@@ -196,7 +196,7 @@ $vs_buf .= "
 
 		var map_{$vs_id}_loc_label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
 		
-		var map = L.map('mapholder_{$element_id}_{n}', { minZoom: 2, maxZoom: 5 }).setView([0, 0], 8);
+		var map = L.map('mapholder_{$element_id}_{n}', { }).setView([0, 0], 8);
 		var b = L.tileLayer('{$base_map_url}').addTo(map);	
 		map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false }));
 		
