@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -276,7 +276,7 @@
 
  			// is it direct input (decimal lat, decimal long)?
  			if(
- 				preg_match("!^([^\[]*)[\[]{0,1}([\d,\-\.;]+)[\]]{0,1}$!", $ps_value, $va_matches)
+ 				preg_match("!^([^\[]*)[\[]{0,1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
  				||
  				preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
  			) {
@@ -290,9 +290,11 @@
 					$vs_first_lat = $vs_first_long = '';
 					
 					foreach($va_point_list as $vs_point) {
+						list($vs_point, $vn_radius) = explode('~', $vs_point);
+					
 						// is it UTM?
 						if (is_array($va_utm_to_latlong = caGISUTMToSignedDecimals($vs_point))) {
-							$va_parsed_points[] = $va_utm_to_latlong['latitude'].','.$va_utm_to_latlong['longitude'];
+							$va_parsed_points[] = $va_utm_to_latlong['latitude'].','.$va_utm_to_latlong['longitude'].(($vn_radius > 0) ? "~{$vn_radius}" : "");
 							if (!$vs_first_lat) { $vs_first_lat = $va_utm_to_latlong['latitude']; }
 							if (!$vs_first_long) { $vs_first_long = $va_utm_to_latlong['longitude']; }
 						} else {
@@ -310,7 +312,7 @@
 								$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
 							}
 						
-							$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1];
+							$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1].(($vn_radius > 0) ? "~{$vn_radius}" : "");
 							if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
 							if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
 						}
