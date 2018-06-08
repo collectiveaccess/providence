@@ -185,20 +185,23 @@
 								}
 							}
 						}
-						$va_path = preg_split("/[:;]/", $va_coordinate['path']);
+						$va_path_items = preg_split("/[:]/", $va_coordinate['path']);
 					
-						if (sizeof($va_path) > 1) {
-							$va_coordinate_pairs = array();
-							foreach($va_path as $vs_pair) {
-								$va_pair = explode(',', $vs_pair);
-								$va_coordinate_pairs[] = array('latitude' => $va_pair[0], 'longitude' => $va_pair[1]);
+						foreach($va_path_items as $vs_path_item) {
+							$va_path = preg_split("/[:]/", $vs_path_item);
+							if (sizeof($va_path) > 1) {
+								$va_coordinate_pairs = array();
+								foreach($va_path as $vs_pair) {
+									$va_pair = explode(',', $vs_pair);
+									$va_coordinate_pairs[] = array('latitude' => $va_pair[0], 'longitude' => $va_pair[1]);
+								}
+								$this->addMapItem(new GeographicMapItem(array('coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
+							} else {
+								$this->addMapItem(new GeographicMapItem(array('latitude' => $va_coordinate['latitude'], 'longitude' => $va_coordinate['longitude'], 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
 							}
-							$this->addMapItem(new GeographicMapItem(array('coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
-						} else {
-							$this->addMapItem(new GeographicMapItem(array('latitude' => $va_coordinate['latitude'], 'longitude' => $va_coordinate['longitude'], 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
-						}
 						
-						$vn_item_count++;
+							$vn_item_count++;
+						}
 					}
 				}
 			}
@@ -246,7 +249,7 @@
 								} 
 								
 								if (!is_null($vs_color) && $vs_color && (strpos($vs_color, '^') !== false)) {
-									$vs_color = caProcessTemplateForIDs($pa_options['color'], $vs_table, array($vn_id), array('returnAsLink' => false));
+									$vs_color = caProcessTemplateForIDs($pa_options['color'], $vs_table, array($vn_id), ['returnAsLink' => false]);
 								} 
 								
 								if (isset($pa_options['ajaxContentUrl']) && $pa_options['ajaxContentUrl']) {
@@ -272,21 +275,29 @@
 									}
 								}
 						
-								$va_path = explode(";", $va_coordinate['path']);
+						
+								$va_path_items = preg_split("/[:]/", $va_coordinate['path']);
 							
-								if (sizeof($va_path) > 1) {
-									$va_coordinate_pairs = array();
-									foreach($va_path as $vs_pair) {
-										$va_pair = explode(',', $vs_pair);
-										$va_coordinate_pairs[] = array('latitude' => $va_pair[0], 'longitude' => $va_pair[1]);
+								foreach($va_path_items as $vs_path_item) {
+									$va_path = preg_split("/[;]/", $vs_path_item);
+									if (sizeof($va_path) > 1) {
+										$va_coordinate_pairs = [];
+										foreach($va_path as $vs_pair) {
+											$va_pair = explode(',', $vs_pair);
+											$va_coordinate_pairs[] = ['latitude' => $va_pair[0], 'longitude' => $va_pair[1]];
+										}
+										$this->addMapItem(new GeographicMapItem(['coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color]));
+									} else {
+										$va_coord = explode(',', $va_path[0]);
+										list($lng, $radius) = explode('~', $va_coord[1]);
+										$d = ['latitude' => $va_coord[0], 'longitude' => $lng, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color];
+										if ($radius) { $d['radius'] = $radius; }
+										$this->addMapItem(new GeographicMapItem($d));
 									}
-									$this->addMapItem(new GeographicMapItem(array('coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
-								} else {
-									$this->addMapItem(new GeographicMapItem(array('latitude' => $va_coordinate['latitude'], 'longitude' => $va_coordinate['longitude'], 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
-								}
 								
-								//if (!$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]) { $vn_point_count++;}
-								//$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]++;
+									//if (!$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]) { $vn_point_count++;}
+									//$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]++;
+								}
 							}
 							$vn_item_count++;
 							//if ($vn_item_count> 50){ break(3); }
@@ -296,7 +307,7 @@
  			}	
 		}
 		
-		return array('items' => $vn_item_count, 'points' => $vn_point_count);
+		return ['items' => $vn_item_count, 'points' => $vn_point_count];
 	}
  	# -------------------------------------------------------------------
  	/**
