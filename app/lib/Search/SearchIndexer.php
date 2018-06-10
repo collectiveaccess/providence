@@ -2507,6 +2507,10 @@ class SearchIndexer extends SearchBase {
 						if(sizeof($va_rel_type_ids) > 0) {
 							$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
 						}
+
+						if (Datamodel::getFieldInfo($vs_right_table, 'deleted')) {
+						    $vs_rel_type_res_sql .= " AND {$vs_alias}.deleted = 0";
+						}
 						
 						if (isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table])) {
 							$va_key_spec = $va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table];
