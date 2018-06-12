@@ -851,7 +851,7 @@ class RequestHTTP extends Request {
 				exit;
 			}
 
-			if (!$pa_options["dont_redirect_to_welcome"]) {
+			if ((!$pa_options["dont_redirect_to_welcome"]) && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) {
 				// redirect to "welcome" page
 				$this->opo_response->setRedirect($this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
 				$this->opo_response->sendResponse();
@@ -873,9 +873,15 @@ class RequestHTTP extends Request {
 	}
 	# ----------------------------------------
 	public function deauthenticate() {
+		$vs_app_name = $this->config->get("app_name");
+	    // TODO: call AuthAdapter for this
+        setcookie("SimpleSAML", "", time()-3600, '/');
+        setcookie("SimpleSAMLAuthToken", "", time()-3600, '/');
+        setcookie($vs_app_name, "", time()-3600, '/');
+        
 		if ($this->isLoggedIn()) {
-			$vs_app_name = $this->config->get("app_name");
-			Session::setVar("{$vs_app_name}_user_id", "");
+			Session::setVar($vs_app_name."_user_id",'');
+			//Session::deleteSession();
 			$this->user = null;
 		}
 	}

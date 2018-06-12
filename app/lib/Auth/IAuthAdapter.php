@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2818 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
 define('__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__', 1);
 define('__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__', 2);
 define('__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__', 3);
+define('__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__', 4);
 
 interface IAuthAdapter {
 
