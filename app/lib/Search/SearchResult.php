@@ -1327,7 +1327,7 @@ class SearchResult extends BaseObject {
                                             if (!in_array($type_id, $filter_by_types)) { continue; }
                                         }
 									    
-									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes']));;
+									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'omitDateSortKey' => true));									    
 									}
 									if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 										$va_hier_item = array_slice($va_hier_item, 0, $vn_max_levels_from_top, true);
@@ -1343,7 +1343,7 @@ class SearchResult extends BaseObject {
 				
 					$va_acc = [];
 					foreach($va_hier_list as $vn_h => $va_hier_item) {
-						if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item); }
+					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item); }
 				
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
@@ -2257,7 +2257,7 @@ class SearchResult extends BaseObject {
 					
 						if ($pa_options['returnWithStructure']) {
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
-							if ($o_value->getType() == __CA_ATTRIBUTE_VALUE_DATERANGE__) {  // add sortable alternate value for dates
+							if ($o_value->getType() == __CA_ATTRIBUTE_VALUE_DATERANGE__ && !caGetOption('omitDateSortKey', $pa_options, false)) {  // add sortable alternate value for dates
 							    $va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code.'_sort_'] = $o_value->getDisplayValue(['sortable' => true]); // add sortable alternate representation for dates; this will be used by the SearchResult::get() "sort" option to properly sort date values
 							}
 						} else { 
