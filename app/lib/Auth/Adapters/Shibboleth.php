@@ -131,6 +131,16 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         return false;
     }
 	# --------------------------------------------------------------------------------
+	/**
+	 * Deauthenticate session by removing SimpleSAML cookies
+	 *
+	 */
+    public function deauthenticate($pa_options=null) {
+        setcookie("SimpleSAML", "", time()-3600, '/');
+        setcookie("SimpleSAMLAuthToken", "", time()-3600, '/');
+        return true;
+    }
+	# --------------------------------------------------------------------------------
 }
 
 class ShibbolethException extends Exception {}

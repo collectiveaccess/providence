@@ -874,13 +874,10 @@ class RequestHTTP extends Request {
 	# ----------------------------------------
 	public function deauthenticate() {
 		$vs_app_name = $this->config->get("app_name");
-	    // TODO: call AuthAdapter for this
-        setcookie("SimpleSAML", "", time()-3600, '/');
-        setcookie("SimpleSAMLAuthToken", "", time()-3600, '/');
-        setcookie($vs_app_name, "", time()-3600, '/');
-        
+    
+        AuthenticationManager::deauthenticate();    
 		if ($this->isLoggedIn()) {
-			Session::setVar($vs_app_name."_user_id",'');
+			Session::setVar("{$vs_app_name}_user_id",'');
 			//Session::deleteSession();
 			$this->user = null;
 		}
