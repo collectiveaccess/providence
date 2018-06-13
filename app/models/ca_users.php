@@ -2877,7 +2877,7 @@ class ca_users extends BaseModel {
 			$vs_username = preg_replace("!".preg_quote($vs_rewrite_username_with_regex, "!")."!", $vs_rewrite_username_to_regex, $vs_username);
 		}
 		
-		 if (!$vs_username) { 
+		 if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
             $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password); 
             $vs_username = $va_info['user_name'];
         }
