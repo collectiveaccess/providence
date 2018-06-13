@@ -202,9 +202,9 @@ class ExternalCache {
 			
 			if ($ps_namespace) {
 				self::getCache()->deleteItem($ps_namespace);
+			} else {
+			    self::getCache()->clear();
 			}
-			
-			self::getCache()->clear();
 		} catch(UnexpectedValueException $e) {
 			// happens during the installer pre tasks when we just purge everything in app/tmp without asking.
 			// At that point we have existing objects in self::$cache that can't deal with that.
