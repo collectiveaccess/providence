@@ -935,7 +935,7 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_val = [$vs_terminal => $vn_item_id, '_related_related' => $va_val['_related_related']];
+							$va_val = [$vs_terminal => $vn_item_id, '_related_related' => $va_val['_related_related'], '_matchOn' => ['row_id']];
 							if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 							$va_vals[] = $va_val;
 							continue;
