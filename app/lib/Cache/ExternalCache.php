@@ -201,7 +201,7 @@ class ExternalCache {
 			if(!self::init()) { return false; }
 			
 			if ($ps_namespace) {
-				self::getCache()->deleteItem($ps_namespace);
+				self::getCache()->deleteItem($z=substr(__CA_APP_TYPE__, 0, 4).'/'.$ps_namespace);
 			} else {
 			    self::getCache()->clear();
 			}
@@ -298,7 +298,7 @@ class ExternalCache {
 	# ------------------------------------------------
 	private static function makeKey($ps_key, $ps_namespace) {
 		if(!defined('__CA_APP_TYPE__')) { define('__CA_APP_TYPE__', 'PROVIDENCE'); }
-		return substr(__CA_APP_TYPE__, 0, 4).':'.$ps_key.':'.$ps_namespace; // only use the first four chars of app type for compactness
+		return substr(__CA_APP_TYPE__, 0, 4).'/'.$ps_namespace.'/'.$ps_key; // only use the first four chars of app type for compactness
 	}
 	# ------------------------------------------------
 	private static function makeCacheName() {
