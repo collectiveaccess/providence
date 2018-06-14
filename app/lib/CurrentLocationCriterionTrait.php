@@ -39,7 +39,7 @@
 			// has there been a change that might affect current location of dependent objects?
 			$vb_reload_current_locations = false;
 			if (is_array($va_map = $this->getAppConfig()->getAssoc('current_location_criteria')) && is_array($va_criteria = $va_map[$this->tableName()])) {
-				
+
 				switch($this->tableName()) {
 					case 'ca_objects_x_storage_locations':
 						foreach ($va_criteria as $vs_type => $va_options) {
@@ -68,9 +68,27 @@
 						$t_object = new ca_objects($vn_object_id);
 						if ($t_object->isLoaded()) { $t_object->deriveCurrentLocationForBrowse(); }
 					}
+					
+					ExternalCache::flush("objectHistory");
 				}
 			}
 			return $vn_rc;
+		}
+		
+		# ------------------------------------------------------
+		/**
+		 * Update location for dependent objects
+		 */
+		public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
+			if ($va_object_ids = $this->getRelatedItems('ca_objects', ['returnAs' => 'ids'])) {
+				foreach($va_object_ids as $vn_object_id) {
+					$t_object = new ca_objects($vn_object_id);
+					if ($t_object->isLoaded()) { $t_object->deriveCurrentLocationForBrowse(); }
+				}
+			}
+			ExternalCache::flush("objectHistory");
+			
+			return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		}
 		# ------------------------------------------------------
 	}
