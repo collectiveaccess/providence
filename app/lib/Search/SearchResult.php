@@ -1270,7 +1270,8 @@ class SearchResult extends BaseObject {
 								}
 								
 								if(($vn_type_id = $this->get($va_path_components['table_name'].".type_id")) && ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null))) {
-									$va_types = caMakeTypeIDList($va_path_components['table_name'], $va_restrict_to_types);
+									// NOTE: this restriction is always "straight" – it doesn't automatically include sub-types
+									$va_types = caMakeTypeIDList($va_path_components['table_name'], $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => true]);
 									if (!in_array($vn_type_id, $va_types)) { 
 										array_shift($va_hier_ids);
 									}
@@ -1326,8 +1327,9 @@ class SearchResult extends BaseObject {
                                             $type_id = array_shift(array_shift($type_struct));
                                             if (!in_array($type_id, $filter_by_types)) { continue; }
                                         }
-									    
-									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'omitDateSortKey' => true));									    
+                                        
+									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null)));									    
+									
 									}
 									if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 										$va_hier_item = array_slice($va_hier_item, 0, $vn_max_levels_from_top, true);
