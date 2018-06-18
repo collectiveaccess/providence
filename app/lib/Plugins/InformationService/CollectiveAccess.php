@@ -38,7 +38,7 @@
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
-use Guzzle\Http\Client;
+use GuzzleHttp\Client;
 
 global $g_information_service_settings_CollectiveAccess;
 $g_information_service_settings_CollectiveAccess = array(
@@ -140,17 +140,16 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	 * @param array $pa_options Lookup options (none defined yet)
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
-		$o_client = new Client($pa_settings['baseURL']);
+		$o_client = new \GuzzleHttp\Client(['base_uri' => $pa_settings['baseURL']]);
 
 		// Get sort field
 		$t_instance = Datamodel::getInstanceByTableName($pa_settings['table'], true);
 		$vs_sort_field = $t_instance->getLabelTableName().".".$t_instance->getLabelSortField();
 
-		// Create a request with basic Auth
-		$o_request = $o_client->get($vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']))->setAuth($pa_settings['user_name'], $pa_settings['password']);
+		// Create and send a request with basic Auth
+		$o_response = $o_client->request("GET", $vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']))->setAuth($pa_settings['user_name'], $pa_settings['password']);
 
-		// Send the request and get the response
-		$o_response = $o_request->send();
+		// Get the response body as JSON
 		$va_data = json_decode($o_response->getBody(), true);
 
 		$vs_pk = $t_instance->primaryKey();
@@ -173,7 +172,7 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
-		$o_client = new Client($pa_settings['baseURL']);
+		$o_client = new \GuzzleHttp\Client(['base_uri' => $pa_settings['baseURL']]);
 
 		$va_tmp = explode("/", $ps_url);
 		$ps_id = array_pop($va_tmp);
@@ -182,11 +181,10 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 			$vs_template = '^'.$pa_settings['table'].".preferred_labels";
 		}
 
-		// Create a request with basic Auth
-		$o_request = $o_client->get($vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template))->setAuth($pa_settings['user_name'], $pa_settings['password']);
+		// Create and send a request with basic Auth
+		$o_response = $o_client->request("GET", $vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template))->setAuth($pa_settings['user_name'], $pa_settings['password']);
 
-		// Send the request and get the response
-		$o_response = $o_request->send();
+		// Get the response as JSON
 		$va_data = json_decode($o_response->getBody(), true);
 
 		return $va_data;

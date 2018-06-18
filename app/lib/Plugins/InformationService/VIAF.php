@@ -34,7 +34,7 @@
  * @file A class to interact with the VIAF API
  */
 
-use Guzzle\Http\Client;
+use \GuzzleHttp\Client;
 
 require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
@@ -76,10 +76,16 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     public function lookup($pa_settings, $ps_search, $pa_options = null)
     {
         $vo_client = $this->getClient();
-        $vo_request = $vo_client->get(self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP );
-        $vo_request->setHeader('Accept', 'application/json');
-        $vo_request->getQuery()->add('query', "'".$ps_search."'");
-        $va_raw_resultlist = $vo_request->send()->json();
+        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP, [
+            'headers' => [
+                'Accept' => 'application/json'
+            ],
+            ['query' => "'".$ps_search."'"]
+        ]);
+        #$vo_request->setHeader('Accept', 'application/json');
+        #$vo_request->getQuery()->add('query', "'".$ps_search."'");
+        #$va_raw_resultlist = $vo_request->send()->json();
+        $va_raw_resultlist = json_decode($vo_response->getBody(), true);
         $response_data = $va_raw_resultlist['result'];
         $va_return = [];
         foreach ($response_data as $data){
@@ -102,7 +108,7 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
      */
     public function getClient() {
         if (!isset ($this->o_client))
-            $this->o_client = new \Guzzle\Http\Client(self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP, []);
+            $this->o_client = new \GuzzleHttp\Client(['base_uri' => self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP]);
 
         $o_conf = Configuration::load();
         if($vs_proxy = $o_conf->get('web_services_proxy_url')) /* proxy server is configured */

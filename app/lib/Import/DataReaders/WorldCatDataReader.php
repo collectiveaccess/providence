@@ -39,7 +39,7 @@
 	
 	// Pull in Guzzle library (web services client)
 	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');
-	use Guzzle\Http\Client;
+	use GuzzleHttp\Client;
 
 
 class WorldCatDataReader extends BaseXMLDataReader {
@@ -189,9 +189,7 @@ class WorldCatDataReader extends BaseXMLDataReader {
 		
 		if(isset($this->opa_row_ids[$this->opn_current_row]) && ($vn_worldcat_id = $this->opa_row_ids[$this->opn_current_row])) {
 			
-			
-			$o_client = new Client(WorldCatDataReader::$s_worldcat_detail_url);
-		
+			$o_client = new \GuzzleHttp\Client(['base_uri' => WorldCatDataReader::$s_worldcat_detail_url]);
 			// Create a request
 			try {
 				if ($this->opb_z3950_available && $this->ops_z3950_user) {
@@ -202,9 +200,8 @@ class WorldCatDataReader extends BaseXMLDataReader {
 					yaz_wait();
 					$vs_data = simplexml_load_string(yaz_record($r_conn, 1,  "xml; charset=marc-8,utf-8"));
 				} elseif ($this->ops_api_key) {
-					$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$this->ops_api_key);
-					$o_response = $o_request->send();
-					$vs_data = $o_response->xml();
+					$o_response = $o_client->request("GET", "{$vn_worldcat_id}?wskey=".$this->ops_api_key);
+					$vs_data = $o_response->getBody();
 				} else {
 					throw new Exception("Neither Z39.50 nor WorldCat web API is configured");
 				}
