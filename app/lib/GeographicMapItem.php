@@ -58,7 +58,7 @@
  				$this->setCoordinates($pa_item_info['coordinates']);
  			} else {
 				if (isset($pa_item_info['latitude']) && isset($pa_item_info['longitude'])) {
-					$this->addCoordinate($pa_item_info['latitude'], $pa_item_info['longitude'], isset($pa_item_info['radius']) ? $pa_item_info['radius'] : null);
+					$this->addCoordinate($pa_item_info['latitude'], $pa_item_info['longitude'], isset($pa_item_info['radius']) ? $pa_item_info['radius'] : null, isset($pa_item_info['angle']) ? (float)$pa_item_info['angle'] : null);
 				}
 			}
  			
@@ -131,9 +131,10 @@
  	/**
  	 * Add coordinate to map item; latitude and longitude should be in decimal format
  	 */
-	public function addCoordinate($pn_latitude, $pn_longitude, $pn_radius=null) {
+	public function addCoordinate($pn_latitude, $pn_longitude, $pn_radius=null, $pn_angle=null) {
 		$d = ['latitude' => $pn_latitude, 'longitude' => $pn_longitude];
 		if ($pn_radius > 0) { $d['radius'] = $pn_radius; }
+		if ((float)$pn_angle !== 0) { $d['angle'] = (float)$pn_angle; }
 		$this->opa_coordinate_list[] = $d;
 		
 		return sizeof($this->opa_coordinate_list);
