@@ -77,6 +77,7 @@
  	 * combination text and HTML email
  	 */
 	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachment=null, $pa_options=null) {
+		global $g_last_email_error;
 		$o_config = Configuration::load();
 		$o_log = new Eventlog();
 
@@ -190,6 +191,7 @@
 			}
 			return true;
 		} catch (Exception $e) {
+			$g_last_email_error = $e->getMessage();
 			if (caGetOption('log', $pa_options, true) && caGetOption('logDFailure', $pa_options, true)) {
 				$o_log->log(array('CODE' => 'ERR', 'SOURCE' => caGetOption('source', $pa_options, 'Registration'),  'MESSAGE' => _t(caGetOption('failureMessage', $pa_options, 'Could not send email to %1: %2'), join(';', array_keys($pa_to)), $e->getMessage())));
 			}
@@ -258,7 +260,7 @@
 		foreach($pa_values as $vs_key => $vm_val) {
 			$o_view->setVar($vs_key, $vm_val);
 		}
-		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, null, $pa_options);
+		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, caGetOption('attachment', $pa_options, null), $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------
 ?>
