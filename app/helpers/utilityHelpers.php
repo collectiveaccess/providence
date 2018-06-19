@@ -2700,15 +2700,14 @@ function caFileIsIncludable($ps_file) {
 		}
         $vs_content = file_get_contents($ps_local_filepath);
         $va_records = json_decode($vs_content, true);
-        foreach($va_records as $vs_key => $vs_value){
-            if($vs_key != 0){
-                $va_records = [$va_records];
-            }
-            break;
-        }
+	foreach($va_records as $vs_key => $va_value){
+	    if($vs_key !== 0){
+	        $va_records = [$va_records];
+	    }
+	    break;
+	}
         $o_client = new \GuzzleHttp\Client(['base_uri' => $ps_base_url]);
         foreach($va_records as $va_record){
-            print($va_record[8])."<br/>";
             if(!($vs_media_url = $va_record['media_url'])){
                 $vs_media_url = '';
             } else {
@@ -2719,9 +2718,14 @@ function caFileIsIncludable($ps_file) {
             } else {
                 unset($va_record['collection_name']);
             }
+	    if((!$vs_resource_type = $va_record['type'])){
+		$vs_resource_type = 0;
+	    } else {
+		unset($va_record['type']);
+	    }
             $o_temp = array();
             try{
-                $vs_query = 'user='.$ps_user.'&function=create_resource&param1=1&param2=0&param3='.rawurlencode($vs_media_url).'&param4=&param5=&param6=&param7='.rawurlencode(json_encode($va_record));
+                $vs_query = 'user='.$ps_user.'&function=create_resource&param1='.$vs_resource_type.'&param2=0&param3='.rawurlencode($vs_media_url).'&param4=&param5=&param6=&param7='.rawurlencode(json_encode($va_record));
                 $vs_hash = hash('sha256', $ps_key.$vs_query);
                 $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
                 $vn_rs_id = json_decode($va_response->getBody(), true);
