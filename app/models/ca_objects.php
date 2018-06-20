@@ -998,7 +998,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				foreach($va_dates as $va_date) {
 					if (!$va_date['sortable']) { continue; }
 					if (!in_array($vn_type_id, $va_loan_types)) { continue; }
-					if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+					//if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+					if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 					
 					$vs_color = $va_loan_type_info[$vn_type_id]['color'];
 					if (!$vs_color || ($vs_color == '000000')) {
@@ -1980,6 +1981,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 */
  	private function relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $pa_options=null) {
  		ExternalCache::flush("objectHistory");
+ 		return true;
  		if(!$pn_rel_id) { return true; }	// null record means we are batch deleting so go ahead and recalculate
  		
  		if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
@@ -1987,7 +1989,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  			$pm_type_id = $t_instance->getTypeID($pn_rel_id);
  		}
  		//print "FOR $pm_rel_table_name_or_num/$pm_type_id<br>\n";
- 		print_R(ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id));
+ 		//print_R(ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id));
  		if (ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id)) { return true; }
  		return false;
  	}

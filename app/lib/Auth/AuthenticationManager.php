@@ -199,6 +199,22 @@ class AuthenticationManager {
 
 		return null;
 	}
+	
+	/**
+	 * Deauthentication using authentication adapter from authentication.conf
+	 *
+	 * @param null $pa_options Associative array of options
+	 * @return bool auth successful or not?
+	 */
+	public static function deauthenticate($pa_options=null) {
+		self::init();
+
+		if ($vn_rc = self::$g_authentication_adapter->deauthenticate($pa_options)) {
+			return $vn_rc;
+		}
+
+		return null;
+	}
 }
 
 class AuthClassDoesNotExistException extends Exception {}

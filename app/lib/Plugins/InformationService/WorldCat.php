@@ -39,7 +39,7 @@ require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 require_once(__CA_LIB_DIR__."/Zend/Feed.php");
 
-use Guzzle\Http\Client;
+use GuzzleHttp\Client;
 
 global $g_information_service_settings_WorldCat;
 $g_information_service_settings_WorldCat = array(
@@ -308,9 +308,8 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 
 			$vs_data = yaz_record($r_conn, 1, "xml; charset=marc-8,utf-8");
 		} else {
-			$o_client = new Client(WLPlugInformationServiceWorldCat::$s_worldcat_detail_url);
-
-			try {
+			$o_client = new \GuzzleHttp\Client(['base_uri' => WLPlugInformationServiceWorldCat::$s_worldcat_detail_url]);
+            try {
 				if (!$va_config['curlIsAvailable']) {
 					throw new Exception(_t('CURL is required for WorldCat web API usage but not available on this server'));
 				}
@@ -323,10 +322,9 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 					}
 				}
 				// Create a request
-				$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$va_config['APIKey']);
+				$o_response = $o_client->request("GET", "{$vn_worldcat_id}?wskey=".$va_config['APIKey']);
 
 				// Send the request and get the response
-				$o_response = $o_request->send();
 				$vs_data = (string)$o_response->getBody();
 			} catch (Exception $e) {
 				return array('display' => _t('WorldCat data could not be loaded: %1', $e->getMessage()));

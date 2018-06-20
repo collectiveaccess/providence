@@ -2871,12 +2871,16 @@ class ca_users extends BaseModel {
 	 * keys and values that can contain such information
 	 */
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
-	
 		$vs_username = $ps_username;
 		if ($vs_rewrite_username_with_regex = $this->opo_auth_config->get('rewrite_username_with_regex')) {
 			$vs_rewrite_username_to_regex = $this->opo_auth_config->get('rewrite_username_to_regex');
 			$vs_username = preg_replace("!".preg_quote($vs_rewrite_username_with_regex, "!")."!", $vs_rewrite_username_to_regex, $vs_username);
 		}
+		
+		 if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
+            $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password); 
+            $vs_username = $va_info['user_name'];
+        }
 
 		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
 		if (strlen($vs_username) > 0 && !$this->load($vs_username)) {

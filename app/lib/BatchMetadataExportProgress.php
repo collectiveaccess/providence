@@ -93,10 +93,9 @@
 			// export done, record it in session for later usage in download/destination action
 			if(filesize($vs_file)){
 
-				$o_session = $req->getSession();
-				$o_session->setVar('export_file', $vs_file);
-				$o_session->setVar('export_content_type', $t_exporter->getContentType());
-				$o_session->setVar('exporter_id', $t_exporter->getPrimaryKey());
+				Session::setVar('export_file', $vs_file);
+				Session::setVar('export_content_type', $t_exporter->getContentType());
+				Session::setVar('exporter_id', $t_exporter->getPrimaryKey());
 
 				caExportAddDownloadLink($req);
 			}

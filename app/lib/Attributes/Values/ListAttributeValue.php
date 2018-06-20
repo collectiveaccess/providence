@@ -74,6 +74,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Require value'),
 		'description' => _t('Check this option if you want to require that a list item be selected.')
 	),
+	'implicitNullOption' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow implicit null values?'),
+		'description' => _t('Check this option if you want to accept an empty selection as a null value.')
+	),
 	'nullOptionText' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
@@ -439,6 +447,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		} else {
 			$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ? $pa_element_info['settings']['nullOptionText'] : _t('Not set')) : null;
 		}
+		
+		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
 
 		$vs_render = caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
 		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
@@ -459,7 +469,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			),
 			array_merge(
 				$pa_options,
-				array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'auto_shrink' => $vb_auto_shrink)
+				array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink)
 			)
 		);
 

@@ -1581,7 +1581,7 @@
 			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
-				foreach(array_count_values($va_base_fields) as $vn_v => $vn_c) {
+				foreach(array_count_values(array_filter($va_base_fields, function($v) { return !is_null($v); })) as $vn_v => $vn_c) {
 					if($vn_c > 1) {
 						foreach(array_keys($va_base_fields, $vn_v) as $vs_k) {
 

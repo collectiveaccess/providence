@@ -36,7 +36,7 @@
  
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
-use Guzzle\Http\Client;
+use GuzzleHttp\Client;
 
 class ResourceSpaceDataReader extends BaseDataReader {
 	# -------------------------------------------------------
@@ -85,7 +85,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
 			array_push($this->opa_row_ids, $vs_source_id);
 		}
         $this->opn_current_row = 0;
-
+    
         return true;
 	}
 	# -------------------------------------------------------
@@ -114,16 +114,14 @@ class ResourceSpaceDataReader extends BaseDataReader {
 				if($vs_resourcespace_instance != $va_api['rsInstance']){
 					continue;
 				}
-                $o_client = new Client($va_api['apiURL']);
+                $o_client = new \GuzzleHttp\Client(['base_uri' => $va_api['apiURL']]);
 				$o_temp = array();
 				try{
                     $vs_query = 'user='.$va_api['user'].'&function=get_resource_field_data&param1='.$vn_resourcespace_id;
 					$vs_hash = hash('sha256', $va_api['apiKey'].$vs_query);
 
-                    $vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
-                    $va_response = $vs_data_request->send();
-                    $va_data_fields = $va_response->json();
-
+                    $va_response = $o_client->request('GET', $vs_query.'&sign='.$vs_hash);
+                    $va_data_fields = json_decode($va_response->getBody(), true);
 
                     $vs_file_extension = '';
                     for($i = 0; $i < count($va_data_fields); $i++){
@@ -135,23 +133,20 @@ class ResourceSpaceDataReader extends BaseDataReader {
                     }
 					$vs_res_query = 'user='.$va_api['user'].'&function=get_resource_data&param1='.$vn_resourcespace_id;
         			$vs_hash = hash('sha256', $va_api['apiKey'].$vs_res_query);
-                    $vs_res_request = $o_client->get('?'.$vs_res_query.'&sign='.$vs_hash);
-                    $va_res_response = $vs_res_request->send();
-                    $va_res_data = $va_res_response->json();
+                    $va_res_response = $o_client->request('GET', $vs_res_query.'&sign='.$vs_hash);
+                    $va_res_data = json_decode($va_res_response->getBody(), true);
                     $vs_file_extension = $va_res_data['file_extension'];
 
 					$vs_path_query = 'user='.$va_api['user'].'&function=get_resource_path&param1='.$vn_resourcespace_id.'&param2=&param3=&param4=1&param5='.$vs_file_extension.'&param6=&param7=&param8=';
 					$vs_path_hash = hash('sha256', $va_api['apiKey'].$vs_path_query);
-                    $vs_path_request = $o_client->get('?'.$vs_path_query.'&sign='.$vs_path_hash);
-                    $va_path_response = $vs_path_request->send();
-                    $vs_path = $va_path_response->json();
+                    $va_path_response = $o_client->request('GET', $vs_path_query.'&sign='.$vs_path_hash);
+                    $vs_path = json_decode($va_path_response->getBody(), true);
 					$o_temp['path'] = $vs_path;
 					if($vn_rs_collection_id > 0){
 						$vs_coll_query = 'user='.$va_api['user'].'&function=search_public_collections&param1='.$vn_rs_collection_id.'&param2=name&param3=ASC&param4=0&param5=0';
 						$vs_coll_hash = hash('sha256', $va_api['apiKey'].$vs_coll_query);
-						$vs_coll_request = $o_client->get('?'.$vs_coll_query.'&sign='.$vs_coll_hash);
-						$va_coll_response = $vs_coll_request->send();
-						$va_coll_data = $va_coll_response->json();
+						$va_coll_response = $o_client->request('GET', $vs_coll_query.'&sign='.$vs_coll_hash);
+						$va_coll_data = json_decode($va_coll_response->getBody(), true);
 						foreach($va_coll_data as $va_collection){
 							if($va_collection['ref'] == $vn_rs_collection_id){
 								foreach($va_collection as $vs_field => $vs_value){
@@ -164,12 +159,10 @@ class ResourceSpaceDataReader extends BaseDataReader {
 
 					}
 
-
-					#array_push($o_temp, array('path' => $vs_path));
-                    $o_row = $o_temp;
+					$o_row = $o_temp;
 					print_r($o_row);
-                    $this->opa_row_buf = $o_row;
-                    #break;
+					$this->opa_row_buf = $o_row;
+					
                 } catch (Exception $e){
                     print_r($e);
                     continue;

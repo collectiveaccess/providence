@@ -1604,22 +1604,37 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
 		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->getSetting('context'))) {
-
-			$va_restrict_to_types = $t_exporter_item->getSetting('restrictToTypes');
-			$va_restrict_to_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes');
+			$va_filter_types = $t_exporter_item->getSetting('filterTypes');	
+			if (!is_array($va_filter_types) && $va_filter_types) { $va_filter_types = [$va_filter_types]; }
+				
+			$va_restrict_to_types = $t_exporter_item->getSetting('restrictToTypes');		
+			if (!is_array($va_restrict_to_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes'))) { $va_restrict_to_rel_types = []; }
+			$va_restrict_to_rel_types = array_merge($va_restrict_to_rel_types, caGetOption('restrictToRelationshipTypes', $pa_options, []));
+			
 			$va_restrict_to_bundle_vals = $t_exporter_item->getSetting('restrictToBundleValues');
 			$va_check_access = $t_exporter_item->getSetting('checkAccess');
 			$va_sort = $t_exporter_item->getSetting('sort');
 
-			$vn_new_table_num = Datamodel::getTableNum($vs_context);
+
+            $vn_new_table_num = $vs_new_table_name = $vs_key = null;
+            if (sizeof($tmp = explode('.', $vs_context)) == 2) {
+                // convert <table>.<spec> contexts to just <spec> when table i
+                $vn_new_table_num = Datamodel::getTableNum($tmp[0]);
+                $vs_new_table_name = Datamodel::getTableName($tmp[0]);
+                $vs_context = $tmp[1];
+                
+                $vs_key = Datamodel::primaryKey($tmp[0]);
+            } else {
+                if($vn_new_table_num = Datamodel::getTableNum($vs_context)) { // switch to new table
+                    $vs_key = Datamodel::primaryKey($vs_context);
+                    $vs_new_table_name = Datamodel::getTableName($vs_context);
+                } else { // this table, i.e. hierarchy context switch
+                    $vs_key = $t_instance->primaryKey();
+			    }
+			}
 			$vb_context_is_related_table = false;
 			$va_related = null;
-
-			if($vn_new_table_num) { // switch to new table
-				$vs_key = Datamodel::primaryKey($vs_context);
-			} else { // this table, i.e. hierarchy context switch
-				$vs_key = $t_instance->primaryKey();
-			}
+			$vb_force_context = false;
 
 			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
 
@@ -1630,14 +1645,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				case 'parent':
 					$va_related = array();
 					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")) {
-						$va_related[] = array($vs_key => $t_instance->get($vs_parent_id_fld));
+						$va_related[] = [
+						    $vs_key => $t_instance->get($vs_parent_id_fld)
+						];
 					}
 					break;
 				case 'ancestors':
-					$va_parents = $t_instance->getHierarchyAncestors(null,array('idsOnly' => true));
-					$va_related = array();
+				case 'hierarchy':
+					$va_parents = $t_instance->get("{$vs_new_table_name}.hierarchy.{$vs_key}", ['returnAsArray' => true, 'restrictToTypes' => $va_filter_types]);
+
+					$va_related = [];
 					foreach(array_unique($va_parents) as $vn_pk) {
-						$va_related[] = array($vs_key => intval($vn_pk));
+						$va_related[] = [
+						    $vs_key => intval($vn_pk)
+						];
 					}
 					break;
 				case 'ca_sets':
@@ -1658,7 +1679,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'ca_list_items.firstLevel':
 					if($t_instance->tableName() == 'ca_lists') {
-						$va_related = array();
+						$va_related = [];
 						$va_items_legacy_format = $t_instance->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
 						$vn_new_table_num = Datamodel::getTableNum('ca_list_items');
 						$vs_key = 'item_id';
@@ -1732,6 +1753,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$pa_options['relationship_type_code'] = $va_rel['relationship_type_code'];
 						$pa_options['relationship_type_id'] = $va_rel['relationship_type_id'];
 					}
+					
 					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
 					$va_info = array_merge($va_info,$va_rel_export);
 				}
@@ -1830,6 +1852,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($va_filter_types = $t_exporter_item->getSetting('filterTypes')) {
 		    $va_get_options['filterTypes'] = is_array($va_filter_types) ? $va_filter_types : [$va_filter_types];
+		}
+		if ($va_restrict_to_types = $t_exporter_item->getSetting('restrictToTypes')) {
+		    $va_get_options['restrictToTypes'] = is_array($va_restrict_to_types) ? $va_restrict_to_types : [$va_restrict_to_types];
+		}
+		if ($va_restrict_to_relationship_types = $t_exporter_item->getSetting('restrictToRelationshipTypes')) {
+		    $va_get_options['restrictToRelationshipTypes'] = is_array($va_restrict_to_relationship_types) ? $va_restrict_to_relationship_types : [$va_restrict_to_relationship_types];
 		}
 		
 		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');

@@ -399,6 +399,7 @@ class DisplayTemplateParser {
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 		
 		unset($pa_options['quote']);
+		unset($pa_options['isCase']);
 		
 		$vn_last_unit_omit_count = null;
 		

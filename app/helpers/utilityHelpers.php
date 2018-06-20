@@ -41,7 +41,7 @@ require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
-use Guzzle\Http\Client;
+use GuzzleHttp\Client;
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -2695,20 +2695,19 @@ function caFileIsIncludable($ps_file) {
 	function caExportDataToResourceSpace($ps_user, $ps_key, $ps_base_url, $ps_local_filepath) {
 		// check mandatory params
 		if(!$ps_user || !$ps_key || !$ps_base_url || !$ps_local_filepath) {
-			caLogEvent('DEBG', "Invalid parameters for ResourceSpace export. Check your configuration!", 'caUploadFileToGitHub');
+		    caLogEvent('DEBG', "Invalid parameters for ResourceSpace export. Check your configuration!", 'caExportDataToResourceSpace');
 			return false;
 		}
         $vs_content = file_get_contents($ps_local_filepath);
         $va_records = json_decode($vs_content, true);
-        foreach($va_records as $vs_key => $vs_value){
-            if($vs_key != 0){
-                $va_records = [$va_records];
-            }
-            break;
-        }
-        $o_client = new Client($ps_base_url);
+	foreach($va_records as $vs_key => $va_value){
+	    if($vs_key !== 0){
+	        $va_records = [$va_records];
+	    }
+	    break;
+	}
+        $o_client = new \GuzzleHttp\Client(['base_uri' => $ps_base_url]);
         foreach($va_records as $va_record){
-            print($va_record[8])."<br/>";
             if(!($vs_media_url = $va_record['media_url'])){
                 $vs_media_url = '';
             } else {
@@ -2719,14 +2718,17 @@ function caFileIsIncludable($ps_file) {
             } else {
                 unset($va_record['collection_name']);
             }
+	    if((!$vs_resource_type = $va_record['type'])){
+		$vs_resource_type = 0;
+	    } else {
+		unset($va_record['type']);
+	    }
             $o_temp = array();
             try{
-                $vs_query = 'user='.$ps_user.'&function=create_resource&param1=1&param2=0&param3='.rawurlencode($vs_media_url).'&param4=&param5=&param6=&param7='.rawurlencode(json_encode($va_record));
+                $vs_query = 'user='.$ps_user.'&function=create_resource&param1='.$vs_resource_type.'&param2=0&param3='.rawurlencode($vs_media_url).'&param4=&param5=&param6=&param7='.rawurlencode(json_encode($va_record));
                 $vs_hash = hash('sha256', $ps_key.$vs_query);
-                $vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
-                $va_response = $vs_data_request->send();
-                print $va_response->getBody()."<br/>";
-                $vn_rs_id = $va_response->json();
+                $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
+                $vn_rs_id = json_decode($va_response->getBody(), true);
                 if(!$vn_rs_id){
                     caLogEvent('ERR', "Could not create Resource. Check your ResourceSpace configuration", 'caExportDataToResourceSpace');
                     continue;
@@ -2736,9 +2738,8 @@ function caFileIsIncludable($ps_file) {
                     $vs_query = 'user='.$ps_user.'&function=get_user_collections';
                     $vs_hash = hash('sha256', $ps_key.$vs_query);
 
-                    $vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
-                    $va_response = $vs_data_request->send();
-                    $va_coll_data = $va_response->json();
+                    $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
+                    $va_coll_data = json_decode($va_response->getBody(), true);
                     foreach($va_coll_data as $va_collection){
                         if($va_collection['name'] == $vs_collection_name){
                             $vs_collection_id = $va_collection['ref'];
@@ -2748,16 +2749,14 @@ function caFileIsIncludable($ps_file) {
                         $vs_query = 'user='.$ps_user.'&function=create_collection&param1='.rawurlencode($vs_collection_name);
                         $vs_hash = hash('sha256', $ps_key.$vs_query);
 
-                        $vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
-                        $va_response = $vs_data_request->send();
-                        $vb_success = $va_response->json();
+                        $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
+                        $vb_success = json_decode($va_response->getBody(), true);
                         if($vb_success){
                             $vs_query = 'user='.$va_api['user'].'&function=search_public_collections&param1='.rawurlencode($vs_collection_name).'&param2=name&param3=ASC&param4=0&param5=0';
                             $vs_hash = hash('sha256', $ps_key.$vs_query);
 
-                            $vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
-                            $va_response = $vs_data_request->send();
-                            $va_coll_data = $va_response->json();
+                            $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
+                            $va_coll_data = json_decode($va_response->getBody(), true);
                             foreach($va_coll_data as $va_collection){
                                 if($va_collection['name'] == $vs_collection_name){
                                     $vs_collection_id = $va_collection['ref'];
@@ -2770,9 +2769,8 @@ function caFileIsIncludable($ps_file) {
                     $vs_query = 'user='.$ps_user.'&function=add_resource_to_collection&param1='.$vn_rs_id.'&param2='.$vs_collection_id;
                     $vs_hash = hash('sha256', $ps_key.$vs_query);
 
-                    $vs_data_request = $o_client->get('?'.$vs_query.'&sign='.$vs_hash);
-                    $va_response = $vs_data_request->send();
-                    $vb_success = $va_response->json();
+                    $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
+                    $vb_success = json_decode($va_response->getBody(), true);
                 }
             } catch (Exception $e){
                 caLogEvent('ERR', "Could not export data to ResourceSpace with error: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caExportDataToResourceSpace');
