@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,6 +45,7 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 	 *
 	 */
 	public function __construct() {
+ 		AssetLoadManager::register('leaflet');
 		parent::__construct();
 		$this->info['NAME'] = 'Map';
 		
@@ -149,7 +150,7 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 	 * @return void 
 	 */
 	public function registerDependencies() {
-		$va_packages = array("openlayers", "maps");
+		$va_packages = array("leaflet");
 		foreach($va_packages as $vs_package) { AssetLoadManager::register($vs_package); }
 		return $va_packages;
 	}

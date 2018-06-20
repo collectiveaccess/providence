@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,6 +99,16 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * @return false|string
 	 */
 	public function getAccountManagementLink() {
+		return false;
+	}
+	
+
+	/**
+	 * Fallback for deauthenticate()
+	 *
+	 * @return false
+	 */
+	public function deauthenticate($pa_options=null) {
 		return false;
 	}
 }

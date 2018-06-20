@@ -55,7 +55,7 @@ class DisplayTemplateParser {
      *  Statically evaluate an expression, returning the value
      */
 	static public function evaluate($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
-		$pa_row_ids = array_filter($pa_row_ids, intval);
+		$pa_row_ids = array_filter($pa_row_ids, "intval");
 		return DisplayTemplateParser::process($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options);
 	}
 	# -------------------------------------------------------------------
@@ -82,7 +82,7 @@ class DisplayTemplateParser {
 						try {
 							$va_row_ids = DisplayTemplateParser::_getRelativeIDsForRowIDs($ps_tablename, $vs_relative_to, $pa_row_ids, 'related', $va_get_options);
 				
-							if (!sizeof($va_row_ids)) { return; }
+							if (!is_array($va_row_ids) || !sizeof($va_row_ids)) { return; }
 							$qr_res = caMakeSearchResult($ps_tablename, $va_row_ids, $va_search_result_opts);
 							if (!$qr_res) { return; }
 
@@ -399,6 +399,7 @@ class DisplayTemplateParser {
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 		
 		unset($pa_options['quote']);
+		unset($pa_options['isCase']);
 		
 		$vn_last_unit_omit_count = null;
 		

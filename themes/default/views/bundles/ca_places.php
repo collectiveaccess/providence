@@ -164,7 +164,7 @@
 <?php
 } else {
 		$vn_use_as_root_id = 'null';
-		if (sizeof($va_settings['restrict_to_lists']) == 1) {
+		if (is_array($va_settings['restrict_to_lists']) && (sizeof($va_settings['restrict_to_lists']) == 1)) {
 			$t_item = new ca_list_items();
 			if ($t_item->load(array('list_id' => $va_settings['restrict_to_lists'][0], 'parent_id' => null))) {
 				$vn_use_as_root_id = $t_item->getPrimaryKey();

@@ -919,7 +919,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_wheres = $va_params = [];
 		
-		$va_type_list = caMakeTypeIDList($pn_table_num, array($pn_type_id));
+		if (!is_array($va_type_list = caMakeTypeIDList($pn_table_num, array($pn_type_id)))) { $va_type_list = []; }
 		if (!sizeof($va_type_list)) { $va_type_list = array($pn_type_id); }
 		
 		if ($pn_table_num) {

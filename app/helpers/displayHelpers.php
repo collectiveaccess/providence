@@ -304,7 +304,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
 				
 				foreach($va_tables as $vs_table) {
-					$va_items = $t_instance->getRelatedItems($vs_table);
+					if (!is_array($va_items = $t_instance->getRelatedItems($vs_table))) { $va_items = []; }
 					
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {
@@ -792,9 +792,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_type_name			= method_exists($t_item, "getTypeName") ? $t_item->getTypeName() : '';
 		if (!$vs_type_name) { $vs_type_name = $t_item->getProperty('NAME_SINGULAR'); }
 		
-		$va_reps 				= $po_view->getVar('representations');
-		
-		
+		if (!is_array($va_reps = $po_view->getVar('representations'))) { $va_reps = []; }		
 		
 		if ($t_item->isHierarchical()) {
 			$va_ancestors 		= $po_view->getVar('ancestors');
@@ -4458,7 +4456,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	    global $g_request;
 	    if (!$po_request) { $po_request = $g_request; }
 	    if (!$po_request) { return []; }
-	    if (!is_array($pa_tables) && !sizeof($pa_tables)) {
+	    if (!is_array($pa_tables) || !sizeof($pa_tables)) {
 	        $pa_tables = ['ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
 	    }
 	    

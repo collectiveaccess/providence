@@ -87,7 +87,8 @@
 		}
 		# ------------------------------------------------------------------
 		public function numErrors($ps_source=null) {
-			return sizeof($this->errors($ps_source));
+			$e = $this->errors($ps_source);
+			return is_array($e) ? sizeof($e) : 0;
 		}
 		# ------------------------------------------------------------------
 		public function clearErrors() {

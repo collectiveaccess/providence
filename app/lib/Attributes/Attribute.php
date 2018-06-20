@@ -32,8 +32,9 @@
  
  /**
   *
-  */
- 	
+  */ 	
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+
 require_once(__CA_LIB_DIR__.'/Attributes/Values/ContainerAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/TextAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/DateRangeAttributeValue.php');
@@ -54,7 +55,17 @@ require_once(__CA_LIB_DIR__.'/Attributes/Values/TaxonomyAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/InformationServiceAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/FloorplanAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/ColorAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 
+define("__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__", 21);
+define("__CA_ATTRIBUTE_VALUE_ENTITIES__", 22);
+define("__CA_ATTRIBUTE_VALUE_PLACES__", 23);
+define("__CA_ATTRIBUTE_VALUE_OCCURRENCES__", 24);
+define("__CA_ATTRIBUTE_VALUE_COLLECTIONS__", 25);
+define("__CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__", 26);
+define("__CA_ATTRIBUTE_VALUE_LOANS__", 27);
+define("__CA_ATTRIBUTE_VALUE_MOVEMENTS__", 28);
+define("__CA_ATTRIBUTE_VALUE_OBJECTS__", 29);
+define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  
 	class Attribute {
  		# ------------------------------------------------------------------
@@ -206,3 +217,4 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
  		}
  		# ------------------------------------------------------------------
 	}
+	

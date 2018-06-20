@@ -2004,7 +2004,7 @@ class BaseModel extends BaseObject {
 			$this->_FILES_CLEAR = array();
 			
 			if ($vn_id = $this->_FIELD_VALUES[$this->primaryKey()]) {
-				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
+				if (is_array(BaseModel::$s_instance_cache[$vs_table_name]) && sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
@@ -2609,7 +2609,7 @@ class BaseModel extends BaseObject {
 					$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
-					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
+					if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
 						BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 					}
 						
@@ -6518,33 +6518,58 @@ class BaseModel extends BaseObject {
 
 		// get subject ids
 		$va_subjects = array();
+		$vs_subject_tablename = null;
 		if ($vb_is_metadata) {
 			// special case for logging attribute changes
 			if (($vn_id = $this->get('row_id')) > 0) {
 				$va_subjects[$this->get('table_num')][] = $vn_id;
+				
+				if ($t = Datamodel::getInstance($this->get('table_num'), true)) {
+					$va_subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+					$vs_subject_tablename = $t->tableName();
+				}
 			}
 		} elseif ($vb_is_metadata_value) {
-			if(!sizeof($this->getChangedFieldValuesArray())) { return null; }	// don't log if nothing has changed
+			if(($ps_change_type !== 'D') && !caGetOption('forceLogChange', $pa_options, false) && !sizeof($this->getChangedFieldValuesArray())) { return null; }	// don't log if nothing has changed
 			// special case for logging metadata changes
 			$t_attr = new ca_attributes($this->get('attribute_id'));
 			if (($vn_id = $t_attr->get('row_id')) > 0) {
 				$va_subjects[$t_attr->get('table_num')][] = $vn_id;
 			}
+			
+			if ($t = Datamodel::getInstance($t_attr->get('table_num'), true)) {
+				$va_subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+				$vs_subject_tablename = $t->tableName();
+			}
 		} else {
-			if (is_array($va_subject_config)) {
-				if(is_array($va_subject_config['FOREIGN_KEYS'])) {
+			$vs_subject_tablename = $this->tableName();
+		}
+		if (is_array($va_subject_config)) {
+				if(is_array($va_subject_config['FOREIGN_KEYS']) && $vs_subject_tablename) {
 					foreach($va_subject_config['FOREIGN_KEYS'] as $vs_field) {
 						$va_relationships = Datamodel::getManyToOneRelations($this->tableName(), $vs_field);
 						if ($va_relationships['one_table']) {
 							$vn_table_num = Datamodel::getTableNum($va_relationships['one_table']);
 							if (!isset($va_subjects[$vn_table_num]) || !is_array($va_subjects[$vn_table_num])) { $va_subjects[$vn_table_num] = array(); }
 							
-							if (($vn_id = $this->get($vs_field)) > 0) {
+							if ($vb_is_metadata) {
+								$t->load($this->get('row_id'));
+								$vn_id = $t->get($vs_field);
+							} elseif($vb_is_metadata_value) {
+								$t_attr = new ca_attributes($this->get('attribute_id'));
+								$t->load($t_attr->get('row_id'));
+								$vn_id = $t->get($vs_field);
+							} else {
+								$vn_id = $this->get($vs_field);
+							}
+							
+							if ($vn_id > 0) {
 								$va_subjects[$vn_table_num][] = $vn_id;
 							}
 						}
 					}
 				}
+				
 				if(is_array($va_subject_config['RELATED_TABLES'])) {
 					$o_db = $this->getDb();
 					if (!isset($o_db) || !$o_db) {
@@ -6571,7 +6596,7 @@ class BaseModel extends BaseObject {
 							$vs_sql .= "INNER JOIN $vs_ltable ON $vs_cur_table.".$va_relations[$vs_cur_table][$vs_ltable][0][0]." = $vs_ltable.".$va_relations[$vs_cur_table][$vs_ltable][0][1]."\n";
 							$vs_cur_table = $vs_ltable;
 						}
-						$vs_sql .= "WHERE ".$this->tableName().".".$this->primaryKey()." = ".$this->getPrimaryKey();
+						$vs_sql .= "WHERE ".$this->tableName().".".$this->primaryKey()." = ".$vn_row_id;
 
 						if ($qr_subjects = $o_db->query($vs_sql)) {
 							if (!isset($va_subjects[$vn_dest_table_num]) || !is_array($va_subjects[$vn_dest_table_num])) { $va_subjects[$vn_dest_table_num] = array(); }
@@ -6592,11 +6617,10 @@ class BaseModel extends BaseObject {
 				}
 			}
 
-			// log to self
-			if($vb_log_changes_to_self) {
-				if (!caGetOption('row_id', $pa_options, null) && ($vn_id = $this->getPrimaryKey()) > 0) {
-					$va_subjects[$this->tableNum()][] = $vn_id;
-				}
+		// log to self
+		if(!$vb_is_metadata && !$vb_is_metadata_value && $vb_log_changes_to_self) {
+			if ($vn_row_id > 0) {
+				$va_subjects[$this->tableNum()][] = $vn_row_id;
 			}
 		}
 
@@ -11694,7 +11718,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_deleted_sql = '(deleted = 0)'; 
 		}
 		$va_sql = [];
-		if (sizeof($vs_wheres = join(" {$ps_boolean} ", $va_sql_wheres))) { $va_sql[] = $vs_wheres; }
+		if ($vs_wheres = join(" {$ps_boolean} ", $va_sql_wheres)) { $va_sql[] = $vs_wheres; }
 		if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
 		if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}
 		$va_sql = array_filter($va_sql, function($v) { return strlen($v) > 0; });

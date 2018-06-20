@@ -32,9 +32,7 @@
  
  /**
   *
-  */
-  	define("__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__", 21);
-  	
+  */	
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
  

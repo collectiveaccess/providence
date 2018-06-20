@@ -350,7 +350,26 @@ class ca_change_log extends BaseModel {
 		}
 
 		$va_ret = array();
+		
+		$vb_synth_attr_log_entry = false;
 		if ($qr_results) {
+		    if (($qr_results->numRows() == 0) && $ps_for_guid) {
+		        // no log entries... is it an attribute? Some attributes may not have a log entry
+		        if (is_array($va_guid_info = ca_guids::getInfoForGUID($ps_for_guid)) && ($va_guid_info['table_num'] == 4)) {
+		            $qr_attr = $o_db->query("SELECT * FROM ca_attributes WHERE attribute_id = ?", [$va_guid_info['row_id']]);
+                    if ($qr_attr->nextRow()) {
+                        $vs_snapshot = caSerializeForDatabase($qr_attr->getRow());
+                        $qr_results = $o_db->query("
+                            SELECT 
+                                1 as i, 1 as log_id, ".time()." as log_datetime, 4 as logged_table_num, 
+                                ".$va_guid_info['row_id']." as logged_row_id, 
+                                'I' as changetype, 1 as user_id, 0 as rolledback, null as unit_id, 
+                                '{$vs_snapshot}' as snapshot
+                        ");
+                    }
+		        }
+		        $vb_synth_attr_log_entry = true;
+		    }
 			while($qr_results->nextRow()) {
 				$va_row = $qr_results->getRow();
 
@@ -572,13 +591,28 @@ class ca_change_log extends BaseModel {
 							break;
 					}
 				}
+				
+				if (($t_instance->tableNum() == 3) && caGetOption('forceValuesForAllAttributeSLots', $pa_options, false)) {
+                    foreach(['value_longtext1', 'value_longtext2', 'value_decimal1', 'value_decimal2', 'value_decimal1', 'value_blob', 'item_id'] as $f) {
+                        $t_av = new ca_attribute_values($qr_results->get('logged_row_id'));
+                        if(!isset($va_snapshot[$f])) {
+                            $va_snapshot[$f] = '';
+                        }
+                    }
+                }
+
 
 				if ($va_snapshot['SKIP']) { $va_row['SKIP'] = true; unset($va_snapshot['SKIP']); }	// row skipped because it's invalid, not on the whitelist, etc.
 				$va_row['snapshot'] = $va_snapshot;
 
 				// get subjects
-				$qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));
-
+				if ($vb_synth_attr_log_entry) {
+				    $vs_guid = ca_guids::getForRow($qr_attr->get('table_num'), $qr_attr->get('row_id'), ['dontAdd' => true]);
+				    $qr_subjects = $o_db->query("SELECT 1 as log_id, ".$qr_attr->get('table_num')." as subject_table_num, ".$qr_attr->get('row_id')." as subject_row_id, '{$vs_guid}' as guid");
+				} else {
+				    $qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));
+                }
+                
 				while($qr_subjects->nextRow()) {
 					// skip subjects without GUID -- we don't care about those
 					if(!($vs_subject_guid = ca_guids::getForRow($qr_subjects->get('subject_table_num'), $qr_subjects->get('subject_row_id')))) {

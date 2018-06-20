@@ -785,8 +785,8 @@ class TimeExpressionParser {
 		$ps_expression=trim($ps_expression);
 		
 		#replace time keywords containing spaces with conf defined replacement, allowing treatments for expression like "av. J.-C." in french
-		$wordsWithSpaces = $this->opo_language_settings->getList("wordsWithSpaces");
-		$wordsWithSpacesReplacements = $this->opo_language_settings->getList("wordsWithSpacesReplacements");
+		if(!is_array($wordsWithSpaces = $this->opo_language_settings->getList("wordsWithSpaces"))) { $wordsWithSpaces = []; }
+		if (!is_array($wordsWithSpacesReplacements = $this->opo_language_settings->getList("wordsWithSpacesReplacements"))) { $wordsWithSpacesReplacements = []; }
 		if ((sizeof($wordsWithSpaces)) && (sizeof($wordsWithSpacesReplacements))) {
 			$ps_expression=str_replace($wordsWithSpaces,$wordsWithSpacesReplacements,$ps_expression);
 		}

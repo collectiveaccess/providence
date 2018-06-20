@@ -2254,7 +2254,7 @@ class SearchIndexer extends SearchBase {
 		// process joins
 		$vn_num_queries_required = 1;
 		foreach($va_joins as $vn_i => $va_join_list) {
-			if(sizeof($va_join_list) > $vn_num_queries_required) {
+			if(is_array($va_join_list) && (sizeof($va_join_list) > $vn_num_queries_required)) {
 				$vn_num_queries_required = sizeof($va_join_list);
 			}
 		}
@@ -2506,6 +2506,10 @@ class SearchIndexer extends SearchBase {
 				
 						if(sizeof($va_rel_type_ids) > 0) {
 							$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+						}
+
+						if (Datamodel::getFieldInfo($vs_right_table, 'deleted')) {
+						    $vs_rel_type_res_sql .= " AND {$vs_alias}.deleted = 0";
 						}
 						
 						if (isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table])) {

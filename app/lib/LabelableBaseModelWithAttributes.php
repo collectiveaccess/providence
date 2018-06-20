@@ -1825,7 +1825,7 @@
  				$va_labels = $va_flattened_labels;
  			}
  			
- 			if (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size) {
+ 			if (is_array(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) && (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size)) {
  				array_splice(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()], 0, ceil(LabelableBaseModelWithAttributes::$s_label_cache_size/2));
  			}
  			

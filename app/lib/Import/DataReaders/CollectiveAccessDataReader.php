@@ -38,7 +38,7 @@
 	
 	// Pull in Guzzle library (web services client)
 	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');
-	use Guzzle\Http\Client;
+	use GuzzleHttp\Client;
 
 
 class CollectiveAccessDataReader extends BaseDataReader {
@@ -90,11 +90,12 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		$this->opn_current_row = 0;
 		
 		try {
-			$this->opo_client = new Client("http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].(($va_url['port'] != 80) ? ":{$va_url['port']}": ''));
-			$request = $this->opo_client->get(($vs_path ? "{$vs_path}" : "")."/service.php/find/{$vs_table}?".$va_url['query']);
+			$this->opo_client = new \GuzzleHttp\Client();
+			$vs_url_root = "http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].(($va_url['port'] != 80) ? ":{$va_url['port']}": '');
 			
-			$response = $request->send();
-			$data = $response->json();
+			$response = $this->opo_client->request("GET", $vs_url_root.($vs_path ? "{$vs_path}" : "")."/service.php/find/{$vs_table}?".$va_url['query']);
+			
+			$data = json_decode($response->getBody(), true);
 			
 			if (isset($data['ok']) && ($data['ok'] == 1) && is_array($data['results'])) {
 				foreach($data['results'] as $vn_i => $va_result) {
