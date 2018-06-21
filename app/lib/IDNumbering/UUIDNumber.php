@@ -552,6 +552,36 @@
 			return $this->getFormatProperty('separator', array('default' => '.'));
 		}
 		# -------------------------------------------------------
+		public function isSerialFormat($ps_format=null, $ps_type=null) {
+			if ($ps_format) {
+				if (!$this->isValidFormat($ps_format)) {
+					return false;
+				}
+				$vs_format = $ps_format;
+			} else {
+				if(!($vs_format = $this->getFormat())) {
+					return false;
+				}
+			}
+			if ($ps_type) {
+				if (!$this->isValidType($ps_type)) {
+					return false;
+				}
+				$vs_type = $ps_type;
+			} else {
+				if(!($vs_type = $this->getType())) {
+					return false;
+				}
+			}
+			
+			$va_elements = $this->opa_formats[$vs_format][$vs_type]['elements'];
+			$va_last_element = array_pop($va_elements);
+			if ($va_last_element['type'] == 'SERIAL') {
+				return true;
+			}
+			return false;
+		}
+		# -------------------------------------------------------
 		/**
 		 * Returns true if the current format is an extension of $ps_format
 		 * That is, the current format is the same as the $ps_form with an auto-generated
