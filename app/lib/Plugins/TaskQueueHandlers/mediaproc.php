@@ -477,9 +477,13 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 				// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
 				$o_config = Configuration::load();
 				if (((bool)$o_config->get('video_preview_generate_frames') || (bool)$o_config->get('document_preview_generate_pages')) && method_exists($t_instance, 'addFile')) {
+					if (method_exists($this, 'removeAllFiles')) {
+					    $this->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
+					}
 					$o_media->read($vs_input_file);
 					$va_preview_frame_list = $o_media->writePreviews(
 						array(
+							'writeAllPages' => true,
 							'width' => $o_media->get("width"), 
 							'height' => $o_media->get("height"),
 							'numberOfFrames' => $o_config->get('video_preview_max_number_of_frames'),
@@ -492,7 +496,6 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 							'outputDirectory' => __CA_APP_DIR__.'/tmp'
 						)
 					);
-					$t_instance->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
 					if (is_array($va_preview_frame_list)) {
 						foreach($va_preview_frame_list as $vn_time => $vs_frame) {
 							$t_instance->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
