@@ -33,21 +33,21 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_LIB_DIR__.'/ca/Import/DataReaderManager.php');
-require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
-require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/Import/DataReaderManager.php');
+require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
+require_once(__CA_LIB_DIR__.'/ProgressBar.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 require_once(__CA_MODELS_DIR__."/ca_data_import_events.php");
 require_once(__CA_MODELS_DIR__."/ca_locales.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
-require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
+require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__.'/Db/Transaction.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
@@ -468,7 +468,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vb_dont_include_worksheet = caGetOption('dontIncludeWorksheet', $pa_options, false);
 		
 		$t_importer = new ca_data_importers();
-		$vo_dm = $t_importer->getAppDatamodel();
 		
 		$va_formats = caGetOption('formats', $pa_options, null, array('forceLowercase' => true));
 		
@@ -510,7 +509,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_ids[] = $vn_id = $va_row['importer_id'];
 			$va_importers[$vn_id] = $va_row;
 			
-			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
+			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num'], true);
 			$va_importers[$vn_id]['importer_type'] = $t_instance->getProperty('NAME_PLURAL');
 			$va_importers[$vn_id]['type'] = $va_settings['type'];
 			$va_importers[$vn_id]['type_for_display'] = $t_instance->getTypeName($va_settings['type']);
@@ -997,8 +996,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_settings['inputFormats'] = array_values(ca_data_importers::getAvailableInputFormats());
 		}
 		
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($va_settings['table']))) {
+		if (!($t_instance = Datamodel::getInstanceByTableName($va_settings['table']))) {
 			$pa_errors[] = _t("Mapping target table %1 is invalid\n", $va_settings['table']);
 			if ($o_log) {  $o_log->logError(_t("[loadImporterFromFile:%1] Mapping target table %2 is invalid\n", $ps_source, $va_settings['table'])); }
 			return;
@@ -1333,8 +1331,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		$o_dm = $t_mapping->getAppDatamodel();
-		
 		$vb_import_all_datasets = caGetOption('importAllDatasets', $pa_options, false);
 		
 		$o_progress->start(_t('Reading %1', $ps_source), array('window' => $r_progress));
@@ -1378,7 +1374,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// What are we importing?
 		$vn_table_num = $t_mapping->get('table_num');
-		if (!($t_subject = $o_dm->getInstanceByTableNum($vn_table_num))) {
+		if (!($t_subject = Datamodel::getInstanceByTableNum($vn_table_num))) {
 			// invalid table
 			$o_log->logError(_t('Mapping uses invalid table %1 as target', $vn_table_num));
 			if ($o_trans) { $o_trans->rollback(); }
@@ -1686,7 +1682,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			foreach($va_idnos_for_row as $vs_idno) {
-				$t_subject = $o_dm->getInstanceByTableNum($vn_table_num);
+				$t_subject = Datamodel::getInstanceByTableNum($vn_table_num);
 				if ($o_trans) { $t_subject->setTransaction($o_trans); }
 				$t_subject->setMode(ACCESS_WRITE);
 			
@@ -1840,7 +1836,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$va_group_tmp = explode(".", $vs_group_destination);
 					if ((sizeof($va_items) < 2) && (sizeof($va_group_tmp) > 2)) { array_pop($va_group_tmp); }
 					$vs_target_table = $va_group_tmp[0];
-					if (!($t_target = $o_dm->getInstanceByTableName($vs_target_table, true))) {
+					if (!($t_target = Datamodel::getInstanceByTableName($vs_target_table, true))) {
 						// Invalid target table
 						$o_log->logWarn(_t('[%1] Skipped group %2 because target %3 is invalid', $vs_idno, $vn_group_id, $vs_target_table));
 						continue;
@@ -2140,7 +2136,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										switch($vs_item_terminal) {
 											case 'preferred_labels':
 											case 'nonpreferred_labels':
-												if ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true)) {
+												if ($t_instance = Datamodel::getInstanceByTableName($vs_target_table, true)) {
 													$va_group_buf[$vn_c][$t_instance->getLabelDisplayField()] = $vs_list_val;
 												}
 												
@@ -2195,7 +2191,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							switch($vs_item_terminal) {
 								case 'preferred_labels':
 								case 'nonpreferred_labels':
-									if ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true)) {
+									if ($t_instance = Datamodel::getInstanceByTableName($vs_target_table, true)) {
 										$va_group_buf[$vn_c][$t_instance->getLabelDisplayField()] = $vm_val;
 									}
 									if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
@@ -2265,7 +2261,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// Process data in subject record
 				//
 				//print_r($va_content_tree);
-				#die("END\n\n");
+				//die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -2406,21 +2402,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 					if (sizeof($va_nonpreferred_label_mapping_ids) && ($t_subject->getNonPreferredLabelCount() > 0)) {
-						$vb_remove_labels = true;
-						foreach($va_nonpreferred_label_mapping_ids as $vn_nonpreferred_label_mapping_id => $vs_fld) {
-							if ($va_mapping_items[$vn_nonpreferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
-						}
-						if ($vb_remove_labels) {
-							$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__, ['locales' => [$vn_locale_id]]);
-							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-								if ($vs_import_error_policy == 'stop') {
-									$o_log->logAlert(_t('Import stopped due to import error policy'));
+						if (preg_match("!^merge!", $vs_existing_record_policy)) {
+						    $vb_remove_labels = false;
+						} else {
+							$vb_remove_labels = true;
+							foreach($va_nonpreferred_label_mapping_ids as $vn_nonpreferred_label_mapping_id => $vs_fld) {
+								if ($va_mapping_items[$vn_nonpreferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+							}
+							if ($vb_remove_labels) {
+								$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__, ['locales' => [$vn_locale_id]]);
+								if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+									ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+									if ($vs_import_error_policy == 'stop') {
+										$o_log->logAlert(_t('Import stopped due to import error policy'));
 							
-									$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+										$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-									if ($o_trans) { $o_trans->rollback(); }
-									return false;
+										if ($o_trans) { $o_trans->rollback(); }
+										return false;
+									}
 								}
 							}
 						}
@@ -2566,19 +2566,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												}
 												
 												try {
-													if ((is_array($va_rel_info = $o_dm->getManyToOneRelations($vs_table_name, $vs_element)) && (sizeof($va_rel_info) > 0)) && is_array($va_element_data[$vs_element]['_related_related']) && sizeof($va_element_data[$vs_element]['_related_related'])) {
+													if ((is_array($va_rel_info = Datamodel::getManyToOneRelations($vs_table_name, $vs_element)) && (sizeof($va_rel_info) > 0)) && is_array($va_element_data[$vs_element]['_related_related']) && sizeof($va_element_data[$vs_element]['_related_related'])) {
 														foreach($va_element_data[$vs_element]['_related_related'] as $vs_rel_rel_table => $va_rel_rels) {
 															foreach($va_rel_rels as $vn_i => $va_rel_rel) {
-																if (!($t_rel_instance = $o_dm->getInstanceByTableName($va_rel_info['one_table']))) { 
+																if (!($t_rel_instance = Datamodel::getInstanceByTableName($va_rel_info['one_table']))) { 
 																	$o_log->logWarn(_t("[%1] Could not instantiate related table %2", $vs_idno, $vs_table_name));
 																	continue; 
 																}
 																if ($o_trans) { $t_rel_instance->setTransaction($o_trans); }
 																if ($t_rel_instance->load($va_element_content[$vs_element])) {
 																	if ($t_rel_rel = $t_rel_instance->addRelationship($vs_rel_rel_table, $va_rel_rel['id'], $va_rel_rel['_relationship_type'])) {
-																		$o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, $o_dm->getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])));
+																		$o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])));
 																	} else {
-																		if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, $o_dm->getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+																		if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 																			ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 																		}
 																	}
@@ -2672,8 +2672,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 								$t_subject->clearErrors();
 						try {
-						        
-								$vs_name = isset($va_element_data['preferred_labels']['name']) ? $va_element_data['preferred_labels']['name'] : (isset($va_element_data['name']['name']) ? $va_element_data['name']['name'] : $va_element_data['name']);
+						    
+						        $vs_rel_label_display_fld = 'name';
+						        if ($t_rel = Datamodel::getInstanceByTableName($vs_table_name, true)) {
+						            $vs_rel_label_display_fld = $t_rel->getLabelDisplayField();
+						        }
+						
+						        $vs_name = '['._t('BLANK').']';
+						        if(isset($va_element_data['preferred_labels'][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data['preferred_labels'][$vs_rel_label_display_fld]; }
+						        elseif(isset($va_element_data['preferred_labels']) ) { $vs_name = $va_element_data['preferred_labels']; }
+						        elseif(isset($va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]; }
+						        elseif(isset($va_element_data[$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data[$vs_rel_label_display_fld]; }
+						        elseif(isset($va_element_data) && !is_array($va_element_data) && strlen($va_element_data)) { $vs_name = $va_element_data; }
 
 								switch($vs_table_name) {
 									case 'ca_objects':
@@ -2883,16 +2893,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								 if(is_array($va_element_data['_related_related']) && sizeof($va_element_data['_related_related'])) {
 									foreach($va_element_data['_related_related'] as $vs_rel_rel_table => $va_rel_rels) {
 										foreach($va_rel_rels as $vn_i => $va_rel_rel) {
-											if (!($t_rel_instance = $o_dm->getInstanceByTableName($vs_table_name))) { 
+											if (!($t_rel_instance = Datamodel::getInstanceByTableName($vs_table_name))) { 
 												$o_log->logWarn(_t("[%1] Could not instantiate related table %2", $vs_idno, $vs_table_name));
 												continue; 
 											}
 											if ($o_trans) { $t_rel_instance->setTransaction($o_trans); }
 											if ($t_rel_instance->load($vn_rel_id)) {
 												if ($t_rel_rel = $t_rel_instance->addRelationship($vs_rel_rel_table, $va_rel_rel['id'], $va_rel_rel['_relationship_type'])) {
-													$o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, $o_dm->getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])));
+													$o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])));
 												} else {
-													if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, $o_dm->getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+													if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 														ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 													}
 												}
@@ -3116,8 +3126,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	public static function _extractIntrinsicValues($pa_values, $ps_table) {
-		$o_dm = Datamodel::load();
-		$t_instance = $o_dm->getInstanceByTableName($ps_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($ps_table, true);
 		$va_form_fields = $t_instance->getFormFields();
 		
 		$va_extracted_values = array();

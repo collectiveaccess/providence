@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.browsepanel.js
+ * js/ca.browsepanel.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

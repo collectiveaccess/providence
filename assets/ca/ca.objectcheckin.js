@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.objectcheckin.js
+ * js/ca.objectcheckin.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -34,10 +34,10 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/ca/WidgetManager.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/WidgetManager.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
  	
 
 BaseModel::$s_ca_models_definitions['ca_user_roles'] = array(
@@ -301,7 +301,7 @@ class ca_user_roles extends BaseModel {
 	public function setAccessSettingForBundle($ps_table, $ps_bundle, $pn_access) {
 		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
-		if(!$this->getAppDatamodel()->tableExists($ps_table)) { return false; }
+		if(!Datamodel::tableExists($ps_table)) { return false; }
 
 		$va_vars = $this->get('vars');
 		if(!is_array($va_vars)) { $va_vars = array(); }
@@ -420,14 +420,13 @@ class ca_user_roles extends BaseModel {
 		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
 		//if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
-		$o_dm = Datamodel::load();
 		$t_list = new ca_lists();	
 
 		$va_vars = $this->get('vars');
 		if(!is_array($va_vars)) { $va_vars = array(); }
 		if(!isset($va_vars['type_access_settings'])) { $va_vars['type_access_settings'] = array(); }
 
-		$t_instance = $o_dm->getInstanceByTableName($ps_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($ps_table, true);
 		if(!$t_instance) { return false; }
 		if(!($vs_list_code = $t_instance->getTypeListCode())) { return false; }
 
@@ -483,14 +482,13 @@ class ca_user_roles extends BaseModel {
 		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
 		//if(!$this->getAppConfig()->get('perform_source_access_checking')) { return false; }
-		$o_dm = Datamodel::load();
 		$t_list = new ca_lists();	
 
 		$va_vars = $this->get('vars');
 		if(!is_array($va_vars)) { $va_vars = array(); }
 		if(!isset($va_vars['source_access_settings'])) { $va_vars['source_access_settings'] = array(); }
 
-		$t_instance = $o_dm->getInstanceByTableName($ps_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($ps_table, true);
 		if(!$t_instance) { return false; }
 		if(!($vs_list_code = $t_instance->getSourceListCode())) { return false; }
 
@@ -528,7 +526,6 @@ class ca_user_roles extends BaseModel {
 		if (!ca_user_roles::$s_action_list) {
 			$o_config = Configuration::load();
 			$o_actions_config = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
-			$vo_datamodel = Datamodel::load();
 			
 			$va_raw_actions = $o_actions_config->getAssoc('user_actions');
 	
@@ -542,7 +539,7 @@ class ca_user_roles extends BaseModel {
 						continue;
 					}
 					if(is_array($va_action["expand_types"]) && strlen($va_action["expand_types"]["table"])>0){
-						$t_instance = $vo_datamodel->getInstanceByTableName($va_action["expand_types"]["table"], true);
+						$t_instance = Datamodel::getInstanceByTableName($va_action["expand_types"]["table"], true);
 						if(method_exists($t_instance, "getTypeList")){
 							$va_type_list = $t_instance->getTypeList();
 							foreach($va_type_list as $vn_type_id => $va_type){

@@ -27,7 +27,7 @@
  */
  
  	require_once(__CA_MODELS_DIR__."/ca_loans.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseQuickAddController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseQuickAddController.php");
  
  	class LoanQuickAddController extends BaseQuickAddController {
  		# -------------------------------------------------------

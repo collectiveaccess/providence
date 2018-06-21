@@ -34,7 +34,7 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_editor_ui_bundle_placement_settings;
 $_ca_editor_ui_bundle_placement_settings = array(		// global
@@ -315,7 +315,7 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 		
 		if ($qr_res->nextRow()) {
 			if (!($vn_table_num = $qr_res->get('editor_type'))) { return null; }
-			return $this->getAppDatamodel()->getTableName($vn_table_num);
+			return Datamodel::getTableName($vn_table_num);
 		}
 		return null;	
 	}

@@ -6,8 +6,8 @@
 	require_once(__CA_MODELS_DIR__."/ca_locales.php");
 	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 	require_once(__CA_APP_DIR__."/helpers/CLIHelpers.php");
-	require_once(__CA_LIB_DIR__."/ca/Utils/CLITools.php");
-	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
+	require_once(__CA_LIB_DIR__."/Utils/CLITools.php");
+	require_once(__CA_LIB_DIR__."/Zend/Console/Getopt.php");
 
 	if (!caIsRunFromCLI()) {
 		die("Sorry, caTools must be run from the command line!\n");

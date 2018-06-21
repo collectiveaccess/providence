@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.relationbundle.js
+ * js/ca.relationbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

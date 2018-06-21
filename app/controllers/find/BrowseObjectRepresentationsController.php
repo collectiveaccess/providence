@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
- 	require_once(__CA_LIB_DIR__."/ca/BaseBrowseController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/ObjectRepresentationBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseBrowseController.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/ObjectRepresentationBrowse.php");
  
  	class BrowseObjectRepresentationsController extends BaseBrowseController {
  		# -------------------------------------------------------

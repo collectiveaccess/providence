@@ -33,9 +33,9 @@
  /**
    *
    */
-	require_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
-	require_once(__CA_LIB_DIR__."/core/Print/Barcode.php");
-	require_once(__CA_LIB_DIR__."/core/Print/phpqrcode/qrlib.php");
+	require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
+	require_once(__CA_LIB_DIR__."/Print/Barcode.php");
+	require_once(__CA_LIB_DIR__."/Print/phpqrcode/qrlib.php");
 
 	global $g_print_measurement_cache;
 	$g_print_measurement_cache = array();
@@ -100,14 +100,14 @@
 		
 		$va_templates = array();
 		$vb_needs_caching = false;
+		
+		$va_cached_list = (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) ? ExternalCache::fetch($vs_cache_key, 'PrintTemplates') : [];
 			
 		foreach($va_template_paths as $vs_template_path) {
 			foreach(array("{$vs_template_path}", "{$vs_template_path}/local") as $vs_path) {
 				if(!file_exists($vs_path)) { continue; }
 		
-				if (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) {
-					$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplates');
-					
+				if (is_array($va_cached_list)) {
 					$f = array_map("filemtime", glob("{$vs_template_path}/*.{php,css}", GLOB_BRACE));
 					sort($f);
 					$vn_template_rev = file_exists($vs_template_path) ? array_pop($f) : 0;
@@ -117,11 +117,10 @@
 					$vn_local_rev = file_exists("{$vs_template_path}/local") ? array_pop($f) : 0;
 					
 					if(
-						$va_list && is_array($va_list) &&
 						(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= $vn_template_rev) &&
 						(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= $vn_local_rev)
 					){
-						$va_templates = array_merge($va_templates, $va_list);
+						$va_templates = array_merge($va_templates, $va_cached_list);
 						continue;
 					}
 				}
@@ -158,6 +157,8 @@
 						}
 					}
 				}
+				
+				if(sizeof($va_templates) == 0) { $vb_needs_caching = true; }
 
 				asort($va_templates);
 			}
@@ -561,8 +562,7 @@
 	function caGetPrintFormatsListAsHTMLForSetItemBundles($ps_id_prefix, $po_request, $pt_set, $pa_row_ids) {
 	    require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 	
-		$o_dm = Datamodel::load();
-		$vs_set_table = $o_dm->getTableName($pt_set->get("table_num"));
+		$vs_set_table = Datamodel::getTableName($pt_set->get("table_num"));
 		$va_formats = caGetAvailablePrintTemplates('sets', ['showOnlyIn' => 'set_item_bundle', 'table' => $vs_set_table, 'type' => null]);
 		
 		if(!is_array($va_formats) || (sizeof($va_formats) == 0)) { return ''; }

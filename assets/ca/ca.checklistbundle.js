@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.checklistbundle.js
+ * js/ca.checklistbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

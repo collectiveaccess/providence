@@ -34,8 +34,8 @@
    *
    */
 
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
+	require_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/XMPParser.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -538,6 +538,9 @@
 		$va_mappings = $o_metadata_config->getAssoc('import_mappings');
 		$vs_tablename = $po_instance->tableName();
 
+        if (!isset($pa_metadata['system']['filename']) && ($vs_original_filename = $po_instance->get('original_filename'))) {
+            $pa_metadata['system']['filename'] = $vs_original_filename;
+        }
 
 		// set extracted georef?
  		$va_georef_elements = $o_metadata_config->getList('extract_embedded_exif_georeferencing_to');
@@ -636,7 +639,6 @@
 				}
 			}
 		}
-
 
 		if (!isset($va_mappings[$po_instance->tableName()])) { return $vb_did_mapping; }
 		$va_mapping = $va_mappings[$vs_tablename];
@@ -980,8 +982,7 @@
 			    $t_val = new ca_attribute_values((int)$va_tmp[1]);
 			    if (!$t_val->isLoaded()) { return null; }
 			    $t_attr = new ca_attributes($t_val->get('attribute_id'));
-			    $o_dm = Datamodel::load();
-			    $vs_table_name  = $o_dm->getTableName($t_attr->get('table_num'));
+			    $vs_table_name  = Datamodel::getTableName($t_attr->get('table_num'));
 			    $vn_subject_id = (int)$t_attr->get('row_id');
 			    if (!($t_subject = $vs_table_name::find($vn_subject_id, $pa_options))) { return null; } // table::find() performs checkAccess
 			    
@@ -1034,8 +1035,7 @@
 	    
 	    $vs_table = isset($va_map[strtolower($ps_type)]) ? $va_map[strtolower($ps_type)] : null;
 	    if ($vs_table && caGetOption('returnInstance', $pa_options, false)) {
-	        $o_dm = Datamodel::load();
-	        return $o_dm->getInstanceByTableName($vs_table, true);
+	        return Datamodel::getInstanceByTableName($vs_table, true);
 	    } 
 	
 	    return $vs_table;
@@ -1051,7 +1051,7 @@
 		// try ZendPDF
 		if(!$o_config->get('dont_use_zendpdf_to_identify_pdfs')) {
 			try {
-				include_once(__CA_LIB_DIR__."/core/Zend/Pdf.php");
+				include_once(__CA_LIB_DIR__."/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 			} catch(Exception $e){
 				$o_pdf = null;

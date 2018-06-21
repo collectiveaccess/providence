@@ -26,9 +26,9 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/RelationshipTypeSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/RelationshipTypeSearch.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
  	
  
  	class RelationshipTypeEditorController extends BaseEditorController {
@@ -76,7 +76,6 @@
  		public function info($pa_parameters) {
  			parent::info($pa_parameters);
  			
-			$o_dm = Datamodel::load();
  			
  			$t_item = $this->view->getVar('t_item');
  			$vn_item_id = $t_item->getPrimaryKey();

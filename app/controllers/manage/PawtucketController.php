@@ -26,9 +26,9 @@
  * ----------------------------------------------------------------------
  */
  
-	require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
-	require_once(__CA_LIB_DIR__."/core/ApplicationVars.php");
-	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
+	require_once(__CA_LIB_DIR__."/ApplicationError.php");
+	require_once(__CA_LIB_DIR__."/ApplicationVars.php");
+	require_once(__CA_LIB_DIR__."/ResultContext.php");
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
  	

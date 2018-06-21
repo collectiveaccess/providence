@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
-require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
+require_once(__CA_LIB_DIR__."/ResultContext.php");
 
 class MetadataAlertsController extends ActionController {
 	# -------------------------------------------------------

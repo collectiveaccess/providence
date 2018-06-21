@@ -38,7 +38,7 @@ define('__CA_ALERT_RULE_NO_ACCESS__', 0);
 define('__CA_ALERT_RULE_ACCESS_NOTIFICATION__', 1);
 define('__CA_ALERT_RULE_ACCESS_ACCESS_EDIT__', 2);
 
-require_once(__CA_LIB_DIR__.'/ca/SetUniqueIdnoTrait.php'); 
+require_once(__CA_LIB_DIR__.'/SetUniqueIdnoTrait.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_type_restrictions.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_labels.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules_x_user_groups.php');
@@ -307,7 +307,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		if (!($vn_rule_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
 		if (!is_array($pa_settings)) { $pa_settings = array(); }
 
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		$va_type_list = $t_instance->getTypeList();
 		if (!isset($va_type_list[$pn_type_id])) { return false; }
@@ -394,7 +394,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			}
 		}
 
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		$va_type_list = $t_instance->getTypeList();
 		$va_current_restrictions = $this->getTypeRestrictions();
@@ -443,7 +443,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			}
 		}
 
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
 
 		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 
@@ -476,9 +476,8 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null);
 		$pb_dont_include_subtypes_in_type_restriction = 	caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 
-		$o_dm = $this->getAppDatamodel();
 		$vn_table_num = 0;
-		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return array(); }
+		if ($pm_table_name_or_num && !($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return array(); }
 
 		$o_db = $this->getDb();
 
@@ -502,7 +501,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 
 		$va_sql_access_wheres = array();
 		if ($pn_user_id) {
-			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
+			$t_user = Datamodel::getInstanceByTableName('ca_users', true);
 			$t_user->load($pn_user_id);
 
 			if ($t_user->getPrimaryKey()) {
@@ -535,7 +534,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			}
 		}
 
-		if (($pn_user_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
+		if (($pn_user_access == __CA_ALERT_RULE_ACCESS_NOTIFICATION__)) {
 			$va_sql_access_wheres[] = "(mar.is_system = 1)";
 		}
 
@@ -654,11 +653,10 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	 * @return string The name of the type of content or null if $pn_table_num is not set to a valid table and no form is loaded.
 	 */
 	public function getMetadataAlertRuleTypeName($pm_table_name_or_num=null, $pa_options=null) {
-		$o_dm = $this->getAppDatamodel();
 		if (!$pm_table_name_or_num && !($pm_table_name_or_num = $this->get('table_num'))) { return null; }
-		if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
+		if (!($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return null; }
 
-		$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
+		$t_instance = Datamodel::getInstanceByTableNum($vn_table_num, true);
 		if (!$t_instance) { return null; }
 		return (isset($pa_options['number']) && ($pa_options['number'] == 'plural')) ? $t_instance->getProperty('NAME_PLURAL') : $t_instance->getProperty('NAME_SINGULAR');
 

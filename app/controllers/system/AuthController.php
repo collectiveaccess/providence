@@ -25,13 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/WidgetManager.php');
-	require_once(__CA_LIB_DIR__.'/core/Auth/AuthenticationManager.php');
+ 	require_once(__CA_LIB_DIR__.'/WidgetManager.php');
+	require_once(__CA_LIB_DIR__.'/Auth/AuthenticationManager.php');
  
  	class AuthController extends ActionController {
  		# -------------------------------------------------------
 		
  		# -------------------------------------------------------
+ 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 		    if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && ($this->request->getAction() != 'logout')) {
+ 		        $po_response->setRedirect($po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$po_request->config->get("auth_login_welcome_path"));
+ 		        $po_response->sendResponse();
+ 		        exit;
+ 		    }
+ 		}
+ 		# -------------------------------------------------------
+ 		
  		public function Login() {
  			global $g_ui_locale;
 			if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {

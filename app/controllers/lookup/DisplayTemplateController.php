@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__ . '/core/Controller/ActionController.php');
+require_once(__CA_LIB_DIR__ . '/Controller/ActionController.php');
 
 class DisplayTemplateController extends ActionController {
 	# -------------------------------------------------------
@@ -34,9 +34,7 @@ class DisplayTemplateController extends ActionController {
 		$ps_table = $this->getRequest()->getParameter('table', pString);
 		$pn_id = $this->getRequest()->getParameter('id', pString);
 
-		$o_dm = Datamodel::load();
-
-		$t_instance = $o_dm->getInstance($ps_table);
+		$t_instance = Datamodel::getInstance($ps_table);
 		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
 			return false;
 		}

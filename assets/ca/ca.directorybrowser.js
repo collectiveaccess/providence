@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.directorybrowser.js
+ * js/ca.directorybrowser.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

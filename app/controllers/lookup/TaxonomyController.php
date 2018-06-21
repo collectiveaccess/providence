@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
-	require_once(__CA_LIB_DIR__."/core/Configuration.php");
+	require_once(__CA_LIB_DIR__."/Configuration.php");
  	
  
  	class TaxonomyController extends ActionController {

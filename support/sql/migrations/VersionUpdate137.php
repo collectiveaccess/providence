@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/VersionUpdate137.php :
+ * app/lib/VersionUpdate137.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/ca/BaseVersionUpdater.php');
+require_once(__CA_LIB_DIR__.'/BaseVersionUpdater.php');
 require_once(__CA_MODELS_DIR__ . '/ca_editor_uis.php');
 require_once(__CA_MODELS_DIR__ . '/ca_editor_ui_screens.php');
 

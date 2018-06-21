@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_item_tags'] = array(
@@ -231,8 +231,6 @@ class ca_item_tags extends BaseModel {
 			{$vs_where} ORDER BY cixt.created_on DESC {$vs_limit}
 		");
 		
-		$o_datamodel = $this->getAppDatamodel();
-		
 		$va_tags = array();
 		while($qr_res->nextRow()) {
 			$vn_datetime = $qr_res->get('created_on');
@@ -241,7 +239,7 @@ class ca_item_tags extends BaseModel {
 			$va_row = $qr_res->getRow();
 			$va_row['created_on'] = $o_tep->getText();
 			
-			$t_table = $o_datamodel->getInstanceByTableNum($qr_res->get('table_num'), true);
+			$t_table = Datamodel::getInstanceByTableNum($qr_res->get('table_num'), true);
 			if ($t_table->load($qr_res->get('row_id'))) {
 				$va_row['item_tagged'] = $t_table->getLabelForDisplay(false);
 				if ($vs_idno = $t_table->get('idno')) {

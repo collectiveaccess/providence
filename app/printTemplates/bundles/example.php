@@ -43,7 +43,7 @@
 
 // Attribute values to display are provided in two formats:
 
-	// As an array of instances of class Attribute (see app/lib/ca/Attributes/Attribute.php).
+	// As an array of instances of class Attribute (see app/lib/Attributes/Attribute.php).
 	// Each instance can be used to get display values for value(s) attached to that attribute.
 	//
 	// This is the most flexible way to receive data for display. You can query the instance for additional 

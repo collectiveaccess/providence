@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.labelbundle.js
+ * js/ca.labelbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

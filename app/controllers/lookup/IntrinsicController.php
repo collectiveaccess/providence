@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+ 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
  
  	//
  	// This lookup controller doesn't extend BaseLookupController
@@ -42,9 +42,8 @@
 			$vs_table = $va_tmp[0];
 			$vs_field = $va_tmp[1];
 			
-			$o_dm = Datamodel::load();
 			
-			if (!($t_table = $o_dm->getInstanceByTableName($vs_table, true))) {
+			if (!($t_table = Datamodel::getInstanceByTableName($vs_table, true))) {
 				// bad table name
 				print _t("Invalid table name");
 				return null;

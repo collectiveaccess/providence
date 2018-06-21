@@ -33,8 +33,8 @@
 	/**
 	 *
 	 */
-	require_once(__CA_LIB_DIR__.'/core/Zend/Search/Lucene.php');
-	require_once(__CA_LIB_DIR__.'/core/Search/Common/Parsers/LuceneSyntaxParser.php');
+	require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene.php');
+	require_once(__CA_LIB_DIR__.'/Search/Common/Parsers/LuceneSyntaxParser.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 
@@ -45,107 +45,106 @@
 	 * @return BaseSearch
 	 */
 	function caGetSearchInstance($pm_table_name_or_num, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		
-		$vs_table = (is_numeric($pm_table_name_or_num)) ? $o_dm->getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
+		$vs_table = (is_numeric($pm_table_name_or_num)) ? Datamodel::getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
 		
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { return null; }
 		if ($t_instance->isRelationship()) { 
-			require_once(__CA_LIB_DIR__.'/ca/Search/InterstitialSearch.php');
+			require_once(__CA_LIB_DIR__.'/Search/InterstitialSearch.php');
 			return new InterstitialSearch($vs_table);
 		}
 		
 		switch($vs_table) {
 			case 'ca_objects':
-				require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
 				return new ObjectSearch();
 				break;
 			case 'ca_entities':
-				require_once(__CA_LIB_DIR__.'/ca/Search/EntitySearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/EntitySearch.php');
 				return new EntitySearch();
 				break;
 			case 'ca_places':
-				require_once(__CA_LIB_DIR__.'/ca/Search/PlaceSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/PlaceSearch.php');
 				return new PlaceSearch();
 				break;
 			case 'ca_occurrences':
-				require_once(__CA_LIB_DIR__.'/ca/Search/OccurrenceSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/OccurrenceSearch.php');
 				return new OccurrenceSearch();
 				break;
 			case 'ca_collections':
-				require_once(__CA_LIB_DIR__.'/ca/Search/CollectionSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/CollectionSearch.php');
 				return new CollectionSearch();
 				break;
 			case 'ca_loans':
-				require_once(__CA_LIB_DIR__.'/ca/Search/LoanSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/LoanSearch.php');
 				return new LoanSearch();
 				break;
 			case 'ca_movements':
-				require_once(__CA_LIB_DIR__.'/ca/Search/MovementSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/MovementSearch.php');
 				return new MovementSearch();
 				break;
 			case 'ca_lists':
-				require_once(__CA_LIB_DIR__.'/ca/Search/ListSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/ListSearch.php');
 				return new ListSearch();
 				break;
 			case 'ca_list_items':
-				require_once(__CA_LIB_DIR__.'/ca/Search/ListItemSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/ListItemSearch.php');
 				return new ListItemSearch();
 				break;
 			case 'ca_object_lots':
-				require_once(__CA_LIB_DIR__.'/ca/Search/ObjectLotSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/ObjectLotSearch.php');
 				return new ObjectLotSearch();
 				break;
 			case 'ca_object_representations':
-				require_once(__CA_LIB_DIR__.'/ca/Search/ObjectRepresentationSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/ObjectRepresentationSearch.php');
 				return new ObjectRepresentationSearch();
 				break;
 			case 'ca_representation_annotations':
-				require_once(__CA_LIB_DIR__.'/ca/Search/RepresentationAnnotationSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/RepresentationAnnotationSearch.php');
 				return new RepresentationAnnotationSearch();
 				break;
 			case 'ca_user_representation_annotations':
-				require_once(__CA_LIB_DIR__.'/ca/Search/UserRepresentationAnnotationSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/UserRepresentationAnnotationSearch.php');
 				return new UserRepresentationAnnotationSearch();
 				break;
 			case 'ca_item_comments':
-				require_once(__CA_LIB_DIR__.'/ca/Search/ItemCommentSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/ItemCommentSearch.php');
 				return new ItemCommentSearch();
 				break;
 			case 'ca_item_tags':
-				require_once(__CA_LIB_DIR__.'/ca/Search/ItemTagSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/ItemTagSearch.php');
 				return new ItemTagSearch();
 				break;
 			case 'ca_relationship_types':
-				require_once(__CA_LIB_DIR__.'/ca/Search/RelationshipTypeSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/RelationshipTypeSearch.php');
 				return new RelationshipTypeSearch();
 				break;
 			case 'ca_sets':
-				require_once(__CA_LIB_DIR__.'/ca/Search/SetSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/SetSearch.php');
 				return new SetSearch();
 				break;
 			case 'ca_set_items':
-				require_once(__CA_LIB_DIR__.'/ca/Search/SetItemSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/SetItemSearch.php');
 				return new SetItemSearch();
 				break;
 			case 'ca_tours':
-				require_once(__CA_LIB_DIR__.'/ca/Search/TourSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/TourSearch.php');
 				return new TourSearch();
 				break;
 			case 'ca_tour_stops':
-				require_once(__CA_LIB_DIR__.'/ca/Search/TourStopSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/TourStopSearch.php');
 				return new TourStopSearch();
 				break;
 			case 'ca_storage_locations':
-				require_once(__CA_LIB_DIR__.'/ca/Search/StorageLocationSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/StorageLocationSearch.php');
 				return new StorageLocationSearch();
 				break;
 			case 'ca_users':
-				require_once(__CA_LIB_DIR__.'/ca/Search/UserSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/UserSearch.php');
 				return new UserSearch();
 				break;
 			case 'ca_user_groups':
-				require_once(__CA_LIB_DIR__.'/ca/Search/UserGroupSearch.php');
+				require_once(__CA_LIB_DIR__.'/Search/UserGroupSearch.php');
 				return new UserGroupSearch();
 				break;
 			default:
@@ -181,12 +180,11 @@
 	 * @return string 
 	 */
 	function caSearchUrl($po_request, $ps_table, $ps_search=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		
 		$vb_return_advanced = isset($pa_options['returnAdvanced']) && $pa_options['returnAdvanced'];
@@ -565,8 +563,7 @@
 	 * @return array 
 	 */
 	function caSplitSearchResultByType($pr_res, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($pr_res->tableName(), true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($pr_res->tableName(), true))) { return null; }
 		
 		if (!($vs_type_fld = $t_instance->getTypeFieldName())) { return null; }
 		$vs_table = $t_instance->tableName();
@@ -647,7 +644,6 @@
 	 *
 	 */
 	function caGetQueryStringForHTMLFormInput($po_result_context, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		
 		$pa_form_values = caGetOption('formValues', $pa_options, $_REQUEST);
 		$va_form_contents = explode('|', caGetOption('_formElements', $pa_form_values, ''));
@@ -682,7 +678,7 @@
 					
 						if(isset($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}_autocomplete"])) {
 							$va_fld = explode(".", $vs_element);
-							$t_table = $o_dm->getInstanceByTableName($va_fld[0], true);
+							$t_table = Datamodel::getInstanceByTableName($va_fld[0], true);
 							foreach($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}"] as $vn_j => $vs_element_value) {
 								if ($t_table) { $vs_search_element = $t_table->primaryKey(true); }
 								
@@ -766,7 +762,6 @@
 		$pa_form_values = caGetOption('formValues', $pa_options, $_REQUEST);
 		$va_form_contents = explode('|', caGetOption('_formElements', $pa_form_values, ''));
 
-		$o_dm = Datamodel::load();
 		
 	 	$va_display_string = array();
 	 	
@@ -793,7 +788,7 @@
 			if ((sizeof($va_fld) > 2) && ($va_fld[1] == 'related')) {
 			    unset($va_fld[1]); $vs_element = join('.', $va_fld); $va_fld = array_values($va_fld);
 			}
-			$t_table = $o_dm->getInstanceByTableName($va_fld[0], true);
+			$t_table = Datamodel::getInstanceByTableName($va_fld[0], true);
 		
 		// TODO: need universal way to convert item_ids in attributes and intrinsics to display text
 			if ($t_table && ($t_table->hasField($va_fld[1]))) {
@@ -1006,10 +1001,9 @@
 	 *
 	 */
 	function caGetLabelForBundle($ps_bundle) {
-		$o_dm = Datamodel::load();
 		$va_tmp = explode(".", $ps_bundle);
 		
-		if ($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+		if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 			return $t_instance->getDisplayLabel($ps_bundle);
 		}
 		return $ps_bundle;
@@ -1019,10 +1013,9 @@
 	 *
 	 */
 	function caGetDisplayValueForBundle($ps_bundle, $ps_value) {
-		$o_dm = Datamodel::load();
 		$va_tmp = explode(".", $ps_bundle);
 		
-		if ($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+		if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 			if ($t_instance->hasField($va_tmp[1])) {		// intrinsic
 				return $ps_value;
 			} elseif($t_instance->hasElement($va_tmp[1])) {	// metadata element
@@ -1060,15 +1053,14 @@
 		$pb_for_select = caGetOption('forSelect', $pa_options, false);
 		$pa_filter = caGetOption('filter', $pa_options, null);
 		
-		$o_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		$o_indexing_config = caGetSearchIndexingConfig();
 		
-		$pm_table_name_or_num = $o_dm->getTableNum($pm_table_name_or_num);
+		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
 		
-		$t_instance = $o_dm->getInstanceByTableNum($pm_table_name_or_num, true);
-		$va_search_settings = $o_indexing_config->getAssoc($o_dm->getTableName($pm_table_name_or_num));
+		$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
+		$va_search_settings = $o_indexing_config->getAssoc(Datamodel::getTableName($pm_table_name_or_num));
 		
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
@@ -1093,7 +1085,7 @@
 			foreach($pa_filter as $vn_i => $vs_filter) {
 				$va_tmp = explode('.', $vs_filter);
 				if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
-					if ($t_filter_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) {
+					if ($t_filter_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 						$pa_filter[] = $t_filter_instance->getLabelTableName().($va_tmp[2] ? '.'.$va_tmp[2] : '');
 					}
 				}
@@ -1159,7 +1151,7 @@
 			} else {
 				// related table
 					if ($o_config->get($vs_table.'_disable')) { continue; }
-					$t_table = $o_dm->getInstanceByTableName($vs_table, true);
+					$t_table = Datamodel::getInstanceByTableName($vs_table, true);
 					if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
 						if ($o_config->get($vs_subject_table.'_disable')) { continue; }
 					}
@@ -1245,7 +1237,7 @@
 			foreach($va_sorted_bundles as $vs_label => $vs_key) {
 				$va_tmp = explode('.', $vs_key);
 				if (preg_match('!_labels$!', $va_tmp[0])) {
-					if (($t_label_instance = $o_dm->getInstanceByTableName($va_tmp[0], true)) && (is_a($t_label_instance, 'BaseLabel'))) {
+					if (($t_label_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) && (is_a($t_label_instance, 'BaseLabel'))) {
 						$va_sorted_bundles[$vs_label] = $t_label_instance->getSubjectTableName().'.preferred_labels'.($va_tmp[1] ? '.'.$va_tmp[1] : '');
 					}
 				}
@@ -1400,18 +1392,15 @@
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
 		require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 		global $g_ui_locale_id;
-		$o_dm = Datamodel::load();
-
 		if(is_numeric($ps_table)) {
-			$ps_table = $o_dm->getTableName($ps_table);
+			$ps_table = Datamodel::getTableName($ps_table);
 		}
-		if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return []; }
+		if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return []; }
 		
 		$t_rel = null;
 		if ($ps_related_table = caGetOption('includeInterstitialSortsFor', $pa_options, null)) {
-			$o_dm = Datamodel::load();
-			if (is_array($va_path = array_keys($o_dm->getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
-				$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
+			if (is_array($va_path = array_keys(Datamodel::getPath($ps_table, $ps_related_table))) && (sizeof($va_path) == 3)) {
+				$t_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 			}
 		} 
 		
@@ -1423,7 +1412,7 @@
 					foreach($va_placements as $va_placement) {
 						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
 						$va_bundle_bits = explode('.', $vs_bundle_name);
-						if (!$o_dm->tableExists($va_bundle_bits[0])) {
+						if (!Datamodel::tableExists($va_bundle_bits[0])) {
 							array_unshift($va_bundle_bits, $ps_table);
 							$vs_bundle_name = join('.', $va_bundle_bits);	
 						}
@@ -1592,7 +1581,7 @@
 			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
-				foreach(array_count_values($va_base_fields) as $vn_v => $vn_c) {
+				foreach(array_count_values(array_filter($va_base_fields, function($v) { return !is_null($v); })) as $vn_v => $vn_c) {
 					if($vn_c > 1) {
 						foreach(array_keys($va_base_fields, $vn_v) as $vs_k) {
 

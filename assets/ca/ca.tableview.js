@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.tableview.js
+ * js/ca.tableview.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

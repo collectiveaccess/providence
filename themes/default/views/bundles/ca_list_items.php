@@ -49,7 +49,7 @@
 	
 	$va_initial_values	= $this->getVar('initialValues');
 	
-	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_'.$vs_id_prefix.'_browse_last_id');
+	$vn_browse_last_id = (int)Session::getVar('ca_list_items_'.$vs_id_prefix.'_browse_last_id');
 
 	// params to pass during occurrence lookup
 	$va_lookup_params = array(

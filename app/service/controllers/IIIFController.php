@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-require_once(__CA_LIB_DIR__.'/ca/Service/IIIFService.php');
+require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+require_once(__CA_LIB_DIR__.'/Service/IIIFService.php');
 
 class IIIFController extends BaseServiceController {
 	# -------------------------------------------------------
