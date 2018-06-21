@@ -161,10 +161,11 @@ var caUI = caUI || {};
                     
                     var d;
                     if (selected.length) {
-                        t=t.replace(tag, d = selected.text());
+                        d = selected.text();
                     } else {
-                        t=t.replace(tag, d = jQuery(values[tagProc]).val());
+                        d = jQuery(values[tagProc]).val();
                     }
+                    t=t.replace(tag, d.replace('&nbsp;', ' ').trim());
                     if (d) { bAtLeastOneValueIsSet = true; }
                 } else {
                     var tagBits = tag.split(/\~/);
