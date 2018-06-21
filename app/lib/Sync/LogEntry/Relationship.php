@@ -143,9 +143,9 @@ class Relationship extends Base {
 		if (isset($va_snapshot[$ps_field . '_guid']) && ($vs_reference_guid = $va_snapshot[$ps_field . '_guid'])) {
 			/** @var \BaseRelationshipModel $t_instance */
 			if($pb_left) {
-				$t_instance = Datamodel::getInstanceByTableName($this->getModelInstance()->getLeftTableName(), true);
+				$t_instance = \Datamodel::getInstanceByTableName($this->getModelInstance()->getLeftTableName(), true);
 			} else {
-				$t_instance = Datamodel::getInstanceByTableName($this->getModelInstance()->getRightTableName(), true);
+				$t_instance = \Datamodel::getInstanceByTableName($this->getModelInstance()->getRightTableName(), true);
 			}
 
 			$t_instance->setTransaction($this->getTx());
