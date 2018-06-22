@@ -76,6 +76,12 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		list($vs_width, $vs_height) = $this->getDimensions();
 		list($vn_width, $vn_height) = $this->getDimensions(array('returnPixelValues' => true));
 		
+		
+ 		$base_path = null;
+ 		if ($request = caGetOption(['request'], $pa_options, null)) {
+ 			$base_path = $request->getBaseUrlPath();
+ 		}
+ 		
  		if (!($base_map_url = $this->opo_config->get('leaflet_base_layer'))) { 
  			$base_map_url = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png';
  		}
@@ -113,7 +119,8 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			} else {
 				// point
 				$va_coord = array_shift($va_coords);
-				$points[$va_coord['latitude']][$va_coord['longitude']][] = ['label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID()];
+				$angle = isset($va_coord['angle']) ? (float)$va_coord['angle'] : null;
+				$points[$va_coord['latitude']][$va_coord['longitude']][] = ['label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID(), 'angle' => $angle];
 			}
 		}
 		
@@ -137,11 +144,13 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				}	
 				
 				if (!($lat && $lng)) { continue; }
+				$vn_angle = isset($content_item['angle']) ? (float)$content_item['angle'] : null;
 				$vs_label = preg_replace("![\n\r]+!", " ", $vs_label);
 				$vs_content = preg_replace("![\n\r]+!", " ", join($vs_delimiter, $va_buf));
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
 				
         		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label];
+        		if ($vn_angle !== 0) { $l['angle'] = $vn_angle; }
         		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
         		$pointList[] = $l;
 			}
@@ -196,6 +205,13 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				
 				$vs_buf = "<div style='width:{$vs_width}; height:{$vs_height}' id='map_{$vs_id}'> </div>\n
 <script type='text/javascript'>
+		var arrowIcon = L.icon({
+			iconUrl: '{$base_path}/assets/leaflet/images/arrow-icon.png',
+			retinaUrl: '{$base_path}/assets/leaflet/images/arrow-icon-2x.png',
+			iconSize: [25, 50],
+			iconAnchor: [12, 50],
+			popupAnchor: [-3, -50]
+		});
 		var pointList{$vs_id} = ".json_encode($pointList).";
 		var circleList{$vs_id} = ".json_encode($circleList).";
 		var pathList{$vs_id} = ".json_encode($paths).";
@@ -205,7 +221,11 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		g.addTo(map);
 		
 		jQuery(pointList{$vs_id}).each(function(k, v) {
-			var m = L.marker([v.lat, v.lng], { title: jQuery('<div>').html(v.label).text() });
+			var opts = { title: jQuery('<div>').html(v.label).text() };
+			if (v.angle != 0) { opts['icon'] = arrowIcon; }
+			var m = L.marker([v.lat, v.lng], opts);
+			
+			if (v.angle != 0) { m.setRotationAngle(v.angle); }
 			if (v.label || v.content) { m.bindPopup(v.label + v.content); }
 			m.addTo(g);
 		});
@@ -243,6 +263,9 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		$vn_element_width = $va_element_width['dimension'];
 		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
 		$vn_element_height = $va_element_height['dimension'];
+		
+		
+		$points_are_directional = (bool)$pa_element_info['settings']['pointsAreDirectional'] ? 1 : 0;
  		
  		$element_id = (int)$pa_element_info['element_id'];
  		$vs_id = $pa_element_info['element_id']."_{n}";
@@ -250,16 +273,31 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
  		if (!($base_map_url = $this->opo_config->get('leaflet_base_layer'))) { 
  			$base_map_url = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png';
  		}
-		
+ 		
+ 		$base_path = null;
+ 		if ($request = caGetOption(['request'], $pa_options, null)) {
+ 			$base_path = $request->getBaseUrlPath();
+ 		}
 		$vs_element = 	"
 <div id='mapholder_{$element_id}_{n}' class='mapholder'>
 	 <div class='map' style='width:695px; height:400px;'></div>
 </div>
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
+		var map_{$vs_id}_editing_enabled = false;
+		var map_{$vs_id}_points_are_directional = {$points_are_directional};
+		var map_{$vs_id}_rotation_in_progress = null;
 		var map_{$vs_id}_loc_str = '{{{$element_id}}}';
 		
-		var re = /\[([\d\,\-\.\:\;~]+)\]/;
+		var arrowIcon = L.icon({
+			iconUrl: '{$base_path}/assets/leaflet/images/arrow-icon.png',
+			retinaUrl: '{$base_path}/assets/leaflet/images/arrow-icon-2x.png',
+			iconSize: [25, 50],
+			iconAnchor: [12, 50],
+			popupAnchor: [-3, -50]
+		});
+		
+		var re = /\[([\d\,\-\.\:\;~\*]+)\]/;
 
 		var map_{$vs_id}_loc_label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
 		
@@ -281,7 +319,12 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 					objs.push(cs.join(';'));
 				} else if (layer.getLatLng) { // marker
 					var c = layer.getLatLng();
-					objs.push(c.lat + ',' + c.lng);
+					
+					if (layer.options.rotationAngle !== 0) {
+						objs.push(c.lat + ',' + c.lng + '*' + layer.options.rotationAngle);
+					} else {
+						objs.push(c.lat + ',' + c.lng);
+					}
 				}
 			});
 			var coords = objs.join(':');
@@ -294,12 +337,110 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		});
 		map.addControl(drawControl);
 		
+		var map_{$vs_id}_set_rotation_guide = function(layer, angle) {
+			var transformation = new L.Transformation(
+				1, Math.sin(angle*Math.PI / 180)*100,
+				1, Math.cos(angle*Math.PI / 180)*-100
+			),
+			pointB = map.layerPointToLatLng(
+				transformation.transform(map.latLngToLayerPoint(layer._latlng))
+			);
+			var pointList = [layer._latlng, pointB];
+			
+			var g = new L.featureGroup();
+			var pl = new L.Polyline(pointList, {
+				color: '#cc0000',
+				weight: 5,
+				stroke: true,
+				opacity: 0.5,
+				smoothFactor: 1,
+				marker: layer,
+				bubblingMouseEvents: false
+			}).addTo(g);
+			
+			
+			var circlePt = map.project(pointB);							
+			circlePt.x += 8 * Math.sin(angle*(Math.PI/180));
+			circlePt.y -= 8 * Math.cos(angle*(Math.PI/180));
+			
+			new L.circle(map.unproject(circlePt), { 
+				color: '#cc0000', 
+				stroke: false,
+				fill: true,
+				fillOpacity: 0.5, 
+				radius: 5,
+				marker: layer
+			}).on('mousedown', function(e) {
+				this.options.rotationInProgress = true;
+				map_{$vs_id}_rotation_in_progress = {'line': pl, 'end': this};
+				this.setStyle({color: '#00cc00'});
+				pl.setStyle({color: '#00cc00'});
+				map.dragging.disable();
+			}).on('mouseup', function(e) {
+				this.options.rotationInProgress = false;
+				map_{$vs_id}_rotation_in_progress = null;
+				this.setStyle({color: '#cc0000'});
+				pl.setStyle({color: '#cc0000'});
+				map.dragging.enable();
+			}).addTo(g);
+			
+			return g;
+		};
+		
 		map.on('draw:created', function (e) {	
 			e.layer.addTo(g);
 			map_{$vs_id}_update_coord_list(e);
 		});
 		map.on('draw:edited', map_{$vs_id}_update_coord_list);
 		map.on('draw:deletestop', map_{$vs_id}_update_coord_list);
+		
+		map.on('draw:editstart', function(e) {
+			if (!map_{$vs_id}_points_are_directional) { return; }
+			map_{$vs_id}_editing_enabled = true;
+			
+			// draw rotate controls on all markers
+			map.eachLayer(function (layer) { 
+				if (layer instanceof L.Marker) {
+					layer.options.dirControl = map_{$vs_id}_set_rotation_guide(layer, layer.options.rotationAngle);
+					
+					map.on('mousemove', function(e) {
+						if (map_{$vs_id}_rotation_in_progress) {
+							var pointB = new L.LatLng(e.latlng.lat, e.latlng.lng);
+							
+							var line = map_{$vs_id}_rotation_in_progress['line'];
+							var end = map_{$vs_id}_rotation_in_progress['end'];
+							
+							line.setLatLngs([line._latlngs[0], pointB]);
+							
+							var A = line._parts[0][0],
+								B = line._parts[0][1];
+							var angle = (Math.atan2(0,1) - Math.atan2((B.x - A.x),(B.y - A.y)))*180/Math.PI+180;
+							end.options.marker.setRotationAngle(angle);
+							
+							var circlePt = map.project(pointB);
+							
+							circlePt.x += 8 * Math.sin(angle*(Math.PI/180));
+							circlePt.y -= 8 * Math.cos(angle*(Math.PI/180));
+							
+							end.setLatLng(map.unproject(circlePt));
+						}
+					});
+					layer.options.dirControl.addTo(map);
+				}
+			});
+		});
+		
+		// Remove marker rotation controls
+		map.on('draw:editstop', function(e) {
+			if (!map_{$vs_id}_points_are_directional) { return; }
+			map.eachLayer(function (layer) { 
+				if (layer instanceof L.Marker) {
+					map.removeLayer(layer.options.dirControl);
+				}
+			});
+			
+			map_{$vs_id}_editing_enabled = false;
+		});
 		
 		map.on('moveend', function(e) {
 			var c = map.getCenter();
@@ -323,7 +464,22 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 					L.polygon(splitPts).addTo(g);
 				} else { // point
 					var pt = ptlist[0].split(/,/);
-					var m = L.marker([parseFloat(pt[0]), parseFloat(pt[1])], {  }).addTo(g);
+					var a = pt[1].split(/\*/);
+					pt[1] = a[0];
+					
+					var angle = a[1] ? a[1] : 0;
+					var opts = (map_{$vs_id}_points_are_directional && (angle != 0)) ? { icon: arrowIcon} : {};
+					var m = L.marker([parseFloat(pt[0]), parseFloat(pt[1])], opts).on('dragstart', function(e) {
+						if (!map_{$vs_id}_points_are_directional) { return; }
+						map.removeLayer(e.target.options.dirControl);
+					}).on('dragend', function(e) {
+						if (!map_{$vs_id}_points_are_directional) { return; }
+						e.target.options.dirControl = map_{$vs_id}_set_rotation_guide(e.target, e.target.options.rotationAngle);
+						e.target.options.dirControl.addTo(map);
+					}).addTo(g);
+					
+					
+					if (map_{$vs_id}_points_are_directional && a) { m.setRotationAngle(angle); }
 					if (map_{$vs_id}_loc_label) { m.bindPopup(map_{$vs_id}_loc_label); }
 				}
 			});

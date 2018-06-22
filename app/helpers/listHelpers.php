@@ -315,7 +315,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_item_values_for_ids = [];
 	function caGetListItemValueForID($pn_id, $pa_options=null) {
 		if(!$pn_id || !is_numeric($pn_id)) { return null; }
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn-id);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_item_values_for_ids[$vs_cache_key])) { return $g_list_item_values_for_ids[$vs_cache_key]; }

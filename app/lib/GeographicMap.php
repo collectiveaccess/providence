@@ -193,7 +193,14 @@
 								$va_coordinate_pairs = array();
 								foreach($va_path as $vs_pair) {
 									$va_pair = explode(',', $vs_pair);
-									$va_coordinate_pairs[] = array('latitude' => $va_pair[0], 'longitude' => $va_pair[1]);
+									
+									$radius = $angle = null;
+									list($lng, $radius) = explode('~', $va_coord[1]);
+									if (!$radius) { list($lng, $angle) = explode('*', $va_coord[1]); }
+									$d = array('latitude' => $va_pair[0], 'longitude' => $va_pair[1]);
+									if ($radius) { $d['radius'] = $radius; }
+									if ($angle) { $d['angle'] = $angle; }
+									$va_coordinate_pairs[] = $d;
 								}
 								$this->addMapItem(new GeographicMapItem(array('coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
 							} else {
@@ -279,6 +286,8 @@
 								$va_path_items = preg_split("/[:]/", $va_coordinate['path']);
 							
 								foreach($va_path_items as $vs_path_item) {
+									$radius = $angle = null;
+									
 									$va_path = preg_split("/[;]/", $vs_path_item);
 									if (sizeof($va_path) > 1) {
 										$va_coordinate_pairs = [];
@@ -290,8 +299,10 @@
 									} else {
 										$va_coord = explode(',', $va_path[0]);
 										list($lng, $radius) = explode('~', $va_coord[1]);
+										if (!$radius) { list($lng, $angle) = explode('*', $va_coord[1]); }
 										$d = ['latitude' => $va_coord[0], 'longitude' => $lng, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color];
 										if ($radius) { $d['radius'] = $radius; }
+										if ($angle) { $d['angle'] = $angle; }
 										$this->addMapItem(new GeographicMapItem($d));
 									}
 								

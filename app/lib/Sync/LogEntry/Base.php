@@ -60,11 +60,6 @@ abstract class Base {
 	private $opn_log_id;
 
 	/**
-	 * @var \Datamodel
-	 */
-	private $opo_datamodel;
-
-	/**
 	 * @var \BaseModel
 	 */
 	private $opt_instance;
@@ -105,9 +100,7 @@ abstract class Base {
 		$this->opn_log_id = $opn_log_id;
 		$this->opo_tx = $po_tx;
 
-		$this->opo_datamodel = \Datamodel::load();
-
-		$this->opt_instance = Datamodel::getInstance($this->getTableNum());
+		$this->opt_instance = \Datamodel::getInstance($this->getTableNum());
 
 		if(!($this->opt_instance instanceof \BaseModel)) {
 			throw new InvalidLogEntryException('table num is invalid for this log entry');
@@ -388,7 +381,7 @@ abstract class Base {
 	public function setIntrinsicsFromSnapshotInModelInstance() {
 		$va_snapshot = $this->getSnapshot();
 
-		$va_many_to_one_rels = Datamodel::getManyToOneRelations($this->getModelInstance()->tableName());
+		$va_many_to_one_rels = \Datamodel::getManyToOneRelations($this->getModelInstance()->tableName());
 		foreach($va_snapshot as $vs_field => $vm_val) {
 		
 			// skip non existing "fake" fields
@@ -475,7 +468,7 @@ abstract class Base {
 				}
 				
 				// handle table_num/row_id based polymorphic relationships
-				if (($vs_field == 'row_id') && isset($va_snapshot['row_guid']) && ($t_rel_item = Datamodel::getInstanceByTableNum($va_snapshot['table_num'], true))) {
+				if (($vs_field == 'row_id') && isset($va_snapshot['row_guid']) && ($t_rel_item = \Datamodel::getInstanceByTableNum($va_snapshot['table_num'], true))) {
 					if($t_rel_item->loadByGUID($va_snapshot['row_guid'])) {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
@@ -483,7 +476,7 @@ abstract class Base {
 				}
 				
 				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
-				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
+				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = \Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
 					$t_rel_item->setTransaction($this->getTx());
 					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
@@ -551,9 +544,7 @@ abstract class Base {
 			throw new InvalidLogEntryException('Invalid log entry');
 		}
 
-		$o_dm = \Datamodel::load();
-
-		$t_instance = Datamodel::getInstance($pa_log['logged_table_num']);
+		$t_instance = \Datamodel::getInstance($pa_log['logged_table_num']);
 
 		if($t_instance instanceof \BaseRelationshipModel) {
 			return new Relationship($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);

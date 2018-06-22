@@ -778,6 +778,7 @@
 			$t_rep = new ca_object_representations();
 			$t_rep->setMode(ACCESS_WRITE);
 
+			$quiet = $po_opts->getOption('quiet');
 			$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes'], 'delimiter' => [',', ';']]);
@@ -842,12 +843,12 @@
 					ORDER BY ca_object_representations.representation_id
 				", $va_params);
 
-				print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media'));
+				if (!$quiet) { print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media')); }
 				while($qr_reps->nextRow()) {
 					$va_media_info = $qr_reps->getMediaInfo('media');
 					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
-					print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
+					if (!$quiet) { print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id')))); }
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(sizeof($pa_mimetypes)) {
 						$vb_mimetype_match = false;
@@ -874,7 +875,7 @@
 						CLIUtils::addError(_t("Error processing representation media: %1", join('; ', $t_rep->getErrors())));
 					}
 				}
-				print CLIProgressBar::finish();
+				if (!$quiet) { print CLIProgressBar::finish(); }
 			}
 
 			if ((in_array('all', $pa_kinds)  || in_array('ca_attributes', $pa_kinds)) && (!$vn_start && !$vn_end)) {
@@ -891,7 +892,7 @@
 						", array($va_element_ids));
 						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 
-						print CLIProgressBar::start($vn_count, _t('Re-processing attribute media'));
+						if (!$quiet) { print CLIProgressBar::start($vn_count, _t('Re-processing attribute media')); }
 						foreach($va_elements as $vs_element_code => $va_element_info) {
 							$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
 							$va_vals = $qr_vals->getAllFieldValues('value_id');
@@ -904,7 +905,7 @@
 									$va_media_info = $t_attr_val->getMediaInfo('value_blob');
 									$vs_original_filename = is_array($va_media_info) ? $va_media_info['ORIGINAL_FILENAME'] : '';
 
-									print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
+									if (!$quiet) { print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id))); }
 
 
 									$t_attr_val->set('value_blob', $t_attr_val->getMediaPath('value_blob', 'original'), array('original_filename' => $vs_original_filename));
@@ -916,7 +917,7 @@
 								}
 							}
 						}
-						print CLIProgressBar::finish();
+						if (!$quiet) { print CLIProgressBar::finish(); }
 					}
 				}
 			}
@@ -932,6 +933,7 @@
 			return array(
 				"mimetypes|m-s" => _t("Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
 				"versions|v-s" => _t("Limit re-processing to specified versions. Separate multiple versions with commas."),
+				"quiet|q" => _t('Suppress progress messages.'),
 				"start_id|s-n" => _t('Representation id to start reloading at'),
 				"end_id|e-n" => _t('Representation id to end reloading at'),
 				"id|i-n" => _t('Representation id to reload'),
@@ -2266,14 +2268,34 @@
 			require_once(__CA_LIB_DIR__."/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 
-			if (!($ps_file_path = strtolower((string)$po_opts->getOption('file')))) {
-				CLIUtils::addError(_t("You must specify an output file"));
+
+			$quiet = $po_opts->getOption('quiet');
+			
+			$ps_email = caGetOption('email', $po_opts, null, ['castTo' => 'string']);
+			if ($ps_email && !caCheckEmailAddress($ps_email)) {
+				CLIUtils::addError(_t("Email address is invalid"));
+				return false;
+			}
+			if (!($ps_file_path = strtolower((string)$po_opts->getOption('file'))) && !$ps_email) {
+				CLIUtils::addError(_t("You must specify an output file or email address"));
 				return false;
 			}
 			
 			$ps_file_path = str_replace("%date", date("Y-m-d_h\hi\m"), $ps_file_path);
 			
-			$ps_format = caGetOption('format', $po_opts, 'text', ['forceLowercase' => true, 'validValues' => ['text', 'tab', 'csv'], 'castTo' => 'string']);
+			switch($ps_format = caGetOption('format', $po_opts, 'text', ['forceLowercase' => true, 'validValues' => ['text', 'tab', 'csv'], 'castTo' => 'string'])) {
+				case 'tab':
+					$mimetype = 'text/tab-separated-values'; $extension = 'tab';
+					break;
+				case 'csv':
+					$mimetype = 'text/csv'; $extension = 'csv';
+					break;
+				case 'text':
+				default:
+					$mimetype = 'text/plain'; $extension = 'txt';
+					break;
+			}
+			
 			
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes'], 'delimiter' => [',', ';']]);
@@ -2346,11 +2368,11 @@
 						".join(" AND ", $va_sql_wheres), $va_params
 				);
 				
-				print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n";
+				if (!$quiet) { print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n"; }
 				$vn_errors = 0;
 				while($qr_reps->nextRow()) {
 					$vn_representation_id = $qr_reps->get('representation_id');
-					print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id));
+					if (!$quiet) { print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id)); }
 
 					$va_media_versions = (is_array($pa_versions) && sizeof($pa_versions) > 0) ? $pa_versions : $qr_reps->getMediaVersions('media');
 					foreach($va_media_versions as $vs_version) {
@@ -2380,8 +2402,14 @@
 					}
 				}
 
-				print CLIProgressBar::finish();
-				CLIUtils::addMessage(_t('%1 errors for %2 representations', $vn_errors, $vn_rep_count));
+				if (!$quiet) { 
+					print CLIProgressBar::finish(); 				
+					if ($vn_errors == 1) {
+						CLIUtils::addMessage(_t('%1 error for %2 representations', $vn_errors, $vn_rep_count));
+					} else {
+						CLIUtils::addMessage(_t('%1 errors for %2 representations', $vn_errors, $vn_rep_count));
+					}
+				}
 			}
 
 
@@ -2399,7 +2427,7 @@
 						", array($va_element_ids));
 						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 
-						print CLIProgressBar::start($vn_count, _t('Checking attribute media'));
+						if (!$quiet) { print CLIProgressBar::start($vn_count, _t('Checking attribute media')); }
 
 						$vn_errors = 0;
 						foreach($va_elements as $vs_element_code => $va_element_info) {
@@ -2412,7 +2440,7 @@
 									$t_attr_val->useBlobAsMediaField(true);
 
 
-									print CLIProgressBar::next(1, _t("Checking attribute media %1", $vn_value_id));
+									if (!$quiet) { print CLIProgressBar::next(1, _t("Checking attribute media %1", $vn_value_id)); }
 
 									$va_media_versions = (is_array($pa_versions) && sizeof($pa_versions) > 0) ? $pa_versions : $t_attr_val->getMediaVersions('value_blob');
 									foreach($va_media_versions as $vs_version) {
@@ -2456,9 +2484,14 @@
 								}
 							}
 						}
-						print CLIProgressBar::finish();
-
-						CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+						if (!$quiet) { 
+							print CLIProgressBar::finish(); 
+							if($vn_errors == 1) {
+								CLIUtils::addMessage(_t('%1 error for %2 attributes', $vn_errors, $vn_rep_count));
+							} else {
+								CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+							}
+						}
 					}
 				}
 
@@ -2475,7 +2508,7 @@
 						", array($va_element_ids));
 						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 
-						print CLIProgressBar::start($vn_count, _t('Checking attribute files'));
+						if (!$quiet) { print CLIProgressBar::start($vn_count, _t('Checking attribute files')); }
 
 						$vn_errors = 0;
 						foreach($va_elements as $vs_element_code => $va_element_info) {
@@ -2488,7 +2521,7 @@
 									$t_attr_val->useBlobAsFileField(true);
 
 
-									print CLIProgressBar::next(1, _t("Checking attribute file %1", $vn_value_id));
+									if (!$quiet) { print CLIProgressBar::next(1, _t("Checking attribute file %1", $vn_value_id)); }
 
 									if (!($vs_path = $t_attr_val->getFilePath('value_blob'))) { continue; }
 
@@ -2529,9 +2562,15 @@
 								}
 							}
 						}
-						print CLIProgressBar::finish();
 
-						CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+						if (!$quiet) { 
+							print CLIProgressBar::finish();
+							if ($vn_errors == 1) {
+								CLIUtils::addMessage(_t('%1 error for %2 attributes', $vn_errors, $vn_rep_count));
+							} else {
+								CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+							}
+						}
 					}
 				}
 			}
@@ -2539,7 +2578,38 @@
 			if ($ps_file_path) {
 				file_put_contents($ps_file_path, $vs_report_output);
 			}
-
+			
+			$o_request = new RequestHTTP(null, [
+				'no_headers' => true,
+				'simulateWith' => [
+					'REQUEST_METHOD' => 'GET',
+					'SCRIPT_NAME' => 'index.php'
+				]
+			]);
+			if ($ps_email) {
+				$vb_delete_file = false;
+				if (!$ps_file_path) {
+					$ps_file_path = caGetTempFileName('fixity', 'txt');
+					file_put_contents($ps_file_path, $vs_report_output);
+					$vb_delete_file = true;
+				}
+				
+				$a = $o_request->config->get('app_display_name');
+				$attachment = null;
+				if($vn_errors > 0) {
+					$attachment = [
+						'path' => $ps_file_path,
+						'name' => _t('%1_fixity_report_%2.%3', $a, date("Y-m-d_h\hi\m"), $extension),
+						'mimetype' => $mimetyype
+					];
+				}
+				
+				if (!caSendMessageUsingView($o_request, [$ps_email], [__CA_ADMIN_EMAIL__], _t('[%1] Media fixity report for %2', $a, $d = caGetLocalizedDate()), 'check_media_fixity_report.tpl', ['date' => $d, 'app_name' => $a, 'num_errors' => $vn_errors], null, null, ['attachment' => $attachment])) {
+					global $g_last_email_error;
+					CLIUtils::addError(_t("Could not send email to %1: %2", $ps_email, $g_last_email_error));
+				}
+				if ($vb_delete_file) { @unlink($ps_file_path); }
+			}
 			return true;
 		}
 		# -------------------------------------------------------
@@ -2551,12 +2621,14 @@
 				"versions|v-s" => _t("Limit checking to specified versions. Separate multiple versions with commas."),
 				"file|o=s" => _t('Location to write report to. The placeholder %date may be included to date/time stamp the report.'),
 				"format|f-s" => _t('Output format. (text|tab|csv)'),
+				"email|m-s" => _t('Email address to send report to.'),
+				"quiet|q" => _t('Suppress progress messages.'),
 				"start_id|s-n" => _t('Representation id to start checking at'),
 				"end_id|e-n" => _t('Representation id to end checking at'),
 				"id|i-n" => _t('Representation id to check'),
 				"ids|l-s" => _t('Comma separated list of representation ids to check'),
 				"object_ids|x-s" => _t('Comma separated list of object ids to check'),
-				"kinds|k-s" => _t('Comma separated list of kind of media to check. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
+				"kinds|k-s" => _t('Comma separated list of kind of media to check. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to check both kinds of media. Default is "all"')
 			);
 		}
 		# -------------------------------------------------------
