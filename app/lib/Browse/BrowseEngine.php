@@ -2694,7 +2694,7 @@
 								$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 							}
 
-							if (sizeof($va_results)) {
+							if (is_array($va_results) && sizeof($va_results)) {
 								$va_wheres[] = $vs_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
 							}
 
@@ -2874,7 +2874,7 @@
 								$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 							}
 
-							if (sizeof($va_results)) {
+							if (is_array($va_results) && sizeof($va_results)) {
 								$va_wheres[] = $vs_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
 							}
 
@@ -3030,7 +3030,7 @@
 					}
 
 
-					if (sizeof($va_results)) {
+					if (is_array($va_results) && sizeof($va_results)) {
 						if ($va_facet_info['relative_to']) {
 							$va_where_sql[] = $this->ops_browse_table_name.".".$t_subject->primaryKey()." IN (".join(",", $va_results).")";
 						} else {
@@ -3058,7 +3058,7 @@
 
 					$vs_join_sql = join("\n", $va_joins);
 
-					if (sizeof($va_where_sql)) {
+					if (is_array($va_where_sql) && sizeof($va_where_sql)) {
 						$vs_where_sql = "WHERE ".join(" AND ", $va_where_sql);
 					}
 
