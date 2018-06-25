@@ -3165,7 +3165,7 @@
 					);
 
 					$va_wheres = array();
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -3491,7 +3491,7 @@
 					$vs_where_sql = '';
 
 					$va_wheres[] = "({$vs_browse_table_name}.current_loc_class IS NOT NULL)";
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -3671,7 +3671,7 @@
 							'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$vs_field_name.' = li.item_id',
 							'INNER JOIN ca_lists ON ca_lists.list_id = li.list_id'
 						);
-						if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+						if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 							$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 						}
 
@@ -3860,7 +3860,7 @@
 								}
 							}
 
-							if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+							if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 								$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 							}
 
@@ -3967,7 +3967,7 @@
 									$va_joins[] = 'INNER JOIN '.$t_label_instance->tableName()." AS lab ON lab.".$t_browse_table->primaryKey().' = '.$t_browse_table->tableName().'.'.$t_browse_table->primaryKey();
 								}
 
-								if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+								if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 									$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 								}
 
@@ -4110,7 +4110,7 @@
 						$va_selects[] = "{$va_restrict_to_types_expanded}.type_id";
 					}
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4233,7 +4233,7 @@
 
 					$va_facet_values = null;
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4360,7 +4360,7 @@
 
 					$va_facet_values = null;
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4526,7 +4526,7 @@
 											break;
 									}
 
-									if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+									if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 										$vs_where .= " AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 									}
 
@@ -4589,7 +4589,7 @@
 					$va_wheres = array();
 					$vs_normalization = $va_facet_info['normalization'];	// how do we construct the date ranges presented to uses. In other words - how do we want to allow users to browse dates? By year, decade, century?
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4933,7 +4933,7 @@
 					$va_wheres = array();
 					$vs_normalization = $va_facet_info['normalization'];	// how do we construct the dimensions ranges presented to users. In other words - what increments do we can to use to  browse measurments?
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
