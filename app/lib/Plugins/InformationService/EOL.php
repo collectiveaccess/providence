@@ -102,7 +102,7 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 			$vs_data = caQueryExternalWebservice("http://eol.org/api/search/1.0.json?q={$ps_search}&page={$p}".($vs_eol_keycode ? "&key={$vs_eol_keycode}" : ""));
 
 			if ($va_data = json_decode($vs_data, true)){
-				if (is_array($va_data['results'])) {
+				if (is_array($va_data['results']) && (sizeof($va_data['results']) > 0)) {
 					foreach($va_data['results'] as $va_entry) {
 						$va_items[(string)$va_entry['title']] = array('label' => (string)$va_entry['title'], 'idno' => (string)$va_entry['id'], 'url' => $va_entry['link']);
 						$count++;
@@ -110,6 +110,7 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 					$p++;
 				}
 			}
+			break;
 		}
 		ksort($va_items);
 		
