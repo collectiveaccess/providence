@@ -584,10 +584,10 @@ class OAIPMHService extends BaseService {
 							$this->createElementWithChildren($oaiData, $recordElement, 'header', $headerData);
 							$metadataElement = $oaiData->createElement('metadata');
 							$o_doc_src = DomDocument::loadXML($vs_item_xml);
+							$recordElement->appendChild($metadataElement);
 							if($o_doc_src) { // just in case the xml fails to load through DomDocument for some reason (e.g. a bad mapping or very weird characters)
 								$metadataElement->appendChild($oaiData->importNode($o_doc_src->documentElement, true));
 							}
-							$recordElement->appendChild($metadataElement);
 						}
 					}
 				}
