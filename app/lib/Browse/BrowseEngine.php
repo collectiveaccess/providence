@@ -3276,7 +3276,7 @@
 								$qr_res->seek(0);
 
 								$t_list_item = new ca_list_items();
-								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('type_id', 'idno', 'item_value', 'parent_id', 'access', 'deleted'));
+								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('type_id', 'idno', 'item_value', 'parent_id', 'access', 'deleted', 'rank'));
 								$va_list_child_count_cache = array();
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
@@ -3312,7 +3312,10 @@
 										'label' => $vs_label,
 										'parent_id' => $vn_parent_id = isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
 										'child_count' => $vn_child_count,
-										'content_count' => $va_value_counts[$i]
+										'content_count' => $va_value_counts[$i],
+										'rank' => $va_list_item_cache[$vn_val]['rank'],
+										'item_value' => $va_list_item_cache[$vn_val]['item_value'],
+										'idno' => $va_list_item_cache[$vn_val]['idno']
 									);
 									$va_children_by_parent_id[$vn_parent_id][] = $vn_val;
 								}
@@ -3373,14 +3376,35 @@
 												'parent_id' => $vn_parent_id,
 												'hierarchy_id' => $qr_ancestors->get('list_id'),
 												'child_count' => 1,
-										        'content_count' => (int)$q_hier_count->get('_count')
+										        'content_count' => (int)$q_hier_count->get('_count'),
+										        'rank' => $qr_ancestors->get('rank'),
+										        'item_value' => $qr_ancestors->get('item_value'),
+										        'idno' => $qr_ancestors->get('idno')
 											);
 										}
 									}
 								}
 								
 								// preserve order of list
-								return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								if ($vn_list_id = $t_element->get('list_id')) {
+								    $t_list = new ca_lists($vn_list_id);
+								    switch($t_list->get('default_sort')) {
+								        case __CA_LISTS_SORT_BY_RANK__:
+								            return caSortArrayByKeyInValue($va_facet_list, array('rank')); 
+								            break;
+								        case __CA_LISTS_SORT_BY_IDENTIFIER__:
+								            return caSortArrayByKeyInValue($va_facet_list, array('idno')); 
+								            break;
+								        case __CA_LISTS_SORT_BY_VALUE__:
+								            return caSortArrayByKeyInValue($va_facet_list, array('item_value')); 
+								            break;
+								        default:
+								            return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								            break;
+								    }
+								} else {
+								    return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_OBJECTS__:
 							case __CA_ATTRIBUTE_VALUE_ENTITIES__:
