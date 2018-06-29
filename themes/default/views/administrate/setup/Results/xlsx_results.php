@@ -39,11 +39,12 @@
 	$vs_supercol = '';
 	
 	$va_a_to_z = range('A', 'Z');
-	
+	$vn_precision = ini_get('precision');
 	$workbook = new PHPExcel();
 
 	// more accurate (but slower) automatic cell size calculation
 	PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
+	ini_set('precision', $vn_precision);
 
 	$o_sheet = $workbook->getActiveSheet();
 	// mise en forme
