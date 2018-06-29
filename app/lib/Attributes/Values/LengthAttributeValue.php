@@ -184,6 +184,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
             $vs_value = '';
             $vn_precision = caGetOption('precision', $pa_options, null);
             
+            if (!is_array($fracs = $this->config->get('display_fractions_for'))) { $fracs = []; }
             $vn_maximum_denominator = array_reduce($this->config->get('display_fractions_for'), function($acc, $v) { 
                 $t = explode("/", $v); return ((int)$t[1] > $acc) ? (int)$t[1] : $acc; 
             }, 0);
