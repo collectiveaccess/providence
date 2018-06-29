@@ -2937,19 +2937,20 @@ class ca_users extends BaseModel {
 			}
 		}
 
-		try {
-			if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-				$this->load($vs_username);
-				return true;
-			}
-		}  catch (Exception $e) {
-			$this->opo_log->log(array(
-				'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-				'MESSAGE' => _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage())
-			));
-			return false;
-		}
-		
+        if ($vs_username) {
+            try {
+                if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
+                    $this->load($vs_username);
+                    return true;
+                }
+            }  catch (Exception $e) {
+                $this->opo_log->log(array(
+                    'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                    'MESSAGE' => _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage())
+                ));
+                return false;
+            }
+        }
 		// check ips
 		if (!isset($pa_options["dont_check_ips"]) || !$pa_options["dont_check_ips"]) {
 			if ($vn_user_id = $this->ipAuthenticate()) {
