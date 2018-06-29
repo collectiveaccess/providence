@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@ namespace CA\Sync\LogEntry;
 require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_attributes.php');
+require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 
 class AttributeValue extends Base {
 
@@ -70,14 +71,25 @@ class AttributeValue extends Base {
 		}
 
 		// if item_id is present, check if it's valid
-		if (isset($va_snapshot['item_id']) && ($vs_item_id = $va_snapshot['item_id'])) {
+		if (
+		    (isset($va_snapshot['item_id_guid']) && ($va_snapshot['item_id_guid']))
+		    ||
+		    (isset($va_snapshot['item_code']) && ($va_snapshot['item_code']))
+		    ||
+		    (isset($va_snapshot['item_label']) && ($va_snapshot['item_label']))
+		) {
 			if (
 				isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])
 			) {
 				$t_element = \ca_metadata_elements::getInstance($vs_element_code);
 
 				if($vn_list_id = $t_element->get('list_id')) {
-					if(isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
+				    if (isset($va_snapshot['item_id_guid']) && ($vs_item_id_guid = $va_snapshot['item_id_guid'])) {
+				        $t_item = new \ca_list_items();
+                        if($this->isUpdate() && !$t_item->loadByGUID($vs_item_id_guid)) {
+                            throw new InvalidLogEntryException(_t("Could not find list item with guid %1", $vs_item_id_guid));
+                        }
+					} elseif(isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
 						if(!($vn_item_id = caGetListItemID($vn_list_id, $vs_item_code))) {
 							throw new InvalidLogEntryException(_t("Invalid list item code %1 for attribute value log entry.", $vs_item_code));
 						}
@@ -107,7 +119,7 @@ class AttributeValue extends Base {
 		} elseif($this->isDelete()) {
 			$this->getModelInstance()->delete(false);
 		}
-
+		
 		$this->checkModelInstanceForErrors();
 	}
 
@@ -144,13 +156,21 @@ class AttributeValue extends Base {
 					$t_element = \ca_metadata_elements::getInstance($vs_element_code);
 
 					if($vn_list_id = $t_element->get('list_id')) {
-						if(isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
+					    if (isset($va_snapshot['item_id_guid']) && ($vs_item_id_guid = $va_snapshot['item_id_guid'])) {
+                            $t_item = new \ca_list_items();
+                            if($t_item->loadByGUID($vs_item_id_guid) && ($vn_item_id = $t_item->getPrimaryKey())) {
+                                $this->getModelInstance()->set('item_id', $vn_item_id);
+								$this->getModelInstance()->set('value_longtext1', $vn_item_id);
+                            }
+                        } elseif(isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
 							if($vn_item_id = caGetListItemID($vn_list_id, $vs_item_code)) {
 								$this->getModelInstance()->set('item_id', $vn_item_id);
+								$this->getModelInstance()->set('value_longtext1', $vn_item_id);
 							}
 						} elseif(isset($va_snapshot['item_label']) && ($vs_item_label = $va_snapshot['item_label'])) {
 							if($vn_item_id = caGetListItemIDForLabel($vn_list_id, $vs_item_label)) {
 								$this->getModelInstance()->set('item_id', $vn_item_id);
+								$this->getModelInstance()->set('value_longtext1', $vn_item_id);
 							}
 						}
 					}

@@ -457,7 +457,7 @@ class ca_change_log extends BaseModel {
 							}
 							break;
 						case 'locale_id':
-						    $va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow(37, $vm_val);	// 37 = ca_locales
+						    $va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow(37, $vm_val); // 37 = ca_locales
 						    $va_snapshot['locale_code'] = ca_locales::IDToCode($vm_val);
 							break;
 						default:

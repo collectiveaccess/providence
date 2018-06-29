@@ -277,7 +277,7 @@ class ca_guids extends BaseModel {
 		if (!($va_info = self::getInfoForGUID($ps_guid))) { return null; }
 
         
-        if (in_array(Datamodel::getTableName($va_info['table_num']), ['ca_object_lots', 'ca_object_lot_labels', 'ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels'])) {   //TODO: make tables for which we should ignore access configurable
+        if (in_array(Datamodel::getTableName($va_info['table_num']), ['ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels', 'ca_object_lots', 'ca_object_lot_labels'])) {   //TODO: make tables for which we should ignore access configurable
             return true;
         } elseif (Datamodel::isLabel($va_info['table_num'])) {
             if (($t_label = Datamodel::getInstanceByTableNum($va_info['table_num'], true)) && $t_label->load($va_info['row_id'])) {
