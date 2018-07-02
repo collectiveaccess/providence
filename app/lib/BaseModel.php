@@ -3140,7 +3140,8 @@ class BaseModel extends BaseObject {
 								$t_instance->setMode(ACCESS_WRITE);
 								$t_instance->set($vs_hier_id_fld, $vn_hierarchy_id);
 								
-								$va_hier_info = $this->_calcHierarchicalIndexing($this->_getHierarchyParent($vn_child_id));
+								$va_child_info = $this->_getHierarchyParent($vn_child_id);
+								$va_hier_info = $this->_calcHierarchicalIndexing($this->_getHierarchyParent($va_child_info[$vs_parent_id_fld]));
 								$t_instance->set($vs_hier_left_fld, $va_hier_info['left']);
 								$t_instance->set($vs_hier_right_fld, $va_hier_info['right']);
 								$t_instance->update();
