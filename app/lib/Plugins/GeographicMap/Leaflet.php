@@ -279,7 +279,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
  			$base_path = $request->getBaseUrlPath();
  		}
 		$vs_element = 	"
-<div id='mapholder_{$element_id}_{n}' class='mapholder'>
+<div id='mapholder_{$element_id}_{n}' class='mapholder' style='z-index:0;'>
 	 <div class='map' style='width:695px; height:400px;'></div>
 </div>
 <script type='text/javascript'>
