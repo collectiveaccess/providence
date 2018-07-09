@@ -240,7 +240,7 @@ class Installer {
 	 * @return int number of errors
 	 */
 	public function numErrors() {
-		return sizeof($this->opa_errors);
+		return is_array($this->opa_errors) ? sizeof($this->opa_errors) : 0;
 	}
 	# --------------------------------------------------
 	/**
