@@ -25,12 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-#
-# Bail if request is a Google Cloud health check. We can to return an HTTP 200 code to 
-# signify "health"
-#
-if (caDeviceIsHealthCheck()) { print "OK"; exit; }
 
 #
 # __CA_BASE_DIR__ = the absolute server path to the directory containing your CollectiveAccess installation
@@ -314,6 +308,12 @@ caCheckVendorLibraries();
 
 # includes commonly used classes
 require_once(__CA_APP_DIR__.'/helpers/preload.php');
+
+#
+# Bail if request is a Google Cloud health check. We can to return an HTTP 200 code to 
+# signify "health"
+#
+if (caDeviceIsHealthCheck()) { print "OK"; exit; }
 
 # __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__
 #
