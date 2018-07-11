@@ -72,6 +72,19 @@ function caDeviceIsMobile() {
 }
 # --------------------------------------------------------------------------------------------
  /**
+  * Return true if user agent of current request appears to be a GoogleCloud health check
+  *
+  * @return bool
+  */
+function caRequestIsHealthCheck() {
+	if (preg_match('!GoogleHC!i', $_SERVER['HTTP_USER_AGENT'])) {
+		return true;
+	}
+			
+	return false;
+}
+# --------------------------------------------------------------------------------------------
+ /**
   * Return true if system is configured to use identifers (idno's) rather than internal numeric CA primary keys
   * in urls when referring to a specific record
   *

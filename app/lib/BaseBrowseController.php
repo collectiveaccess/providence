@@ -717,8 +717,9 @@
 					}
  				
 					if ($t_item->getPrimaryKey()) { 
-						$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
+					    $va_ancestors = $t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true));
 						if (!is_array($va_ancestors)) { $va_ancestors = array(); }
+						$va_ancestors = array_reverse($va_ancestors);
 					}
 					if ($vn_hierarchies_in_use <= 1) {
 						array_shift($va_ancestors);

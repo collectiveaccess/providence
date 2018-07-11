@@ -2694,7 +2694,7 @@
 								$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 							}
 
-							if (sizeof($va_results)) {
+							if (is_array($va_results) && sizeof($va_results)) {
 								$va_wheres[] = $vs_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
 							}
 
@@ -2874,7 +2874,7 @@
 								$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 							}
 
-							if (sizeof($va_results)) {
+							if (is_array($va_results) && sizeof($va_results)) {
 								$va_wheres[] = $vs_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
 							}
 
@@ -3030,7 +3030,7 @@
 					}
 
 
-					if (sizeof($va_results)) {
+					if (is_array($va_results) && sizeof($va_results)) {
 						if ($va_facet_info['relative_to']) {
 							$va_where_sql[] = $this->ops_browse_table_name.".".$t_subject->primaryKey()." IN (".join(",", $va_results).")";
 						} else {
@@ -3058,7 +3058,7 @@
 
 					$vs_join_sql = join("\n", $va_joins);
 
-					if (sizeof($va_where_sql)) {
+					if (is_array($va_where_sql) && sizeof($va_where_sql)) {
 						$vs_where_sql = "WHERE ".join(" AND ", $va_where_sql);
 					}
 
@@ -3165,7 +3165,7 @@
 					);
 
 					$va_wheres = array();
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -3276,7 +3276,7 @@
 								$qr_res->seek(0);
 
 								$t_list_item = new ca_list_items();
-								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('type_id', 'idno', 'item_value', 'parent_id', 'access', 'deleted'));
+								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('type_id', 'idno', 'item_value', 'parent_id', 'access', 'deleted', 'rank'));
 								$va_list_child_count_cache = array();
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
@@ -3312,7 +3312,10 @@
 										'label' => $vs_label,
 										'parent_id' => $vn_parent_id = isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
 										'child_count' => $vn_child_count,
-										'content_count' => $va_value_counts[$i]
+										'content_count' => $va_value_counts[$i],
+										'rank' => $va_list_item_cache[$vn_val]['rank'],
+										'item_value' => $va_list_item_cache[$vn_val]['item_value'],
+										'idno' => $va_list_item_cache[$vn_val]['idno']
 									);
 									$va_children_by_parent_id[$vn_parent_id][] = $vn_val;
 								}
@@ -3373,14 +3376,35 @@
 												'parent_id' => $vn_parent_id,
 												'hierarchy_id' => $qr_ancestors->get('list_id'),
 												'child_count' => 1,
-										        'content_count' => (int)$q_hier_count->get('_count')
+										        'content_count' => (int)$q_hier_count->get('_count'),
+										        'rank' => $qr_ancestors->get('rank'),
+										        'item_value' => $qr_ancestors->get('item_value'),
+										        'idno' => $qr_ancestors->get('idno')
 											);
 										}
 									}
 								}
 								
 								// preserve order of list
-								return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								if ($vn_list_id = $t_element->get('list_id')) {
+								    $t_list = new ca_lists($vn_list_id);
+								    switch($t_list->get('default_sort')) {
+								        case __CA_LISTS_SORT_BY_RANK__:
+								            return caSortArrayByKeyInValue($va_facet_list, array('rank')); 
+								            break;
+								        case __CA_LISTS_SORT_BY_IDENTIFIER__:
+								            return caSortArrayByKeyInValue($va_facet_list, array('idno')); 
+								            break;
+								        case __CA_LISTS_SORT_BY_VALUE__:
+								            return caSortArrayByKeyInValue($va_facet_list, array('item_value')); 
+								            break;
+								        default:
+								            return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								            break;
+								    }
+								} else {
+								    return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_OBJECTS__:
 							case __CA_ATTRIBUTE_VALUE_ENTITIES__:
@@ -3491,7 +3515,7 @@
 					$vs_where_sql = '';
 
 					$va_wheres[] = "({$vs_browse_table_name}.current_loc_class IS NOT NULL)";
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -3671,7 +3695,7 @@
 							'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$vs_field_name.' = li.item_id',
 							'INNER JOIN ca_lists ON ca_lists.list_id = li.list_id'
 						);
-						if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+						if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 							$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 						}
 
@@ -3860,7 +3884,7 @@
 								}
 							}
 
-							if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+							if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 								$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 							}
 
@@ -3967,7 +3991,7 @@
 									$va_joins[] = 'INNER JOIN '.$t_label_instance->tableName()." AS lab ON lab.".$t_browse_table->primaryKey().' = '.$t_browse_table->tableName().'.'.$t_browse_table->primaryKey();
 								}
 
-								if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+								if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 									$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 								}
 
@@ -4110,7 +4134,7 @@
 						$va_selects[] = "{$va_restrict_to_types_expanded}.type_id";
 					}
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4233,7 +4257,7 @@
 
 					$va_facet_values = null;
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4360,7 +4384,7 @@
 
 					$va_facet_values = null;
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4526,7 +4550,7 @@
 											break;
 									}
 
-									if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+									if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 										$vs_where .= " AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 									}
 
@@ -4589,7 +4613,7 @@
 					$va_wheres = array();
 					$vs_normalization = $va_facet_info['normalization'];	// how do we construct the date ranges presented to uses. In other words - how do we want to allow users to browse dates? By year, decade, century?
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -4933,7 +4957,7 @@
 					$va_wheres = array();
 					$vs_normalization = $va_facet_info['normalization'];	// how do we construct the dimensions ranges presented to users. In other words - what increments do we can to use to  browse measurments?
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -5172,7 +5196,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 }
 
-					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 

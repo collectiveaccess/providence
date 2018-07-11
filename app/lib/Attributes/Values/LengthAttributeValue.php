@@ -184,7 +184,9 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
             $vs_value = '';
             $vn_precision = caGetOption('precision', $pa_options, null);
             
-            $vn_maximum_denominator = array_reduce($this->config->get('display_fractions_for'), function($acc, $v) { 
+            if (!is_array($unicode_fracs = $this->config->get('use_unicode_fraction_glyphs_for'))) { $unicode_fracs = []; }
+            if (!is_array($fracs = $this->config->get('display_fractions_for'))) { $fracs = []; }
+            $vn_maximum_denominator = array_reduce($fracs, function($acc, $v) { 
                 $t = explode("/", $v); return ((int)$t[1] > $acc) ? (int)$t[1] : $acc; 
             }, 0);
             
@@ -251,7 +253,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 if(in_array($vs_convert_to_units, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 
                                 if ($vn_inches > 0) {
-                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['precision' => $this->config->get('inch_decimal_precision'), 'allowFractionsFor' => $this->config->get('display_fractions_for'), 'useUnicodeFractionGlyphsFor' => $this->config->get('use_unicode_fraction_glyphs_for')]);
+                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['precision' => $this->config->get('inch_decimal_precision'), 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
                                     if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 }
                                 return trim($vs_value);
@@ -277,14 +279,14 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                     if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 }
                                 if ($vn_inches > 0) {
-                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['units' => Zend_Measure_Length::INCH, 'allowFractionsFor' => $this->config->get('display_fractions_for'), 'useUnicodeFractionGlyphsFor' => $this->config->get('use_unicode_fraction_glyphs_for')]);
+                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['units' => Zend_Measure_Length::INCH, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
                                     if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 }
                                 return trim($vs_value);
                                 break;
                             case Zend_Measure_Length::INCH:
                             default:
-                                $vs_value = caLengthToFractions($vs_value_in_inches, $vn_maximum_denominator, true, ['units' => $vs_convert_to_units, 'allowFractionsFor' => $this->config->get('display_fractions_for'), 'useUnicodeFractionGlyphsFor' => $this->config->get('use_unicode_fraction_glyphs_for')]);
+                                $vs_value = caLengthToFractions($vs_value_in_inches, $vn_maximum_denominator, true, ['units' => $vs_convert_to_units, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
                                 break;
                         }
                     } 

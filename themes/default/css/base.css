@@ -32,6 +32,8 @@ form select {
 }
 textarea {
     resize: none;
+    font-size: 12px !important;
+    
 }
 
 a, a:link, a:visited, a font { color: #1ab3c8; text-decoration: underline; }

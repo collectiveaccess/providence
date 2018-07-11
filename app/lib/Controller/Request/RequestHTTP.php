@@ -722,7 +722,8 @@ class RequestHTTP extends Request {
 		
 		foreach(array(
 			'no_headers', 'dont_redirect_to_login', 'dont_create_new_session', 'dont_redirect_to_welcome',
-			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers', 'redirect'
+			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers', 'redirect',
+			'allow_external_auth'
 		) as $vs_key) {
 			if (!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
@@ -755,8 +756,7 @@ class RequestHTTP extends Request {
 					$vb_login_successful = true;
 				}
 				
-				if ($vb_login_successful) {
-																								// Login was successful
+				if ($vb_login_successful) {																	// Login was successful
 					Session::setVar($vs_app_name."_lastping",time());					// set last time we heard from client in session
 					$this->user->setLastPing(time());	
 					$AUTH_CURRENT_USER_ID = $vn_user_id;
@@ -768,31 +768,33 @@ class RequestHTTP extends Request {
 			if (!$vb_login_successful) {
 				$this->user = new ca_users();		// add user object
 
-				$vs_tmp1 = $vs_tmp2 = null;
-				if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
-					if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
-						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
-						$vb_login_successful = false;
-					} else {
-						$vb_login_successful = true;
-						$vn_user_id = $this->user->getUserID();
-					}
-				}
+                if (!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) || $pa_options['allow_external_auth']) {
+                    $vs_tmp1 = $vs_tmp2 = null;
+                    if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
+                        if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
+                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            $vb_login_successful = false;
+                        } else {
+                            $vb_login_successful = true;
+                            $vn_user_id = $this->user->getUserID();
+                        }
+                    }
 
-				if (!$vb_login_successful) {																	// throw user to login screen
-					if (!$pa_options["dont_redirect_to_login"]) {
-						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
-						$vs_redirect = $this->getRequestUrl(true);
+                    if (!$vb_login_successful) {																	// throw user to login screen
+                        if (!$pa_options["dont_redirect_to_login"]) {
+                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            $vs_redirect = $this->getRequestUrl(true);
 
-						if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
-							$vs_redirect = '';
-						} else {
-							$vs_redirect = '?redirect=' . urlencode($vs_redirect);
-						}
-						$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path") . $vs_redirect);
-					}
-					return false;
-				}
+                            if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
+                                $vs_redirect = '';
+                            } else {
+                                $vs_redirect = '?redirect=' . urlencode($vs_redirect);
+                            }
+                            $this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path") . $vs_redirect);
+                        }
+                        return false;
+                    }
+                }
 			}
 		} 
 		
@@ -814,7 +816,7 @@ class RequestHTTP extends Request {
 		}
 	
 		if (!$vb_login_successful) {	
-			$this->user = null;																	// auth failed
+			$this->user = new ca_users();															// auth failed
 																								// throw user to login screen
 			if ($pa_options["user_name"]) {
 				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));

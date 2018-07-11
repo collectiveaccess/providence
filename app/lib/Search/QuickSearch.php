@@ -62,13 +62,22 @@
 			$t_list = new ca_lists();
 			
  			$va_searches_sorted = [];
- 			foreach($va_default_order as $vs_table) {
+ 			foreach($va_default_order as $vs_spec) {
+ 			    list($vs_table, $vs_type) = explode('/', $vs_spec);
  				if((bool)$o_config->get("{$vs_table}_disable")) { continue; }
  				$va_searches_sorted[$vs_table] = $va_searches[$vs_table];
  				
- 				if (is_array($va_breakout_by_type) && in_array($vs_table, $va_breakout_by_type)) {
- 					if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+ 				if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
  					
+ 				if ($vs_type) {
+ 				    if ($t_type = $t_instance->getTypeInstance($t_instance->getTypeIDForCode($vs_type))) {
+						$va_proto_type = $va_searches_sorted[$vs_table];
+						unset($va_searches_sorted[$vs_table]);
+						$va_searches_sorted["{$vs_table}/".$t_type->get('idno')] = $va_proto_type;
+						$va_searches_sorted["{$vs_table}/".$t_type->get('idno')]['displayname'] = caUcFirstUTF8Safe($t_type->get('ca_list_items.preferred_labels.name_plural'));
+						
+					}
+ 				} elseif (is_array($va_breakout_by_type) && in_array($vs_table, $va_breakout_by_type)) {
  					if (is_array($va_types = caExtractValuesByUserLocale($t_list->getItemsForList($t_instance->getTypeListCode())))) {
 						$va_proto_type = $va_searches_sorted[$vs_table];
 						unset($va_searches_sorted[$vs_table]);

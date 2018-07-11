@@ -6141,7 +6141,7 @@ if (!$vb_batch) {
 					$this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
 					if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
 						$this->set($vs_idno_fld, 
-						    ($t_parent->get($vs_parent_id_fld)) ? 
+						    ($t_parent->get($vs_idno_fld)) ? 
 						        $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
 						        :
 						        ''

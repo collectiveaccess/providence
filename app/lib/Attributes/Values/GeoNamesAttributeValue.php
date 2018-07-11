@@ -207,7 +207,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			return $this->ops_text_value.'|'.$this->ops_uri_value;
 		}
 
-		return $this->ops_text_value.' [id:'.$this->ops_uri_value.']';
+		return $this->ops_uri_value ? $this->ops_text_value.' [id:'.$this->ops_uri_value.']' : '';
 	}
 	# ------------------------------------------------------------------
 	public function getTextValue(){

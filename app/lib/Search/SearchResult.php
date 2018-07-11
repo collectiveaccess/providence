@@ -885,6 +885,16 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 *
+	 */
+	public function getInstance() {
+		if(($id = $this->opo_engine_result->get($this->opo_subject_instance->primaryKey())) && $this->opo_subject_instance->load($id)) {
+		    return $this->opo_subject_instance;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
 	  * Returns a list of values for the specified field from all rows in the result set. 
 	  * If you need to extract all values from single field in a result set this method provides a convenient means to do so.
 	  *

@@ -685,7 +685,6 @@
 		 */
 		static public function getResultContextForLastFind($po_request, $pm_table_name_or_num) {
 			if (!ResultContextStorage::$storageLoaded) { ResultContextStorage::init($po_request); }
-			if (!storageLoaded::$storageLoaded) { ResultContextStorage::init($po_request); }
 			
 			$va_tmp = explode('/', ResultContextStorage::getVar('result_last_context_'.$vs_table_name));
 		
