@@ -1011,6 +1011,8 @@ class SearchResult extends BaseObject {
 			$pa_options['returnAsSearchResult'] = false;
 		}
 		
+		$config = Configuration::load();
+		
 		if($pa_options['filterTypes'] && !is_array($pa_options['filterTypes'])) { $pa_options['filterTypes'] = [$pa_options['filterTypes']]; }
 		
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
@@ -1331,6 +1333,18 @@ class SearchResult extends BaseObject {
 									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null)));									    
 									
 									}
+									
+									// Output full collection-object hierarchy
+									if (($va_path_components['table_name'] == 'ca_objects') && caGetOption('showCollectionObjectHierarchy', $pa_options, false) && ($config->get('ca_objects_x_collections_hierarchy_enabled'))) {
+									    if (($qr_bridge = caMakeSearchResult($va_path_components['table_name'], [$va_ancestor_ids[0]], $pa_options)) && $qr_bridge->nextHit()) {
+                                            $t = explode('.', $vs_field_spec); $t[0] = 'ca_collections';
+                                            $collections = $qr_bridge->get(join('.', $t), ['returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'restrictToRelationshipTypes' => [$config->get('ca_objects_x_collections_hierarchy_relationship_type')]]);
+                                            foreach($collections as $c) {
+                                                array_unshift($va_hier_item, $c);
+                                            }
+                                        }
+									}
+									
 									if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 										$va_hier_item = array_slice($va_hier_item, 0, $vn_max_levels_from_top, true);
 									} elseif (!is_null($vn_max_levels_from_bottom) && ($vn_max_levels_from_bottom > 0)) {
