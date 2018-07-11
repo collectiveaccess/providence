@@ -109,6 +109,12 @@
 		 *
 		 */
 		public function setPropertyValues($pa_serialized_values) {
+		    #
+			# Deal with older serialized values that are numerically indexed
+			# 
+			if (caIsIndexedArray($pa_serialized_values)) {
+			    $pa_serialized_values = array_shift($pa_serialized_values);
+			}
 			$this->opa_property_values = $pa_serialized_values;
 		}
 		# ------------------------------------------------------------------
