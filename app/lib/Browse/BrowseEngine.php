@@ -5369,7 +5369,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 					
 					if (sizeof($va_criteria) > 0) {
-						$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." NOT IN (".join(",", caQuoteList(array_map(intval, array_keys($va_criteria))))."))";	
+						$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." NOT IN (".join(",", caQuoteList(array_map("intval", array_keys($va_criteria))))."))";	
 					}
 
 					$vs_join_sql = join("\n", $va_joins);
