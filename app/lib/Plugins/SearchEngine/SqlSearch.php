@@ -1542,13 +1542,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$vs_sql_where .= " AND (".join(" OR ", $va_field_restrict_sql).")";
 					}
 					if (!$vs_fld_num && is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, null)) && sizeof($va_exclude_fields_from_search)) {
-						$va_field_restrict_sql = array();
+						$va_field_restrict_sql = [];
 						foreach($va_exclude_fields_from_search as $va_restrict) {
-							$va_field_restrict_sql[] = "((swi.field_table_num <> ".intval($va_restrict['table_num']).") AND (swi.field_num <> '".$va_restrict['field_num']."'))";
+							$va_field_restrict_sql[] = "'".(int)$va_restrict['table_num']."/".(int)$va_restrict['field_num']."'";
 						}
-						$vs_sql_where .= " AND (".join(" OR ", $va_field_restrict_sql).")";
+						$vs_sql_where .= " AND (CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (".join(",", $va_field_restrict_sql)."))";
 					}
-					
 					
 					$va_join = array();
 					if (($vn_direct_sql_target_table_num != $pn_subject_tablenum) && !$vb_dont_rewrite_direct_sql_query) {
