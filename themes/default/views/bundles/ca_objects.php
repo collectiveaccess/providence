@@ -205,7 +205,7 @@
 					</td>
 					<td>
 <?php
-	if (is_array($this->getVar('relationship_types_by_sub_type')) && sizeof($this->getVar('relationship_types_by_sub_type')))s {
+	if (is_array($this->getVar('relationship_types_by_sub_type')) && sizeof($this->getVar('relationship_types_by_sub_type'))) {
 ?>
 						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
 <?php
