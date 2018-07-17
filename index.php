@@ -83,7 +83,7 @@
 		//
 		// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature
 		//
-		if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) || !preg_match("/^[\/]{0,1}system\/auth\/(dologin|login|forgot|requestpassword|initreset|doreset)/", strtolower($req->getPathInfo()))) {
+		if ((AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !preg_match("/^[\/]{0,1}system\/auth\/callback/", strtolower($req->getPathInfo()))) || !preg_match("/^[\/]{0,1}system\/auth\/(dologin|login|forgot|requestpassword|initreset|doreset|callback)/", strtolower($req->getPathInfo()))) {
 			$vb_auth_success = $req->doAuthentication(array('noPublicUsers' => true));
 
 			if(!$vb_auth_success) {

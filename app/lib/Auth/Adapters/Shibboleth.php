@@ -66,7 +66,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	    return false;
 	}
     # --------------------------------------------------------------------------------
-    public function getUserInfo($ps_username, $ps_password) {
+    public function getUserInfo($ps_username, $ps_password, $pa_options=null) {
         if(!$this->opo_shibAuth->isAuthenticated()){
             if (!$this->authenticate($ps_username, $ps_password)) {
                 throw new ShibbolethException(_t("User could not be authenticated."));

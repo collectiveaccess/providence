@@ -67,9 +67,10 @@ interface IAuthAdapter {
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
+	 * @param $pa_options
 	 * @return array
 	 */
-	public function getUserInfo($ps_username, $ps_password);
+	public function getUserInfo($ps_username, $ps_password, $pa_options=null);
 
 	/**
 	 * Deletes user. Should throw AuthClassFeatureException if not implemented.

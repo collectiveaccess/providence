@@ -34,7 +34,7 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		    if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && ($this->request->getAction() != 'logout')) {
+ 		    if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !in_array($this->request->getAction(), ['logout', 'callback'])) {
  		        $po_response->setRedirect($po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$po_request->config->get("auth_login_welcome_path"));
  		        $po_response->sendResponse();
  		        exit;
@@ -191,6 +191,15 @@
 				}
 			}
 
+		}
+		# -------------------------------------------------------
+		#
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function callback() {
+			AuthenticationManager::callback();
 		}
 		# -------------------------------------------------------
  	}

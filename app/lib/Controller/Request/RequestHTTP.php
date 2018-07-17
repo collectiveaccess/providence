@@ -794,6 +794,9 @@ class RequestHTTP extends Request {
                         }
                         return false;
                     }
+                } else {
+                	// Redirect to external auth?
+                	return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
                 }
 			}
 		} 
