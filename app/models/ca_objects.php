@@ -1988,8 +1988,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		if ((($vs_table_name = $t_instance->tableName())) !== 'ca_storage_locations') {
  			$pm_type_id = $t_instance->getTypeID($pn_rel_id);
  		}
- 		//print "FOR $pm_rel_table_name_or_num/$pm_type_id<br>\n";
- 		//print_R(ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id));
  		if (ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id)) { return true; }
  		return false;
  	}
