@@ -1757,6 +1757,11 @@
 											if ($vn_hier_id_fld = $t_rel_item->getProperty('HIERARCHY_ID_FLD')) {
 												$vs_get_item_sql .= " AND {$vs_rel_table_name}.{$vn_hier_id_fld} = ".(int)$t_rel_item->get($vn_hier_id_fld);
 											}
+											
+											if ($t_rel_item->hasField('deleted')) { 
+												$vs_get_item_sql .= " AND ({$vs_rel_table_name}.deleted = 0)";
+											}
+											
 											$vs_get_item_sql = "({$vs_get_item_sql})";
 										} else {
 											$vs_get_item_sql = "({$vs_rel_table_name}.{$vs_rel_table_pk} = ".(int)$vn_row_id.")";
