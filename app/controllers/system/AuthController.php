@@ -193,13 +193,22 @@
 
 		}
 		# -------------------------------------------------------
-		#
+		# Authentication callback handler
+		# 	Passes control to authentication manager callback handler
+		#	Authentication adapters for schemes like Okta can use this to 
+		#	implement required control flow elements
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public function callback() {
-			AuthenticationManager::callback();
+			try {
+				AuthenticationManager::callback();
+			} catch (Exception $e) {
+				$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+				$this->view->setVar('notifications', $this->notification->getNotifications());
+				$this->render('auth_error_html.php');
+			}
 		}
 		# -------------------------------------------------------
  	}

@@ -219,7 +219,7 @@ class AuthenticationManager {
 	}
 	
 	/**
-	 * 
+	 * Callback handler for adapters that require a callback for control flow (Eg. Okta)
 	 */
 	public static function callback($pa_options=null) {
 		self::init();
