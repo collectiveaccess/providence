@@ -57,14 +57,17 @@
 	if(is_array($va_items) && sizeof($va_items)) {
 		print caGetPrintFormatsListAsHTMLForSetItemBundles($vs_id_prefix, $this->request, $t_set, $t_set->getItemRowIDs());
 	}
-	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
-	
 ?>
-	<div class="caItemListSortControls">
-		<?php print _t('Sort by'); ?>:<br/>
+    <div class="caItemListSortControls">
+		<?php print _t('Sort by'); ?>:
 		<a href="#" onclick="setEditorOps.sort('name'); return false;"><?php print _t('name'); ?></a>&nbsp;&nbsp;
 		<a href="#" onclick="setEditorOps.sort('idno'); return false;"><?php print _t('identifier'); ?></a>
 	</div>
+<?php
+	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
+	
+?>
+	
 	<div id="<?php print $vs_id_prefix; ?>setItems" class="setItems">
 		<div class="setEditorAddItemForm" id="<?php print $vs_id_prefix; ?>addItemForm">
 			<?php print _t('Add %1', $vs_type_singular).': '; ?>

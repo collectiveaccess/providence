@@ -123,6 +123,7 @@
 	 * @param array $pa_options Options include:
 	 *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
 	 *		absolute = return absolute URL. [Default is to return relative URL]
+	 *      useQueryString = encode other parameters as query string rather than in url path [Default is false]
 	 *
 	 * @return string
 	 */
@@ -156,14 +157,23 @@
 			$vn_i = 0;
 			
 			if (caIsAssociativeArray($pa_other_params)) {
+			    $use_query_string = caGetOption('useQueryString', $pa_options, false);
+			    $query_params = [];
 				foreach($pa_other_params as $vs_name => $vs_value) {
 					if (in_array($vs_name, array('module', 'controller', 'action'))) { continue; }
 					if (is_array($vs_value)) { // is the value is array we need to serialize is... just treat it as a list of values which *should* be what it is.
 						$vs_value = join(";", $vs_value);
 					}
-					$vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
-				
+					
+					if ($use_query_string) { 
+					    $query_params[$vs_name] = $vs_value;
+					} else {
+					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
+				    }
 					$vn_i++;
+				}
+				if ($use_query_string) {
+				    $vs_url .= "?".http_build_query($query_params);
 				}
 			} else {
 				$vs_url .= "/".join("/", $pa_other_params);
