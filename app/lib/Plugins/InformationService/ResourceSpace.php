@@ -39,8 +39,6 @@ require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 require_once(__CA_LIB_DIR__."/Zend/Feed.php");
 
-use Guzzle\Http\Client;
-
 global $g_information_service_settings_ResourceSpae;
 $g_information_service_settings_ResourceSpace = array(
 		'user' => array(
