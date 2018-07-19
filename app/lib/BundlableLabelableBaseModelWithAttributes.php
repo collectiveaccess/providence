@@ -3302,6 +3302,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if(!(bool)$this->getAppConfig()->get($this->tableName().'_dont_allow_editing_of_codes_when_in_use') || !$this->getPrimaryKey()) {
 								if ($this->opo_idno_plugin_instance) {
 									$this->opo_idno_plugin_instance->setDb($this->getDb());
+									if (isset($va_fields_by_type['intrinsic']['mandatory_type_id'])) {
+										$this->set('type_id', $_REQUEST['type_id']);
+									}
 									$this->set($vs_f, $vs_tmp = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field));
 								} else {
 									$this->set($vs_f, $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString));
