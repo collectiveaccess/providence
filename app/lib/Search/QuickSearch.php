@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2017 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,7 @@
 		 * @param array $pa_options No options are supported
 		 * @return array
 		 */ 
-		public static function availableSearches($pa_options=nulls) {
+		public static function availableSearches($pa_options=null) {
 			$o_config = Configuration::load();
 			
 			# default order is 

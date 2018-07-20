@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -135,6 +135,10 @@
                     default:
                         return $this->opo_file_info_coder->getFileUrl($this->opa_file_data);
                         break;
+					case 'original_filename':
+						$va_info =  $this->opo_file_info_coder->getFileInfo($this->opa_file_data);
+						return $va_info['ORIGINAL_FILENAME'];
+						break;
                 }
             }
 			
@@ -182,7 +186,7 @@
  				($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value))
  			) {
  				// got file
- 				$vs_original_name = null;
+ 				$vs_original_name = caGetOption('original_filename', $pa_options, null);
  				if ($vb_is_user_media) {
  					$vb_is_file_path = true;
  					$o_config = Configuration::load();

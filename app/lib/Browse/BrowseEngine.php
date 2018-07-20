@@ -1757,6 +1757,11 @@
 											if ($vn_hier_id_fld = $t_rel_item->getProperty('HIERARCHY_ID_FLD')) {
 												$vs_get_item_sql .= " AND {$vs_rel_table_name}.{$vn_hier_id_fld} = ".(int)$t_rel_item->get($vn_hier_id_fld);
 											}
+											
+											if ($t_rel_item->hasField('deleted')) { 
+												$vs_get_item_sql .= " AND ({$vs_rel_table_name}.deleted = 0)";
+											}
+											
 											$vs_get_item_sql = "({$vs_get_item_sql})";
 										} else {
 											$vs_get_item_sql = "({$vs_rel_table_name}.{$vs_rel_table_pk} = ".(int)$vn_row_id.")";
@@ -5369,7 +5374,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 					
 					if (sizeof($va_criteria) > 0) {
-						$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." NOT IN (".join(",", caQuoteList(array_map(intval, array_keys($va_criteria))))."))";	
+						$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." NOT IN (".join(",", caQuoteList(array_map("intval", array_keys($va_criteria))))."))";	
 					}
 
 					$vs_join_sql = join("\n", $va_joins);

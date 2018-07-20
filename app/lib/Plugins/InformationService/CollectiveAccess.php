@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -147,7 +147,10 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		$vs_sort_field = $t_instance->getLabelTableName().".".$t_instance->getLabelSortField();
 
 		// Create and send a request with basic Auth
-		$o_response = $o_client->request("GET", $vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']))->setAuth($pa_settings['user_name'], $pa_settings['password']);
+		$o_response = $o_client->request("GET", 
+		    $vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']),
+		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
+		);
 
 		// Get the response body as JSON
 		$va_data = json_decode($o_response->getBody(), true);
@@ -182,7 +185,10 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		}
 
 		// Create and send a request with basic Auth
-		$o_response = $o_client->request("GET", $vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template))->setAuth($pa_settings['user_name'], $pa_settings['password']);
+		$o_response = $o_client->request("GET", 
+		    $vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template),
+		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
+		);
 
 		// Get the response as JSON
 		$va_data = json_decode($o_response->getBody(), true);
@@ -191,4 +197,3 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	}
 	# ------------------------------------------------
 }
-?>
