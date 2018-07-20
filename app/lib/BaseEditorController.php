@@ -289,7 +289,7 @@ class BaseEditorController extends ActionController {
 		$vb_is_insert = !$t_subject->getPrimaryKey();
 
 		# trigger "BeforeSaveItem" hook
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
 
 		$vb_save_rc = false;
 		$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
@@ -385,7 +385,7 @@ class BaseEditorController extends ActionController {
 		}
 		# trigger "SaveItem" hook
 
-		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
 
 		if (method_exists($this, "postSave")) {
 			$this->postSave($t_subject, $vb_is_insert);
@@ -990,7 +990,7 @@ class BaseEditorController extends ActionController {
 			'id' => $vn_subject_id,
 			'table_num' => $t_subject->tableNum(),
 			'table_name' => $t_subject->tableName(), 
-			'instance' => $t_subject,
+			'instance' => &$t_subject,
 			'is_insert' => false)
 		);
 
@@ -1053,7 +1053,7 @@ class BaseEditorController extends ActionController {
 			'id' => $vn_subject_id,
 			'table_num' => $t_subject->tableNum(),
 			'table_name' => $t_subject->tableName(),
-			'instance' => $t_subject,
+			'instance' => &$t_subject,
 			'is_insert' => false)
 		);
 
@@ -1073,7 +1073,7 @@ class BaseEditorController extends ActionController {
 
 		if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
 			if (method_exists($t_subject, "changeType")) {
-				$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+				$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
 
 				if (!$t_subject->changeType($vn_new_type_id = $this->request->getParameter('type_id', pInteger))) {
 					// post error
@@ -1081,7 +1081,7 @@ class BaseEditorController extends ActionController {
 				} else {
 					$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
 				}
-				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
 
 			}
 		} else {

@@ -44,7 +44,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Override checkStatus() to return true - the MMS plugin always initializes ok
+	 * 
 	 */
 	public function checkStatus() {
 		return array(
@@ -301,12 +301,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			}
 		}
 
+
+		$_REQUEST['form_timestamp'] = time();
 		$vn_old_mode = $t_instance->getMode();
 		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->update();
 		$t_instance->setMode($vn_old_mode);
-
-		//$_REQUEST['form_timestamp'] = $vn_timestamp;
 
 		if($t_instance->numErrors() > 0) {
 			foreach($t_instance->getErrors() as $vs_error) {
