@@ -620,7 +620,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
-				'timestamp' => $qr_res->get('log_datetime')
+				'timestamp' => $qr_res->get('log_datetime'),
+				'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
+				'datetime' => caGetLocalizedDate($qr_res->get('log_datetime'))
 			);
 		}
  		
@@ -671,7 +673,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				'lname' => $qr_res->get('lname'),
 				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
-				'timestamp' => $qr_res->get('log_datetime')
+				'timestamp' => $qr_res->get('log_datetime'),
+				'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
+				'datetime' => caGetLocalizedDate($qr_res->get('log_datetime'))
 			);
 		}
 		
@@ -703,7 +707,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 					'lname' => $qr_res->get('lname'),
 					'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 					'email' => $qr_res->get('email'),
-					'timestamp' => $qr_res->get('log_datetime')
+					'timestamp' => $qr_res->get('log_datetime'),
+					'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
+					'datetime' => caGetLocalizedDate($qr_res->get('log_datetime'))
 				);
 			}
 		}
