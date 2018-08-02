@@ -2713,6 +2713,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										} else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related object with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_object_lots':
@@ -2735,6 +2737,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										}else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related object lot with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_entities':
@@ -2752,6 +2756,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										}else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related entity with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_places':
@@ -2768,6 +2774,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										}else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related place with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_collections':
@@ -2785,6 +2793,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										}else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related collection with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_occurrences':
@@ -2801,6 +2811,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										}else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related occurrence with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_storage_locations':
@@ -2817,6 +2829,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										} else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related storage locations with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_list_items':
@@ -2836,6 +2850,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										} else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related list items with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_object_representations':
@@ -2851,6 +2867,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										} else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related object representations with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_loans':
@@ -2867,6 +2885,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										}  else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related loan with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 									case 'ca_movements':
@@ -2883,6 +2903,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													return false;
 												}
 											}
+										} else {
+											ca_data_importers::logImportError(_t("[%1] Could not find related movements with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), $va_log_import_error_opts);
 										}
 										break;
 								 }
