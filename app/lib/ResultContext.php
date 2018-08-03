@@ -76,6 +76,24 @@
 			return $this->ops_table_name;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * Returns type result context
+		 *
+		 * @return string
+		 */
+		public function findType() {
+			return $this->ops_find_type;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns subtype of result context 
+		 *
+		 * @return string
+		 */
+		public function findSubType() {
+			return $this->ops_find_subtype;
+		}
+		# ------------------------------------------------------------------
 		# Context getter/setters
 		# ------------------------------------------------------------------
 		/**
@@ -685,7 +703,6 @@
 		 */
 		static public function getResultContextForLastFind($po_request, $pm_table_name_or_num) {
 			if (!ResultContextStorage::$storageLoaded) { ResultContextStorage::init($po_request); }
-			if (!storageLoaded::$storageLoaded) { ResultContextStorage::init($po_request); }
 			
 			$va_tmp = explode('/', ResultContextStorage::getVar('result_last_context_'.$vs_table_name));
 		
@@ -860,41 +877,33 @@
 			if(!($vs_find_subtype = $ps_find_subtype)) {
 				$vs_find_subtype = $this->ops_find_subtype;
 			}
-			
+
+            $va_context = [];
+            
 			if ($ps_find_type) {
-				if(
-					(!is_array($va_semi = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
-					&&
-					(!is_array($va_semi = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
-				) {
-					$va_semi = [];
+			    if(is_array($d = ResultContextStorage::getVar('result_context_'.$this->ops_table_name))) {
+					$va_context = array_merge($va_context, $d);
 				}
-				if (
-					(!is_array($va_context = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype)))
-					&&
-					(!is_array($va_context = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type)))
-				) { 
-					$va_context = [];
+				if(is_array($d = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type))) {
+					$va_context = array_merge($va_context, $d);
 				}
-				return array_merge($va_context, $va_semi); 
+				if(is_array($d = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$ps_find_type.'_'.$ps_find_subtype))) {
+					$va_context = array_merge($va_context, $d);
+				}
+				return $va_context; 
 			}
 		
 			if (!$this->opa_context) { 
-				if(
-					(!is_array($va_semi = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
-					&&
-					(!is_array($va_semi = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
-				){
-					$va_semi = [];
+			    if(is_array($d = ResultContextStorage::getVar('result_context_'.$this->ops_table_name))) {
+					$va_context = array_merge($va_context, $d);
 				}
-				if(
-					(!is_array($va_context = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype)))
-					&&
-					(!is_array($va_context = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type)))
-				) { 
-					$va_context = [];
+				if(is_array($d = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type))) {
+					$va_context = array_merge($va_context, $d);
 				}
-				$this->opa_context = array_merge($va_semi, $va_context); 
+				if(is_array($d = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.'_'.$vs_find_subtype))) {
+					$va_context = array_merge($va_context, $d);
+				}
+				$this->opa_context = $va_context; 
 			}
 
 			return $this->opa_context;
@@ -934,9 +943,7 @@
 			} else {
 				$va_context = $pa_context;
 			}
-			if (!($vs_find_subtype = $ps_find_subtype)) {
-				$vs_find_subtype = $this->ops_find_subtype;
-			}
+			$vs_find_subtype = is_null($ps_find_subtype) ? $this->ops_find_subtype : $ps_find_subtype;
 			
 			$va_semi_context = array(
 				'history' => $va_context['history'],

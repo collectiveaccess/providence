@@ -111,6 +111,52 @@ var caUI = caUI || {};
 			}
 			
 			// ------------------------------------------------------------------------------------
+			
+			caUI.utils.sortObjIdno = function(arr) {
+				var sortedKeys = new Array();
+				var sortedObj = {};
+				var trans = {};
+				
+				// Separate keys and sort them
+				for (var i in arr){
+				    var elements = i.split(/[ ]+/);
+				    var acc = [];
+				    for (var ie in elements) {
+				        var e = elements[ie];
+				        if (e == '') { continue; }
+				        var r;
+				        if (r = e.match(/^([\d]+)/)) {
+				            var e = String(parseInt(r[1]));
+                            while (e.length < 10) {e = "0" + e;}
+				        } 
+				        acc.push(e);
+				    }
+				    var tk = acc.join(' ');
+				    //var tk = i.replace(/[ ]+/, ' ').trim();
+				    trans[tk] = i;
+					sortedKeys.push(tk);
+				}
+				sortedKeys.sort(caUI.utils._caseInsensitiveSort);
+				console.log(sortedKeys);
+				// Reconstruct sorted obj based on keys
+				for (var i in sortedKeys){
+					sortedObj[trans[sortedKeys[i]]] = arr[trans[sortedKeys[i]]];
+				}
+				return sortedObj;
+			};
+			
+			caUI.utils._caseInsensitiveSort = function(a, b) { 
+			   var ret = 0;
+			   a = a.toLowerCase();
+			   b = b.toLowerCase();
+			   if(a > b) 
+				  ret = 1;
+			   if(a < b) 
+				  ret = -1; 
+			   return ret;
+			}
+			
+			// ------------------------------------------------------------------------------------
 			// Update state/province form drop-down based upon country setting
 			// Used by BaseModel for text fields with DISPLAY_TYPE DT_COUNTRY_LIST and DT_STATEPROV_LIST
 			//

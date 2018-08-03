@@ -32,6 +32,8 @@ form select {
 }
 textarea {
     resize: none;
+    font-size: 12px !important;
+    
 }
 
 a, a:link, a:visited, a font { color: #1ab3c8; text-decoration: underline; }
@@ -5662,19 +5664,20 @@ select.caItemListSortControlTrigger {
 }
 
 .caItemListSortControls {
-    display: none;
-
     line-height: 17px;
     font-size: 11px;
-    padding: 3px 5px 5px 5px;
-    background-color: #fff;
-    
-    border: 1px solid #e6e6e6;
+    padding: 0px 5px 5px 0px;
+	background-color:#fbfbfb;
 
     z-index: 10000;
 
     max-height: 350px;
     overflow: scroll;
+    
+	position:relative;
+	font-weight:normal;
+	font-size:11px;
+	line-height:1em;
 }
 
 .caItemListSortControls ul {

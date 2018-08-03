@@ -901,7 +901,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_options)) {
 				$va_nav['screen_'.$va_screen['screen_id']] = array_merge($va_nav['screen_'.$va_screen['screen_id']], $pa_options);
 			}
-			if ($va_screen['is_default'] && !$vn_default_screen_id) { $vn_default_screen_id = $va_screen['screen_id']; }
+			if ($va_screen['is_default']) { $vn_default_screen_id = $va_screen['screen_id']; }
 		}
 		return array('fragment' => $va_nav, 'defaultScreen' => 'Screen'.$vn_default_screen_id);
 	}

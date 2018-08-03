@@ -385,29 +385,11 @@
 
 			return $vn_width;
 		}
+		
 		# -------------------------------------------------------
-		private function genNumberElement($ps_element_name, $ps_name, $ps_value, $ps_id_prefix=null, $pb_generate_for_search_form=false, $pa_options=null) {
-			if (!($vs_format = $this->getFormat())) {
-				return null;
-			}
-			if (!($vs_type = $this->getType())) {
-				return null;
-			}
-			$vs_element = '';
-
-			$va_element_info = $this->opa_formats[$vs_format][$vs_type]['elements'][$ps_element_name];
-			$vs_element_form_name = $ps_name.'_'.$ps_element_name;
-			$vs_gen_value = $ps_value;
-			$vn_width = $this->getElementWidth($va_element_info, 3);
-			if(preg_match("/^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/", $ps_value) == true){
-				if ($va_element_info['editable'] || $pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($ps_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
-				} else {
-					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($ps_value, ENT_QUOTES, 'UTF-8').'"/>'.$ps_value;
-				}
-				return $vs_element;
-			}
-			switch($va_element_info['type']) {
+		function genUUID($ps_type){
+			
+			switch($ps_type) {
 				# ----------------------------------------------------
 				case 'VER3':
 				    /*
@@ -442,7 +424,7 @@
 						$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_uuid3, ENT_QUOTES, 'UTF-8').'"/>'.$vs_uuid3;
 					}
 					*/
-					return '[Invalid element type]';
+					return false;
 					break;
 				# ----------------------------------------------------
 				case 'VER4':
@@ -454,8 +436,11 @@
     				$vs_rand_data[8] = chr(ord($vs_radn_data[8]) & 0x3f | 0x80);
 
 					$vs_uuid4 = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_rand_data), 4));
-
+					
+					return $vs_uuid4;
+					
 					if ($va_element_info['editable'] || $pb_generate_for_search_form) {
+						
 						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_uuid4, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
 					} else {
 						$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_uuid4, ENT_QUOTES, 'UTF-8').'"/>'.$vs_uuid4;
@@ -495,14 +480,49 @@
 						$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_uuid5, ENT_QUOTES, 'UTF-8').'"/>'.$vs_uuid5;
 					}
 					*/
-					return '[Invalid element type]';
+					return false;
 					break;
 				# ----------------------------------------------------
 				default:
-					return '[Invalid element type]';
+					return false;
 					break;
 				# ----------------------------------------------------
 			}
+		}
+		
+		# -------------------------------------------------------
+		private function genNumberElement($ps_element_name, $ps_name, $ps_value, $ps_id_prefix=null, $pb_generate_for_search_form=false, $pa_options=null) {
+			if (!($vs_format = $this->getFormat())) {
+				return null;
+			}
+			if (!($vs_type = $this->getType())) {
+				return null;
+			}
+			$vs_element = '';
+
+			$va_element_info = $this->opa_formats[$vs_format][$vs_type]['elements'][$ps_element_name];
+			$vs_element_form_name = $ps_name.'_'.$ps_element_name;
+			$vs_gen_value = $ps_value;
+			$vn_width = $this->getElementWidth($va_element_info, 3);
+			if(preg_match("/^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/", $ps_value) == true){
+				if ($va_element_info['editable'] || $pb_generate_for_search_form) {
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($ps_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+				} else {
+					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($ps_value, ENT_QUOTES, 'UTF-8').'"/>'.$ps_value;
+				}
+				return $vs_element;
+			}
+			$vs_uuid = $this->genUUID($va_element_info['type']);
+			if(!$vs_uuid){
+				return '[Invalid element type]';
+			}
+			
+			if ($va_element_info['editable'] || $pb_generate_for_search_form) {
+				$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_uuid, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+			} else {
+				$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_uuid, ENT_QUOTES, 'UTF-8').'"/>'.$vs_uuid;
+			}
+			
 			return $vs_element;
 		}
 		# -------------------------------------------------------

@@ -38,6 +38,7 @@ include_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPDFRenderer {
 	# ------------------------------------------------
@@ -57,7 +58,9 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 		
 		$this->description = _t('Renders HTML as PDF using domPDF');
 		
-		$this->renderer = new DOMPDF();
+		$options = new Options();
+		$options->set('isRemoteEnabled', TRUE);
+		$this->renderer = new DOMPDF($options);
 	}
 	# ------------------------------------------------
 	/**

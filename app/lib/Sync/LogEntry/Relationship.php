@@ -151,7 +151,7 @@ class Relationship extends Base {
 			$t_instance->setTransaction($this->getTx());
 			if (!method_exists($t_instance, "loadByGUID") || !$t_instance->loadByGUID($vs_reference_guid)) {
 				// TODO: confirm irrelevant is the way to go here
-				throw new IrrelevantLogEntry("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
+				throw new IrrelevantLogEntry("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record [".$this->getModelInstance()->tableName()."])");
 			}
 		} else {
 			if($this->isInsert()) {

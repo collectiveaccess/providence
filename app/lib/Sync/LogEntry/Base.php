@@ -482,7 +482,7 @@ abstract class Base {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
 					} else {
-						if (!in_array($vs_field, ['type_id', 'locale_id', 'item_id'])) {	// let auto-resolved fields fall through
+						if (!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id'])) {	// let auto-resolved fields fall through
 							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot[$vs_field.'_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 						}
 					}

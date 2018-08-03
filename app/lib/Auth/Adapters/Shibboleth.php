@@ -138,6 +138,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
     public function deauthenticate($pa_options=null) {
         setcookie("SimpleSAML", "", time()-3600, '/');
         setcookie("SimpleSAMLAuthToken", "", time()-3600, '/');
+        setcookie($this->opo_auth_config->get('shib_token_cookie'), '', time()-3600, __CA_URL_ROOT__);
         return true;
     }
 	# --------------------------------------------------------------------------------

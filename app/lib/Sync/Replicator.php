@@ -316,10 +316,10 @@ class Replicator {
                                                 // If we've already seen this guid then move it to the end of the list
                                                 // Since the queue is pushed in reverse we're actually pushing this towards
                                                 // the *beginning*, allowing it to be in place for those rows which depend upon it
-                                                $va_entry_tmp = $va_source_log_entries_for_missing_guids[$vs_missing_guid];
-                                                unset($va_source_log_entries_for_missing_guids[$vs_missing_guid]);
-                                                $va_source_log_entries_for_missing_guids[$vs_missing_guid] = $va_entry_tmp;
-                                                
+                                               //  $va_entry_tmp = $va_source_log_entries_for_missing_guids[$vs_missing_guid];
+//                                                 unset($va_source_log_entries_for_missing_guids[$vs_missing_guid]);
+//                                                 $va_source_log_entries_for_missing_guids[$vs_missing_guid] = $va_entry_tmp;
+                                                $this->log(_t("Skipped %1 because we've seen it already ", $vs_missing_guid), Zend_Log::DEBUG);
                                                 continue; 
                                             } 
                                             
@@ -356,6 +356,7 @@ class Replicator {
                                                     }
                                                     if ($pa_filter_on_access_settings && ($va_access_for_dependent[$va_missing_entry['guid']] !== '?') && !in_array($va_access_for_dependent[$va_missing_entry['guid']], $pa_filter_on_access_settings)) {
                                                         // skip rows for which we have no access
+                                                       // $this->log(_t("SKIP %1 because we have no access: %2", $va_missing_entry['guid'], print_R($va_missing_entry, true)), Zend_Log::DEBUG);
                                                         continue;
                                                     }
                                                     
@@ -363,17 +364,22 @@ class Replicator {
                             
                                                     // Add guids for dependencies referenced by this log entry
                                                     if(is_array($va_missing_entry['snapshot'])) {
-                                                        $va_dependent_guids = array_unique(array_merge($va_dependent_guids, array_values(array_filter($va_missing_entry['snapshot'], function($v, $k) use ($va_missing_entry, $o_dm, $vs_missing_guid) { 
+                                                        $va_dependent_guids = array_unique(array_merge($va_dependent_guids, array_values(array_filter($va_missing_entry['snapshot'], function($v, $k) use ($va_missing_entry, $vs_missing_guid) { 
+                                                            if(!(bool)$v) { return false; }
                                                             if ($v == $vs_missing_guid) { return false; }
-                                                            if(preg_match("!([A-Za-z0-9_]+)_guid$!", $k, $matches)) {
+                                                           // if (isset($va_source_log_entries_for_missing_guids_seen_guids[$vs_missing_guid])) { return false; }     // TODO: ???
+                                                            if(preg_match("!([A-Za-z0-9_]+)_guid$!", $k, $matches) && !in_array($matches[1], ['locale_id', 'attribute', 'attribute_id'])) {
+                                                                
                                                                 if(
                                                                     is_array(Datamodel::getFieldInfo($va_missing_entry['logged_table_num'], $matches[1]))
                                                                     ||
                                                                     is_array(Datamodel::getFieldInfo($va_missing_entry['logged_table_num'], $matches[1].'_id'))
                                                                 ) { 
+                                                                    $this->log(_t("Added dep %1 guid %2 via %3", $vs_missing_guid, $v, $k), Zend_Log::DEBUG);
                                                                     return true; 
                                                                 }
                                                             }
+
                                                             return false;
                                                         }, ARRAY_FILTER_USE_BOTH))));
                                                     }
@@ -500,8 +506,7 @@ class Replicator {
                                 }	// end subject loop							
 							}
 						}       // end source log entry loop
-						
-						//ksort($va_source_log_entries_for_missing_guids, SORT_NUMERIC);
+
                         if(sizeof($va_source_log_entries_for_missing_guids)) {
                             $va_source_log_entries_for_missing_guids = array_reverse($va_source_log_entries_for_missing_guids);
 						    
@@ -515,20 +520,43 @@ class Replicator {
                                             if (!isset($va_source_log_entries_for_missing_guids[$dep_subject['guid']])) { 
                                                 continue; 
                                             }
+                                            // if (isset($va_source_log_entries_for_missing_guids_seen_guids[$dep_subject['guid']])) { continue; }     // TODO: ???
                                             $va_dependency_list[$x['guid']][$dep_subject['guid']] = true;
                                         }
                                     }
+// 
+//                                     if(is_array($x['snapshot'])) {
+//                                         foreach($x['snapshot'] as $sk => $sv) {
+//                                             if (!(bool)$sv) { continue; }
+//                                             if ((string)$sv && !isset($va_source_log_entries_for_missing_guids[(string)$sv])) { continue; }
+//                                             if ($x['guid'] == $sv) { continue; }
+//                                             
+//                                             if(preg_match("!([A-Za-z0-9_]+)_guid$!", $sk, $m)) {
+//                                                 if(
+//                                                     !is_array(Datamodel::getFieldInfo($x['logged_table_num'], $m[1]))
+//                                                     &&
+//                                                     !is_array(Datamodel::getFieldInfo($x['logged_table_num'], $m[1].'_id'))
+//                                                 ) { 
+//                                                     continue; 
+//                                                 }
+//                                             }
+//                                             
+//                                             $va_dependency_list[$x['guid']][$sv] = true;
+//                                             $this->log(_t("Added %1 to dependency list for %2 from snapshot [%3]", $sv, $x['guid'], $sk), Zend_Log::DEBUG);
+//                                         }
+//                                     }
                                 }
 						    }
 						    
 						    $va_seen = [];
                             foreach($va_source_log_entries_for_missing_guids as $vs_missing_guid => $va_source_log_entries_for_missing_guid) {
+                                ksort($va_source_log_entries_for_missing_guid, SORT_NUMERIC);
+                                    
                                 $this->log(_t("Pushing %1 missing entries for %2", sizeof($va_source_log_entries_for_missing_guid), $vs_missing_guid), Zend_Log::DEBUG);
                                 while(sizeof($va_source_log_entries_for_missing_guid) > 0) {
                                     $va_entries = [];
                                     $vn_first_missing_log_id = null;
                                     
-                                    ksort($va_source_log_entries_for_missing_guid, SORT_NUMERIC);
                                     while(sizeof($va_source_log_entries_for_missing_guid) > 0) {
                                         $va_log_entry = array_shift($va_source_log_entries_for_missing_guid);
                                         $vn_mlog_id = $va_log_entry['log_id'];
@@ -542,12 +570,14 @@ class Replicator {
                                         }
                                         
                                         foreach($va_log_entry['snapshot'] as $k => $v) {
+                                            if (!(bool)$v) { continue; }
                                             if (in_array($v, $va_guids_to_skip)) { 
                                                 if (preg_match("!parent!", $k)) {
                                                     unset($va_log_entry['snapshot'][$k]);
                                                     unset($va_log_entry['snapshot'][str_replace("_guid", "", $k)]);
                                                 } else {
                                                     // SKIP log entry because dependency is not available
+                                                    $this->log(_t("Skipped %1 because dependency %2 is not available", $vn_mlog_id, $v),Zend_Log::DEBUG);
                                                     continue(2); 
                                                 }
                                             }
@@ -556,11 +586,13 @@ class Replicator {
                                         unset($va_dependency_list[$va_log_entry['guid']][$vs_missing_guid]);
                                         if (sizeof($va_dependency_list[$va_log_entry['guid']]) > 0) { 
                                             // Skip log entry because it still has dependencies
+                                            $this->log(_t("Skipped %1 because it still has dependencies: %2", $vn_mlog_id, print_R($va_dependency_list[$va_log_entry['guid']], true)),Zend_Log::DEBUG);
                                             continue;
                                         }
                                         
                                         if ($va_seen[$vn_mlog_id]) { 
                                             // Skip log entry because it has already been pushed
+                                            $this->log(_t("Skipped %1 because it has already been pushed", $vn_mlog_id), Zend_Log::DEBUG);
                                             continue; 
                                         }
                                         $va_seen[$vn_mlog_id] = $vs_missing_guid;
@@ -595,15 +627,14 @@ class Replicator {
                                                             // look for first log entry that defines row_guid
                                                             $base_log_id = $vn_mlog_id - 1; // If all else fails we'll map sync attr before current, as that has the best odds of working
                                                             $sorted_missing_log = $va_attr_log;
-                                                            ksort($sorted_attr_log);
-                                                            foreach($sorted_attr_log as $l) {
+                                                            ksort($sorted_missing_log);
+                                                            foreach($sorted_missing_log as $l) {
                                                                 if (($l['logged_table_num'] == 3) && ($l['snapshot']['attribute_guid'] === $x['guid'])) {
                                                                     $base_log_id = (int)$l['log_id'] - 1;    // insert before attribute value
                                                                     //$this->log("Base log id for synth log entry for attr $vs_attr_guid is $base_log_id (".$l['log_id'].")", Zend_Log::DEBUG);
                                                                     break;
                                                                 }
                                                             }
-                                                            
                                                             
                                                             do {
                                                                 $co++;
@@ -624,7 +655,9 @@ class Replicator {
                                                             $va_entries[$x['log_id']] = $acc[$x['log_id']] = $x;
                                                         }
                                                     }
-                                                    $this->log(_t("Adding %3 unpushed attribute log entries starting with %1 for %2 [%4].", $vn_first_missing_log_id, $vs_missing_guid, sizeof($acc), $vs_attr_guid), Zend_Log::DEBUG);
+                                                    if (sizeof($acc) > 0) {
+                                                        $this->log(_t("Adding %3 unpushed attribute log entries starting with %1 for %2 [%4].", $vn_first_missing_log_id, $vs_missing_guid, sizeof($acc), $vs_attr_guid), Zend_Log::DEBUG);
+                                                    }
                                                 }
                                             }
                                         }

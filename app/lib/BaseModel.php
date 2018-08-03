@@ -2675,7 +2675,7 @@ class BaseModel extends BaseObject {
 	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @return bool success state
 	 */
-	public function update ($pa_options=null) {
+	public function update($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$this->field_conflicts = array();
@@ -2787,10 +2787,9 @@ class BaseModel extends BaseObject {
 								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
-								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-									
-									$va_rebuild_hierarchical_index = $va_children;
-								}
+								$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
+							} elseif($this->changed('parent_id')) {
+								$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
 							}
 							
 							break;
@@ -2804,11 +2803,7 @@ class BaseModel extends BaseObject {
 								}
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 							
-								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-									$va_rebuild_hierarchical_index = $va_children;
-								}
-								
-							
+								$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
 							} 
 								
 							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
@@ -3124,44 +3119,8 @@ class BaseModel extends BaseObject {
 						}
 						if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 						return false;
-					} else {
-						if ((($vb_is_hierarchical) && ($vb_parent_id_changed)) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])){
-							// recalulate left/right indexing of sub-records
-							
-							$vn_interval_start = $this->get($vs_hier_left_fld);
-							$vn_interval_end = $this->get($vs_hier_right_fld);
-							if (($vn_interval_start > 0) && ($vn_interval_end > 0)) {
-	
-								if ($vs_hier_id_fld) {
-									$vs_hier_sql = ' AND ('.$vs_hier_id_fld.' = '.$this->get($vs_hier_id_fld).')';
-								} else {
-									$vs_hier_sql = "";
-								}
-								
-								$vn_ratio = ($vn_interval_end - $vn_interval_start)/($vn_orig_hier_right - $vn_orig_hier_left);
-								$vs_sql = "
-									UPDATE ".$this->tableName()."
-									SET
-										$vs_hier_left_fld = ($vn_interval_start + (({$vs_hier_left_fld} - ?) * ?)),
-										$vs_hier_right_fld = ($vn_interval_end + (({$vs_hier_right_fld} - ?) * ?))
-									WHERE
-										({$vs_hier_left_fld} BETWEEN ? AND ?)
-										$vs_hier_sql
-								";
-								//print "<hr>$vs_sql<hr>";
-								$o_db->query($vs_sql, array($vn_orig_hier_left, $vn_ratio, $vn_orig_hier_right, $vn_ratio, $vn_orig_hier_left, $vn_orig_hier_right));
-								if ($vn_err = $o_db->numErrors()) {
-									$this->postError(2030, _t("Could not update sub records in hierarchy: [%1] %2", $vs_sql, join(';', $o_db->getErrors())),"BaseModel->update()");
-									if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-									return false;
-								}
-							} else {
-								$this->postError(2045, _t("Parent record had invalid hierarchical indexing (should not happen!)"), "BaseModel->update()");
-								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-								return false;
-							}
-						}
-					}
+					} 
+					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
 						$va_index_options = array();
@@ -3172,20 +3131,24 @@ class BaseModel extends BaseObject {
 						$this->doSearchIndexing(null, false, $va_index_options);
 					}
 														
-					if (is_array($va_rebuild_hierarchical_index)) {
-						//$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
+					if (is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
 						$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 						if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 						foreach($va_rebuild_hierarchical_index as $vn_child_id) {
 							if ($vn_child_id == $this->getPrimaryKey()) { continue; }
 							if ($t_instance->load($vn_child_id)) {
 								$t_instance->setMode(ACCESS_WRITE);
-								$t_instance->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
+								$t_instance->set($vs_hier_id_fld, $vn_hierarchy_id);
+								
+								$va_child_info = $this->_getHierarchyParent($vn_child_id);
+								$va_hier_info = $this->_calcHierarchicalIndexing($this->_getHierarchyParent($va_child_info[$vs_parent_id_fld]));
+								$t_instance->set($vs_hier_left_fld, $va_hier_info['left']);
+								$t_instance->set($vs_hier_right_fld, $va_hier_info['right']);
 								$t_instance->update();
 								
-								if ($t_instance->numErrors()) {
+								 if ($t_instance->numErrors()) {
 									$this->errors = array_merge($this->errors, $t_instance->errors);
-								}
+ 								}
 							}
 						}
 					}
@@ -7284,27 +7247,28 @@ class BaseModel extends BaseObject {
 			
 			$va_indent_stack = $va_hier = $va_parent_map = [];
 			
-			$vn_cur_level = -1;
-			
 			$vn_root_id = $pn_id;
 		
+		    $va_id2parent = [];
 			while($qr_hier->nextRow()) {
 			    $vn_row_id = $qr_hier->get($this->primaryKey());
-				
 				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
 				
-				if(!$vn_parent_id) {
-			        $vn_cur_level = 0;
+				$va_id2parent[$vn_row_id] = $vn_parent_id;
+			}
+			
+			foreach($va_id2parent as $vn_row_id => $vn_parent_id) {
+			    if(!$vn_parent_id) { 
 			        $va_parent_map[$vn_row_id] = ['level' =>  1];
-				} elseif (!isset($va_parent_map[$vn_parent_id])) {
-				    $va_parent_map[$vn_parent_id] = ['level' => $vn_cur_level + 1];
-				    $vn_cur_level++;
-				} else {
-				    $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
-				}
-				if (!isset($va_parent_map[$vn_row_id])) {
-					$va_parent_map[$vn_row_id] = ['level' => $vn_cur_level + 1];
-				}
+			    } else {
+			        $r = $vn_row_id;
+			        $l = 0;
+			        while(isset($va_id2parent[$r])) {
+			            $r = $va_id2parent[$r];
+			            $l++;
+			        }
+			        $va_parent_map[$vn_row_id] = ['level' =>  $l];
+			    }
 			}
 			
 			$qr_hier->seek(0);
@@ -7316,7 +7280,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
 				
-                $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
+                $vn_cur_level =  $va_parent_map[$vn_row_id]['level'];
                 
 				$vn_r = $qr_hier->get($vs_hier_right_fld);
 				$vn_c = sizeof($va_indent_stack);
@@ -7380,7 +7344,7 @@ class BaseModel extends BaseObject {
 		
 		$t_instance = null;
 		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
-			$t_instance = Datamodel::getInstanceByTableName($this->tableName());
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
 			if (!$t_instance->load($pn_id)) { return null; }
 		} else {
 			$t_instance = $this;
