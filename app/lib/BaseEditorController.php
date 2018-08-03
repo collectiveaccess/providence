@@ -2407,10 +2407,10 @@ class BaseEditorController extends ActionController {
 				
 				$va_file_names[$vs_file_name] = true;
 				$o_view->setVar('version_download_name', $vs_file_name);
-
+				
 				//
 				// Perform metadata embedding
-				if (($t_subject->tableName() == 'ca_object_representations')) {
+				if (isset($va_rep['representation_id']) && ($va_rep['representation_id'] > 0)) {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
                     if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
                         $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info

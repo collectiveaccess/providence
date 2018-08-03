@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -733,6 +733,7 @@
 	 */
 	function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code, $pn_rep_pk, $ps_rep_type_code) {
 		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
+
 		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
 		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
@@ -740,17 +741,15 @@
 		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
 
 		// make a temporary copy (we won't touch the original)
-		copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
+		copy($ps_file, $vs_tmp_filepath = __CA_APP_DIR__."/tmp/foo"); //caGetTempDirPath()."/".time().md5($ps_file));
 
 		//
 		// SUBJECT TABLE
 		//
-
 		if($vs_subject_table_export = caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_pk)) {
-			$vs_export_filename = caGetTempFileName('mediaMetadataSubjExport','xml');
-			if(@file_put_contents($vs_export_filename, $vs_subject_table_export) === false) { return false; }
-			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
-			@unlink($vs_export_filename);
+			$tag_args = caGetExifTagArgsForExport($vs_subject_table_export);
+			exec("{$vs_path_to_exif_tool} -m ".join(" ", $tag_args)." ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			
 			@unlink("{$vs_tmp_filepath}_original");
 		}
 
@@ -758,15 +757,47 @@
 		// REPRESENTATION
 		//
 
-		if($vs_representation_Export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
-			$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
-			if(@file_put_contents($vs_export_filename, $vs_representation_Export) === false) { return false; }
-			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
-			@unlink($vs_export_filename);
+		if($vs_representation_export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
+		    $tag_args = caGetExifTagArgsForExport($vs_representation_export);
+			exec("{$vs_path_to_exif_tool} -m ".join(" ", $tag_args)." ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+
 			@unlink("{$vs_tmp_filepath}_original");
 		}
 
 		return $vs_tmp_filepath;
+	}
+	# ------------------------------------------------------------------------------------------------
+	function caGetExifTagArgsForExport($data) {
+	    $xml = new SimpleXMLElement($data);	
+        $xml->registerXPathNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+        $xml->registerXPathNamespace('et', 'http://ns.exiftool.ca/1.0/');
+        $xml->registerXPathNamespace('ExifTool', 'http://ns.exiftool.ca/1.0/');
+        $xml->registerXPathNamespace('System', 'http://ns.exiftool.ca/File/System/1.0/');
+        $xml->registerXPathNamespace('File', 'http://ns.exiftool.ca/File/1.0/');
+        $xml->registerXPathNamespace('JFIF', 'http://ns.exiftool.ca/JFIF/JFIF/1.0/');
+        $xml->registerXPathNamespace('IFF0', 'http://ns.exiftool.ca/EXIF/IFD0/1.0/');
+        $xml->registerXPathNamespace('ExifIFD', 'http://ns.exiftool.ca/EXIF/ExifIFD/1.0/');
+        $xml->registerXPathNamespace('Apple', 'http://ns.exiftool.ca/MakerNotes/Apple/1.0/');
+        $xml->registerXPathNamespace('XMP-x', 'http://ns.exiftool.ca/XMP/XMP-x/1.0/');
+        $xml->registerXPathNamespace('XMP-xmp', 'http://ns.exiftool.ca/XMP/XMP-xmp/1.0/');
+        $xml->registerXPathNamespace('XMP-photoshop', 'http://ns.exiftool.ca/XMP/XMP-photoshop/1.0/');
+        $xml->registerXPathNamespace('Photoshop', 'http://ns.exiftool.ca/Photoshop/Photoshop/1.0/');
+        $xml->registerXPathNamespace('ICC-header', 'http://ns.exiftool.ca/ICC_Profile/ICC-header/1.0/');
+        $xml->registerXPathNamespace('ICC_Profile', 'http://ns.exiftool.ca/ICC_Profile/ICC_Profile/1.0/');
+        $xml->registerXPathNamespace('ICC-view', 'http://ns.exiftool.ca/ICC_Profile/ICC-view/1.0/');
+        $xml->registerXPathNamespace('IVV-meas', 'http://ns.exiftool.ca/ICC_Profile/ICC-meas/1.0/');
+        $xml->registerXPathNamespace('Composite', 'http://ns.exiftool.ca/Composite/1.0/');
+        
+        $tags = $xml->xpath('rdf:Description/*');
+		
+        $tag_args = [];
+        foreach($tags as $t) {
+            $ns = array_shift(array_keys($t->getNamespaces()));
+            $n = $t->getName();
+            $v = $t->__toString();
+            $tag_args[] = "-{$n}=\"$v\"";
+        }
+        return $tag_args;
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_id) {
