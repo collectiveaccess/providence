@@ -1180,7 +1180,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			_t('Errors') => KLogger::ERR,
 			_t('Warnings') => KLogger::WARN,
 			_t('Alerts') => KLogger::NOTICE,
-			_t('Infomational messages') => KLogger::INFO,
+			_t('Informational messages') => KLogger::INFO,
 			_t('Debugging messages') => KLogger::DEBUG
 		);
 	}
