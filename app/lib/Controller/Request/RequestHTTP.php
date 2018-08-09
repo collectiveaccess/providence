@@ -623,18 +623,36 @@ class RequestHTTP extends Request {
 		}
 
 		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
-
-			if(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
-				$vn_port = $_SERVER['SERVER_PORT'];
-			} else {
-				$vn_port = 80;
+		    
+			if (
+			    !($vn_port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
+			    && 
+			    !($vn_port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
+			) {
+                if(__CA_SITE_PROTOCOL__ == 'https') { 
+                    $vn_port = 443;	
+                } elseif(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
+                    $vn_port = $_SERVER['SERVER_PORT'];
+                } else {
+                    $vn_port = 80;
+                }
+            }
+			
+			if (
+			    !($vs_proto = trim($this->getAppConfig()->get('out_of_process_search_indexing_protocol')))
+			    && 
+			    !($vs_proto = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PROTOCOL'))
+			) {
+			    $vs_proto = (($vn_port == 443) || (__CA_SITE_PROTOCOL__ == 'https')) ? 'tls://' : 'tcp://';
 			}
 			
-			$vs_proto = ($vn_port == 443) ? 'tls://' : 'tcp://';
-			if (!($vs_indexing_hostname = trim($this->getAppConfig()->get('out_of_process_search_indexing_hostname')))) {
+			if (
+			    !($vs_indexing_hostname = trim($this->getAppConfig()->get('out_of_process_search_indexing_hostname')))
+			    && 
+			    !($vs_indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
+			) {
 			    $vs_indexing_hostname = __CA_SITE_HOSTNAME__;
 			}
-
 			// trigger async search indexing
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
