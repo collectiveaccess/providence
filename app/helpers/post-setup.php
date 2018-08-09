@@ -76,7 +76,7 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 #		The default value is based on the URL being used to access the site.  To force a protocol, set it explicitly.
 #
 if (!defined("__CA_SITE_PROTOCOL__")) {
-	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : 'http');
+	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&  ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http'));
 }
 
 

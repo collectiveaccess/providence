@@ -3942,3 +3942,31 @@ function caFileIsIncludable($ps_file) {
 	    }
 	}
 	# ----------------------------------------
+	/**
+	 * Generate natural language string for list. Delimiters are used between all items in the list save 
+	 * for the last, where a conjunction is used. Ex. ['apples', 'oranges', 'pears'] => "apples, oranges and pears"
+	 *
+	 * @param array $pa_items
+	 * @param array $pa_options Options include:
+	 *		delimiter = Delimiter used in between all but last list item. [Default is ', ']
+	 *		conjunction = Delimiter used between second-to-last and last list item. [Default is localized test for 'and']
+	 *
+	 * @return string
+	 */
+	function caMakeCommaListWithConjunction($pa_items, $pa_options=null) {
+		if(!is_array($pa_items)) { return null; }
+	    switch(sizeof($pa_items)) {
+	    	case 0:
+	    		return '';
+	    		break;
+	    	case 1:
+	    		return join('', $pa_items);
+	    		break;
+	    	default:
+	    		$last_item = array_pop($pa_items);
+	    		$list = join(caGetOption('delimiter', $pa_options, ', '), $pa_items);
+	    		return  ' '.caGetOption('conjunction', $pa_options, _t('and')).' '.$last_item;
+	    		break;
+	    }
+	}
+	# ----------------------------------------

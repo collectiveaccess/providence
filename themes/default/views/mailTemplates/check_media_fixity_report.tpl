@@ -36,13 +36,13 @@
     $num_errors = $this->getVar('num_errors');
     switch($num_errors) {
         case 0:
-            print _t('A media fixity check for <em>%1</em> run on %2 found no errors', $this->getVar('app_name'), $this->getVar('date'));
+            print _t('A media fixity check of %1 in <em>%2</em> run on %3 found no errors', $this->getVar('counts'), $this->getVar('app_name'), $this->getVar('date'));
             break;
         case 1:
-            print _t('Attached is a media fixity report for <em>%1</em> run on %2. There was %3 error.', $this->getVar('app_name'), $this->getVar('date'), $num_errors);
+            print _t('Attached is a media fixity report for %1 in <em>%2</em> run on %3. There was %4 error.', $this->getVar('counts'), $this->getVar('app_name'), $this->getVar('date'), $num_errors);
             break;
         default:
-            print _t('Attached is a media fixity report for <em>%1</em> run on %2. There were %3 errors.', $this->getVar('app_name'), $this->getVar('date'), $num_errors);
+            print _t('Attached is a media fixity report for %1 in <em>%2</em> run on %3. There were %4 errors.', $this->getVar('counts'), $this->getVar('app_name'), $this->getVar('date'), $num_errors);
             break;
     }
 ?>

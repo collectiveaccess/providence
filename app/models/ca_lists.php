@@ -1935,8 +1935,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_items->load(array('list_id' => $vn_list_id, 'parent_id' => null));
 		$vn_id = $t_items->getPrimaryKey();
 		
-		ExternalCache::save($pm_list_name_or_id, $vn_id, 'listRootIDs');
-		ExternalCache::save($vn_list_id, $vn_id, 'listRootIDs');
+		if ($pm_list_name_or_id && $vn_list_id) {
+			ExternalCache::save($pm_list_name_or_id, $vn_id, 'listRootIDs');
+			ExternalCache::save($vn_list_id, $vn_id, 'listRootIDs');
+		}
 		
 		return $vn_id;
 	}
