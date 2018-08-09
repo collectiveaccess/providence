@@ -5441,10 +5441,10 @@ if (!$vb_batch) {
 						if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 					}
 					
-					if ($ps_return_as !== 'data') {
-						$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
-						continue;
-					}
+					// if ($ps_return_as !== 'data') {
+// 						$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
+// 						continue;
+// 					}
 					
 					$va_row = $qr_res->getRow();
 					$vn_id = $va_row[$vs_key].'/'.$va_row['row_id'];
@@ -5611,10 +5611,10 @@ if (!$vb_batch) {
 						if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 					}
 					
-					if ($ps_return_as !== 'data') {
-						$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
-						continue;
-					}
+					// if ($ps_return_as !== 'data') {
+// 						$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
+// 						continue;
+// 					}
 
 					$va_row = $qr_res->getRow();
 					$vs_v = $va_row['row_id'].'/'.$va_row[$vs_key];

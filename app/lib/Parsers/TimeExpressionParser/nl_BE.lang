@@ -42,6 +42,7 @@ meridianTable = {
 }
 
 dateCircaIndicator = [circa, c, c., ca, ca.]
+dateProbablyIndicator = [probably, possibly]
 dateUncertaintyIndicator = [~]
 dateUncertaintyYearIndicator = [y]
 dateUncertaintyDayIndicator = [d]

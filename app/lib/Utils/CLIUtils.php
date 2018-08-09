@@ -2305,6 +2305,7 @@
 
 			$vs_report_output = join(($ps_format == 'tab') ? "\t" : ",", array(_t('Type'), _t('Error'), _t('Name'), _t('ID'), _t('Version'), _t('File path'), _t('Expected MD5'), _t('Actual MD5')))."\n";
 
+			$counts = [];
 
 			if (in_array('all', $pa_kinds) || in_array('ca_object_representations', $pa_kinds)) {
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
@@ -2370,6 +2371,8 @@
 				
 				if (!$quiet) { print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n"; }
 				$vn_errors = 0;
+				
+				$counts[] = _t('%1 media representations', $qr_reps->numRows());
 				while($qr_reps->nextRow()) {
 					$vn_representation_id = $qr_reps->get('representation_id');
 					if (!$quiet) { print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id)); }
@@ -2414,7 +2417,7 @@
 
 
 			if (in_array('all', $pa_kinds) || in_array('ca_attributes', $pa_kinds)) {
-				// get all Media elements
+				// get all media elements
 				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
 
 				if (is_array($va_elements) && sizeof($va_elements)) {
@@ -2430,12 +2433,14 @@
 						if (!$quiet) { print CLIProgressBar::start($vn_count, _t('Checking attribute media')); }
 
 						$vn_errors = 0;
+						$c = 0;
 						foreach($va_elements as $vs_element_code => $va_element_info) {
 							$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
 							$va_vals = $qr_vals->getAllFieldValues('value_id');
 							foreach($va_vals as $vn_value_id) {
 								$t_attr_val = new ca_attribute_values($vn_value_id);
 								if ($t_attr_val->getPrimaryKey()) {
+									$c++;
 									$t_attr_val->setMode(ACCESS_WRITE);
 									$t_attr_val->useBlobAsMediaField(true);
 
@@ -2484,6 +2489,9 @@
 								}
 							}
 						}
+						
+						$counts[] = _t('%1 media in %2 metadata elements', sizeof($va_elements), $c);
+						
 						if (!$quiet) { 
 							print CLIProgressBar::finish(); 
 							if($vn_errors == 1) {
@@ -2511,12 +2519,15 @@
 						if (!$quiet) { print CLIProgressBar::start($vn_count, _t('Checking attribute files')); }
 
 						$vn_errors = 0;
+						$c = 0;
 						foreach($va_elements as $vs_element_code => $va_element_info) {
 							$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
 							$va_vals = $qr_vals->getAllFieldValues('value_id');
 							foreach($va_vals as $vn_value_id) {
 								$t_attr_val = new ca_attribute_values($vn_value_id);
 								if ($t_attr_val->getPrimaryKey()) {
+									$c++;
+									
 									$t_attr_val->setMode(ACCESS_WRITE);
 									$t_attr_val->useBlobAsFileField(true);
 
@@ -2562,6 +2573,8 @@
 								}
 							}
 						}
+						
+						$counts[] = _t('%1 files in %2 metadata elements', sizeof($va_elements), $c);
 
 						if (!$quiet) { 
 							print CLIProgressBar::finish();
@@ -2604,7 +2617,16 @@
 					];
 				}
 				
-				if (!caSendMessageUsingView($o_request, [$ps_email], [__CA_ADMIN_EMAIL__], _t('[%1] Media fixity report for %2', $a, $d = caGetLocalizedDate()), 'check_media_fixity_report.tpl', ['date' => $d, 'app_name' => $a, 'num_errors' => $vn_errors], null, null, ['attachment' => $attachment])) {
+				if (!caSendMessageUsingView(
+					$o_request, 
+					[$ps_email], 
+					[__CA_ADMIN_EMAIL__], 
+					_t('[%1] Media fixity report for %2', $a, $d = caGetLocalizedDate()), 
+					'check_media_fixity_report.tpl', 
+					['date' => $d, 'app_name' => $a, 'num_errors' => $vn_errors, 'counts' => caMakeCommaListWithConjunction($counts)], 
+					null, null, 
+					['attachment' => $attachment])
+				) {
 					global $g_last_email_error;
 					CLIUtils::addError(_t("Could not send email to %1: %2", $ps_email, $g_last_email_error));
 				}

@@ -72,6 +72,7 @@ define("TEP_TOKEN_SEASON_SUMMER", 24);
 define("TEP_TOKEN_SEASON_AUTUMN", 25);
 define("TEP_TOKEN_UNDATED", 26);
 define("TEP_TOKEN_BP", 27);
+define("TEP_TOKEN_PROBABLY", 28);
 
 # --- Meridian types
 define("TEP_MERIDIAN_AM", 0);
@@ -91,6 +92,7 @@ define('TEP_STATE_TIME_RANGE_CONJUNCTION', 5);
 define('TEP_STATE_BEFORE_GET_DATE', 6);
 define('TEP_STATE_AFTER_GET_DATE', 7);
 define('TEP_STATE_ACCEPT', 8);
+define('TEP_STATE_PROBABLY', 9);
 
 # --- Date element parse states
 define("TEP_STATE_BEGIN_DATE_ELEMENT",0);
@@ -242,7 +244,7 @@ class TimeExpressionParser {
 		$vn_state = TEP_STATE_BEGIN;
 		$vb_can_accept = false;
 		
-		$vb_circa_is_set = false;
+		$vb_circa_is_set = $vb_is_probably_set = false;
 		while($va_token = $this->peekToken()) {
 			if ($this->getParseError()) { break; }
 			switch($vn_state) {
@@ -257,7 +259,7 @@ class TimeExpressionParser {
 									'month' => null, 'day' => null, 
 									'year' => TEP_START_OF_UNIVERSE,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$va_dates['end'] = $va_date;
 								$vn_state = TEP_STATE_ACCEPT;
@@ -278,11 +280,11 @@ class TimeExpressionParser {
 											$vn_end_year = (((int)$va_token['value'] -1) * 100) + (($vn_q) * 25);
 											$va_dates['start'] = array(
 												'month' => 1, 'day' => 1, 'year' => $vn_start_year, 'era' => TEP_ERA_AD,
-												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true
+												'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
 											);
 											$va_dates['end'] = array(
 												'month' => 12, 'day' => 31, 'year' => $vn_end_year, 'era' => TEP_ERA_AD,
-												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true
+												'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
 											);
 											$this->skipToken();
 											$this->skipToken();
@@ -303,12 +305,12 @@ class TimeExpressionParser {
 								$va_dates['start'] = array(
 									'month' => 1, 'day' => 1, 'year' => intval($va_token['value']) * -1000000,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
 								);
 								$va_dates['end'] = array(
 									'month' => 12, 'day' => 31, 'year' => intval($va_token['value']) * -1000000,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
 								);
 								$this->skipToken();
 								$this->skipToken();
@@ -320,12 +322,12 @@ class TimeExpressionParser {
 								$va_dates['start'] = array(
 									'month' => 1, 'day' => 1, 'year' => 1950 - intval($va_token['value']),
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true, 'is_bp' => true
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true, 'is_bp' => true
 								);
 								$va_dates['end'] = array(
 									'month' => 12, 'day' => 31, 'year' => 1950 - intval($va_token['value']),
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true, 'is_bp' => true
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true, 'is_bp' => true
 								);
 								$this->skipToken();
 								$this->skipToken();
@@ -378,11 +380,11 @@ class TimeExpressionParser {
 								
 								$va_dates['start'] = array(
 									'month' => $vn_start_month, 'day' => 21, 'year' => $vn_start_year,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$va_dates['end'] = array(
 									'month' => $vn_end_month, 'day' => 20, 'year' => $vn_start_year + $vn_year_offset,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$vn_state = TEP_STATE_ACCEPT;
 								$vb_can_accept = true;
@@ -393,12 +395,12 @@ class TimeExpressionParser {
 								$va_dates['start']  = array(
 									'month' => null, 'day' => null, 'year' => null,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_undated' => true
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'is_undated' => true
 								);
 								$va_dates['end']  = array(
 									'month' => null, 'day' => null, 'year' => null,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_undated' => true
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'is_undated' => true
 								);
 								
 								$this->skipToken();
@@ -447,63 +449,61 @@ class TimeExpressionParser {
 									$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
 									$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
 
-									//if (in_array($va_matches[2], $va_ordinals)) {
-										if ($vn_use_romans && caIsRomanNumerals($va_roman_matches[1])) {
-											$vn_century = intval(caRomanArabic($va_roman_matches[1]));
-										} else {
-											$vn_century = intval($va_matches[1]);
-										} 
-										
-										
-										if (in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) {
-											$va_next_token = null;
-										}
-										
-										$vn_is_circa = 0;
-										while($va_modfier_token = (is_array($va_next_token) ? $va_next_token : $this->getToken())) {
-											$va_next_token = null;
-											switch($va_modfier_token['type']) {
-												case TEP_TOKEN_ERA:
-													if($va_modfier_token['era'] == TEP_ERA_BC) {
-														$vn_century *= -1;
-													}
-													break;
-												case TEP_TOKEN_QUESTION_MARK_UNCERTAINTY:
-													$vn_is_circa = 1;
-													break;
-												default:
-													$this->setParseError($va_modfier_token, TEP_ERROR_TRAILING_JUNK);
-													break;
-											}
-										}
-										
-										if (preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'])) {
-											$vn_century += 1;
-										}
-										
-										if (($vn_century > -100) && ($vn_century < 100)) {
-											if ($vn_century < 0) { 
-												$vn_start_year = ($vn_century + 1) * 100;
-												$vn_end_year = (($vn_century + 1) * 100) - 99;
-											} else {
-												$vn_start_year = ($vn_century - 1) * 100;
-												$vn_end_year = (($vn_century - 1) * 100) + 99;
-											}
-											$va_dates['start'] = array(
-												'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa,
-												'dont_window' => true
-											);
-											$va_dates['end'] = array(
-												'month' => 12, 'day' => 31, 'year' => $vn_end_year,
-												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa,
-												'dont_window' => true
-											);
-											$vn_state = TEP_STATE_ACCEPT;
-											$vb_can_accept = true;
-											break;
-										}
-									//}
+                                    if ($vn_use_romans && caIsRomanNumerals($va_roman_matches[1])) {
+                                        $vn_century = intval(caRomanArabic($va_roman_matches[1]));
+                                    } else {
+                                        $vn_century = intval($va_matches[1]);
+                                    } 
+                                    
+                                    
+                                    if (in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) {
+                                        $va_next_token = null;
+                                    }
+                                    
+                                    $vn_is_circa = 0;
+                                    while($va_modfier_token = (is_array($va_next_token) ? $va_next_token : $this->getToken())) {
+                                        $va_next_token = null;
+                                        switch($va_modfier_token['type']) {
+                                            case TEP_TOKEN_ERA:
+                                                if($va_modfier_token['era'] == TEP_ERA_BC) {
+                                                    $vn_century *= -1;
+                                                }
+                                                break;
+                                            case TEP_TOKEN_QUESTION_MARK_UNCERTAINTY:
+                                                $vn_is_circa = 1;
+                                                break;
+                                            default:
+                                                $this->setParseError($va_modfier_token, TEP_ERROR_TRAILING_JUNK);
+                                                break;
+                                        }
+                                    }
+                                    
+                                    if (preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'])) {
+                                        $vn_century += 1;
+                                    }
+                                    
+                                    if (($vn_century > -100) && ($vn_century < 100)) {
+                                        if ($vn_century < 0) { 
+                                            $vn_start_year = ($vn_century + 1) * 100;
+                                            $vn_end_year = (($vn_century + 1) * 100) - 99;
+                                        } else {
+                                            $vn_start_year = ($vn_century - 1) * 100;
+                                            $vn_end_year = (($vn_century - 1) * 100) + 99;
+                                        }
+                                        $va_dates['start'] = array(
+                                            'month' => 1, 'day' => 1, 'year' => $vn_start_year,
+                                            'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
+                                            'dont_window' => true
+                                        );
+                                        $va_dates['end'] = array(
+                                            'month' => 12, 'day' => 31, 'year' => $vn_end_year,
+                                            'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
+                                            'dont_window' => true
+                                        );
+                                        $vn_state = TEP_STATE_ACCEPT;
+                                        $vb_can_accept = true;
+                                        break;
+                                    }
 								}
 								
 								$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
@@ -522,12 +522,12 @@ class TimeExpressionParser {
 												$va_dates['start'] = array(
 													'month' => null, 'day' => null, 'year' => intval($va_token['value']) * -1000000,
 													'hours' => null, 'minutes' => null, 'seconds' => null,
-													'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+													'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 												);
 												$va_dates['end'] = array(
 													'month' => 12, 'day' => 31, 'year' => intval($va_token['value']) * -1000000,
 													'hours' => null, 'minutes' => null, 'seconds' => null,
-													'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_bp' => true
+													'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'is_bp' => true
 												);
 												$vb_can_accept = true;
 												
@@ -536,12 +536,12 @@ class TimeExpressionParser {
 												$va_dates['start'] = array(
 													'month' => null, 'day' => null, 'year' => 1950 - intval($va_token['value']),
 													'hours' => null, 'minutes' => null, 'seconds' => null,
-													'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+													'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false
 												);
 												$va_dates['end'] = array(
 													'month' => 12, 'day' => 31, 'year' => 1950 - intval($va_token['value']),
 													'hours' => null, 'minutes' => null, 'seconds' => null,
-													'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_bp' => true
+													'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'is_bp' => true
 												);
 												$vb_can_accept = true;
 												
@@ -570,13 +570,43 @@ class TimeExpressionParser {
 										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
 										'year' => $va_date_element['year'],
 										'hours' => null, 'minutes' => null, 'seconds' => null,
-										'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 1
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => true, 'is_probably' => false
 									);
 									$va_dates['end'] = array(
 										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
 										'year' => $va_date_element['year'],
 										'hours' => null, 'minutes' => null, 'seconds' => null,
-										'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 1
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => true, 'is_probably' => false
+									);
+									
+									$vn_state = TEP_STATE_DATE_RANGE_CONJUNCTION;
+									$vb_can_accept = true;
+								}
+								break;
+							# ----------------------
+							case TEP_TOKEN_PROBABLY:
+								$vb_probably_is_set = true;
+								
+								if($va_date_element = $this->_parseDateElement()) {
+									if ($va_peek = $this->peekToken()) {
+										if ($va_peek['type'] == TEP_TOKEN_ERA) {
+											$this->skipToken();
+											if ($va_peek['era'] == TEP_ERA_BC) {
+												$va_date_element['year'] *= -1;
+											}
+										}
+									}
+									$va_dates['start'] = array(
+										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
+										'year' => $va_date_element['year'],
+										'hours' => null, 'minutes' => null, 'seconds' => null,
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => true
+									);
+									$va_dates['end'] = array(
+										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
+										'year' => $va_date_element['year'],
+										'hours' => null, 'minutes' => null, 'seconds' => null,
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => true
 									);
 									
 									$vn_state = TEP_STATE_DATE_RANGE_CONJUNCTION;
@@ -623,7 +653,7 @@ class TimeExpressionParser {
 						'month' => null, 'day' => null, 
 						'year' => TEP_START_OF_UNIVERSE,
 						'hours' => null, 'minutes' => null, 'seconds' => null,
-						'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 					);
 					$va_dates['end'] = $va_date;
 					$this->skipToken();
@@ -642,7 +672,7 @@ class TimeExpressionParser {
 						'month' => null, 'day' => null, 
 						'year' => TEP_END_OF_UNIVERSE,
 						'hours' => null, 'minutes' => null, 'seconds' => null,
-						'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 					);
 					$this->skipToken();
 					$vn_state = TEP_STATE_ACCEPT;
@@ -654,7 +684,7 @@ class TimeExpressionParser {
 				break;
 			# -------------------------------------------------------
 			case TEP_STATE_DATE_RANGE_CONJUNCTION:
-				$vb_circa_is_set = false;
+				$vb_circa_is_set = $vb_probably_is_set = false;
 				if ($va_token['type'] == TEP_TOKEN_RANGE_CONJUNCTION) {
 					$this->skipToken();
 					//if (!$va_dates['start']['day']) { $va_dates['start']['day'] = 1; }
@@ -686,6 +716,8 @@ class TimeExpressionParser {
 					$va_dates['end'] = $va_date;
 					if (isset($va_dates['start']['is_circa']) && $va_dates['start']['is_circa']) {
 						$va_dates['end']['is_circa'] = true;
+					} elseif (isset($va_dates['start']['is_probably']) && $va_dates['start']['is_probably']) {
+						$va_dates['end']['is_probably'] = true;
 					}
 					$vn_state = TEP_STATE_ACCEPT;
 					$vb_can_accept = true;
@@ -736,7 +768,7 @@ class TimeExpressionParser {
 						'month' => null, 'day' => null, 
 						'year' => TEP_END_OF_UNIVERSE,
 						'hours' => null, 'minutes' => null, 'seconds' => null,
-						'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 					);
 					return $this->_processParseResults($va_dates, $pa_options);
 				}
@@ -905,7 +937,7 @@ class TimeExpressionParser {
 		
 		$vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
 		
-		$vb_is_circa = false;
+		$vb_is_circa =  $vb_is_probably = false;
 		while($va_token = $this->peekToken()) {
 			switch($vn_state) {
 				# -------------------------------------------------------
@@ -917,9 +949,19 @@ class TimeExpressionParser {
 							$this->skipToken();
 							break;
 						# ----------------------
+						case TEP_TOKEN_PROBABLY:
+							$vb_is_probably = true;
+							$this->skipToken();
+							break;
+						# ----------------------
+						case TEP_TOKEN_PROBABLY:
+							$vb_is_probablty = true;
+							$this->skipToken();
+							break;
+						# ----------------------
 						case TEP_TOKEN_DATE:
 							$this->skipToken();
-							return array('month' => $va_token['month'], 'day' => $va_token['day'], 'year' => $va_token['year'], 'is_circa' => $vb_is_circa);
+							return array('month' => $va_token['month'], 'day' => $va_token['day'], 'year' => $va_token['year'], 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							break;
 						# ----------------------
 						case TEP_TOKEN_TODAY:
@@ -930,10 +972,10 @@ class TimeExpressionParser {
 							$vn_int = intval($va_token['value']);
 							if (($vn_int >= 1000) && ($vn_int <= 9999)) {
 								$this->skipToken();
-								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_AD, 'is_circa' => $vb_is_circa);
+								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_AD, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							} elseif(($vn_int < 0) && is_int($vn_int)) {
 								$this->skipToken();
-								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_BC, 'is_circa' => $vb_is_circa);
+								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_BC, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							} else {
 								$va_peek = $this->peekToken(2);
 								if ((($vn_int >= 1) && ($vn_int <=31)) && ($va_peek['type'] != TEP_TOKEN_ERA)) {
@@ -949,7 +991,7 @@ class TimeExpressionParser {
 								} else {
 									if ($vn_int == $va_token['value']) {
 										$this->skipToken();
-										return array('day' => null, 'month' => null, 'year' => $vn_int, 'is_circa' => $vb_is_circa);
+										return array('day' => null, 'month' => null, 'year' => $vn_int, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 									} else {
 										$this->setParseError($va_token, TEP_ERROR_INVALID_DATE);
 										return false;
@@ -985,7 +1027,7 @@ class TimeExpressionParser {
 									}
 								}
 							}
-							return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa);
+							return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							break;
 						# ----------------------
 						default:
@@ -1011,13 +1053,13 @@ class TimeExpressionParser {
 								}
 							}
 							
-							return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa);
+							return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							
 							break;
 						# ----------------------
 						case TEP_TOKEN_RANGE_CONJUNCTION:
 							# assume month will be set by ending expression
-							return array('day' => $vn_day, 'month' => null, 'year' => null, 'is_circa' => $vb_is_circa);
+							return array('day' => $vn_day, 'month' => null, 'year' => null, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							break;
 						# ----------------------
 						default:
@@ -1025,7 +1067,7 @@ class TimeExpressionParser {
 								$vn_month = $pa_options['start']['month'];
 								$vn_year = intval($va_token['value']);
 								$this->skipToken();
-								return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa);
+								return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							}
 							$this->setParseError($va_token, TEP_ERROR_INVALID_DATE);
 							return false;
@@ -1041,7 +1083,7 @@ class TimeExpressionParser {
 			$vn_month = $pa_options['start']['month'];
 			$vn_year = $pa_options['start']['year'];
 			$this->skipToken();
-			return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa);
+			return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 		}
 		$this->setParseError(null, TEP_ERROR_INVALID_DATE);
 		return false;
@@ -1059,7 +1101,7 @@ class TimeExpressionParser {
 						$va_date = array(
 							'month' => null, 'day' => null, 'year' => null,
 							'hours' => $va_time['hours'], 'minutes' =>  $va_time['minutes'], 'seconds' => $va_time['seconds'],
-							'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+							'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 						);
 						return $va_date;
 						break;
@@ -1071,7 +1113,7 @@ class TimeExpressionParser {
 								$va_date = array(
 									'month' => null, 'day' => null, 'year' => TEP_END_OF_UNIVERSE,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$this->skipToken();
 								
@@ -1083,7 +1125,7 @@ class TimeExpressionParser {
 								$va_date = array(
 									'month' => $va_now['mon'], 'day' => $va_now['mday'], 'year' => $va_now['year'],
 									'hours' => $va_now['hours'], 'minutes' => $va_now['minutes'], 'seconds' => $va_now['seconds'],
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$this->skipToken();
 								
@@ -1095,7 +1137,7 @@ class TimeExpressionParser {
 								$va_date = array(
 									'month' => $va_yesterday['mon'], 'day' => $va_yesterday['mday'], 'year' => $va_yesterday['year'],
 									'hours' => 0, 'minutes' => 0, 'seconds' => 0,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$this->skipToken();
 								
@@ -1107,7 +1149,7 @@ class TimeExpressionParser {
 								$va_date = array(
 									'month' => $va_today['mon'], 'day' => $va_today['mday'], 'year' => $va_today['year'],
 									'hours' => 0, 'minutes' => 0, 'seconds' => 0,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$this->skipToken();
 								
@@ -1119,7 +1161,7 @@ class TimeExpressionParser {
 								$va_date = array(
 									'month' => $va_tomorrow['mon'], 'day' => $va_tomorrow['mday'], 'year' => $va_tomorrow['year'],
 									'hours' => 0, 'minutes' => 0, 'seconds' => 0,
-									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 								);
 								$this->skipToken();
 								
@@ -1132,7 +1174,7 @@ class TimeExpressionParser {
 										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
 										'year' => $va_date_element['year'], 
 										'hours' => null, 'minutes' => null, 'seconds' => null,
-										'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $va_date_element['is_circa']
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $va_date_element['is_circa'], 'is_probably' => $va_date_element['is_probably']
 									);
 									
 									$va_peek = $this->peekToken();
@@ -1324,7 +1366,7 @@ class TimeExpressionParser {
 								'hours' => $va_token['hours'],
 								'minutes' => $va_token['minutes'],
 								'seconds' => $va_token['seconds'],
-								'uncertainty' => 0, 'uncertainty_units' => ''
+								'uncertainty' => false, 'uncertainty_units' => ''
 							);
 							$this->skipToken();
 							
@@ -1364,7 +1406,7 @@ class TimeExpressionParser {
 										'hours' => $vn_hours,
 										'minutes' => 0,
 										'seconds' => 0,
-										'uncertainty' => 0, 'uncertainty_units' => ''
+										'uncertainty' => false, 'uncertainty_units' => ''
 									);
 									
 									return $va_time;
@@ -1502,11 +1544,11 @@ class TimeExpressionParser {
 				if ($vb_is_bc) { $vn_start_year *= -1; }
 				$va_dates['start'] = array(
 					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false
 				);
 				$va_dates['end'] = array(
 					'month' => 12, 'day' => 31, 'year' => $vb_is_bc ? ($vn_start_year - 9) : ($vn_start_year + 9),
-					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false
 				);
 			}
 		}
@@ -1713,6 +1755,11 @@ class TimeExpressionParser {
 		// circa
 		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateCircaIndicator"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_CIRCA);
+		}
+		
+		// probably
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateProbablyIndicator"))) {
+			return array('value' => $vs_token, 'type' => TEP_TOKEN_PROBABLY);
 		}
 		
 		// EXIF date
@@ -2109,7 +2156,7 @@ class TimeExpressionParser {
 				}
 			}
 			# create historic timestamps
-			# -- encode uncertainty and circa status
+			# -- encode uncertainty, circa and probably status
 		
 			# date attribute byte (actually a single digit - 0 to 9 - which mean 3 effective bits)
 			# bit 0 indicates whether date is "circa" or not
@@ -2118,6 +2165,8 @@ class TimeExpressionParser {
 			#	01 = uncertainty is in days
 			#	10 = uncertainty is in years
 			#
+			# If value is 9 then "probably" is indicated; no uncertainty can be set with probably
+			#
 			# If units are not 00, then all digits following it are the uncertainty quantity
 			$vn_start_attributes = 0;
 			if ($pa_dates['start']['is_circa']) {
@@ -2125,6 +2174,9 @@ class TimeExpressionParser {
 			}
 			if ($pa_dates['start']['is_bp']) {
 				$vn_start_attributes += 8;
+			}
+			if ($pa_dates['start']['is_probably']) {
+				$vn_start_attributes = 9;
 			}
 			
 			$vn_start_uncertainty = '';
@@ -2154,6 +2206,10 @@ class TimeExpressionParser {
 			if ($pa_dates['end']['is_bp']) {
 				$vn_end_attributes += 8;
 			}
+			if ($pa_dates['end']['is_probably']) {
+				$vn_start_attributes = 9;
+			}
+			
 			$vn_end_uncertainty = '';
 			if ($pa_dates['end']['uncertainty'] > 0) {
 				switch($pa_dates['end']['uncertainty_units']) {
@@ -2667,13 +2723,18 @@ class TimeExpressionParser {
 				}
 			}
 
-			// catch 'circa' dates
+			// catch 'circa' and 'probably' dates
 			$va_circa_indicators = $this->opo_language_settings->getList('dateCircaIndicator');
 			$vs_circa_indicator = ($pa_options['circaIndicator'] && in_array($pa_options['circaIndicator'], $va_circa_indicators)) ? $pa_options['circaIndicator'] : $va_circa_indicators[0];
+
+            $va_probably_indicators = $this->opo_language_settings->getList('dateProbablyIndicator');
+			$vs_probably_indicator = ($pa_options['probablyIndicator'] && in_array($pa_options['probablyIndicator'], $va_probably_indicators)) ? $pa_options['probablyIndicator'] : $va_probably_indicators[0];
 
 			$vs_start_circa = $vs_end_circa = '';
 			if ($va_start_pieces['is_circa']) { $vs_start_circa = $vs_circa_indicator.' '; }
 			if ($va_end_pieces['is_circa'] && !$va_start_pieces['is_circa']) { $vs_end_circa = $vs_circa_indicator.' '; }
+			if ($va_start_pieces['is_probably']) { $vs_start_circa = $vs_probably_indicator.' '; }
+			if ($va_end_pieces['is_probably'] && !$va_start_pieces['is_probably']) { $vs_end_circa = $vs_probably_indicator.' '; }
 
 			if ($va_start_pieces['year'] == $va_end_pieces['year']) {
 				if ($va_start_pieces['month'] == $va_end_pieces['month']) {
@@ -3249,6 +3310,9 @@ class TimeExpressionParser {
 		$vn_attributes = (int)substr($va_tmp[1], 10, 1);
 		$vb_is_circa = ($vn_attributes & 0b0001) ? 1 : 0;
 		$vb_is_bp = ($vn_attributes & 0b1000) ? 1 : 0;
+		if ($vb_is_probably = ($vn_attributes == 9) ? 1 : 0) {
+		    $vb_is_circa = $vb_is_bp = false;   
+		}
 		
 		$vs_uncertainty_units = ((intval($vn_attributes) >> 1) == 1) ? 'd' : null;
 		if (!$vs_uncertainty_units) { 	$vs_uncertainty_units = ((intval($vn_attributes) >> 2) == 1) ? 'y' : null; }
@@ -3270,6 +3334,7 @@ class TimeExpressionParser {
 			'seconds'			=> substr($va_tmp[1], 8, 2),
 			'era'				=> $vs_era,
 			'is_circa'			=> $vb_is_circa,
+			'is_probably'		=> $vb_is_probably,
 			'is_bp'				=> $vb_is_bp,
 			'uncertainty'		=> $vn_uncertainty,
 			'uncertainty_units'	=> $vs_uncertainty_units
