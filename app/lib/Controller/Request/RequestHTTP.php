@@ -643,7 +643,7 @@ class RequestHTTP extends Request {
 			    && 
 			    !($vs_proto = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PROTOCOL'))
 			) {
-			    $vs_proto = (($vn_port == 443) || (__CA_SITE_PROTOCOL__ == 'https')) ? 'tls://' : 'tcp://';
+			    $vs_proto = (($vn_port == 443) || (__CA_SITE_PROTOCOL__ == 'https')) ? 'tls' : 'tcp';
 			}
 			
 			if (
@@ -657,7 +657,7 @@ class RequestHTTP extends Request {
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
                 if (!ca_search_indexing_queue::lockExists()) {
-                    $r_socket = fsockopen($vs_proto . $vs_indexing_hostname, $vn_port, $errno, $err, 3);
+                    $r_socket = fsockopen($vs_proto . '://'. $vs_indexing_hostname, $vn_port, $errno, $err, 3);
                     if ($r_socket) {
                         $vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
                         $vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
