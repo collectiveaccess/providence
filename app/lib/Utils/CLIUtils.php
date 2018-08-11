@@ -2372,38 +2372,40 @@
 				if (!$quiet) { print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n"; }
 				$vn_errors = 0;
 				
-				$counts[] = _t('%1 media representations', $qr_reps->numRows());
-				while($qr_reps->nextRow()) {
-					$vn_representation_id = $qr_reps->get('representation_id');
-					if (!$quiet) { print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id)); }
+				if ($qr_reps->numRows() > 0) {
+                    $counts[] = _t('%1 media representations', $qr_reps->numRows());
+                    while($qr_reps->nextRow()) {
+                        $vn_representation_id = $qr_reps->get('representation_id');
+                        if (!$quiet) { print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id)); }
 
-					$va_media_versions = (is_array($pa_versions) && sizeof($pa_versions) > 0) ? $pa_versions : $qr_reps->getMediaVersions('media');
-					foreach($va_media_versions as $vs_version) {
-						if (!($vs_path = $qr_reps->getMediaPath('media', $vs_version))) { continue; }
-						if (!($vs_database_md5 = $qr_reps->getMediaInfo('media', $vs_version, 'MD5'))) { continue; }		// skip missing MD5s - indicates empty file
-						$vs_file_md5 = md5_file($vs_path);
+                        $va_media_versions = (is_array($pa_versions) && sizeof($pa_versions) > 0) ? $pa_versions : $qr_reps->getMediaVersions('media');
+                        foreach($va_media_versions as $vs_version) {
+                            if (!($vs_path = $qr_reps->getMediaPath('media', $vs_version))) { continue; }
+                            if (!($vs_database_md5 = $qr_reps->getMediaInfo('media', $vs_version, 'MD5'))) { continue; }		// skip missing MD5s - indicates empty file
+                            $vs_file_md5 = md5_file($vs_path);
 
-						if ($vs_database_md5 !== $vs_file_md5) {
-							$t_rep->load($vn_representation_id);
+                            if ($vs_database_md5 !== $vs_file_md5) {
+                                $t_rep->load($vn_representation_id);
 
-							$vs_message = _t("[Object representation][MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
-							switch($ps_format) {
-								case 'text':
-								default:
-									$vs_report_output .= "{$vs_message}\n";
-									break;
-								case 'tab':
-								case 'csv':
-									$va_log = array(_t('Object representation'), ("MD5 mismatch"), '"'.caEscapeForDelimitedOutput($t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno").")").'"', $vn_representation_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
-									$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log)."\n";
-									break;
-							}
+                                $vs_message = _t("[Object representation][MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
+                                switch($ps_format) {
+                                    case 'text':
+                                    default:
+                                        $vs_report_output .= "{$vs_message}\n";
+                                        break;
+                                    case 'tab':
+                                    case 'csv':
+                                        $va_log = array(_t('Object representation'), ("MD5 mismatch"), '"'.caEscapeForDelimitedOutput($t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno").")").'"', $vn_representation_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+                                        $vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log)."\n";
+                                        break;
+                                }
 
-							CLIUtils::addError($vs_message);
-							$vn_errors++;
-						}
-					}
-				}
+                                CLIUtils::addError($vs_message);
+                                $vn_errors++;
+                            }
+                        }
+                    }
+                }
 
 				if (!$quiet) { 
 					print CLIProgressBar::finish(); 				
@@ -2490,8 +2492,9 @@
 							}
 						}
 						
-						$counts[] = _t('%1 media in %2 metadata elements', sizeof($va_elements), $c);
-						
+						if ((sizeof($va_elements) > 0) && ($c > 0)) {
+						    $counts[] = _t('%1 media in %2 metadata elements', sizeof($va_elements), $c);
+						}
 						if (!$quiet) { 
 							print CLIProgressBar::finish(); 
 							if($vn_errors == 1) {
@@ -2574,8 +2577,9 @@
 							}
 						}
 						
-						$counts[] = _t('%1 files in %2 metadata elements', sizeof($va_elements), $c);
-
+						if((sizeof($va_elements) > 0) && ($c > 0)) {
+						    $counts[] = _t('%1 files in %2 metadata elements', $c, sizeof($va_elements));
+						}
 						if (!$quiet) { 
 							print CLIProgressBar::finish();
 							if ($vn_errors == 1) {
@@ -2587,7 +2591,7 @@
 					}
 				}
 			}
-
+			
 			if ($ps_file_path) {
 				file_put_contents($ps_file_path, $vs_report_output);
 			}
@@ -2617,19 +2621,21 @@
 					];
 				}
 				
-				if (!caSendMessageUsingView(
-					$o_request, 
-					[$ps_email], 
-					[__CA_ADMIN_EMAIL__], 
-					_t('[%1] Media fixity report for %2', $a, $d = caGetLocalizedDate()), 
-					'check_media_fixity_report.tpl', 
-					['date' => $d, 'app_name' => $a, 'num_errors' => $vn_errors, 'counts' => caMakeCommaListWithConjunction($counts)], 
-					null, null, 
-					['attachment' => $attachment])
-				) {
-					global $g_last_email_error;
-					CLIUtils::addError(_t("Could not send email to %1: %2", $ps_email, $g_last_email_error));
-				}
+				if (sizeof($counts) > 0) {
+                    if (!caSendMessageUsingView(
+                        $o_request, 
+                        [$ps_email], 
+                        [__CA_ADMIN_EMAIL__], 
+                        _t('[%1] Media fixity report for %2', $a, $d = caGetLocalizedDate()), 
+                        'check_media_fixity_report.tpl', 
+                        ['date' => $d, 'app_name' => $a, 'num_errors' => $vn_errors, 'counts' => caMakeCommaListWithConjunction($counts)], 
+                        null, null, 
+                        ['attachment' => $attachment])
+                    ) {
+                        global $g_last_email_error;
+                        CLIUtils::addError(_t("Could not send email to %1: %2", $ps_email, $g_last_email_error));
+                    }
+                }
 				if ($vb_delete_file) { @unlink($ps_file_path); }
 			}
 			return true;
