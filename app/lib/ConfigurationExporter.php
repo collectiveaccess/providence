@@ -318,8 +318,11 @@ final class ConfigurationExporter {
 				$vo_item->setAttribute("color", $vs_color);
 			}
 			
-			if(is_numeric($vn_value = $qr_items->get("item_value"))) {
-				$vo_item->setAttribute("value", $vn_value);
+			if(strlen($vs_value = $qr_items->get("item_value"))) {
+				$vo_item->setAttribute("value", $vs_value);
+			}
+			if(strlen($vn_rank = $qr_items->get("rank")) && is_numeric($vn_rank)) {
+				$vo_item->setAttribute("rank", $vn_rank);
 			}
 			if($qr_items->get('type_id')){
 				$vo_item->setAttribute('type', $t_list_item->getTypeCode($qr_items->get('type_id')));
@@ -681,7 +684,7 @@ final class ConfigurationExporter {
 					$vo_rule->setAttribute('level', $va_rule['rule_level']);
 
 					// expression
-					if(isset($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
+					if(isset($va_rule['expression']) && is_array($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
 						$vo_expression = $this->opo_dom->createElement('expression');
 						$vo_expression->appendChild(new DOMCdataSection($va_rule['expression']));
 						$vo_rule->appendChild($vo_expression);
@@ -796,7 +799,7 @@ final class ConfigurationExporter {
 
 			// type restrictions
 			$va_ui_type_restrictions = $t_ui->getTypeRestrictions();
-			if(sizeof($va_ui_type_restrictions)>0) {
+			if(is_array($va_ui_type_restrictions) && (sizeof($va_ui_type_restrictions)>0)) {
 				//$vo_ui_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 				//$vo_ui->appendChild($vo_ui_type_restrictions);
 				$va_types = [];
@@ -827,7 +830,7 @@ final class ConfigurationExporter {
 
 			// User and group access
 			$va_users = $t_ui->getUsers();
-			if(sizeof($va_users)>0) {
+			if(is_array($va_users) && (sizeof($va_users)>0)) {
 				$vo_user_access = $this->opo_dom->createElement("userAccess");
 				$vo_ui->appendChild($vo_user_access);
 
@@ -841,7 +844,7 @@ final class ConfigurationExporter {
 			}
 
 			$va_groups = $t_ui->getUserGroups();
-			if(sizeof($va_groups)>0) {
+			if(is_array($va_groups) && (sizeof($va_groups)>0)) {
 				$vo_group_access = $this->opo_dom->createElement("groupAccess");
 				$vo_ui->appendChild($vo_group_access);
 
@@ -1455,7 +1458,7 @@ final class ConfigurationExporter {
 
 			// User and group access
 			$va_users = $t_form->getUsers();
-			if(sizeof($va_users)>0) {
+			if(is_array($va_users) && (sizeof($va_users)>0)) {
 				$vo_user_access = $this->opo_dom->createElement("userAccess");
 				$vo_form->appendChild($vo_user_access);
 
@@ -1469,7 +1472,7 @@ final class ConfigurationExporter {
 			}
 
 			$va_groups = $t_form->getUserGroups();
-			if(sizeof($va_groups)>0) {
+			if(is_array($va_groups) && (sizeof($va_groups)>0)) {
 				$vo_group_access = $this->opo_dom->createElement("groupAccess");
 				$vo_form->appendChild($vo_group_access);
 
@@ -1572,7 +1575,7 @@ final class ConfigurationExporter {
 					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
 					$va_type_ids[] = $va_restriction['type_id'];
 				}
-				if (sizeof($va_type_ids)) {
+				if (is_array($va_type_ids) && sizeof($va_type_ids)) {
 					$vs_type_restriction_attr = "typeRestrictions=\"".join(",", caMakeTypeList($t_display->get('table_num'), $va_type_ids))."\" includeSubtypes=\"".($vb_include_subtypes ? 1 : 0)."\"";
 				}
 			}
@@ -1587,7 +1590,7 @@ final class ConfigurationExporter {
 			$vs_buf .= "\t\t</labels>\n";
 
 			$va_settings = $t_display->getSettings();
-			if(sizeof($va_settings)>0) {
+			if(is_array($va_settings) && (sizeof($va_settings)>0)) {
 				$vs_buf .= "\t\t<settings>\n";
 				foreach ($va_settings as $vs_setting => $vm_val) {
 					if (is_array($vm_val)) {
@@ -1603,7 +1606,7 @@ final class ConfigurationExporter {
 
 			// User and group access
 			$va_users = $t_display->getUsers();
-			if(sizeof($va_users)>0) {
+			if(is_array($va_users) && (sizeof($va_users)>0)) {
 				$vs_buf .= "\t\t<userAccess>\n";
 				foreach($va_users as $va_user_info) {
 					$vs_buf .= "\t\t\t<permission user='".$va_user_info["user_name"]."' access='".$this->_convertUserGroupAccessToString(intval($va_user_info['access']))."'/>\n";
@@ -1613,7 +1616,7 @@ final class ConfigurationExporter {
 			}
 
 			$va_groups = $t_display->getUserGroups();
-			if(sizeof($va_groups)>0) {
+			if(is_array($va_groups) && (sizeof($va_groups)>0)) {
 				$vs_buf .= "\t\t<groupAccess>\n";
 				foreach($va_groups as $va_group_info) {
 					$vs_buf .= "\t\t\t<permission group='".$va_group_info["code"]."' access='".$this->_convertUserGroupAccessToString(intval($va_group_info['access']))."'/>\n";
