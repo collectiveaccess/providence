@@ -754,26 +754,32 @@ class Configuration {
 	/**
 	 * Get configuration value
 	 *
-	 * @param string $ps_key Name of configuration value to get. get() will look for the
-	 * configuration value first as a scalar, then as a list and finally as an associative array.
-	 * The first value found is returned.
+	 * @param mixed $pm_key Name of configuration key to fetch. get() will look for the
+	 * key first as a scalar, then as a list and finally as an associative array.
+	 * The first value found is returned. If an array of values are passed get() will try 
+	 * each key in turn until a value is found.
 	 *
 	 * @return mixed A string, indexed array (list) or associative array, depending upon what
-	 * kind of configuration value was found.
+	 * kind of configuration value was found. If no value is found null is returned.
 	 */
-	public function get($ps_key) {
-		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; }
-		$this->ops_error = "";
+	public function get($pm_key) {
+	    if (!is_array($pm_key)) { $pm_key = [$pm_key]; }
+	    
+	    foreach($pm_key as $ps_key) {
+            if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; }
+            $this->ops_error = "";
 
-		$vs_tmp = $this->getScalar($ps_key);
-		if (!strlen($vs_tmp)) {
-			$vs_tmp = $this->getList($ps_key);
-		}
-		if (!is_array($vs_tmp) && !strlen($vs_tmp)) {
-			$vs_tmp = $this->getAssoc($ps_key);
-		}
-		Configuration::$s_get_cache[$this->ops_md5_path][$ps_key] = $vs_tmp;
-		return $vs_tmp;
+            $vs_tmp = $this->getScalar($ps_key);
+            if (!strlen($vs_tmp)) {
+                $vs_tmp = $this->getList($ps_key);
+            }
+            if (!is_array($vs_tmp) && !strlen($vs_tmp)) {
+                $vs_tmp = $this->getAssoc($ps_key);
+            }
+            Configuration::$s_get_cache[$this->ops_md5_path][$ps_key] = $vs_tmp;
+            return $vs_tmp;
+        }
+        return null;
 	}
 	/* ---------------------------------------- */
 	/**
