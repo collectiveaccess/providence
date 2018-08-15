@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -343,7 +343,7 @@
 				return null;		// not an error, just skip it
 			}
 			
-			if(sizeof(LCSHAttributeValue::$s_term_cache > LCSHAttributeValue::$s_term_cache_max_size)) {
+			if(sizeof(LCSHAttributeValue::$s_term_cache) > LCSHAttributeValue::$s_term_cache_max_size) {
 				LCSHAttributeValue::$s_term_cache = array($ps_value => LCSHAttributeValue::$s_term_cache[$ps_value]);
 			}
 			return LCSHAttributeValue::$s_term_cache[$ps_value];
