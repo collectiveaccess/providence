@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,21 +58,11 @@
 ?>
 				<tr>
 					<td>
-						<?php print $vo_result->get('ca_item_tags.tag'); ?>
+						<?php print $tag = $vo_result->get('ca_item_tags.tag'); ?>
 					</td>
 					<td>
 <?php
-		$o_db = new Db();
-		$qr_c = $o_db->query("
-			SELECT count(*) c
-			FROM ca_items_x_tags
-			WHERE tag_id = ?
-		", $vo_result->get('ca_item_tags.tag_id'));
-		
-		if ($qr_c->nextRow()) {
-			print (int)$qr_c->get('c');
-		}
-						
+						print caNavLink($this->request, ca_items_x_tags::find(['tag_id' => $vo_result->get('ca_item_tags.tag_id')], ['returnAs' => 'count']), '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]);
 ?>
 					</td>
 					<td>
