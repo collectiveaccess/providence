@@ -58,11 +58,11 @@
 ?>
 				<tr>
 					<td>
-						<?php print $tag = $vo_result->get('ca_item_tags.tag'); ?>
+						<?php print caNavLink($this->request, $tag = $vo_result->get('ca_item_tags.tag'), '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]); ?>
 					</td>
 					<td>
 <?php
-						print caNavLink($this->request, ca_items_x_tags::find(['tag_id' => $vo_result->get('ca_item_tags.tag_id')], ['returnAs' => 'count']), '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]);
+						print ca_items_x_tags::find(['tag_id' => $vo_result->get('ca_item_tags.tag_id')], ['returnAs' => 'count']);
 ?>
 					</td>
 					<td>
