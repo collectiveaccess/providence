@@ -3634,7 +3634,7 @@
 										}
 										if (!$vn_max_browse_depth) { $vn_max_browse_depth = null; } else { $vn_max_browse_depth++; }	// add one to account for invisible root
 										
-										$vs_hier_pk = Datamodel::primaryKey($vs_hier_table_name, true);
+										$vs_hier_pk = Datamodel::primaryKey($vs_hier_table_name, false);
 									
 										$va_hier_ids = [];
 										while($qr_res->nextHit()) {
