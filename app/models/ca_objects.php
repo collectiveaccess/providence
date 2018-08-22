@@ -575,7 +575,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 */ 
 	public function insert($pa_options=null) {
 		if ($vn_parent_id = $this->get('parent_id')) {
-			if(!$this->getAppConfig()->get('ca_objects_dont_inherit_lot_id_from_parent')) {
+			if(!$this->getAppConfig()->get(['ca_objects_dont_inherit_lot_from_parent', 'ca_objects_dont_inherit_lot_id_from_parent'])) {
 				$t_parent = new ca_objects();
 				if ($this->inTransaction()) {
 					$t_parent->setTransaction($this->getTransaction());
@@ -594,7 +594,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 */ 
 	public function update($pa_options=null) {
 		if ($vn_parent_id = $this->get('parent_id')) {
-			if(!$this->getAppConfig()->get('ca_objects_dont_inherit_lot_id_from_parent')) {
+			if(!$this->getAppConfig()->get(['ca_objects_dont_inherit_lot_from_parent', 'ca_objects_dont_inherit_lot_id_from_parent'])) {
 				$t_parent = new ca_objects();
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				if ($t_parent->load($vn_parent_id) && ($vn_lot_id = $t_parent->get('lot_id'))) {
