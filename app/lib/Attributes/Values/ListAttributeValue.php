@@ -552,6 +552,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								]; 
 							}
 						}
+
 					}
 				}
 			}
@@ -573,6 +574,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 	});
 	select.trigger('change');
+	caUI.utils.showUnsavedChangesWarning(false);
 });</script>\n";
             }
 		}
