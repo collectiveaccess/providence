@@ -738,8 +738,11 @@
  				unset($va_saved_search['_label']);
  				$vn_form_id = $va_saved_search['_form_id'];
  				unset($va_saved_search['_form_id']);
+ 				$this->Index(array('saved_search' => $va_saved_search, 'form_id' => $vn_form_id));
+ 				return;
  			}
- 			$this->Index(array('saved_search' => $va_saved_search, 'form_id' => $vn_form_id));
+ 			
+ 			$this->Index();
  		}
  		# ------------------------------------------------------------------
  		/**

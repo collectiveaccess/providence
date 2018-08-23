@@ -21,6 +21,8 @@ Allow from all
 		SetEnv HTTP_MOD_REWRITE On
 	</IfModule>
 	
+	RewriteRule "(^|/)\.(?!well-known\/)" - [F]
+	
 	# Pass all requests not referring directly 
 	# to files in the filesystem to index.php.
 	RewriteCond %{REQUEST_FILENAME} !-f
