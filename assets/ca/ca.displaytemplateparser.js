@@ -282,14 +282,24 @@ var caUI = caUI || {};
                                                 emitUnits = (!omitRepeatingUnits) || (lastUnits !== ((inFeet > 0) ? 'ft' : 'in'));
                                             }
                                             if (inFeet > 0) { 
-                                                vals.push(inFeet + (emitUnits ? " ft" : "") + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
+                                                if (inInches == 0) {
+                                                    vals.push(inFeet);
+                                                    lastUnits = u = 'ft';
+                                                } else {
+                                                    vals.push(inFeet + (emitUnits ? " ft" : "") + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
+                                                    lastUnits = null; u = '';
+                                                }
                                             }
                                             if (inInches > 0) {
-                                                vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
+                                                if (inFeet > 0) {
+                                                    vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
+                                                    lastUnits = null; u = '';
+                                                } else {
+                                                    vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}));
+                                                    lastUnits = u = 'in';
+                                                }
                                             }
-                                            lastUnits = null;
                                             q = vals.join(" ");
-                                            u = ''
                                         } else {
                                             var inMiles = parseInt(inInches / (5280 * 12));
                                             inInches -= inMiles * (5280 * 12);
