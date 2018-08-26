@@ -2165,7 +2165,7 @@ select.searchSetSelect {
     color:#828282;
 }
 
-#showOptions{
+#showOptions, .showOptions {
     float:right;
     margin: 1px 2px 0px 15px;
     text-decoration:none;
@@ -2174,7 +2174,7 @@ select.searchSetSelect {
     font-size:9px;
 }
 
-#hideOptions{
+#hideOptions, .hideOptions {
     float:right;
     margin: 2px 0px 0px 0px;
     text-decoration:none;
@@ -2192,7 +2192,7 @@ select.searchSetSelect {
     font-size:12px;
 }
 
-#searchOptionsBox{
+#searchOptionsBox, .relatedListSearchOptionsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
     display:none;
@@ -2214,14 +2214,14 @@ select.searchSetSelect {
     margin: 10px 0px 0px 0px;
 }
 
-#searchOptionsBox .col{
+#searchOptionsBox .col, .relatedListSearchOptionsBox .col {
     float:left;
     margin-right:15px;
     color:#333;
     padding-bottom:15px;
 }
 
-#searchOptionsBox .bg{
+#searchOptionsBox .bg, .relatedListSearchOptionsBox .bg {
 	background-color: #f7f7f7;
 	border: 0px;
 	padding: 20px 15px 5px 15px;
@@ -2340,7 +2340,7 @@ a#hideRefine img {
 }
 
 /* search tools - horizontal show hide */
-#showTools, #hideTools {
+#showTools, #hideTools, .showTools, .hideTools {
     float:right;
     margin: 1px 0px 0px 15px;
     text-decoration:none;
@@ -2349,10 +2349,10 @@ a#hideRefine img {
     font-size:9px;
 
 }
-#hideTools {
+#hideTools, .hideTools {
     clear: both;
 }
-#searchToolsBox{
+#searchToolsBox, .relatedListSearchToolsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
     display:none;
@@ -2369,7 +2369,7 @@ a#hideRefine img {
 	width: 400px;
 	z-index:20000;
 }
-#searchToolsBox .bg{
+#searchToolsBox .bg, .relatedListSearchToolsBox .bg {
 	background-color: #f7f7f7;
 	border: 0px;
 	padding: 20px 15px 5px 15px;
@@ -2380,7 +2380,7 @@ a#hideRefine img {
 	box-shadow: 0 0 5px #bbb;
 }
 
-#searchToolsBox .col{
+#searchToolsBox .col, .relatedListSearchToolsBox .col {
     float:left;
     margin-right:15px;
     color:#333;
