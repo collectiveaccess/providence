@@ -1025,7 +1025,7 @@
 				}
 			    break;
 			default:
-			    if (($vs_table = caMediaIdentifierTypeToTable($vs_type)) && ($t_instance = $vs_table::find((int)$va_tmp[1], $pa_options)) && ($vn_rep_id = $t_instance->getPrimaryRepresentationID($pa_options))) {
+			    if (($vs_table = caMediaIdentifierTypeToTable($vs_type)) && Datamodel::getInstance($vs_table, true) && ($t_instance = $vs_table::find((int)$va_tmp[1], $pa_options)) && ($vn_rep_id = $t_instance->getPrimaryRepresentationID($pa_options))) {
 			        // return primary representation (access checkAccess performed by table::find() )
 			        $va_ret = ['type' => 'representation', 'id' => (int)$vn_rep_id, 'page' => null, 'subject' => $vs_table, 'subject_id' => (int)$va_tmp[1]];
 			        
