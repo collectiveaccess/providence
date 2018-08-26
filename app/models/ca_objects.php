@@ -1434,7 +1434,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
 				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
 				
-				$o_view->setVar('location_relationship_type', $x=$this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
 				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
 				break;
 		}
