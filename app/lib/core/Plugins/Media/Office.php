@@ -45,9 +45,6 @@ require_once(__CA_LIB_DIR__."/core/Media.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 require_once(__CA_LIB_DIR__."/core/Parsers/UnZipFile.php");
 
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
-
 class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	

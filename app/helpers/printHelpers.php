@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2017 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -206,7 +206,7 @@
 				"@name", "@type", "@pageSize", "@pageOrientation", "@tables",
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
-				"@elementCode", "@showOnlyIn"
+				"@elementCode", "@showOnlyIn", "@filename"
 			) as $vs_tag) {
 				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
@@ -522,6 +522,8 @@
                 $va_options[$va_form_info['name']] = $va_form_info['code'];
             }
         }
+        
+		if (sizeof($va_options) == 0) { return ''; }
 		
 		// Get current display list
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
@@ -570,6 +572,7 @@
 		foreach($va_formats as $vn_ => $va_form_info) {
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
+		if (sizeof($va_options) == 0) { return ''; }
 		
 		$t_display = new ca_bundle_displays();
 		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {

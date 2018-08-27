@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,12 +34,6 @@
    *
    */
 	require_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
-   
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
-	
-	//\PhpOffice\PhpPresentation\Autoloader::register();
 	
    # ----------------------------------------
 	/**
@@ -427,7 +421,7 @@
 				//
 				// PDF output
 				//
-				caExportViewAsPDF($o_view, $va_template_info, caGetOption('filename', $va_template_info, 'export_results.pdf'), []);
+				caExportViewAsPDF($o_view, $va_template_info, ($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results.pdf'), []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
 		

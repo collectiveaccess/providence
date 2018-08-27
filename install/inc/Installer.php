@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -650,6 +650,7 @@ class Installer {
 			$vs_rank = self::getAttribute($vo_item, "rank");
 			$vn_enabled = self::getAttribute($vo_item, "enabled");
 			$vn_default = self::getAttribute($vo_item, "default");
+			$vs_color = self::getAttribute($vo_item, "color");
 
 			if (!isset($vs_item_value) || !strlen(trim($vs_item_value))) {
 				$vs_item_value = $vs_item_idno;
@@ -675,10 +676,10 @@ class Installer {
 					$t_item->delete();
 					continue;
 				}
-				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $vs_item_idno));
-				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
@@ -978,6 +979,7 @@ class Installer {
 			$t_ui->set('is_system_ui', 1);
 			$t_ui->set('editor_code', $vs_ui_code);
 			$t_ui->set('editor_type', $vn_type);
+			if ($vs_color = self::getAttribute($vo_ui, "color")) { $t_ui->set('color', $vs_color); }
 
 			if($t_ui->getPrimaryKey()) {
 				$t_ui->update();
@@ -1083,6 +1085,7 @@ class Installer {
 				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
+				if ($vs_color = self::getAttribute($vo_screen, "color")) { $t_ui_screens->set('color', $vs_color); }
 
 				if($t_ui_screens->getPrimaryKey()) {
 					$t_ui_screens->update();
@@ -1215,7 +1218,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_ui_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for UI {$vs_ui_code} (permission item with user name '{$vs_user}')");
@@ -1234,7 +1238,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_ui_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for UI {$vs_ui_code} (permission item with group code '{$vs_group}')");
@@ -1718,7 +1723,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_display_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for display {$vs_display_code} (permission item with user name '{$vs_user}')");
@@ -1737,7 +1743,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_display_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for display {$vs_display_code} (permission item with group code '{$vs_group}')");
@@ -1904,7 +1911,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_form_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for search form {$vs_form_code} (permission item with user name '{$vs_user}')");
@@ -1923,7 +1931,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for search form {$vs_form_code} (permission item with group code '{$vs_group}')");

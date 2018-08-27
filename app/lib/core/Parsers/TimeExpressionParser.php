@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2017 Whirl-i-Gig
+ * Copyright 2006-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,7 @@ define("TEP_TOKEN_SEASON_SPRING", 23);
 define("TEP_TOKEN_SEASON_SUMMER", 24);
 define("TEP_TOKEN_SEASON_AUTUMN", 25);
 define("TEP_TOKEN_UNDATED", 26);
+define("TEP_TOKEN_BP", 27);
 
 # --- Meridian types
 define("TEP_MERIDIAN_AM", 0);
@@ -315,6 +316,23 @@ class TimeExpressionParser {
 								$vn_state = TEP_STATE_ACCEPT;
 								$vb_can_accept = true;
 								break(2);
+							} elseif ($va_peek['type'] == TEP_TOKEN_BP) {
+								$va_dates['start'] = array(
+									'month' => 1, 'day' => 1, 'year' => 1950 - intval($va_token['value']),
+									'hours' => null, 'minutes' => null, 'seconds' => null,
+									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true, 'is_bp' => true
+								);
+								$va_dates['end'] = array(
+									'month' => 12, 'day' => 31, 'year' => 1950 - intval($va_token['value']),
+									'hours' => null, 'minutes' => null, 'seconds' => null,
+									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => false, 'dont_window' => true, 'is_bp' => true
+								);
+								$this->skipToken();
+								$this->skipToken();
+						
+								$vn_state = TEP_STATE_ACCEPT;
+								$vb_can_accept = true;
+								break(2);
 							}
 							break;
 						# ----------------------
@@ -509,7 +527,21 @@ class TimeExpressionParser {
 												$va_dates['end'] = array(
 													'month' => 12, 'day' => 31, 'year' => intval($va_token['value']) * -1000000,
 													'hours' => null, 'minutes' => null, 'seconds' => null,
+													'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_bp' => true
+												);
+												$vb_can_accept = true;
+												
+												break;
+											} elseif ($va_token_mya['type'] == TEP_TOKEN_BP) {
+												$va_dates['start'] = array(
+													'month' => null, 'day' => null, 'year' => 1950 - intval($va_token['value']),
+													'hours' => null, 'minutes' => null, 'seconds' => null,
 													'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
+												);
+												$va_dates['end'] = array(
+													'month' => 12, 'day' => 31, 'year' => 1950 - intval($va_token['value']),
+													'hours' => null, 'minutes' => null, 'seconds' => null,
+													'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_bp' => true
 												);
 												$vb_can_accept = true;
 												
@@ -1443,11 +1475,12 @@ class TimeExpressionParser {
 				if ($vb_was_peeked) { $this->skipToken(); }
 				$this->skipToken();
 			
+			    $vb_is_bc = false;
 				while($va_modfier_token = $this->peekToken()) {
 					switch($va_modfier_token['type']) {
 						case TEP_TOKEN_ERA:
 							if($va_modfier_token['era'] == TEP_ERA_BC) {
-								$vn_century *= -1;
+								$vb_is_bc = true;
 							}
 							$this->skipToken();
 							break;
@@ -1466,17 +1499,17 @@ class TimeExpressionParser {
 				}
 			
 				$vn_start_year = (int) ($va_matches[1] - ($va_matches[1] % 10));
+				if ($vb_is_bc) { $vn_start_year *= -1; }
 				$va_dates['start'] = array(
 					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 				$va_dates['end'] = array(
-					'month' => 12, 'day' => 31, 'year' => ($vn_start_year + 9),
+					'month' => 12, 'day' => 31, 'year' => $vb_is_bc ? ($vn_start_year - 9) : ($vn_start_year + 9),
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 			}
 		}
-
 		return $va_dates;
 	}
 	# -------------------------------------------------------------------
@@ -1670,6 +1703,11 @@ class TimeExpressionParser {
 		// mya
 		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateMYA"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_MYA);
+		}
+		
+		// bp (radiocarbon) dates
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateBP"))) {
+			return array('value' => $vs_token, 'type' => TEP_TOKEN_BP);
 		}
 		
 		// circa
@@ -2085,6 +2123,9 @@ class TimeExpressionParser {
 			if ($pa_dates['start']['is_circa']) {
 				$vn_start_attributes = 1;
 			}
+			if ($pa_dates['start']['is_bp']) {
+				$vn_start_attributes += 8;
+			}
 			
 			$vn_start_uncertainty = '';
 			if ($pa_dates['start']['uncertainty'] > 0) {
@@ -2109,6 +2150,9 @@ class TimeExpressionParser {
 			$vn_end_attributes = 0;
 			if ($pa_dates['end']['is_circa']) {
 				$vn_end_attributes = 1;
+			}
+			if ($pa_dates['end']['is_bp']) {
+				$vn_end_attributes += 8;
 			}
 			$vn_end_uncertainty = '';
 			if ($pa_dates['end']['uncertainty'] > 0) {
@@ -2346,7 +2390,6 @@ class TimeExpressionParser {
 				}
 				return $this->getISODateTime($va_end_pieces, 'FULL', $pa_options);
 			}
-			
 			
 			// start is same as end so just output start date
 			if ($va_dates['start'] == $va_dates['end']) {
@@ -2699,7 +2742,7 @@ class TimeExpressionParser {
 							$va_end_pieces['month'] == 12 && $va_end_pieces['day'] == 31
 						) {
 							// year only
-							return $vs_start_circa.$this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
+							return $vs_start_circa.$this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units'], 'is_bp' => $va_start_pieces['is_bp']), $pa_options);
 						} else {
 							if ($vb_full_day_time_range) {
 								// date range within single year without time
@@ -2814,10 +2857,18 @@ class TimeExpressionParser {
 		if (((int)$pa_start_pieces['day'] === 1) && ((int)$pa_end_pieces['day'] === (int)$this->daysInMonth($pa_end_pieces['month'], $pa_end_pieces['year']))) {
 			$pa_start_pieces['day'] = null;
 		}
-		if (((int)$pa_end_pieces['day'] === (int)$this->daysInMonth(12, $pa_end_pieces['year'])) && ((int)$pa_end_pieces['month'] === 12)) {
+		if (
+			(((int)$pa_end_pieces['day'] === (int)$this->daysInMonth(12, $pa_end_pieces['year'])) && ((int)$pa_end_pieces['month'] === 12))
+			&&
+			(((int)$pa_start_pieces['day'] === 1) && ((int)$pa_start_pieces['month'] === 1))
+		) {
 			$pa_end_pieces['day'] = $pa_end_pieces['month'] = null;
 		}
-		if (((int)$pa_start_pieces['day'] === 1) && ((int)$pa_start_pieces['month'] === 1)) {
+		if (
+			(((int)$pa_start_pieces['day'] === 1) && ((int)$pa_start_pieces['month'] === 1))
+			&& 
+			(((int)$pa_end_pieces['day'] === 31) && ((int)$pa_end_pieces['month'] === 12))
+		) {
 			$pa_start_pieces['day'] = $pa_start_pieces['month'] = null;
 		}
 		
@@ -2966,6 +3017,11 @@ class TimeExpressionParser {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
 			}
+		}
+		
+		if ($pa_date_pieces['is_bp']) {
+			$va_bp_indicators = $this->opo_language_settings->getList("dateBP");
+			return (1950 - $pa_date_pieces['year']).' '.$va_bp_indicators[0];
 		}
 	
 		$va_uncertainty_indicators = $this->opo_language_settings->getList("dateUncertaintyIndicator");
@@ -3191,8 +3247,8 @@ class TimeExpressionParser {
 			$vn_abs_year = $vn_year;
 		}
 		$vn_attributes = (int)substr($va_tmp[1], 10, 1);
-		
-		$vb_is_circa = ($vn_attributes & 0x0001) ? 1 : 0;
+		$vb_is_circa = ($vn_attributes & 0b0001) ? 1 : 0;
+		$vb_is_bp = ($vn_attributes & 0b1000) ? 1 : 0;
 		
 		$vs_uncertainty_units = ((intval($vn_attributes) >> 1) == 1) ? 'd' : null;
 		if (!$vs_uncertainty_units) { 	$vs_uncertainty_units = ((intval($vn_attributes) >> 2) == 1) ? 'y' : null; }
@@ -3214,6 +3270,7 @@ class TimeExpressionParser {
 			'seconds'			=> substr($va_tmp[1], 8, 2),
 			'era'				=> $vs_era,
 			'is_circa'			=> $vb_is_circa,
+			'is_bp'				=> $vb_is_bp,
 			'uncertainty'		=> $vn_uncertainty,
 			'uncertainty_units'	=> $vs_uncertainty_units
 			

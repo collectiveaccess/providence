@@ -657,8 +657,6 @@
 				if (!isset($va_submenu_item['parameters']) || !is_array($va_submenu_item['parameters'])) { $va_submenu_item['parameters'] = array(); }
 				if (isset($va_submenu_item) && isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) {
 					$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
-				} elseif(isset($va_submenu_item['displayName']) && (sizeof(array_keys($va_submenu_item) == 1))) {
-					$vs_buf .= $va_submenu_item['displayName'];
 				} else {
 					$vs_buf .= "<a href='#'>".$va_submenu_item['displayName']."</a>";
 				}
@@ -680,9 +678,9 @@
 				$vb_disabled = (isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) ? false : true;
 				
 				if ($vb_disabled) {
-					$vs_buf .= caHTMLLink( unicode_ucfirst(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path) ? 'sf-menu-disabled-selected' : '')));
+					$vs_buf .= caHTMLLink(caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path) ? 'sf-menu-disabled-selected' : '')));
 				} else {
-					$vs_buf .= caNavLink($this->opo_request, unicode_ucfirst(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
+					$vs_buf .= caNavLink($this->opo_request, caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
 				}
 				if (isset($va_submenu_item['navigation']) && $va_submenu_item['navigation']) {
 					$vs_buf .= $this->_genSubMenu($va_submenu_item['navigation'], $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults);
@@ -905,4 +903,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>

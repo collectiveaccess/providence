@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -142,6 +142,7 @@ class SearchEngine extends SearchBase {
 			$ps_search .= $vs_append_to_search;
 		}
 		
+		$ps_search = preg_replace('![\|]([A-Za-z0-9_,;]+[:]{1})!', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
 		$ps_search = preg_replace('/(?!")\['._t('BLANK').'\](?!")/i', '"['._t('BLANK').']"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		$ps_search = preg_replace('/(?!")\['._t('SET').'\](?!")/i', '"['._t('SET').']"', $ps_search); // the special [SET] search term, which returns records that have *any* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
@@ -1258,4 +1259,3 @@ class SearchEngine extends SearchBase {
 	}
 	# ------------------------------------------------------------------
 }
-?>

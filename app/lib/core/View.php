@@ -100,7 +100,22 @@ class View extends BaseObject {
 			}
 			if ($vs_suffix = join("/", array_reverse($va_suffix_bits))) { $vs_suffix = '/'.$vs_suffix; break;}
 		}
-		
+		if (caGetOption('allowThemeInheritance', $pa_options, true)) {
+			if(file_exists(__CA_THEME_DIR__.'/conf/app.conf')) {
+				$o_config = Configuration::load(__CA_THEME_DIR__.'/conf/app.conf');
+				$i=0;
+				while($vs_inherit_from_theme = trim(trim($o_config->get('inherit_from')), "/")) {
+					$i++;
+					$vs_inherited_theme_path = __CA_THEMES_DIR__."/{$vs_inherit_from_theme}/views{$vs_suffix}";
+					if (!in_array($vs_inherited_theme_path, $pm_path) && !in_array($vs_inherited_theme_path.'/', $pm_path)) {
+						array_unshift($pm_path, $vs_inherited_theme_path);
+					}
+					if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { continue; }
+					$o_config = Configuration::load(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf", false, false, true);
+					if ($i > 10) {break;} // make 10 levels
+				}
+			}
+		}
 		if (caGetOption('includeDefaultThemePath', $pa_options, true)) {
 				$vs_default_theme_path = $this->opo_request ? $this->opo_request->getDefaultThemeDirectoryPath().'/views'.$vs_suffix : __CA_THEME_DIR__."/default/views{$vs_suffix}";
 				if (!in_array($vs_default_theme_path, $pm_path) && !in_array($vs_default_theme_path.'/', $pm_path)) {

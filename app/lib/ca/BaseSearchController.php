@@ -109,14 +109,6 @@
  			
  			MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
  			
- 			// Get attribute sorts
- 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
- 			
- 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $va_sortable_element) {
- 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
- 			}
-
 			$vs_append_to_search = '';
  			if ($pa_options['appendToSearch']) {
  				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
@@ -418,7 +410,7 @@
 				$va_results = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_objects', 57, array('limit' => 3, 'checkAccess' => $va_access_values)));
 				// break found objects out by type
 				foreach($va_results as $vn_id => $va_match_info) {
-					$vs_type = unicode_ucfirst($t_list->getItemFromListForDisplayByItemID('object_types', $va_match_info['type_id'], true));
+					$vs_type = caUcFirstUTF8Safe($t_list->getItemFromListForDisplayByItemID('object_types', $va_match_info['type_id'], true));
 					$va_data['ca_objects'][$vs_type][$vn_id] = $va_match_info;
 				}
 			}
@@ -435,7 +427,7 @@
 				$va_results = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_occurrences', 67, array('limit' => 10, 'checkAccess' => $va_access_values)));
 				// break found occurrences out by type
 				foreach($va_results as $vn_id => $va_match_info) {
-					$vs_type = unicode_ucfirst($t_list->getItemFromListForDisplayByItemID('occurrence_types', $va_match_info['type_id'], true));
+					$vs_type = caUcFirstUTF8Safe($t_list->getItemFromListForDisplayByItemID('occurrence_types', $va_match_info['type_id'], true));
 					$va_data['ca_occurrences'][$vs_type][$vn_id] = $va_match_info;
 				}
 			}

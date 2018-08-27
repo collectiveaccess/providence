@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -834,7 +834,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function checkForDupeLabel($pn_locale_id, $pa_label_values, $pb_preferred_only=true) {
 		$o_db = $this->getDb();
 		$t_label = $this->getLabelTableInstance();
-		unset($pa_label_values['displayname']);
+		//unset($pa_label_values['displayname']);
 		$va_wheres = array();
 		foreach($pa_label_values as $vs_field => $vs_value) {
 			$va_wheres[] = "(l.{$vs_field} = ?)";
@@ -1327,7 +1327,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				$pa_bundle_settings['definition'][$g_ui_locale] = "<div class='caMetadataDictionaryViolationsList'><div class='caMetadataDictionaryViolationsListHeading'>"._t('These problems require attention:')."</div><ol>".join("\n", $va_violation_text)."</ol></div>\n".$pa_bundle_settings['definition'][$g_ui_locale]."<br style='clear: both;'/>";
 			}
-			if (!caGetOption($g_ui_locale, $pa_bundle_settings['description'], null)) { $pa_bundle_settings['description'][$g_ui_locale] = $va_dictionary_entry['settings']['definition']; }
 		}
 		
 		// is label for this bundle forced in bundle settings?
@@ -1363,8 +1362,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
-				
-				if (($vs_label) && ($vs_description) && !is_array($va_dictionary_entry)) {
+				if (($vs_label) && ($vs_description)) { 
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
 				break;
@@ -1448,7 +1446,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$vs_description = $this->getFieldInfo($ps_bundle_name, 'DESCRIPTION');
 				}
 				
-				if (($pa_options['label']) && ($vs_description) && !is_array($va_dictionary_entry)) {
+				if (($pa_options['label']) && ($vs_description)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
 				}
 				
@@ -1498,7 +1496,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				
-				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
+				if (($vs_label_text) && ($vs_description)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
 		
@@ -1586,7 +1584,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				
-				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
+				if (($vs_label_text) && ($vs_description)) {
 					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
 				}
 				break;
@@ -1829,7 +1827,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				
-				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
+				if (($vs_label_text) && ($vs_description)) {
 					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
 				}
 				
@@ -1915,6 +1913,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				switch($va_tmp[1]) {
 					# --------------------
+					case '_generic_bundle_':
+						return _t('Generic bundle');
+						break;
+					# --------------------
 					case 'related':
 						unset($va_tmp[1]);
 						$vs_label = $this->getDisplayLabel(join('.', $va_tmp));
@@ -1961,7 +1963,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					default:
 						if ($va_tmp[0] !== $this->tableName()) {
-							return unicode_ucfirst($t_instance->getDisplayLabel($ps_field)).$vs_suffix;
+							return caUcFirstUTF8Safe($t_instance->getDisplayLabel($ps_field)).$vs_suffix;
 						}
 						break;
 					# --------------------
@@ -2920,6 +2922,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							'id' => $vn_id, 
 							'idno' => ($vn_idno = $t_item->get('idno')) ? $vn_idno : null, 
 							'idno_stub' => ($vn_idno_stub = $t_item->get('idno_stub')) ? $vn_idno_stub : null, 
+							'item_type_id' => $t_item->getTypeID(),
 							'relationship_type_id' => null
 						)
 					);
@@ -3207,6 +3210,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * @return mixed
 	*/
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
+	    global $g_ui_locale_id;
+										
 		$vb_we_set_transaction = false;
 		$vs_form_prefix = caGetOption('formName', $pa_options, $po_request->getParameter('_formName', pString));
 		
@@ -3609,6 +3614,8 @@ if ($this->getProperty('LABEL_TABLE_NAME')) {
 		$vb_check_for_dupe_labels = $this->_CONFIG->get('allow_duplicate_labels_for_'.$this->tableName()) ? false : true;
 		$vb_error_inserting_pref_label = false;
 		if (is_array($va_fields_by_type['preferred_label'])) {
+		    $vs_label_must_be_in_list = $this->_CONFIG->get('preferred_label_for_'.$this->tableName().'_must_be_in_list');
+		    
 			foreach($va_fields_by_type['preferred_label'] as $vs_placement_code => $vs_f) {
 
 if (!$vb_batch) {	
@@ -3622,6 +3629,11 @@ if (!$vb_batch) {
 								if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], true))) {
 									if ($vb_check_for_dupe_labels && $this->checkForDupeLabel($vn_label_locale_id, $va_label_values)) {
 										$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
+										$po_request->addActionErrors($this->errors(), 'preferred_labels');
+										continue;
+									}
+									if ($vs_label_must_be_in_list && !caGetListItemIDForLabel($vs_label_must_be_in_list, $vs_label_val = $va_label_values[$this->getLabelDisplayField()])) {
+									    $this->postError(1100, _t('Value <em>%1</em> is not in <em>%2</em>', $vs_label_val, caGetListName($vs_label_must_be_in_list)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
 										$po_request->addActionErrors($this->errors(), 'preferred_labels');
 										continue;
 									}
@@ -3715,6 +3727,13 @@ if (!$vb_batch) {
 								$vb_error_inserting_pref_label = true;
 								continue;
 							}
+							if ($vs_label_must_be_in_list && !caGetListItemIDForLabel($vs_label_must_be_in_list, $vs_label_val = $va_label_values[$this->getLabelDisplayField()])) {
+                                $this->postError(1100, _t('Value <em>%1</em> is not in <em>%2</em>', $vs_label_val, caGetListName($vs_label_must_be_in_list)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
+                                $po_request->addActionErrors($this->errors(), 'preferred_labels');
+                                $vb_error_inserting_pref_label = true;
+                                continue;
+                            }
+                            
 							$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_new_'.$vn_c, pInteger);
 							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
 							if ($this->numErrors()) {
@@ -3914,7 +3933,6 @@ if (!$vb_batch) {
 										//
 										$t_rep = new ca_object_representations();
 										if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
-										global $g_ui_locale_id;
 										if ($t_rep->load($va_rep['representation_id'])) {
 											$t_rep->setMode(ACCESS_WRITE);
 											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true, array('queueIndexing' => true));
@@ -3941,81 +3959,90 @@ if (!$vb_batch) {
 							$vs_batch_mode = $_REQUEST[$vs_prefix_stub.'batch_mode'];
 	
 							if ($vs_batch_mode == '_disabled_') { break;}
-							if ($vs_batch_mode == '_replace_') { $this->removeAllRepresentations();}
+							if (($vs_batch_mode == '_replace_') && sizeof($va_reps)) { 
+							    foreach($va_reps as $va_rep) {
+									$pn_access = $po_request->getParameter("{$vs_prefix_stub}access_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}access_new_0", pInteger) : null;
+									$pn_status = $po_request->getParameter("{$vs_prefix_stub}access_status_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}status_new_0", pInteger) : null;
+									$pn_type_id = $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0", pInteger) : null;
+									$ps_rep_label = $po_request->getParameter("{$vs_prefix_stub}rep_label_new_0_enabled", pInteger) ? trim($po_request->getParameter("{$vs_prefix_stub}rep_label_new_0", pString)) : null;
+									$this->editRepresentation($va_rep['representation_id'], null, $g_ui_locale_id, $pn_status, $pn_access, null, [], ['label' => $ps_rep_label, 'type_id' => $pn_type_id]);
+							    }
+							}
 							if ($vs_batch_mode == '_delete_') { $this->removeAllRepresentations(); break; }
-						}
+						} else {
 					
-						// check for new representations to add 
-						$va_file_list = $_FILES;
-						foreach($_REQUEST as $vs_key => $vs_value) {
-							if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
-								$va_file_list[$vs_key] = array(
-									'url' => $vs_value
-								);
-							} elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
-								$va_file_list[$vs_key] = array(
-									'tmp_name' => $vs_value,
-									'name' => $vs_value
-								);
-							}
-						}
-						
-						foreach($va_file_list as $vs_key => $va_values) {
-							$this->clearErrors();
-							
-							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
-							
-							if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
-								$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
-							}
-							
-							$vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_id_new_'.$va_matches[1], pInteger);
-							if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
-								$this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
-							} else {
-								if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
-									$va_tmp = explode('/', $vs_path);
-									$vs_original_name = array_pop($va_tmp);
-								} else {
-									$vs_path = $va_values['tmp_name'];
-									$vs_original_name = $va_values['name'];
-								}
-								if (!$vs_path) { continue; }
-							
-								$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], pInteger);
-								if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
-									require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-									$t_list = new ca_lists();
-									if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
-										$vn_rep_type_id = array_shift($va_rep_type_ids);
-									}
-								}
-						
-								if (is_array($pa_options['existingRepresentationMap']) && isset($pa_options['existingRepresentationMap'][$vs_path]) && $pa_options['existingRepresentationMap'][$vs_path]) {
-									$this->addRelationship('ca_object_representations', $pa_options['existingRepresentationMap'][$vs_path], $vn_type_id);
-									break;
-								}
-							
-								$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_new_'.$va_matches[1], pString));	
-								$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_new_'.$va_matches[1], pInteger);
-								$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
-								$vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
-								$vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
-								$vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
-								
-								// Get user-specified center point (images only)
-								$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
-								$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
-						
-								$t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label, 'idno' => $vs_idno), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
-								if ($this->numErrors()) {
-									$po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
-								} else {
-									if ($t_rep && is_array($pa_options['existingRepresentationMap'])) { 
-										$pa_options['existingRepresentationMap'][$vs_path] = $t_rep->getPrimaryKey();
-									}
-								}
-							}
+                            // check for new representations to add 
+                            $va_file_list = $_FILES;
+                            foreach($_REQUEST as $vs_key => $vs_value) {
+                                if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+                                    $va_file_list[$vs_key] = array(
+                                        'url' => $vs_value
+                                    );
+                                } elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
+                                    $va_file_list[$vs_key] = array(
+                                        'tmp_name' => $vs_value,
+                                        'name' => $vs_value
+                                    );
+                                }
+                            }
+                        
+                            foreach($va_file_list as $vs_key => $va_values) {
+                                $this->clearErrors();
+                            
+                                if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
+                            
+                                if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
+                                    $po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
+                                }
+                            
+                                $vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_id_new_'.$va_matches[1], pInteger);
+                                if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
+                                    $this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
+                                } else {
+                                    if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
+                                        $va_tmp = explode('/', $vs_path);
+                                        $vs_original_name = array_pop($va_tmp);
+                                    } else {
+                                        $vs_path = $va_values['tmp_name'];
+                                        $vs_original_name = $va_values['name'];
+                                    }
+                                    if (!$vs_path) { continue; }
+                            
+                                    $vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], pInteger);
+                                    if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
+                                        require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+                                        $t_list = new ca_lists();
+                                        if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
+                                            $vn_rep_type_id = array_shift($va_rep_type_ids);
+                                        }
+                                    }
+                        
+                                    if (is_array($pa_options['existingRepresentationMap']) && isset($pa_options['existingRepresentationMap'][$vs_path]) && $pa_options['existingRepresentationMap'][$vs_path]) {
+                                        $this->addRelationship('ca_object_representations', $pa_options['existingRepresentationMap'][$vs_path], $vn_type_id);
+                                        break;
+                                    }
+                            
+                                    $vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_new_'.$va_matches[1], pString));	
+                                    $vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_new_'.$va_matches[1], pInteger);
+                                    $vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
+                                    $vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
+                                    $vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
+                                    $vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
+                                
+                                    // Get user-specified center point (images only)
+                                    $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
+                                    $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
+                        
+                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label, 'idno' => $vs_idno), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                                    if ($this->numErrors()) {
+                                        $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
+                                    } else {
+                                        if ($t_rep && is_array($pa_options['existingRepresentationMap'])) { 
+                                            $pa_options['existingRepresentationMap'][$vs_path] = $t_rep->getPrimaryKey();
+                                        }
+                                    }
+                                }
+                            }
 						}
 						break;
 					# -------------------------------------
@@ -4994,6 +5021,8 @@ if (!$vb_batch) {
  	 */
 	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null, &$pn_count=null) {
 		global $AUTH_CURRENT_USER_ID;
+		$o_dm = Datamodel::load();
+				        
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
 
@@ -5504,6 +5533,12 @@ if (!$vb_batch) {
 				
 				$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
 
+                $vb_use_is_primary = false;
+                if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
+                    $va_selects[] = $t_item_rel->tableName().'.is_primary';
+                    $vb_use_is_primary = true;
+                }
+
 				$vs_order_by = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
 					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
@@ -5575,6 +5610,10 @@ if (!$vb_batch) {
 
 					$va_rels[$vs_v]['_key'] = $vs_key;
 					$va_rels[$vs_v]['direction'] = $vs_direction;
+					
+                    if ($vb_use_is_primary) {
+                        $va_rels_for_id[$vs_v]['is_primary'] = $qr_res->get('is_primary');
+                    }
 
 					$vn_c++;
 					if ($vb_uses_relationship_types) {
@@ -5635,6 +5674,11 @@ if (!$vb_batch) {
 
 			if ($vb_is_combo_key_relation) {
 				$va_joins = array("INNER JOIN {$vs_related_table_name} ON {$vs_related_table_name}.row_id = ".$this->primaryKey(true)." AND {$vs_related_table_name}.table_num = ".$this->tableNum());
+				if(method_exists($t_rel_item, "getLabelTableInstance") && ($t_rel_label = $t_rel_item->getLabelTableInstance())) {
+				    $vs_related_label_table_name = $t_rel_label->tableName();
+				    $vs_rel_pk = $t_rel_item->primaryKey();
+				    $va_joins[] = "INNER JOIN {$vs_related_label_table_name} ON {$vs_related_label_table_name}.{$vs_rel_pk} = {$vs_related_table_name}.{$vs_rel_pk}";
+			    }
 			} else {
 				foreach($va_path as $vs_join_table) {
 					$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
@@ -5686,6 +5730,12 @@ if (!$vb_batch) {
 			// If we're getting ca_set_items, we have to rename the intrinsic row_id field because the pk is named row_id below. Hence, this hack.
 			if($vs_related_table_name == 'ca_set_items') {
 				$va_selects[] = 'ca_set_items.row_id AS record_id';
+			}
+			
+			$vb_use_is_primary = false;
+			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
+			    $va_selects[] = $t_item_rel->tableName().'.is_primary';
+			    $vb_use_is_primary = true;
 			}
 
 			$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
@@ -5767,7 +5817,11 @@ if (!$vb_batch) {
 
 				$va_rels_for_id[$vs_v]['_key'] = $vs_key;
 				$va_rels_for_id[$vs_v]['direction'] = $vs_direction;
-
+				
+				if ($vb_use_is_primary) {
+				    $va_rels_for_id[$vs_v]['is_primary'] = $qr_res->get('is_primary');
+                }
+                
 				$vn_c++;
 				if ($vb_uses_relationship_types) {
 					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
@@ -5794,12 +5848,24 @@ if (!$vb_batch) {
 							
 				// filter for current?
 				if($pb_show_current_only && $t_item_rel) {
-					$qr_rels = caMakeSearchResult($t_item_rel->tableName(), [$qr_res->get($vs_key)]);
+				    if ($this->isRelationship()) {
+				        $k = $this->tableName().".".(($this->getLeftTableFieldName() == $vs_key) ? $this->getRightTableFieldName() : $this->getLeftTableFieldName());
+				        $t = $t_rel_item->tableName();
+				        $id = $qr_res->get($t_rel_item->primaryKey());
+				    } else {
+				        $k = $this->primaryKey(true);
+				        $t = $t_item_rel->tableName();
+				        $id = $qr_res->get($vs_key);
+				    }
+				    $cd = $ps_current_date_bundle;
+				    if ($cd == 'effective_date') { $cd = $t_item_rel->tableName().".{$cd}"; }
+				    
+					$qr_rels = caMakeSearchResult($t, [$id]);
 					while($qr_rels->nextHit()) {
-						foreach($qr_rels->get($ps_current_date_bundle, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
+						foreach($d= $qr_rels->get($cd, ['returnAsArray' => true, 'sortable' => true]) as $vs_date) {
 							$va_tmp = explode("/", $vs_date);
 							if ($va_tmp[0] > $vn_current_date) { continue; } 	// skip future dates
-							$va_rels_for_id_by_date[$qr_rels->get($this->primaryKey(true))][$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_v] = $va_rels_for_id[$vs_v];
+							$va_rels_for_id_by_date[$qr_rels->get($k)][$vs_date.'/'.sprintf("%09d", $qr_rels->get($t_item_rel->tableName().".relation_id"))][$vs_v] = $va_rels_for_id[$vs_v];
 						}
 					}
 				}
@@ -5840,6 +5906,9 @@ if (!$vb_batch) {
 			//
 			// END - non-self relation
 			//
+		}
+		if ($pb_show_current_only) {
+		    $va_rels = array_slice($va_rels, sizeof($va_rels)-1, 1);
 		}
 
 		// Apply restrictToBundleValues
@@ -6021,6 +6090,7 @@ if (!$vb_batch) {
 			$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			
 			if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && !$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_disable_object_collection_idno_inheritance') && $pa_options['request'] && ($vn_collection_id = $pa_options['request']->getParameter('collection_id', pInteger))) {
+				require_once(__CA_MODELS_DIR__."/ca_collections.php");
 				// Parent will be set to collection
 				$t_coll = new ca_collections($vn_collection_id);
 				if ($this->inTransaction()) { $t_coll->setTransaction($this->getTransaction()); }

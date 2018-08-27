@@ -95,6 +95,14 @@
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
 					
 				}
+							
+                if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id)) {
+                    $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $vn_display_id));
+			    } else {
+			        $this->opa_sorts = [];
+			    }
+			} else {
+			    $this->opa_sorts = [];
 			}
  		}
 		# -------------------------------------------------------
@@ -432,7 +440,7 @@
 				$vs_content .= $this->render("pdfEnd.php");
 				
 				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'labels.pdf')));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
 
 				$vb_printed_properly = true;
 				
@@ -471,8 +479,6 @@
 			if(substr($ps_output_type, 0, 4) !== '_pdf') {
 				switch($ps_output_type) {
 					case '_xlsx':
-						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
-						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
 						$this->render('Results/xlsx_results.php');
 						return;
                     case '_docx':
@@ -565,9 +571,11 @@
 					$vs_content = $this->render($va_template_info['path']);
 					
 					$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
-					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
+					
+					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results.pdf')));
 					exit;
 				} catch (Exception $e) {
+					die($e->getMessage());
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
 				return;			
@@ -886,8 +894,10 @@
  			$this->view->setVar('views', $this->opa_views);	// pass view list to view for rendering
  			$this->view->setVar('current_view', $vs_view);
  			
+ 			
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $vn_display_id)));
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -965,7 +975,8 @@
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
  			
  			// Get attribute sorts
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
+ 			
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $vn_display_id)));
  			
  			$this->view->setVar('display_id', $vn_display_id);
  			$this->view->setVar('columns',ca_bundle_displays::getColumnsForResultsEditor($va_display_list, array('request' => $this->request)));
@@ -1009,7 +1020,7 @@
  				
  				if (($pn_c > 0) && ($vn_c >= $pn_c)) { break; }
  			}
-			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, ['restrictToDisplay' => $vn_display_id]);
  			
  			$this->view->setVar('data', $va_data);
  			$this->render("Results/ajax_results_editable_data_json.php");

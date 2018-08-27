@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,28 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 
+	public function testBPDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('55 BP');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1895.010100000080");	# Date attribute 8=BP
+		$this->assertEquals($va_parse['end'], "1895.123123595980");
+		$this->assertEquals($va_parse[0], "1895.010100000080");
+		$this->assertEquals($va_parse[1], "1895.123123595980");	
+		
+		
+		$vb_res = $o_tep->parse('7000 BP');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "-5050.010100000080");	# Date attribute 8=BP
+		$this->assertEquals($va_parse['end'], "-5050.123123595980");
+		$this->assertEquals($va_parse[0], "-5050.010100000080");
+		$this->assertEquals($va_parse[1], "-5050.123123595980");	
+	}
+	
 	public function testDatesWithoutStart() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
@@ -533,7 +555,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1955.123123595910");
 		$this->assertEquals($va_parse[0], "1950.060100000000");
 		$this->assertEquals($va_parse[1], "1955.123123595910");
-		$this->assertEquals($o_tep->getText(), "June 1950 – circa 1955");
+		$this->assertEquals($o_tep->getText(), "June 1950 – circa December 1955");
 		
 		$vb_res = $o_tep->parse('circa June 1950 to circa 1955');
 		$this->assertEquals($vb_res, true);
@@ -543,7 +565,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1955.123123595910");
 		$this->assertEquals($va_parse[0], "1950.060100000010");
 		$this->assertEquals($va_parse[1], "1955.123123595910");
-		$this->assertEquals($o_tep->getText(), "circa June 1950 – 1955");
+		$this->assertEquals($o_tep->getText(), "circa June 1950 – December 1955");
 		
 		$vb_res = $o_tep->parse('circa June 1950 to circa 11/1955');
 		$this->assertEquals($vb_res, true);

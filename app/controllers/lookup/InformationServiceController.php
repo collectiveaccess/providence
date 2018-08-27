@@ -63,7 +63,7 @@
 				$vs_service = $t_element->getSetting('service');
 			
 				$va_items = array();
-				if (unicode_strlen($ps_query) >= 3) {
+				if (mb_strlen($ps_query) >= 3) {
 					try {
 						// Load plugin and connect to information service
 						if (!($o_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -114,7 +114,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			if (!($vs_search = $t_form->getLuceneQueryStringForHTMLFormInput($_REQUEST))) { // try to get search off of request
 				$vs_search = $this->opo_result_context->getSearchExpression();				// get the search out of the result context
 				$va_form_data = $this->opo_result_context->getParameter('form_data');
-				$vb_is_new_search = !$this->opo_result_context->cacheIsValid();
+				$vb_is_new_search = !$this->opo_result_context->cacheIsValid() || $this->opb_type_restriction_has_changed;
 			} else {
 				$va_form_data = $t_form->extractFormValuesFromArray($_REQUEST);				// ah ok, its an incoming request, so get the form values out for interpretation/processing/whatever
 				$vb_is_new_search = true;

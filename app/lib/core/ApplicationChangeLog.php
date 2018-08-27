@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -672,6 +672,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
+				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
 				'timestamp' => $qr_res->get('log_datetime')
 			);
@@ -703,6 +704,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					'user_id' => $qr_res->get('user_id'),
 					'fname' => $qr_res->get('fname'),
 					'lname' => $qr_res->get('lname'),
+					'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 					'email' => $qr_res->get('email'),
 					'timestamp' => $qr_res->get('log_datetime')
 				);
@@ -741,6 +743,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
+				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
 				'timestamp' => $qr_res->get('log_datetime')
 			);

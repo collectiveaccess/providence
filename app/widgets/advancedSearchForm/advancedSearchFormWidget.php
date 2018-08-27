@@ -54,7 +54,7 @@
 			
 			$va_form_list = array();
 			foreach($va_forms as $va_form){
-				$va_form_list[unicode_ucfirst($o_dm->getTableProperty($va_form['table_num'], 'NAME_PLURAL')).": ".$va_form["name"]] = $va_form["form_id"];
+				$va_form_list[caUcFirstUTF8Safe($o_dm->getTableProperty($va_form['table_num'], 'NAME_PLURAL')).": ".$va_form["name"]] = $va_form["form_id"];
 			}
 			
 			BaseWidget::$s_widget_settings['advancedSearchFormWidget']["form_code"] =

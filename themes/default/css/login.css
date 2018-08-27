@@ -114,6 +114,9 @@ a.button{
 a.button:hover{
 	color: #1FAA99;
 }
+.loginButton {
+	vertical-align:middle;
+}
 
 a.form-button, span.form-button, del.form-button{
     display:-moz-inline-box;

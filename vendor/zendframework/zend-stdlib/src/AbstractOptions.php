@@ -13,6 +13,7 @@ use Traversable;
 
 abstract class AbstractOptions implements ParameterObjectInterface
 {
+    // @codingStandardsIgnoreStart
     /**
      * We use the __ prefix to avoid collisions with properties in
      * user-implementations.
@@ -20,6 +21,7 @@ abstract class AbstractOptions implements ParameterObjectInterface
      * @var bool
      */
     protected $__strictMode__ = true;
+    // @codingStandardsIgnoreEnd
 
     /**
      * Constructor
@@ -46,7 +48,7 @@ abstract class AbstractOptions implements ParameterObjectInterface
             $options = $options->toArray();
         }
 
-        if (!is_array($options) && !$options instanceof Traversable) {
+        if (! is_array($options) && ! $options instanceof Traversable) {
             throw new Exception\InvalidArgumentException(
                 sprintf(
                     'Parameter provided to %s must be an %s, %s or %s',
@@ -72,7 +74,7 @@ abstract class AbstractOptions implements ParameterObjectInterface
      */
     public function toArray()
     {
-        $array = array();
+        $array = [];
         $transform = function ($letters) {
             $letter = array_shift($letters);
             return '_' . strtolower($letter);
@@ -100,7 +102,7 @@ abstract class AbstractOptions implements ParameterObjectInterface
     {
         $setter = 'set' . str_replace('_', '', $key);
 
-        if (is_callable(array($this, $setter))) {
+        if (is_callable([$this, $setter])) {
             $this->{$setter}($value);
 
             return;
@@ -128,7 +130,7 @@ abstract class AbstractOptions implements ParameterObjectInterface
     {
         $getter = 'get' . str_replace('_', '', $key);
 
-        if (is_callable(array($this, $getter))) {
+        if (is_callable([$this, $getter])) {
             return $this->{$getter}();
         }
 

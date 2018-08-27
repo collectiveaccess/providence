@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,10 +55,17 @@ use Guzzle\Http\Client;
 
 MemoryCache::flush('translation');
 
+$g_translations = Configuration::load(__CA_CONF_DIR__."/translations.conf");
+
+$g_translation_strings = $g_translations->get('strings');
+$g_translation_replacements = $g_translations->get('replacements');
+
 function _t($ps_key) {
 	if(!$ps_key) { return ''; }
-	global $_;
-
+	global $_, $g_translation_strings, $g_translation_replacements;
+	
+	if (isset($g_translation_strings[$ps_key])) { return $g_translation_strings[$ps_key]; }
+	
 	if(!MemoryCache::contains($ps_key, 'translation')) {
 		if (is_array($_)) {
 			$vs_str = $ps_key;
@@ -75,6 +82,11 @@ function _t($ps_key) {
 				$vs_str = $_->_($ps_key);
 			}
 		}
+		
+		if(is_array($g_translation_replacements)) {
+		    $vs_str = str_replace(array_keys($g_translation_replacements), array_values($g_translation_replacements), $vs_str);
+		}
+		
 		MemoryCache::save($ps_key, $vs_str, 'translation');
 	} else {
 		$vs_str = MemoryCache::fetch($ps_key, 'translation');
@@ -2089,7 +2101,7 @@ function caFileIsIncludable($ps_file) {
 					continue;
 				}
 
-				if ((!preg_match("!^\X+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
+				if (((strlen($vm_v) < 8192) && (!preg_match("!^\X+$!", $vm_v))) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 					continue;
 				}
@@ -2342,6 +2354,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caIsAssociativeArray($pa_array) {
+	  if(!is_array($pa_array)) { return false; }
 	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
 	}
 	# ----------------------------------------
@@ -3269,8 +3282,11 @@ function caFileIsIncludable($ps_file) {
 	        return true;
 	    }
 	    
-	    if (caGetOption('exceptions', $pa_options, true)) {
+	    if (caGetOption('exceptions', $pa_options, false)) {
 	        throw new ApplicationException(_t('CSRF token is not valid'));
+	    }
+	    if ($nm = caGetOption('notifications', $pa_options, false)) {
+	    	$nm->addNotification(_t('CSRF token is not valid'), __NOTIFICATION_TYPE_ERROR__);
 	    }
 	    return false;   
 	}
@@ -3510,7 +3526,7 @@ function caFileIsIncludable($ps_file) {
         if(caGetOption('forceFractions', $pa_options, true)) {
             $v = $num/$pn_denom;
             foreach($pa_allow_fractions_for as $i => $f) {
-                $t = split("/", $f);
+                $t = explode("/", $f);
                 $tv = (int)$t[0]/(int)$t[1];
                 if ($tv >= $v) { 
                     $frac = $f;
@@ -3743,6 +3759,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
 		$va_tags = [];
+		$vb_ignore_quotes = caGetOption('ignoreQuotes', $pa_options, false);
 
 		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = $vb_is_ca_get_ref = false;
 		$vs_tag = '';
@@ -3772,45 +3789,34 @@ function caFileIsIncludable($ps_file) {
 				case ' ':
 				case ',':
 				case '<':
-					if ($vb_in_tag) {
-                        if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
-                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
-                            $vs_tag = '';
-                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
-                        } else {
-                            $vs_tag .= $vs_char;
-                        }
-                    }
-					break;
-				case ')':
-				    if ($vb_in_tag) {
-                        if (!$vb_in_single_quote && !$vb_in_double_quote && !preg_match("![/]+!", $vs_tag)) {  // paren is not part of tag unless it's expath
-                            if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
-                            $vs_tag = '';
-                            $vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
-                        } else {
-                            $vs_tag .= $vs_char;
-                        }
-                    }
-				    break;
-				case '"':
-					if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
-						$vb_in_double_quote = true;
-						$vs_tag .= $vs_char;
-					} elseif($vb_in_tag && $vb_in_double_quote) {
-						$vs_tag .= $vs_char;
-						$vb_in_double_quote = false;
-					} elseif($vb_in_tag) {
+					if (!$vb_in_single_quote && !$vb_in_double_quote && (!$vb_have_seen_param_delimiter || (!in_array($vs_char, [','])))) {
 						if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 						$vs_tag = '';
 						$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+					} else {
+						$vs_tag .= $vs_char;
+					}
+					break;
+				case '"':
+					if (!$vb_ignore_quotes) {
+						if ($vb_in_tag && !$vb_in_double_quote && ($vs_last_char == '=')) {
+							$vb_in_double_quote = true;
+							$vs_tag .= $vs_char;
+						} elseif($vb_in_tag && $vb_in_double_quote) {
+							$vs_tag .= $vs_char;
+							$vb_in_double_quote = false;
+						} elseif($vb_in_tag) {
+							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
+							$vs_tag = '';
+							$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
+						}
 					}
 					break;
 				case "'":
-					if ($vb_in_tag) {
-                        $vb_in_single_quote = !$vb_in_single_quote;
-                        $vs_tag .= $vs_char;
-                    }
+					if (!$vb_ignore_quotes) {
+						$vb_in_single_quote = !$vb_in_single_quote;
+						$vs_tag .= $vs_char;
+					}
 					break;
 				default:
 					if ($vb_in_tag) {
@@ -3818,7 +3824,7 @@ function caFileIsIncludable($ps_file) {
 							$vb_is_ca_get_ref = true;
 						}
 						if ($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char))) {
-							$va_tags[] = $vs_tag;
+							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
 							$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
 						} else {
@@ -3849,7 +3855,7 @@ function caFileIsIncludable($ps_file) {
 
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
-		return $va_tags;
+		return array_filter($va_tags, "strlen");
 	}
 	# ----------------------------------------
 	/**
@@ -3864,6 +3870,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caParseAttributes($ps_attr_string, $pa_attributes) {
 	    $va_ret = [];
+	    $ps_attr_string = html_entity_decode($ps_attr_string, ENT_QUOTES);	// ensure quotes are there for the picking
 	    foreach($pa_attributes as $vs_attr) {
 	        if(preg_match("!{$vs_attr}[ ]*=[ ]*[\"']{1}([^\"']+)[\"']{1}!", $ps_attr_string, $va_matches)) {
 	            $va_ret[$vs_attr] = $va_matches[1];

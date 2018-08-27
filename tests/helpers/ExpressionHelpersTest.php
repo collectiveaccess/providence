@@ -15,18 +15,18 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
+ *
  * @package CollectiveAccess
  * @subpackage tests
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
 require_once(__CA_APP_DIR__.'/helpers/expressionHelpers.php');
@@ -35,7 +35,7 @@ class ExpressionHelpersTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	public function testAgeCalculation() {
 		// this test will fail on my father's birthday every year. Nie vergessen.
-		$this->assertEquals(88, caCalculateAgeInYears('1929/10/07'));
+		$this->assertEquals(88, caCalculateAgeInYears('1929/10/07', "now"));
 
 		// Alan Turing, pre-Unix time
 		$this->assertEquals(41, caCalculateAgeInYears('23 June 1912', '7 June 1954'));

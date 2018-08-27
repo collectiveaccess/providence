@@ -430,12 +430,12 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					$vn_item_count += $vn_count;
 					$va_ids = [];
 					foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
-						$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
+						$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']] = $va_x_item;
 
 						$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['item_id'] = 'ca_objects-'.$va_x_item['object_id'];
 						$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['parent_id'] = $vn_id;
 
-						unset($va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']]['labels']);
+						unset($va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['labels']);
 
 						$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['children'] = 0;
 

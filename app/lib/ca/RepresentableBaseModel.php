@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,7 +45,8 @@
 		 * @param array $pa_versions An array of media versions to include information for. If you omit this then a single version, 'preview170', is assumed by default.
 		 * @param array $pa_version_sizes Optional array of sizes to force specific versions to. The array keys are version names; the values are arrays with two keys: 'width' and 'height'; if present these values will be used in lieu of the actual values in the database
 		 * @param array $pa_options An optional array of options to use when getting representation information. Supported options are:
-		 *		return_primary_only - If true then only the primary representation will be returned
+		 *		return_primary_only - If true then only the primary representation will be returned [Default is false]
+		 *      primaryOnly = Synonym for return_primary_only
 		 *		return_with_access - Set to an array of access values to filter representation through; only representations with an access value in the list will be returned
 		 *		checkAccess - synonym for return_with_access
 		 *		start = 
@@ -73,7 +74,7 @@
 				$pa_versions = array('preview170');
 			}
 		
-			if (isset($pa_options['return_primary_only']) && $pa_options['return_primary_only']) {
+		    if (caGetOption(['primaryOnly', 'return_primary_only'], $pa_options, false)) {
 				$vs_is_primary_sql = ' AND (caoor.is_primary = 1)';
 			} else {
 				$vs_is_primary_sql = '';
@@ -686,7 +687,8 @@
 		 * @param array $pa_options
 		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
-		 *
+		 *      label = Preferred label in specified locale for representation. [Default is null]
+		 *      type_id = Type to force representation to. [Default is null]
 		 * @return bool True on success, false on failure, null if no row has been loaded into the object model 
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
@@ -700,9 +702,10 @@
 				return false;
 			} else {
 				$t_rep->setMode(ACCESS_WRITE);
-				$t_rep->set('locale_id', $pn_locale_id);
-				$t_rep->set('status', $pn_status);
-				$t_rep->set('access', $pn_access);
+				if ($pn_locale_id) { $t_rep->set('locale_id', $pn_locale_id); }
+				if (!is_null($pn_status)) { $t_rep->set('status', $pn_status); }
+				if (!is_null($pn_access)) { $t_rep->set('access', $pn_access); }
+				if ($pm_type_id = caGetOption('type_id', $pa_options, null)) {  $t_rep->set('type_id', $pm_type_id, ['allowSettingOfTypeID' => true]); }
 			
 				if ($ps_media_path) {
 					if(is_array($va_replication_targets = $t_rep->getUsedMediaReplicationTargets('media'))) {
@@ -748,6 +751,18 @@
 				$vn_center_y = caGetOption('centerY', $pa_options, null);
 				if (strlen($vn_center_x) && (strlen($vn_center_y)) && ($vn_center_x >= 0) && ($vn_center_y >= 0) && ($vn_center_x <= 1) && ($vn_center_y <= 1)) {
 					$t_rep->setMediaCenter('media', (float)$vn_center_x, (float)$vn_center_y);
+					if ($t_rep->numErrors()) {
+                        $this->errors = array_merge($this->errors, $t_rep->errors());
+                        return false;
+                    }
+				}
+				
+				if ($pn_locale_id && ($ps_label = caGetOption('label', $pa_options, null))) {
+				    $t_rep->replaceLabel(array('name' => $ps_label), $pn_locale_id, null, true, array('queueIndexing' => true));
+				    if ($t_rep->numErrors()) {
+                        $this->errors = array_merge($this->errors, $t_rep->errors());
+                        return false;
+                    }
 				}
 					
 				if ($ps_media_path) {
@@ -1006,7 +1021,7 @@
 			if (!$pa_mimetypes) { return array(); }
 			if (!is_array($pa_mimetypes) && $pa_mimetypes) { $pa_mimetypes = array($pa_mimetypes); }
 			$va_rep_list = array();
-			if (is_array($va_reps = $this->getRepresentations(null, null, $pa_options))) {
+			if (is_array($va_reps = $this->getRepresentations(caGetOption('versions', $pa_options, null), null, $pa_options))) {
 				foreach($va_reps as $vn_rep_id => $va_rep) {
 					if (in_array($va_rep['mimetype'], $pa_mimetypes)) {	
 						$va_rep_list[$vn_rep_id] = $va_rep;

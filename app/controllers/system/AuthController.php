@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,8 +44,11 @@
  		}
  		# -------------------------------------------------------
  		public function DoLogin() {
- 		    caValidateCSRFToken($this->request);
- 		    
+ 		    if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+ 		    	$this->view->setVar('notifications', $this->notification->getNotifications());
+ 		    	$this->render('login_html.php');
+ 		    	return;
+ 		    }
  			global $g_ui_locale;
  			
 			$vs_redirect_url = $this->request->getParameter('redirect', pString) ?: caNavUrl($this->request, null, null, null);
@@ -102,17 +105,16 @@
 		# -------------------------------------------------------
 		public function RequestPassword() {
 			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
-		    caValidateCSRFToken($this->request);
+		    if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$vs_username = $this->getRequest()->getParameter('username',pString);
+				$t_user = new ca_users();
 
-			$vs_username = $this->getRequest()->getParameter('username',pString);
-			$t_user = new ca_users();
-
-			if($t_user->load($vs_username)) {
-				$t_user->requestPasswordReset();
-			} else {
-				sleep(2);
+				if($t_user->load($vs_username)) {
+					$t_user->requestPasswordReset();
+				} else {
+					sleep(2);
+				}
 			}
-
 			// render the same static view no matter if something was actually done.
 			// otherwise you could figure out which user names exist and which don't
 			$this->render('password_reset_instructions_html.php');
@@ -141,7 +143,10 @@
 		# -------------------------------------------------------
 		public function DoReset() {
 			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
-		    caValidateCSRFToken($this->request);
+		    if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+		    	$this->Login();
+		    	return;
+		    }
 
 			$vs_token = $this->getRequest()->getParameter('token',pString);
 			$vs_username = $this->getRequest()->getParameter('username',pString);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -222,7 +222,10 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($pa_options=null) {
-	    #caValidateCSRFToken($this->request, null, ['remove' => false]);
+	    if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification, 'remove' => false])) {
+	    	$this->Edit();
+	    	return;
+	    }
 	    
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
@@ -484,7 +487,10 @@ class BaseEditorController extends ActionController {
 		}
 
 		if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
-	        #caValidateCSRFToken($this->request, null, ['remove' => false]);
+	        if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification, 'remove' => false])) {
+	        	$this->Edit();
+	        	return;
+	        }
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
 				$t_subject->setTransaction($o_t = new Transaction());
@@ -519,10 +525,48 @@ class BaseEditorController extends ActionController {
 							$t_target->load($vn_remap_id);
 							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 						}
+						
+						// move children
+						if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
+							if (!$t_target) {
+								$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+								$t_target->load($vn_remap_id);
+							}
+							
+							$t_child = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+							$vn_child_count = 0;
+							foreach($va_children as $vn_child_id) {
+								$t_child->load($vn_child_id);
+								$t_child->setMode(ACCESS_WRITE);
+								$t_child->set('parent_id', $vn_remap_id);
+								$t_child->update();
+								if ($t_child->numErrors() > 0) {
+									continue;
+								}
+								$vn_child_count++;
+							}
+							$this->notification->addNotification(($vn_child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+						}
+						
 						break;
 				}
 			} else {
 				$t_subject->deleteAuthorityElementReferences();
+				
+				if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
+					$t_child = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+					$vn_child_count = 0;
+					foreach($va_children as $vn_child_id) {
+						$t_child->load($vn_child_id);
+						$t_child->setMode(ACCESS_WRITE);
+						$t_child->delete(true);
+						if ($t_child->numErrors() > 0) {
+							continue;
+						}
+						$vn_child_count++;
+					}
+					$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+				}
 			}
 			
 			// Do we need to move references contained in attributes bound to this item?
@@ -625,7 +669,7 @@ class BaseEditorController extends ActionController {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
 		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
-		    $va_tmp = array_filter($va_displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
+		    $va_tmp = array_filter($va_displays, function($v) { return !isset($v['settings']['show_only_in']) || !is_array($v['settings']['show_only_in']) || in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
 
@@ -701,8 +745,9 @@ class BaseEditorController extends ActionController {
 		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
+		
 		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
-		    $va_tmp = array_filter($va_displays, function($v) { return in_array('editor_summary', $v['settings']['show_only_in']); });
+		    $va_tmp = array_filter($va_displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
 		
@@ -736,7 +781,7 @@ class BaseEditorController extends ActionController {
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
 		} else {
-			$vn_display_id = $t_display = null;
+			$vn_display_id = null;
 			$this->view->setVar('display_id', null);
 			$this->view->setVar('placements', array());
 		}
@@ -777,7 +822,8 @@ class BaseEditorController extends ActionController {
 			$vs_content = $this->render($va_template_info['path']);
 
 			$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
-			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+			
+			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
 
 			$vb_printed_properly = true;
 
@@ -1163,8 +1209,8 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
 		if (!$this->request->isLoggedIn()) { return array(); }
 
-		if (!($vn_type_id = $t_subject->getTypeID())) {
-			$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
+		if (!($vn_type_id = $t_subject->getTypeID()) && !($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger))) {
+		    $vn_type_id = $t_subject->getDefaultTypeID();
 		}
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
 			isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
@@ -1223,7 +1269,12 @@ class BaseEditorController extends ActionController {
 				if ($vn_item_id == $vn_root_id) { continue; } // skip root
 				$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 			}
+			
+			$va_limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
+			
 			foreach($va_hier as $vn_item_id => $va_item) {
+			    if (is_array($va_limit_to_types) && sizeof($va_limit_to_types) && !in_array($va_item['idno'], $va_limit_to_types)) { continue; }
+			    
 				if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
 				// does this item have sub-items?
@@ -1264,7 +1315,7 @@ class BaseEditorController extends ActionController {
 			}
 			ksort($va_types);
 		}
-
+			
 		$va_types_proc = array();
 		foreach($va_types as $vs_sort_key => $va_items) {
 			foreach($va_items as $vn_i => $va_item) {
@@ -1323,9 +1374,13 @@ class BaseEditorController extends ActionController {
 		ksort($va_subtypes);
 		$va_subtypes_proc = array();
 
+        $va_limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
+        
 		foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
+				if (is_array($va_limit_to_types) && sizeof($va_limit_to_types) && !in_array($va_item['idno'], $va_limit_to_types)) { continue; }
+			    
 				$va_subtypes_proc[$vn_item_id] = $va_item;
 			}
 		}

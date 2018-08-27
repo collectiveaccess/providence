@@ -13,32 +13,34 @@
         }
     },
     "require": {
-        "php": ">=5.3.23"
+        "php": "^5.6 || ^7.0"
     },
     "require-dev": {
-        "zendframework/zend-eventmanager": "self.version",
-        "zendframework/zend-serializer": "self.version",
-        "zendframework/zend-servicemanager": "self.version",
-        "zendframework/zend-filter": "self.version",
-        "fabpot/php-cs-fixer": "1.7.*",
-        "satooshi/php-coveralls": "dev-master",
-        "phpunit/PHPUnit": "~4.0"
-    },
-    "suggest": {
-        "zendframework/zend-eventmanager": "To support aggregate hydrator usage",
-        "zendframework/zend-serializer": "Zend\\Serializer component",
-        "zendframework/zend-servicemanager": "To support hydrator plugin manager usage",
-        "zendframework/zend-filter": "To support naming strategy hydrator usage"
+        "athletic/athletic": "~0.1",
+        "phpunit/PHPUnit": "~4.0",
+        "zendframework/zend-coding-standard": "~1.0.0"
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.4-dev",
-            "dev-develop": "2.5-dev"
+            "dev-master": "3.1-dev",
+            "dev-develop": "3.2-dev"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ZendTest\\Stdlib\\": "test/"
+            "ZendTest\\Stdlib\\": "test/",
+            "ZendBench\\Stdlib\\": "benchmark/"
         }
+    },
+    "scripts": {
+        "check": [
+            "@cs-check",
+            "@test"
+        ],
+        "cs-check": "phpcs",
+        "cs-fix": "phpcbf",
+        "test": "phpunit --colors=always",
+        "test-coverage": "phpunit --colors=always --coverage-clover clover.xml",
+        "upload-coverage": "coveralls -v"
     }
 }

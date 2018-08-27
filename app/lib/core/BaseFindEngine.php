@@ -379,7 +379,7 @@
 						// generate related joins
 						foreach($va_path as $vs_table => $va_info) {
 							$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-			
+			                $vb_has_deleted = $t_instance->hasField('deleted');
 							$vs_rel_type_sql = $vs_item_type_sql = null;
 							if($t_instance->isRelationship() && $vs_rel_type) {
 								if(is_array($va_rel_types = caMakeRelationshipTypeIDList($vs_table, explode(",", $vs_rel_type))) && sizeof($va_rel_types)) {
@@ -390,15 +390,18 @@
 									$vs_item_type_sql = " AND {$vs_table}.{$vs_type_fld_name} IN (".join(",", $va_item_types).")";
 								}
 							}
+							
+							$vs_deleted_sql = $vb_has_deleted ? " AND {$vs_table}.deleted = 0 " : "";
+							
 							if ($vs_last_table) {
 								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
 								if (!sizeof($va_rels)) {
 									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
 								}
 								if ($vs_table == $va_rels['one_table']) {
-									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql.$vs_item_type_sql;
+									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql.$vs_item_type_sql.$vs_deleted_sql;
 								} else {
-									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql.$vs_item_type_sql;
+									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql.$vs_item_type_sql.$vs_deleted_sql;
 								}
 							}
 							$vs_last_table = $vs_table;

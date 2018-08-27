@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -701,6 +701,7 @@
 				break;
 			case __CA_NAV_ICON_LOGIN__:
 				$vs_fa_class = 'fa-check-circle-o';
+				$vs_ca_class = 'loginButton';
 				break;
 			case __CA_NAV_ICON_SAVE__:
 				$vs_fa_class = 'fa-check-circle-o';
@@ -852,7 +853,10 @@
 				break;
 			case __CA_NAV_ICON_FULL_RESULTS__:
 				$vs_fa_class = 'fa-bars';
-				break;																			
+				break;
+			case __CA_NAV_ICON_EXPORT_SMALL__: 
+				$vs_fa_class = 'fa-external-link-square';
+				break;																							
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
@@ -1137,7 +1141,10 @@
 		if(isset($pa_options['action'])){
 			$vs_action = $pa_options['action'];
 		} else {
-			$vs_action = caGetDetailForType($ps_table, caGetOption('type_id', $pa_options, null), array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
+			if ($pn_id && !($vn_type_id = caGetOption('type_id', $pa_options, null))) {
+				$vn_type_id = $t_table->getTypeID($pn_id);
+			}
+			$vs_action = caGetDetailForType($ps_table, $vn_type_id, array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
 		}
 		
 		$vn_id_for_idno = null;
