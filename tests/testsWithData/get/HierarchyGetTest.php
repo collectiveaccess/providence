@@ -76,6 +76,16 @@ class HierarchyGetTest extends BaseTestWithData {
 					"name" => "My test moving image",
 				),
 			),
+			'attributes' => array(
+				'materials' => array(
+					array(
+						'materials' => 'cordage'
+					),
+					array(
+						'materials' => 'blown'
+					)
+				),
+			)
 		));
 
 		$this->assertGreaterThan(0, $vn_test_parent);
@@ -92,6 +102,16 @@ class HierarchyGetTest extends BaseTestWithData {
 					"name" => "My test still",
 				),
 			),
+			'attributes' => array(
+				'materials' => array(
+					array(
+						'materials' => 'drawing_paper'
+					),
+					array(
+						'materials' => 'natural_fiber'
+					)
+				),
+			)
 		));
 
 		$this->assertGreaterThan(0, $vn_test_child);
@@ -289,6 +309,15 @@ class HierarchyGetTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='image' relativeTo='ca_objects.parent'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_another_child_object->getPrimaryKey()), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(0, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testHierarchyDisplayTemplates() {
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_objects.materials' delimiter='<br/>'>^ca_objects.materials.hierarchy.preferred_labels.name_plural%delimiter=_➔_</unit>", "ca_objects", array($this->opt_parent_object->getPrimaryKey()), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		
+		$this->assertEquals('fabric ➔ cordage<br/>glass ➔ blown', $vm_ret[0]);
+		
 	}
 	# -------------------------------------------------------
 	public function testHierarchyRestrictToTypesDisplayTemplates() {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,10 +74,10 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 *			idsOnly = Return numeric item_id only [Default is false]
 	 *			alwaysReturnItemID = Synonym for idsOnly [Default is false]
 	 *			output = Authority value to return. Valid values are text [display text], idno [identifier; same as returnIdno option], value [numeric id; same as idsOnly option]. [Default is value]
-	 *			forDuplication = Forces value suitable duplication of the record. This is almost always the numeric primary key ID for the related authority reocrd. [Default is false]
+	 *			forDuplication = Forces value suitable duplication of the record. This is almost always the numeric primary key ID for the related authority record. [Default is false]
 	 *			includeID = Include numeric primary key ID at end of display text, surrounded by brackets (Eg. [353]) [Default is false]
 	 *			template =  Display template for format returned value with. Template is evaluated related to the related authority record. [Default is null]
-	 *
+	 *          checkAccess = 
 	 * @return string The value
 	 */
 	public function getDisplayValue($pa_options=null) {
@@ -99,8 +99,12 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 					break;
 			}
 		}
+		
+		$vs_idno = $this->elementTypeToInstance($this->getType())->getIdnoForID($this->opn_id, $pa_options);
+		if($vs_idno === false) { return null; } // failed checkAccess checks
+		
 		if (caGetOption('returnIdno', $pa_options, false)) {
-			return $this->elementTypeToInstance($this->getType())->getIdnoForID($this->opn_id);
+			return $vs_idno;
 		}
 
 		$o_config = Configuration::load();
@@ -115,7 +119,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 
 		if ($vb_ids_only) { return $this->opn_id; }
-		return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false))).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
+		return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), array('returnAsArray' => false, 'returnAllLocales' => false)).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
 	}
 	# ------------------------------------------------------------------
 	/**

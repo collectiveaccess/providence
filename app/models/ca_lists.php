@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -221,6 +221,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	protected $SELF_RELATION_TABLE_NAME = null;
 	
 	# ------------------------------------------------------
+	# ID numbering
+	# ------------------------------------------------------
+	protected $ID_NUMBERING_ID_FIELD = 'list_code';		// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;		    // name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
+	
+	
+	# ------------------------------------------------------
 	# ACL
 	# ------------------------------------------------------
 	protected $SUPPORTS_ACL = true;
@@ -324,9 +332,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# List maintenance
 	# ------------------------------------------------------
 	/**
+	 * Add an item to the currently loaded list
 	 *
+	 * @param string $ps_value
+	 * @param bool $pb_is_enabled
+	 * @param bool $pb_is_default
+	 * @param int $pn_parent_id
+	 * @param int $pn_type_id
+	 * @param string $ps_idno
+	 * @param string $ps_validation_format
+	 * @param int $pn_status
+	 * @param int $pn_access
+	 * @param int $pn_rank 
+	 * @param string $ps_color Color of list item, in hex without leading "#" (ex. FF0000). [Default is null]
+	 *
+	 * @return bool|ca_list_items
 	 */
-	public function addItem($ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
+	public function addItem($ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null, $ps_color=null) {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return null; }
 		
 		$t_item = new ca_list_items();
@@ -344,6 +366,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_item->set('validation_format', $ps_validation_format);
 		$t_item->set('status', $pn_status);
 		$t_item->set('access', $pn_access);
+		$t_item->set('color', $ps_color);
 		if (!is_null($pn_rank)) { $t_item->set('rank', $pn_rank); }
 		
 		$vn_item_id = $t_item->insert();
@@ -357,7 +380,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Edit existing list item
+	 * Edit an existing list item
+	 *
 	 * @param int $pn_item_id
 	 * @param string $ps_value
 	 * @param bool $pb_is_enabled
@@ -369,9 +393,11 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_status
 	 * @param int $pn_access
 	 * @param int $pn_rank
+	 * @param string $ps_color Color of list item, in hex without leading "#" (ex. FF0000). [Default is null]
+	 *
 	 * @return bool|ca_list_items
 	 */
-	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
+	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null, $ps_color=null) {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return false; }
 
 		$t_item = new ca_list_items($pn_item_id);
@@ -391,6 +417,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_item->set('validation_format', $ps_validation_format);
 		$t_item->set('status', $pn_status);
 		$t_item->set('access', $pn_access);
+		$t_item->set('color', $ps_color);
 		if (!is_null($pn_rank)) { $t_item->set('rank', $pn_rank); }
 
 		$t_item->update();
@@ -447,7 +474,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		start = 		offset to start returning records from [default=0; no offset]
 	 *		limit = 		maximum number of records to return [default=null; no limit]
 	 * 		dontCache =		don't cache
-	 *		checkAccess =
+	 *		checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
@@ -538,9 +565,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_limit_sql = ($pn_start > 0) ? "LIMIT {$pn_start}, {$pn_limit}" : "LIMIT {$pn_limit}";
 			} 
 			
-			$vs_check_access_sql = '';
-			if (is_array($pa_check_access) && sizeof($pa_check_access)) {
-				$vs_check_access_sql = " AND (cli.access in (?))";
+			$vs_access_sql = '';
+			if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+				$vs_access_sql = " AND cli.access in (?)";
 				$va_params[] = $pa_check_access;
 			}
 			
@@ -549,7 +576,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				FROM ca_list_items cli
 				LEFT JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
 				WHERE
-					(cli.deleted = 0) AND ((clil.is_preferred = 1) OR (clil.is_preferred IS NULL)) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql} {$vs_check_access_sql}
+					(cli.deleted = 0) AND ((clil.is_preferred = 1) OR (clil.is_preferred IS NULL)) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql} {$vs_access_sql}
 				{$vs_order_by}
 				{$vs_limit_sql}
 			";
@@ -712,6 +739,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Options:
 	 * 		includeSelf - if true, the specified item is included in the returned set of items; [default is false]
 	 *		directChildrenOnly - if true, only children immediately below the specified item are returned; [default is false]
+	 *		checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return array
 	 */
 	public function getChildItemsForList($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
 		if ($pm_list_name_or_id) {
@@ -742,14 +772,22 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$vs_order_by = "ORDER BY {$vs_order_by}";
 		
+		$va_params = [(int)$vn_list_id, floatval($t_item->get('hier_left')), floatval($t_item->get('hier_right'))];
+		$vs_access_sql = '';
+        if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+            $pa_check_access = array_map("intval", $pa_check_access);
+            $vs_access_sql = " AND cli.access IN (?)";
+            $va_params[] = $pa_check_access;
+        }
+		
 		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_list_items cli
 			INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
 			WHERE
-				(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) AND (cli.hier_left >= ? AND cli.hier_right <= ?)
+				(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) AND (cli.hier_left >= ? AND cli.hier_right <= ?) {$vs_access_sql}
 			{$vs_order_by}
-		", (int)$vn_list_id, floatval($t_item->get('hier_left')), floatval($t_item->get('hier_right')));
+		", $va_params);
 		
 		$va_items = array();
 		while($qr_res->nextRow()) {
@@ -769,7 +807,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_list_name_or_id
 	 * @param int $pn_type_id
 	 * @param array $pa_options Supported options are:
-	 *		includeRoot - include root record for list in count; default is false
+	 *		includeRoot =   Include root record for list in count; default is false
+	 *		checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return int
 	 */
 	public function numItemsInList($pm_list_name_or_id=null, $pn_type_id=null, $pa_options=null) {
 		if (!$pm_list_name_or_id) {
@@ -789,16 +830,25 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_db = $this->getDb();
 		
+		$va_params = [(int)$vn_list_id];
+		$vs_access_sql = '';
+        if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+            $pa_check_access = array_map("intval", $pa_check_access);
+            $vs_access_sql = " AND cli.access IN (?)";
+            $va_params[] = $pa_check_access;
+        }
+        
 		$vs_type_sql = '';
 		if ($pn_type_id) {
-			$vs_type_sql = ' AND (cli.type_id = '.intval($pn_type_id).')';
+			$vs_type_sql = ' AND (cli.type_id = ?)';
+			$va_params[] = (int)$pn_type_id;
 		}
 		$qr_res = $o_db->query("
 			SELECT count(*) c
 			FROM ca_list_items cli
 			WHERE
-				(cli.deleted = 0) AND (cli.list_id = ?) {$vs_type_sql} {$vs_include_root_sql}
-		", (int)$vn_list_id);
+				(cli.deleted = 0) AND (cli.list_id = ?) {$vs_include_root_sql} {$vs_access_sql} {$vs_type_sql} 
+		", $va_params);
 		
 		if($qr_res->nextRow()) {
 			return $qr_res->get('c');
@@ -808,204 +858,326 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return ca_list_items instance for list item with given idno in a list
 	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param string $ps_idno The list item identifer
+	 * @params array $pa_options Options include:
+	 *      checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return ca_list_items 
 	 */
-	public function getItemInstanceFromList($pm_list_name_or_id, $ps_item_idno) {
-		if (is_array($va_item = $this->getItemFromList($pm_list_name_or_id, $ps_item_idno))) {
+	public function getItemInstanceFromList($pm_list_name_or_id, $ps_idno, $pa_options=null) {
+		if (is_array($va_item = $this->getItemFromList($pm_list_name_or_id, $ps_idno, $pa_options))) {
 			if($va_item['item_id']) {
 				return new ca_list_items($va_item['item_id']);
 			}
+		}	
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array of field information for a list item with given idno in a list
+	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param string $ps_idno The list item identifer
+	 * @params array $pa_options Options include:
+	 *      checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return array 
+	 */
+	public function getItemFromList($pm_list_name_or_id, $ps_idno, $pa_options=null) {
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_idno}");
+		if (isset(ca_lists::$s_list_item_get_cache[$vs_cache_key])) {
+			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
+		}
+	
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "" : "(cli.deleted = 0) AND ";
+	
+		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_idno}");
+		if (isset(ca_lists::$s_list_item_get_cache[$vs_alt_key])) {
+			return ca_lists::$s_list_item_get_cache[$vs_alt_key];
+		}
+		
+		$o_db = $this->getDb();
+		
+		$va_params = [(int)$vn_list_id, (string)$ps_idno];
+		$vs_access_sql = '';
+        if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+            $pa_check_access = array_map("intval", $pa_check_access);
+            $vs_access_sql = " AND cli.access IN (?)";
+            $va_params[] = $pa_check_access;
+        }
+        
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_list_items cli
+			WHERE
+                 {$vs_deleted_sql} (cli.list_id = ?) AND (cli.idno = ?) {$vs_access_sql}
+		", $va_params);
+		
+		if ($qr_res->nextRow()) {
+			return  ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_cache_key] = $qr_res->getRow();
+		}
+		return ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_cache_key]  = null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array of field information for a list item with given item_id in a list
+	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param int $pn_item_id An item_id
+	 * @params array $pa_options Options include:
+	 *      checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return array 
+	 */
+	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
+		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		
+		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "" : "(cli.deleted = 0) AND ";
+		
+		$va_params = [(int)$vn_list_id, (int)$pn_item_id];
+        $vs_access_sql = '';
+        if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+            $pa_check_access = array_map("intval", $pa_check_access);
+            $vs_access_sql = " AND cli.access IN (?)";
+            $va_params[] = $pa_check_access;
+        }
+		
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_list_items cli
+			WHERE
+				{$vs_deleted_sql} (cli.list_id = ?) AND (cli.item_id = ?) {$vs_access_sql}
+		", $va_params);
+		$va_items = array();
+		while($qr_res->nextRow()) {
+			 return $qr_res->getRow();
 		}
 		
 		return null;
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns data for list item(s) with a given item value. Item value is a text or numeric value associated with a list item. Unlike
+	 * idno, it need not be unique.
 	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $pm_value The item value
+	 * @param mixed $pa_options Options include:
+	 *                        checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 * @return array
 	 */
-	public function getItemFromList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
-		$vs_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_item_idno}");
-		if (isset(ca_lists::$s_list_item_get_cache[$vs_key])) {
-			return ca_lists::$s_list_item_get_cache[$vs_key];
-		}
-	
-		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
-	
-		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+	public function getItemFromListByItemValue($pm_list_name_or_id, $pm_value, $pa_options=null) {
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$pm_value}");
 		
-		if (isset(ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_item_idno])) {
-			return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_item_idno];
-		}
-		$o_db = $this->getDb();
-		$qr_res = $o_db->query("
-			SELECT *
-			FROM ca_list_items cli
-			WHERE
-				{$vs_deleted_sql} (cli.list_id = ?) AND (cli.idno = ?)
-		", (int)$vn_list_id, (string)$ps_item_idno);
-		
-		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_item_idno}");
-		if ($qr_res->nextRow()) {
-			return  ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_key] = $qr_res->getRow();
-		}
-		return ca_lists::$s_list_item_get_cache[$vs_alt_key] = ca_lists::$s_list_item_get_cache[$vs_key]  = null;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getItemFromListByLabel($pm_list_name_or_id, $ps_label_name) {
-		if (isset(ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name])) {
-			return ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name];
-		}
-	
-		$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		if (isset(ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name])) {
-			return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name];
-		}
-		$o_db = $this->getDb();
-		$qr_res = $o_db->query("
-			SELECT *
-			FROM ca_list_items cli
-			INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
-			WHERE
-				(cli.deleted = 0) AND (cli.list_id = ?) AND ((clil.name_singular = ?) OR (clil.name_plural = ?))
-		", (int)$vn_list_id, (string)$ps_label_name, (string)$ps_label_name);
-		
-		if ($qr_res->nextRow()) {
-			return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name] = $qr_res->getRow();
-		}
-		return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name]  = null;
-
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getItemFromListForDisplay($pm_list_name_or_id, $ps_idno, $pb_return_plural=false) {
-	
-		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
-			$va_items = ca_lists::$s_list_item_display_cache[$ps_idno];
+		if (isset(ca_lists::$s_list_item_value_display_cache[$vs_cache_key])) {
+			$va_items = ca_lists::$s_list_item_value_display_cache[$vs_cache_key];
 		} else {
 			$vn_list_id = $this->_getListID($pm_list_name_or_id);
 			
-			$o_db = $this->getDb();
-			$qr_res = $o_db->query("
-				SELECT cli.item_id, clil.locale_id, clil.name_singular, clil.name_plural
-				FROM ca_list_items cli
-				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
-				WHERE
-					(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.idno = ?) AND (clil.is_preferred = 1)
-			", (int)$vn_list_id, (string)$ps_idno);
-			
-			$va_items = array();
-			while($qr_res->nextRow()) {
-				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
-			}
-			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$ps_idno] = $va_items;
-		}
-		
-		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
-		$va_item = array_shift($va_tmp);
-		
-		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getItemFromListForDisplayByItemID($pm_list_name_or_id, $pn_item_id, $pb_return_plural=false) {
-	
-		if (isset(ca_lists::$s_list_item_display_cache[$pn_item_id])) {
-			$va_items = ca_lists::$s_list_item_display_cache[$pn_item_id];
-		} else {
-			$vn_list_id = $this->_getListID($pm_list_name_or_id);
-			
-			$o_db = $this->getDb();
-			$qr_res = $o_db->query("
-				SELECT cli.item_id, clil.locale_id, clil.name_singular, clil.name_plural
-				FROM ca_list_items cli
-				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
-				WHERE
-					(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.item_id = ?) AND (clil.is_preferred = 1)
-			", (int)$vn_list_id, (int)$pn_item_id);
-			
-			$va_items = array();
-			while($qr_res->nextRow()) {
-				 $va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
-			}
-			ca_lists::$s_list_item_display_cache[$pn_item_id] = $va_items;
-		}
-		
-		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
-		$va_item = array_shift($va_tmp);
-		
-		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getItemForDisplayByItemID($pn_item_id, $pb_return_plural=false) {
-		
-		if (isset(ca_lists::$s_list_item_display_cache[$pn_item_id])) {
-			$va_items = ca_lists::$s_list_item_display_cache[$pn_item_id];
-		} else {
-			$o_db = $this->getDb();
-			$qr_res = $o_db->query("
-				SELECT cli.item_id, clil.locale_id, clil.name_singular, clil.name_plural
-				FROM ca_list_items cli
-				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
-				WHERE
-					(cli.deleted = 0) AND (cli.item_id = ?) AND (clil.is_preferred = 1)
-			", (int)$pn_item_id);
-			
-			$va_items = array();
-			while($qr_res->nextRow()) {
-				 $va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
-			}
-			ca_lists::$s_list_item_display_cache[$pn_item_id] = $va_items;
-		}
-		
-		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
-		$va_item = array_shift($va_tmp);
-		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getItemFromListByItemValue($pm_list_name_or_id, $pm_value) {
-		
-		if (isset(ca_lists::$s_list_item_value_display_cache[$pm_list_name_or_id.'/'.$pm_value])) {
-			$va_items = ca_lists::$s_list_item_value_display_cache[$pm_list_name_or_id.'/'.$pm_value];
-		} else {
-			$vn_list_id = $this->_getListID($pm_list_name_or_id);
-			
+			$va_params = [(int)$vn_list_id, (string)$pm_value];
+		    $vs_access_sql = '';
+		    if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+		        $pa_check_access = array_map("intval", $pa_check_access);
+		        $vs_access_sql = " AND cli.access IN (?)";
+		        $va_params[] = $pa_check_access;
+		    }
+		    
 			$o_db = $this->getDb();
 			$qr_res = $o_db->query("
 				SELECT *
 				FROM ca_list_items cli
 				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
 				WHERE
-					(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.item_value = ?) AND (clil.is_preferred = 1)
-			", (int)$vn_list_id, (string)$pm_value);
+					(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.item_value = ?) AND (clil.is_preferred = 1) {$vs_access_sql}
+			", $va_params);
 			
 			$va_items = array();
 			while($qr_res->nextRow()) {
 				$pn_item_id = $qr_res->get('item_id');
 				 $va_items[$pn_item_id][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			ca_lists::$s_list_item_display_cache[$pn_item_id] = ca_lists::$s_list_item_value_display_cache[$pm_list_name_or_id.'/'.$pm_value] =  $va_items;
+			ca_lists::$s_list_item_value_display_cache[$vs_cache_key] =  $va_items;
 		}
 		return $va_items;
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return array of field information for a list item with given label in a list
 	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param string $ps_label_name A preferred or nonpreferred list item label
+	 * @params array $pa_options Options include:
+	 *      checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return array 
 	 */
-	public function getItemFromListForDisplayByItemValue($pm_list_name_or_id, $pm_value, $pb_return_plural=false) {
-		if ($va_item = $this->getItemFromListByItemValue($pm_list_name_or_id, $pm_value)) {			
+	public function getItemFromListByLabel($pm_list_name_or_id, $ps_label_name, $pa_options=null) {
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_label_name}");
+		if (isset(ca_lists::$s_list_item_get_cache[$vs_cache_key])) {
+			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
+		}
+	
+		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_label_name}");
+		if (isset(ca_lists::$s_list_item_get_cache[$vs_alt_key])) {
+			return ca_lists::$s_list_item_get_cache[$vs_alt_key];
+		}
+		
+		$va_params = [(int)$vn_list_id, (string)$ps_label_name, (string)$ps_label_name];
+        $vs_access_sql = '';
+        if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+            $pa_check_access = array_map("intval", $pa_check_access);
+            $vs_access_sql = " AND cli.access IN (?)";
+            $va_params[] = $pa_check_access;
+        }
+        
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_list_items cli
+			INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
+			WHERE
+				(cli.deleted = 0) AND (cli.list_id = ?) AND ((clil.name_singular = ?) OR (clil.name_plural = ?)) {$vs_access_sql}
+		", $va_params);
+		
+		if ($qr_res->nextRow()) {
+			return ca_lists::$s_list_item_get_cache[$vs_cache_key] = ca_lists::$s_list_item_get_cache[$vs_alt_key] = $qr_res->getRow();
+		}
+		return ca_lists::$s_list_item_get_cache[$vs_cache_key] = ca_lists::$s_list_item_get_cache[$vs_alt_key]  = null;
+
+	}	
+	# ------------------------------------------------------
+	/**
+	 * Returns name of list item for a given list item identifer (aka "idno")
+	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param string $ps_idno The list item identifer
+	 * @param mixed $pa_options If set to a boolean, controls whether the singular (false) or plural (true) sense are returned. 
+	 *                          This allows an older calling signature, where the second parameter was a boolean to be preserved. 
+	 *                          If set to an options array, available options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *                              return = Set to "singular" or "plural" to return singular or plural sense. [Default is "singular"]
+	 * @return string
+	 */
+	public function getItemFromListForDisplay($pm_list_name_or_id, $ps_idno, $pa_options=null) {
+	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_idno}");
+		
+		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
+			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
+		} else {
+			$vn_list_id = $this->_getListID($pm_list_name_or_id);
+			
+			$va_params = [(int)$vn_list_id, (string)$ps_idno];
+		    $vs_access_sql = '';
+		    if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+		        $pa_check_access = array_map("intval", $pa_check_access);
+		        $vs_access_sql = " AND cli.access IN (?)";
+		        $va_params[] = $pa_check_access;
+		    }
+		    
+			$o_db = $this->getDb();
+			$qr_res = $o_db->query("
+				SELECT cli.item_id, clil.locale_id, clil.name_singular, clil.name_plural
+				FROM ca_list_items cli
+				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
+				WHERE
+					(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.idno = ?) AND (clil.is_preferred = 1) {$vs_access_sql}
+			", $va_params);
+			
+			$va_items = array();
+			while($qr_res->nextRow()) {
+				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+			}
+			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_items;
+		}
+		
+		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
+		$va_item = array_shift($va_tmp);
+		
+		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Deprecated call. Forwarded to ca_lists::getItemForDisplayByItemID()
+	 * @seeAlso getItemForDisplayByItemID()
+	 */
+	public function getItemFromListForDisplayByItemID($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
+	    return $this->getItemForDisplayByItemID($pn_item_id, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of list item for a given numeric item_id.
+	 *
+	 * @param int $pn_item_id Numeric id for list item
+	 * @param mixed $pa_options If set to a boolean, controls whether the singular (false) or plural (true) sense are returned. 
+	 *                          This allows an older calling signature, where the second parameter was a boolean to be preserved. 
+	 *                          If set to an options array, available options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *                              return = Set to "singular" or "plural" to return singular or plural sense. [Default is "singular"]
+	 * @return string
+	 */
+	public function getItemForDisplayByItemID($pn_item_id, $pa_options=null) {
+	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pn_item_id}");
+		
+		if (isset(ca_lists::$s_list_item_display_cache[$vs_cache_key])) {
+			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
+		} else {
+		    $va_params = [(int)$pn_item_id];
+		    $vs_access_sql = '';
+		    if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
+		        $pa_check_access = array_map("intval", $pa_check_access);
+		        $vs_access_sql = " AND cli.access IN (?)";
+		        $va_params[] = $pa_check_access;
+		    }
+			$o_db = $this->getDb();
+			$qr_res = $o_db->query("
+				SELECT cli.item_id, clil.locale_id, clil.name_singular, clil.name_plural
+				FROM ca_list_items cli
+				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
+				WHERE
+					(cli.deleted = 0) AND (cli.item_id = ?) AND (clil.is_preferred = 1) {$vs_access_sql}
+			", $va_params);
+			
+			$va_items = array();
+			while($qr_res->nextRow()) {
+				 $va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+			}
+			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_items;
+		}
+		
+		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
+		$va_item = array_shift($va_tmp);
+		
+		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name for first list item found in a list with a given item value. Item value is a text or numeric value 
+	 * associated with a list item. Unlike idno, it need not be unique.
+	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $pm_value The item value
+	 * @param mixed $pa_options If set to a boolean, controls whether the singular (false) or plural (true) sense are returned. 
+	 *                          This allows an older calling signature, where the second parameter was a boolean to be preserved. 
+	 *                          If set to an options array, available options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *                              return = Set to "singular" or "plural" to return singular or plural sense. [Default is "singular"]
+	 * @return string
+	 */
+	public function getItemFromListForDisplayByItemValue($pm_list_name_or_id, $pm_value, $pa_options=null) {
+	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
+		
+		if ($va_item = $this->getItemFromListByItemValue($pm_list_name_or_id, $pm_value, $pa_options)) {			
 			$va_tmp = caExtractValuesByUserLocale($va_item, null, null, array());
 			$va_item = array_shift($va_tmp);
 			return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
@@ -1014,10 +1186,33 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns the item_id for list item in a list with a given identifer (aka "idno"). 
 	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $ps_idno The list item identifier (idno)
+	 * @param mixed $pa_options Options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 * @return int The item_id of the first matching item, or null if no matching item was found
 	 */
-	public function getItemIDFromListByItemValue($pm_list_name_or_id, $pm_value, $pb_return_plural=false) {
-		if ($va_item = $this->getItemFromListByItemValue($pm_list_name_or_id, $pm_value)) {
+	public function getItemIDFromList($pm_list_name_or_id, $ps_idno, $pa_options=null) {
+		if ($va_list_item = $this->getItemFromList($pm_list_name_or_id, $ps_idno, $pa_options)) {
+			return (int)$va_list_item['item_id'];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns the item_id for first list item found in a list with a given item value. Item value is a text or numeric value 
+	 * associated with a list item. Unlike idno, it need not be unique.
+	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $pm_value The item value
+	 * @param mixed $pa_options Options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 * @return string
+	 */
+	public function getItemIDFromListByItemValue($pm_list_name_or_id, $pm_value, $pa_options=null) {
+		if ($va_item = $this->getItemFromListByItemValue($pm_list_name_or_id, $pm_value, $pa_options)) {
 			$va_tmp = caExtractValuesByUserLocale($va_item, null, null, array());
 			$va_item = array_shift($va_tmp);
 			return $va_item['item_id'];
@@ -1026,13 +1221,19 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns the item_id for first list item found in a list with a given preferred or non-preferred label value.
 	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $ps_label_name The label value
+	 * @param mixed $pa_options Options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 * @return int The item_id of the first matching item, or null if no matching item was found
 	 */
-	public function getItemIDFromListByLabel($pm_list_name_or_id, $ps_label_name) {
+	public function getItemIDFromListByLabel($pm_list_name_or_id, $ps_label_name, $pa_options=null) {
 		if ($vn_list_id = $this->_getListID($pm_list_name_or_id)) {
-			if ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_plural' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+			if ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_plural' => $ps_label_name)), array('returnAs' => 'firstId', 'checkAccess' => caGetOption('checkAccess', $pa_options, null)))) {
 				return $vn_id;
-			} elseif ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+			} elseif ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId', 'checkAccess' => caGetOption('checkAccess', $pa_options, null)))) {
 				return $vn_id;
 			}
 		}
@@ -1040,17 +1241,11 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return the item_id of the root for a given list
 	 *
-	 */
-	public function getItemIDFromList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
-		if ($va_list_item = $this->getItemFromList($pm_list_name_or_id, $ps_item_idno)) {
-			return $va_list_item['item_id'];
-		}
-		return null;
-	}
-	# ------------------------------------------------------
-	/**
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list. If omitted the list for the currently loaded item is used.
 	 *
+	 * @return int The item_id of the root item, or null if no list could be found.
 	 */
 	public function getRootItemIDForList($pm_list_name_or_id=null) {
 		if ($pm_list_name_or_id) {
@@ -1077,48 +1272,42 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Check if list has an item with a given identifier (aka "idno")
 	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $ps_idno The list item identifier (idno)
+	 * @param mixed $pa_options Options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 * @return bool True if the item exists
 	 */
-	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
-		$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		
-		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "(cli.deleted = 0) AND " : "";
-		
-		$o_db = $this->getDb();
-		$qr_res = $o_db->query("
-			SELECT *
-			FROM ca_list_items cli
-			WHERE
-				{$vs_deleted_sql} (cli.list_id = ?) AND (cli.item_id = ?)
-		", (int)$vn_list_id, (int)$pn_item_id);
-		$va_items = array();
-		while($qr_res->nextRow()) {
-			 return $qr_res->getRow();
-		}
-		
-		return null;
+	public function itemIsInList($pm_list_name_or_id, $ps_idno, $pa_options=null) {
+		return $this->getItemFromList($pm_list_name_or_id, $ps_idno, $pa_options) ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
+	 * Check if list has an item with a given item_id
 	 *
-	 */
-	public function itemIsInList($pm_list_name_or_id, $ps_item_idno, $pa_options=null) {
-		return $this->getItemFromList($pm_list_name_or_id, $ps_item_idno, $pa_options) ? true : false;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $pn_item_id The list item_id
+	 * @param mixed $pa_options Options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 * @return bool True if the item exists
 	 */
 	public function itemIDIsInList($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
 		return $this->getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options) ? true : false;
 	}
 	# ------------------------------------------------------
-	/**
-	 * Returns true if specified list item exists and has its' is_enabled flag set
-	 * Returns null if item doesn't exist
+	 /**
+	 * Check if specified list item exists and has its is_enabled flag set
+	 *
+	 * @param mixed $pm_list_name_or_id The list code or list_id for the list to search
+	 * @param mixed $pn_item_id The list item_id
+	 * @param mixed $pa_options Options include:
+	 *                              checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 * @return bool True if the item exists and is enabled
 	 */
-	public function itemIsEnabled($pm_list_name_or_id, $pn_item_id) {
-		if ($va_item = $this->getItemFromListByItemID($pm_list_name_or_id, $pn_item_id)) {
+	public function itemIsEnabled($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
+		if ($va_item = $this->getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options)) {
 			return (intval($va_item['is_enabled'])) ? true : false;
 		} 
 		return null;
@@ -1154,7 +1343,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Convert list code to list_id
 	 */
 	private function _getListID($pm_list_name_or_id) {
 		return ca_lists::getListID($pm_list_name_or_id, array('transaction' => $this->getTransaction()));
@@ -1164,14 +1353,18 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Converts list specifier (code or list_id) into a list_id
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id
+	 * @param array $pa_options Options include:
+	 *      transaction = Transaction to perform database operations within. [Default is null]
+	 *
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListID($pm_list_name_or_id, $pa_options=null) {
-		if (ca_lists::$s_list_id_cache[$pm_list_name_or_id]) {
-			return ca_lists::$s_list_id_cache[$pm_list_name_or_id];
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_name_or_id);
+		if (ca_lists::$s_list_id_cache[$vs_cache_key]) {
+			return ca_lists::$s_list_id_cache[$vs_cache_key];
 		}
 		if (is_numeric($pm_list_name_or_id)) {
-			$vn_list_id = intval($pm_list_name_or_id);
+			$vn_list_id = (int)$pm_list_name_or_id;
 		} else {
 			$t_list = new ca_lists();
 			$o_trans = caGetOption('transaction', $pa_options, null);
@@ -1182,13 +1375,16 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vn_list_id = $t_list->getPrimaryKey();
 		}
 		
-		return ca_lists::$s_list_id_cache[$pm_list_name_or_id] = $vn_list_id;
+		return ca_lists::$s_list_id_cache[$vs_cache_key] = $vn_list_id;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Converts list specifier (code or list_id) into a list_id
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id
+	 * @param array $pa_options Options include:
+	 *      transaction = Transaction to perform database operations within. [Default is null]
+	 *
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListCode($pm_list_name_or_id, $pa_options=null) {
@@ -1237,7 +1433,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 	transaction = transaction to perform database operations within. [Default is null]
 	 *
 	 *  useDefaultWhenNull = if a list has a null value the default value is typically ignored and null used as the initial value; set this option to use the default in all cases [Default=false]
-	 *	checkAccess = 
+	 *	checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
 	 *	exclude = array of item idnos to omit from the returned list. [Default is null]
 	 *	 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
@@ -1905,9 +2101,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
 	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
 	 	
-	 	$vs_key = md5(print_r($pa_ids, true));
-	 	if (isset(ca_lists::$s_item_id_to_code_cache[$vs_key])) {
-	 		return ca_lists::$s_item_id_to_code_cache[$vs_key];
+	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_ids, 'opts' => $pa_options]);
+	 	if (isset(ca_lists::$s_item_id_to_code_cache[$vs_cache_key])) {
+	 		return ca_lists::$s_item_id_to_code_cache[$vs_cache_key];
 	 	}
 	 	
 	 	$va_ids = $va_non_numerics = array();
@@ -1936,7 +2132,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
 	 	}
-	 	return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
+	 	return ca_lists::$s_item_id_to_code_cache[$vs_cache_key] = $va_item_ids_to_codes + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1950,9 +2146,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 static public function itemIDsToItemValues($pa_ids, $pa_options=null) {
 	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
 	 	
-	 	$vs_key = md5(print_r($pa_ids, true));
-	 	if (isset(ca_lists::$s_item_id_to_value_cache[$vs_key])) {
-	 		return ca_lists::$s_item_id_to_value_cache[$vs_key];
+	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_ids, 'opts' => $pa_options]);
+	 	
+	 	if (isset(ca_lists::$s_item_id_to_value_cache[$vs_cache_key])) {
+	 		return ca_lists::$s_item_id_to_value_cache[$vs_cache_key];
 	 	}
 	 	
 	 	$va_ids = $va_non_numerics = array();
@@ -1981,11 +2178,30 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
 	 	}
-	 	return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
+	 	return ca_lists::$s_item_id_to_value_cache[$vs_cache_key] = $va_item_ids_to_values + $va_non_numerics;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getAdditionalChecksumComponents() {
 		return [$this->get('list_code')];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Quickly return access value for list item 
+	 *
+	 * @param int $item_id 
+	 * 
+	 * @return bool or null if item does not exist
+	 */
+	static public function getAccessForItemID($pn_item_id) {
+		$o_db = new Db();
+		$q = $o_db->query("SELECT access FROM ca_list_items WHERE item_id = ? AND deleted = 0", [(int)$pn_item_id]);
+		while($q->nextRow()) {
+			return $q->get('access');
+		}
+		return null;
 	}
 	# ------------------------------------------------------
 }

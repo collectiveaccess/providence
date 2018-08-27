@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -310,12 +310,20 @@ final class ConfigurationExporter {
 			$vo_item = $this->opo_dom->createElement("item");
 			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno', $va_used_codes);
 			$va_used_codes[$vs_idno] = true;
-			
+
 			$vo_item->setAttribute("idno", $vs_idno);
 			$vo_item->setAttribute("enabled", $qr_items->get("is_enabled"));
 			$vo_item->setAttribute("default", $qr_items->get("is_default"));
+								
+			if ($vs_color = $qr_items->get('color')) {
+				$vo_item->setAttribute("color", $vs_color);
+			}
+			
 			if(is_numeric($vn_value = $qr_items->get("item_value"))) {
 				$vo_item->setAttribute("value", $vn_value);
+			}
+			if($qr_items->get('type_id')){
+				$vo_item->setAttribute('type', $t_list_item->getTypeCode($qr_items->get('type_id')));
 			}
 
 			$vo_labels = $this->opo_dom->createElement("labels");
@@ -328,6 +336,7 @@ final class ConfigurationExporter {
 					$vo_label->setAttribute("preferred", $qr_list_item_labels->get("is_preferred"));
 					$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($qr_list_item_labels->get("name_singular"))));
 					$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($qr_list_item_labels->get("name_plural"))));
+					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_list_item_labels->get("description"))));
 
 					$vo_labels->appendChild($vo_label);
 				}
@@ -337,10 +346,21 @@ final class ConfigurationExporter {
 				$vo_label->setAttribute("locale", $vs_default_locale);
 				$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($vs_idno)));
 				$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($vs_idno)));
+				$vo_label->appendChild($this->opo_dom->createElement("description",''));
 				$vo_labels->appendChild($vo_label);
 			}
 
 			$vo_item->appendChild($vo_labels);
+			$va_settings = $qr_items->get('settings', ['unserialize' => true]);
+			if (is_array($va_settings) && (sizeof($va_settings) > 0)){
+				$vo_settings = $this->opo_dom->createElement("settings");
+				foreach($va_settings as $vs_name => $va_setting){
+					$vo_setting = $this->opo_dom->createElement("setting",caEscapeForXML($va_setting));
+					$vo_setting->setAttribute('name', $vs_name);
+					$vo_settings->appendChild($vo_setting);
+				}
+				$vo_item->appendChild($vo_settings);
+			}
 
 			if($vo_sub_items = $this->getListItemsAsDOM($qr_items->get("item_id"), $pn_list_id)) {
 				$vo_item->appendChild($vo_sub_items);
@@ -392,6 +412,8 @@ final class ConfigurationExporter {
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_element_labels = $this->opo_db->query("SELECT * FROM ca_metadata_element_labels WHERE element_id=?",$qr_elements->get("element_id"));
+			
+			$vn_num_labels = 0;
 			while($qr_element_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
@@ -401,6 +423,13 @@ final class ConfigurationExporter {
 					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_element_labels->get("description"))));
 				}
 
+				$vo_labels->appendChild($vo_label);
+				$vn_num_labels++;
+			}
+			if (!$vn_num_labels) {
+			    $vo_label = $this->opo_dom->createElement("label");
+				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode(ca_locales::getDefaultCataloguingLocaleID()));
+				$vo_label->appendChild($this->opo_dom->createElement("name", "BLANK"));
 				$vo_labels->appendChild($vo_label);
 			}
 
@@ -617,7 +646,7 @@ final class ConfigurationExporter {
 				}
 
 				// append settings to XML tree
-				if(sizeof($va_settings)>0) {
+				if(is_array($va_settings) && (sizeof($va_settings)>0)) {
 					$vo_settings = $this->opo_dom->createElement("settings");
 					$vo_entry->appendChild($vo_settings);
 
@@ -679,7 +708,7 @@ final class ConfigurationExporter {
 						}
 
 						// append settings to XML tree
-						if(sizeof($va_settings)>0) {
+						if(is_array($va_settings) && (sizeof($va_settings)>0)) {
 							$vo_settings = $this->opo_dom->createElement("settings");
 							$vo_rule->appendChild($vo_settings);
 
@@ -740,6 +769,10 @@ final class ConfigurationExporter {
 			}
 
 			$vo_ui->setAttribute("type", $vs_type);
+			
+			if ($vs_color = $qr_uis->get('color')) {
+				$vo_ui->setAttribute("color", $vs_color);
+			}
 
 			// labels
 			$vo_labels = $this->opo_dom->createElement("labels");
@@ -786,8 +819,11 @@ final class ConfigurationExporter {
 					}
 					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes)  { $vb_include_subtypes = true; }
 				}
-				$vo_ui->setAttribute("typeRestrictions", join(",", $va_types));
-				$vo_ui->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+				
+				if(is_array($va_types) && (sizeof($va_types) > 0)) {
+					$vo_ui->setAttribute("typeRestrictions", join(",", $va_types));
+					$vo_ui->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+				}
 			}
 
 			// User and group access
@@ -850,6 +886,10 @@ final class ConfigurationExporter {
 				}
 
 				$vo_screen->setAttribute("default", $qr_screens->get("is_default"));
+							
+				if ($vs_color = $qr_screens->get('color')) {
+					$vo_screen->setAttribute("color", $vs_color);
+				}
 
 				$vo_labels = $this->opo_dom->createElement("labels");
 				$qr_screen_labels = $this->opo_db->query("SELECT * FROM ca_editor_ui_screen_labels WHERE screen_id=?",$qr_screens->get("screen_id"));
@@ -899,11 +939,12 @@ final class ConfigurationExporter {
 						//$vo_type_restrictions->appendChild($vo_type_restriction);
 					}
 
-					//$vo_screen->appendChild($vo_type_restrictions);
-					$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
-					$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+					if (is_array($va_types) && (sizeof($va_types) > 0)) {
+						$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
+						$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
+					}
 				}
-				
+
 
 				$vo_placements = $this->opo_dom->createElement("bundlePlacements");
 				$va_placements = $t_screen->getPlacementsInScreen();
@@ -915,18 +956,21 @@ final class ConfigurationExporter {
 						$vo_placements->appendChild($vo_placement);
 
 						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
-						
+
 						if (isset($va_placement['settings']['bundleTypeRestrictions']) && (is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions']) || strlen($va_type_restrictions))) {
-							if(!is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
-							$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+							if($va_type_restrictions && !is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
+							
+							if (is_array($va_type_restrictions) && (sizeof($va_type_restrictions) > 0)) {
+								$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+							}
 						}
 						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {
 							$vo_placement->setAttribute("includeSubtypes", 1);
 						}
-						
-						
+
+
 						$va_used_codes[$vs_code] = true;
-						
+
 						$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($va_placement["bundle"])));
 
 						if(is_array($va_placement["settings"])) {
@@ -1067,7 +1111,7 @@ final class ConfigurationExporter {
 			}
 		}
 
-		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=? ORDER BY rank, type_id",$pn_parent_id);
+		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id= ? ORDER BY rank, type_id", [$pn_parent_id]);
 		if(!$qr_types->numRows() && !$this->opn_modified_after) { return false; }
 
 		while($qr_types->nextRow()) {
@@ -1090,7 +1134,7 @@ final class ConfigurationExporter {
 			$vo_type->setAttribute("default", $qr_types->get("is_default"));
 
 			$vo_labels = $this->opo_dom->createElement("labels");
-			$qr_type_labels = $this->opo_db->query("SELECT * FROM ca_relationship_type_labels WHERE type_id=?",$qr_types->get("type_id"));
+			$qr_type_labels = $this->opo_db->query("SELECT * FROM ca_relationship_type_labels WHERE type_id = ?", [$qr_types->get("type_id")]);
 			while($qr_type_labels->nextRow()) {
 				$vo_label = $this->opo_dom->createElement("label");
 
@@ -1136,7 +1180,7 @@ final class ConfigurationExporter {
 			// subtypes
 
 			if($vo_subtypes = $this->getRelationshipTypesForParentAsDOM($qr_types->get("type_id"), $pn_table_num)) {
-				$vo_types->appendChild($vo_subtypes);
+				$vo_type->appendChild($vo_subtypes);
 			}
 
 			$vo_types->appendChild($vo_type);
@@ -1236,6 +1280,38 @@ final class ConfigurationExporter {
 				}
 				$vo_role->appendChild($vo_type_lvl_ac);
 			}
+			// add source level ACL items
+			if(is_array($va_vars['source_access_settings'])) {
+				$vo_type_lvl_ac = $this->opo_dom->createElement("sourceLevelAccessControl");
+				foreach($va_vars['source_access_settings'] as $vs_id => $vn_val) {
+					$va_tmp = explode('.', $vs_id);
+					$vs_table_name = $va_tmp[0];
+					if ($vs_table_name === $vs_id){
+						// this is the where the setting is $ps_table.'_default_id'
+						continue;
+					}
+					$vn_type_id = $va_tmp[1];
+					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
+
+					/** @var BaseModelWithAttributes $t_instance */
+					$t_instance = $this->opo_dm->getInstanceByTableName($vs_table_name, true);
+					if (!($vs_list_code = $t_instance->getSourceListCode())) { continue; }
+
+					$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vn_type_id);
+					if(!isset($va_item['idno'])) { continue; }
+
+
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_type_lvl_ac->appendChild($vo_permission);
+					$vo_permission->setAttribute('table',$vs_table_name);
+					$vo_permission->setAttribute('source',$va_item['idno']);
+					$vo_permission->setAttribute('access',$vs_access);
+					$vb_default = (int)(isset($va_vars['source_access_settings'][$vs_table_name.'_default_id']) && $vn_type_id == $va_vars['source_access_settings'][$vs_table_name.'_default_id']);
+					$vo_permission->setAttribute('default', $vb_default);
+
+				}
+				$vo_role->appendChild($vo_type_lvl_ac);
+			}
 
 			$vo_roles->appendChild($vo_role);
 		}
@@ -1330,7 +1406,7 @@ final class ConfigurationExporter {
 			$vo_form->setAttribute("code", $this->makeIDNOFromInstance($t_form, "form_code"));
 			$vo_form->setAttribute("type", $this->opo_dm->getTableName($qr_forms->get("table_num")));
 			$vo_form->setAttribute("system", $qr_forms->get("is_system"));
-			
+
 			if(is_array($va_restrictions = $t_form->getTypeRestrictions()) && sizeof($va_restrictions)) {
 				$vb_include_subtypes = false;
 				$va_type_ids = [];
@@ -1338,7 +1414,7 @@ final class ConfigurationExporter {
 					if ($va_restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
 					$va_type_ids[] = $va_restriction['type_id'];
 				}
-				if (sizeof($va_type_ids)) {
+				if (is_array($va_type_ids) && (sizeof($va_type_ids) > 0)) {
 					$vo_form->setAttribute("typeRestrictions", join(",", caMakeTypeList($t_form->get('table_num'), $va_type_ids)));
 					$vo_form->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
 				}
@@ -1488,8 +1564,8 @@ final class ConfigurationExporter {
 
 				$this->printStatus(_t("Exporting changes for display %1", $va_info['display_code']));
 			}
-			
-			
+
+
 			$vs_type_restriction_attr = '';
 			if(is_array($va_restrictions = $t_display->getTypeRestrictions()) && sizeof($va_restrictions)) {
 				$vb_include_subtypes = false;
@@ -1554,7 +1630,7 @@ final class ConfigurationExporter {
 			foreach($va_placements as $vn_placement_id => $va_placement_info) {
 				$vs_buf .= "\t\t<placement code='".preg_replace("![^A-Za-z0-9_]+!", "_", $va_placement_info['bundle_name'])."'><bundle>".$va_placement_info['bundle_name']."</bundle>\n";
 				$va_settings = caUnserializeForDatabase($va_placement_info['settings']);
-				if(is_array($va_settings)) {
+				if(is_array($va_settings) && (sizeof($va_settings) > 0)) {
 					$vs_buf .= "<settings>\n";
 					foreach($va_settings as $vs_setting => $vm_value) {
 						switch($vs_setting) {
@@ -1626,7 +1702,7 @@ final class ConfigurationExporter {
 		} else {
 			$vs_code =  "default";
 		}
-		
+
 		$vs_code_stem = $vs_code;
 		$vn_i = 1;
 		while(isset($pa_used_list[$vs_code])) {

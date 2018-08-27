@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,6 +68,11 @@ class Installer {
 	 * @var Db
 	 */
 	protected $opo_db;
+	# --------------------------------------------------
+	/**
+	 * @var array
+	 */
+	protected $opa_metadata_element_deferred_settings_processing = [];
 	# --------------------------------------------------
 	/**
 	 * Constructor
@@ -384,6 +389,26 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
+	    // process metadata element settings that couldn't be processed during install
+	    // (Eg. those for hideIfSelected_*)
+	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
+	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
+	            if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
+	            $t_element->setMode(ACCESS_WRITE);
+	            $va_available_settings = $t_element->getAvailableSettings();
+	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
+	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
+	                
+	                if (isset($va_available_settings[$vs_setting_name]['multiple']) && $va_available_settings[$vs_setting_name]['multiple']) {
+	                    $t_element->setSetting($vs_setting_name, $va_setting_values);
+	                } else {
+	                    $t_element->setSetting($vs_setting_name, array_shift($va_setting_values));
+	                }
+	            }
+	        }
+	        $t_element->update();
+	    } 
+	    
 		// generate system GUID -- used to identify systems in data sync protocol
 		$o_vars = new ApplicationVars();
 		$o_vars->setVar('system_guid', caGenerateGUID());
@@ -625,6 +650,7 @@ class Installer {
 			$vs_rank = self::getAttribute($vo_item, "rank");
 			$vn_enabled = self::getAttribute($vo_item, "enabled");
 			$vn_default = self::getAttribute($vo_item, "default");
+			$vs_color = self::getAttribute($vo_item, "color");
 
 			if (!isset($vs_item_value) || !strlen(trim($vs_item_value))) {
 				$vs_item_value = $vs_item_idno;
@@ -650,10 +676,10 @@ class Installer {
 					$t_item->delete();
 					continue;
 				}
-				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $vs_item_idno));
-				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
@@ -953,6 +979,7 @@ class Installer {
 			$t_ui->set('is_system_ui', 1);
 			$t_ui->set('editor_code', $vs_ui_code);
 			$t_ui->set('editor_type', $vn_type);
+			if ($vs_color = self::getAttribute($vo_ui, "color")) { $t_ui->set('color', $vs_color); }
 
 			if($t_ui->getPrimaryKey()) {
 				$t_ui->update();
@@ -1058,6 +1085,7 @@ class Installer {
 				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
+				if ($vs_color = self::getAttribute($vo_screen, "color")) { $t_ui_screens->set('color', $vs_color); }
 
 				if($t_ui_screens->getPrimaryKey()) {
 					$t_ui_screens->update();
@@ -1159,26 +1187,27 @@ class Installer {
 						}
 					}
 				}
-			}
-			if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
-				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				if ($t_instance instanceof BaseRelationshipModel) {
-					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
-				} elseif($t_instance instanceof ca_representation_annotations) {
-					$va_ids = [];
-					foreach($va_codes as $vs_annotation_type) {
-						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
-							$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
-						}
-					}
-				} else {
-					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-				}
 				
-				foreach($va_ids as $vn_i => $vn_type_id) {
-					$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
-					$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
-				}
+				if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
+                    $va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
+                    if ($t_instance instanceof BaseRelationshipModel) {
+                        $va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
+                    } elseif($t_instance instanceof ca_representation_annotations) {
+                        $va_ids = [];
+                        foreach($va_codes as $vs_annotation_type) {
+                            if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+                                $va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+                            }
+                        }
+                    } else {
+                        $va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
+                    }
+                
+                    foreach($va_ids as $vn_i => $vn_type_id) {
+                        $t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
+                        $this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
+                    }
+                }
 			}
 
 			// set user and group access
@@ -1189,7 +1218,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_ui_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for UI {$vs_ui_code} (permission item with user name '{$vs_user}')");
@@ -1208,7 +1238,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_ui_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for UI {$vs_ui_code} (permission item with group code '{$vs_group}')");
@@ -1692,7 +1723,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_display_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for display {$vs_display_code} (permission item with user name '{$vs_user}')");
@@ -1711,7 +1743,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_display_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for display {$vs_display_code} (permission item with group code '{$vs_group}')");
@@ -1878,7 +1911,8 @@ class Installer {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
+					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+					if($vn_access) {
 						$va_form_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for search form {$vs_form_code} (permission item with user name '{$vs_user}')");
@@ -1897,7 +1931,8 @@ class Installer {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
+					if(!$t_group->load(array('code' => $vs_group))) { continue; }
+					if($vn_access) {
 						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for search form {$vs_form_code} (permission item with group code '{$vs_group}')");
@@ -2145,7 +2180,7 @@ class Installer {
 		$va_settings = array();
 		
 		$pa_settings_info = caGetOption('settingsInfo', $pa_options, []);
-		
+
 		if($po_settings_node) {
 			foreach($po_settings_node->children() as $vo_setting) {
 				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
@@ -2158,6 +2193,12 @@ class Installer {
 
 				$vs_setting_name = self::getAttribute($vo_setting, "name");
 				$vs_value = (string) $vo_setting;
+				
+				
+                if (isset($pa_settings_info[$vs_setting_name]) && isset($pa_settings_info[$vs_setting_name]['deferred']) && $pa_settings_info[$vs_setting_name]['deferred']) {
+                    $this->opa_metadata_element_deferred_settings_processing[$pt_instance->get('element_code')][$vs_setting_name][] = $vs_value;
+                    continue;
+                }
 
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
 					if ($vs_locale) { // settings with locale (those can't repeat)

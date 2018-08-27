@@ -34,7 +34,7 @@ rangePreConjunctions = [depuis, après]
 # ???
 rangeConjunctions = [to, -, et, .., through]
 
-dateTimeConjunctions = [at,@]
+dateTimeConjunctions = [à,@]
 
 dateDelimiters = [/,-,.]
 timeDelimiters = [:,.]
@@ -57,6 +57,9 @@ dateUncertaintyDayIndicator = [j]
 
 # What to use to indicate a geological date ("millions of years ago")
 dateMYA = [mya]
+
+# What to use to indicate radiocarbon dates ("before present")
+dateBP = [bp]
 
 dateADIndicator = ad
 dateBCIndicator = bc

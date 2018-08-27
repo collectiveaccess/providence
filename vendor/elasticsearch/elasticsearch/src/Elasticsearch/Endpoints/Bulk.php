@@ -10,20 +10,18 @@ use Elasticsearch\Transport;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class Bulk extends AbstractEndpoint implements BulkEndpointInterface
 {
     /**
-     * @param Transport $transport
      * @param SerializerInterface $serializer
      */
-    public function __construct(Transport $transport, SerializerInterface $serializer)
+    public function __construct(SerializerInterface $serializer)
     {
         $this->serializer = $serializer;
-        parent::__construct($transport);
     }
 
     /**
@@ -51,7 +49,7 @@ class Bulk extends AbstractEndpoint implements BulkEndpointInterface
     /**
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         return $this->getOptionalURI('_bulk');
     }
@@ -59,21 +57,26 @@ class Bulk extends AbstractEndpoint implements BulkEndpointInterface
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [
+        return array(
             'consistency',
             'refresh',
             'replication',
             'type',
             'fields',
-        ];
+            'pipeline',
+            '_source',
+            '_source_include',
+            '_source_exclude',
+            'pipeline'
+        );
     }
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'POST';
     }

@@ -5,12 +5,10 @@ namespace CollectiveAccessService;
 class ServiceResult {
 	# ----------------------------------------------
 	private $opa_data;
-	private $ops_data;
 	private $opb_ok;
 	private $opa_errors;
 	# ----------------------------------------------
 	public function __construct($ps_data) {
-		$this->ops_data = $ps_data;
 		$this->opa_data = json_decode($ps_data,true);
 		$this->opb_ok = (isset($this->opa_data["ok"]) && $this->opa_data["ok"]);
 		unset($this->opa_data["ok"]);
@@ -21,10 +19,6 @@ class ServiceResult {
 			$this->opa_errors = array();
 		}
 
-	}
-	# ----------------------------------------------
-	public function getRawDataAsString(){
-		return $this->ops_data;
 	}
 	# ----------------------------------------------
 	public function getRawData(){

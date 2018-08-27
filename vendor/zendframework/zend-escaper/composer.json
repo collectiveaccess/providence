@@ -13,12 +13,14 @@
         }
     },
     "require": {
-        "php": ">=5.3.23"
+        "php": ">=5.5"
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "extra": {
         "branch-alias": {
-            "dev-master": "2.4-dev",
-            "dev-develop": "2.5-dev"
+            "dev-master": "2.5-dev",
+            "dev-develop": "2.6-dev"
         }
     },
     "autoload-dev": {
@@ -28,7 +30,6 @@
     },
     "require-dev": {
         "fabpot/php-cs-fixer": "1.7.*",
-        "satooshi/php-coveralls": "dev-master",
         "phpunit/PHPUnit": "~4.0"
     }
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,7 +37,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	/**
 	 * @var array
 	 */
-    private $opa_auth_config_framents = [];
+    private $opa_auth_config_fragments = [];
 	/**
 	 * @var array
 	 */
@@ -65,7 +65,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 				}
 
 				$this->opa_ldaps[$vs_dir_key] = $o_ldap;
-				$this->opa_auth_config_framents[$vs_dir_key] = $va_dir;
+				$this->opa_auth_config_fragments[$vs_dir_key] = $va_dir;
 			}
 		} else {// else @todo maybe support legacy configs?
 			throw new LDAPException(_t('No directories key found in authentication config. Are you using an old configuration?'));
@@ -83,11 +83,11 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
     public function authenticate($ps_username, $ps_password = '', $pa_options=null) {
 		// try to bind against one of the directories
 		foreach($this->getLinkIdentifiers() as $vs_key => $r_ldap) {
-			$vo_bind = $this->bindToDirectory($r_ldap, $ps_username, $ps_password, $this->opa_auth_config_framents[$vs_key]);
+			$vo_bind = $this->bindToDirectory($r_ldap, $ps_username, $ps_password, $this->opa_auth_config_fragments[$vs_key]);
 			if (!$vo_bind) {
 				if (ldap_get_option($r_ldap, 0x0032, $extended_error)) {
 					$vs_bind_rdn = $this->getProcessedConfigValue(
-						$this->opa_auth_config_framents[$vs_key],
+						$this->opa_auth_config_fragments[$vs_key],
 						"ldap_bind_rdn_format",
 						$ps_username, "", ""
 					);
@@ -97,12 +97,12 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 			}
 
 			// check group membership
-			if (!$this->hasRequiredGroupMembership($r_ldap, $ps_username, $this->opa_auth_config_framents[$vs_key])) {
+			if (!$this->hasRequiredGroupMembership($r_ldap, $ps_username, $this->opa_auth_config_fragments[$vs_key])) {
 				continue; // try next one
 			}
 
 			// user role and group membership syncing with directory
-			$this->syncWithDirectory($r_ldap, $ps_username, $this->opa_auth_config_framents[$vs_key]);
+			$this->syncWithDirectory($r_ldap, $ps_username, $this->opa_auth_config_fragments[$vs_key]);
 
 			// auth successful
 			return true;
@@ -115,29 +115,29 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
     public function getUserInfo($ps_username, $ps_password) {
 		foreach($this->getLinkIdentifiers() as $vs_key => $r_ldap) {
 			// ldap config
-			$vs_base_dn = $this->opa_auth_config_framents[$vs_key]['ldap_base_dn'];
-			$vs_user_ou = $this->opa_auth_config_framents[$vs_key]['ldap_user_ou'];
-			$va_default_roles = $this->opa_auth_config_framents[$vs_key]["ldap_users_default_roles"];
+			$vs_base_dn = $this->opa_auth_config_fragments[$vs_key]['ldap_base_dn'];
+			$vs_user_ou = $this->opa_auth_config_fragments[$vs_key]['ldap_user_ou'];
+			$va_default_roles = $this->opa_auth_config_fragments[$vs_key]["ldap_users_default_roles"];
 			if(!is_array($va_default_roles)) { $va_default_roles = []; }
-			$va_default_groups = $this->opa_auth_config_framents[$vs_key]["ldap_users_default_groups"];
+			$va_default_groups = $this->opa_auth_config_fragments[$vs_key]["ldap_users_default_groups"];
 			if(!is_array($va_default_groups)) { $va_default_groups = []; }
 			$vs_search_dn = $this->getProcessedConfigValue(
-				$this->opa_auth_config_framents[$vs_key], "ldap_user_search_dn_format",
+				$this->opa_auth_config_fragments[$vs_key], "ldap_user_search_dn_format",
 				$ps_username, $vs_user_ou, $vs_base_dn
 			);
 			$vs_search_filter = $this->getProcessedConfigValue(
-				$this->opa_auth_config_framents[$vs_key], "ldap_user_search_filter_format",
+				$this->opa_auth_config_fragments[$vs_key], "ldap_user_search_filter_format",
 				$ps_username, $vs_user_ou, $vs_base_dn
 			);
 
-			$vo_bind = $this->bindToDirectory($r_ldap, $ps_username, $ps_password, $this->opa_auth_config_framents[$vs_key]);
+			$vo_bind = $this->bindToDirectory($r_ldap, $ps_username, $ps_password, $this->opa_auth_config_fragments[$vs_key]);
 			if (!$vo_bind) {
 				// wrong credentials
 				continue;
 			}
 
 			// check group membership
-			if (!$this->hasRequiredGroupMembership($r_ldap, $ps_username, $this->opa_auth_config_framents[$vs_key])) {
+			if (!$this->hasRequiredGroupMembership($r_ldap, $ps_username, $this->opa_auth_config_fragments[$vs_key])) {
 				continue;
 			}
 
@@ -160,15 +160,15 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
 			return array(
 				'user_name' => $ps_username,
-				'email' => $va_attrs[$this->opa_auth_config_framents[$vs_key]["ldap_attribute_email"]][0],
-				'fname' => $va_attrs[$this->opa_auth_config_framents[$vs_key]["ldap_attribute_fname"]][0],
-				'lname' => $va_attrs[$this->opa_auth_config_framents[$vs_key]["ldap_attribute_lname"]][0],
-				'active' => $this->opa_auth_config_framents[$vs_key]["ldap_users_auto_active"],
+				'email' => $va_attrs[$this->opa_auth_config_fragments[$vs_key]["ldap_attribute_email"]][0],
+				'fname' => $va_attrs[$this->opa_auth_config_fragments[$vs_key]["ldap_attribute_fname"]][0],
+				'lname' => $va_attrs[$this->opa_auth_config_fragments[$vs_key]["ldap_attribute_lname"]][0],
+				'active' => $this->opa_auth_config_fragments[$vs_key]["ldap_users_auto_active"],
 				'roles' => array_merge($va_default_roles, $this->getRolesToAddFromDirectory(
-					$r_ldap, $ps_username, $this->opa_auth_config_framents[$vs_key])
+					$r_ldap, $ps_username, $this->opa_auth_config_fragments[$vs_key])
 				),
 				'groups' => array_merge($va_default_groups, $this->getGroupsToAddFromDirectory(
-					$r_ldap, $ps_username, $this->opa_auth_config_framents[$vs_key])
+					$r_ldap, $ps_username, $this->opa_auth_config_fragments[$vs_key])
 				)
 			);
 		}

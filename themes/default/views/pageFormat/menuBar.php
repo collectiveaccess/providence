@@ -22,11 +22,11 @@
 					
 						if ($this->request->isLoggedIn() && ($this->request->user->getPreference('clear_quicksearch') == 'auto_clear')) { 
 ?>
-						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>" onfocus="this.value='';"/>
+						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print $this->request->session->getVar('quick_search_last_search'); ?>" onfocus="this.value='';"/>
 <?php						
 						} else {
 ?>
-						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>" onfocus="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>"/>	
+						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print $this->request->session->getVar('quick_search_last_search'); ?>" onfocus="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>"/>	
 <?php
 						}
 						print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_SEARCH__, 1, array('style' => 'float: right; margin: 5px 3px 0 0; color: #777')), 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 

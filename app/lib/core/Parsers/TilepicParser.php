@@ -2031,6 +2031,7 @@ class TilepicParser {
 				
 				if ($x['header_size'] <= 8) { 
 					if ($pb_print_errors) { print "Tilepic header length is invalid"; }
+					fclose($fh);
 					return false;
 				}
 				# --- get tile offsets (start of each tile)
@@ -2043,23 +2044,27 @@ class TilepicParser {
 					
 					$vn_len = $y["offset"] - $x["offset"];
 					if (!fseek($fh, $x["offset"])) {
-						
-						return fread($fh, $vn_len);
-						return true;
+						$buf = fread($fh, $vn_len);
+						fclose($fh);
+						return $buf;
 					} else {
 						if ($pb_print_errors) { print "File seek error while getting tile; tried to seek to ".$x["offset"]." and read $vn_len bytes"; }
+						fclose($fh);
 						return false;
 					}
 				} else {
 					if ($pb_print_errors) { print "File seek error while getting tile offset"; }
+					fclose($fh);
 					return false;
 				}
 			} else {
 				if ($pb_print_errors) { print "File is not Tilepic format"; }
+				fclose($fh);
 				return false;
 			}
 		} else {
 			if ($pb_print_errors) { print "Couldn't open file $ps_filepath"; }
+			fclose($fh);
 			return false;
 		}
 	}

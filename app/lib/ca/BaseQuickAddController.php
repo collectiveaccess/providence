@@ -68,6 +68,11 @@
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
  			$vs_n = $this->request->getParameter('n', pString);
+ 			
+ 			// table name and row_id from calling record (what we're quick-adding on)
+ 			// only set for ca_objects quick-adds
+ 			$vs_source = $this->request->getParameter('source', pString);
+ 			$vn_source_id = $this->request->getParameter('source_id', pInteger);
  		
  			// Is user allowed to quickadd?
  			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
@@ -81,6 +86,10 @@
  			
  			// Get user query
 			$this->view->setVar('q', preg_replace("!^[^:]*:!", "", $this->request->getParameter('q', pString)));
+ 			
+ 			// table name and row_id of caller
+ 			$this->view->setVar('source', $vs_source);
+ 			$this->view->setVar('source_id', $vn_source_id);
  			
  			//
  			// Is record of correct type?
@@ -350,6 +359,11 @@
  			$vn_parent_id = $this->request->getParameter('parent_id', pInteger);
  			$t_subject->set('parent_id', $vn_parent_id);
  			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
+ 			
+ 			// Set lot_id when quick-adding objects from lots
+ 			if (($t_subject->tableName() == 'ca_objects') && ($vn_lot_id = $this->request->getParameter('lot_id', pInteger))) {
+ 			    $t_subject->set('lot_id', $vn_lot_id);
+ 			}
  			
  			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);

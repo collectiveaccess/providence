@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -653,21 +653,38 @@ class MultipartIDNumber extends IDNumber {
 
 		// Get the next number based upon field data
 		$vn_type_id = null;
+		$vs_type_limit_sql = '';
 		
 		$o_dm = Datamodel::load();
 		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return 'ERR'; }
 		if ((bool)$va_element_info['sequence_by_type']) {
-			$vn_type_id = (int)$t_instance->getTypeIDForCode($this->getType());
+			$vs_type = $this->getType();
+			if ($vs_type == '__default__') {
+			    $va_types = $this->getTypes(); 
+			    
+			    $va_exclude_type_ids = [];
+			    foreach($va_types as $vs_type) {
+			        if ($vs_type == '__default__') { continue; }
+			        if ($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
+			            $va_exclude_type_ids[] = $vn_type_id;
+			        }
+			    }
+			    if (sizeof($va_exclude_type_ids) > 0) {
+			        $vs_type_limit_sql = " AND type_id NOT IN (".join(", ", $va_exclude_type_ids).")";
+			    }
+			} elseif($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
+		        $vs_type_limit_sql = " AND type_id = {$vn_type_id}";
+		    }
 		}
 		
-		if ($qr_res = $this->opo_db->query($x="
+		if ($qr_res = $this->opo_db->query("
 			SELECT $vs_field FROM ".$vs_table."
 			WHERE
-				$vs_field LIKE ? ".(($vn_type_id > 0) ? " AND type_id = {$vn_type_id}" : "")."
+				$vs_field LIKE ? {$vs_type_limit_sql}
 				".($t_instance->hasField('deleted') ? " AND (deleted = 0)" : '')."
 			ORDER BY
 				$vs_sort_field DESC
-		", ($y=$vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%')))) {
+		", ($vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%')))) {
 			if ($this->opo_db->numErrors()) {
 				return "ERR";
 			}
@@ -763,7 +780,7 @@ class MultipartIDNumber extends IDNumber {
 								array_unshift($va_tmp, $va_matches[2]);
 							}
 						}
-						$vn_pad_len = 12 - mb_strlen($vs_piece);
+						$vn_pad_len = $vn_padding - mb_strlen($vs_piece);
 
 						if ($vn_pad_len >= 0) {
 							if (is_numeric($vs_piece)) {
@@ -785,11 +802,7 @@ class MultipartIDNumber extends IDNumber {
 				case 'SERIAL':
 				case 'NUMERIC':
 					if ($vn_padding < $va_element_info['width']) { $vn_padding = $va_element_info['width']; }
-					if (preg_match("/^([0-9]+)([A-Za-z]{1})$/", $va_element_vals[$vn_i], $va_matches)) {
-						$va_output[] = str_repeat(' ', $vn_padding - mb_strlen(intval($va_matches[1]))).intval($va_matches[1]).$va_matches[2];
-					} else {
-						$va_output[] = str_repeat(' ', $vn_padding - mb_strlen(intval($va_element_vals[$vn_i]))).intval($va_element_vals[$vn_i]);
-					}
+					$va_output[] = str_repeat(' ', $vn_padding - strlen(intval($va_element_vals[$vn_i]))).intval($va_element_vals[$vn_i]);
 					break;
 				case 'YEAR':
 					$vn_p = (($va_element_info['width'] == 2) ? 2 : 4) - mb_strlen($va_element_vals[$vn_i]);
@@ -821,7 +834,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $ps_value Value from which to derive the index values. If omitted the current value is used. [Default is null]
 	 * @return array Array of string for indexing
 	 */
-	public function getIndexValues($ps_value=null) {
+	public function getIndexValues($ps_value=null, $pa_options=null) {
 		$vs_separator = $this->getSeparator();
 		if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
 		$va_element_names_normal_order = array_keys($va_elements_normal_order);
@@ -930,7 +943,12 @@ class MultipartIDNumber extends IDNumber {
 			$va_output_values = array_merge($va_output_values, $va_tokens);
 		}
 		
-		return $va_output_values;
+		if (isset($pa_options['INDEX_IDNO_PARTS']) || (is_array($pa_options) && (in_array('INDEX_IDNO_PARTS', $pa_options)))) {
+		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $pa_options, [$this->getSeparator()])) && sizeof($va_delimiters)) {
+		        $va_output_values = array_merge($va_output_values, preg_split("![".preg_quote(join('', $va_delimiters), "!")."]!", $ps_value));
+		    }
+		}
+		return array_unique($va_output_values);
 	}
 	# -------------------------------------------------------
 	# User interace (HTML)

@@ -50,7 +50,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'title' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Title'), 'DESCRIPTION' => _t('Short descriptive title for media'),
@@ -58,7 +58,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'idno' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Media identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this media.'),
@@ -66,7 +66,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'idno_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable media identifier', 'DESCRIPTION' => 'Value used for sorting media on identifier value.',
@@ -74,7 +74,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		),
 		'caption' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Caption'), 'DESCRIPTION' => _t('Long description for media')
@@ -101,9 +101,9 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		'media_metadata' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => true, 
+				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
+				#'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				
@@ -112,9 +112,9 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 		'media_content' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => true, 
+				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
+				#'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				
@@ -235,7 +235,7 @@ class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = null;
+	protected $RANK = 'rank';
 	
 	
 	# ------------------------------------------------------
@@ -253,10 +253,18 @@ class ca_site_page_media extends BundlableLabelableBaseModelWithAttributes {
 	);
 	
 	# ------------------------------------------------------
+	# ID numbering
+	# ------------------------------------------------------
+	protected $ID_NUMBERING_ID_FIELD = 'idno';		// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;		// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_CONTEXT_FIELD = 'page_id';		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
+	
+	
+	# ------------------------------------------------------
 	# Search
 	# ------------------------------------------------------
-	protected $SEARCH_CLASSNAME = 'SitePageSearch';
-	protected $SEARCH_RESULT_CLASSNAME = 'SitePageSearchResult';
+	protected $SEARCH_CLASSNAME = 'SitePageMediaSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'SitePageMediaSearchResults';
 	
 	# ------------------------------------------------------
 	# ACL

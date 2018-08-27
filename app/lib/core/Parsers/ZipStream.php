@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -368,7 +368,6 @@
 		"\x00\x00");
 		$vn_current_offset += strlen($vs_end_of_ctrl_dir);
 		
-		ob_flush();
 		flush();
 		fclose($r_out);
     } 

@@ -52,7 +52,7 @@
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
 				$vs_item_display_str =
-					((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
+					((mb_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
 
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {

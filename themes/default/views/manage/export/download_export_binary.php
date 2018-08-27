@@ -44,5 +44,5 @@ if(!$vs_file){
 		ob_flush();
 		flush();
 	}
-	exit();	
+	exit();
 }

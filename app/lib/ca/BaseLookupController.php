@@ -164,6 +164,8 @@
 						$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
 					}
 				}
+		
+				if (preg_match("![\/\.\-]!", $ps_query)) { $pb_exact = true; }
 				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
@@ -172,7 +174,7 @@
 					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
 				}
 				
-				$qr_res = $o_search->search($vs_search);
+				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 				
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
@@ -509,7 +511,7 @@
 			}
 
 			$o_db = new Db();
-			if(unicode_strlen($ps_val) > 0) {
+			if(mb_strlen($ps_val) > 0) {
 				$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_longtext1=?', $pn_element_id, $ps_val);
 				$va_value_list = $qr_values->getAllFieldValues('value_id');
 			} else {

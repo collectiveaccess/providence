@@ -723,7 +723,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_names = [];
 		while($qr_res->nextRow()) {
 			$t_instance = $o_dm->getInstanceByTableNum($qr_res->get('table_num'), true);
-			$va_restriction_names = array_map(function($v) { return caUcFirstUTF8Safe(caGetListItemForDisplayByItemID($v['type_id'], !$vb_use_singular)); }, $t_form->getTypeRestrictions(null, ['form_id' => $qr_res->get('form_id')]));
+			$va_restriction_names = array_map(function($v) { return caUcFirstUTF8Safe(caGetListItemByIDForDisplay($v['type_id'], !$vb_use_singular)); }, $t_form->getTypeRestrictions(null, ['form_id' => $qr_res->get('form_id')]));
 			
 			switch($t_instance->tableName()) {
 				case 'ca_occurrences':
@@ -871,6 +871,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		// get fields 
 
 		foreach($va_search_settings as $vs_table => $va_fields) {
+		    if (preg_match("!\.related$!", $vs_table)) { continue; }
 			if (!is_array($va_fields['fields'])) { continue; }
 
 			if ($vs_table == $vs_primary_table) {

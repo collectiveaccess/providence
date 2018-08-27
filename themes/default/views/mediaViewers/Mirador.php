@@ -37,7 +37,6 @@
 	$vs_width = caParseElementDimension($this->getVar('width') ? $this->getVar('width') : $this->getVar('viewer_width'), ['returnAsString' => true, 'default' => '100%']);
 	$vs_height = caParseElementDimension($this->getVar('height') ? $this->getVar('height') : $this->getVar('viewer_height'), ['returnAsString' => true, 'default' => '100%']);
 ?>
-<link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css">
 <script type="text/javascript" src="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/mirador.js"></script>
 <script type="text/javascript">
     jQuery(document).ready(function() {

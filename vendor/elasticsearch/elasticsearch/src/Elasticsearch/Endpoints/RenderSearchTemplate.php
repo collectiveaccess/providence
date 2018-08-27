@@ -2,6 +2,7 @@
 
 namespace Elasticsearch\Endpoints;
 
+use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
 
 /**
@@ -9,10 +10,11 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
+
 class RenderSearchTemplate extends AbstractEndpoint
 {
     /**
@@ -28,7 +30,6 @@ class RenderSearchTemplate extends AbstractEndpoint
         }
 
         $this->body = $body;
-
         return $this;
     }
 
@@ -36,11 +37,11 @@ class RenderSearchTemplate extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $id = $this->id;
 
-        $uri = "/_render/template";
+        $uri   = "/_render/template";
 
         if (isset($id) === true) {
             $uri = "/_render/template/$id";
@@ -52,16 +53,16 @@ class RenderSearchTemplate extends AbstractEndpoint
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
-        return [];
+        return array();
     }
 
     /**
      * @return array
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      */
-    protected function getBody()
+    public function getBody()
     {
         return $this->body;
     }
@@ -69,7 +70,7 @@ class RenderSearchTemplate extends AbstractEndpoint
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

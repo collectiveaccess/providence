@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2017 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -373,6 +373,7 @@
 	 * Options:
 	 * 	disableUnsavedChangesWarning = if true, unsaved change warnings (when user tries to navigate away from the form before saving) are disabled. [Default is false]
 	 *	noTimestamp = if true no form timestamp (used to determine if other users have made changes while the form is being displayed) is included. [Default is false]
+	 *  noCSRFToken = if true CSRF token is omitted. [Default is false]
 	 *	disableSubmit = don't allow form to be submitted. [Default is false]
 	 *	submitOnReturn = submit form if user hits return in any form element. [Default is false]
 	 */
@@ -400,6 +401,10 @@
 		if (!caGetOption('noTimestamp', $pa_options, false)) {
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
+		if (!caGetOption('noCSRFToken', $pa_options, false)) {
+			$vs_buf .= caHTMLHiddenInput('crsfToken', array('value' => caGenerateCSRFToken($po_request)));
+		}
+		
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
 			// tagging form elements with the CSS 'dontTriggerUnsavedChangeWarning' class lets us skip over selected form elements
 			// when applying unsaved change warning event handlers
@@ -696,6 +701,7 @@
 				break;
 			case __CA_NAV_ICON_LOGIN__:
 				$vs_fa_class = 'fa-check-circle-o';
+				$vs_ca_class = 'loginButton';
 				break;
 			case __CA_NAV_ICON_SAVE__:
 				$vs_fa_class = 'fa-check-circle-o';
@@ -847,7 +853,10 @@
 				break;
 			case __CA_NAV_ICON_FULL_RESULTS__:
 				$vs_fa_class = 'fa-bars';
-				break;																			
+				break;
+			case __CA_NAV_ICON_EXPORT_SMALL__: 
+				$vs_fa_class = 'fa-external-link-square';
+				break;																							
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
@@ -1132,18 +1141,25 @@
 		if(isset($pa_options['action'])){
 			$vs_action = $pa_options['action'];
 		} else {
-			$vs_action = caGetDetailForType($ps_table, caGetOption('type_id', $pa_options, null), array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
+			if ($pn_id && !($vn_type_id = caGetOption('type_id', $pa_options, null))) {
+				$vn_type_id = $t_table->getTypeID($pn_id);
+			}
+			$vs_action = caGetDetailForType($ps_table, $vn_type_id, array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
 		}
-		if (caUseIdentifiersInUrls() && $t_table->getProperty('ID_NUMBERING_ID_FIELD')) {
+		
+		$vn_id_for_idno = null;
+		if(((int)$pn_id > 0) && ($vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls($ps_table))) {
+		    $va_attr = array_values($t_table->getAttributeForIDs($vs_use_alt_identifier_in_urls, [$pn_id]));
+		    if (is_array($va_attr[0]) && ($vn_id_for_idno = array_shift($va_attr[0]))) {
+				$vb_id_exists = true;
+			}
+		    $pn_id = (strlen($vn_id_for_idno)) ? $vn_id_for_idno : "id:{$pn_id}";
+		} elseif (caUseIdentifiersInUrls() && $t_table->getProperty('ID_NUMBERING_ID_FIELD')) {
 			$va_ids = $t_table->getFieldValuesForIDs(array($pn_id), array($t_table->getProperty('ID_NUMBERING_ID_FIELD')));
 			if (is_array($va_ids) && ($vn_id_for_idno = array_shift($va_ids))) {
 				$vb_id_exists = true;
 			}
-			if (strlen($vn_id_for_idno)) {
-				$pn_id = $vn_id_for_idno;
-			} else {
-				$pn_id = "id:{$pn_id}";
-			}
+		    $pn_id = (strlen($vn_id_for_idno)) ? $vn_id_for_idno : "id:{$pn_id}";
 		}
 		$vs_action .= "/".rawurlencode($pn_id);
 		
@@ -1290,6 +1306,14 @@
 			case 'ca_object_representations':
 			case 56:
 				$vs_controller = 'ObjectRepresentation';
+				break;
+			case 'ca_site_pages':
+			case 236:
+				$vs_controller = 'SitePage';
+				break;
+			case 'ca_site_page_media':
+			case 237:
+				$vs_controller = 'SitePageMedia';
 				break;
 			default:
 				return null;

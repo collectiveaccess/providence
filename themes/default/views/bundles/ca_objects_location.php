@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,8 +35,6 @@
 	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
 	
 	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
-	$vs_display_template		= caGetOption('displayTemplate', $va_settings, _t('No template defined'));
-	$vs_history_template		= caGetOption('historyTemplate', $va_settings, $vs_display_template);
 
 	$vs_current_location		= $this->getVar('current_location');
 	$va_history					= $this->getVar('location_history');

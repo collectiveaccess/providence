@@ -19,17 +19,17 @@ namespace Symfony\Component\VarDumper\Caster;
 class ClassStub extends ConstStub
 {
     /**
-     * Constructor.
-     *
      * @param string   A PHP identifier, e.g. a class, method, interface, etc. name
      * @param callable The callable targeted by the identifier when it is ambiguous or not a real PHP identifier
      */
-    public function __construct($identifier, $callable = null)
+    public function __construct(string $identifier, $callable = null)
     {
         $this->value = $identifier;
 
         if (0 < $i = strrpos($identifier, '\\')) {
             $this->attr['ellipsis'] = strlen($identifier) - $i;
+            $this->attr['ellipsis-type'] = 'class';
+            $this->attr['ellipsis-tail'] = 1;
         }
 
         try {
@@ -45,7 +45,7 @@ class ClassStub extends ConstStub
                 } else {
                     $r = new \ReflectionFunction($callable);
                 }
-            } elseif (false !== $i = strpos($identifier, '::')) {
+            } elseif (0 < $i = strpos($identifier, '::') ?: strpos($identifier, '->')) {
                 $r = array(substr($identifier, 0, $i), substr($identifier, 2 + $i));
             } else {
                 $r = new \ReflectionClass($identifier);

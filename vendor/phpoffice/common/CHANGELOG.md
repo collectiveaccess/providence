@@ -43,3 +43,9 @@
 
 ### Changes
 - `\PhpOffice\Common\Text::utf8ToUnicode()` became `public`.
+
+## 0.2.7
+
+### Features
+- Added `\PhpOffice\Common\File::fileGetContents()` (with support of zip://)
+- Added Support for PHP 7.1

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package version="2.0" xmlns="http://pear.php.net/dtd/package-2.0"
+    xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+http://pear.php.net/dtd/tasks-1.0.xsd
+http://pear.php.net/dtd/package-2.0
+http://pear.php.net/dtd/package-2.0.xsd">
+ <name>File_MARC</name>
+ <channel>pear.php.net</channel>
+ <summary>Parse, modify, and create MARC records</summary>
+ <description>The standard for machine-readable cataloging (MARC) records is documented at http://loc.gov/marc/. This package enables you to read existing MARC records from a file, string, or (using the YAZ extension), from a Z39.50 source. You can also use this package to create new MARC records.
+
+This package is based on the PHP MARC package, originally called "php-marc", that is part of the Emilda Project (http://www.emilda.org).  Christoffer Landtman generously agreed to make the "php-marc" code available under the GNU LGPL so it could be used as the basis of this PEAR package.
+ </description>
+ <lead>
+  <name>Dan Scott</name>
+  <user>dbs</user>
+  <email>dbs@php.net</email>
+  <active>yes</active>
+ </lead>
+ <date>2017-12-04</date>
+ <version>
+  <release>1.2.0</release>
+  <api>1.2.0</api>
+ </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+ <license uri="http://www.gnu.org/copyleft/lesser.html">GNU Lesser General Public License</license>
+ <notes>
+1.2.0
+  * Support injection of extended Record class (thanks Dan Michael O. Heggø!)
+  * Support regular expression matching of subfields (thanks Waldemar Bartikowski!)
+  * Fix deletion of multiple subfields at once (thanks Dan Michael O. Heggø!)
+ </notes>
+ <contents>
+  <dir name="/" baseinstalldir="File">
+   <file name="CHANGELOG" role="doc" />
+   <file name="LICENSE" role="doc" />
+   <dir name="File" baseinstalldir="/">
+    <file name="MARC.php" role="php" />
+    <file name="MARCBASE.php" role="php" />
+    <file name="MARCXML.php" role="php" />
+    <dir name="MARC">
+     <file name="Control_Field.php" role="php" />
+     <file name="Data_Field.php" role="php" />
+     <file name="Exception.php" role="php" />
+     <file name="Field.php" role="php" />
+     <file name="Lint.php" role="php" />
+     <file name="List.php" role="php" />
+     <file name="Record.php" role="php" />
+     <file name="Subfield.php" role="php" />
+      <dir name="Lint">
+       <file name="CodeData.php" role="php" />
+      </dir>
+    </dir>
+   </dir>
+   <dir name="examples">
+    <file name="example.mrc" role="doc" />
+    <file name="marc_yaz.php" role="doc" />
+    <file name="read.php" role="doc" />
+    <file name="subfields.php" role="doc" />
+   </dir>
+   <dir name="tests">
+    <file name="bad_example.mrc" role="test" />
+    <file name="bad_example.xml" role="test" />
+    <file name="camel.mrc" role="test" />
+    <file name="example.mrc" role="test" />
+    <file name="marc_001.phpt" role="test" />
+    <file name="marc_002.phpt" role="test" />
+    <file name="marc_003.phpt" role="test" />
+    <file name="marc_004.phpt" role="test" />
+    <file name="marc_005.phpt" role="test" />
+    <file name="marc_006.phpt" role="test" />
+    <file name="marc_007.phpt" role="test" />
+    <file name="marc_008.phpt" role="test" />
+    <file name="marc_009.phpt" role="test" />
+    <file name="marc_010.phpt" role="test" />
+    <file name="marc_011.phpt" role="test" />
+    <file name="marc_012.phpt" role="test" />
+    <file name="marc_013.phpt" role="test" />
+    <file name="marc_014.phpt" role="test" />
+    <file name="marc_015.phpt" role="test" />
+    <file name="marc_016.phpt" role="test" />
+    <file name="marc_017.phpt" role="test" />
+    <file name="marc_018.phpt" role="test" />
+    <file name="marc_019.phpt" role="test" />
+    <file name="marc_020.phpt" role="test" />
+    <file name="marc_021.phpt" role="test" />
+    <file name="marc_022.phpt" role="test" />
+    <file name="marc_023.phpt" role="test" />
+    <file name="marc_16783.phpt" role="test" />
+    <file name="marc_field_001.phpt" role="test" />
+    <file name="marc_field_002.phpt" role="test" />
+    <file name="marc_field_003.phpt" role="test" />
+    <file name="marc_field_004.phpt" role="test" />
+    <file name="marc_field_005.phpt" role="test" />
+    <file name="marc_field_21246.phpt" role="test" />
+    <file name="marc_lint_001.phpt" role="test" />
+    <file name="marc_lint_002.phpt" role="test" />
+    <file name="marc_lint_003.phpt" role="test" />
+    <file name="marc_lint_004.phpt" role="test" />
+    <file name="marc_lint_005.phpt" role="test" />
+    <file name="marc_record_001.phpt" role="test" />
+    <file name="marc_subfield_001.phpt" role="test" />
+    <file name="marc_subfield_002.phpt" role="test" />
+    <file name="marc_xml_001.phpt" role="test" />
+    <file name="marc_xml_002.phpt" role="test" />
+    <file name="marc_xml_003.phpt" role="test" />
+    <file name="marc_xml_004.phpt" role="test" />
+    <file name="marc_xml_005.phpt" role="test" />
+    <file name="marc_xml_006.phpt" role="test" />
+    <file name="marc_xml_007.phpt" role="test" />
+    <file name="marc_xml_008.phpt" role="test" />
+    <file name="marc_xml_009.phpt" role="test" />
+    <file name="marc_xml_16642.phpt" role="test" />
+    <file name="marc_xml_namespace.phpt" role="test" />
+    <file name="marc_xml_namespace_prefix.phpt" role="test" />
+    <file name="marc_xml_rsinger.phpt" role="test" />
+    <file name="namespace.xml" role="test" />
+    <file name="skipif.inc" role="test" />
+    <file name="music.mrc" role="test" />
+    <file name="music.xml" role="test" />
+    <file name="bigarchive.xml" role="test" />
+    <file name="onerecord.xml" role="test" />
+    <file name="sandburg.mrc" role="test" />
+    <file name="sandburg.xml" role="test" />
+    <file name="xmlescape.mrc" role="test" />
+   </dir>
+  </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.5</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0</min>
+   </pearinstaller>
+  </required>
+  <optional>
+   <package>
+    <name>Validate_ISPN</name>
+    <channel>pear.php.net</channel>
+   </package>
+  </optional>
+ </dependencies>
+ <phprelease>
+ </phprelease>
+</package>

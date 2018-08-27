@@ -939,24 +939,106 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Resolve media identifiers in the form <type>:<id> or <type>:<id>:<page> into references suitable for using with the IIIF service.
+	 * Identifier types include: "representation", "attribute", "object", "entity", "place", "occurrence", "collection" and "location"
+	 * 
+	 * "representation" reference to a representation by representation_id
+	 * "attribute" refers to a media attribute by value_id
+	 * "object", "entity" and other table referencing types refer to the primary representation attached the specified row.
 	 *
+	 * For valid identifiers an array is returned with the following information:
 	 *
+	 * type = the "type" portion of resolved IIIF identifier. This will always be either "representation" or "attribute", no matter what the type in the original identifer is.
+	 * id = the "id" portion of the resolved identifier. This will be a representation_id or attribute value_id
+	 * page = the "page" portion of the identifer, if specified. This will be unchanged from the original identifier.
+	 * subject = the table name of the subject of the original media identifier. For representations this will be the representation itself. For attributes this will be the table name of the record it is bonud to. For table-related types this will be the table name of the type (Eg. for "objects", this will be "ca_objects")
+	 * subject_id = the primary key of the subject row. For representations this will be the representation_id. For attributes this will be the id of the row to which the attribute is bound. For table-related types this will be the id of the referenced row.
+	 * instance = An instance of the resolved media (ca_object_representations or ca_attribute_values) when the "includeInstance" option is set.
+	 * subject_instance = An instance of the resolved subject (ca_object_representations, ca_objects, or other primary table) when the "includeInstance" option is set.
+	 *
+	 * @param string $ps_identifier The identifier
+	 * @param array $pa_options Options include:
+	 *      includeInstance = Include resolved media and subject instances in return value. [Default is false]
+	 *      checkAccess = check resolved media and subject against provided access values and return null if access is not allowed. [Default is null]
+	 *
+	 * @return array
 	 */
 	function caParseMediaIdentifier($ps_identifier, $pa_options=null) {
+		$pb_include_instance = caGetOption('includeInstance', $pa_options, false);
 		$va_tmp = explode(':', $ps_identifier);
 		
+		$va_ret = null;
 		switch($vs_type = strtolower($va_tmp[0])) {
 			case 'representation':
-			case 'attribute':
-				return ['type' => $vs_type, 'id' => (int)$va_tmp[1], 'page' => isset($va_tmp[2]) ? (int)$va_tmp[2] : null];
+				$va_ret = ['type' => $vs_type, 'id' => (int)$va_tmp[1], 'page' => isset($va_tmp[2]) ? (int)$va_tmp[2] : null, 'subject' => 'ca_object_representations', 'subject_id' => (int)$va_tmp[1]];
+				if (!($t_rep = ca_object_representations::find((int)$va_tmp[1], $pa_options))) { return null; } // ca_object_representations::find() performs checkAccess
+				if ($pb_include_instance) {
+				    $va_ret['instance'] = $t_rep;
+				}
 				break;
+			case 'attribute':
+			    $t_val = new ca_attribute_values((int)$va_tmp[1]);
+			    if (!$t_val->isLoaded()) { return null; }
+			    $t_attr = new ca_attributes($t_val->get('attribute_id'));
+			    $o_dm = Datamodel::load();
+			    $vs_table_name  = $o_dm->getTableName($t_attr->get('table_num'));
+			    $vn_subject_id = (int)$t_attr->get('row_id');
+			    if (!($t_subject = $vs_table_name::find($vn_subject_id, $pa_options))) { return null; } // table::find() performs checkAccess
+			    
+			    $va_ret = ['type' => $vs_type, 'id' => (int)$va_tmp[1], 'page' => isset($va_tmp[2]) ? (int)$va_tmp[2] : null, 'subject' => $vs_table_name, 'subject_id' => $vn_subject_id];
+				
+				if ($pb_include_instance) {
+				    $va_ret['instance'] = $t_val;
+				    $va_ret['subject_instance'] = $t_subject;
+				}
+			    break;
 			default:
-				if (is_numeric($va_tmp[0])) {
-					return ['type' => 'representation', 'id' => (int)$va_tmp[0], 'page' => isset($va_tmp[1]) ? (int)$va_tmp[1] : null];
+			    if (($vs_table = caMediaIdentifierTypeToTable($vs_type)) && ($t_instance = $vs_table::find((int)$va_tmp[1], $pa_options)) && ($vn_rep_id = $t_instance->getPrimaryRepresentationID($pa_options))) {
+			        // return primary representation (access checkAccess performed by table::find() )
+			        $va_ret = ['type' => 'representation', 'id' => (int)$vn_rep_id, 'page' => null, 'subject' => $vs_table, 'subject_id' => (int)$va_tmp[1]];
+			        
+			        if ($pb_include_instance) {
+			            $va_ret['subject_instance'] = $t_instance;
+			        }
+				} elseif (is_numeric($va_tmp[0])) {
+				    if (!($t_rep = ca_object_representations::find((int)$va_tmp[1], $pa_options))) { return null; }     // ca_object_representations::find() performs checkAccess
+				    
+					$va_ret = ['type' => 'representation', 'id' => (int)$va_tmp[0], 'page' => isset($va_tmp[1]) ? (int)$va_tmp[1] : null, 'subject' => 'ca_object_representations', 'subject_id' => (int)$va_tmp[0]];
+				}
+				if ($va_ret && $pb_include_instance) {
+				    $va_ret['instance'] = $t_rep;
 				}
 				break;
 		}
-		return null;
+		return $va_ret;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Transform table-related media identifier types (Eg. object, entity, place) to table names
+	 * 
+	 * @param string $ps_type A table-related media type
+	 * @param array $pa_options Options include:
+	 *      returnInstance = Return instance of table rather than name. [Default is false]
+	 *
+	 * @return mixed
+	 */
+	function caMediaIdentifierTypeToTable($ps_type, $pa_options=null) {
+	    $va_map = [
+	        'object' => 'ca_objects', 'objects' => 'ca_objects',
+	        'entity' => 'ca_entities', 'entities' => 'ca_entities',
+	        'place' => 'ca_places', 'places' => 'ca_places',
+	        'occurrence' => 'ca_occurrences', 'occurrences' => 'ca_occurrences',
+	        'collection' => 'ca_collections', 'collections' => 'ca_collections',
+	        'location' => 'ca_storage_locations', 'locations' => 'ca_storage_locations'
+	    ];
+	    
+	    $vs_table = isset($va_map[strtolower($ps_type)]) ? $va_map[strtolower($ps_type)] : null;
+	    if ($vs_table && caGetOption('returnInstance', $pa_options, false)) {
+	        $o_dm = Datamodel::load();
+	        return $o_dm->getInstanceByTableName($vs_table, true);
+	    } 
+	
+	    return $vs_table;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1033,42 +1115,6 @@
 			}
 		}
 		
-		if (caExifToolInstalled()) {
-			// try EXIFTool
-			$vs_exiftool_path = caGetExternalApplicationPath('exiftool');
-			exec("{$vs_exiftool_path} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-			
-			if (($vn_return == 0) && sizeof($va_output) > 0) {
-				$va_info = [];
-				foreach($va_output as $vs_line) {
-					$va_line = explode(":", $vs_line);
-					
-					$vs_tag = strtolower(trim(array_shift($va_line)));
-					$vs_value = trim(join(":", $va_line));
-				
-					switch($vs_tag) {
-						case 'page count':
-							$va_info['pages'] = (int)$vs_value;
-							break;
-						case 'pdf version':
-							$va_info['version'] = (float)$vs_value;
-							break;
-						case 'producer':
-							$va_info['software'] = $vs_value;
-							break;
-						case 'author':
-						case 'creator':
-						case 'title':
-							$va_info[$vs_tag] = $vs_value;
-							break;
-					}
-				}
-				return $va_info;
-			} else {
-				return null;
-			}
-		}
-		
 		// try pdfinfo
 		if (caMediaPluginPdftotextInstalled()) {
 			$vs_path_to_pdf_to_text = str_replace("pdftotext", "pdfinfo", caGetExternalApplicationPath('pdftotext'));
@@ -1106,8 +1152,6 @@
 					}
 				}
 				return $va_info;
-			} else {
-				return null;
 			}
 		}
 		

@@ -46,6 +46,13 @@ class IIIFService {
 	 */
 	public static function dispatch($ps_identifier, $po_request, $po_response) {
 		$va_path = array_slice(explode("/", $po_request->getPathInfo()), 3);
+		$vs_key = $ps_identifier."/".join("/", $va_path);
+		
+		if ($vs_tile = CompositeCache::fetch($vs_key, 'IIIFTiles')) {
+		    header("Content-type: ".CompositeCache::fetch($vs_key, 'IIIFTileTypes'));
+		    $po_response->addContent($vs_tile);
+		    return true;
+		}
 		
 		// BASEURL:		{scheme}://{server}{/prefix}/{identifier}
 		// INFO: 		{scheme}://{server}{/prefix}/{identifier}/info.json
@@ -242,7 +249,11 @@ class IIIFService {
 				$vn_tile_num = $vn_tile_offset + $vn_tile;
 				
 				header("Content-type: ".$va_tilepic_info['PROPERTIES']['tile_mimetype']);
-				$po_response->addContent(TilepicParser::getTileQuickly($va_media_paths['tilepic'], $vn_tile_num, true));
+				
+				$vs_tile = TilepicParser::getTileQuickly($va_media_paths['tilepic'], $vn_tile_num, true);
+				CompositeCache::save($vs_key, $vs_tile, 'IIIFTiles');
+				CompositeCache::save($vs_key, $va_tilepic_info['PROPERTIES']['tile_mimetype'], 'IIIFTileTypes');
+				$po_response->addContent($vs_tile);
 				return true;
 			}
 			

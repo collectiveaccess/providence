@@ -39,6 +39,18 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
     /**
      */
+    public function testGetFileContents()
+    {
+        $pathResources = PHPOFFICE_COMMON_TESTS_BASE_DIR.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR;
+        $this->assertInternalType('string', File::fileGetContents($pathResources.'images'.DIRECTORY_SEPARATOR.'PHPPowerPointLogo.png'));
+        $this->assertFalse(File::fileGetContents($pathResources.'images'.DIRECTORY_SEPARATOR.'PHPPowerPointLogo_404.png'));
+        $this->assertInternalType('string', File::fileGetContents('zip://'.$pathResources.'files'.DIRECTORY_SEPARATOR.'Sample_01_Simple.pptx#[Content_Types].xml'));
+        $this->assertFalse(File::fileGetContents('zip://'.$pathResources.'files'.DIRECTORY_SEPARATOR.'Sample_01_Simple.pptx#404.xml'));
+        $this->assertFalse(File::fileGetContents('zip://'.$pathResources.'files'.DIRECTORY_SEPARATOR.'404.pptx#404.xml'));
+    }
+
+    /**
+     */
     public function testRealPath()
     {
         $pathFiles = PHPOFFICE_COMMON_TESTS_BASE_DIR.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'files'.DIRECTORY_SEPARATOR;

@@ -235,11 +235,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	# Display settings
 	# ------------------------------------------------------
 	/**
-	 * Add bundle placement to currently loaded display
+	 * Add bundle placement to currently loaded screen
 	 *
 	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
 	 * @param array $pa_settings Placement settings array; keys should be valid setting names
-	 * @param int $pn_rank Optional value that determines sort order of bundles in the display. If omitted, placement is added to the end of the display.
+	 * @param int $pn_rank Optional value that determines sort order of bundles in the screen. If omitted, placement is added to the end of the screen.
 	 * @param array $pa_options Optional array of options. Supports the following options:
 	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
 	 * @return int Returns placement_id of newly created placement on success, false on error
@@ -247,9 +247,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function addPlacement($ps_bundle_name, $ps_placement_code, $pa_settings, $pn_rank=null, $pa_options=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
-		//if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_EDIT_ACCESS__)) {
-		//	return null;
-		//}
 		
 		unset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]);
 		
@@ -283,7 +280,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Removes bundle placement from display
+	 * Removes bundle placement from screen
 	 *
 	 * @param int $pn_placement_id Placement_id of placement to remove
 	 * @param array $pa_options Optional array of options. Supports the following options:
@@ -293,9 +290,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function removePlacement($pn_placement_id, $pa_options=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
-		//if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_EDIT_ACCESS__)) {
-		//	return null;
-		//}
 		
 		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
@@ -309,6 +303,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			unset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]);
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Removes all bundle placements from screen
+	 *
+	 * @param array $pa_options Optional array of options. Supports the following options:
+	 * 		user_id = if specified then remove will fail if specified user does not have edit access for the display
+	 * @return bool Returns true on success, false on error
+	 */
+	public function removeAllPlacements($pa_options=null) {
+		if (is_array($va_placements = $this->getPlacements($pa_options))) {
+			foreach($va_placements as $va_placement) {
+				if (!($this->removePlacement($va_placement['placement_id'], $pa_options))) {
+					return false;
+				}
+			}
 			return true;
 		}
 		return false;
@@ -1168,6 +1181,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
+										'takesLocale' => true,
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Object location display template'),
 										'description' => _t('Layout for current location of object when displayed in list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship that is current. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
@@ -1176,6 +1190,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
+										'takesLocale' => true,
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Object location history template'),
 										'description' => _t('Layout for each previous location of object when displayed in history list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')

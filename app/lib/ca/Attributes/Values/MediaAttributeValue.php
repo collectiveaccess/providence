@@ -118,7 +118,7 @@
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->opn_value_id = $pa_value_array['value_id'];
  			$this->ops_media_data = $pa_value_array['value_blob'];
- 			$this->opa_media_data = $this->opo_media_info_coder->getMediaArray($pa_value_array['value_blob']);
+ 			$this->opa_media_data = $this->opo_media_info_coder->setMedia($pa_value_array['value_blob']);
  			$this->ops_file_original_name = $pa_value_array['value_longtext2'];
  		}
  		# ------------------------------------------------------------------
@@ -153,35 +153,35 @@
 			if(isset($pa_options['return'])) {
                 switch($pa_options['return']) {
                     case 'width':
-                        return $this->opo_media_info_coder->getMediaInfo($this->opa_media_data, $vs_version, 'WIDTH');
+                        return $this->opo_media_info_coder->getMediaInfo($vs_version, 'WIDTH');
                         break;
                     case 'height':
-                        return $this->opo_media_info_coder->getMediaInfo($this->opa_media_data, $vs_version, 'HEIGHT');
+                        return $this->opo_media_info_coder->getMediaInfo($vs_version, 'HEIGHT');
                         break;
                     case 'mimetype':
-                        return $this->opo_media_info_coder->getMediaInfo($this->opa_media_data, $vs_version, 'MIMETYPE');
+                        return $this->opo_media_info_coder->getMediaInfo($vs_version, 'MIMETYPE');
                         break;
                     case 'tag':
-                        return $this->opo_media_info_coder->getMediaTag($this->opa_media_data, $vs_version);
+                        return $this->opo_media_info_coder->getMediaTag($vs_version);
                         break;
                     case 'path':
-                        return $this->opo_media_info_coder->getMediaPath($this->opa_media_data, $vs_version);
+                        return $this->opo_media_info_coder->getMediaPath($vs_version);
                         break;
                     case 'url':
                     default:
-                        return $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, $vs_version);
+                        return $this->opo_media_info_coder->getMediaUrl($vs_version);
                         break;
                 }
             }
 			
-			if ($vs_url = $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, 'original')) {
+			if ($vs_url = $this->opo_media_info_coder->getMediaUrl('original')) {
 				AssetLoadManager::register('panel');
 				
-				$va_info =  $this->opo_media_info_coder->getMediaInfo($this->opa_media_data);
+				$va_info =  $this->opo_media_info_coder->getMediaInfo();
 				
 				$vs_dimensions = '';
 				if ($pa_options['showMediaInfo']) {
-					$va_dimensions = array($va_info['INPUT']['MIMETYPE']);
+					$va_dimensions = array(Media::getTypenameForMimetype($va_info['INPUT']['MIMETYPE']));
 					if ($va_info['ORIGINAL_FILENAME']) {
 						$vs_filename = $va_info['ORIGINAL_FILENAME'];
 					} else {
@@ -215,15 +215,9 @@
 					if (isset($va_info['original']['PROPERTIES']['pages']) && ($vn_pages = $va_info['original']['PROPERTIES']['pages'])) {
 						$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
 					}
-					if (!isset($va_info['original']['PROPERTIES']['filesize']) || !($vn_filesize = $va_info['original']['PROPERTIES']['filesize'])) {
-						$vn_filesize = 0;
-					}
-					if ($vn_filesize) {
-						$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
-					}
 		
 					if (!isset($va_info['PROPERTIES']['filesize']) || !($vn_filesize = $va_info['PROPERTIES']['filesize'])) {
-						$vn_filesize = @filesize($this->opo_media_info_coder->getMediaPath($this->opa_media_data, 'original'));
+						$vn_filesize = @filesize($this->opo_media_info_coder->getMediaPath('original'));
 					}
 					if ($vn_filesize) {
 						$va_dimensions[] = sprintf("%4.2f", $vn_filesize/(1024*1024)).'mb';
@@ -232,23 +226,23 @@
 				}
 				
 				if (isset($pa_options['poster_frame_version']) && $pa_options['poster_frame_version']) {
-					$pa_options['poster_frame_url'] = $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, $pa_options['poster_frame_version']);
+					$pa_options['poster_frame_url'] = $this->opo_media_info_coder->getMediaUrl($pa_options['poster_frame_version']);
 				}
 				
-				$vs_tag = $this->opo_media_info_coder->getMediaTag($this->opa_media_data, $vs_version, $pa_options);
+				$vs_tag = $this->opo_media_info_coder->getMediaTag($vs_version, $pa_options);
 				
 				if (is_object($pa_options['request'])) {
 					$vs_view_url = urldecode(caNavUrl($pa_options['request'], $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'GetMediaOverlay', array('value_id' => $this->opn_value_id)));
 					$vs_val = "<div id='caMediaAttribute".$this->opn_value_id."' class='attributeMediaInfoContainer'>";
 
 					$vs_val .= "<div class='attributeMediaThumbnail'>";
+					if ($pa_options['showMediaInfo']) {
+						$vs_val .= "<div class='attributeMediaInfo' style='float: right; width: 200px; padding: 0 0 0 10px;'>{$vs_filename}<br/>{$vs_dimensions}</div>";
+					}
 					$vs_val .= "<div style='float: left;'>".urlDecode(caNavLink($pa_options['request'], caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')))."</div>";
 					$vs_val .= "<a href='#' onclick='caMediaPanel.showPanel(\"{$vs_view_url}\"); return false;'>{$vs_tag}</a>";
 					$vs_val .= "</div>";
 					
-					if ($pa_options['showMediaInfo']) {
-						$vs_val .= "<div class='attributeMediaInfo'><p>{$vs_filename}</p><p>{$vs_dimensions}</p></div>";
-					}
 					
 					$vs_val .= "</div>";
 				} else {
@@ -268,7 +262,7 @@
  		 * @return array
  		 */
  		public function getVersions() {
- 			return $this->opo_media_info_coder->getMediaVersions($this->opa_media_data);
+ 			return $this->opo_media_info_coder->getMediaVersions();
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -284,7 +278,7 @@
  				||
  				($vb_is_file_path = isURL($ps_value))
  				||
- 				($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value))
+ 				(is_string($ps_value) && ($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value)))
  			) {
  				// got file
  				$vs_original_name = null;

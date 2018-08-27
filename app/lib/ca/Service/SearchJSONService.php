@@ -99,14 +99,15 @@ class SearchJSONService extends BaseJSONService {
 			$this->addError(_t("Invalid table"));
 			return false;
 		}
+		
+		$o_service_config = Configuration::load(__CA_APP_DIR__."/conf/services.conf");
+		
 		$t_instance = $this->_getTableInstance($vs_table_name = $this->getTableName());
 
 		$vo_result = $vo_search->search($this->ops_query, array(
 			'deletedOnly' => $this->opb_deleted_only,
 			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
-			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
-			//'start' => $this->opo_request->getParameter('start', pInteger),
-			//'limit' => $this->opo_request->getParameter('limit', pInteger)
+			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString)
 		));
 		
 		$va_return = ['total' => $vo_result->numHits()];
@@ -151,10 +152,25 @@ class SearchJSONService extends BaseJSONService {
 					// it should provide a means to get the media info array
 					if(trim($vs_bundle) == 'ca_object_representations.media') {
 						if($t_instance instanceof RepresentableBaseModel) {
-							$va_reps = $vo_result->getMediaInfo($vs_bundle);
-							if(is_array($va_reps) && sizeof($va_reps)>0) {
-								$va_item[$vs_bundle] = $va_reps;
-								continue;
+							if ($vs_rep_version = $o_service_config->get('search_service_return_media_version_as_url')) {
+								$va_object_ids = $vo_result->get('ca_objects.object_id', ['returnAsArray' => true]);
+								if (sizeof($va_object_ids)) {
+									if ($qr_objects = caMakeSearchResult('ca_objects', $va_object_ids)) {
+										while($qr_objects->nextHit()) {
+											$vs_reps = $qr_objects->get($vs_bundle.'.'.$vs_rep_version.'.url', ['returnAsArray' => false]);
+											if($vs_reps) {
+												$va_item[$vs_bundle] = $vs_reps;
+												continue(2);
+											}
+										}
+									}
+								}
+							} else {
+								$va_reps = $vo_result->getMediaInfo($vs_bundle);
+								if(is_array($va_reps) && sizeof($va_reps)>0) {
+									$va_item[$vs_bundle] = $va_reps;
+									continue;
+								}
 							}
 						}
 					}

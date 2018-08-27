@@ -197,7 +197,7 @@
  				$pa_element_info, 
  				array('minChars', 'maxChars', 'minValue', 'maxValue', 'regex', 'mustNotBeBlank')
  			);
- 			$vn_strlen = unicode_strlen($ps_value);
+ 			$vn_strlen = mb_strlen($ps_value);
  			if ($va_settings['minChars'] && ($vn_strlen < $va_settings['minChars'])) {
  				// length is too short
  				$vs_err_str = ($va_settings['minChars'] == 1) ? _t('%1 must be at least 1 character long', $pa_element_info['displayLabel']) : _t('%1 must be at least %2 characters long', $pa_element_info['displayLabel'], $va_settings['minChars']); 

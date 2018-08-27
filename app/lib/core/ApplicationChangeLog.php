@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -314,6 +314,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			// Process units
 			//
 			$va_attributes = array();
+			$vn_pseudo_unit_counter = 1;
 			foreach($va_grouped_data as $vn_unit_id => $va_log_entries_by_table) {
 				foreach($va_log_entries_by_table as $vs_table_key => $va_log_entries) {
 					foreach($va_log_entries as $va_log_entry) {
@@ -559,7 +560,14 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			
 						// record log line
 						if (sizeof($va_changes)) {
-							$va_log_output[$vn_unit_id][] = array(
+						    if ($vn_unit_id == '') {
+						        $vs_unit_identifier = "U{$vn_pseudo_unit_counter}";
+						        $vn_pseudo_unit_counter++;
+						    } else {
+						        $vs_unit_identifier = $vn_unit_id;
+						    }
+						
+							$va_log_output[$vs_unit_identifier][] = array(
 								'datetime' => $vs_datetime,
 								'timestamp' => $va_log_entry['log_datetime'],
 								'user_id' => $va_log_entry['user_id'],
@@ -664,6 +672,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
+				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
 				'timestamp' => $qr_res->get('log_datetime')
 			);
@@ -695,6 +704,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					'user_id' => $qr_res->get('user_id'),
 					'fname' => $qr_res->get('fname'),
 					'lname' => $qr_res->get('lname'),
+					'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 					'email' => $qr_res->get('email'),
 					'timestamp' => $qr_res->get('log_datetime')
 				);
@@ -733,6 +743,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
+				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
 				'timestamp' => $qr_res->get('log_datetime')
 			);
