@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1474,6 +1474,14 @@
 											if (!$o_tep->parse($vn_row_id)) { continue; } // invalid date?
 											$va_dates = $o_tep->getHistoricTimestamps();
 										}
+										
+										if (
+										    ($va_dates[0] <= (int)$va_dates[0] + 0.01010000000)
+										    &&
+										    ($va_facet_info['treat_before_dates_as_circa'] || $va_facet_info['treat_after_dates_as_circa'])
+										) {
+                                            $va_dates[0] = $va_dates['start'] = (int)$va_dates[0];
+                                        }
 
 										if ($vb_is_element) {
 										    $vs_container_sql = '';
@@ -4767,7 +4775,14 @@
 							while($qr_res->nextRow()) {
 								$vn_start = $qr_res->get('value_decimal1');
 								$vn_end = $qr_res->get('value_decimal2');
-
+								
+								if (((int)$vn_start === -2000000000) && $va_facet_info['treat_before_dates_as_circa']) {
+								    $vn_start = (int)$vn_end;
+								}
+								if (((int)$vn_end === 2000000000) && $va_facet_info['treat_after_dates_as_circa']) {
+								    $vn_end = (int)$vn_start + .1231235959;
+								}
+								
 								if (!($vn_start && $vn_end)) {
 									if ($vb_include_unknown) {
 										$vb_unknown_is_set = true;

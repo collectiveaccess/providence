@@ -206,6 +206,17 @@
 		 * @var TimeExpressionParser
 		 */
  		static private $o_tep;
+
+		/**
+		 * 
+		 */
+ 		static private $o_search_config;
+
+		/**
+		 * 
+		 */
+ 		static private $o_lang;
+ 		
 		/**
 		 * @var array
 		 */
@@ -440,6 +451,28 @@
 		public function getType() {
 			return __CA_ATTRIBUTE_VALUE_DATERANGE__;
 		}
+		# ------------------------------------------------------------------
+        /**
+         * Get extra values to add to search index.
+         *
+         * @return array
+         */
+        public function getDataForSearchIndexing() {
+            if (!self::$o_search_config) { self::$o_search_config = caGetSearchConfig(); };
+            if (!self::$o_lang) { self::$o_lang = TimeExpressionParser::getSettingsForLanguage(__CA_DEFAULT_LOCALE__); }
+            $circa_indicators = self::$o_lang->get('dateCircaIndicator');
+            $p = explode(' ', $this->ops_text_value);
+            
+            $terms = [];
+            if (in_array($p[0], $circa_indicators)) {
+                $d = join(' ', array_slice($p, 1));
+            } elseif (self::$o_search_config->get('treat_before_dates_as_circa') && ((int)$this->opn_start_date === -2000000000)) {
+                $d = (int)$this->opn_end_date;
+            } elseif (self::$o_search_config->get('treat_after_dates_as_circa') && ((int)$this->opn_end_date === 2000000000)) {
+                $d = (int)$this->opn_start_date;
+            }
+            return ($d) ? array_map(function($v) use ($d) { return "{$v} {$d}"; }, $circa_indicators) : [];
+        }
  		# ------------------------------------------------------------------
 	}
  ?>
