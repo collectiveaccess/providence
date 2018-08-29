@@ -1259,7 +1259,7 @@
 												WHERE
 													{$vs_label_table_name}.{$vs_label_display_field} = ?";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
-											$qr_res = $this->opo_db->query($vs_sql, $va_labels[$vn_row_id]);
+											$qr_res = $this->opo_db->query($vs_sql, trim($va_labels[$vn_row_id]));
 										} else {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()."
@@ -1267,7 +1267,7 @@
 												{$vs_relative_to_join}
 												WHERE
 													{$vs_label_table_name}.{$vs_label_display_field} = ?";
-											$qr_res = $this->opo_db->query($vs_sql, $va_labels[$vn_row_id]);
+											$qr_res = $this->opo_db->query($vs_sql, trim($va_labels[$vn_row_id]));
 
 										}
 										
