@@ -106,7 +106,7 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
-	public function getUserInfo($ps_username, $ps_password) {
+	public function getUserInfo($ps_username, $ps_password, $pa_options=null) {
 		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
 
 		// external database config

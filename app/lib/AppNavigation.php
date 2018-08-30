@@ -131,8 +131,6 @@
 			foreach($va_aliases_to_resolve as $vs_alias_controller_path => $vs_alias_nav_path) {
 				$this->opa_reverse_nav_table[$vs_alias_controller_path] = $this->opa_reverse_nav_table[$vs_alias_nav_path];
 			}
-			
-			//print_R($this->opa_reverse_nav_table);
 		}
 		# -------------------------------------------------------
 		public function setRequest($po_request) {
