@@ -601,6 +601,7 @@
                             if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryRelated] List was not specified')); }
                             return null;
                         }
+					    if (!isset($va_attributes['is_enabled'])) { $va_attributes['is_enabled'] = 1; }
                         $vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
                         break;
                     case 'ca_storage_locations':
