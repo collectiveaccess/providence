@@ -392,6 +392,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$table = $this->tableName();
 		$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld = $this->getProperty('ID_NUMBERING_SORT_FIELD');
+		$vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
 		$vs_pk = $this->primaryKey();
 		
 		$vb_duplicate_nonpreferred_labels = isset($pa_options['duplicate_nonpreferred_labels']) && $pa_options['duplicate_nonpreferred_labels'];
@@ -419,7 +420,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->setTransaction($o_t);
 		
 		if($this->isHierarchical()) {
-			if (!$this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) {
+			if (!$this->get($vs_parent_id_fld)) {
 				if ($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// If we're duping the root of an adhoc hierarchy then we need to set the HIERARCHY_ID_FLD to null
 					$this->set($this->getProperty('HIERARCHY_ID_FLD'), null);
 				} else {
@@ -571,7 +572,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Set rank of duplicated record such that it immediately follows its original
-		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')) > 0)) {
+		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($vs_parent_id_fld) > 0)) {
 			$t_dupe->setRankAfter($this->getPrimaryKey());
 		}
 		
@@ -585,7 +586,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						return false;
 					}
 					$t_child_dupe->setMode(ACCESS_WRITE);
-					$t_child_dupe->set('parent_id', $t_dupe->getPrimaryKey());
+					$t_child_dupe->set($vs_parent_id_fld, $t_dupe->getPrimaryKey());
 					$t_child_dupe->update();
 					if ($t_child_dupe->numErrors()) {
 						$this->errors = $t_child_dupe->errors;
