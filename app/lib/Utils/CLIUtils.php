@@ -4751,5 +4751,48 @@
 		public static function check_relationship_type_rootsHelp() {
 			return _t('Each relationship has a hierarchy of relationship types defined. Each type hierarchy must have a root record. Root records are normally created during system installation, but may be missing due to accidental deletion or failure to create during system updates. This command will check for presence of require root records and recreate missing roots as required.');
         }
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function clear_search_indexing_queue_lock_file($po_opts=null) {
+            require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
+			
+			if (ca_search_indexing_queue::lockExists()) {
+			    if (ca_search_indexing_queue::lockCanBeRemoved()) {
+			        CLIUtils::addMessage(_t("Removed search indexing queue lock"));
+			    } else {
+			        CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue. Try running caUtils under a user with privileges"));
+			    }
+			} else {
+			    CLIUtils::addMessage(_t("Search indexing queue lock is not present"));
+			}
+		}
+		# -------------------------------------------------------
+		public static function clear_search_indexing_queue_lock_fileParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_search_indexing_queue_lock_fileUtilityClass() {
+            return _t('Maintenance');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_search_indexing_queue_lock_fileShortHelp() {
+			return _t('Remove search indexing queue lock file if present.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_search_indexing_queue_lock_fileHelp() {
+			return _t('The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to start. Lingering lock files may be removed using this command. Note that you must run caUtils under a user with privileges to delete the lock file.');
+        }
 		# -------------------------------------------------------
 	}
