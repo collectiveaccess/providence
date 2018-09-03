@@ -382,12 +382,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		duplicate_relationships = if set to an array of table names, all relationships to be specified tables will be duplicated. [Default is null - no relationships duplicated]
 	 *		duplicate_relationship_attributes = duplicate metadata attributes attached to duplicated relationships. [Default is false]
 	 *		duplicate_element_settings = per-metdata element duplication settings; keys are element names, values are 1 (duplicate) or 0 (don't duplicate); if element is not set then it will be duplicated. [Default is null]
+	 *		duplicate_children = duplicate child records. [Default is false]
 	 *		user_id = User ID of the user to make owner of the newly duplicated record (for records that support ownership by a user like ca_bundle_displays) [Default is null]
 	 *		
 	 * @return BundlableLabelablleBaseModelWithAttributes instance of newly created duplicate item
 	 */
 	public function duplicate($pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
+		$table = $this->tableName();
 		$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld = $this->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_pk = $this->primaryKey();
@@ -398,6 +400,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_duplicate_relationships = (isset($pa_options['duplicate_relationships']) && is_array($pa_options['duplicate_relationships']) && sizeof($pa_options['duplicate_relationships'])) ? $pa_options['duplicate_relationships'] : array();
 		$va_duplicate_element_settings = (isset($pa_options['duplicate_element_settings']) && is_array($pa_options['duplicate_element_settings']) && sizeof($pa_options['duplicate_element_settings'])) ? $pa_options['duplicate_element_settings'] : array();
 		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
+		$vb_duplicate_children = isset($pa_options['duplicate_children']) && $pa_options['duplicate_children'];
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
@@ -408,7 +411,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// create new instance
-		if (!($t_dupe = Datamodel::getInstanceByTableName($this->tableName()))) { 
+		if (!($t_dupe = Datamodel::getInstanceByTableName($table))) { 
 			if ($vb_we_set_transaction) { $o_t->rollback();}
 			return null;
 		}
@@ -439,11 +442,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
 					break;
 				case FT_VARS:
-					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field, array('unserialize' => true)));
+					$t_dupe->set($vs_field, $this->get($table.'.'.$vs_field, array('unserialize' => true)));
 					break;
 				default:
 					if (!isset($va_duplicate_element_settings[$vs_field]) || (isset($va_duplicate_element_settings[$vs_field]) && ($va_duplicate_element_settings[$vs_field] == 1))) {
-						$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+						$t_dupe->set($vs_field, $this->get($table.'.'.$vs_field));
 					}
 					break;
 			}
@@ -471,7 +474,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	
 			if ($vs_idno_stub) {
 				if ($vb_needs_suffix_generated) {
-					$t_lookup = Datamodel::getInstanceByTableName($this->tableName());
+					$t_lookup = Datamodel::getInstance($table, true);
 				
 					$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
 					$vs_suffix = (is_array($va_tmp) && (sizeof($va_tmp) > 1)) ? array_pop($va_tmp) : '';
@@ -541,7 +544,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 			$va_options = ['restrictToAttributesByCodes' => $va_attrs_to_duplicate];
 
-			if($va_dont_duplicate_codes = $this->getAppConfig()->get($this->tableName().'_dont_duplicate_element_codes')) {
+			if($va_dont_duplicate_codes = $this->getAppConfig()->get($table.'_dont_duplicate_element_codes')) {
 				if(is_array($va_dont_duplicate_codes)) {
 					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
 				}
@@ -570,6 +573,27 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Set rank of duplicated record such that it immediately follows its original
 		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')) > 0)) {
 			$t_dupe->setRankAfter($this->getPrimaryKey());
+		}
+		
+		if ($vb_duplicate_children && $this->isHierarchical() && ($child_ids = $this->getHierarchyChildren(null, ['idsOnly' => true]))) {
+			foreach($child_ids as $child_id) {
+				if ($t_child = $table::find([$vs_pk => $child_id], ['returnAs' => 'firstModelInstance'])) {
+					$t_child_dupe = $t_child->duplicate($pa_options);
+					if ($t_child->numErrors()) {
+						$this->errors = $t_child->errors;
+						if ($vb_we_set_transaction) { $o_t->rollback();}
+						return false;
+					}
+					$t_child_dupe->setMode(ACCESS_WRITE);
+					$t_child_dupe->set('parent_id', $t_dupe->getPrimaryKey());
+					$t_child_dupe->update();
+					if ($t_child_dupe->numErrors()) {
+						$this->errors = $t_child_dupe->errors;
+						if ($vb_we_set_transaction) { $o_t->rollback();}
+						return false;
+					}
+				}
+			}
 		}
 		
 		if ($vb_we_set_transaction) { $o_t->commit();}

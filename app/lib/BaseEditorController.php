@@ -105,7 +105,8 @@ class BaseEditorController extends ActionController {
 				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
 				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
 				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
-				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings')
+				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings'),
+				'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
 			))) {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 
@@ -334,7 +335,7 @@ class BaseEditorController extends ActionController {
 					$t_instance->update();
 
 					if ($t_instance->numErrors()) {
-						$this->notification->addNotification($t_instance->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+						$this->notification->addNotification(join("; ", $t_instance->getErrors()), __NOTIFICATION_TYPE_ERROR__);
 					}
 				}
 				
@@ -342,7 +343,7 @@ class BaseEditorController extends ActionController {
 				if ($vn_after_id) {
 					$t_subject->setRankAfter($vn_after_id);
 					if ($t_subject->numErrors()) {
-						$this->notification->addNotification($t_subject->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+						$this->notification->addNotification(join("; ", $t_subject->getErrors()), __NOTIFICATION_TYPE_ERROR__);
 					}
 				}
 			}
