@@ -6265,6 +6265,58 @@ div.dialogHeader {
     -webkit-border-radius:4px;
 }
 
+/* Editor summary download options */
+#caSummaryDownloadOptionsPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 550px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    border: 2px solid #999999;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+}
+
+#caSummaryDownloadOptionsPanel .close a{
+    text-decoration:none;
+    font-size:16px;
+}
+
+#caSummaryDownloadOptionsPanelContentArea {
+    padding:10px;
+}
+
+#caSummaryDownloadOptionsPanelControlButtons {
+    width: 490px;
+    text-align: center;
+}
+
+#caSummaryDownloadOptionsPanelControlButtons table {
+    width: 100%;
+}
+
+.caSummaryDownloadOptionsPanelAlertText {
+    font-size: 14px;
+    padding: 15px;
+}
+
+.caSummaryDownloadOptionsPanelAlertControls {
+    font-size: 11px;
+    height: 25px;
+    margin-bottom: 10px;
+}
+
+table.caSummaryDownloadOptionsPanelAlertControls {
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.caSummaryDownloadOptionsPanelAlertControl {
+    font-size: 11px;
+}
+
 /* Quick add */
 .caRelationQuickAddPanel {
     position: fixed;
