@@ -4761,6 +4761,7 @@
 			
 			if (ca_search_indexing_queue::lockExists()) {
 			    if (ca_search_indexing_queue::lockCanBeRemoved()) {
+			        ca_search_indexing_queue::lockRelease();
 			        CLIUtils::addMessage(_t("Removed search indexing queue lock"));
 			    } else {
 			        CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue. Try running caUtils under a user with privileges"));
@@ -4792,7 +4793,7 @@
 		 *
 		 */
 		public static function clear_search_indexing_queue_lock_fileHelp() {
-			return _t('The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to start. Lingering lock files may be removed using this command. Note that you must run caUtils under a user with privileges to delete the lock file.');
+			return _t('The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed using this command. Note that you must run caUtils under a user with privileges to delete the lock file.');
         }
 		# -------------------------------------------------------
 	}
