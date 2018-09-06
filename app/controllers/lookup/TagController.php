@@ -1,13 +1,13 @@
 <?php
-/** ---------------------------------------------------------------------
- * app/lib/Search/InterstitialSearchResult.php :
+/* ----------------------------------------------------------------------
+ * app/controllers/lookup/TagController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,32 +23,15 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
- * @subpackage Search
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- *
  * ----------------------------------------------------------------------
  */
+ 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
  
- /**
-  *
-  */
-
-include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
-
-class InterstitialSearchResult extends BaseSearchResult {
-	# -------------------------------------
-	/**
-	 * Name of table for this type of search subject
-	 */
-	protected $ops_table_name;
-	# -------------------------------------
-	/**
-	 * Constructor
-	 */
-	public function __construct($ps_table) {
-		$this->ops_table_name = $ps_table;
-		parent::__construct();
-	}
-	# -------------------------------------
-}
+ 	class TagController extends BaseLookupController {
+ 		# -------------------------------------------------------
+ 		protected $opb_uses_hierarchy_browser = false;
+ 		protected $ops_table_name = 'ca_item_tags';		// name of "subject" table (what we're editing)
+ 		protected $ops_name_singular = 'tag';
+ 		protected $ops_search_class = 'ItemTagSearch';
+ 		# -------------------------------------------------------
+ 	}

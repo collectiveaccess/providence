@@ -5605,6 +5605,12 @@ div.roundedRel a{
 	color: #333;
 	font-size:12px;
 }
+
+div.roundedRel span.relAnnotation {
+    font-size: 9px;
+    font-style: italic;
+}
+
 .listRelEditButton img{
 	width:14px;
 	height:14px;

@@ -1,13 +1,13 @@
 <?php
-/** ---------------------------------------------------------------------
- * app/lib/Search/InterstitialSearchResult.php :
+/* ----------------------------------------------------------------------
+ * lookup/ajax_tag_list_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,32 +23,6 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
- * @subpackage Search
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
-include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
-
-class InterstitialSearchResult extends BaseSearchResult {
-	# -------------------------------------
-	/**
-	 * Name of table for this type of search subject
-	 */
-	protected $ops_table_name;
-	# -------------------------------------
-	/**
-	 * Constructor
-	 */
-	public function __construct($ps_table) {
-		$this->ops_table_name = $ps_table;
-		parent::__construct();
-	}
-	# -------------------------------------
-}
+ 	print json_encode($this->getVar('tag_list'));
