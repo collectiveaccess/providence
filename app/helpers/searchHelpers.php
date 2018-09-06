@@ -1542,7 +1542,9 @@
 				);
 				break;
 			case 'ca_item_tags':
+			case 'ca_items_x_tags':
 				$va_base_fields = array(
+					'ca_item_tags.tag' => _t('tag'),
 					'ca_items_x_tags.created_on' => _t('date'),
 					'ca_items_x_tags.user_id' => _t('user')
 				);

@@ -159,6 +159,12 @@ class ca_item_tags extends BaseModel {
 	protected $SELF_RELATION_TABLE_NAME = null;
 	
 	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'ItemTagSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'ItemTagSearchResult';
+	
+	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 

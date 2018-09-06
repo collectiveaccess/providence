@@ -34,7 +34,7 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		    if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && ($this->request->getAction() != 'logout')) {
+ 		    if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !in_array($this->request->getAction(), ['logout', 'callback'])) {
  		        $po_response->setRedirect($po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$po_request->config->get("auth_login_welcome_path"));
  		        $po_response->sendResponse();
  		        exit;
@@ -191,6 +191,24 @@
 				}
 			}
 
+		}
+		# -------------------------------------------------------
+		# Authentication callback handler
+		# 	Passes control to authentication manager callback handler
+		#	Authentication adapters for schemes like Okta can use this to 
+		#	implement required control flow elements
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function callback() {
+			try {
+				AuthenticationManager::callback();
+			} catch (Exception $e) {
+				$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+				$this->view->setVar('notifications', $this->notification->getNotifications());
+				$this->render('auth_error_html.php');
+			}
 		}
 		# -------------------------------------------------------
  	}
