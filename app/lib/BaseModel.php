@@ -10447,7 +10447,7 @@ $pa_options["display_form_field_tips"] = true;
 		$va_tags = $this->getTags($pn_user_id);
 		
 		foreach($va_tags as $va_tag) {
-			if (!$this->removeTag($va_tag['tag_id'], $pn_user_id)) {
+			if (!$this->removeTag($va_tag['relation_id'], $pn_user_id)) {
 				return false;
 			}
 		}

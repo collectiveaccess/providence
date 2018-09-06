@@ -4805,24 +4805,36 @@ if (!$vb_batch) {
 					# -------------------------------
 					//
 					case 'ca_item_tags':
-						foreach($_REQUEST as $vs_key => $vs_val) {
-							if (is_array($vs_val)) { continue; }
-							if (!($vs_val = trim($vs_val))) { continue; }
-							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_autocompletenew_([\d]+)$!", $vs_key, $va_matches)) {
-								
-								foreach(preg_split("![,;]+!", $vs_val) as $v) {
-									if (!($v = trim($v))) { continue; }
-									$this->addTag($v, $po_request->getUserID(), null, 1, $po_request->getUserID());
-									continue;
-								}
-							}
+						if ($vb_batch) { 
+							$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
 							
-							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
-								$this->removeTag($va_matches[1]);
+							if($vs_batch_mode == '_disabled_') { continue; }
+							
+							if (in_array($vs_batch_mode, ['_replace_', '_delete_'])) {
+								$this->removeAllTags();
 							}
 						}
 						
-						if (is_array($ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}BundleList", pString)))) {
+						if (!$vb_batch || ($vb_batch && in_array($vs_batch_mode, ['_add_', '_replace_']))) {
+							foreach($_REQUEST as $vs_key => $vs_val) {
+								if (is_array($vs_val)) { continue; }
+								if (!($vs_val = trim($vs_val))) { continue; }
+								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_autocompletenew_([\d]+)$!", $vs_key, $va_matches)) {
+								
+									foreach(preg_split("![,;]+!", $vs_val) as $v) {
+										if (!($v = trim($v))) { continue; }
+										$this->addTag($v, $po_request->getUserID(), null, 1, $po_request->getUserID());
+										continue;
+									}
+								}
+							
+								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
+									$this->removeTag($va_matches[1]);
+								}
+							}
+						}
+						
+						if (!$vb_batch && is_array($ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}BundleList", pString)))) {
 							$tags = $this->getTags();
 							$tag_ids = array_map(function($v) { return $v['relation_id']; }, $tags);
 							$current_tag_ranks = array_map(function($v) { return $v['rank']; }, $tags);
@@ -7476,7 +7488,7 @@ side. For many self-relations the direction determines the nature and display te
 		$o_view->setVar('id_prefix', $ps_form_name);	
 		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
-		
+		$o_view->setVar('batch', caGetOption('batch', $pa_options, false));
 		
 		$initial_values = [];
 		foreach(($this->getPrimaryKey() ? $this->getTags() : []) as $v) {
