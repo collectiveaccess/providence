@@ -1852,6 +1852,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getPageMediaHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
+					//
+					case 'ca_item_tags':
+						$vs_element .= $this->getItemTagHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						break;
+					# -------------------------------
 					default:
 						$vs_element = "'{$ps_bundle_name}' is not a valid bundle name";
 						break;
@@ -4798,6 +4803,36 @@ if (!$vb_batch) {
 						}
 						break;
 					# -------------------------------
+					//
+					case 'ca_item_tags':
+						foreach($_REQUEST as $vs_key => $vs_val) {
+							if (is_array($vs_val)) { continue; }
+							if (!($vs_val = trim($vs_val))) { continue; }
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_autocompletenew_([\d]+)$!", $vs_key, $va_matches)) {
+								
+								foreach(preg_split("![,;]+!", $vs_val) as $v) {
+									if (!($v = trim($v))) { continue; }
+									$this->addTag($v, $po_request->getUserID(), null, 1, $po_request->getUserID());
+									continue;
+								}
+							}
+							
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
+								$this->removeTag($va_matches[1]);
+							}
+						}
+						
+						if (is_array($ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}BundleList", pString)))) {
+							$tags = $this->getTags();
+							$tag_ids = array_map(function($v) { return $v['relation_id']; }, $tags);
+							$current_tag_ranks = array_map(function($v) { return $v['rank']; }, $tags);
+							foreach($ids_sorted as $i => $id) {
+								$this->changeTagRank($id, $current_tag_ranks[$i]);
+							}
+						}
+						
+						break;
+					# -------------------------------
 				}
 			}
 		}
@@ -6349,7 +6384,6 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
-
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/Search/'.$vs_search_result_class.'.php'); }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
@@ -7422,6 +7456,40 @@ side. For many self-relations the direction determines the nature and display te
 			BundlableLabelableBaseModelWithAttributes::$s_tep = new TimeExpressionParser();
 		}
 		return BundlableLabelableBaseModelWithAttributes::$s_tep;
+	}
+	
+	# ------------------------------------------------------
+	# Bundles
+	# ------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of tags in the currently record
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getItemTagHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_subject', $this);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('request', $po_request);
+		
+		
+		$initial_values = [];
+		foreach(($this->getPrimaryKey() ? $this->getTags() : []) as $v) {
+			$initial_values[$v['relation_id']] = $v;
+		}
+		
+		$o_view->setVar('initialValues', $initial_values);
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		
+		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
+		
+		return $o_view->render('ca_item_tags.php');
 	}
 	# -------------------------------------------------------
 }
