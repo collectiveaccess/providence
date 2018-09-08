@@ -5583,6 +5583,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							}
 						}
 
+                        $natural_sort = caGetOption('natural_sort', $va_facet_info, false);
+                        
 						// Get labels for facet items
 						if (sizeof($va_row_ids = array_keys($va_facet_items))) {
 							if ($vs_label_table_name = $t_rel_item->getLabelTableName()) {
@@ -5628,7 +5630,11 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 								while($qr_labels->nextRow()) {
 									$va_fetched_row = $qr_labels->getRow();
-									$va_facet_item = array_merge($va_facet_items[$va_fetched_row[$vs_rel_pk]], array('label' => $va_fetched_row[$vs_label_display_field]));
+									
+									$label_values = ['label' => $va_fetched_row[$vs_label_display_field]];
+									if ($natural_sort) { $label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_label_display_field]); }
+									
+									$va_facet_item = array_merge($va_facet_items[$va_fetched_row[$vs_rel_pk]], $label_values);
 
 									foreach($va_ordering_fields_to_fetch as $vs_to_fetch) {
 										$va_facet_item[$vs_to_fetch] = $va_fetched_row[$vs_to_fetch];
@@ -5667,6 +5673,10 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
 							return array();
+						}
+						
+						if ($natural_sort) {
+						    return caSortArrayByKeyInValue(caExtractValuesByUserLocale($va_facet), ['label']);
 						}
 						return caExtractValuesByUserLocale($va_facet);
 					}
