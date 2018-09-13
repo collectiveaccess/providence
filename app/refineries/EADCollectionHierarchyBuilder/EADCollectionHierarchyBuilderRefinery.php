@@ -32,6 +32,12 @@
  
 	class EADCollectionHierarchyBuilderRefinery extends BaseRefinery {
 		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		static $mapping_options = ['skipGroupIfEmpty'];
+		
+		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'EADCollectionHierarchyBuilder';
 			$this->ops_title = _t('EAD Collection hierarchy builder');
@@ -105,29 +111,53 @@
 			if(isset($level_mappings[(string)$data["level"]]) && is_array($mapping = $level_mappings[(string)$data["level"]])) { 
 				$tag = 'c'.sprintf("%02d", $l);
 				
+				$instance = Datamodel::getInstance($mapping['table'], true);
+				
 				$mapped_values = ['_table' => $mapping['table'], '_type' => $mapping['type']];
-				foreach(array_merge($mapping['attributes'], ['preferred_labels' => ['name' => $mapping['preferredLabel']]]) as $f => $t) {
-					if(is_array($t)) {
-						// container
-						foreach($t as $sf => $st) {
-							$xpaths = caGetTemplateTags($st);	// Extract xpath tags from string
-							$values = array_map(function($v) use ($data) { $v = ltrim($v, '/'); return $data->xpath("{$v}"); }, $xpaths);	// get values for each xpath tag
-				 
-							foreach($xpaths as $i => $p) {	// replace tags with values
-								$v = isset($values[$i][0]) ? dom_import_simplexml($values[$i][0])->nodeValue : '';
-								$st = str_replace("^{$p}", $v, $st);
-							}
+				foreach(array_merge($mapping['attributes'], ['preferred_labels' => ['name' => $mapping['preferredLabel']]]) as $f => $m) {					
+					if (!caIsIndexedArray($m)) {	// if it's not a list of mappings make it one
+						$m = [$m];
+					}
+					foreach($m as $index => $t) {
+						if(!is_array($t)) {
+							$t = ['source' => $t]; // convert simple mapping to expanded
+						}
 						
-							$mapped_values[$f][$sf] = $st;
+						// container or expanded mapping?
+						$mapping_keys = array_keys($t);
+						if (sizeof(array_intersect(array_merge(['source'], self::$mapping_options), $mapping_keys)) !== sizeof($mapping_keys)) {
+							// it's a container
+					
+							foreach($t as $sf => $st) {
+								if(!is_array($st)) {
+									$st = ['source' => $st]; // convert simple mapping to expanded
+								}
+								$xpaths = caGetTemplateTags($st['source']);	// Extract xpath tags from string
+								
+								$values = array_map(function($v) use ($data) { $v = ltrim($v, '/'); return $data->xpath("{$v}"); }, $xpaths);	// get values for each xpath tag
+			 			
+			 					$tv = $st['source'];
+								foreach($xpaths as $i => $p) {	// replace tags with values
+									$v = isset($values[$i][0]) ? dom_import_simplexml($values[$i][0])->nodeValue : '';
+									$tv = str_replace("^{$p}", $v, $tv);
+								}
+								if(!trim($tv) && isset($st['skipGroupIfEmpty']) && $st['skipGroupIfEmpty']) {  unset($mapped_values[$f][$index]); break; }
+								
+								if(sizeof($m) > 1) {
+									$mapped_values[$f][$index][$sf] = $tv;
+								} else {
+									$mapped_values[$f][$sf] = $tv;
+								}
+							}
+						} else {
+							$xpaths = caGetTemplateTags($t['source']);	// Extract xpath tags from string
+							$values = array_map(function($v) use ($data) { $v = ltrim($v, '/'); return $data->xpath("{$v}"); }, $xpaths); // get values for each xpath tag
+							foreach($xpaths as $i => $p) { // replace tags with values
+								$v = isset($values[$i][0]) ? dom_import_simplexml($values[$i][0])->nodeValue : '';
+								$t['source'] = str_replace("^{$p}", $v, $t['source']);
+							}
+							$mapped_values[$f] = $t['source'];
 						}
-					} else {
-						$xpaths = caGetTemplateTags($t);	// Extract xpath tags from string
-						$values = array_map(function($v) use ($data) { $v = ltrim($v, '/'); return $data->xpath("{$v}"); }, $xpaths); // get values for each xpath tag
-						foreach($xpaths as $i => $p) { // replace tags with values
-							$v = isset($values[$i][0]) ? dom_import_simplexml($values[$i][0])->nodeValue : '';
-							$t = str_replace("^{$p}", $v, $t);
-						}
-						$mapped_values[$f] = $t;
 					}
 				}
 			}
@@ -140,7 +170,6 @@
 				}
 			}
 			$l--;
-			
 			return $mapped_values;
 		}
 		# -------------------------------------------------------	
