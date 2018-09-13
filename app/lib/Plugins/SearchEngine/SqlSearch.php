@@ -1175,6 +1175,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 															default:
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
+																	if (((int)$va_dates[0] === -2000000000) && $this->opo_search_config->get('treat_before_dates_as_circa')) {
+                                                                        $va_dates[0] = $va_dates['start'] = (int)$vn_end + 0.1231235959;
+                                                                    }
+                                                                    if (((int)$va_dates[1] === 2000000000) && $this->opo_search_config->get('treat_after_dates_as_circa')) {
+                                                                        $va_dates[1] = $va_dates['end'] = (int)$va_dates['start'];
+                                                                    }
+                                                                    
 																	$vs_direct_sql_query = "
 																		SELECT ca.row_id, 1, ".($vs_sub_field ? "ca.attribute_id" : "null")."
 																		FROM ca_attribute_values cav

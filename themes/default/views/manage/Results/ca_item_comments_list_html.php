@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,7 +45,7 @@
 			<thead>
 				<tr>
 					<th class="list-header-nosort">
-						<?php print _t('Author'); ?>
+						<?php print _t('Item'); ?>
 					</th>
 					<th class="list-header-nosort">
 						<?php print _t('Comment'); ?>
@@ -57,10 +57,10 @@
 						<?php print _t('Rating'); ?>
 					</th>
 					<th class="list-header-nosort">
-						<?php print _t('Date'); ?>
+						<?php print _t('Author'); ?>
 					</th>
 					<th class="list-header-nosort">
-						<?php print _t('Commented On'); ?>
+						<?php print _t('Date'); ?>
 					</th>
 					<th class="list-header-nosort">
 						<?php print _t('Status'); ?>
@@ -78,15 +78,17 @@
 ?>
 				<tr>
 					<td>
-						<div class="caUserCommentsListName">
-<?php 
-						if($vo_result->get('ca_item_comments.user_id')){
-							print $vo_result->get('ca_users.fname')." ".$vo_result->get('ca_users.lname')."<br/>".$vo_result->get('ca_users.email');
-						}else{
-							print $vo_result->get('ca_item_comments.name')."<br/>".$vo_result->get('ca_item_comments.user_email');
+<?php
+						$vs_commented_on = "";
+						if ($t_table->load($vo_result->get('ca_item_comments.row_id'))) {
+							$vs_commented_on = $t_table->getLabelForDisplay(false);
+							if ($vs_idno = $t_table->get('idno')) {
+								$vs_commented_on .= ' ['.$vs_idno.']';
+							}
 						}
+
+						print caEditorLink($this->request, $vs_commented_on, '', $vo_result->get('ca_item_comments.table_num'), $vo_result->get('ca_item_comments.row_id'));
 ?>
-						</div>
 					</td>
 					<td>
 						<div class="caUserCommentsListComment">
@@ -106,21 +108,19 @@
 						<?php print ($vn_tmp = $vo_result->get('ca_item_comments.rating')) ? $vn_tmp : "-"; ?>
 					</td>
 					<td>
+						<div class="caUserCommentsListName">
 <?php 
-						print $vo_result->get('ca_item_comments.created_on');
+						if($vo_result->get('ca_item_comments.user_id')){
+							print $vo_result->get('ca_users.fname')." ".$vo_result->get('ca_users.lname')." (".$vo_result->get('ca_users.email').")";
+						}else{
+							print $vo_result->get('ca_item_comments.name')." (".$vo_result->get('ca_item_comments.user_email').")";
+						}
 ?>
+						</div>
 					</td>
 					<td>
-<?php
-						$vs_commented_on = "";
-						if ($t_table->load($vo_result->get('ca_item_comments.row_id'))) {
-							$vs_commented_on = $t_table->getLabelForDisplay(false);
-							if ($vs_idno = $t_table->get('idno')) {
-								$vs_commented_on .= ' ['.$vs_idno.']';
-							}
-						}
-
-						print $vs_commented_on;
+<?php 
+						print $vo_result->get('ca_item_comments.created_on');
 ?>
 					</td>
 					<td>

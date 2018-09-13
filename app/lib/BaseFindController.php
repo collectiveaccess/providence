@@ -96,7 +96,7 @@
 				}
 							
                 if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id)) {
-                    $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $vn_display_id));
+                    $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null));
 			    } else {
 			        $this->opa_sorts = [];
 			    }
@@ -738,8 +738,11 @@
  				unset($va_saved_search['_label']);
  				$vn_form_id = $va_saved_search['_form_id'];
  				unset($va_saved_search['_form_id']);
+ 				$this->Index(array('saved_search' => $va_saved_search, 'form_id' => $vn_form_id));
+ 				return;
  			}
- 			$this->Index(array('saved_search' => $va_saved_search, 'form_id' => $vn_form_id));
+ 			
+ 			$this->Index();
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -902,7 +905,7 @@
  			
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $vn_display_id)));
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null)));
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -981,7 +984,7 @@
  			
  			// Get attribute sorts
  			
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $vn_display_id)));
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null)));
  			
  			$this->view->setVar('display_id', $vn_display_id);
  			$this->view->setVar('columns',ca_bundle_displays::getColumnsForResultsEditor($va_display_list, array('request' => $this->request)));
@@ -1025,7 +1028,7 @@
  				
  				if (($pn_c > 0) && ($vn_c >= $pn_c)) { break; }
  			}
-			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, ['restrictToDisplay' => $vn_display_id]);
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, ['restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null]);
  			
  			$this->view->setVar('data', $va_data);
  			$this->render("Results/ajax_results_editable_data_json.php");

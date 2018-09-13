@@ -255,7 +255,6 @@ class SearchResult extends BaseObject {
 	# ------------------------------------------------------------------
 	public function cloneInit() {
 		$this->opo_db = new Db();
-		SearchResult::$opo_datamodel = Datamodel::load();
 		$this->opo_subject_instance = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 	}
 	# ------------------------------------------------------------------
@@ -501,6 +500,7 @@ class SearchResult extends BaseObject {
 		
 		$vs_type_sql = '';
 		if (is_array($va_type_ids = caMakeTypeIDList($ps_tablename, caGetOption('restrictToTypes', $pa_options, null))) && sizeof($va_type_ids)) {
+			$vs_related_table = $t_rel_instance->tableName();
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
 		}
@@ -548,6 +548,7 @@ class SearchResult extends BaseObject {
 			if ((!isset($pa_options['allDescendants']) || !$pa_options['allDescendants']) && ($vn_level > 0)) {
 				break;
 			}
+			$va_params[0] = $va_row_ids_in_current_level;
 		}
 		
 		foreach($va_row_ids as $vn_row_id) {
@@ -1678,10 +1679,22 @@ class SearchResult extends BaseObject {
 			
 			if (is_array($va_keys) && sizeof($va_keys)) {
 				if ($vb_return_with_structure) {
-					foreach($vm_val as $vn_top_level_id => $va_data) {
-						if(!$va_data || !is_array($va_data)) { continue; }
-						$vm_val[$vn_top_level_id] = caSortArrayByKeyInValue($va_data, $va_keys, caGetOption('sortDirection', $pa_options, 'ASC'));
-					}
+				    $vs_sort_desc = caGetOption('sortDirection', $pa_options, 'ASC');
+				    
+				    $vb_is_three_level_array = false;
+				    foreach($vm_val as $vn_top_level_id => $va_data) {
+				        foreach($va_data as $k => $v) {
+				            if (is_array($v)) { $vb_is_three_level_array = true; }
+				            break(2);
+				        }
+				    }
+				    
+				    if ($vb_is_three_level_array) {
+                        foreach($vm_val as $vn_top_level_id => $va_data) {
+                            if(!$va_data || !is_array($va_data)) { continue; }
+                            $vm_val[$vn_top_level_id] = caSortArrayByKeyInValue($va_data, $va_keys, $vs_sort_desc);
+                        }
+                    } 
 				}
 			}
 		}

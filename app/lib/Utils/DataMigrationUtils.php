@@ -858,6 +858,17 @@
 		 *				  separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
 		 * @return bool|BaseModel|mixed|null
 		 */
+		static function getIDFor($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+			return self::_getID($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values, $pa_options);
+		}
+		# -------------------------------------------------------
+		/**
+		 * Returns id for the row with the specified name (and type) or idno (regardless of specified type.) If the row does not already
+		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
+		 * $pa_values keys should be either valid entity fields or attributes. 
+		 *
+		 * @see DataMigrationUtils::getIDFor()
+		 */
 		private static function _getID($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
@@ -896,7 +907,7 @@
 			
 			/** @var ca_data_import_events $o_event */
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
-	
+
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_instance->setTransaction($pa_options['transaction']);
 				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
@@ -1086,6 +1097,10 @@
 					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null
 				);
 				if ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD')) { $va_intrinsics[$vs_hier_id_fld] = null;}
+				
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$pa_values[$vs_idno_fld] = $vs_idno = $t_instance->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
 				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = $vs_idno ? $vs_idno : null; }
 			
 				foreach($va_intrinsics as $vs_fld => $vm_fld_default) {

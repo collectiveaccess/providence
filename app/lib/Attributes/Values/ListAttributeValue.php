@@ -474,7 +474,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		);
 
 		// dependant field visibility
+		$vs_show_hide_js = '';
 		if(Configuration::load()->get('enable_dependent_field_visibility')) {
+		    $vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
 			// only get into outputting all the JS below if hideIfSelected is set for at least one list item for this element
 			$vb_print_js = false;
 			if(is_array($pa_element_info['settings'])) {
@@ -488,80 +490,96 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			if($vb_print_js) {
 				$t_list = new ca_lists();
 				$vb_yes_was_set = false;
-				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
-					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
-						$vs_hide_js = '';
-						$vs_show_js = '';
-						$vs_condition = '';
-						$vs_select = '';
+				
+				$cases = $all_ids =  [];
+				if(!$pa_element_info['settings']['requireValue'] && is_array($pa_element_info['settings']['hideIfSelected___null__']) && sizeof($pa_element_info['settings']['hideIfSelected___null__'])) {
+				    $va_hideif_for_null = $pa_element_info['settings']['hideIfSelected___null__'];
+				    foreach($va_hideif_for_null as $vs_key) {
+                        $va_tmp = self::resolveHideIfSelectedKey($vs_key);
+                        if(!is_array($va_tmp)) { continue; }
 
-						if(isset($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
-							$va_hideif_for_idno = $pa_element_info['settings']['hideIfSelected_'.$va_item['idno']];
-							if(!is_array($va_hideif_for_idno)) { $va_hideif_for_idno = array($va_hideif_for_idno); }
+                        $ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
+                    }
+				    $cases[] = [
+                        'condition' => "{$vs_select}.val() == ''",
+                        'ids' => $ids
+                    ]; 
+				}
+				if (is_array($va_list_items = $t_list->getItemsForList($pa_element_info['list_id']))) {
+					foreach($va_list_items as $va_items_by_locale) {
+						foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
+							$vs_hide_js = $vs_show_js = $vs_condition = '';
+						
+							$ids = [];
 
-							// @todo maybe only generate JS for bundles on current screen? could figure that out from request
-							foreach($va_hideif_for_idno as $vs_key) {
-								$va_tmp = self::resolveHideIfSelectedKey($vs_key);
-								if(!is_array($va_tmp)) { continue; }
+							if(isset($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
+								$va_hideif_for_idno = $pa_element_info['settings']['hideIfSelected_'.$va_item['idno']];
+								if(!is_array($va_hideif_for_idno)) { $va_hideif_for_idno = [$va_hideif_for_idno]; }
 
-								$vs_hide_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().hide();\n";
-								$vs_show_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().show();\n";
+								// @todo maybe only generate JS for bundles on current screen? could figure that out from request
+								foreach($va_hideif_for_idno as $vs_key) {
+									$va_tmp = self::resolveHideIfSelectedKey($vs_key);
+									if(!is_array($va_tmp)) { continue; }
+
+									$ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
+								}
+							}
+
+							switch($pa_element_info['settings']['render']) {
+								case 'radio_buttons':
+									$vs_condition = "jQuery('input[name={fieldNamePrefix}".$pa_element_info['element_id']."_{n}]:checked').val() === '".$va_item['item_id']."'";
+									break;
+								case 'yes_no_checkboxes':
+									if($vb_yes_was_set) {
+										$vs_condition = "!(jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked'))";
+									} else {
+										$vb_yes_was_set = true;
+										$vs_condition = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked')";
+									}
+									break;
+								case 'select':
+								case null:
+									$vs_condition = "{$vs_select}.val() === '" . $va_item['item_id'] . "'";
+									break;
+								default:
+									continue;
+							}
+						
+							if (sizeof($ids) > 0) {
+								$cases[] = [
+									'condition' => $vs_condition,
+									'ids' => $ids
+								]; 
 							}
 						}
 
-						switch($pa_element_info['settings']['render']) {
-							case 'radio_buttons':
-								$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
-								$vs_selector_for_val = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val()";
-								$vs_condition = $vs_selector_for_val . " === '" . $va_item['item_id'] . "'";
-								break;
-							case 'yes_no_checkboxes':
-								$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
-								if($vb_yes_was_set) {
-									$vs_condition = "!(jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked'))";
-								} else {
-									$vb_yes_was_set = true;
-									$vs_condition = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked')";
-								}
-								break;
-							case 'select':
-							case null:
-								$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
-								//$vs_selector_for_val = "jQuery(this).find(':selected').val()";
-								$vs_selector_for_val = "{$vs_select}.val()";
-								$vs_condition = $vs_selector_for_val . " === '" . $va_item['item_id'] . "'";
-								break;
-							default:
-								continue;
-						}
-
-						if ($vs_select && $vs_hide_js && $vs_condition) {
-							$vs_element .= "
-<script type='text/javascript'>
-	jQuery(document).ready(function() {
-		var select = {$vs_select};
-		select.change(function() {
-			if ({$vs_condition}) {
-				jQuery('div.bundleLabel').show();
-				{$vs_hide_js}
-			} else {
-			    {$vs_show_js}
-			}
-		});
-
-		if ({$vs_condition}) {
-			{$vs_hide_js}
-		}
-	});
-</script>
-	";
-						}
 					}
 				}
 			}
+		    if(is_array($cases) && sizeof($cases)) {
+			    $all_ids = array_unique($all_ids);
+			    $all_ids_sel = array_map(function($v) { return "#{$v}"; }, $all_ids);
+			    $case_switch = array_map(function($v) 
+			        { 
+			            $id_list = array_map(function($x) { return "#{$x}"; }, $v['ids']);
+			            return "if(".$v['condition'].") { jQuery('".join(',', $id_list)."').hide(); }";
+			    
+			        }, $cases);
+                $vs_show_hide_js = "
+<script type='text/javascript'>jQuery(document).ready(function() { 
+    var select = {$vs_select};
+	select.change(function() {
+	    jQuery('".join(',', $all_ids_sel)."').show();
+	    ".join("\n", $case_switch)."
+
+	});
+	select.trigger('change');
+	caUI.utils.showUnsavedChangesWarning(false);
+});</script>\n";
+            }
 		}
 
-		return $vs_element;
+		return $vs_element.$vs_show_hide_js;
 	}
 	# ------------------------------------------------------------------
 	public function getAvailableSettings($pa_element_info=null) {
@@ -583,8 +601,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			 */
 			$vs_cache_key = "ca_metadata_elements_available_settings_".$pa_element_info['element_id'];
 		 
-			if (CompositeCache::contains($vs_cache_key)) {
-				return CompositeCache::fetch($vs_cache_key);
+			if (CompositeCache::contains($vs_cache_key, 'ca_metadata_elements_available_settings')) {
+				return CompositeCache::fetch($vs_cache_key, 'ca_metadata_elements_available_settings');
 			}
 			$va_options_for_settings = array();
 
@@ -608,7 +626,10 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					foreach($t_ui->getScreens() as $va_screen) {
 						// get placements
 						foreach($t_ui->getScreenBundlePlacements($va_screen['screen_id']) as $va_placement) {
-							$va_options_for_settings[$t_ui->get('editor_code') . '/'. $va_screen['idno'] . '/' . $va_placement['placement_code']] = $t_ui->get('editor_code') . '/'. $va_screen['idno'] . '/' . $va_placement['placement_code'];
+						    $m = [];
+						    if (preg_match("!^ca_attribute_([A-Za-z0-9_]+)$!", $va_placement['bundle_name'], $m) && ($m[1] === $pa_element_info['element_code'])) { continue; }
+						
+							$va_options_for_settings[$t_ui->get('editor_code') . '/'. $va_screen['idno'] . '/' . (isset($m[1]) ? $m[1] : $va_placement['placement_code'])] = $t_ui->get('editor_code') . '/'. $va_screen['idno'] . '/' . $va_placement['placement_code'];
 						}
 					}
 				}
@@ -621,6 +642,19 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			// then large vocabularies will cause things to hang by generating thousands of setting elements
 			if (sizeof($va_list) <= 250) {
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+				    if(!$pa_element_info['settings']['requireValue']) {
+				        $va_element_settings['hideIfSelected___null__'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'multiple' => true,
+							'options' => $va_options_for_settings,
+							'takesLocale' => false,
+							'default' => '',
+							'width' => "400px", 'height' => 10,
+							'label' => _t('Hide bundles if value is not set'),
+							'description' => _t('Select bundles from the list below to be hidden when no value is set for this element.')
+						);
+				    }
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
 						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
 							'formatType' => FT_TEXT,
@@ -631,12 +665,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 							'default' => '',
 							'width' => "400px", 'height' => 10,
 							'label' => _t('Hide bundles if "%1" is selected', $va_item['name_singular']),
-							'description' => _t('Select bundles from the list below')
+							'description' => _t('Select bundles from the list below.')
 						);
 					}
 				}
 			}
-            CompositeCache::save($vs_cache_key, $va_element_settings);
+            CompositeCache::save($vs_cache_key, $va_element_settings, 'ca_metadata_elements_available_settings');
 		} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependent_field_visibility')) {
 			// when installing, UIs, screens and placements are not yet available when we process elementSets, so
 			// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
@@ -645,7 +679,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			if(is_array($va_list_items) && sizeof($va_list_items)) {
 				foreach($va_list_items as $va_items_by_locale) {
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => true, 'multiple' => true];
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => false, 'multiple' => true];
 					}
 				}
 			}

@@ -880,7 +880,7 @@ function caFileIsIncludable($ps_file) {
 
 		if ($vb_convert_breaks) {
 			$vs_text = preg_replace("/(\n|\r\n){2}/","<p/>",$vs_text);
-			$vs_text = ereg_replace("\n","<br/>",$vs_text);
+			$vs_text = preg_replace("![\n]{1}!","<br/>",$vs_text);
 		}
 
 		return $vs_text;
@@ -3269,6 +3269,7 @@ function caFileIsIncludable($ps_file) {
 	 * @throws ApplicationException
 	 */
 	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
+		return true;
 	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
 	    if (!is_array($va_tokens = Session::getVar('csrf_tokens'))) { $va_tokens = []; }
 	    

@@ -51,10 +51,11 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
+	 * @param $pa_options
 	 * @return array
 	 * @throws AuthClassFeatureException
 	 */
-	public function getUserInfo($ps_username, $ps_password) {
+	public function getUserInfo($ps_username, $ps_password, $pa_options=null) {
 		throw new AuthClassFeatureException();
 	}
 

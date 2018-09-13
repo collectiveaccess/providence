@@ -2878,7 +2878,7 @@ class ca_users extends BaseModel {
 		}
 		
 		 if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
-            $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password); 
+            $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
             $vs_username = $va_info['user_name'];
         }
 
