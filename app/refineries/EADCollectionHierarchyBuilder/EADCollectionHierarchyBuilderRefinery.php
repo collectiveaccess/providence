@@ -162,6 +162,7 @@
 				}
 				
 				if(isset($mapping['relationships']) && is_array($mapping['relationships'])) {
+					if(!caIsIndexedArray($mapping['relationships'])) { $mapping['relationships'] = [$mapping['relationships']]; }
 					foreach($mapping['relationships'] as $rel) {
 						$reader = new EADReader();
 						$dxml = preg_replace("!</".$data->getName()."[^>]*>!", "</ead>", preg_replace("!<".$data->getName()."[^>]*>!", "<ead audience=\"internal\" xmlns=\"http://ead3.archivists.org/schema/\">", $data->asXML()));
