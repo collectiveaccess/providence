@@ -92,7 +92,7 @@
 				
 				$l = 1;
 				foreach($subcollections as $tag => $data) {
-					$children[] = $this->_mapLevels($data, $l, $level_mappings);
+					$children[] = $this->_mapLevels($data, $l, $level_mappings, ['subcollection_xml' => $subcollection_xml, 'group' => $pa_group, 'item' => $pa_item, 'source_data' => $pa_source_data, 'options' => $pa_options]);
 				}
 			}
 			return ['_children' => $children];
@@ -107,7 +107,7 @@
 		 *
 		 * @return array Mapped values in a format ready for import
 		 */
-		private function _mapLevels($data, &$l, $level_mappings) {
+		private function _mapLevels($data, &$l, $level_mappings, $refinery_data) {
 			if(isset($level_mappings[(string)$data["level"]]) && is_array($mapping = $level_mappings[(string)$data["level"]])) { 
 				$tag = 'c'.sprintf("%02d", $l);
 				
@@ -160,13 +160,25 @@
 						}
 					}
 				}
+				
+				if(isset($mapping['relationships']) && is_array($mapping['relationships'])) {
+					if(!caIsIndexedArray($mapping['relationships'])) { $mapping['relationships'] = [$mapping['relationships']]; }
+					foreach($mapping['relationships'] as $rel) {
+						$reader = new EADReader();
+						$dxml = preg_replace("!</".$data->getName()."[^>]*>!", "</ead>", preg_replace("!<".$data->getName()."[^>]*>!", "<ead audience=\"internal\" xmlns=\"http://ead3.archivists.org/schema/\">", $data->asXML()));
+						$reader->read(null, ['fromString' => "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>".$dxml]); 
+						$reader->nextRow();
+						$rel_data = caProcessRefineryRelated($rel['relatedTable'], [$rel], $refinery_data['source_data'], $refinery_data['item'], 0, array_merge($refinery_data['options'], ['reader' => $reader]));
+						$mapped_values = array_merge($mapped_values, $rel_data);
+					}
+				}
 			}
 			// Are there sub-collections?
 			$l++;
 			$tag = 'c'.sprintf("%02d", $l);
 			if ($data->{$tag}) {
 				foreach($data->{$tag} as $d) {
-					$mapped_values['_children'][] = $this->_mapLevels($d, $l, $level_mappings);
+					$mapped_values['_children'][] = $this->_mapLevels($d, $l, $level_mappings, $refinery_data);
 				}
 			}
 			$l--;

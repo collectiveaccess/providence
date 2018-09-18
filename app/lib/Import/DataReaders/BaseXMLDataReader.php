@@ -131,7 +131,10 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * 
 	 * 
 	 * @param string $ps_source
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		basePath = 
+	 *		fromString = XML string to parse if $ps_source is set to null. [Default is null]
+	 *
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
@@ -143,8 +146,13 @@ class BaseXMLDataReader extends BaseDataReader {
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
 		}
 		
-		if(!($this->opo_xml = @DOMDocument::load($ps_source))) { return false;}
-		
+		if ($ps_source) { 
+			if(!($this->opo_xml = @DOMDocument::load($ps_source))) { return false;}
+		} elseif($str = caGetOption('fromString', $pa_options, null))  {
+			if(!($this->opo_xml = @DOMDocument::loadXML($str))) { return false;}
+		} else {
+			return false;
+		}
 		try {
 			$this->opo_xpath = new DOMXPath($this->opo_xml);
 		} catch (Exception $e) {
