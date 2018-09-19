@@ -1748,8 +1748,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						$vs_hidden_value = $vs_val_id;
 					}
 				} else {
-					$vs_value = "{".$pa_options['element_id']."_label}";
-					$vs_hidden_value = "{".$pa_options['element_id']."}";
+					$vs_value = "{{".$pa_options['element_id']."_label}}";
+					$vs_hidden_value = "{{".$pa_options['element_id']."}}";
 				}
 				$vs_buf =
  				caHTMLTextInput(
