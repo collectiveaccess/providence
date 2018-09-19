@@ -267,16 +267,18 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			if(!$vs_table_name = Datamodel::getTableName($pn_table_num)) { return false; }
 
 			$va_search_params = array(
-				'search_type' => 'scan',    // use search_type=scan
 				'scroll' => '1m',          // how long between scroll requests. should be small!
 				'index' => $this->getIndexName(),
 				'type' => $vs_table_name,
 				'body' => array(
 					'query' => array(
-						'match_all' => array()
+						'match_all' => $this->version >= 5 ? new \stdClass() : []
 					)
 				)
 			);
+			if ($this->version < 5){
+				$va_search_params['search_type'] = 'scan';
+			}
 
 			$va_tmp = $this->getClient()->search($va_search_params);   // Execute the search
 			$vs_scroll_id = $va_tmp['_scroll_id'];   // The response will contain no results, just a _scroll_id
