@@ -1579,6 +1579,7 @@ class TimeExpressionParser {
 						'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa,
 						'dont_window' => true
 					);
+					
 					return $va_dates;
 				}
 			//}								
