@@ -1804,6 +1804,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				if (isset($pa_options['thumbnailVersion'])) {
 					$va_row['representation_tag'] = $qr_res->getMediaTag('media', $pa_options['thumbnailVersion']);
 					$va_row['representation_url'] = $qr_res->getMediaUrl('media', $pa_options['thumbnailVersion']);
+					$va_row['representation_path'] = $qr_res->getMediaPath('media', $pa_options['thumbnailVersion']);
 					$va_row['representation_width'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'WIDTH');
 					$va_row['representation_height'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'HEIGHT');
 				}
@@ -1812,6 +1813,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					foreach($pa_options['thumbnailVersions'] as $vs_version) {
 						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version);
 						$va_row['representation_url_'.$vs_version] = $qr_res->getMediaUrl('media', $vs_version);
+						$va_row['representation_path_'.$vs_version] = $qr_res->getMediaPath('media', $vs_version);
 						$va_row['representation_width_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'WIDTH');
 						$va_row['representation_height_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'HEIGHT');
 					}

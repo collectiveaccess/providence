@@ -20,7 +20,7 @@ monthListDisplay = [Janvier, Février, Mars, Avril, Mai, Juin, Juillet, Août, S
 monthTable = {
 	jan = janvier, janv. = janvier,
 	fév = février, févr. = février, fev = février,
-	mar = mars, mars = mars,
+sftp://seth:@b//data/estee/admin/app/lib/Parsers/TimeExpressionParser/fr_FR.lang	mar = mars, mars = mars,
 	avr = avril, avr. = avril,
 	mai = mai,
 	jun = juin, juin = juin,
@@ -55,6 +55,7 @@ meridianTable = {
 }
 
 dateCircaIndicator = [vers, environ, autour de, <>, <approximatif>, circa, c, c., ca, ca., cca.]
+dateProbablyIndicator = [probablement]
 dateUncertaintyIndicator = [~]
 #dateUncertaintyYearIndicator = [y]
 dateUncertaintyYearIndicator = [a]

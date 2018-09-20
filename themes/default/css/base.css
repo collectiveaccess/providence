@@ -32,6 +32,8 @@ form select {
 }
 textarea {
     resize: none;
+    font-size: 12px !important;
+    
 }
 
 a, a:link, a:visited, a font { color: #1ab3c8; text-decoration: underline; }
@@ -2163,7 +2165,7 @@ select.searchSetSelect {
     color:#828282;
 }
 
-#showOptions{
+#showOptions, .showOptions {
     float:right;
     margin: 1px 2px 0px 15px;
     text-decoration:none;
@@ -2172,7 +2174,7 @@ select.searchSetSelect {
     font-size:9px;
 }
 
-#hideOptions{
+#hideOptions, .hideOptions {
     float:right;
     margin: 2px 0px 0px 0px;
     text-decoration:none;
@@ -2190,7 +2192,7 @@ select.searchSetSelect {
     font-size:12px;
 }
 
-#searchOptionsBox{
+#searchOptionsBox, .relatedListSearchOptionsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
     display:none;
@@ -2212,14 +2214,14 @@ select.searchSetSelect {
     margin: 10px 0px 0px 0px;
 }
 
-#searchOptionsBox .col{
+#searchOptionsBox .col, .relatedListSearchOptionsBox .col {
     float:left;
     margin-right:15px;
     color:#333;
     padding-bottom:15px;
 }
 
-#searchOptionsBox .bg{
+#searchOptionsBox .bg, .relatedListSearchOptionsBox .bg {
 	background-color: #f7f7f7;
 	border: 0px;
 	padding: 20px 15px 5px 15px;
@@ -2338,7 +2340,7 @@ a#hideRefine img {
 }
 
 /* search tools - horizontal show hide */
-#showTools, #hideTools {
+#showTools, #hideTools, .showTools, .hideTools {
     float:right;
     margin: 1px 0px 0px 15px;
     text-decoration:none;
@@ -2347,10 +2349,10 @@ a#hideRefine img {
     font-size:9px;
 
 }
-#hideTools {
+#hideTools, .hideTools {
     clear: both;
 }
-#searchToolsBox{
+#searchToolsBox, .relatedListSearchToolsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
     display:none;
@@ -2367,7 +2369,7 @@ a#hideRefine img {
 	width: 400px;
 	z-index:20000;
 }
-#searchToolsBox .bg{
+#searchToolsBox .bg, .relatedListSearchToolsBox .bg {
 	background-color: #f7f7f7;
 	border: 0px;
 	padding: 20px 15px 5px 15px;
@@ -2378,7 +2380,7 @@ a#hideRefine img {
 	box-shadow: 0 0 5px #bbb;
 }
 
-#searchToolsBox .col{
+#searchToolsBox .col, .relatedListSearchToolsBox .col {
     float:left;
     margin-right:15px;
     color:#333;
@@ -5603,6 +5605,12 @@ div.roundedRel a{
 	color: #333;
 	font-size:12px;
 }
+
+div.roundedRel span.relAnnotation {
+    font-size: 9px;
+    font-style: italic;
+}
+
 .listRelEditButton img{
 	width:14px;
 	height:14px;
@@ -5662,19 +5670,20 @@ select.caItemListSortControlTrigger {
 }
 
 .caItemListSortControls {
-    display: none;
-
     line-height: 17px;
     font-size: 11px;
-    padding: 3px 5px 5px 5px;
-    background-color: #fff;
-    
-    border: 1px solid #e6e6e6;
+    padding: 0px 5px 5px 0px;
+	background-color:#fbfbfb;
 
     z-index: 10000;
 
     max-height: 350px;
     overflow: scroll;
+    
+	position:relative;
+	font-weight:normal;
+	font-size:11px;
+	line-height:1em;
 }
 
 .caItemListSortControls ul {
@@ -6260,6 +6269,58 @@ div.dialogHeader {
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+}
+
+/* Editor summary download options */
+#caSummaryDownloadOptionsPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 550px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    border: 2px solid #999999;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+}
+
+#caSummaryDownloadOptionsPanel .close a{
+    text-decoration:none;
+    font-size:16px;
+}
+
+#caSummaryDownloadOptionsPanelContentArea {
+    padding:10px;
+}
+
+#caSummaryDownloadOptionsPanelControlButtons {
+    width: 490px;
+    text-align: center;
+}
+
+#caSummaryDownloadOptionsPanelControlButtons table {
+    width: 100%;
+}
+
+.caSummaryDownloadOptionsPanelAlertText {
+    font-size: 14px;
+    padding: 15px;
+}
+
+.caSummaryDownloadOptionsPanelAlertControls {
+    font-size: 11px;
+    height: 25px;
+    margin-bottom: 10px;
+}
+
+table.caSummaryDownloadOptionsPanelAlertControls {
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.caSummaryDownloadOptionsPanelAlertControl {
+    font-size: 11px;
 }
 
 /* Quick add */

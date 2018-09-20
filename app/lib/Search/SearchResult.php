@@ -255,7 +255,6 @@ class SearchResult extends BaseObject {
 	# ------------------------------------------------------------------
 	public function cloneInit() {
 		$this->opo_db = new Db();
-		SearchResult::$opo_datamodel = Datamodel::load();
 		$this->opo_subject_instance = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 	}
 	# ------------------------------------------------------------------
@@ -501,6 +500,7 @@ class SearchResult extends BaseObject {
 		
 		$vs_type_sql = '';
 		if (is_array($va_type_ids = caMakeTypeIDList($ps_tablename, caGetOption('restrictToTypes', $pa_options, null))) && sizeof($va_type_ids)) {
+			$vs_related_table = $t_rel_instance->tableName();
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
 		}
@@ -548,6 +548,7 @@ class SearchResult extends BaseObject {
 			if ((!isset($pa_options['allDescendants']) || !$pa_options['allDescendants']) && ($vn_level > 0)) {
 				break;
 			}
+			$va_params[0] = $va_row_ids_in_current_level;
 		}
 		
 		foreach($va_row_ids as $vn_row_id) {
@@ -885,6 +886,16 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 *
+	 */
+	public function getInstance() {
+		if(($id = $this->opo_engine_result->get($this->opo_subject_instance->primaryKey())) && $this->opo_subject_instance->load($id)) {
+		    return $this->opo_subject_instance;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
 	  * Returns a list of values for the specified field from all rows in the result set. 
 	  * If you need to extract all values from single field in a result set this method provides a convenient means to do so.
 	  *
@@ -1010,6 +1021,8 @@ class SearchResult extends BaseObject {
 			$pa_options['template'] = null;
 			$pa_options['returnAsSearchResult'] = false;
 		}
+		
+		$config = Configuration::load();
 		
 		if($pa_options['filterTypes'] && !is_array($pa_options['filterTypes'])) { $pa_options['filterTypes'] = [$pa_options['filterTypes']]; }
 		
@@ -1331,6 +1344,18 @@ class SearchResult extends BaseObject {
 									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null)));									    
 									
 									}
+									
+									// Output full collection-object hierarchy
+									if (($va_path_components['table_name'] == 'ca_objects') && caGetOption('showCollectionObjectHierarchy', $pa_options, false) && ($config->get('ca_objects_x_collections_hierarchy_enabled'))) {
+									    if (($qr_bridge = caMakeSearchResult($va_path_components['table_name'], [$va_ancestor_ids[0]], $pa_options)) && $qr_bridge->nextHit()) {
+                                            $t = explode('.', $vs_field_spec); $t[0] = 'ca_collections';
+                                            $collections = $qr_bridge->get(join('.', $t), ['returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'restrictToRelationshipTypes' => [$config->get('ca_objects_x_collections_hierarchy_relationship_type')]]);
+                                            foreach($collections as $c) {
+                                                array_unshift($va_hier_item, $c);
+                                            }
+                                        }
+									}
+									
 									if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 										$va_hier_item = array_slice($va_hier_item, 0, $vn_max_levels_from_top, true);
 									} elseif (!is_null($vn_max_levels_from_bottom) && ($vn_max_levels_from_bottom > 0)) {
@@ -1654,10 +1679,22 @@ class SearchResult extends BaseObject {
 			
 			if (is_array($va_keys) && sizeof($va_keys)) {
 				if ($vb_return_with_structure) {
-					foreach($vm_val as $vn_top_level_id => $va_data) {
-						if(!$va_data || !is_array($va_data)) { continue; }
-						$vm_val[$vn_top_level_id] = caSortArrayByKeyInValue($va_data, $va_keys, caGetOption('sortDirection', $pa_options, 'ASC'));
-					}
+				    $vs_sort_desc = caGetOption('sortDirection', $pa_options, 'ASC');
+				    
+				    $vb_is_three_level_array = false;
+				    foreach($vm_val as $vn_top_level_id => $va_data) {
+				        foreach($va_data as $k => $v) {
+				            if (is_array($v)) { $vb_is_three_level_array = true; }
+				            break(2);
+				        }
+				    }
+				    
+				    if ($vb_is_three_level_array) {
+                        foreach($vm_val as $vn_top_level_id => $va_data) {
+                            if(!$va_data || !is_array($va_data)) { continue; }
+                            $vm_val[$vn_top_level_id] = caSortArrayByKeyInValue($va_data, $va_keys, $vs_sort_desc);
+                        }
+                    } 
 				}
 			}
 		}

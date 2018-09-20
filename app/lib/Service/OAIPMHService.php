@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -381,7 +381,7 @@ class OAIPMHService extends BaseService {
 	 * Responds to ListSets OAI verb
 	 */
 	private function listSets($oaiData) {
-		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
+		$va_access_values = caGetUserAccessValues($this->opo_request, array_merge($this->opa_provider_info, ['ignoreProvidence' => true]));
 		$vb_show_deleted = (bool)$this->opa_provider_info['show_deleted'];
 		$vb_dont_enforce_access_settings = (bool)$this->opa_provider_info['dont_enforce_access_settings'];
 		$vb_dont_cache = (bool)$this->opa_provider_info['dont_cache'];
@@ -479,8 +479,8 @@ class OAIPMHService extends BaseService {
 		// by this point, the mapping code was checked to be valid
 		$t_instance = Datamodel::getInstanceByTableName($this->table, true);
 		$vs_pk = $t_instance->primaryKey();
-		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
-	
+		$va_access_values = caGetUserAccessValues($this->opo_request, array_merge($this->opa_provider_info, ['ignoreProvidence' => true]));
+
 		$vb_show_deleted = (bool)$this->opa_provider_info['show_deleted'];
 		$vb_dont_enforce_access_settings = (bool)$this->opa_provider_info['dont_enforce_access_settings'];
 		$vb_dont_cache = (bool)$this->opa_provider_info['dont_cache'];
@@ -497,13 +497,16 @@ class OAIPMHService extends BaseService {
 		$vs_conj = array_shift($o_lang_settings->getList("rangeConjunctions"));
 		$vs_range = ($from && $until) ? "{$from} {$vs_conj} {$until}" : '';
    
-		if ($set && $this->opa_provider_info['setFacet']) {
+		if (($set && $this->opa_provider_info['setFacet']) || $vs_range) {
 			$o_browse = caGetBrowseInstance($this->table);
 		
-			if (($vs_query = $this->opa_provider_info['query']) && ($vs_query != "*")) {
+			if ($vs_query = $this->opa_provider_info['query']) {
 				$o_browse->addCriteria("_search", $vs_query);
 			}
-			$o_browse->addCriteria($this->opa_provider_info['setFacet'], $set);
+			
+			if ($this->opa_provider_info['setFacet'] && $set) {
+				$o_browse->addCriteria($this->opa_provider_info['setFacet'], $set);
+			}
 			$o_browse->execute(array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values));
 			$qr_res = $o_browse->getResults();
 		} else {
@@ -517,7 +520,7 @@ class OAIPMHService extends BaseService {
 	
 		$rows = $qr_res->numHits();
 	
-		if(count($qr_res->numHits()) == 0) {
+		if($qr_res->numHits() == 0) {
 			$this->throwError(self::OAI_ERR_NO_RECORDS_MATCH, _t('No records match the given criteria'));
 		} else {
 			$verbElement = $oaiData->createElement($verb);
@@ -584,10 +587,10 @@ class OAIPMHService extends BaseService {
 							$this->createElementWithChildren($oaiData, $recordElement, 'header', $headerData);
 							$metadataElement = $oaiData->createElement('metadata');
 							$o_doc_src = DomDocument::loadXML($vs_item_xml);
+							$recordElement->appendChild($metadataElement);
 							if($o_doc_src) { // just in case the xml fails to load through DomDocument for some reason (e.g. a bad mapping or very weird characters)
 								$metadataElement->appendChild($oaiData->importNode($o_doc_src->documentElement, true));
 							}
-							$recordElement->appendChild($metadataElement);
 						}
 					}
 				}

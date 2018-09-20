@@ -849,7 +849,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 							// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
 							//
 							$va_placement = array_shift($va_placements);
-							$va_bundle_settings = $va_placement['settings'];
+							$va_bundle_settings = caConvertCurrentLocationCriteriaToBundleSettings(); //$va_placement['settings'];
 							if (is_array($va_history = $t_item->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
 								$va_current_location = array_shift(array_shift($va_history));
 
@@ -2731,8 +2731,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if(!$po_request) { global $g_request; $po_request = $g_request; }
 		
 	
-		$va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings");
-		$vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter");
+		if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
+		if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
 		if (!$vs_template) { $vs_template = join($vs_display_delimiter, $va_display_format); }
 		
 		$va_related_item_info = $va_parent_ids = $va_hierarchy_ids = array();
@@ -4469,4 +4469,40 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
         }
         return $va_lookup_urls;
 	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caConvertCurrentLocationCriteriaToBundleSettings() {
+	    require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
+	    
+	    $o_config = Configuration::load();
+	    $va_bundle_settings = array();
+ 		$t_rel_type = new ca_relationship_types();
+ 		
+	    $va_map = $o_config->getAssoc('current_location_criteria');
+ 		if(!is_array($va_map)){
+		    $va_map = array();
+	    }
+	 
+ 		foreach($va_map as $vs_table => $va_types) {
+ 			$va_bundle_settings["{$vs_table}_showTypes"] = array();
+ 			if(is_array($va_types)) {
+				foreach($va_types as $vs_type => $va_config) {
+					switch($vs_table) {
+						case 'ca_storage_locations':
+						case 'ca_objects_x_storage_locations':
+							$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $vs_type);
+							break;
+						default:
+							if(!is_array($va_config)) { break; }
+							$va_bundle_settings["{$vs_table}_showTypes"][] = array_shift(caMakeTypeIDList($vs_table, array($vs_type)));
+							$va_bundle_settings["{$vs_table}_{$vs_type}_dateElement"] = $va_config['date'];
+							break;
+					}
+				}
+			}
+ 		}
+ 		return $va_bundle_settings;
+ 	}
 	# ------------------------------------------------------------------

@@ -623,23 +623,41 @@ class RequestHTTP extends Request {
 		}
 
 		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
-
-			if(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
-				$vn_port = $_SERVER['SERVER_PORT'];
-			} else {
-				$vn_port = 80;
+		    
+			if (
+			    !($vn_port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
+			    && 
+			    !($vn_port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
+			) {
+                if(__CA_SITE_PROTOCOL__ == 'https') { 
+                    $vn_port = 443;	
+                } elseif(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
+                    $vn_port = $_SERVER['SERVER_PORT'];
+                } else {
+                    $vn_port = 80;
+                }
+            }
+			
+			if (
+			    !($vs_proto = trim($this->getAppConfig()->get('out_of_process_search_indexing_protocol')))
+			    && 
+			    !($vs_proto = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PROTOCOL'))
+			) {
+			    $vs_proto = (($vn_port == 443) || (__CA_SITE_PROTOCOL__ == 'https')) ? 'tls' : 'tcp';
 			}
 			
-			$vs_proto = ($vn_port == 443) ? 'tls://' : 'tcp://';
-			if (!($vs_indexing_hostname = trim($this->getAppConfig()->get('out_of_process_search_indexing_hostname')))) {
+			if (
+			    !($vs_indexing_hostname = trim($this->getAppConfig()->get('out_of_process_search_indexing_hostname')))
+			    && 
+			    !($vs_indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
+			) {
 			    $vs_indexing_hostname = __CA_SITE_HOSTNAME__;
 			}
-
 			// trigger async search indexing
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
                 if (!ca_search_indexing_queue::lockExists()) {
-                    $r_socket = fsockopen($vs_proto . $vs_indexing_hostname, $vn_port, $errno, $err, 3);
+                    $r_socket = fsockopen($vs_proto . '://'. $vs_indexing_hostname, $vn_port, $errno, $err, 3);
                     if ($r_socket) {
                         $vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
                         $vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
@@ -722,7 +740,8 @@ class RequestHTTP extends Request {
 		
 		foreach(array(
 			'no_headers', 'dont_redirect_to_login', 'dont_create_new_session', 'dont_redirect_to_welcome',
-			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers', 'redirect'
+			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers', 'redirect',
+			'allow_external_auth'
 		) as $vs_key) {
 			if (!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
@@ -755,8 +774,7 @@ class RequestHTTP extends Request {
 					$vb_login_successful = true;
 				}
 				
-				if ($vb_login_successful) {
-																								// Login was successful
+				if ($vb_login_successful) {																	// Login was successful
 					Session::setVar($vs_app_name."_lastping",time());					// set last time we heard from client in session
 					$this->user->setLastPing(time());	
 					$AUTH_CURRENT_USER_ID = $vn_user_id;
@@ -768,31 +786,36 @@ class RequestHTTP extends Request {
 			if (!$vb_login_successful) {
 				$this->user = new ca_users();		// add user object
 
-				$vs_tmp1 = $vs_tmp2 = null;
-				if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
-					if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
-						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
-						$vb_login_successful = false;
-					} else {
-						$vb_login_successful = true;
-						$vn_user_id = $this->user->getUserID();
-					}
-				}
+                if (!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) || $pa_options['allow_external_auth']) {
+                    $vs_tmp1 = $vs_tmp2 = null;
+                    if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
+                        if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
+                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            $vb_login_successful = false;
+                        } else {
+                            $vb_login_successful = true;
+                            $vn_user_id = $this->user->getUserID();
+                        }
+                    }
 
-				if (!$vb_login_successful) {																	// throw user to login screen
-					if (!$pa_options["dont_redirect_to_login"]) {
-						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
-						$vs_redirect = $this->getRequestUrl(true);
+                    if (!$vb_login_successful) {																	// throw user to login screen
+                        if (!$pa_options["dont_redirect_to_login"]) {
+                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            $vs_redirect = $this->getRequestUrl(true);
 
-						if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
-							$vs_redirect = '';
-						} else {
-							$vs_redirect = '?redirect=' . urlencode($vs_redirect);
-						}
-						$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path") . $vs_redirect);
-					}
-					return false;
-				}
+                            if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
+                                $vs_redirect = '';
+                            } else {
+                                $vs_redirect = '?redirect=' . urlencode($vs_redirect);
+                            }
+                            $this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path") . $vs_redirect);
+                        }
+                        return false;
+                    }
+                } else {
+                	// Redirect to external auth?
+                	return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
+                }
 			}
 		} 
 		
@@ -814,7 +837,7 @@ class RequestHTTP extends Request {
 		}
 	
 		if (!$vb_login_successful) {	
-			$this->user = null;																	// auth failed
+			$this->user = new ca_users();															// auth failed
 																								// throw user to login screen
 			if ($pa_options["user_name"]) {
 				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));

@@ -93,7 +93,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		$vs_delimiter = caGetOption('delimiter', $pa_options, '<br/>');
 		$vn_zoom_level = caGetOption('zoomLevel', $pa_options, 8);
 		$vn_min_zoom_level = caGetOption('minZoomLevel', $pa_options, 0);
-		$vn_max_zoom_level = caGetOption('maxZoomLevel', $pa_options, 16);
+		$vn_max_zoom_level = caGetOption('maxZoomLevel', $pa_options, 18);
 		
 		if (!($vs_path_color = caGetOption('pathColor', $pa_options, $this->opo_config->get('leaflet_maps_path_color')))) { $vs_path_color = '#ff0000'; }
 		if (($vn_path_weight = caGetOption('pathWeight', $pa_options, $this->opo_config->get('leaflet_maps_path_weight'))) < 1) { $vn_path_weight = 1; }
@@ -279,7 +279,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
  			$base_path = $request->getBaseUrlPath();
  		}
 		$vs_element = 	"
-<div id='mapholder_{$element_id}_{n}' class='mapholder'>
+<div id='mapholder_{$element_id}_{n}' class='mapholder' style='z-index:0;'>
 	 <div class='map' style='width:695px; height:400px;'></div>
 </div>
 <script type='text/javascript'>
@@ -301,7 +301,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 
 		var map_{$vs_id}_loc_label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
 		
-		var map = L.map('mapholder_{$element_id}_{n}', { attributionControl: false }).setView([0, 0], 8);
+		var map = L.map('mapholder_{$element_id}_{n}', { attributionControl: false, maxZoom: 18 }).setView([0, 0], 8);
 		var b = L.tileLayer('{$base_map_url}').addTo(map);	
 		map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false }));
 		
@@ -353,15 +353,12 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				weight: 5,
 				stroke: true,
 				opacity: 0.5,
-				smoothFactor: 1,
 				marker: layer,
 				bubblingMouseEvents: false
 			}).addTo(g);
 			
 			
-			var circlePt = map.project(pointB);							
-			circlePt.x += 8 * Math.sin(angle*(Math.PI/180));
-			circlePt.y -= 8 * Math.cos(angle*(Math.PI/180));
+			var circlePt = map.project(pointB);				
 			
 			new L.circle(map.unproject(circlePt), { 
 				color: '#cc0000', 
@@ -487,7 +484,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			var c = localStorage.getItem('leafletLastPos');
 			if (c) {
 				var coord = c.split(/,/);
-				map.setView(coord, 12, {animate: false});
+				map.setView(coord, 16, {animate: false});
 			} else {
 				map.setZoom(2, {animate: false});
 			}

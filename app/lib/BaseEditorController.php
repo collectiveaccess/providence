@@ -105,7 +105,8 @@ class BaseEditorController extends ActionController {
 				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
 				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
 				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
-				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings')
+				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings'),
+				'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
 			))) {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 
@@ -289,7 +290,7 @@ class BaseEditorController extends ActionController {
 		$vb_is_insert = !$t_subject->getPrimaryKey();
 
 		# trigger "BeforeSaveItem" hook
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
 
 		$vb_save_rc = false;
 		$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
@@ -334,7 +335,7 @@ class BaseEditorController extends ActionController {
 					$t_instance->update();
 
 					if ($t_instance->numErrors()) {
-						$this->notification->addNotification($t_instance->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+						$this->notification->addNotification(join("; ", $t_instance->getErrors()), __NOTIFICATION_TYPE_ERROR__);
 					}
 				}
 				
@@ -342,7 +343,7 @@ class BaseEditorController extends ActionController {
 				if ($vn_after_id) {
 					$t_subject->setRankAfter($vn_after_id);
 					if ($t_subject->numErrors()) {
-						$this->notification->addNotification($t_subject->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+						$this->notification->addNotification(join("; ", $t_subject->getErrors()), __NOTIFICATION_TYPE_ERROR__);
 					}
 				}
 			}
@@ -385,7 +386,7 @@ class BaseEditorController extends ActionController {
 		}
 		# trigger "SaveItem" hook
 
-		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
 
 		if (method_exists($this, "postSave")) {
 			$this->postSave($t_subject, $vb_is_insert);
@@ -660,6 +661,7 @@ class BaseEditorController extends ActionController {
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
 			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
 		}
+		
 
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
@@ -722,6 +724,22 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list['displayList']);
 			
 		}
+		
+		// Summary formats list
+		$formats = [];
+		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName()]))) {
+            $num_available_templates = sizeof($available_templates);
+            foreach($available_templates as $k => $v) {
+                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
+                $formats[$v['code']] = $v['name'].' ('.$v['type'].')';
+            }
+        }
+		$this->view->setVar('formats', $formats);
+		
+		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
+		
+		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+
 		$this->render('summary_html.php');
 	}
 	# -------------------------------------------------------
@@ -737,6 +755,7 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
+        if (!is_array($last_settings = Session::getVar($t_subject->tableName().'_summary_last_settings'))) { $last_settings = []; }
 
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
@@ -788,14 +807,19 @@ class BaseEditorController extends ActionController {
 		//
 		// PDF output
 		//
-		if(!$vn_display_id || !$t_display || !is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_".$t_display->get('display_code')."_summary"))) {
-			if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
-				if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
-					$this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
-					return;
-				}
-			}
-		}
+		if (($ps_template = $this->request->getParameter('template', pString)) && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
+		    $last_settings['template'] = $ps_template;
+		} else {		
+            // When no display is specified (or valid) and no template is specified try loading the default summary format for the table
+            if(!$vn_display_id || !$t_display || !is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_".$t_display->get('display_code')."_summary"))) {
+                if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
+                    if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
+                        $this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
+                        return;
+                    }
+                }
+            }
+        }
 
 		$va_barcode_files_to_delete = array();
 
@@ -805,26 +829,38 @@ class BaseEditorController extends ActionController {
 
 			$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
 
-			$o_pdf = new PDFRenderer();
+            switch($va_template_info['fileFormat']) {
+                case 'pdf':
+                    $o_pdf = new PDFRenderer();
 
-			$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+                    $this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
 
-			$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
-			$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-			$this->view->setVar('pageWidth', "{$vn_page_width}mm");
-			$this->view->setVar('pageHeight', "{$vn_page_height}mm");
-			$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
-			$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
-			$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
-			$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+                    $va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+                    $vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+                    $this->view->setVar('pageWidth', "{$vn_page_width}mm");
+                    $this->view->setVar('pageHeight', "{$vn_page_height}mm");
+                    $this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+                    $this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+                    $this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+                    $this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
 
-			$vs_content = $this->render($va_template_info['path']);
+                    $vs_content = $this->render($va_template_info['path']);
 
-			$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
-			
-			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+                    $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
+            
+                    $o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
 
-			$vb_printed_properly = true;
+                    $vb_printed_properly = true;
+                    break;
+                case 'docx':
+                    print $this->render($va_template_info['path']);
+                    break;
+                default:
+                    throw new Exception(_t('Unsupported format: %1', $va_template_info['fileFormat']));
+                    break;
+            }
+            
+            Session::setVar($t_subject->tableName().'_summary_last_settings', $last_settings);
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 			exit;
@@ -990,7 +1026,7 @@ class BaseEditorController extends ActionController {
 			'id' => $vn_subject_id,
 			'table_num' => $t_subject->tableNum(),
 			'table_name' => $t_subject->tableName(), 
-			'instance' => $t_subject,
+			'instance' => &$t_subject,
 			'is_insert' => false)
 		);
 
@@ -1053,7 +1089,7 @@ class BaseEditorController extends ActionController {
 			'id' => $vn_subject_id,
 			'table_num' => $t_subject->tableNum(),
 			'table_name' => $t_subject->tableName(),
-			'instance' => $t_subject,
+			'instance' => &$t_subject,
 			'is_insert' => false)
 		);
 
@@ -1073,7 +1109,7 @@ class BaseEditorController extends ActionController {
 
 		if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
 			if (method_exists($t_subject, "changeType")) {
-				$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+				$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
 
 				if (!$t_subject->changeType($vn_new_type_id = $this->request->getParameter('type_id', pInteger))) {
 					// post error
@@ -1081,7 +1117,7 @@ class BaseEditorController extends ActionController {
 				} else {
 					$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
 				}
-				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
 
 			}
 		} else {
@@ -1374,11 +1410,11 @@ class BaseEditorController extends ActionController {
 		$va_subtypes_proc = array();
 
         $va_limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
-        
+        $va_limit_to_type_ids = (is_array($va_limit_to_types) && sizeof($va_limit_to_types)) ? caMakeTypeIDList($this->ops_table_name, $va_limit_to_types, ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
 		foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
-				if (is_array($va_limit_to_types) && sizeof($va_limit_to_types) && !in_array($va_item['idno'], $va_limit_to_types)) { continue; }
+				if (is_array($va_limit_to_type_ids) && sizeof($va_limit_to_type_ids) && !in_array($va_item['parameters']['type_id'], $va_limit_to_type_ids)) { continue; }
 			    
 				$va_subtypes_proc[$vn_item_id] = $va_item;
 			}
@@ -2407,10 +2443,10 @@ class BaseEditorController extends ActionController {
 				
 				$va_file_names[$vs_file_name] = true;
 				$o_view->setVar('version_download_name', $vs_file_name);
-
+				
 				//
 				// Perform metadata embedding
-				if (($t_subject->tableName() == 'ca_object_representations')) {
+				if (isset($va_rep['representation_id']) && ($va_rep['representation_id'] > 0)) {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
                     if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
                         $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info

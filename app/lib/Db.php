@@ -68,13 +68,6 @@ class Db extends DbBase {
 	private $config;
 
 	/**
-	 * Datamodel object
-	 *
-	 * @access private
-	 */
-	private $datamodel;
-
-	/**
 	 * The id generated from the previous SQL INSERT operation
 	 *
 	 * @access private
@@ -506,7 +499,7 @@ class Db extends DbBase {
 	 * @return mixed
 	 */
 	public function getTableInstance($ps_table) {
-		return $this->datamodel->getInstanceByTableName($ps_table);
+		return Datamodel::getInstance($ps_table);
 	}
 
 	/**

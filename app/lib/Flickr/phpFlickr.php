@@ -136,7 +136,6 @@
 				if ( empty($value) ) unset($request[$key]);
 				else $request[$key] = (string) $request[$key];
 			}
-			//if ( is_user_logged_in() ) print_r($request);
 			$reqhash = md5(serialize($request));
 			$this->cache_key = $reqhash;
 			$this->cache_request = $request;

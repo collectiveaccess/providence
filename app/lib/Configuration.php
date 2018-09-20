@@ -122,6 +122,9 @@ class Configuration {
 		global $g_ui_locale, $g_configuration_cache_suffix;
 
 		$this->ops_config_file_path = $ps_file_path ? $ps_file_path : __CA_APP_CONFIG__;	# path to configuration file
+		
+		$va_config_file_list = [];
+		
 		// cache key for on-disk caching
 		$vs_path_as_md5 = md5($_SERVER['HTTP_HOST'].$this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
 
@@ -132,14 +135,36 @@ class Configuration {
 		$vs_config_filename = array_pop($va_config_path_components);
 
 
-		$vs_local_conf_file_path = null;
+        $vs_top_level_config_path = $this->ops_config_file_path;
 		if (!$pb_dont_load_from_default_path) {
 			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
-				$vs_local_conf_file_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
-			} elseif (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
-				$vs_local_conf_file_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+				$va_config_file_list[] = $vs_top_level_config_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+			} 
+			
+			// Theme config overrides local config
+			if (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
+				$va_config_file_list[] = $vs_top_level_config_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
 			}
 		}
+		$o_config = ($vs_top_level_config_path === $this->ops_config_file_path) ? $this : Configuration::load($vs_top_level_config_path, false, false, true);
+
+        
+		
+		$vs_filename = pathinfo($ps_file_path, PATHINFO_BASENAME);
+		if (($vb_inherit_config = $o_config->get('allowThemeInheritance')) && !$pb_dont_load_from_default_path) {
+		    $i=0;
+            while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
+                $i++;
+                $vs_inherited_config_path = __CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/{$vs_filename}";
+                if (file_exists($vs_inherited_config_path) && !in_array($vs_inherited_config_path, $va_config_file_list) && ($vs_inherited_config_path !== $vs_config_file_path)) {
+                    array_unshift($va_config_file_list, $vs_inherited_config_path);
+                }
+                if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
+                $o_config = Configuration::load(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf", false, false, true);
+                if ($i > 10) { break; } // max 10 levels
+            }
+		}
+		array_unshift($va_config_file_list, $this->ops_config_file_path);
 
 		// try to figure out if we can get it from cache
 		if((!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__) && !$pb_dont_cache) {
@@ -151,23 +176,18 @@ class Configuration {
 
 			if(!$vb_setup_has_changed && isset(self::$s_config_cache[$vs_path_as_md5])) {
 				$vb_cache_is_invalid = false;
-
-				$vs_config_mtime = caGetFileMTime($this->ops_config_file_path);
-				if($vs_config_mtime != self::$s_config_cache['mtime_'.$vs_path_as_md5]) { // config file has changed
-					self::$s_config_cache['mtime_'.$vs_path_as_md5] = $vs_config_mtime;
-					$vb_cache_is_invalid = true;
-				}
-
-				if ($vs_local_conf_file_path) {
-					$vs_local_config_mtime = caGetFileMTime($vs_local_conf_file_path);
-					if($vs_local_config_mtime != self::$s_config_cache['local_mtime_'.$vs_path_as_md5]) { // local config file has changed
-						self::$s_config_cache['local_mtime_'.$vs_path_as_md5] = $vs_local_config_mtime;
-						$vb_cache_is_invalid = true;
-					}
+				
+				foreach($va_config_file_list as $vs_config_file_path) {
+				    $vs_config_mtime = caGetFileMTime($vs_config_file_path);
+                    if($vs_config_mtime != self::$s_config_cache[$k='mtime_'.$vs_path_as_md5.md5($vs_config_file_path)]) { // config file has changed
+                        self::$s_config_cache[$k] = $vs_config_mtime;
+                        $vb_cache_is_invalid = true;
+                        break;
+                    }
 				}
 
 				if (!$vb_cache_is_invalid) { // cache is ok
-					$this->ops_config_settings = self::$s_config_cache[$vs_path_as_md5];;
+					$this->ops_config_settings = self::$s_config_cache[$vs_path_as_md5];
 					$this->ops_md5_path = md5($this->ops_config_file_path);
 					return;
 				}
@@ -176,7 +196,7 @@ class Configuration {
 		}
 
 		# load hash
-		$this->ops_config_settings = array();
+		$this->ops_config_settings = [];
 
 		# try loading global.conf file
 		$vs_global_path = join("/", $va_config_path_components).'/global.conf';
@@ -190,22 +210,27 @@ class Configuration {
 		#
 		# load specified config file
 		#
-		if (file_exists($this->ops_config_file_path) && $this->loadFile($this->ops_config_file_path, false)) {
-			$this->ops_config_settings["ops_config_file_path"] = $this->ops_config_file_path;
+		$vs_config_file_path = array_shift($va_config_file_list);
+		if (file_exists($vs_config_file_path) && $this->loadFile($vs_config_file_path, false, false)) {
+			$this->ops_config_settings["ops_config_file_path"] = $vs_config_file_path;
 		}
-
-		#
-		# try to load optional "local" config file (extra, optional, config file that can override values in the specified config file with "local" values)
-		#
-		if ($vs_local_conf_file_path) {
-			$this->loadFile($vs_local_conf_file_path, false, false);
-		}
+		
+		
+        if (sizeof($va_config_file_list) > 0) {
+            foreach($va_config_file_list as $vs_config_file_path) {
+                if (file_exists($vs_config_file_path)) {
+                    $this->loadFile($vs_config_file_path, false, false, true);
+                }
+            }
+        }
 
 		if($vs_path_as_md5 && !$pb_dont_cache) {
 			self::$s_config_cache[$vs_path_as_md5] = $this->ops_config_settings;
 			// we loaded this cfg from file, so we have to write the
 			// config cache to disk at least once on this request
 			self::$s_have_to_write_config_cache = true;
+			
+			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 3600 * 3600 * 30);
 		}
 	}
 	/* ---------------------------------------- */
@@ -754,26 +779,34 @@ class Configuration {
 	/**
 	 * Get configuration value
 	 *
-	 * @param string $ps_key Name of configuration value to get. get() will look for the
-	 * configuration value first as a scalar, then as a list and finally as an associative array.
-	 * The first value found is returned.
+	 * @param mixed $pm_key Name of configuration key to fetch. get() will look for the
+	 * key first as a scalar, then as a list and finally as an associative array.
+	 * The first value found is returned. If an array of values are passed get() will try 
+	 * each key in turn until a value is found.
 	 *
 	 * @return mixed A string, indexed array (list) or associative array, depending upon what
-	 * kind of configuration value was found.
+	 * kind of configuration value was found. If no value is found null is returned.
 	 */
-	public function get($ps_key) {
-		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; }
-		$this->ops_error = "";
+	public function get($pm_key) {
+	    if (!is_array($pm_key)) { $pm_key = [$pm_key]; }
+	    
+	    foreach($pm_key as $ps_key) {
+            if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; }
+            $this->ops_error = "";
 
-		$vs_tmp = $this->getScalar($ps_key);
-		if (!strlen($vs_tmp)) {
-			$vs_tmp = $this->getList($ps_key);
-		}
-		if (!is_array($vs_tmp) && !strlen($vs_tmp)) {
-			$vs_tmp = $this->getAssoc($ps_key);
-		}
-		Configuration::$s_get_cache[$this->ops_md5_path][$ps_key] = $vs_tmp;
-		return $vs_tmp;
+            $vs_tmp = $this->getScalar($ps_key);
+            if (!strlen($vs_tmp)) {
+                $vs_tmp = $this->getList($ps_key);
+            }
+            if (!is_array($vs_tmp) && !strlen($vs_tmp)) {
+                $vs_tmp = $this->getAssoc($ps_key);
+            }
+            Configuration::$s_get_cache[$this->ops_md5_path][$ps_key] = $vs_tmp;
+            
+            if (!$vs_tmp) { continue; }
+            return $vs_tmp;
+        }
+        return null;
 	}
 	/* ---------------------------------------- */
 	/**

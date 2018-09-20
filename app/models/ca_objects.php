@@ -552,6 +552,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
 		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
+		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
@@ -575,7 +577,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 */ 
 	public function insert($pa_options=null) {
 		if ($vn_parent_id = $this->get('parent_id')) {
-			if(!$this->getAppConfig()->get('ca_objects_dont_inherit_lot_id_from_parent')) {
+			if(!$this->getAppConfig()->get(['ca_objects_dont_inherit_lot_from_parent', 'ca_objects_dont_inherit_lot_id_from_parent'])) {
 				$t_parent = new ca_objects();
 				if ($this->inTransaction()) {
 					$t_parent->setTransaction($this->getTransaction());
@@ -594,7 +596,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	 */ 
 	public function update($pa_options=null) {
 		if ($vn_parent_id = $this->get('parent_id')) {
-			if(!$this->getAppConfig()->get('ca_objects_dont_inherit_lot_id_from_parent')) {
+			if(!$this->getAppConfig()->get(['ca_objects_dont_inherit_lot_from_parent', 'ca_objects_dont_inherit_lot_id_from_parent'])) {
 				$t_parent = new ca_objects();
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				if ($t_parent->load($vn_parent_id) && ($vn_lot_id = $t_parent->get('lot_id'))) {
@@ -1434,7 +1436,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
 				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
 				
-				$o_view->setVar('location_relationship_type', $x=$this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
 				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
 				break;
 		}
@@ -1988,8 +1990,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		if ((($vs_table_name = $t_instance->tableName())) !== 'ca_storage_locations') {
  			$pm_type_id = $t_instance->getTypeID($pn_rel_id);
  		}
- 		//print "FOR $pm_rel_table_name_or_num/$pm_type_id<br>\n";
- 		//print_R(ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id));
  		if (ca_objects::getConfigurationForCurrentLocationType($pm_rel_table_name_or_num, $pm_type_id)) { return true; }
  		return false;
  	}

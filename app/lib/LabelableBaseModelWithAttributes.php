@@ -588,10 +588,12 @@
 			}
 			
 			// ... and in sort list
-			$vs_sort_proc = $ps_sort;
+			$vs_sort_proc = null;
 			if ((preg_match("!^{$vs_table}.preferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches)) || (preg_match("!^{$vs_table}.nonpreferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches))) { 
 				$vs_sort_proc = ($va_matches[1] && ($t_label->hasField($va_matches[1]))) ? "{$vs_label_table}.".$va_matches[1] : "{$vs_label_table}.".$t_label->getDisplayField();
 				$vb_has_label_fields = true; 
+			} elseif(preg_match("!^{$vs_table}\.([A-Za-z0-9_]+)!", $ps_sort, $va_matches) && $t_instance->hasField($va_matches[1])) {
+			    $vs_sort_proc = $ps_sort;
 			}
 			
 			// Check for attributes in value list
@@ -687,15 +689,17 @@
 				}
 			}
 		
-			if ($vb_has_label_fields) {
+			if ($vb_has_label_fields && $t_label) {
 				$va_joins[] = " INNER JOIN {$vs_label_table} ON {$vs_label_table}.{$vs_table_pk} = {$vs_table}.{$vs_table_pk} ";
 				
 				foreach(['preferred_labels', 'nonpreferred_labels'] as $vs_label_type) {
 					$va_label_sql_wheres = [];
 					if (isset($pa_values[$vs_label_type]) && is_array($pa_values[$vs_label_type])) {
 						$vn_label_field_where_count = 0;
-						$va_label_sql_wheres[] = "({$vs_label_table}.is_preferred = ".(($vs_label_type == 'preferred_labels') ? "1" : "0").")";
-					
+						
+						if($t_label->hasField('is_preferred')) {
+							$va_label_sql_wheres[] = "({$vs_label_table}.is_preferred = ".(($vs_label_type == 'preferred_labels') ? "1" : "0").")";
+						}
 						foreach ($pa_values[$vs_label_type] as $vs_field => $va_field_values) {
 							foreach($va_field_values as $vn_i => $va_field_value) {
 								if (!$t_label->hasField($vs_field)) {
@@ -938,7 +942,7 @@
                 $va_sql[] = "({$vs_table}.{$vs_table_pk} IN (?))";
                 $va_sql_params[] = $va_ids;
 			} 
-            $vs_sql = "SELECT DISTINCT {$vs_table}.* FROM {$vs_table}";
+            $vs_sql = "SELECT DISTINCT {$vs_table}.*".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
             $vs_sql .= join("\n", $va_joins);
             $vs_sql .= ((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 			

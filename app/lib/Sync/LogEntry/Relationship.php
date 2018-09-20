@@ -143,15 +143,15 @@ class Relationship extends Base {
 		if (isset($va_snapshot[$ps_field . '_guid']) && ($vs_reference_guid = $va_snapshot[$ps_field . '_guid'])) {
 			/** @var \BaseRelationshipModel $t_instance */
 			if($pb_left) {
-				$t_instance = Datamodel::getInstanceByTableName($this->getModelInstance()->getLeftTableName(), true);
+				$t_instance = \Datamodel::getInstanceByTableName($this->getModelInstance()->getLeftTableName(), true);
 			} else {
-				$t_instance = Datamodel::getInstanceByTableName($this->getModelInstance()->getRightTableName(), true);
+				$t_instance = \Datamodel::getInstanceByTableName($this->getModelInstance()->getRightTableName(), true);
 			}
 
 			$t_instance->setTransaction($this->getTx());
 			if (!method_exists($t_instance, "loadByGUID") || !$t_instance->loadByGUID($vs_reference_guid)) {
 				// TODO: confirm irrelevant is the way to go here
-				throw new IrrelevantLogEntry("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
+				throw new IrrelevantLogEntry("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record [".$this->getModelInstance()->tableName()."])");
 			}
 		} else {
 			if($this->isInsert()) {

@@ -2675,7 +2675,7 @@ class BaseModel extends BaseObject {
 	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @return bool success state
 	 */
-	public function update ($pa_options=null) {
+	public function update($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$this->field_conflicts = array();
@@ -2787,10 +2787,9 @@ class BaseModel extends BaseObject {
 								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
-								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-									
-									$va_rebuild_hierarchical_index = $va_children;
-								}
+								$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
+							} elseif($this->changed('parent_id')) {
+								$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
 							}
 							
 							break;
@@ -2804,11 +2803,7 @@ class BaseModel extends BaseObject {
 								}
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 							
-								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-									$va_rebuild_hierarchical_index = $va_children;
-								}
-								
-							
+								$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
 							} 
 								
 							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
@@ -3124,44 +3119,8 @@ class BaseModel extends BaseObject {
 						}
 						if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 						return false;
-					} else {
-						if ((($vb_is_hierarchical) && ($vb_parent_id_changed)) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])){
-							// recalulate left/right indexing of sub-records
-							
-							$vn_interval_start = $this->get($vs_hier_left_fld);
-							$vn_interval_end = $this->get($vs_hier_right_fld);
-							if (($vn_interval_start > 0) && ($vn_interval_end > 0)) {
-	
-								if ($vs_hier_id_fld) {
-									$vs_hier_sql = ' AND ('.$vs_hier_id_fld.' = '.$this->get($vs_hier_id_fld).')';
-								} else {
-									$vs_hier_sql = "";
-								}
-								
-								$vn_ratio = ($vn_interval_end - $vn_interval_start)/($vn_orig_hier_right - $vn_orig_hier_left);
-								$vs_sql = "
-									UPDATE ".$this->tableName()."
-									SET
-										$vs_hier_left_fld = ($vn_interval_start + (({$vs_hier_left_fld} - ?) * ?)),
-										$vs_hier_right_fld = ($vn_interval_end + (({$vs_hier_right_fld} - ?) * ?))
-									WHERE
-										({$vs_hier_left_fld} BETWEEN ? AND ?)
-										$vs_hier_sql
-								";
-								//print "<hr>$vs_sql<hr>";
-								$o_db->query($vs_sql, array($vn_orig_hier_left, $vn_ratio, $vn_orig_hier_right, $vn_ratio, $vn_orig_hier_left, $vn_orig_hier_right));
-								if ($vn_err = $o_db->numErrors()) {
-									$this->postError(2030, _t("Could not update sub records in hierarchy: [%1] %2", $vs_sql, join(';', $o_db->getErrors())),"BaseModel->update()");
-									if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-									return false;
-								}
-							} else {
-								$this->postError(2045, _t("Parent record had invalid hierarchical indexing (should not happen!)"), "BaseModel->update()");
-								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-								return false;
-							}
-						}
-					}
+					} 
+					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
 						$va_index_options = array();
@@ -3172,20 +3131,24 @@ class BaseModel extends BaseObject {
 						$this->doSearchIndexing(null, false, $va_index_options);
 					}
 														
-					if (is_array($va_rebuild_hierarchical_index)) {
-						//$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
+					if (is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
 						$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 						if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 						foreach($va_rebuild_hierarchical_index as $vn_child_id) {
 							if ($vn_child_id == $this->getPrimaryKey()) { continue; }
 							if ($t_instance->load($vn_child_id)) {
 								$t_instance->setMode(ACCESS_WRITE);
-								$t_instance->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
+								$t_instance->set($vs_hier_id_fld, $vn_hierarchy_id);
+								
+								$va_child_info = $this->_getHierarchyParent($vn_child_id);
+								$va_hier_info = $this->_calcHierarchicalIndexing($this->_getHierarchyParent($va_child_info[$vs_parent_id_fld]));
+								$t_instance->set($vs_hier_left_fld, $va_hier_info['left']);
+								$t_instance->set($vs_hier_right_fld, $va_hier_info['right']);
 								$t_instance->update();
 								
-								if ($t_instance->numErrors()) {
+								 if ($t_instance->numErrors()) {
 									$this->errors = array_merge($this->errors, $t_instance->errors);
-								}
+ 								}
 							}
 						}
 					}
@@ -7284,27 +7247,28 @@ class BaseModel extends BaseObject {
 			
 			$va_indent_stack = $va_hier = $va_parent_map = [];
 			
-			$vn_cur_level = -1;
-			
 			$vn_root_id = $pn_id;
 		
+		    $va_id2parent = [];
 			while($qr_hier->nextRow()) {
 			    $vn_row_id = $qr_hier->get($this->primaryKey());
-				
 				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
 				
-				if(!$vn_parent_id) {
-			        $vn_cur_level = 0;
+				$va_id2parent[$vn_row_id] = $vn_parent_id;
+			}
+			
+			foreach($va_id2parent as $vn_row_id => $vn_parent_id) {
+			    if(!$vn_parent_id) { 
 			        $va_parent_map[$vn_row_id] = ['level' =>  1];
-				} elseif (!isset($va_parent_map[$vn_parent_id])) {
-				    $va_parent_map[$vn_parent_id] = ['level' => $vn_cur_level + 1];
-				    $vn_cur_level++;
-				} else {
-				    $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
-				}
-				if (!isset($va_parent_map[$vn_row_id])) {
-					$va_parent_map[$vn_row_id] = ['level' => $vn_cur_level + 1];
-				}
+			    } else {
+			        $r = $vn_row_id;
+			        $l = 0;
+			        while(isset($va_id2parent[$r])) {
+			            $r = $va_id2parent[$r];
+			            $l++;
+			        }
+			        $va_parent_map[$vn_row_id] = ['level' =>  $l];
+			    }
 			}
 			
 			$qr_hier->seek(0);
@@ -7316,7 +7280,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_parent_id = $qr_hier->get($vs_parent_id_fld);
 				
-                $vn_cur_level =  $va_parent_map[$vn_parent_id]['level'];
+                $vn_cur_level =  $va_parent_map[$vn_row_id]['level'];
                 
 				$vn_r = $qr_hier->get($vs_hier_right_fld);
 				$vn_c = sizeof($va_indent_stack);
@@ -7380,7 +7344,7 @@ class BaseModel extends BaseObject {
 		
 		$t_instance = null;
 		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
-			$t_instance = Datamodel::getInstanceByTableName($this->tableName());
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
 			if (!$t_instance->load($pn_id)) { return null; }
 		} else {
 			$t_instance = $this;
@@ -10259,6 +10223,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param $pn_moderator [integer] A valid ca_users.user_id value indicating who moderated the tag; if omitted or set to null then moderation status will not be set unless app.conf setting dont_moderate_comments = 1 (optional - default is null)
 	 * @param array $pa_options Array of options. Supported options are:
 	 *				purify = if true, comment, name and email are run through HTMLPurifier before being stored in the database. Default is true. 
+	 *				rank = option rank used for sorting. If omitted the tag is added to the end of the display list. [Default is null]
 	 */
 	public function addTag($ps_tag, $pn_user_id=null, $pn_locale_id=null, $pn_access=0, $pn_moderator=null, $pa_options=null) {
 		global $g_ui_locale_id;
@@ -10301,6 +10266,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_ixt->set('user_id', $pn_user_id);
 		$t_ixt->set('tag_id', $vn_tag_id);
 		$t_ixt->set('access', $pn_access);
+		if ($rank = caGetOption('rank', $pa_options, null)) {
+			$t_ixt->set('rank', $rank);
+		}
 		
 		if (!is_null($pn_moderator)) {
 			$t_ixt->set('moderated_by_user_id', $pn_moderator);
@@ -10378,6 +10346,52 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Changed the rank of an existing tag. Returns null if no row is loaded. Otherwise returns true
+	 * if tag rank was successfully changed, false if an error occurred in which case the errors will be available
+	 * via the model's standard error methods (getErrors() and friends.
+	 *
+	 * @param $pn_relation_id int A valid ca_items_x_tags.relation_id value specifying the tag relation to modify (mandatory)
+	 * @param $pn_rank int Rank to apply
+	 *
+	 * @return bool
+	 */
+	public function changeTagRank($pn_relation_id, $pn_rank) {
+		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
+		
+		$t_ixt = new ca_items_x_tags($pn_relation_id);
+		
+		if (!$t_ixt->getPrimaryKey()) {
+			$this->postError(2800, _t('Tag relation id is invalid'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
+			return false;
+		}
+		if (
+			($t_ixt->get('table_num') != $this->tableNum()) ||
+			($t_ixt->get('row_id') != $vn_row_id)
+		) {
+			$this->postError(2810, _t('Tag is not part of the current row'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
+			return false;
+		}
+		
+		if ($pn_user_id) {
+			if ($t_ixt->get('user_id') != $pn_user_id) {
+				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
+				return false;
+			}
+		}
+		
+		$t_ixt->setMode(ACCESS_WRITE);
+		$t_ixt->set('rank', $pn_rank);
+		
+		$t_ixt->update();
+		
+		if ($t_ixt->numErrors()) {
+			$this->errors = $t_ixt->errors;
+			return false;
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Deletes the tag relation specified by $pn_relation_id (a ca_items_x_tags.relation_id value) from the currently loaded row. Will only delete 
 	 * tags attached to the currently loaded row. If you attempt to delete a ca_items_x_tags.relation_id not attached to the current row 
 	 * removeTag() will return false and post an error. If you attempt to call removeTag() with no row loaded null will be returned.
@@ -10433,7 +10447,7 @@ $pa_options["display_form_field_tips"] = true;
 		$va_tags = $this->getTags($pn_user_id);
 		
 		foreach($va_tags as $va_tag) {
-			if (!$this->removeTag($va_tag['tag_id'], $pn_user_id)) {
+			if (!$this->removeTag($va_tag['relation_id'], $pn_user_id)) {
 				return false;
 			}
 		}
@@ -10470,9 +10484,10 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN ca_items_x_tags AS cixt ON cit.tag_id = cixt.tag_id
 			WHERE
 				(cixt.table_num = ?) AND (cixt.row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
+			ORDER BY cixt.rank
 		", $this->tableNum(), $vn_row_id);
 		
-		return $qr_comments->getAllRows();
+		return array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $qr_comments->getAllRows());
 	}
 	# --------------------------------------------------------------------------------------------
 	# User commenting

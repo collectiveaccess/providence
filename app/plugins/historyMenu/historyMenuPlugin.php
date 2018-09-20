@@ -84,6 +84,15 @@
 		/**
 		 * Record save activity
 		 */
+		public function hookSummarizeItem($pa_params) {
+			$this->hookEditItem($pa_params);
+			
+			return $pa_params;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Record save activity
+		 */
 		public function hookSaveItem($pa_params) {
 			$this->hookEditItem($pa_params);
 			

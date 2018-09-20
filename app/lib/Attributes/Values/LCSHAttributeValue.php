@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -234,7 +234,7 @@
 			if (trim($ps_value)) {
 				// parse <text>|<url> format
 				$va_tmp = explode('|', $ps_value);
-				if (sizeof($va_tmp) > 1) {
+				if (is_array($va_tmp) && (sizeof($va_tmp) > 1)) {
 				
 					$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
 				
@@ -343,7 +343,7 @@
 				return null;		// not an error, just skip it
 			}
 			
-			if(sizeof(LCSHAttributeValue::$s_term_cache > LCSHAttributeValue::$s_term_cache_max_size)) {
+			if(is_array(LCSHAttributeValue::$s_term_cache ) && (sizeof(LCSHAttributeValue::$s_term_cache) > LCSHAttributeValue::$s_term_cache_max_size)) {
 				LCSHAttributeValue::$s_term_cache = array($ps_value => LCSHAttributeValue::$s_term_cache[$ps_value]);
 			}
 			return LCSHAttributeValue::$s_term_cache[$ps_value];
@@ -459,4 +459,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>
