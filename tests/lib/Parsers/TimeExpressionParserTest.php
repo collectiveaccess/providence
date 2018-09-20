@@ -1198,3 +1198,16 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_historic['end'], '2001.032723595900');
 	}
 }
+
+public function testCenturyRanges() {
+	$o_tep = new TimeExpressionParser();
+	$o_tep->setLanguage('en_US');
+	$vb_res = $o_tep->parse('19th century - 20th century');
+	$this->assertEquals($vb_res, true);
+
+	$va_parse = $o_tep->getHistoricTimestamps();
+	$this->assertEquals($va_parse['start'], "1800.010100000000");
+	$this->assertEquals($va_parse['end'], "1999.123123595900");
+	$this->assertEquals($va_parse[0], "1800.010100000000");
+	$this->assertEquals($va_parse[1], "1999.123123595900");
+}
