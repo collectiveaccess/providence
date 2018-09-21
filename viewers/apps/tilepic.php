@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004 - 2012 Whirl-i-Gig
+ * Copyright 2004-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,11 +32,13 @@
 
 $ps_filepath = 	$_REQUEST["p"];
 $pn_tile = $_REQUEST["t"];
-$media_root = $_SERVER['DOCUMENT_ROOT'];
+
+$media_root = $_SERVER['CONTEXT_DOCUMENT_ROOT'] ? $_SERVER['CONTEXT_DOCUMENT_ROOT'] : $_SERVER['DOCUMENT_ROOT'];
+$script_path = $_SERVER['CONTEXT_PREFIX'] ? $_SERVER['CONTEXT_PREFIX'] : join("/", array_slice(explode("/", $_SERVER['SCRIPT_NAME']), 0, -3));
 
 $ps_filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", $ps_filepath);
 $ps_filepath = preg_replace("/\.tpc\$/", "", $ps_filepath);
-$ps_filepath = str_replace($media_root,"", $ps_filepath);
+$ps_filepath = str_replace($script_path,"", $ps_filepath);
 $ps_filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $ps_filepath);
 
 if (file_exists("{$media_root}{$ps_filepath}.tpc")) {
