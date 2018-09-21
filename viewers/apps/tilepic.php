@@ -32,17 +32,16 @@
 
 $ps_filepath = 	$_REQUEST["p"];
 $pn_tile = $_REQUEST["t"];
-
-$vs_media_root = "../..";
+$media_root = $_SERVER['DOCUMENT_ROOT'];
 
 $ps_filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", $ps_filepath);
 $ps_filepath = preg_replace("/\.tpc\$/", "", $ps_filepath);
-$ps_filepath = str_replace($vs_media_root,"", $ps_filepath);
+$ps_filepath = str_replace($media_root,"", $ps_filepath);
 $ps_filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $ps_filepath);
 
-if (file_exists("{$vs_media_root}/{$ps_filepath}.tpc")) {
+if (file_exists("{$media_root}{$ps_filepath}.tpc")) {
 	header("Content-type: image/jpeg");
-	$vs_output = caTilepicGetTileQuickly($vs_media_root."/".$ps_filepath.".tpc", $pn_tile);
+	$vs_output = caTilepicGetTileQuickly($media_root."/".$ps_filepath.".tpc", $pn_tile);
 	header("Content-Length: ".strlen($vs_output));
 	print $vs_output;
 	exit;
