@@ -3246,13 +3246,16 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = Session::getVar('csrf_tokens'))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 300) { $va_tokens = array_slice($va_tokens, 50, 250, true); }
+	        if (sizeof($va_tokens) > 300) { 
+	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 28800)); });	// delete any token older than eight hours
+	    	}
+	    	if (sizeof($va_tokens) > 600) { 
+	    		$va_tokens = array_slice($va_tokens, 0, 300, true); // delete last half of token buffer if it gets too long
+	    	}
 	    
-	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = 1; }
-	        
+	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
 	        
 	        Session::setVar('csrf_tokens', $va_tokens);
-	        //$po_request->session->save();
 	    }
 	    return $vs_token;
 	}
@@ -3269,12 +3272,11 @@ function caFileIsIncludable($ps_file) {
 	 * @throws ApplicationException
 	 */
 	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
-		return true;
 	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
 	    if (!is_array($va_tokens = Session::getVar('csrf_tokens'))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
-	        if (caGetOption('remove', $pa_options, false)) {
+	        if (caGetOption('remove', $pa_options, true)) {
 	            unset($va_tokens[$ps_token]);
 	            Session::setVar('csrf_tokens', $va_tokens);
 	        }
