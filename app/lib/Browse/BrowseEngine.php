@@ -351,8 +351,10 @@
 			$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
 			$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
 			if (!is_array($pa_row_ids)) { $pa_row_ids = array($pa_row_ids); }
+			
+			$purifier = new HTMLPurifier();
 			foreach($pa_row_ids as $vn_i => $vn_row_id) {
-			    $vn_row_id = preg_replace('![^\d\p{L} \-_\.;,]+!', '', urldecode($vn_row_id)); // sanitize facet values
+			    $vn_row_id = $purifier->purify(urldecode($vn_row_id)); // sanitize facet values
 				$va_criteria[$ps_facet_name][urldecode($vn_row_id)] = true;
 				
 				if (isset($pa_display_strings[$vn_i])) { $va_criteria_display_strings[$ps_facet_name][urldecode($vn_row_id)] = $pa_display_strings[$vn_i]; }
