@@ -775,7 +775,7 @@ function caFileIsIncludable($ps_file) {
 
 		if ($vb_convert_breaks) {
 			$ps_text = preg_replace("/(\n|\r\n){2}/","<p/>",$ps_text);
-			$ps_text = ereg_replace("\n","<br/>",$ps_text);
+			$ps_text = preg_replace("/[\n]/","<br/>",$ps_text);
 		}
 
 		return $ps_text;
