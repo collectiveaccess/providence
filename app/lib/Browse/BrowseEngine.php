@@ -734,7 +734,8 @@
 					if($va_facet_info['table'] && ($t_browse_table = Datamodel::getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true))) {
 						if (!($app = AppController::getInstance())) { return '???'; }
 						if ($t_browse_table->load($pn_row_id) && $t_browse_table->isReadable($app->getRequest(), 'preferred_labels')) {
-							return $t_browse_table->get("{$vs_facet_table}.preferred_labels");
+							
+							return $t_browse_table->getWithTemplate(isset($va_facet_info['display']) ? $va_facet_info['display'] : "^".$t_browse_table->tableName().".preferred_labels");
 						}
 					}
 					return '???';
@@ -4061,10 +4062,9 @@
 								);
 
 
-								$vs_display_field_name = null;
+								$vs_display = caGetOption('display', $va_facet_info, "^".$t_browse_table->tableName().".preferred_labels");
 								if (method_exists($t_browse_table, 'getLabelTableInstance')) {
 									$t_label_instance = $t_browse_table->getLabelTableInstance();
-									$vs_display_field_name = (isset($va_facet_info['display']) && $va_facet_info['display']) ? $va_facet_info['display'] : $t_label_instance->getDisplayField();
 									$va_joins[] = 'INNER JOIN '.$t_label_instance->tableName()." AS lab ON lab.".$t_browse_table->primaryKey().' = '.$t_browse_table->tableName().'.'.$t_browse_table->primaryKey();
 								}
 
@@ -4130,25 +4130,29 @@
 									return ((int)$qr_res->numRows() > 0) ? true : false;
 								} else {
 									$vs_sql = "
-										SELECT COUNT(*) _count,  *
+										SELECT COUNT(*) _count, ".$t_browse_table->primaryKey(true)."
 										FROM {$vs_facet_table}
 
 										{$vs_join_sql}
 										{$vs_where_sql}
-									    GROUP BY {$vs_facet_table}.{$vs_display_field_name}
+									    GROUP BY ".$t_browse_table->primaryKey(true)."
 									";
 									//print $vs_sql;
 									$qr_res = $this->opo_db->query($vs_sql);
 
 									$va_values = array();
 									$vs_pk = $t_browse_table->primaryKey();
+									
+									$values = caProcessTemplateForIDs($vs_display, $t_browse_table->tableName(), $qr_res->getAllFieldValues($vs_pk), ['returnAsArray' => true, 'indexWithIDs' => true]);
+									
+									$qr_res->seek(0);
 									while($qr_res->nextRow()) {
 										$vn_id = $qr_res->get($vs_pk);
 										if ($va_criteria[$vn_id]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 
 										$va_values[$vn_id][$qr_res->get('locale_id')] = array(
 											'id' => $vn_id,
-											'label' => $qr_res->get($vs_display_field_name),
+											'label' => isset($values[$vn_id]) ? $values[$vn_id] : "???", //$qr_res->get($vs_display_field_name),
 									        'content_count' => $qr_res->get('_count')
 										);
 										if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
