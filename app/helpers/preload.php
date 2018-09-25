@@ -71,10 +71,6 @@ require_once(__CA_LIB_DIR__.'/Controller/ActionController.php');
 
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
-require_once(__CA_LIB_DIR__.'/Cache/ExternalCache.php');
-require_once(__CA_LIB_DIR__.'/Cache/CompositeCache.php');
-require_once(__CA_LIB_DIR__.'/Cache/MemoryCache.php');
-
 require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
 require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
 
