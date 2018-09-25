@@ -727,6 +727,9 @@ class ItemService extends BaseJSONService {
 					if($va_value["locale"]) {
 						$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
 						unset($va_value["locale"]);
+					} else {
+						// use the default locale
+						$va_value["locale_id"] = ca_locales::getDefaultCataloguingLocaleID();
 					}
 					$t_instance->addAttribute($va_value,$vs_attribute_name);
 				}
@@ -749,7 +752,11 @@ class ItemService extends BaseJSONService {
 				if($va_label["locale"]) {
 					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
+				} else {
+					// use the default locale
+					$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
 				}
+
 				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
 			}
 		}
@@ -764,6 +771,9 @@ class ItemService extends BaseJSONService {
 				if($va_label["locale"]) {
 					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
+				} else {
+					// use the default locale
+					$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
 				}
 				if($va_label["type_id"]) {
 					$vn_type_id = $va_label["type_id"];
@@ -808,6 +818,9 @@ class ItemService extends BaseJSONService {
 										if($va_value["locale"]) {
 											$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
 											unset($va_value["locale"]);
+										} else {
+											// use the default locale
+											$va_value["locale_id"] = ca_locales::getDefaultCataloguingLocaleID();
 										}
 										$t_rel->addAttribute($va_value,$vs_attribute_name);
 										$vb_have_to_update = true;
@@ -829,7 +842,7 @@ class ItemService extends BaseJSONService {
 					if(!isset($va_rep['media']) || (!file_exists($va_rep['media']) && !isURL($va_rep['media']))) { continue; }
 
 					if(!($vn_rep_locale_id = $t_locales->localeCodeToID($va_rep['locale']))) {
-						$vn_rep_locale_id = $t_locales->localeCodeToID('en_US');
+						$vn_rep_locale_id = ca_locales::getDefaultCataloguingLocaleID();
 					}
 
 					$t_instance->addRepresentation(
@@ -909,6 +922,9 @@ class ItemService extends BaseJSONService {
 					if($va_value["locale"]) {
 						$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
 						unset($va_value["locale"]);
+					} else {
+						// use the default locale
+						$va_value["locale_id"] = ca_locales::getDefaultCataloguingLocaleID();
 					}
 					$t_instance->addAttribute($va_value,$vs_attribute_name);
 				}
@@ -931,6 +947,9 @@ class ItemService extends BaseJSONService {
 				if($va_label["locale"]) {
 					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
+				} else {
+					// use the default locale
+					$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
 				}
 				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
 			}
@@ -942,6 +961,9 @@ class ItemService extends BaseJSONService {
 				if($va_label["locale"]) {
 					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
 					unset($va_label["locale"]);
+				} else {
+					// use the default locale
+					$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
 				}
 				if($va_label["type_id"]) {
 					$vn_type_id = $va_label["type_id"];
@@ -990,6 +1012,9 @@ class ItemService extends BaseJSONService {
 									if($va_value["locale"]) {
 										$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
 										unset($va_value["locale"]);
+									} else {
+										// use the default locale
+										$va_value["locale_id"] = ca_locales::getDefaultCataloguingLocaleID();
 									}
 									$t_rel->addAttribute($va_value,$vs_attribute_name);
 									$vb_have_to_update = true;
