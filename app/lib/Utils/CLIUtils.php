@@ -416,7 +416,7 @@
 			print CLIProgressBar::finish();
 
 			print CLIProgressBar::start(1, _t('Reading file list'));
-			$va_contents = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/media', true, false);
+			$va_contents = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__, true, false);
 			print CLIProgressBar::next();
 			print CLIProgressBar::finish();
 
