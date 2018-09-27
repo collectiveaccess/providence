@@ -3473,11 +3473,11 @@
 								            return caSortArrayByKeyInValue($va_facet_list, array('item_value')); 
 								            break;
 								        default:
-								            return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								            return caSortArrayByKeyInValue($va_facet_list, ['label'], 'ASC', ['naturalSort' => true]); 
 								            break;
 								    }
 								} else {
-								    return caSortArrayByKeyInValue($va_facet_list, array('label')); 
+								    return caSortArrayByKeyInValue($va_facet_list, ['label'], 'ASC', ['naturalSort' => true]); 
 								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_OBJECTS__:
