@@ -4039,6 +4039,40 @@
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="standard_representation_ui" type="ca_object_representations">
+      <labels>
+        <label locale="en_CA">
+          <name>Object representation editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="screen_23_0" default="0">
+          <labels>
+            <label locale="en_CA">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels1">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="idno2">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="media3">
+              <bundle>media</bundle>
+            </placement>
+            <placement code="access4">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status5">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_loans_x_entities">
