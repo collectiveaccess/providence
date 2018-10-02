@@ -73,7 +73,7 @@ class DisplayTemplateParser {
 						$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
 						$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
-
+						$va_get_options['allDescendants'] = (int) $o_node->allDescendants ?: null;
 						if ($o_node->sort) {
 							$va_get_options['sort'] = preg_split('![ ,;]+!', $o_node->sort);
 							$va_get_options['sortDirection'] = $o_node->sortDirection;
@@ -83,7 +83,7 @@ class DisplayTemplateParser {
 							$va_row_ids = DisplayTemplateParser::_getRelativeIDsForRowIDs($ps_tablename, $vs_relative_to, $pa_row_ids, 'related', $va_get_options);
 				
 							if (!is_array($va_row_ids) || !sizeof($va_row_ids)) { return; }
-							$qr_res = caMakeSearchResult($ps_tablename, $va_row_ids, $va_search_result_opts);
+							$qr_res = caMakeSearchResult($ps_tablename, $va_row_ids, $pa_options);
 							if (!$qr_res) { return; }
 
 							/** @var HTML_Node $o_node */
@@ -569,6 +569,7 @@ class DisplayTemplateParser {
 					$va_get_options['hierarchyDirection'] = (string)$o_node->hierarchyDirection ?: null;
 					$va_get_options['maxLevelsFromTop'] = (int)$o_node->maxLevelsFromTop ?: null;
 					$va_get_options['maxLevelsFromBottom'] = (int)$o_node->maxLevelsFromBottom ?: null;
+					$va_get_options['allDescendants'] = (int)$o_node->allDescendants ?: null;
 					
 					if ($o_node->sort) {
 						$va_get_options['sort'] = preg_split('![ ,;]+!', $o_node->sort);
@@ -804,8 +805,8 @@ class DisplayTemplateParser {
 							array_merge(
 								$pa_options,
 								[
-									'sort' => $va_unit['sort'],
-									'sortDirection' => $va_unit['sortDirection'],
+									'sort' => $va_get_options['sort'],
+									'sortDirection' => $va_get_options['sortDirection'],
 									'delimiter' => $vs_unit_delimiter,
 									'returnAsArray' => true,
 									'skipIfExpression' => $vs_unit_skip_if_expression,

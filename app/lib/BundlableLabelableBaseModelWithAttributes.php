@@ -382,14 +382,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		duplicate_relationships = if set to an array of table names, all relationships to be specified tables will be duplicated. [Default is null - no relationships duplicated]
 	 *		duplicate_relationship_attributes = duplicate metadata attributes attached to duplicated relationships. [Default is false]
 	 *		duplicate_element_settings = per-metdata element duplication settings; keys are element names, values are 1 (duplicate) or 0 (don't duplicate); if element is not set then it will be duplicated. [Default is null]
+	 *		duplicate_children = duplicate child records. [Default is false]
 	 *		user_id = User ID of the user to make owner of the newly duplicated record (for records that support ownership by a user like ca_bundle_displays) [Default is null]
 	 *		
 	 * @return BundlableLabelablleBaseModelWithAttributes instance of newly created duplicate item
 	 */
 	public function duplicate($pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
+		$table = $this->tableName();
 		$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld = $this->getProperty('ID_NUMBERING_SORT_FIELD');
+		$vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
 		$vs_pk = $this->primaryKey();
 		
 		$vb_duplicate_nonpreferred_labels = isset($pa_options['duplicate_nonpreferred_labels']) && $pa_options['duplicate_nonpreferred_labels'];
@@ -398,6 +401,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_duplicate_relationships = (isset($pa_options['duplicate_relationships']) && is_array($pa_options['duplicate_relationships']) && sizeof($pa_options['duplicate_relationships'])) ? $pa_options['duplicate_relationships'] : array();
 		$va_duplicate_element_settings = (isset($pa_options['duplicate_element_settings']) && is_array($pa_options['duplicate_element_settings']) && sizeof($pa_options['duplicate_element_settings'])) ? $pa_options['duplicate_element_settings'] : array();
 		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
+		$vb_duplicate_children = isset($pa_options['duplicate_children']) && $pa_options['duplicate_children'];
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
@@ -408,7 +412,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// create new instance
-		if (!($t_dupe = Datamodel::getInstanceByTableName($this->tableName()))) { 
+		if (!($t_dupe = Datamodel::getInstanceByTableName($table))) { 
 			if ($vb_we_set_transaction) { $o_t->rollback();}
 			return null;
 		}
@@ -416,7 +420,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->setTransaction($o_t);
 		
 		if($this->isHierarchical()) {
-			if (!$this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) {
+			if (!$this->get($vs_parent_id_fld)) {
 				if ($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// If we're duping the root of an adhoc hierarchy then we need to set the HIERARCHY_ID_FLD to null
 					$this->set($this->getProperty('HIERARCHY_ID_FLD'), null);
 				} else {
@@ -439,11 +443,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
 					break;
 				case FT_VARS:
-					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field, array('unserialize' => true)));
+					$t_dupe->set($vs_field, $this->get($table.'.'.$vs_field, array('unserialize' => true)));
 					break;
 				default:
 					if (!isset($va_duplicate_element_settings[$vs_field]) || (isset($va_duplicate_element_settings[$vs_field]) && ($va_duplicate_element_settings[$vs_field] == 1))) {
-						$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+						$t_dupe->set($vs_field, $this->get($table.'.'.$vs_field));
 					}
 					break;
 			}
@@ -471,7 +475,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	
 			if ($vs_idno_stub) {
 				if ($vb_needs_suffix_generated) {
-					$t_lookup = Datamodel::getInstanceByTableName($this->tableName());
+					$t_lookup = Datamodel::getInstance($table, true);
 				
 					$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
 					$vs_suffix = (is_array($va_tmp) && (sizeof($va_tmp) > 1)) ? array_pop($va_tmp) : '';
@@ -541,7 +545,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 			$va_options = ['restrictToAttributesByCodes' => $va_attrs_to_duplicate];
 
-			if($va_dont_duplicate_codes = $this->getAppConfig()->get($this->tableName().'_dont_duplicate_element_codes')) {
+			if($va_dont_duplicate_codes = $this->getAppConfig()->get($table.'_dont_duplicate_element_codes')) {
 				if(is_array($va_dont_duplicate_codes)) {
 					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
 				}
@@ -568,8 +572,29 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Set rank of duplicated record such that it immediately follows its original
-		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')) > 0)) {
+		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($vs_parent_id_fld) > 0)) {
 			$t_dupe->setRankAfter($this->getPrimaryKey());
+		}
+		
+		if ($vb_duplicate_children && $this->isHierarchical() && ($child_ids = $this->getHierarchyChildren(null, ['idsOnly' => true]))) {
+			foreach($child_ids as $child_id) {
+				if ($t_child = $table::find([$vs_pk => $child_id], ['returnAs' => 'firstModelInstance'])) {
+					$t_child_dupe = $t_child->duplicate($pa_options);
+					if ($t_child->numErrors()) {
+						$this->errors = $t_child->errors;
+						if ($vb_we_set_transaction) { $o_t->rollback();}
+						return false;
+					}
+					$t_child_dupe->setMode(ACCESS_WRITE);
+					$t_child_dupe->set($vs_parent_id_fld, $t_dupe->getPrimaryKey());
+					$t_child_dupe->update();
+					if ($t_child_dupe->numErrors()) {
+						$this->errors = $t_child_dupe->errors;
+						if ($vb_we_set_transaction) { $o_t->rollback();}
+						return false;
+					}
+				}
+			}
 		}
 		
 		if ($vb_we_set_transaction) { $o_t->commit();}
@@ -1825,6 +1850,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_page_media':
 						$vs_element .= $this->getPageMediaHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					//
+					case 'ca_item_tags':
+						$vs_element .= $this->getItemTagHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						break;
 					# -------------------------------
 					default:
@@ -4773,6 +4803,48 @@ if (!$vb_batch) {
 						}
 						break;
 					# -------------------------------
+					//
+					case 'ca_item_tags':
+						if ($vb_batch) { 
+							$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
+							
+							if($vs_batch_mode == '_disabled_') { continue; }
+							
+							if (in_array($vs_batch_mode, ['_replace_', '_delete_'])) {
+								$this->removeAllTags();
+							}
+						}
+						
+						if (!$vb_batch || ($vb_batch && in_array($vs_batch_mode, ['_add_', '_replace_']))) {
+							foreach($_REQUEST as $vs_key => $vs_val) {
+								if (is_array($vs_val)) { continue; }
+								if (!($vs_val = trim($vs_val))) { continue; }
+								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_autocompletenew_([\d]+)$!", $vs_key, $va_matches)) {
+								
+									foreach(preg_split("![,;]+!", $vs_val) as $v) {
+										if (!($v = trim($v))) { continue; }
+										$this->addTag($v, $po_request->getUserID(), null, 1, $po_request->getUserID());
+										continue;
+									}
+								}
+							
+								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
+									$this->removeTag($va_matches[1]);
+								}
+							}
+						}
+						
+						if (!$vb_batch && is_array($ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}BundleList", pString)))) {
+							$tags = $this->getTags();
+							$tag_ids = array_map(function($v) { return $v['relation_id']; }, $tags);
+							$current_tag_ranks = array_map(function($v) { return $v['rank']; }, $tags);
+							foreach($ids_sorted as $i => $id) {
+								$this->changeTagRank($id, $current_tag_ranks[$i]);
+							}
+						}
+						
+						break;
+					# -------------------------------
 				}
 			}
 		}
@@ -6324,7 +6396,6 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
-
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/Search/'.$vs_search_result_class.'.php'); }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
@@ -7397,6 +7468,40 @@ side. For many self-relations the direction determines the nature and display te
 			BundlableLabelableBaseModelWithAttributes::$s_tep = new TimeExpressionParser();
 		}
 		return BundlableLabelableBaseModelWithAttributes::$s_tep;
+	}
+	
+	# ------------------------------------------------------
+	# Bundles
+	# ------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of tags in the currently record
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getItemTagHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_subject', $this);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('request', $po_request);
+		$o_view->setVar('batch', caGetOption('batch', $pa_options, false));
+		
+		$initial_values = [];
+		foreach(($this->getPrimaryKey() ? $this->getTags() : []) as $v) {
+			$initial_values[$v['relation_id']] = $v;
+		}
+		
+		$o_view->setVar('initialValues', $initial_values);
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		
+		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
+		
+		return $o_view->render('ca_item_tags.php');
 	}
 	# -------------------------------------------------------
 }

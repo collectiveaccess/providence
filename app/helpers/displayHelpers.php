@@ -2731,8 +2731,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if(!$po_request) { global $g_request; $po_request = $g_request; }
 		
 	
-		$va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings");
-		$vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter");
+		if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
+		if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
 		if (!$vs_template) { $vs_template = join($vs_display_delimiter, $va_display_format); }
 		
 		$va_related_item_info = $va_parent_ids = $va_hierarchy_ids = array();

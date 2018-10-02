@@ -147,7 +147,7 @@
  			if (
  				$this->opo_browse->criteriaHaveChanged() 
  				&& 
- 				(sizeof($va_criteria = $this->opo_browse->getCriteria()) == 1)
+ 				(is_array($va_criteria = $this->opo_browse->getCriteria()) && (sizeof($va_criteria) == 1))
  			) {
  				$va_tmp = array_keys($va_criteria);
   				

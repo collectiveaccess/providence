@@ -97,7 +97,6 @@
 			if(is_array($va_users_list) && sizeof($va_users_list)){
 				$va_filtered_list = array();
 				#$va_profile_prefs = $t_user->getValidPreferences('profile');
-				print_r($va_profile_prefs);
 				foreach($va_users_list as $vn_key => $va_user){
 					if(($vn_show_type == 1) && ($va_user["active"])){
 						# --- only show new registrations in need of approval ---- active == null

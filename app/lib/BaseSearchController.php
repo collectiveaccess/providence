@@ -289,7 +289,7 @@
 						}
 						
 						// set last browse id for hierarchy browser
-						$vn_id = intval(Session::getVar($this->ops_tablename.'_browse_last_id'));
+						$vn_id = ($this->request->config->get($this->ops_tablename.'_dont_remember_last_browse_item')) ? null : intval(Session::getVar($this->ops_tablename.'_browse_last_id'));
 						if (!$t_model->load($vn_id)) { 
 							$vn_id = null;
 						} elseif ($t_model->get('deleted')) {

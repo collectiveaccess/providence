@@ -79,6 +79,7 @@
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
 			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
+			$pb_quiet = (bool)$this->request->getParameter('quiet', pInteger);
 			
 			if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
 			$va_items = array();
@@ -193,7 +194,7 @@
 					if(!isset($va_opts['inlineCreateMessageDoesNotExist'])) { $va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query); }
 					if(!isset($va_opts['inlineCreateMessage'])) { $va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query); }
 					$va_opts['inlineCreateQuery'] = $ps_query;
-				} else {
+				} elseif(!$pb_quiet) {
 					$va_opts['emptyResultQuery'] = $ps_query;
 					$va_opts['emptyResultMessage'] = _t('No matches found for "%1"', $ps_query);
 				}

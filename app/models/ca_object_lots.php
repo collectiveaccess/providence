@@ -337,6 +337,8 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
 		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
+		
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
 		$this->BUNDLES['ca_objects_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
@@ -543,6 +545,7 @@ class ca_object_lots extends RepresentableBaseModel {
 			$va_lot_num = explode($vs_separator, $vs_lot_num);
 			
 			$vn_i = 1;
+			$seen_last_nums = [];
 			foreach($va_objects as $vn_object_id => $va_object_info) {
 				if ($t_object->load($vn_object_id)) {
 					if ($po_application_plugin_manager) {
@@ -552,10 +555,20 @@ class ca_object_lots extends RepresentableBaseModel {
 					
 					$va_tmp = explode($vs_separator, $t_object->get('idno'));
 					$vs_last_num = array_pop($va_tmp);
+					if (!is_numeric($vs_last_num)) { $vs_last_num = "1"; }
+					$vn_last_num = (int)$vs_last_num;
+					if ($vn_last_num < 1) { $vn_last_num = 1; }
+					
 					foreach($va_lot_num as $vn_i => $vs_n) {
 						$va_tmp[$vn_i] = $vs_n;
 					}
-					$va_tmp[] = $vs_last_num;
+					
+					while(isset($seen_last_nums[$vn_last_num])) {
+					    $vn_last_num++;
+					}
+					$va_tmp[] = $vn_last_num;
+					
+					$seen_last_nums[$vs_last_num] = true;
 					$t_object->setIdnoWithTemplate(join($vs_separator, $va_tmp));
 				
 					$t_object->update();

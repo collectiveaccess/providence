@@ -276,6 +276,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = array_merge($this->errors, $t_placement->errors);
 			return false;
 		}
+		
+		// Dependent field visibility config relies on UI config
+		if ($this->getAppConfig()->get('enable_dependent_field_visibility')) { CompositeCache::flush('ca_metadata_elements_available_settings'); }
 		return $t_placement->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -303,6 +306,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			unset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]);
+			
+			// Dependent field visibility config relies on UI config
+			if ($this->getAppConfig()->get('enable_dependent_field_visibility')) { CompositeCache::flush('ca_metadata_elements_available_settings'); }
 			return true;
 		}
 		return false;
@@ -322,6 +328,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					return false;
 				}
 			}
+			
+			// Dependent field visibility config relies on UI config
+			if ($this->getAppConfig()->get('enable_dependent_field_visibility')) { CompositeCache::flush('ca_metadata_elements_available_settings'); }
 			return true;
 		}
 		return false;

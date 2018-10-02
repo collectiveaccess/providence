@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/administrate/maintenance/ACLReindexController.php :
+ * app/controllers/administrate/maintenance/ClearSearchIndexingLockFileController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,31 +26,27 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
-require_once(__CA_LIB_DIR__."/Media.php");
-require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
-require_once(__CA_LIB_DIR__.'/ACLReindexingProgress.php');
+require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
 
-class ACLReindexController extends ActionController {
+class ClearSearchIndexingLockFileController extends ActionController {
 
 	# ------------------------------------------------	
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		
-		//if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_search_reindex')) {
-		//	$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 		//	return;
-		//}	
+		if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_search_reindex')) {
+			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 			return;
+		}	
 	}
 	# ------------------------------------------------
 	public function Index(){
-		$this->render('acl_reindex_landing_html.php');
+		$this->render('clear_search_indexing_lock_file_landing_html.php');
 	}
 	# ------------------------------------------------
-	public function Reindex(){
-		$this->render('acl_reindex_status_html.php');
+	public function RemoveLock(){
+	    ca_search_indexing_queue::lockRelease();
+		$this->render('clear_search_indexing_lock_file_result_html.php');
 	}
 	# ------------------------------------------------
 }
-?>

@@ -188,8 +188,6 @@ class WorldCatDataReader extends BaseXMLDataReader {
 		if (!$this->opa_row_ids || !is_array($this->opa_row_ids) || !sizeof($this->opa_row_ids)) { return false; }
 		
 		if(isset($this->opa_row_ids[$this->opn_current_row]) && ($vn_worldcat_id = $this->opa_row_ids[$this->opn_current_row])) {
-			
-			$o_client = new \GuzzleHttp\Client(['base_uri' => WorldCatDataReader::$s_worldcat_detail_url]);
 			// Create a request
 			try {
 				if ($this->opb_z3950_available && $this->ops_z3950_user) {
@@ -200,6 +198,7 @@ class WorldCatDataReader extends BaseXMLDataReader {
 					yaz_wait();
 					$vs_data = simplexml_load_string(yaz_record($r_conn, 1,  "xml; charset=marc-8,utf-8"));
 				} elseif ($this->ops_api_key) {
+					$o_client = new \GuzzleHttp\Client(['base_uri' => WorldCatDataReader::$s_worldcat_detail_url]);
 					$o_response = $o_client->request("GET", "{$vn_worldcat_id}?wskey=".$this->ops_api_key);
 					$vs_data = $o_response->getBody();
 				} else {

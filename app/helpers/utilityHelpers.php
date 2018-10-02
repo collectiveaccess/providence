@@ -775,7 +775,7 @@ function caFileIsIncludable($ps_file) {
 
 		if ($vb_convert_breaks) {
 			$ps_text = preg_replace("/(\n|\r\n){2}/","<p/>",$ps_text);
-			$ps_text = ereg_replace("\n","<br/>",$ps_text);
+			$ps_text = preg_replace("/[\n]/","<br/>",$ps_text);
 		}
 
 		return $ps_text;
@@ -1193,10 +1193,16 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
 	 * @param array $pa_options Options include:
 	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
+	 *      caseInsenstive = Sort case insensitively. [Default is true]
+	 *      naturalSort = Sort case insensitively and only considers letters and numbers in sort, stripping punctuation and other characters. [Default is false]
 	 * @return array The sorted array
 	*/
 	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
 		$va_sort_keys = array();
+		
+		$pb_case_insensitive = caGetOption('caseInsensitive', $pa_options, true);
+		$pb_natural_sort = caGetOption('naturalSort', $pa_options, false);
+		
 		if (caGetOption('dontRemoveKeyPrefixes', $pa_options, false)) {
 			foreach ($pa_sort_keys as $vs_field) {
 				$va_tmp = explode('.', $vs_field);
@@ -1211,7 +1217,13 @@ function caFileIsIncludable($ps_file) {
 			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
-				$va_key[] = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
+			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
+				
+				if ($pb_natural_sort || $pb_case_insensitive) { $k = mb_strtolower($k); }
+				if ($pb_natural_sort) {
+				    $k = trim(preg_replace("![^[:alnum:][:space:]]!u", " ", $k));
+				}
+				$va_key[] = $k;
 			}
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
@@ -3246,13 +3258,16 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = Session::getVar('csrf_tokens'))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 300) { $va_tokens = array_slice($va_tokens, 50, 250, true); }
+	        if (sizeof($va_tokens) > 300) { 
+	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 28800)); });	// delete any token older than eight hours
+	    	}
+	    	if (sizeof($va_tokens) > 600) { 
+	    		$va_tokens = array_slice($va_tokens, 0, 300, true); // delete last half of token buffer if it gets too long
+	    	}
 	    
-	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = 1; }
-	        
+	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
 	        
 	        Session::setVar('csrf_tokens', $va_tokens);
-	        //$po_request->session->save();
 	    }
 	    return $vs_token;
 	}
@@ -3269,12 +3284,11 @@ function caFileIsIncludable($ps_file) {
 	 * @throws ApplicationException
 	 */
 	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
-		return true;
 	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
 	    if (!is_array($va_tokens = Session::getVar('csrf_tokens'))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
-	        if (caGetOption('remove', $pa_options, false)) {
+	        if (caGetOption('remove', $pa_options, true)) {
 	            unset($va_tokens[$ps_token]);
 	            Session::setVar('csrf_tokens', $va_tokens);
 	        }

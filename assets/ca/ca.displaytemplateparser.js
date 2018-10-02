@@ -113,10 +113,16 @@ var caUI = caUI || {};
             // get tags from template
             var tagRegex = /[\^]+([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
             var tagList = template.match(tagRegex);
+            var fullTagList = tagList;
+            
             
             // rewrite tags
+            var j = 1;
             jQuery.each(tagList, function(i, tag) {
                 if (tag.substring(0,6) === '^^join') {
+                    var tagProc = "join_" + j;
+                    j++;
+                    fullTagList[i] = tagProc;
                     var opts = that.parseTagOpts(tag);
                     var delimiter = opts['delimiter'] ? opts['delimiter'] : "; ";
                     
@@ -141,7 +147,8 @@ var caUI = caUI || {};
                         acc.push(e);
                     } 
                     
-                    template = template.replace(tag, acc.join(delimiter));
+                    values[tagProc] = acc.join(delimiter);
+                    template = template.replace(tag, values[tagProc]);
                     
                     return;
                 }
@@ -282,14 +289,24 @@ var caUI = caUI || {};
                                                 emitUnits = (!omitRepeatingUnits) || (lastUnits !== ((inFeet > 0) ? 'ft' : 'in'));
                                             }
                                             if (inFeet > 0) { 
-                                                vals.push(inFeet + (emitUnits ? " ft" : "") + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
+                                                if (inInches == 0) {
+                                                    vals.push(inFeet);
+                                                    lastUnits = u = 'ft';
+                                                } else {
+                                                    vals.push(inFeet + (emitUnits ? " ft" : "") + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
+                                                    lastUnits = null; u = '';
+                                                }
                                             }
                                             if (inInches > 0) {
-                                                vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
+                                                if (inFeet > 0) {
+                                                    vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
+                                                    lastUnits = null; u = '';
+                                                } else {
+                                                    vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}));
+                                                    lastUnits = u = 'in';
+                                                }
                                             }
-                                            lastUnits = null;
                                             q = vals.join(" ");
-                                            u = ''
                                         } else {
                                             var inMiles = parseInt(inInches / (5280 * 12));
                                             inInches -= inMiles * (5280 * 12);
@@ -382,17 +399,23 @@ var caUI = caUI || {};
 			
             // Process <ifdef> tags
             var h = jQuery("<div>" + t + "</div>");
-            jQuery.each(tagList, function(k, tag) {
+            jQuery.each(fullTagList, function(k, tag) {
+                var isJoin = false;
+                var originalTag = tag;
+                if (tag.match(/^join_/)) { 
+                    tag = values[tag]; 
+                    isJoin = true;
+                }
                 var tagBits = tag.split(/\~/);
                 var tagRoot = tagBits[0].replace("^", "");
                 var val = jQuery(values[tagRoot]).val();
 
                 if(val && (val.length > 0)) {
-                    jQuery.each(h.find("ifdef[code=" + tagRoot + "]"), function(k, v) {
+                    jQuery.each(h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]"), function(k, v) {
                         jQuery(v).replaceWith(jQuery(v).html());
                     });
                 } else {
-                    h.find("ifdef[code=" + tagRoot + "]").remove();
+                    h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]").remove();
                 }
             });
             return h.html().trim();

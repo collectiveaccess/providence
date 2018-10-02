@@ -500,74 +500,59 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
                         $ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
                     }
-                    
-					switch($pa_element_info['settings']['render']) {	
-                        case 'radio_buttons':
-                            $cases[] = [
-                                'condition' => "jQuery('input[name={fieldNamePrefix}".$pa_element_info['element_id']."_{n}]:checked').val() == ''",
-                                'ids' => $ids
-                            ]; 
-                            break;	
-                        case 'yes_no_checkboxes':
-                            $cases[] = [
-                                'condition' => "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked').val() == ''",
-                                'ids' => $ids
-                            ]; 
-                            break;		        
-                        case 'select':
-                        case null:
-                            $cases[] = [
-                                'condition' => "{$vs_select}.val() == ''",
-                                'ids' => $ids
-                            ]; 
-                            break;
-                    }
+				    $cases[] = [
+                        'condition' => "{$vs_select}.val() == ''",
+                        'ids' => $ids
+                    ]; 
 				}
-				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
-					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
-						$vs_hide_js = $vs_show_js = $vs_condition = '';
+				if (is_array($va_list_items = $t_list->getItemsForList($pa_element_info['list_id']))) {
+					foreach($va_list_items as $va_items_by_locale) {
+						foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
+							$vs_hide_js = $vs_show_js = $vs_condition = '';
 						
-						$ids = [];
+							$ids = [];
 
-						if(isset($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
-							$va_hideif_for_idno = $pa_element_info['settings']['hideIfSelected_'.$va_item['idno']];
-							if(!is_array($va_hideif_for_idno)) { $va_hideif_for_idno = [$va_hideif_for_idno]; }
+							if(isset($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
+								$va_hideif_for_idno = $pa_element_info['settings']['hideIfSelected_'.$va_item['idno']];
+								if(!is_array($va_hideif_for_idno)) { $va_hideif_for_idno = [$va_hideif_for_idno]; }
 
-							// @todo maybe only generate JS for bundles on current screen? could figure that out from request
-							foreach($va_hideif_for_idno as $vs_key) {
-								$va_tmp = self::resolveHideIfSelectedKey($vs_key);
-								if(!is_array($va_tmp)) { continue; }
+								// @todo maybe only generate JS for bundles on current screen? could figure that out from request
+								foreach($va_hideif_for_idno as $vs_key) {
+									$va_tmp = self::resolveHideIfSelectedKey($vs_key);
+									if(!is_array($va_tmp)) { continue; }
 
-                                $ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
+									$ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
+								}
+							}
+
+							switch($pa_element_info['settings']['render']) {
+								case 'radio_buttons':
+									$vs_condition = "jQuery('input[name={fieldNamePrefix}".$pa_element_info['element_id']."_{n}]:checked').val() === '".$va_item['item_id']."'";
+									break;
+								case 'yes_no_checkboxes':
+									if($vb_yes_was_set) {
+										$vs_condition = "!(jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked'))";
+									} else {
+										$vb_yes_was_set = true;
+										$vs_condition = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked')";
+									}
+									break;
+								case 'select':
+								case null:
+									$vs_condition = "{$vs_select}.val() === '" . $va_item['item_id'] . "'";
+									break;
+								default:
+									continue;
+							}
+						
+							if (sizeof($ids) > 0) {
+								$cases[] = [
+									'condition' => $vs_condition,
+									'ids' => $ids
+								]; 
 							}
 						}
 
-						switch($pa_element_info['settings']['render']) {
-							case 'radio_buttons':
-								$vs_condition = "jQuery('input[name={fieldNamePrefix}".$pa_element_info['element_id']."_{n}]:checked').val() === '".$va_item['item_id']."'";
-								break;
-							case 'yes_no_checkboxes':
-								if($vb_yes_was_set) {
-									$vs_condition = "!(jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked'))";
-								} else {
-									$vb_yes_was_set = true;
-									$vs_condition = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked')";
-								}
-								break;
-							case 'select':
-							case null:
-								$vs_condition = "{$vs_select}.val() === '" . $va_item['item_id'] . "'";
-								break;
-							default:
-								continue;
-						}
-						
-						if (sizeof($ids) > 0) {
-                            $cases[] = [
-                                'condition' => $vs_condition,
-                                'ids' => $ids
-                            ]; 
-                        }
 					}
 				}
 			}
@@ -616,8 +601,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			 */
 			$vs_cache_key = "ca_metadata_elements_available_settings_".$pa_element_info['element_id'];
 		 
-			if (CompositeCache::contains($vs_cache_key)) {
-				return CompositeCache::fetch($vs_cache_key);
+			if (CompositeCache::contains($vs_cache_key, 'ca_metadata_elements_available_settings')) {
+				return CompositeCache::fetch($vs_cache_key, 'ca_metadata_elements_available_settings');
 			}
 			$va_options_for_settings = array();
 
@@ -685,7 +670,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					}
 				}
 			}
-            CompositeCache::save($vs_cache_key, $va_element_settings);
+            CompositeCache::save($vs_cache_key, $va_element_settings, 'ca_metadata_elements_available_settings');
 		} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependent_field_visibility')) {
 			// when installing, UIs, screens and placements are not yet available when we process elementSets, so
 			// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
