@@ -1997,8 +1997,8 @@ if (!$pb_omit_editing_info) {
 				}
 				
 				if ($vb_is_related) {
-					$vs_restrict_to_types = is_array($pa_options['restrictToTypes']) ? "restrictToTypes=\"".join("|", $pa_options['restrictToTypes'])."\"" : "";
-					$vs_restrict_to_relationship_types = is_array($pa_options['restrictToRelationshipTypes']) ? "restrictToRelationshipTypes=\"".join("|", $pa_options['restrictToRelationshipTypes'])."\"" : "";
+					$vs_restrict_to_types = (is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) ? "restrictToTypes=\"".join("|", $pa_options['restrictToTypes'])."\"" : "";
+					$vs_restrict_to_relationship_types = (is_array($pa_options['restrictToRelationshipTypes']) && sizeof($pa_options['restrictToRelationshipTypes'])) ? "restrictToRelationshipTypes=\"".join("|", $pa_options['restrictToRelationshipTypes'])."\"" : "";
 					
 					// resolve template relative to relationship
 					if (is_array($va_path = Datamodel::getPath($po_result->tableName(), $t_instance->tableName()))) {
