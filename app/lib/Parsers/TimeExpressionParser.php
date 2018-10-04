@@ -1513,7 +1513,7 @@ class TimeExpressionParser {
 		$va_next_token = $this->getToken();
 		$vs_next_token_lc = mb_strtolower($va_next_token['value']);
 		$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
-										
+		$va_dates = array();							
 		if (
 			($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
 			||	
@@ -1579,11 +1579,12 @@ class TimeExpressionParser {
 						'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa,
 						'dont_window' => true
 					);
-					
-					return $va_dates;
 				}
 			//}								
+		} else {
+			array_unshift($this->opa_tokens,$va_token[value]);
 		}
+		return $va_dates;
 		}	
 	# -------------------------------------------------------------------
 	# Lexical analysis
