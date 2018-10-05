@@ -702,8 +702,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = "<script type=\"text/javascript\">
-		jQuery(document).ready(function() {
-			jQuery(document).bind('keydown.ctrl_f', function() {
+		jQuery(document).on('ready', function() {
+			jQuery(document).on('keydown.ctrl_f', function() {
 				caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
 				caEditorFieldList.onOpenCallback = function(){
 					var selector = '#' + caEditorFieldList.panelID + ' a.editorFieldListLink:link';
@@ -744,8 +744,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
 		$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
 		$vs_buf = "<script type=\"text/javascript\">
-		jQuery(document).ready(function() {
-			jQuery(document).bind('keydown.ctrl_h', function() {
+		jQuery(document).on('ready', function() {
+			jQuery(document).on('keydown.ctrl_h', function() {
 				caEditorFieldList.hidePanel({dontCloseMask:1});
 				
 				var url;
@@ -2933,10 +2933,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *
 	 */
 	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null) {
-		$o_config = Configuration::load();
+		$o_config = caGetDetailConfig();
 		$vn_can_download = false;
-		if($o_config->get('allow_ca_objects_representation_download')){
-			switch($o_config->get('allow_ca_objects_representation_download')){
+		if($vs_allow = $o_config->get(['allowObjectRepresentationDownload', 'allow_ca_objects_representation_download'])){
+			switch($vs_allow){
 				case "anyone":
 					$vn_can_download = true;
 				    break;
@@ -2953,18 +2953,21 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					}
 				    break;
 				# ------------------------------------------
+				default:
 				case "never":
 				    $vn_can_download = false;
 				    break;
 				# ------------------------------------------
 			}
 		}
-		if($pn_object_id && $vn_can_download && is_array($o_config->get('allow_ca_objects_representation_download_types')) && sizeof($o_config->get('allow_ca_objects_representation_download_types'))){
+		
+		$va_types = $o_config->get(['restrictObjectRepresentationDownloadToObjectTypes', 'allow_ca_objects_representation_download_types']);
+		if($pn_object_id && $vn_can_download && is_array($va_types) && sizeof($va_types)){
 			# --- see if current object's type is in the confirgured array
 			$t_object = new ca_objects($pn_object_id);
 			$t_list_item = new ca_list_items($t_object->get("type_id"));
 			$va_object_type_code = $t_list_item->get("idno");
-			if(!in_array($va_object_type_code, $o_config->get('allow_ca_objects_representation_download_types'))){
+			if(!in_array($va_object_type_code, $va_types)){
 				$vn_can_download = false;
 			}
 		}
@@ -3714,9 +3717,21 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$va_add_to_set_link_info = caGetAddToSetInfo($po_request);
 		
 		$vs_tool_bar = "<div class='detailMediaToolbar'>";
-		if(!$va_rep_display_info["no_overlay"]){
-			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $pt_representation->getPrimaryKey(), 'overlay' => 1))."\"); return false;' title='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in'></span></a>\n";
+		$vn_rep_id = $pt_representation->getPrimaryKey();
+		
+		$va_detail_type_config = caGetDetailTypeConfig($ps_context);
+		
+		if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
+			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'overlay' => 1))."\"); return false;' title='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in'></span></a>\n";
 		}
+		
+		if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
+		    $vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
+		}
+		if ($vb_show_compare) {
+		   $vs_tool_bar .= "<a href='#' class='compare_link' title='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true'></i></a>";
+		}
+		
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
 			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' title='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
 		}
@@ -3724,8 +3739,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			# -- get version to download configured in media_display.conf
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
-			
-			$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("title" => _t("Download")));
+			if($vs_download_version){
+				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("title" => _t("Download")));
+			}
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
 		
@@ -3911,7 +3927,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				
 				if ($pb_inline) {
 					$vs_tool_bar = caRepToolbar($po_request, $t_instance, $pt_subject, array('display' => $ps_display_type, 'context' => $ps_context, 'checkAccess' => $pa_check_acccess));
-					$vs_viewer = "<div class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}{$vs_tool_bar}</div></div>";
+					$vs_viewer = "<div data-representation_id='{$pn_representation_id}' data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}{$vs_tool_bar}</div></div>";
 				}
 				
 				return $vs_viewer;
@@ -4138,12 +4154,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					
 				$vs_caption = (isset($pa_options["captionTemplate"]) && $pa_options["captionTemplate"]) ? $po_data->getWithTemplate($pa_options["captionTemplate"]) : "";
 			
-				$va_reps[$vn_rep_id = $po_data->get('ca_object_representations.representation_id')] = "<div class='repViewerContCont'><div id='cont{$vn_rep_id}' class='repViewerCont'>".$vs_viewer_name::getViewerHTML(
+				$va_reps[$vn_rep_id = $po_data->get('ca_object_representations.representation_id')] = "<div data-representation_id='{$vn_rep_id}' class='repViewerContCont'><div id='cont{$vn_rep_id}' class='repViewerCont'>".$vs_viewer_name::getViewerHTML(
 					$po_request, 
 					"representation:{$vn_representation_id}", 
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
 					['viewerWrapper' => 'viewerInline', 'context' => caGetOption('context', $pa_options, null)]
 				).$vs_tool_bar.$vs_caption."</div></div>";
+				
+				if (sizeof($va_reps) > 10) { break(2); }
 			}
  		}
  		return $va_reps;

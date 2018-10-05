@@ -462,4 +462,3 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	}
 	# ------------------------------------------------------
 }
-?>

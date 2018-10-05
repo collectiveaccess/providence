@@ -3734,7 +3734,7 @@ class BaseModel extends BaseObject {
 			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 
-		$url = $this->getMediaUrl($ps_field, $ps_version, isset($pa_options["page"]) ? $pa_options["page"] : null);
+		$url = caGetOption('usePath', $pa_options, false) ? $this->getMediaPath($ps_field, $ps_version, isset($pa_options["page"]) ? $pa_options["page"] : null) : $this->getMediaUrl($ps_field, $ps_version, isset($pa_options["page"]) ? $pa_options["page"] : null);
 		$m = new Media();
 		
 		$o_vol = new MediaVolumes();
@@ -7344,7 +7344,7 @@ class BaseModel extends BaseObject {
 		
 		$t_instance = null;
 		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
-			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
+			$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 			if (!$t_instance->load($pn_id)) { return null; }
 		} else {
 			$t_instance = $this;

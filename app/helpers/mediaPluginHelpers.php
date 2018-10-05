@@ -1017,6 +1017,7 @@
 			    if (!$t_val->isLoaded()) { return null; }
 			    $t_attr = new ca_attributes($t_val->get('attribute_id'));
 			    $vs_table_name  = Datamodel::getTableName($t_attr->get('table_num'));
+			    Datamodel::getInstance($vs_table_name, true);
 			    $vn_subject_id = (int)$t_attr->get('row_id');
 			    if (!($t_subject = $vs_table_name::find($vn_subject_id, $pa_options))) { return null; } // table::find() performs checkAccess
 			    

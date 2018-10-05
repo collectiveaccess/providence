@@ -394,6 +394,14 @@
 			$vs_target = '';
 		}
 		
+		if ($ps_action == '*') { 
+			$ps_action = $po_request->getAction(); 
+			if ($vs_action_extra =  $po_request->getActionExtra()) { 
+				$ps_action .= "/{$vs_action_extra}";
+			}
+		}
+		
+		
 		if ($ps_module_and_controller_path) {
 			$vs_action = (caUseCleanUrls()) ?
 				$po_request->getBaseUrlPath().'/'.$ps_module_and_controller_path.'/'.$ps_action

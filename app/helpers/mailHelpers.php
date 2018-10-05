@@ -263,4 +263,3 @@
 		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, caGetOption('attachment', $pa_options, null), $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>

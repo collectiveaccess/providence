@@ -196,11 +196,23 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	function caGetInfoForBrowseType($ps_browse_type) {
 		$o_browse_config = caGetBrowseConfig();
 		
-		$va_browse_types = $o_browse_config->getAssoc('browseTypes');
+		if (!is_array($va_browse_types = $o_browse_config->getAssoc('browseTypes'))) { return null; }
+		
 		$ps_browse_type = strtolower($ps_browse_type);
 		
 		if (isset($va_browse_types[$ps_browse_type])) {
 			return $va_browse_types[$ps_browse_type];
+		} else {
+		    // Try to match case insensitively
+		    $keys = array_keys($va_browse_types);
+		    
+		    $dict = [];
+		    foreach($keys as $k) {
+		        $dict[strtolower($k)] = $k;
+		    }
+		    if (isset($dict[$ps_browse_type])) {
+		        return $va_browse_types[$dict[$ps_browse_type]];
+		    }
 		}
 		return null;
 	}
