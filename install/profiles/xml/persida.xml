@@ -13990,6 +13990,11 @@
                 <setting name="label" locale="en_US">Related Exhibitions</setting>
                 <setting name="add_label" locale="en_US">add exhibitions</setting>
                 <setting name="restrict_to_types">exhibition</setting>
+                <setting name="render">list</setting>
+                <setting name="display_template"><![CDATA[ <l>^ca_occurrences.preferred_labels</l>
+<ifdef code="ca_occurrences.occurrence_dates"><br>Loan Period:</ifdef> ^ca_occurrences.occurrence_dates<br>
+Borrower: <unit relativeTo="ca_occurrences">
+<unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="venue">^ca_entities.preferred_labels</unit>]]></setting>
               </settings>
             </placement>
              <placement code="ca_storage_locations">
@@ -13997,6 +14002,7 @@
                <settings>
                 <setting name="label" locale="en_US">Artwork Location</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="render">list</setting>
               </settings>
              </placement>
             <placement code="ca_objects_deaccession">
@@ -14097,6 +14103,9 @@
             </placement>
              <placement code="ca_attribute_vat_import">
               <bundle>ca_attribute_vat_import</bundle>
+            </placement>
+             <placement code="ca_attribute_vat_percentage">
+              <bundle>ca_attribute_vat_percentage</bundle>
             </placement>
              <placement code="ca_attribute_country_purchase">
               <bundle>ca_attribute_country_purchase</bundle>
@@ -17553,6 +17562,26 @@ Is Gift?: ^ca_objects.price_copy.is_gift
   </displays>
   <logins>
     <login user_name="admin" password="changeme" fname="CollectiveAccess" lname="Administrator"
+      email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Eugenia" password="changeme" fname="Eugenia" lname="Stamatopoulou"
+      email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Minos" password="changeme" fname="Minos" lname="Papmichael"
+      email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Olga" password="changeme" fname="Olga" lname="Simos"
+      email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="Natasha" password="changeme" fname="Natasha" lname="Polymeropoulos"
       email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
