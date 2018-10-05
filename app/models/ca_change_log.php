@@ -244,8 +244,6 @@ class ca_change_log extends BaseModel {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 		require_once(__CA_MODELS_DIR__ . '/ca_locales.php');
 
-		$o_dm = Datamodel::load();
-
 		if(!is_null($pn_limit)) {
 			$vs_limit_sql = "LIMIT $pn_limit";
 		} else {
