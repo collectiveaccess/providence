@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,15 +47,31 @@
 	function caGetThemeGraphic($po_request, $ps_file_path, $pa_attributes=null, $pa_options=null) {
 		$vs_base_url_path = $po_request->getThemeUrlPath();
 		$vs_base_path = $po_request->getThemeDirectoryPath();
-		$vs_file_path = '/assets/pawtucket/graphics/'.$ps_file_path;
+		$vs_file_path = "/assets/pawtucket/graphics/{$ps_file_path}";
 
-		if (!file_exists($vs_base_path.$vs_file_path)) {
-			$vs_base_url_path = $po_request->getDefaultThemeUrlPath();
+        if (file_exists($vs_base_path.$vs_file_path)) {
+            // Graphic is present in currently configured theme
+			return caHTMLImage($vs_base_url_path.$vs_file_path, $pa_attributes, $pa_options);
 		}
 
-		$vs_html = caHTMLImage($vs_base_url_path.$vs_file_path, $pa_attributes, $pa_options);
+        $o_config = Configuration::load();		
+		if ($o_config->get('allowThemeInheritance')) {
+            $i=0;
+            
+            while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
+                $i++;
+                if (file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/{$vs_file_path}")) {
+                    return caHTMLImage(__CA_THEMES_URL__."/{$vs_inherit_from_theme}/{$vs_file_path}", $pa_attributes, $pa_options);
+                }
+                
+                if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
+                $o_config = Configuration::load(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf", false, false, true);
+                if ($i > 10) {break;} // max 10 levels
+            }
+        }
 
-		return $vs_html;
+        // Fall back to default theme
+		return caHTMLImage($po_request->getDefaultThemeUrlPath().$vs_file_path, $pa_attributes, $pa_options);
 	}
 	# ---------------------------------------
 	/**
@@ -1119,11 +1135,11 @@
 		
 		if($vb_submit_or_reset_set) {
 			$vs_script = "<script type='text/javascript'>
-			jQuery('.caAdvancedSearchFormSubmit').bind('click', function() {
+			jQuery('.caAdvancedSearchFormSubmit').on('click', function() {
 				jQuery('#caAdvancedSearch').submit();
 				return false;
 			});
-			jQuery('.caAdvancedSearchFormReset').bind('click', function() {
+			jQuery('.caAdvancedSearchFormReset').on('click', function() {
 				jQuery('#caAdvancedSearch').find('input[type!=\"hidden\"],textarea').val('');
 				jQuery('#caAdvancedSearch').find('input.lookupBg').val('');
 				jQuery('#caAdvancedSearch').find('select.caAdvancedSearchBoolean').val('AND');
@@ -1268,21 +1284,43 @@ jQuery(document).ready(function() {
 		if($o_collections_config->get("export_max_levels") && ($vn_level > $o_collections_config->get("export_max_levels"))){
 			return;
 		}
+		$t_list = new ca_lists();
+		$va_exclude_collection_type_ids = array();
+		if($va_exclude_collection_type_idnos = $o_collections_config->get("export_exclude_collection_types")){
+			# --- convert to type_ids
+			$va_exclude_collection_type_ids = $t_list->getItemIDsFromList("collection_types", $va_exclude_collection_type_idnos, array("dontIncludeSubItems" => true));
+		}
 		$vs_output = "";
 		$qr_collections = caMakeSearchResult("ca_collections", $va_collection_ids);
 		
 		$vs_sub_collection_label_template = $o_collections_config->get("export_sub_collection_label_template");
 		$vs_sub_collection_desc_template = $o_collections_config->get("export_sub_collection_description_template");
 		$vs_object_template = $o_collections_config->get("export_object_label_template");
-	
+		$va_collection_type_icons = array();
+		$va_collection_type_icons_by_idnos = $o_collections_config->get("export_collection_type_icons");
+		if(is_array($va_collection_type_icons_by_idnos) && sizeof($va_collection_type_icons_by_idnos)){
+			foreach($va_collection_type_icons_by_idnos as $vs_idno => $vs_icon){
+				$va_collection_type_icons[$t_list->getItemId("collection_types", $vs_idno)] = $vs_icon;
+			}
+		}
 		if($qr_collections->numHits()){
 			while($qr_collections->nextHit()) {
+				if($va_exclude_collection_type_ids && is_array($va_exclude_collection_type_ids) && (in_array($qr_collections->get("ca_collections.type_id"), $va_exclude_collection_type_ids))){
+					continue;
+				}
+		
 				$vs_icon = "";
+				if(is_array($va_collection_type_icons) && $va_collection_type_icons[$qr_collections->get("ca_collections.type_id")]){
+					$vs_icon = $va_collection_type_icons[$qr_collections->get("ca_collections.type_id")];
+				}			
 				# --- related objects?
 				$va_object_ids = $qr_collections->get("ca_objects.object_id", array("returnAsArray" => true, 'checkAccess' => $va_access_values));
 				$vn_rel_object_count = sizeof($va_object_ids);
 				$va_child_ids = $qr_collections->get("ca_collections.children.collection_id", array("returnAsArray" => true, "checkAccess" => $va_access_values, "sort" => "ca_collections.idno_sort"));
 				$vs_output .= "<div class='unit' style='margin-left:".(40*($vn_level - 1))."px;'>";
+				if($vs_icon){
+					$vs_output .= $vs_icon." ";
+				}
 				$vs_output .= "<b>";
 				if($vs_sub_collection_label_template){
 					$vs_output .= $qr_collections->getWithTemplate($vs_sub_collection_label_template);

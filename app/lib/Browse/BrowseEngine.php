@@ -3045,6 +3045,11 @@
 					if(is_array($va_label_ui_fields) && sizeof($va_label_ui_fields)) {
 					    $va_label_ui_fields = array_map(function($v) { return "l.{$v}"; }, $va_label_ui_fields);
 					}
+					
+					foreach($va_label_ui_fields as $x) {
+					    if (!in_array($x, $va_label_order_by_fields)) { $va_label_order_by_fields[] = $x; }
+					}
+					
 
 					$vs_where_sql = $vs_join_sql = '';
 					$vb_needs_join = false;
