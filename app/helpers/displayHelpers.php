@@ -3235,7 +3235,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						$va_placements[] = $va_bundles_by_code[$vs_field];
 					}
 					
-					$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements , $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
+					$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements, $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
 					
 					$vs_template = str_replace("^".$va_tag['originalTag'], $vs_val, $vs_template);
 					
@@ -3265,8 +3265,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$pn_page_start = caGetOption('pageStart', $pa_options, 0);
 		$pn_page_end = caGetOption('pageEnd', $pa_options, $pr_res->numHits());
 		
-		$va_tags_to_process = array();
-		$va_subelements_to_process = array();
+		$va_tags_to_process = $va_subelements_to_process = $va_tag_values = [];
 		
 		foreach($pa_placements as $pa_placement) {
 			if (!$pr_res) { return null; }
