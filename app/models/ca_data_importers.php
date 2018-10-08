@@ -2159,6 +2159,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									
 									// Replicate constants as needed: constant is already set for first constant in group, 
 									// but will not be set for repeats so we set them here
+									
 									if (sizeof($va_group_buf) > 1) {
                                         foreach($va_items_by_group[$vn_group_id] as $va_gitem) {
                                             if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'], $va_gmatches)) {
@@ -2210,7 +2211,23 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						} // end foreach($va_vals as $vm_val)
 					}
+					
+					
+					if (sizeof($va_group_buf) > 1) {
+                        foreach($va_items_by_group[$vn_group_id] as $va_gitem) {
+                            if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'], $va_gmatches)) {
+                                $va_gitem_dest = explode(".",  $va_gitem['destination']);
+                                $vs_gitem_terminal = $va_gitem_dest[sizeof($va_gitem_dest)-1];
+                                for($vn_gc=1; $vn_gc < sizeof($va_group_buf); $vn_gc++) {
+                                    $va_group_buf[$vn_gc][$vs_gitem_terminal] = $va_gmatches[1];		// Set it and go onto the next item
+                                }
+                            }
+                
+                        }
+                    }
 				
+                    // Replicate constants as needed: constant is already set for first constant in group, 
+                    // but will not be set for repeats so we set them here
 					foreach($va_group_buf as $vn_group_index => $va_group_data) {	
 						$va_ptr =& $va_content_tree;
 						foreach($va_group_tmp as $vs_tmp) {
@@ -3014,6 +3031,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$config = Configuration::load();
 		foreach($children as $child) {
 			$vals = $child; unset($vals['_table']); unset($vals['_type']); unset($vals['preferred_labels']); unset($vals['_children']);
+			
+			if (caIsIndexedArray($child['preferred_labels'])) { $child['preferred_labels'] = array_shift($child['preferred_labels']); }
 			
 			$id = null;
 			if ($parent_table == $child['_table']) {	// direct child to parent (both are same table)

@@ -3984,3 +3984,31 @@ function caFileIsIncludable($ps_file) {
 	    }
 	}
 	# ----------------------------------------
+	/**
+	 * Return common root for a set of delimited strings, such as file paths.
+	 *
+	 * @param array $strings
+	 * @param string $delimiter
+	 * @param array $options No options are currently supported.
+	 *
+	 * @param string
+	 */
+	function caFindCommonRootForDelimitedStrings($strings, $delimiter='/', $options=null) {
+	    $acc = null;
+	    foreach($strings as $s) {
+	        $pieces = explode($delimiter, $s);
+	        if(!is_array($acc)) { $acc = $pieces; continue; }
+	        
+	        foreach($pieces as $i => $p) {
+	            if (!isset($acc[$i]) || ($acc[$i] !== $p)) {
+	                $acc = array_slice($acc, 0, $i);
+	            }
+	            
+	            if (sizeof($acc) == 0) {
+	                return null;
+	            }
+	        }
+	    }
+	    return join($delimiter, $acc);
+	}
+	# ----------------------------------------
