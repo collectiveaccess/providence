@@ -1620,10 +1620,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
             if (sizeof($tmp = explode('.', $vs_context)) == 2) {
                 // convert <table>.<spec> contexts to just <spec> when table i
                 $vn_new_table_num = Datamodel::getTableNum($tmp[0]);
-                $vs_new_table_name = Datamodel::getTableName($tmp[0]);
-                $vs_context = $tmp[1];
                 
-                $vs_key = Datamodel::primaryKey($tmp[0]);
+                if ($pn_table_num != $vn_new_table_num) {
+                    $vs_new_table_name = Datamodel::getTableName($tmp[0]);
+                    $vs_context = $tmp[1];
+                
+                    $vs_key = Datamodel::primaryKey($tmp[0]);
+                } else {
+                    $vn_new_table_num = null;
+                }
             } else {
                 if($vn_new_table_num = Datamodel::getTableNum($vs_context)) { // switch to new table
                     $vs_key = Datamodel::primaryKey($vs_context);
@@ -1889,9 +1894,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_values = $t_attr->getAttributeValues();
 
 				$va_src_tmp = explode('.', $vs_source);
+				$vs_modifier = null;
 				if(sizeof($va_src_tmp) == 2) {
 					if($t_attr->get('table_num') == Datamodel::getTableNum($va_src_tmp[0])) {
 						$vs_source = $va_src_tmp[1];
+					} else {
+					    $vs_source = $va_src_tmp[0];
+					    $vs_modifier = $va_src_tmp[1];
 					}
 				}
 
@@ -1908,6 +1917,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
 
 					foreach ($va_values as $vo_val) {
+					    if ($vo_val->getElementCode() !== $vs_source)  { continue; }
+					
 						$va_display_val_options = array();
 						switch($vo_val->getDatatype()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__: //if ($vo_val instanceof ListAttributeValue) {
@@ -1925,19 +1936,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 								break;
 							case __CA_ATTRIBUTE_VALUE_LCSH__:
-								switch($va_src_tmp[0]) {
+								switch($vs_modifier) {
 									case 'text':
 									default:
 										$vs_display_value = $vo_val->getDisplayValue(['text' => true]);
 										break;
 									case 'id':
+										$vs_display_value = $vo_val->getDisplayValue(['n' => true]);
+										break;
 									case 'url':
 										$vs_display_value = $vo_val->getDisplayValue(['idno' => true]);
 										break;
 								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-								switch($va_src_tmp[0]) {
+								switch($vs_modifier) {
 									case 'text':
 									default:
 										$vs_display_value = $vo_val->getDisplayValue();
