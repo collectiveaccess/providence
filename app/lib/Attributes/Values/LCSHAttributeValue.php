@@ -179,8 +179,9 @@
  		 *		asHTML = if set URL is returned as an HTML link to the LOC definition of the term
  		 *		asText = if set only text portion, without LCSH identifier, is returned
  		 *		text = synonym for asText
- 		 *		id = return LCSH identifer
+ 		 *		id = return LCSH identifer URI
  		 *		idno = synonym for id
+ 		 *      n = return LCSH id only 
  		 * @return string The term
  		 */
 		public function getDisplayValue($pa_options=null) {
@@ -195,6 +196,10 @@
 			}
 			if (caGetOption(['id', 'idno'], $pa_options, false) && preg_match('!\[([^\]]*)!',$this->ops_text_value, $va_matches)) {
 				return $va_matches[1];
+			}
+			if (caGetOption('n', $pa_options, false) && preg_match('!\[([^\]]*)!',$this->ops_text_value, $va_matches)) {
+				$t = explode('/', $va_matches[1]);
+				return array_pop($t);
 			}
 			return $this->ops_text_value;
 		}
