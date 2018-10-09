@@ -225,7 +225,7 @@
 						    $items[] = $item;
 						}
 						$rel_data = caProcessRefineryRelated($rel['relatedTable'], $items, $refinery_data['source_data'], $refinery_data['item'], 0, array_merge($refinery_data['options'], ['reader' => $reader]));
-						print_R($rel_data);
+				
 						$mapped_values = array_merge($mapped_values, $rel_data);
 					}
 				}
