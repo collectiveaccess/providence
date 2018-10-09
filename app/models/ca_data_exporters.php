@@ -726,6 +726,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					$o_source = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
 					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
+					$o_orig_values = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
+					$o_replacement_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
 
 					if($vs_id = trim((string)$o_id->getValue())) {
 						$va_ids[] = $vs_id;
@@ -744,6 +746,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 					$vs_source = trim((string)$o_source->getValue());
+					
+                    $va_original_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_orig_values->getValue()));
+                    array_walk($va_original_values, function(&$v) { $v = trim($v); });
+                    $va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
+                    array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 
 					if ($vs_mode == 'Constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
@@ -778,6 +785,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'element' => $vs_element,
 						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
 						'options' => $va_options,
+						'original_values' => $va_original_values,
+						'replacement_values' => $va_replacement_values
 					);
 
 					// allow mapping repetition
@@ -964,6 +973,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 				}
+			}
+			
+			if (is_array($va_info['original_values']) && sizeof($va_info['original_values'])) {
+			    $va_item_settings['original_values'] = join("\n", $va_info['original_values']);
+			    if (is_array($va_info['replacement_values']) && sizeof($va_info['replacement_values'])) {
+			        $va_item_settings['replacement_values'] = join("\n", $va_info['replacement_values']);  
+			    }  
 			}
 
 			$vn_parent_id = null;
@@ -1815,7 +1831,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_get_options['locale'] = $vs_locale;
 		}
-
+		
 		// AttributeValue settings that are simply passed through by the exporter
 		if($t_exporter_item->getSetting('convertCodesToDisplayText')) {
 			$va_get_options['convertCodesToDisplayText'] = true;		// try to return text suitable for display for system lists stored in intrinsics (ex. ca_objects.access, ca_objects.status, ca_objects.source_id)
@@ -2082,7 +2098,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_original_values = $t_exporter_item->getSetting('original_values');
 		$vs_replacement_values = $t_exporter_item->getSetting('replacement_values');
-
+		
 		$va_replacements = ca_data_exporter_items::getReplacementArray($vs_original_values,$vs_replacement_values);
 
 		foreach($va_item_info as $vn_key => &$va_item) {
