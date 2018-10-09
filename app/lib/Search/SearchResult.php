@@ -981,6 +981,7 @@ class SearchResult extends BaseObject {
 	 *			returnAsLink = Synonym for makeLink. [Default is false]
 	 *			convertCodesToDisplayText = Convert list item_ids text in the user's preferred locale for display. [Default is false]
 	 *			convertCodesToIdno = Convert list item_ids to idno's (ca_list_items.idno). If convertCodesToDisplayText is also set then it will take precedence. [Default is false]
+	 *          convertCodesToValue = Convert list item_ids to item value's (ca_list_items.item_value). If convertCodesToDisplayText is also set then it will take precedence. [Default is false]
 	 *			output = Convert list item_ids to display text in user's preferred locale ("text") or idno ("idno"). This is an easier to type alternative to the convertCodesToDisplayText and convertCodesToIdno options. [Default is null]
 	 *			sort = Array list of bundles to sort returned values on. Currently sort is only supported when getting related values via simple related <table_name> and <table_name>.related bundle specifiers. Eg. from a ca_objects results you can sort when fetching 'ca_entities', 'ca_entities.related', 'ca_objects.related', etc.. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You can also sort on attributes if returnWithStructure is set. [Default is null]
 	*
@@ -1066,6 +1067,8 @@ class SearchResult extends BaseObject {
 		$vb_return_path 					= isset($pa_options['returnPath']) ? (bool)$pa_options['returnPAth'] : false;
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 		$vb_convert_codes_to_idno 			= isset($pa_options['convertCodesToIdno']) ? (bool)$pa_options['convertCodesToIdno'] : false;
+		$vb_convert_codes_to_value 			= isset($pa_options['convertCodesToValue']) ? (bool)$pa_options['convertCodesToValue'] : false;
+		
 		
 		$va_exclude_values 					= (isset($pa_options['excludeValues']) && $pa_options['excludeValues']) ? is_array($pa_options['excludeValues']) ? $pa_options['excludeValues'] : [$pa_options['excludeValues']] : [];
 		$va_exclude_idnos					= (isset($pa_options['excludeIdnos']) && $pa_options['excludeIdnos']) ? is_array($pa_options['excludeIdnos']) ? $pa_options['excludeIdnos'] : [$pa_options['excludeIdnos']] : [];
@@ -1077,6 +1080,7 @@ class SearchResult extends BaseObject {
 		if (!($vs_output = (isset($pa_options['output']) ? (string)$pa_options['output'] : null))) {
 			if ($vb_convert_codes_to_display_text) { $vs_output = "text"; }
 			if (!$vs_output && $vb_convert_codes_to_idno) { $vs_output = "idno"; }
+			if (!$vs_output && $vb_convert_codes_to_value) { $vs_output = "value"; }
 		}
 		if (!in_array($vs_output, array('text', 'idno', 'value'))) { $vs_output = 'value'; }
 		$pa_options['output'] = $vs_output;
@@ -1113,6 +1117,7 @@ class SearchResult extends BaseObject {
 			'unserialize' => $vb_unserialize,
 			'convertCodesToDisplayText' => $vb_convert_codes_to_display_text,
 			'convertCodesToIdno' => $vb_convert_codes_to_idno,
+			'convertCodesToValue' => $vb_convert_codes_to_value,
 			'checkAccess' => $va_check_access,
 			'template' => $vs_template,
 			'useLocaleCodes' => $vb_use_locale_codes,
@@ -1341,7 +1346,7 @@ class SearchResult extends BaseObject {
                                             if (!in_array($type_id, $filter_by_types)) { continue; }
                                         }
                                         
-									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null)));									    
+									    $va_hier_item += $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'convertCodesToValue' => $pa_options['convertCodesToValue'], 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null)));									    
 									
 									}
 									
@@ -1947,6 +1952,7 @@ class SearchResult extends BaseObject {
 		$vb_assume_display_field 			= isset($pa_options['assumeDisplayField']) ? (bool)$pa_options['assumeDisplayField'] : true;
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 		$vb_convert_codes_to_idno 			= isset($pa_options['convertCodesToIdno']) ? (bool)$pa_options['convertCodesToIdno'] : false;
+		$vb_convert_codes_to_value 			= isset($pa_options['convertCodesToValue']) ? (bool)$pa_options['convertCodesToValue'] : false;
 		
 		$va_path_components			=& $pa_options['pathComponents'];
 		
@@ -1968,8 +1974,9 @@ class SearchResult extends BaseObject {
 		    $va_exclude_type_ids = caMakeItemIDList($vs_label_type_list_code, $va_exclude_types);
 		}
 		
-		if ($vb_convert_codes_to_display_text) { $pa_options['output'] = 'text'; }
-		if ($vb_convert_codes_to_idno) { $pa_options['output'] = 'idno'; }
+		if (!isset($pa_options['output']) && $vb_convert_codes_to_display_text) { $pa_options['output'] = 'text'; }
+		if (!isset($pa_options['output']) && $vb_convert_codes_to_idno) { $pa_options['output'] = 'idno'; }
+		if (!isset($pa_options['output']) && $vb_convert_codes_to_value) { $pa_options['output'] = 'value'; }
 		
 		
 		// Set subfield to display field if not specified and *NOT* returning as array
@@ -2605,6 +2612,8 @@ class SearchResult extends BaseObject {
 							$vs_prop = $this->_convertCodeToDisplayText($vs_prop, $va_path_components, $pt_instance, $pa_options);
 						} elseif($pa_options['convertCodesToIdno']) {
 							$vs_prop = $this->_convertCodeToIdno($vs_prop, $va_path_components, $pt_instance, $pa_options);
+						} elseif($pa_options['convertCodesToValue']) {
+							$vs_prop = $this->_convertCodeToValue($vs_prop, $va_path_components, $pt_instance, $pa_options);
 						}
 						
 						$va_return_values[$vn_id][$vm_locale_id] = $vs_prop;
@@ -2849,6 +2858,28 @@ class SearchResult extends BaseObject {
 			$vs_prop = caGetListItemIdno($vs_prop);
 		} elseif (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
 			$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
+	    } elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+		    $t_rel_type = new ca_relationship_types($vs_prop);
+		    return $t_rel_type->get('type_code');
+		}
+		return $vs_prop;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _convertCodeToValue($ps_prop, $pa_path_components, $pt_instance, $pa_options=null) {
+		$vs_prop = $ps_prop;
+		$vs_field_name = $pa_path_components['subfield_name'] ? $pa_path_components['subfield_name'] : $pa_path_components['field_name'];
+		
+		$vs_table_name = $pa_path_components['table_name'];
+		if (method_exists($pt_instance, 'setLabelTypeList')) {
+			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
+		}
+		if (isset($pa_options['convertCodesToValue']) && $pa_options['convertCodesToValue'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+			$vs_prop = caGetListItemValueForID($vs_prop);
+		} elseif (isset($pa_options['convertCodesToValue']) && $pa_options['convertCodesToValue'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+			return $vs_prop;
 	    } elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
 		    $t_rel_type = new ca_relationship_types($vs_prop);
 		    return $t_rel_type->get('type_code');
