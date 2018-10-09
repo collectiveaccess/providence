@@ -130,6 +130,7 @@ class SearchEngine extends SearchBase {
 	 *		dontFilterByACL = if true ACL checking is not performed on results
 	 *		appendToSearch = 
 	 *		restrictSearchToFields = 
+	 *      rootRecordsOnly = Only return records that are the root of whatever hierarchy they are in. [Default is false]
 	 *
 	 * @return SearchResult Results packages in a SearchResult object, or sub-class of SearchResult if an instance was passed in $po_result
 	 * @uses TimeExpressionParser::parse
@@ -284,6 +285,10 @@ class SearchEngine extends SearchBase {
 			
 				if (in_array($t_table->getHierarchyType(), array(__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__))) {
 					$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS NOT', NULL);
+				}
+				
+				if (caGetOption('rootRecordsOnly', $pa_options, false)) {
+					$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS', NULL);
 				}
 			
 				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {

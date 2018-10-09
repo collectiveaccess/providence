@@ -56,17 +56,17 @@ class EADReader extends BaseXMLDataReader {
 	 * For files that use a namespace this should match that actually used in the file;
 	 * For files that don't use a namespace this should be set to *something* – doesn't really matter what
 	 */
-	protected $ops_xml_namespace_prefix = 'ead';
+	protected $ops_xml_namespace_prefix = 'e';
 	
 	/**
 	 * XPath to select data for reading
 	 */
-	protected $ops_xpath = '//ead';
+	protected $ops_xpath = '//e:ead';
 	
 	/**
 	 * 
 	 */
-	protected $ops_root_tag = 'ead';
+	protected $ops_root_tag = 'e:ead';
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?

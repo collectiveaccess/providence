@@ -112,7 +112,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 		return false;
     }
     # --------------------------------------------------------------------------------
-    public function getUserInfo($ps_username, $ps_password) {
+    public function getUserInfo($ps_username, $ps_password, $pa_options=null) {
 		foreach($this->getLinkIdentifiers() as $vs_key => $r_ldap) {
 			// ldap config
 			$vs_base_dn = $this->opa_auth_config_fragments[$vs_key]['ldap_base_dn'];

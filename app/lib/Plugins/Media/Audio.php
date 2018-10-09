@@ -317,6 +317,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (!((isset($this->handle["error"])) && (is_array($this->handle["error"])) && (sizeof($this->handle["error"]) > 0))) {
 			$this->filepath = $filepath;
 			//$this->properties  = $this->handle;
+			$this->properties = [];
 
 			$this->properties["mimetype"] = $this->handle["mime_type"];
 			$this->properties["typename"] = $this->typenames[$this->properties["mimetype"]] ? $this->typenames[$this->properties["mimetype"]] : "Unknown";

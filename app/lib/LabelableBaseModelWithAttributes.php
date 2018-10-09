@@ -588,10 +588,12 @@
 			}
 			
 			// ... and in sort list
-			$vs_sort_proc = $ps_sort;
-			if ($t_label && ((preg_match("!^{$vs_table}.preferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches)) || (preg_match("!^{$vs_table}.nonpreferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches)))) { 
+			$vs_sort_proc = null;
+			if ((preg_match("!^{$vs_table}.preferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches)) || (preg_match("!^{$vs_table}.nonpreferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches))) { 
 				$vs_sort_proc = ($va_matches[1] && ($t_label->hasField($va_matches[1]))) ? "{$vs_label_table}.".$va_matches[1] : "{$vs_label_table}.".$t_label->getDisplayField();
 				$vb_has_label_fields = true; 
+			} elseif(preg_match("!^{$vs_table}\.([A-Za-z0-9_]+)!", $ps_sort, $va_matches) && $t_instance->hasField($va_matches[1])) {
+			    $vs_sort_proc = $ps_sort;
 			}
 			
 			// Check for attributes in value list

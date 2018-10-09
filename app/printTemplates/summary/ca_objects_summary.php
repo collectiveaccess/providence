@@ -57,7 +57,7 @@
 	<div class="representationList">
 		
 <?php
-	$va_reps = $t_item->getRepresentations(array("thumbnail", "medium"));
+	$va_reps = $t_item->getRepresentations(array("thumbnail", "medium"), null, ['usePath' => true]);
 
 	foreach($va_reps as $va_rep) {
 		if(sizeof($va_reps) > 1){
@@ -77,7 +77,7 @@
 		if (!is_array($va_bundle_info)) break;
 		if (in_array($va_bundle_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; }		// skip preferred labels because we always print it anyway
 		
-		if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('purify' => true)))) {
+		if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('usePath' => true, 'purify' => true)))) {
 			if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 			$vs_display_value = "&lt;"._t('not defined')."&gt;";
 		}

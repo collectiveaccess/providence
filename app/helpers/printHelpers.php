@@ -148,7 +148,8 @@
 									$va_templates[$vs_template_tag] = array(
 										'name' => $va_template_info['name'],
 										'code' => '_pdf_'.$vs_template_tag,
-										'type' => 'pdf'
+										'type' => $va_template_info['fileFormat'],
+										'generic' => $va_template_info['generic'] ? 1 : 0
 									);
 								}
 								
@@ -179,7 +180,7 @@
 	 * @return array|bool|false|mixed
 	 */
 	function caGetPrintTemplateDetails($ps_type, $ps_template, $pa_options=null) {
-		$va_template_paths = caGetPrintTemplateDirectoryPath($ps_type);
+		if (!is_array($va_template_paths = caGetPrintTemplateDirectoryPath($ps_type))) { return null; }
 		
 		$va_info = [];
 		foreach($va_template_paths as $vs_template_path) {
@@ -207,7 +208,7 @@
 				"@name", "@type", "@pageSize", "@pageOrientation", "@tables",
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
-				"@elementCode", "@showOnlyIn", "@filename"
+				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic"
 			) as $vs_tag) {
 				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
@@ -215,6 +216,7 @@
 					$va_info[str_replace("@", "", $vs_tag)] = null;
 				}
 			}
+			if (!$va_info['fileFormat']) { $va_info['fileFormat'] = 'pdf'; }    // pdf is inferred for templates without a specific file format
 			$va_info['tables'] = preg_split("![,;]{1}!", $va_info['tables']);
 			$va_info['path'] = $vs_template_path;
 
@@ -603,5 +605,41 @@
 			</script>
 		";
 		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 * Return HTML/Javascript for "print summmary" controls on item editor summary screen
+	 *
+	 * @param View $po_view The view into which the control will be rendered
+	 * 
+	 * @return string
+	 */
+	function caEditorPrintSummaryControls($po_view) {
+	    $t_display = $po_view->getVar('t_display');
+	    $t_item = $po_view->getVar('t_subject');
+	    $request = $po_view->request;
+	    
+	    $vn_item_id = $t_item->getPrimaryKey();
+	    
+        $vs_buf = $po_view->render($request->getViewsDirectoryPath().'/bundles/summary_download_options_html.php');
+    
+        if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID()), 'context' => 'editor_summary'))) {
+
+            $vs_buf .= "<div id='printButton'>
+                <a href='#' onclick='return caShowSummaryDownloadOptionsPanel();'>".caNavIcon(__CA_NAV_ICON_PDF__, 2)."</a>
+                    <script type='text/javascript'>
+                            function caShowSummaryDownloadOptionsPanel() {
+                                caSummaryDownloadOptionsPanel.showPanel();
+                                return false;
+                            }
+                    </script>
+ </div>\n";
+            $vs_buf .= caFormTag($request, 'Summary', 'caSummaryDisplaySelectorForm').
+            "<div class='searchFormSelector' style='float:right;'>". _t('Display').": {$vs_display_select_html}</div>
+            <input type='hidden' name='".$t_item->primaryKey()."' value='{$vn_item_id}'/>
+            </form>\n";
+	}
+	
+        return $vs_buf;
 	}
 	# ---------------------------------------

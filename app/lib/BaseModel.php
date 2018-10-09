@@ -3734,7 +3734,7 @@ class BaseModel extends BaseObject {
 			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 
-		$url = $this->getMediaUrl($ps_field, $ps_version, isset($pa_options["page"]) ? $pa_options["page"] : null);
+		$url = caGetOption('usePath', $pa_options, false) ? $this->getMediaPath($ps_field, $ps_version, isset($pa_options["page"]) ? $pa_options["page"] : null) : $this->getMediaUrl($ps_field, $ps_version, isset($pa_options["page"]) ? $pa_options["page"] : null);
 		$m = new Media();
 		
 		$o_vol = new MediaVolumes();
@@ -7344,7 +7344,7 @@ class BaseModel extends BaseObject {
 		
 		$t_instance = null;
 		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
-			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
+			$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 			if (!$t_instance->load($pn_id)) { return null; }
 		} else {
 			$t_instance = $this;
@@ -10223,6 +10223,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param $pn_moderator [integer] A valid ca_users.user_id value indicating who moderated the tag; if omitted or set to null then moderation status will not be set unless app.conf setting dont_moderate_comments = 1 (optional - default is null)
 	 * @param array $pa_options Array of options. Supported options are:
 	 *				purify = if true, comment, name and email are run through HTMLPurifier before being stored in the database. Default is true. 
+	 *				rank = option rank used for sorting. If omitted the tag is added to the end of the display list. [Default is null]
 	 */
 	public function addTag($ps_tag, $pn_user_id=null, $pn_locale_id=null, $pn_access=0, $pn_moderator=null, $pa_options=null) {
 		global $g_ui_locale_id;
@@ -10265,6 +10266,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_ixt->set('user_id', $pn_user_id);
 		$t_ixt->set('tag_id', $vn_tag_id);
 		$t_ixt->set('access', $pn_access);
+		if ($rank = caGetOption('rank', $pa_options, null)) {
+			$t_ixt->set('rank', $rank);
+		}
 		
 		if (!is_null($pn_moderator)) {
 			$t_ixt->set('moderated_by_user_id', $pn_moderator);
@@ -10342,6 +10346,52 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Changed the rank of an existing tag. Returns null if no row is loaded. Otherwise returns true
+	 * if tag rank was successfully changed, false if an error occurred in which case the errors will be available
+	 * via the model's standard error methods (getErrors() and friends.
+	 *
+	 * @param $pn_relation_id int A valid ca_items_x_tags.relation_id value specifying the tag relation to modify (mandatory)
+	 * @param $pn_rank int Rank to apply
+	 *
+	 * @return bool
+	 */
+	public function changeTagRank($pn_relation_id, $pn_rank) {
+		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
+		
+		$t_ixt = new ca_items_x_tags($pn_relation_id);
+		
+		if (!$t_ixt->getPrimaryKey()) {
+			$this->postError(2800, _t('Tag relation id is invalid'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
+			return false;
+		}
+		if (
+			($t_ixt->get('table_num') != $this->tableNum()) ||
+			($t_ixt->get('row_id') != $vn_row_id)
+		) {
+			$this->postError(2810, _t('Tag is not part of the current row'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
+			return false;
+		}
+		
+		if ($pn_user_id) {
+			if ($t_ixt->get('user_id') != $pn_user_id) {
+				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
+				return false;
+			}
+		}
+		
+		$t_ixt->setMode(ACCESS_WRITE);
+		$t_ixt->set('rank', $pn_rank);
+		
+		$t_ixt->update();
+		
+		if ($t_ixt->numErrors()) {
+			$this->errors = $t_ixt->errors;
+			return false;
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Deletes the tag relation specified by $pn_relation_id (a ca_items_x_tags.relation_id value) from the currently loaded row. Will only delete 
 	 * tags attached to the currently loaded row. If you attempt to delete a ca_items_x_tags.relation_id not attached to the current row 
 	 * removeTag() will return false and post an error. If you attempt to call removeTag() with no row loaded null will be returned.
@@ -10397,7 +10447,7 @@ $pa_options["display_form_field_tips"] = true;
 		$va_tags = $this->getTags($pn_user_id);
 		
 		foreach($va_tags as $va_tag) {
-			if (!$this->removeTag($va_tag['tag_id'], $pn_user_id)) {
+			if (!$this->removeTag($va_tag['relation_id'], $pn_user_id)) {
 				return false;
 			}
 		}
@@ -10434,9 +10484,10 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN ca_items_x_tags AS cixt ON cit.tag_id = cixt.tag_id
 			WHERE
 				(cixt.table_num = ?) AND (cixt.row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
+			ORDER BY cixt.rank
 		", $this->tableNum(), $vn_row_id);
 		
-		return $qr_comments->getAllRows();
+		return array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $qr_comments->getAllRows());
 	}
 	# --------------------------------------------------------------------------------------------
 	# User commenting

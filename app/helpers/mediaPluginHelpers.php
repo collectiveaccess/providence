@@ -733,7 +733,6 @@
 	 */
 	function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code, $pn_rep_pk, $ps_rep_type_code) {
 		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
-
 		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
 		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
@@ -741,15 +740,16 @@
 		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
 
 		// make a temporary copy (we won't touch the original)
-		copy($ps_file, $vs_tmp_filepath = __CA_APP_DIR__."/tmp/foo"); //caGetTempDirPath()."/".time().md5($ps_file));
+		copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
 
 		//
 		// SUBJECT TABLE
 		//
 		if($vs_subject_table_export = caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_pk)) {
-			$tag_args = caGetExifTagArgsForExport($vs_subject_table_export);
-			exec("{$vs_path_to_exif_tool} -m ".join(" ", $tag_args)." ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
-			
+			$vs_export_filename = caGetTempFileName('mediaMetadataSubjExport','xml');
+			if(@file_put_contents($vs_export_filename, $vs_subject_table_export) === false) { return false; }
+			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			@unlink($vs_export_filename);
 			@unlink("{$vs_tmp_filepath}_original");
 		}
 
@@ -758,9 +758,10 @@
 		//
 
 		if($vs_representation_export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
-		    $tag_args = caGetExifTagArgsForExport($vs_representation_export);
-			exec("{$vs_path_to_exif_tool} -m ".join(" ", $tag_args)." ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
-
+			$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
+			if(@file_put_contents($vs_export_filename, $vs_representation_Export) === false) { return false; }
+			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			@unlink($vs_export_filename);
 			@unlink("{$vs_tmp_filepath}_original");
 		}
 
@@ -1003,6 +1004,7 @@
 		$va_ret = null;
 		switch($vs_type = strtolower($va_tmp[0])) {
 			case 'representation':
+			    Datamodel::getInstance('ca_object_representations', true);
 				$va_ret = ['type' => $vs_type, 'id' => (int)$va_tmp[1], 'page' => isset($va_tmp[2]) ? (int)$va_tmp[2] : null, 'subject' => 'ca_object_representations', 'subject_id' => (int)$va_tmp[1]];
 				if (!($t_rep = ca_object_representations::find((int)$va_tmp[1], $pa_options))) { return null; } // ca_object_representations::find() performs checkAccess
 				if ($pb_include_instance) {
@@ -1010,10 +1012,12 @@
 				}
 				break;
 			case 'attribute':
+			    Datamodel::getInstance('ca_attribute_values', true);
 			    $t_val = new ca_attribute_values((int)$va_tmp[1]);
 			    if (!$t_val->isLoaded()) { return null; }
 			    $t_attr = new ca_attributes($t_val->get('attribute_id'));
 			    $vs_table_name  = Datamodel::getTableName($t_attr->get('table_num'));
+			    Datamodel::getInstance($vs_table_name, true);
 			    $vn_subject_id = (int)$t_attr->get('row_id');
 			    if (!($t_subject = $vs_table_name::find($vn_subject_id, $pa_options))) { return null; } // table::find() performs checkAccess
 			    
@@ -1033,6 +1037,7 @@
 			            $va_ret['subject_instance'] = $t_instance;
 			        }
 				} elseif (is_numeric($va_tmp[0])) {
+			        Datamodel::getInstance('ca_object_representations', true);
 				    if (!($t_rep = ca_object_representations::find((int)$va_tmp[1], $pa_options))) { return null; }     // ca_object_representations::find() performs checkAccess
 				    
 					$va_ret = ['type' => 'representation', 'id' => (int)$va_tmp[0], 'page' => isset($va_tmp[1]) ? (int)$va_tmp[1] : null, 'subject' => 'ca_object_representations', 'subject_id' => (int)$va_tmp[0]];

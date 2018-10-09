@@ -244,8 +244,6 @@ class ca_change_log extends BaseModel {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 		require_once(__CA_MODELS_DIR__ . '/ca_locales.php');
 
-		$o_dm = Datamodel::load();
-
 		if(!is_null($pn_limit)) {
 			$vs_limit_sql = "LIMIT $pn_limit";
 		} else {
@@ -637,6 +635,14 @@ class ca_change_log extends BaseModel {
 					}
 
 					$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_subject_guid));
+				}
+				
+				if ($va_row['snapshot']['attribute_guid']) {
+				    $va_row['subjects'][] = [
+				        'subject_table_num' => 4,
+				        'subject_row_id' => $va_row['snapshot']['attribute_id'],
+				        'guid' => $va_row['snapshot']['attribute_guid']
+				    ];
 				}
 
 				$va_ret[(int) $qr_results->get('log_id')] = $va_row;

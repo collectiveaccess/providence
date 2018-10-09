@@ -440,6 +440,7 @@
 			if (is_array($va_types) && sizeof($va_types)) { $o_search->setTypeRestrictions($va_types, $va_block_info); }
 			$va_options['restrictSearchToFields'] = caGetOption('restrictSearchToFields', $va_block_info, null);
 			$va_options['excludeFieldsFromSearch'] = caGetOption('excludeFieldsFromSearch', $va_block_info, null);
+			$va_options['rootRecordsOnly'] = caGetOption('omitChildRecords', $va_block_info, null);
 			
 			if (caGetOption('dontShowChildren', $va_block_info, false)) {
 				$o_search->addResultFilter('ca_objects.parent_id', 'is', 'null');	
@@ -1542,7 +1543,9 @@
 				);
 				break;
 			case 'ca_item_tags':
+			case 'ca_items_x_tags':
 				$va_base_fields = array(
+					'ca_item_tags.tag' => _t('tag'),
 					'ca_items_x_tags.created_on' => _t('date'),
 					'ca_items_x_tags.user_id' => _t('user')
 				);

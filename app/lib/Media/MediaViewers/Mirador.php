@@ -59,12 +59,12 @@
 				if ($pa_data['t_subject']) { 
 				    $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); 
 				    
+				    $o_view->setVar('index', 0);
 				    if ($pa_data['t_instance']) {
                         $vn_rep_id = $pa_data['t_instance']->getPrimaryKey();
-                        $va_rep_ids = Mirador::getViewerRepresentationIDList($po_request, $ps_identifier, $pa_data, $pa_options);
-                        $o_view->setVar('index', array_search($vn_rep_id, $va_rep_ids));
-                    } else {
-                         $o_view->setVar('index', 0);
+                        if (is_array($va_rep_ids = Mirador::getViewerRepresentationIDList($po_request, $ps_identifier, $pa_data, $pa_options))) {
+                            $o_view->setVar('index', array_search($vn_rep_id, $va_rep_ids));
+                        }
                     }
 				}
 				

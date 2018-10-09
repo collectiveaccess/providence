@@ -500,6 +500,7 @@ class SearchResult extends BaseObject {
 		
 		$vs_type_sql = '';
 		if (is_array($va_type_ids = caMakeTypeIDList($ps_tablename, caGetOption('restrictToTypes', $pa_options, null))) && sizeof($va_type_ids)) {
+			$vs_related_table = $t_rel_instance->tableName();
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
 		}
@@ -547,6 +548,7 @@ class SearchResult extends BaseObject {
 			if ((!isset($pa_options['allDescendants']) || !$pa_options['allDescendants']) && ($vn_level > 0)) {
 				break;
 			}
+			$va_params[0] = $va_row_ids_in_current_level;
 		}
 		
 		foreach($va_row_ids as $vn_row_id) {
