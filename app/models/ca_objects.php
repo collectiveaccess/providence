@@ -1135,6 +1135,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$va_occurrences = $this->get('ca_objects_x_occurrences.relation_id', array('returnAsArray' => true));
 	    $va_child_occurrences = [];
 		if(is_array($va_occurrence_types = caGetOption('ca_occurrences_showTypes', $pa_bundle_settings, null)) && is_array($va_occurrences)) {	
+			require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
 			$t_occurrence = new ca_occurrences();
 			$va_occurrence_type_info = $t_occurrence->getTypeList(); 
 			
@@ -1146,7 +1147,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
             }
 			
 			$qr_occurrences = caMakeSearchResult('ca_objects_x_occurrences', $va_occurrences);
-			require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
 			
 			$va_date_elements_by_type = array();
 			foreach($va_occurrence_types as $vn_type_id) {
