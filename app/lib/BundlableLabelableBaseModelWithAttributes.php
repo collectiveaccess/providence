@@ -1772,7 +1772,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!$this->getPrimaryKey() && !$vb_batch) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
-						$vs_element .= $this->getObjectHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+					    if (strlen($pb_show_child_history = $pa_options['request']->getParameter("showChildHistory", pInteger))) {
+					        Session::setVar("ca_objects_history_showChildHistory", (bool)$pb_show_child_history);
+					    }
+						$vs_element .= $this->getObjectHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, ['showChildHistory' => Session::getVar("ca_objects_history_showChildHistory")]));
 						
 						break;
 					# -------------------------------
@@ -4533,6 +4536,10 @@ if (!$vb_batch) {
 						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 								
+					    if (strlen($pb_show_child_history = $po_request->getParameter("showChildHistory", pInteger))) {
+					        Session::setVar("ca_objects_history_showChildHistory", (bool)$pb_show_child_history);
+					    }
+					    
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
