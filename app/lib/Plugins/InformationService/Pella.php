@@ -128,7 +128,6 @@ class WLPlugInformationServicePella extends BaseInformationServicePlugin Impleme
 		if(!$vs_result) { return []; }
 		if(!is_array($va_data = json_decode($vs_result, true))) { return []; }
 
-		$va_info_fields = [];
 		$va_display = ["<strong>"._t('Link')."</strong>: <a href='{$ps_url}' target='_blank'>{$ps_url}</a><br/>"];
 		
 		if (isset($va_data['@graph']) && is_array($va_data['@graph'])) {
