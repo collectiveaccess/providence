@@ -87,6 +87,12 @@ class WLPlugInformationServicePella extends BaseInformationServicePlugin Impleme
 		$maxcount = caGetOption('count', $pa_options, 30);
 		$count = 0;
 		$va_items = [];
+		
+		$s = urldecode($ps_search);
+		if (isURL($s) && preg_match("!^http://numismatics.org/pella/id/([A-Za-z0-9\.\-]+)$!", $s, $m)) {
+			$ps_search = $m[1];
+		}
+		
 		while($count <= $maxcount) {
 			$vs_data = caQueryExternalWebservice('http://numismatics.org/pella/apis/search?format=rss&q='.urlencode($ps_search));
 
