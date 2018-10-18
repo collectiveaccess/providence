@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/InformationService/BaseGettyLODServicePlugin.php :
+ * app/lib/Plugins/InformationService/BaseNomismaLODServicePlugin.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,7 +38,7 @@
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
-abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
+abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin {
 	# ------------------------------------------------
 	protected $opo_linked_data_conf = null;
 	# ------------------------------------------------
@@ -51,25 +51,26 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	abstract protected function getConfigName();
 	# ------------------------------------------------
 	/** 
-	 * Perform lookup on Getty linked open data service
+	 * Perform lookup on Nomisma linked open data service
 	 *
 	 * @param string $ps_query The sparql query
 	 * @return array The decoded JSON result
 	 */
-	public static function queryGetty($ps_query) {
+	public static function queryNomisma($ps_query) {
 		$o_curl=curl_init();
-		curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/sparql.json?query={$ps_query}");
+		curl_setopt($o_curl, CURLOPT_URL, "http://nomisma.org/query?query={$ps_query}&output=json");
 		curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
 		curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($o_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
 		$vs_result = curl_exec($o_curl);
 		curl_close($o_curl);
-
+		
 		if(!$vs_result) {
 			return false;
 		}
 
 		$va_result = json_decode($vs_result, true);
+		
 		if(!isset($va_result['results']['bindings']) || !is_array($va_result['results']['bindings'])) {
 			return false;
 		}
@@ -78,7 +79,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	}
 	# ------------------------------------------------
 	/** 
-	 * Fetch details about a specific item from getty data service
+	 * Fetch details about a specific item from Nomisma data service
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
@@ -171,8 +172,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
 		$vs_cache_key = md5(serialize(func_get_args()));
-		if(CompositeCache::contains($vs_cache_key, 'GettyRDFLiterals')) {
-			return CompositeCache::fetch($vs_cache_key, 'GettyRDFLiterals');
+		if(CompositeCache::contains($vs_cache_key, 'NomismaRDFLiterals')) {
+			return CompositeCache::fetch($vs_cache_key, 'NomismaRDFLiterals');
 		}
 
 		$pn_limit = (int) caGetOption('limit', $pa_options, 10);
@@ -226,7 +227,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		}
 
 		$vs_return = join('; ', $va_return);
-		CompositeCache::save($vs_cache_key, $vs_return, 'GettyRDFLiterals', 60 * 60 * 24 * 7);
+		CompositeCache::save($vs_cache_key, $vs_return, 'NomismaRDFLiterals', 60 * 60 * 24 * 7);
 
 		return $vs_return;
 	}
@@ -239,18 +240,18 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	static function getURIAsRDFGraph($ps_uri) {
 		if(!$ps_uri) { return false; }
 
-		if(CompositeCache::contains($ps_uri, 'GettyLinkedDataRDFGraphs')) {
-			return CompositeCache::fetch($ps_uri, 'GettyLinkedDataRDFGraphs');
+		if(CompositeCache::contains($ps_uri, 'NomismaLinkedDataRDFGraphs')) {
+			return CompositeCache::fetch($ps_uri, 'NomismaLinkedDataRDFGraphs');
 		}
 
 		try {
-			$o_graph = new EasyRdf_Graph("http://vocab.getty.edu/download/rdf?uri={$ps_uri}.rdf");
+			$o_graph = new EasyRdf_Graph("http://nomisma.org/apis/getRdf?identifiers={$ps_uri}");
 			$o_graph->load();
 		} catch(Exception $e) {
 			return false;
 		}
 
-		CompositeCache::save($ps_uri, $o_graph, 'GettyLinkedDataRDFGraphs');
+		CompositeCache::save($ps_uri, $o_graph, 'NomismaLinkedDataRDFGraphs');
 		return $o_graph;
 	}
 	# ------------------------------------------------
@@ -265,8 +266,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	static function getListOfRelatedGraphs($po_graph, $ps_base_node, $ps_node_uri, $pn_limit, $pb_recursive=false) {
 		$vs_cache_key = md5(serialize(func_get_args()));
 
-		if(CompositeCache::contains($vs_cache_key, 'GettyLinkedDataRelatedGraphs')) {
-			return CompositeCache::fetch($vs_cache_key, 'GettyLinkedDataRelatedGraphs');
+		if(CompositeCache::contains($vs_cache_key, 'NomismaLinkedDataRelatedGraphs')) {
+			return CompositeCache::fetch($vs_cache_key, 'NomismaLinkedDataRelatedGraphs');
 		}
 
 		$va_related_nodes = $po_graph->all($ps_base_node, $ps_node_uri);
@@ -294,7 +295,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			$va_pull_graphs = array_merge($va_pull_graphs, $va_sub_pull_graphs);
 		}
 
-		CompositeCache::save($vs_cache_key, $va_pull_graphs, 'GettyLinkedDataRelatedGraphs');
+		CompositeCache::save($vs_cache_key, $va_pull_graphs, 'NomismaLinkedDataRelatedGraphs');
 
 		return $va_pull_graphs;
 	}

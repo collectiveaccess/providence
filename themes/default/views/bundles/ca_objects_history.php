@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,33 +43,36 @@
 	$va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_settings, array());
 	
 	$va_occ_types  				= $this->getVar('occurrence_types');
+	$va_occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $va_occ_types));
 	
 	if (!($vs_add_label = $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 	
-	$va_lookup_params = array();
-	
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings);
+    if (!$this->request->isAjax()) {
+	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings);
+	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
-<?php
-	if (!$vb_read_only) {
-?>
 			<div class="caUseHistoryButtonBar labelInfo">
 <?php
-			if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
+            if(!caGetOption('hide_include_child_history_controls', $va_settings, false) && ($this->getVar('child_count') > 0)) {
+?>
+                <div style='float: left;' class='button caSetChildViewButton'><a href="#" id="<?php print $vs_id_prefix; ?>SetChildView"><?php print caNavIcon(__CA_NAV_ICON_CHILD__, '15px'); ?> <?php print Session::getVar('ca_objects_history_showChildHistory') ? _t('Hide child history') : _t('Include child history'); ?></a></div>
+<?php
+            }
+			if(!$vb_read_only && !caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 ?>
 				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to loan'); ?></a></div>
 <?php
 			}
-			if(!caGetOption('hide_update_location_controls', $va_settings, false)) {
+			if(!$vb_read_only && !caGetOption('hide_update_location_controls', $va_settings, false)) {
 ?>
 				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Update location'); ?></a></div>
 <?php
 			}
 			
-			if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
+			if(!$vb_read_only && !caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
+			
 				foreach($va_occ_types as $vn_type_id => $va_type_info) {
 ?>
 				<div style='float: left;'  class='button caAddOccurrenceButton caAddOccurrenceButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddOcc<?php print $vn_type_id; ?>"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
@@ -80,9 +83,7 @@
 ?>
 				<br style='clear: both;'/>
 			</div>
-<?php
-	}
-?>			
+					
 		<div class="caLocationList"> </div>
 		<div class="caLoanList"> </div>
 <?php
@@ -205,8 +206,6 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
-					
-						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 					
 						displayCurrentSelectionOnLoad: false,
 						currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
@@ -340,7 +339,7 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 				deleteButtonClassName: 'caDeleteLocationButton',
 				showEmptyFormsOnLoad: 0,
 				relationshipTypes: <?php print json_encode($this->getVar('location_relationship_types_by_sub_type')); ?>,
-				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', $va_lookup_params); ?>',
+				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', []); ?>',
 				minChars:1,
 				readonly: false,
 				isSortable: false,
@@ -392,7 +391,7 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 			hideOnNewIDList: [],
 			showEmptyFormsOnLoad: 0,
 			relationshipTypes: <?php print json_encode($this->getVar('loan_relationship_types_by_sub_type')); ?>,
-			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Loan', 'Get', $va_lookup_params); ?>',
+			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Loan', 'Get', []); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -431,7 +430,7 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 			hideOnNewIDList: [],
 			showEmptyFormsOnLoad: 0,
 			relationshipTypes: <?php print json_encode($this->getVar('occurrence_relationship_types_by_sub_type')); ?>,
-			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Occurrence', 'Get', $va_lookup_params); ?>',
+			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Occurrence', 'Get', $va_occ_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -454,6 +453,12 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 	}
 }
 ?>
+        jQuery('#<?php print $vs_id_prefix; ?>SetChildView').on('click', function(e) {
+            if(caBundleUpdateManager) { 
+                caBundleUpdateManager.reloadBundle('ca_objects_history', {'showChildHistory': <?php print Session::getVar('ca_objects_history_showChildHistory') ? 0 : 1; ?>}); 
+            }
+
+        });
 	});
 </script>
 <?php
