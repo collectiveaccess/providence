@@ -147,7 +147,7 @@
 						$mapping_keys = array_keys($t);
 						
 						
-						if (sizeof(array_intersect(array_merge(['source', 'delimiter', 'useAsSingleValue'], self::$mapping_options), $mapping_keys)) !== sizeof($mapping_keys)) {
+						if (sizeof(array_intersect(array_merge(['source', 'delimiter', 'useAsSingleValue', 'skipGroupIfEmpty'], self::$mapping_options), $mapping_keys)) !== sizeof($mapping_keys)) {
 							// it's a container
 					        $mapped_values[$f][] = [];
                             $mapping_index = sizeof($mapped_values[$f]) - 1;
@@ -162,7 +162,8 @@
 								    $values = [];
 								    foreach($xpaths as $i => $x) { $values[$i] = []; }
 								    foreach($subdata as $si => $sd) {
-								        $svalues = array_map(function($v) use ($sd) { $v = ltrim($v, '/'); return $v ? $sd->xpath("{$v}") : ''; }, array_map(function($x) use($r) { return str_replace($r, '', $x); }, $xpaths));
+								        $svalues = array_map(function($v) use ($sd) { $v = ltrim($v, '/'); return $v ? $sd->xpath("{$v}") : ''; }, array_map(function($x) use($r) { $x = str_replace($r, '', $x); return ($x && ($x !== '/')) ? $x : "./text()"; }, $xpaths));
+								        
 								        foreach($svalues as $x => $sv) {
 								            $values[$x][$si] = $sv[0];
 								        }
@@ -239,6 +240,7 @@
 				}
 			}
 			$l--;
+			
 			return $mapped_values;
 		}
 		# -------------------------------------------------------	
