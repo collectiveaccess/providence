@@ -698,7 +698,7 @@
 		/**
 		 *
 		 */
-		private static function _setAttributes($pt_instance, $pn_locale_id, $pa_values, $pa_options) {
+		private static function _setAttributes($pt_instance, $pn_locale_id, $pa_values, $pa_options=null) {
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			$vb_attr_errors = false;
 			
@@ -729,13 +729,12 @@
 						    } else {
 						        $va_expanded_values = [$va_value];
 						    }
-						    
 							// array of values (complex multi-valued attribute)
 							foreach($va_expanded_values as $va_v) {
                                 $pt_instance->addAttribute(
                                     array_merge($va_v, array(
                                         'locale_id' => $pn_locale_id
-                                    )), $vs_element, null, ['skipExistingValues' => true, 'matchOn' => caGetOption('matchOn', $va_values, null)]);
+                                    )), $vs_element, null, ['skipExistingValues' => (caGetOption('skipExistingValues', $pa_options, false) || caGetOption('skipExistingValues', $va_values, false)), 'matchOn' => caGetOption('matchOn', $va_values, null)]);
                             }
 						} else {
 							// scalar value (simple single value attribute)
