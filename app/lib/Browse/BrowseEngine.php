@@ -222,6 +222,16 @@
 						$va_facet_info['label_plural'] = $va_facet_info['label_plural'][$g_ui_locale];
 					}
 				}
+				
+				
+				// group_mode = hierarchical is only supported for location facets when current location criteria is storage locations-only
+				if (($va_facet_info['type'] === 'location') && (caGetOption('group_mode', $va_facet_info, null) == 'hierarchical')) {
+					if((is_array($current_location_criteria = $this->opo_config->get('current_location_criteria'))) && (sizeof($current_location_criteria) == 1) && isset($current_location_criteria['ca_storage_locations'])) {
+				    	$va_facet_info['table'] = 'ca_storage_locations';
+				    } else {
+				    	$va_facet_info['group_mode'] == 'none';
+				    }
+				}
 
 				// generate_facets_for_types config directive triggers auto-generation of facet config for each type of an authority item
 				// it's typically employed to provide browsing of occurrences where the various types are unrelated
@@ -650,8 +660,28 @@
 					break;
 				# -----------------------------------------------------
 				case 'location':
-					$va_tmp = explode(":", urldecode($pn_row_id));
-					$vs_loc_table_name = Datamodel::getTableName($va_tmp[0]);
+					$va_row_tmp = explode(":", urldecode($pn_row_id));
+					if (
+						(sizeof($va_row_tmp) < 3)
+						&&
+						($object_location_tracking_relationship_type = $this->opo_config->get('object_storage_location_tracking_relationship_type'))
+						&&
+						($object_location_tracking_relationship_type_id = array_shift(caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', [$object_location_tracking_relationship_type])))
+					) {
+						//
+						// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
+						// locations, not loans, occurrences etc.) is configured. The value of location criteria is typically in the 
+						// form <table num>:<type id>:<row id> but is shortened to just the row_id (which is the storage location location_id)
+						// by the hierarchy browser. In this case we can assume the table number is 119 (ca_objects_x_storage_locations) and
+						// the type_id is whatever is configured in "object_storage_location_tracking_relationship_type" in app.conf.
+						//
+						// We prepend those values below, allowing the criterion value to behave as a standard location value/
+						//
+						array_unshift($va_row_tmp, $object_location_tracking_relationship_type_id); 
+						if (sizeof($va_row_tmp) < 3) { array_unshift($va_row_tmp, 119); }	// assume ca_objects_x_storage_locations
+					}
+		
+					$vs_loc_table_name = Datamodel::getTableName($va_row_tmp[0]);
 					$va_collapse_map = $this->getCollapseMapForLocationFacet($va_facet_info);
 
 					$t_instance = Datamodel::getInstanceByTableName($vs_loc_table_name, true);
@@ -659,16 +689,16 @@
 					if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
 						$vs_table_name = 'ca_storage_locations';
 					}
-					if (isset($va_collapse_map[$vs_table_name][$va_tmp[1]])) {
+					
+					if (isset($va_collapse_map[$vs_table_name][$va_row_tmp[1]])) {
 						// Class/subclass is collapsable
-						return $va_collapse_map[$vs_table_name][$va_tmp[1]];
+						return $va_collapse_map[$vs_table_name][$va_row_tmp[1]];
 					} elseif(isset($va_collapse_map[$vs_table_name]['*'])) {
 						// Class is collapsable
 						return $va_collapse_map[$vs_table_name]['*'];
-					} elseif($va_tmp[2] && ($qr_res = caMakeSearchResult($vs_table_name, array($va_tmp[2]))) && $qr_res->nextHit()) {
+					} elseif($va_row_tmp[2] && ($qr_res = caMakeSearchResult($vs_table_name, [$va_row_tmp[2]])) && $qr_res->nextHit()) {
 						// Return label for id
-
-						$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $va_tmp[1]);
+						$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $va_row_tmp[1]);
 						$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
 
 						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($vs_template), 30, 'end');
@@ -1817,6 +1847,26 @@
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										$va_row_tmp = explode(":", $vn_row_id);
+										
+										if (
+											(sizeof($va_row_tmp) < 3)
+											&&
+											($object_location_tracking_relationship_type = $this->opo_config->get('object_storage_location_tracking_relationship_type'))
+											&&
+											($object_location_tracking_relationship_type_id = array_shift(caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', [$object_location_tracking_relationship_type])))
+										) {
+											//
+											// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
+											// locations, not loans, occurrences etc.) is configured. The value of location criteria is typically in the 
+											// form <table num>:<type id>:<row id> but is shortened to just the row_id (which is the storage location location_id)
+											// by the hierarchy browser. In this case we can assume the table number is 119 (ca_objects_x_storage_locations) and
+											// the type_id is whatever is configured in "object_storage_location_tracking_relationship_type" in app.conf.
+											//
+											// We prepend those values below, allowing the criterion value to behave as a standard location value/
+											//	
+											array_unshift($va_row_tmp, $object_location_tracking_relationship_type_id); 
+											if (sizeof($va_row_tmp) < 3) { array_unshift($va_row_tmp, 119); }	// ca_objects_x_storage_locations
+										}
 										
 										if ($va_row_tmp[0] == 119) { // ca_objects_x_storage_locations
 											$t_loc = new ca_storage_locations();

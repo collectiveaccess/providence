@@ -840,8 +840,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
 				break;
 		}
-		
-		
+
 		return $o_view->render('ca_objects_location.php');
  	}
  	# ------------------------------------------------------
