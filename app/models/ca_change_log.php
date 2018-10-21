@@ -636,6 +636,14 @@ class ca_change_log extends BaseModel {
 
 					$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_subject_guid));
 				}
+				
+				if ($va_row['snapshot']['attribute_guid']) {
+				    $va_row['subjects'][] = [
+				        'subject_table_num' => 4,
+				        'subject_row_id' => $va_row['snapshot']['attribute_id'],
+				        'guid' => $va_row['snapshot']['attribute_guid']
+				    ];
+				}
 
 				$va_ret[(int) $qr_results->get('log_id')] = $va_row;
 			}

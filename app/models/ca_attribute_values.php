@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -643,6 +643,60 @@ class ca_attribute_values extends BaseModel {
  			return intval($qr_res->get('c'));
  		}
  		return 0;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return first attribute value id found for the specified element and value.
+ 	 *
+ 	 * @param mixed $element_id An element code or numeric element_id
+ 	 * @param mixed $value An attribute value (numeric or text)
+ 	 * @param array $options Options include:
+ 	 *      transaction = A transaction within which to perform the value search. [Default is null]
+ 	 *
+ 	 * @return int A value_id or null if no value is found.
+ 	 */
+ 	static public function getValueIDFor($element_id, $value, $options=null) {
+ 	    if (!is_numeric($element_id)) { 
+            require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+ 	        $element_id = ca_metadata_elements::getElementID($element_id); 
+ 	   }
+ 	
+        if ($element_id > 0) {
+ 	        $db = ($trans = caGetOption('transaction', $options, null)) ? $trans->getDb() : new Db();
+ 	        
+ 	        $qr = $db->query("
+ 	            SELECT value_id FROM ca_attribute_values WHERE element_id = ? AND value_longtext1 = ? LIMIT 1
+ 	        ", [$element_id, $value]);
+ 	        
+ 	        if ($qr->nextRow()) {
+ 	            return $qr->get('value_id');
+ 	        }
+ 	    }
+ 	    return null;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return raw attribute value data for a value_id.
+ 	 *
+ 	 * @param int $value_id 
+ 	 * @param array $options Options include:
+ 	 *      transaction = A transaction within which to perform the value search. [Default is null]
+ 	 *
+ 	 * @return array Dictionary with raw attribute value fields (value_longtext1, value_longtext2, value_blob, value_decimal1, value_decimal2, value_integer1, item_id) or null if value_id is invalid.
+ 	 */
+ 	static public function getValuesFor($value_id, $options=null) {
+        if ($value_id > 0) {
+ 	        $db = ($trans = caGetOption('transaction', $options, null)) ? $trans->getDb() : new Db();
+ 	        
+ 	        $qr = $db->query("
+ 	            SELECT value_longtext1, value_longtext2, value_blob, value_decimal1, value_decimal2, value_integer1, item_id FROM ca_attribute_values WHERE value_id = ?
+ 	        ", [(int)$value_id]);
+
+ 	        if ($qr->nextRow()) {
+ 	            return $qr->getRow();
+ 	        }
+ 	    }
+ 	    return null;
  	}
 	# ------------------------------------------------------
 }

@@ -180,7 +180,7 @@
 	 * @return array|bool|false|mixed
 	 */
 	function caGetPrintTemplateDetails($ps_type, $ps_template, $pa_options=null) {
-		$va_template_paths = caGetPrintTemplateDirectoryPath($ps_type);
+		if (!is_array($va_template_paths = caGetPrintTemplateDirectoryPath($ps_type))) { return null; }
 		
 		$va_info = [];
 		foreach($va_template_paths as $vs_template_path) {

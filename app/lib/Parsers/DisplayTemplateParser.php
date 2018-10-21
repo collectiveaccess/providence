@@ -1335,12 +1335,20 @@ class DisplayTemplateParser {
 		            if ($v) { 
 		                // If one not the other...
 		                $va_tag_opts['convertCodesToIdno'] = false;
+		                $va_tag_opts['convertCodesToValue'] = false;
 		            }
 		            break;
 		        case 'convertCodesToIdno':
 		            if ($v) { 
 		                // If one not the other...
 		                $va_tag_opts['convertCodesToDisplayText'] = false;
+		                $va_tag_opts['convertCodesToValue'] = false;
+		            }
+		        case 'convertCodesToValue':
+		            if ($v) { 
+		                // If one not the other...
+		                $va_tag_opts['convertCodesToDisplayText'] = false;
+		                $va_tag_opts['convertCodesToIdno'] = false;
 		            }
 		            break;
 		    }

@@ -222,7 +222,7 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($pa_options=null) {
-	    if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification, 'remove' => false])) {
+	    if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 	    	$this->Edit();
 	    	return;
 	    }
@@ -487,7 +487,7 @@ class BaseEditorController extends ActionController {
 		}
 
 		if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
-	        if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification, 'remove' => false])) {
+	        if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 	        	$this->Edit();
 	        	return;
 	        }
@@ -1546,7 +1546,7 @@ class BaseEditorController extends ActionController {
 					return;
 				}
 
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, $pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'P'.$pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
 				break;
 		}
 	}

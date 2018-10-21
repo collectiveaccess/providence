@@ -122,10 +122,10 @@
     // First column : media
     $mediaCell = $table->addCell( 5 * $cmToTwips);
 
-    $va_info = $t_item->getMediaInfo('ca_object_representations.media',"medium");
+    $va_info = $t_item->getPrimaryRepresentation(["medium"]);
 
-    if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-        $vs_path = $t_item->getMediaPath('ca_object_representations.media',"medium");
+    if($va_info['info']['medium']['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+        $vs_path = $va_info['paths']['medium']; 
         if (is_file($vs_path)) {
             $mediaCell->addImage(
                 $vs_path,

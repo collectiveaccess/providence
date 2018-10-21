@@ -1297,6 +1297,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Always Expand/collapse'),
 										'description' => _t('Controls the expand/collapse behavior')
 									),
+									'hide_include_child_history_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Include child history" controls'),
+										'description' => _t('Check this option if you want to to hide the "Include child history" controls in this bundle placement.')
+									),
 									'hide_add_to_loan_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,
@@ -1389,9 +1398,27 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Lot (%1) display template', $va_type['name_singular']),
 										'description' => _t('Layout for lot when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
 									);
+									$va_additional_settings["ca_object_lots_{$va_type['idno']}_includeFromChildren"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Include history from lots (%1) related to child objects', $va_type['name_singular']),
+										'description' => _t('If checked history from lots that are related to sub-objects (children) is included.')
+									);
+									$va_additional_settings["ca_object_lots_{$va_type['idno']}_childDisplayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Lot (%1) display template when related to child objects', $va_type['name_singular']),
+										'description' => _t('Layout for lot related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									);
 									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_dateElement";
 									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_displayTemplate";
+									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_includeFromChildren";
+									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_childDisplayTemplate";
 								}
 								
 								$va_additional_settings['ca_occurrences_showTypes'] = array(
@@ -1436,10 +1463,28 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('%1 display template', $va_type['name_singular']),
 										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_occurrences.idno</i>.', $va_type['name_singular'])
 									);
+									$va_additional_settings["ca_occurrences_{$va_type['idno']}_includeFromChildren"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Include history from %1 related to child objects', $va_type['name_plural']),
+										'description' => _t('If checked history from %1 that are related to sub-objects (children) is included.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_occurrences_{$va_type['idno']}_childDisplayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template for %1 when related to child objects', $va_type['name_plural']),
+										'description' => _t('Layout for %1 related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.', $va_type['name_plural'])
+									);
 									
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_dateElement";
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_displayTemplate";
+									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_includeFromChildren";
+									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_childDisplayTemplate";
 								}
 
 								$va_additional_settings['ca_collections_showTypes'] = array(
@@ -1484,10 +1529,28 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('%1 display template', $va_type['name_singular']),
 										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_collections.idno</i>.', $va_type['name_singular'])
 									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_includeFromChildren"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Include history from %1 related to child objects', $va_type['name_plural']),
+										'description' => _t('If checked history from %1 that are related to sub-objects (children) is included.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_collections_{$va_type['idno']}_childDisplayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template for %1 when related to child objects', $va_type['name_plural']),
+										'description' => _t('Layout for %1 related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.', $va_type['name_plural'])
+									);
 									
 									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_dateElement";
 									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_displayTemplate";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_includeFromChildren";
+									$va_to_hide_when_using_defaults[] = "ca_collections_{$va_type['idno']}_childDisplayTemplate";
 								}								
 								$va_additional_settings['ca_movements_showTypes'] = array(
 									'formatType' => FT_TEXT,
@@ -1531,10 +1594,28 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('%1 display template', $va_type['name_singular']),
 										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.', $va_type['name_singular'])
 									);
+									$va_additional_settings["ca_movements_{$va_type['idno']}_includeFromChildren"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Include history from %1 related to child objects', $va_type['name_plural']),
+										'description' => _t('If checked history from %1 that are related to sub-objects (children) is included.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_movements_{$va_type['idno']}_childDisplayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template for %1 when related to child objects', $va_type['name_plural']),
+										'description' => _t('Layout for %1 related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.', $va_type['name_plural'])
+									);
 									
 									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_dateElement";
 									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_displayTemplate";
+									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_includeFromChildren";
+									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_childDisplayTemplate";
 								}
 								
 								$va_additional_settings['ca_loans_showTypes'] = array(
@@ -1580,10 +1661,28 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('%1 display template', $va_type['name_singular']),
 										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_loans.idno</i>.', $va_type['name_singular'])
 									);
+									$va_additional_settings["ca_loans_{$va_type['idno']}_includeFromChildren"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Include history from %1 related to child objects', $va_type['name_plural']),
+										'description' => _t('If checked history from %1 that are related to sub-objects (children) is included.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_loans_{$va_type['idno']}_childDisplayTemplate"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template for %1 when related to child objects', $va_type['name_plural']),
+										'description' => _t('Layout for %1 related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.', $va_type['name_plural'])
+									);
 									
 									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_dateElement";
 									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_color";
 									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_displayTemplate";
+									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_includeFromChildren";
+									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_childDisplayTemplate";
 								}
 									
 								$va_additional_settings += array(
@@ -1628,6 +1727,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Storage location display template'),
 										'description' => _t('Layout for storage location when displayed in history list (can include HTML). The template is evaluated relative to the object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
 									),
+									'ca_storage_locations_includeFromChildren' => array(
+									    'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Include history from storage locations related to child objects'),
+										'description' => _t('If checked history from storage locations that are related to sub-objects (children) is included.')
+									),
+									'ca_storage_locations_childDisplayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template for storage locations when related to child objects'),
+										'description' => _t('Layout for storage location related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									),
 									'showDeaccessionInformation' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,
@@ -1653,6 +1768,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Deaccession display template'),
 										'description' => _t('Layout for deaccession information when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
+									),
+									'deaccession_includeFromChildren' => array(
+									    'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Include history from deaccession information related to child objects'),
+										'description' => _t('If checked history from deaccession information that are related to sub-objects (children) is included.')
+									),
+									'deaccession_childDisplayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template for deaccessions related to child objects'),
+										'description' => _t('Layout for deaccession information related to child objects when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
 									)
 								);
 								

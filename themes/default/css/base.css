@@ -6775,7 +6775,7 @@ div.caUseHistoryButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton {
+.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caSetChildViewButton {
 	margin-top: 5px;
 }
 

@@ -179,8 +179,9 @@
  		 *		asHTML = if set URL is returned as an HTML link to the LOC definition of the term
  		 *		asText = if set only text portion, without LCSH identifier, is returned
  		 *		text = synonym for asText
- 		 *		id = return LCSH identifer
+ 		 *		id = return LCSH identifer URI
  		 *		idno = synonym for id
+ 		 *      n = return LCSH id only 
  		 * @return string The term
  		 */
 		public function getDisplayValue($pa_options=null) {
@@ -195,6 +196,10 @@
 			}
 			if (caGetOption(['id', 'idno'], $pa_options, false) && preg_match('!\[([^\]]*)!',$this->ops_text_value, $va_matches)) {
 				return $va_matches[1];
+			}
+			if (caGetOption('n', $pa_options, false) && preg_match('!\[([^\]]*)!',$this->ops_text_value, $va_matches)) {
+				$t = explode('/', $va_matches[1]);
+				return array_pop($t);
 			}
 			return $this->ops_text_value;
 		}
@@ -234,7 +239,7 @@
 			if (trim($ps_value)) {
 				// parse <text>|<url> format
 				$va_tmp = explode('|', $ps_value);
-				if (sizeof($va_tmp) > 1) {
+				if (is_array($va_tmp) && (sizeof($va_tmp) > 1)) {
 				
 					$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
 				
@@ -343,7 +348,7 @@
 				return null;		// not an error, just skip it
 			}
 			
-			if(sizeof(LCSHAttributeValue::$s_term_cache) > LCSHAttributeValue::$s_term_cache_max_size) {
+			if(is_array(LCSHAttributeValue::$s_term_cache ) && (sizeof(LCSHAttributeValue::$s_term_cache) > LCSHAttributeValue::$s_term_cache_max_size)) {
 				LCSHAttributeValue::$s_term_cache = array($ps_value => LCSHAttributeValue::$s_term_cache[$ps_value]);
 			}
 			return LCSHAttributeValue::$s_term_cache[$ps_value];
@@ -459,4 +464,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>
