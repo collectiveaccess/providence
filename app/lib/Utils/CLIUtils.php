@@ -3191,6 +3191,7 @@
 			require_once(__CA_MODELS_DIR__."/ca_movements.php");
 			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
 			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
+			require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 			
 			$o_config = Configuration::load();
 			$o_db = new Db();
@@ -3241,6 +3242,24 @@
 				
 				print CLIProgressBar::finish();
 			}
+            
+            $qr_loc_rels = ca_objects_x_storage_locations::find('*', ['returnAs' => 'searchResult']);
+            print CLIProgressBar::start($qr_loc_rels->numHits(), "Reloading location dates");
+            while($qr_loc_rels->nextHit()) {
+                if (!$qr_loc_rels->get('ca_objects_x_storage_locations.effective_date')) {
+                    if (($ts = $qr_loc_rels->get('ca_objects_x_storage_locations.lastModified')) && ($start_end = caDateToHistoricTimestamps($ts))) {
+                        try {
+                           $qr_res = $o_db->query(
+                                "UPDATE ca_objects_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id = ?", 
+                                [$start_end[0], $start_end[1], $qr_loc_rels->get('ca_objects_x_storage_locations.relation_id')]
+                            );
+                        } catch (Exception $e) {
+                            // noop
+                        }
+                    }
+                }
+                print CLIProgressBar::next();
+            }
 	
 			return true;
 		}
