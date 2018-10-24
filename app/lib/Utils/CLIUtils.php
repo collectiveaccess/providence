@@ -4815,4 +4815,65 @@
 			return _t('The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed using this command. Note that you must run caUtils under a user with privileges to delete the lock file.');
         }
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function run_external_export($po_opts=null) {
+            require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+            
+            $target = $po_opts->getOption('target');
+			if ($target && !ExternalExportManager::isValidTarget($target)) {
+				CLIUtils::addMessage(_t('Ignoring invalid target %1', $target));
+				$target = null;
+			}
+			
+			$table = $po_opts->getOption('table');
+			if (!$table) {
+				CLIUtils::addError(_t('You must specify a table'));
+				return;
+			}
+			if (!Datamodel::tableExists($table)) {
+				CLIUtils::addError(_t('Invalid table %1', $table));
+				return;
+			}
+			$id = $po_opts->getOption('id');
+			if (!$id) {
+				CLIUtils::addError(_t('You must specify an id'));
+				return;
+			}
+            
+            $e = new ExternalExportManager();
+            $e->process($table, $id, null, ['target' => $target]);
+		}
+		# -------------------------------------------------------
+		public static function run_external_exportParamList() {
+			return [
+				"table|t=s" => _t('Table of record to export.'),
+				"id|i=s" => _t('ID of row to export.'),
+				"target|a=s" => _t('Target to export to. If omitted all valid targets will be exported to.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_external_exportUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_external_exportShortHelp() {
+			return _t('Run external export for a record.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_external_exportHelp() {
+			return _t('To come.');
+        }
+		# -------------------------------------------------------
 	}

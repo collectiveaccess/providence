@@ -229,7 +229,7 @@
 					if((is_array($current_location_criteria = $this->opo_config->get('current_location_criteria'))) && (sizeof($current_location_criteria) == 1) && isset($current_location_criteria['ca_storage_locations'])) {
 				    	$va_facet_info['table'] = 'ca_storage_locations';
 				    } else {
-				    	$va_facet_info['group_mode'] == 'none';
+				    	$va_facet_info['group_mode'] = 'none';
 				    }
 				}
 
