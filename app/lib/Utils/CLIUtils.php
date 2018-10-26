@@ -416,7 +416,7 @@
 			print CLIProgressBar::finish();
 
 			print CLIProgressBar::start(1, _t('Reading file list'));
-			$va_contents = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/media', true, false);
+			$va_contents = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__, true, false);
 			print CLIProgressBar::next();
 			print CLIProgressBar::finish();
 
@@ -781,7 +781,7 @@
 			$quiet = $po_opts->getOption('quiet');
 			$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
-			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes'], 'delimiter' => [',', ';']]);
+			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
 			
 			if (in_array('all', $pa_kinds) || in_array('ca_object_representations', $pa_kinds)) {
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
@@ -921,6 +921,35 @@
 					}
 				}
 			}
+			
+			if ((in_array('all', $pa_kinds)  || in_array('icons', $pa_kinds)) && (!$vn_start && !$vn_end)) {
+				$icon_tables = ['ca_list_items', 'ca_storage_locations', 'ca_editor_uis', 'ca_editor_ui_screens', 'ca_tours', 'ca_tour_stops'];
+				
+				foreach($icon_tables as $icon_table) {
+					if (!($t_instance = Datamodel::getInstance($icon_table, true))) { continue; }
+					if (!$quiet) { print CLIProgressBar::start($icon_table::find('*', ['returnAs' => 'count']), _t('Re-processing icons')); }
+					$qr_vals = $o_db->query("SELECT ".($pk = $t_instance->primaryKey())." FROM {$icon_table}");
+					$ids = $qr_vals->getAllFieldValues($pk);
+					foreach($ids as $id) {
+						if ($t_instance->load($id)) {
+							$t_instance->setMode(ACCESS_WRITE);
+
+							$media_info = $t_instance->getMediaInfo($pk);
+
+							if (!$quiet) { print CLIProgressBar::next(1, _t("Re-processing %1 from %2", $id, $icon_table)); }
+
+
+							$t_instance->set('icon', ($p = $t_instance->getMediaPath('icon', 'original')) ? $p : $t_instance->getMediaPath('icon', 'iconlarge'));
+
+							$t_instance->update();
+							if ($t_instance->numErrors()) {
+								CLIUtils::addError(_t("Error processing icon media: %1", join('; ', $t_instance->getErrors())));
+							}
+						}	
+					}
+					if (!$quiet) { print CLIProgressBar::finish(); }
+				}
+			}
 
 
 			return true;
@@ -939,7 +968,7 @@
 				"id|i-n" => _t('Representation id to reload'),
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
 				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
-				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
+				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all"')
 			);
 		}
 		# -------------------------------------------------------
@@ -3191,6 +3220,7 @@
 			require_once(__CA_MODELS_DIR__."/ca_movements.php");
 			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
 			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
+			require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 			
 			$o_config = Configuration::load();
 			$o_db = new Db();
@@ -3241,6 +3271,24 @@
 				
 				print CLIProgressBar::finish();
 			}
+            
+            $qr_loc_rels = ca_objects_x_storage_locations::find('*', ['returnAs' => 'searchResult']);
+            print CLIProgressBar::start($qr_loc_rels->numHits(), "Reloading location dates");
+            while($qr_loc_rels->nextHit()) {
+                if (!$qr_loc_rels->get('ca_objects_x_storage_locations.effective_date')) {
+                    if (($ts = $qr_loc_rels->get('ca_objects_x_storage_locations.lastModified')) && ($start_end = caDateToHistoricTimestamps($ts))) {
+                        try {
+                           $qr_res = $o_db->query(
+                                "UPDATE ca_objects_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id = ?", 
+                                [$start_end[0], $start_end[1], $qr_loc_rels->get('ca_objects_x_storage_locations.relation_id')]
+                            );
+                        } catch (Exception $e) {
+                            // noop
+                        }
+                    }
+                }
+                print CLIProgressBar::next();
+            }
 	
 			return true;
 		}

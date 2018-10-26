@@ -221,16 +221,6 @@ class ca_data_exporter_items extends BaseModel {
 	protected function initSettings($pa_settings=null){
 		$va_settings = is_array($pa_settings) ? $pa_settings : array();
 		
-		/*$va_settings['refineries'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_SELECT,
-			'width' => 40, 'height' => 6,
-			'takesLocale' => false,
-			'default' => '',
-			'options' => ca_data_exporter_items::getAvailableRefineries(),
-			'label' => _t('Refineries'),
-			'description' => _t('Select the refinery that preforms the correct function to alter your data source as it maps to CollectiveAccess.')
-		);*/
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

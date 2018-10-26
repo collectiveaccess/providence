@@ -414,7 +414,7 @@
  				    caDisplayTemplateParser.setOptions(".json_encode($va_parser_opts).");
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				";
- 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').bind('keyup', function(e) { 
+ 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup', function(e) { 
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				});";
  				

@@ -118,45 +118,87 @@
 					if (!caIsIndexedArray($m)) {	// if it's not a list of mappings make it one
 						$m = [$m];
 					}
+					
+					// analyze mapping to find common base tag
+					$xpath_roots = [];
 					foreach($m as $index => $t) {
+					    $xp = [];
 						if(!is_array($t)) {
 							$t = ['source' => $t]; // convert simple mapping to expanded
+							$m[$index] = $t;
 						}
 						
+						if (!is_array($t)) {
+						    $xp = array_merge($xp, caGetTemplateTags($t));
+						} elseif (isset($t['source'])) {
+						    $xp = array_merge($xp, caGetTemplateTags($t['source']));
+						} else {
+						    foreach($t as $k => $st) {
+						        $xp = array_merge($xp, caGetTemplateTags(is_array($st) ? $st['source'] : $st));
+						    }
+						}
+						if (sizeof($xp) > 1) {
+                            $xpath_roots[$index] = caFindCommonRootForDelimitedStrings($xp, '/');
+                        }
+					}
+					
+					foreach($m as $index => $t) {
 						// container or expanded mapping?
 						$mapping_keys = array_keys($t);
-						if (sizeof(array_intersect(array_merge(['source'], self::$mapping_options), $mapping_keys)) !== sizeof($mapping_keys)) {
+						
+						
+						if (sizeof(array_intersect(array_merge(['source', 'delimiter', 'useAsSingleValue', 'skipGroupIfEmpty'], self::$mapping_options), $mapping_keys)) !== sizeof($mapping_keys)) {
 							// it's a container
-					
+					        $mapped_values[$f][] = [];
+                            $mapping_index = sizeof($mapped_values[$f]) - 1;
 							foreach($t as $sf => $st) {
 								if(!is_array($st)) {
 									$st = ['source' => $st]; // convert simple mapping to expanded
 								}
 								$xpaths = caGetTemplateTags($st['source']);	// Extract xpath tags from string
 								
-								$values = array_map(function($v) use ($data) { $v = ltrim($v, '/'); return $data->xpath("{$v}"); }, $xpaths);	// get values for each xpath tag
-			 			
-			 					$tv = $st['source'];
-								foreach($xpaths as $i => $p) {	// replace tags with values
-									$v = isset($values[$i][0]) ? dom_import_simplexml($values[$i][0])->nodeValue : '';
-									$tv = str_replace("^{$p}", $v, $tv);
-								}
-								if(!trim($tv) && isset($st['skipGroupIfEmpty']) && $st['skipGroupIfEmpty']) {  unset($mapped_values[$f][$index]); break; }
-								
-								if(sizeof($m) > 1) {
-									$mapped_values[$f][$index][$sf] = $tv;
+								if ($r = ltrim($xpath_roots[$index], '/')) {
+								    $subdata = $data->xpath($r);
+								    $values = [];
+								    foreach($xpaths as $i => $x) { $values[$i] = []; }
+								    foreach($subdata as $si => $sd) {
+								        $svalues = array_map(function($v) use ($sd) { $v = ltrim($v, '/'); return $v ? $sd->xpath("{$v}") : ''; }, array_map(function($x) use($r) { $x = str_replace($r, '', $x); return ($x && ($x !== '/')) ? $x : "./text()"; }, $xpaths));
+								        
+								        foreach($svalues as $x => $sv) {
+								            $values[$x][$si] = $sv[0];
+								        }
+								    }
 								} else {
-									$mapped_values[$f][$sf] = $tv;
+								    $values = array_map(function($v) use ($data) { $v = ltrim($v, '/'); return $data->xpath("{$v}"); }, $xpaths);	// get values for each xpath tag
+			 			        }
+			 			        
+								foreach($xpaths as $i => $p) {	// replace tags with values
+								    foreach($values[$i] as $vindex => $v) {
+								        $tv = str_replace("^{$p}", $v, $st['source']);
+								        if(!trim($tv) && isset($st['skipGroupIfEmpty']) && $st['skipGroupIfEmpty']) {  unset($mapped_values[$f][$mapping_index + $vindex]); break; }
+                                        $mapped_values[$f][$mapping_index + $vindex][$sf] = $tv;
+								    }
 								}
 							}
+							
+							// Remove empty arrays
+							$mapped_values[$f] = array_filter($mapped_values[$f], function($x) { return (is_array($x) && sizeof($x)); });
 						} else {
 							$xpaths = caGetTemplateTags($t['source']);	// Extract xpath tags from string
 							$values = array_map(function($v) use ($data) { $v = ltrim($v, '/'); return $data->xpath("{$v}"); }, $xpaths); // get values for each xpath tag
+							
 							foreach($xpaths as $i => $p) { // replace tags with values
-								$v = isset($values[$i][0]) ? dom_import_simplexml($values[$i][0])->nodeValue : '';
-								$t['source'] = str_replace("^{$p}", $v, $t['source']);
+							    foreach($values[$i] as $j => $sv) {
+							        $mapped_values[$f][] = str_replace("^{$p}", $sv, $t['source']);
+							    }
 							}
-							$mapped_values[$f] = $t['source'];
+							
+							if(is_array($mapped_values[$f]) && caIsIndexedArray($mapped_values[$f]) && (sizeof($mapped_values[$f]) > 1) && caGetOption('useAsSingleValue', $t, false)) { 
+                                $mapped_values[$f] = join(caGetOption('delimiter', $t, '; '), $mapped_values[$f]);
+                            }
+                            if(is_array($mapped_values[$f]) && caIsIndexedArray($mapped_values[$f]) && (sizeof($mapped_values[$f]) == 1)) { 
+                                $mapped_values[$f] = array_shift($mapped_values[$f]);
+                            }
 						}
 					}
 				}
@@ -168,7 +210,23 @@
 						$dxml = preg_replace("!</".$data->getName()."[^>]*>!", "</ead>", preg_replace("!<".$data->getName()."[^>]*>!", "<ead audience=\"internal\" xmlns=\"http://ead3.archivists.org/schema/\">", $data->asXML()));
 						$reader->read(null, ['fromString' => "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>".$dxml]); 
 						$reader->nextRow();
-						$rel_data = caProcessRefineryRelated($rel['relatedTable'], [$rel], $refinery_data['source_data'], $refinery_data['item'], 0, array_merge($refinery_data['options'], ['reader' => $reader]));
+						
+						$labels = BaseRefinery::parsePlaceholder($rel['preferredLabel'], [], [], null, array('reader' => $reader, 'returnAsString' => false));
+						$idnos = BaseRefinery::parsePlaceholder($rel['attributes']['idno'], [], [], null, array('reader' => $reader, 'returnAsString' => false));
+						
+						$items = [];
+						
+						$tags = (sizeof($labels) > sizeof($idnos)) ? $labels : $idnos;
+						
+						foreach($tags as $i => $tag) {
+						    $item = $rel;
+						    $item['preferredLabel'] = isset($labels[$i]) ? $labels[$i] : $labels[0];
+						    $item['attributes']['idno'] = isset($idnos[$i]) ? $idnos[$i] : $idnos[0];
+						    
+						    $items[] = $item;
+						}
+						$rel_data = caProcessRefineryRelated($rel['relatedTable'], $items, $refinery_data['source_data'], $refinery_data['item'], 0, array_merge($refinery_data['options'], ['reader' => $reader]));
+				
 						$mapped_values = array_merge($mapped_values, $rel_data);
 					}
 				}
@@ -182,6 +240,7 @@
 				}
 			}
 			$l--;
+			
 			return $mapped_values;
 		}
 		# -------------------------------------------------------	

@@ -66,7 +66,7 @@
 			global $g_asset_config, $g_asset_load_list;
 			$o_config = Configuration::load();
 			$g_asset_config = Configuration::load(__CA_CONF_DIR__.'/assets.conf');
-			$g_asset_load_list = array();
+			$g_asset_load_list = [];
 			
 			$vb_used_minified = !$o_config->get('debug') && $o_config->get('minification') && $g_asset_config->get('minification');
 			AssetLoadManager::useMinified($vb_used_minified);
@@ -100,6 +100,8 @@
 			global $g_asset_config, $g_asset_load_list;
 			
 			if (!$g_asset_config) { AssetLoadManager::init(); }
+			
+			$o_config = Configuration::load();
 			
 			$va_exclude_packages = $g_asset_config->getAssoc('excludePackages');
 			
@@ -137,7 +139,23 @@
 					
 					if (!$vb_is_theme_specific && isset($va_exclude_packages[$ps_package][$ps_library])) { return true; }
 					
-					$g_asset_load_list[$pn_priority][$ps_package.'/'.$va_list[$ps_library]] = $vb_is_theme_specific ? "THEME" : "APP";
+					$g_asset_load_list[$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
+					
+					// inherit from parent themes?
+					if ($o_config->get('allowThemeInheritance')) {
+                        $i=0;
+                        $pm_path = [];
+                        while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
+                            $i++;
+                            
+                            $g_asset_load_list[$pn_priority][$ps_package.'/'.$va_list[$ps_library]]["INHERITED_THEME_{$vs_inherit_from_theme}"] = true;
+                            
+                            if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
+                            $o_config = Configuration::load(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf", false, false, true);
+                            if ($i > 10) {break;} // max 10 levels
+                        }
+                    }
+					
 					return true;
 				}
 				
@@ -204,49 +222,59 @@
 			if (is_array($g_asset_load_list)) {
 				ksort($g_asset_load_list);
 				foreach($g_asset_load_list as $vn_priority => $va_libs) { 
-					foreach($va_libs as $vs_lib => $vs_type) { 
-						if ($vb_dont_load_app_assets && ($vs_type == 'APP')) { continue; }
-						if (AssetLoadManager::useMinified()) {
-							$va_tmp = explode(".", $vs_lib);
-							array_splice($va_tmp, -1, 0, array('min'));
-							$vs_lib = join('.', $va_tmp);
-						}
-						
-						if (substr($vs_lib, 0, 5) === '_css/') {							
-							//
-							// Load files in _css package from theme "css" directory rather than assets
-							//
-							list($_, $vs_css_file) = explode("/", $vs_lib);
-							if (file_exists("{$vs_theme_directory_path}/css/{$vs_css_file}")) {
-								$vs_url = "{$vs_theme_url_path}/css/{$vs_css_file}";
-							} elseif (file_exists("{$vs_default_theme_directory_path}/css/{$vs_css_file}")) {
-								$vs_url = "{$vs_default_theme_url_path}/css/{$vs_css_file}";
-							} else {
-								continue;
-							}
-						} elseif (preg_match('!(http[s]{0,1}://.*)!', $vs_lib, $va_matches)) { 
-							$vs_url = $va_matches[1];
-						} else {
-							if ($vs_type == 'THEME') {
-								if (file_exists("{$vs_theme_directory_path}/assets/{$vs_lib}")) {
-									$vs_url = "{$vs_theme_url_path}/assets/{$vs_lib}";
-								} elseif (file_exists("{$vs_default_theme_directory_path}/assets/{$vs_lib}")) {
-									$vs_url = "{$vs_default_theme_url_path}/assets/{$vs_lib}";
-								} else {
-									continue;
-								}
-							} else {
-								$vs_url = "{$vs_base_url_path}/assets/{$vs_lib}";
-							}
-						}
-					
-						if (preg_match('!\.css$!', $vs_lib)) {
-							$vs_buf .= "<link rel='stylesheet' href='{$vs_url}' type='text/css' media='all'/>\n";
-						} elseif(preg_match('!\.properties$!', $vs_lib)) {
-							$vs_buf .= "<link rel='resource' href='{$vs_url}' type='application/l10n' />\n";
-						} else {
-							$vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
-						}
+					foreach($va_libs as $vs_lib => $va_types) { 
+					    foreach(array_keys($va_types) as $vs_type) {
+                            if ($vb_dont_load_app_assets && ($vs_type == 'APP')) { continue; }
+                            if (AssetLoadManager::useMinified()) {
+                                $va_tmp = explode(".", $vs_lib);
+                                array_splice($va_tmp, -1, 0, array('min'));
+                                $vs_lib = join('.', $va_tmp);
+                            }
+                        
+                            if (substr($vs_lib, 0, 5) === '_css/') {							
+                                //
+                                // Load files in _css package from theme "css" directory rather than assets
+                                //
+                                list($_, $vs_css_file) = explode("/", $vs_lib);
+                                if (file_exists("{$vs_theme_directory_path}/css/{$vs_css_file}")) {
+                                    $vs_url = "{$vs_theme_url_path}/css/{$vs_css_file}";
+                                } elseif (file_exists("{$vs_default_theme_directory_path}/css/{$vs_css_file}")) {
+                                    $vs_url = "{$vs_default_theme_url_path}/css/{$vs_css_file}";
+                                } else {
+                                    continue;
+                                }
+                            } elseif (preg_match('!(http[s]{0,1}://.*)!', $vs_lib, $va_matches)) { 
+                                $vs_url = $va_matches[1];
+                            } elseif ($vs_type == 'THEME') {
+                                if (file_exists("{$vs_theme_directory_path}/assets/{$vs_lib}")) {
+                                    $vs_url = "{$vs_theme_url_path}/assets/{$vs_lib}";
+                                } elseif (file_exists("{$vs_default_theme_directory_path}/assets/{$vs_lib}")) {
+                                    $vs_url = "{$vs_default_theme_url_path}/assets/{$vs_lib}";
+                                } else {
+                                    continue;
+                                }
+                            } elseif(preg_match("!^INHERITED_THEME_(.*)$!", $vs_type, $m)) {
+                                $vs_inherited_theme_directory_path = __CA_THEMES_DIR__."/{$m[1]}";
+                                $vs_inherited_theme_url_path = __CA_THEMES_URL__."/{$m[1]}";
+                                if (file_exists("{$vs_inherited_theme_directory_path}/assets/{$vs_lib}")) {
+                                    $vs_url = "{$vs_inherited_theme_url_path}/assets/{$vs_lib}";
+                                } elseif (file_exists("{$vs_default_theme_directory_path}/assets/{$vs_lib}")) {
+                                    $vs_url = "{$vs_inherited_theme_url_path}/assets/{$vs_lib}";
+                                } else {
+                                    continue;
+                                }
+                            } else {
+                                $vs_url = "{$vs_base_url_path}/assets/{$vs_lib}";
+                            }
+                    
+                            if (preg_match('!\.css$!', $vs_lib)) {
+                                $vs_buf .= "<link rel='stylesheet' href='{$vs_url}' type='text/css' media='all'/>\n";
+                            } elseif(preg_match('!\.properties$!', $vs_lib)) {
+                                $vs_buf .= "<link rel='resource' href='{$vs_url}' type='application/l10n' />\n";
+                            } else {
+                                $vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
+                            }
+                        }
 					}
 				}
 			}

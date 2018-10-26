@@ -1508,7 +1508,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					
 					$va_item_ids = array();
 					while($qr_collections->nextHit()) {
-						$va_list_items = $qr_collections->get('ca_list_items', array('returnAsArray' => true, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)));
+						$va_list_items = $qr_collections->get('ca_list_items', array('returnAsArray' => true, 'returnWithStructure' => true, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)));
 						foreach($va_list_items as $vn_rel_id => $va_list_item) {
 							$va_item_ids[$vn_rel_id] = $va_list_item['item_id'];
 						}
@@ -1850,7 +1850,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				initItemID: '{".$pa_options['element_id']."}',
 				defaultItemID: '".$t_list->getDefaultItemID()."',
 				useAsRootID: '".$t_root_item->getPrimaryKey()."',
-				indicator: \"".caNavIcon(__CA_NAV_ICON_SPINNER__, 1)."\",
+				indicatorUrl: \"".caNavIcon(__CA_NAV_ICON_SPINNER__, 1)."\",
 				autoShrink: '".(caGetOption('auto_shrink', $pa_options, false) ? 'true' : 'false')."',
 				autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
 				autoShrinkMaxHeightPx: {$vn_autoshrink_height},
