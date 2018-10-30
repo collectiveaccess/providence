@@ -81,12 +81,13 @@ class ExternalExportManager {
             throw new ApplicationException(_t('No external export targets are defined.'));
         }
         
-        if ($target = caGetOption('target', $options, null) && !isset($targets[$target])) {
+        if (($target = caGetOption('target', $options, null)) && !isset($targets[$target])) {
             throw new ApplicationException(_t('Invalid external export target %1', $target));
         }
     
         if ($target) { $targets = [$targets[$target]]; }
     
+    	$files = [];
         foreach($targets as $target => $target_info) {
             $target_table = caGetOption('table', $target_info, null);
             
@@ -105,9 +106,64 @@ class ExternalExportManager {
             
             Datamodel::getInstance($table, true);
             $t_instance = $table::find($id, ['returnAs' => 'firstModelInstance']);          
-            $plugin->process($t_instance, $target_info, []);
+            $files[] = $plugin->process($t_instance, $target_info, []);
+            
         }
-    
+    	return $files;
     }
+    # ------------------------------------------------------
+	/**
+	 * Return list of available external export targets
+	 *
+	 * @param int $pn_table_num
+	 * @param array $pa_options
+	 *		table = 
+	 *		restrictToTypes = 
+	 *		countOnly = return number of exporters available rather than a list of exporters
+	 *
+	 * @return mixed List of exporters, or integer count of exporters if countOnly option is set
+	 */
+	static public function getTargets($options=null) {
+		$config = self::getConfig();
+		$restrict_to_types = null;
+
+		if ($table = caGetOption('table', $options, null)) { $table = Datamodel::getTableName($table); }
+		if (!is_array($restrict_to_types = caGetOption('restrictToTypes', $options, null)) && $restrict_to_types) {
+			$restrict_to_types = [$restrict_to_types];
+		}
+		if ($table && is_array($restrict_to_types)) {
+			$restrict_to_types = caMakeTypeList($table, $restrict_to_types);
+		}
+		$targets = array_filter($config->get('targets'), function($v) use ($table, $restrict_to_types) { 
+			if(($table && $v['table'] !== $table)) { return false; }
+			if (is_array($restrict_to_types) && sizeof($restrict_to_types) && 
+				isset($v['restrictToTypes']) && is_array($v['restrictToTypes']) && sizeof($v['restrictToTypes']) && 
+				!sizeof(array_intersect($v['restrictToTypes'], $restrict_to_types))
+			) {
+				return false;	
+			}
+			return true;
+		});
+		
+		if (isset($pa_options['countOnly']) && $pa_options['countOnly']) {
+			return sizeof($targets);
+		}
+
+		return $targets;
+	}
+    # ------------------------------------------------------
+	/**
+	 * Returns list of available external export targets as HTML form element
+	 */
+	static public function getTargetListAsHTMLFormElement($name, $table=null, $attributes=null, $options=null) {
+		$targets = self::getTargets(array_merge($options, ['table' => $table]));
+
+		$opts = [];
+		foreach($targets as $target_name => $target_info) {
+			$opts[$target_info['label']] = $target_name;
+		}
+		ksort($opts);
+		return caHTMLSelect($name, $opts, $attributes, $options);
+	}
     # ------------------------------------------------------
 }

@@ -1427,6 +1427,23 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	  * Determine if two mimetypes are equivalent. Mimetypes may be specific or include wildcards.
+	  *
+	  * @param string $mimetype1 A specific or wildcard mimetype. Eg. image/jpeg or image/*.
+	  * @param string $mimetype2 A specific or wildcard mimetype. Eg. image/jpeg or image/*.
+	  * @return bool
+	  */
+	function caCompareMimetypes($mimetype1, $mimetype2) {
+		$t1 = explode('/', $mimetype1);
+		$t2 = explode('/', $mimetype2);
+		
+		if ($t1[0] !== $t2[0]) { return false; }
+		if (($t1[1] === $t2[1]) || ($t1[1] === '*') || ($t2[1] === '*')) { return true; }
+		
+		return false;
+	}
+	# ---------------------------------------
+	/**
 	  * Creates an md5-based cached key from an array of options
 	  *
 	  * @param array $pa_options An options array

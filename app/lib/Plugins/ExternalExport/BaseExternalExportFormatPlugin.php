@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/ExternalExport/BaseExternalExportPlugin.php : base class for external export plugins
+ * app/lib/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php : base class for external export plugins
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,10 +34,10 @@
     *
     */ 
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExport.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 include_once(__CA_LIB_DIR__."/Configuration.php");
 
-abstract class BaseExternalExportPlugin Extends WLPlug {
+abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 	# ------------------------------------------------
 	// properties for this plugin instance
 	protected $properties = array(
@@ -110,6 +110,27 @@ abstract class BaseExternalExportPlugin Extends WLPlug {
 	 */
 	public function getAvailableSettings() {
 		return [];
+	}
+	# ------------------------------------------------
+	/**
+	 * Generate file name for export using configured specification
+	 *
+	 * @param mixed $spec Formatting specification for filename. Can be either a template or an rray with two keys: "delimiter" and "components". Components is a list of display templates to be strung together with the delimiter.
+	 * @param array $data An array of data to substitute into the file name spec. 
+	 *
+	 * @string The processed file name
+	 */
+	static public function processExportFilename($spec, $data) {
+		if (is_array($spec)) {
+			$delimiter = caGetOption('delimiter', $spec, '.');
+			if (!is_array($components = caGetOption('components', $spec, null))) {
+				$components = [$components];
+			}
+			return join($delimiter, array_map(function($v) use ($data) { return caProcessTemplate($v, $data); }, $components));
+		} else {
+			// simple template
+			return caProcessTemplate($spec, $data);
+		}
 	}
 	# ------------------------------------------------
 }

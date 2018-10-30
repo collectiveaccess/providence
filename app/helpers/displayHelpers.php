@@ -1719,27 +1719,51 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		
 		
 
-		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
-			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
+		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey()) {
+			if (ca_data_exporters::getExporters($t_item->tableNum(), ['countOnly' => true]) > 0) {
+				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
 				
-			$vs_buf .= _t('Export this %1', mb_strtolower($vs_type_name, 'UTF-8'))." ";
-			$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
+				$vs_buf .= _t('Export data')." ";
+				$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
 
-			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
-			$vs_buf .= "<div id='exporterFormList'>";
-			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
-			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
-			$vs_buf .= "</div>\n";
-			$vs_buf .= "</form>";
+				$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+				$vs_buf .= "<div id='exporterFormList'>";
+				$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
+				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+				$vs_buf .= "</div>\n";
+				$vs_buf .= "</form>";
 				
-			$vs_buf .= "</div>";
+				$vs_buf .= "</div>";
 
-			$vs_buf .= "<script type='text/javascript'>";
-			$vs_buf .= "jQuery(document).ready(function() {";
-			$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
-			$vs_buf .= "});";
-			$vs_buf .= "</script>";
+				$vs_buf .= "<script type='text/javascript'>";
+				$vs_buf .= "jQuery(document).ready(function() {";
+				$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
+				$vs_buf .= "});";
+				$vs_buf .= "</script>";
+			}
+			
+			require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+			if (ExternalExportManager::getTargets($t_item->tableNum(), ['countOnly' => true]) > 0) {
+				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExternalExportItemButton">';
+				$vs_buf .= _t('Export to external repository')." ";
+				$vs_buf .= "<a class='button' onclick='jQuery(\"#externalExporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
+
+				$vs_buf .= caFormTag($po_view->request, 'ExternalExportSingle', 'caExternalExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+				$vs_buf .= "<div id='externalExporterFormList'>";
+				$vs_buf .= ExternalExportManager::getTargetListAsHTMLFormElement('target', $t_item->tableNum(), array('id' => 'caExternalExporterList'), array('width' => '120px', 'restrictToTypes' => [$t_item->getTypeCode()]));
+				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm");
+				$vs_buf .= "</div>\n";
+				$vs_buf .= "</form>";
+				$vs_buf .= "</div>";
+
+				$vs_buf .= "<script type='text/javascript'>";
+				$vs_buf .= "jQuery(document).ready(function() {";
+				$vs_buf .= "jQuery(\"#externalExporterFormList\").hide();";
+				$vs_buf .= "});";
+				$vs_buf .= "</script>";
+			}
 		}
 		
 		
