@@ -98,7 +98,7 @@ class ExternalExportManager {
             if (!($format = caGetOption('format', $target_info['output'], null))) { continue; }
             
             // get plugin
-            if (!require_once(__CA_LIB_DIR__."/plugins/ExternalExport/{$format}.php")) { 
+            if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/{$format}.php")) { 
                 throw ApplicationException(_t('Invalid plugin %1', $format));
             }
             $plugin_class = "WLPlug{$format}";
