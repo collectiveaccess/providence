@@ -621,7 +621,7 @@
 	    
 	    $vn_item_id = $t_item->getPrimaryKey();
 	    
-        $vs_buf = $po_view->render($request->getViewsDirectoryPath().'/bundles/summary_download_options_html.php');
+        $vs_buf = $po_view->render($request->getViewsDirectoryPath(true).'/bundles/summary_download_options_html.php');
     
         if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID()), 'context' => 'editor_summary'))) {
 
