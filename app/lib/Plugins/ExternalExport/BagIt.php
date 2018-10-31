@@ -150,9 +150,9 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                             	
                             	$e = $export_filename = self::processExportFilename($export_filename_spec, [
                             		'extension' => $extension,
-                            		'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : null, 'original_basename' => $original_basename,
-                            		'filename' => "{$basename}.{$extension}", "basename" => $basename, 
-                            	]);
+                            		'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : "{$basename}.{$extension}", 'original_basename' => $original_basename ? $original_basename : $basename,
+                            		'filename' => "{$basename}.{$extension}", "basename" => $basename, 'id' => $ids[$i] ? $ids[$i] : $i
+                            	], $t);
                             	
                             	// Detect and rename duplicate file names
                             	$i = 1;

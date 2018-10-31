@@ -120,15 +120,30 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 	 *
 	 * @string The processed file name
 	 */
-	static public function processExportFilename($spec, $data) {
+	static public function processExportFilename($spec, $data, $instance=null) {
 		if (is_array($spec)) {
 			$delimiter = caGetOption('delimiter', $spec, '.');
 			if (!is_array($components = caGetOption('components', $spec, null))) {
 				$components = [$components];
 			}
+			
+			if($instance) {
+			    $tags = array_reduce($components, function($c, $v) { return array_merge($c, caGetTemplateTags($v)); }, []);
+			    foreach($tags as $t) {
+			        if (!($v = $instance->get($t))) { continue; }
+			        $data[str_replace("^", "", $t)] = $v;
+			    }
+			}
 			return join($delimiter, array_map(function($v) use ($data) { return caProcessTemplate($v, $data); }, $components));
 		} else {
 			// simple template
+			if($instance) {
+				$tags = caGetTemplateTags($spec);
+				foreach($tags as $t) {
+					if (!($v = $instance->get($t))) { continue; }
+					$data[str_replace("^", "", $t)] = $v;
+				}
+			}
 			return caProcessTemplate($spec, $data);
 		}
 	}
