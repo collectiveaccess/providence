@@ -213,6 +213,7 @@ class Session {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
 		}
 		// Delete session data
+		unset($_COOKIE[Session::$name]);
 		ExternalCache::delete($session_id, 'SessionVars');
 		session_destroy();
 	}

@@ -849,7 +849,10 @@ class RequestHTTP extends Request {
 			return false;
 		} else {		
 			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".$_SERVER["HTTP_USER_AGENT"]));
-		
+		    
+		    Session::deleteSession();
+		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
+			
 			Session::setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
 			Session::setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
 			Session::setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
