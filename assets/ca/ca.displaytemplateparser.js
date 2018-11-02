@@ -118,7 +118,8 @@ var caUI = caUI || {};
             
             // rewrite tags
             var j = 1;
-            jQuery.each(tagList, function(i, tag) {
+            if (tagList) {
+           		jQuery.each(tagList, function(i, tag) {
                 if (tag.substring(0,6) === '^^join') {
                     var tagProc = "join_" + j;
                     j++;
@@ -153,7 +154,7 @@ var caUI = caUI || {};
                     return;
                 }
             });
-            
+            }
             tagList = template.match(tagRegex);
             var t = template;    
             var unitRegex = /([\.]{0,1}[\d]+[ \d\.\,\/]*)([^\d ]+)/g, bAtLeastOneValueIsSet = false;
@@ -161,7 +162,9 @@ var caUI = caUI || {};
             var templatevalues = [];
             var lastUnits = null;
             //tagList.reverse();
-            jQuery.each(tagList, function(i, tag) {
+            
+            if (tagList) {
+            	jQuery.each(tagList, function(i, tag) {
                 var tagProc = tag.replace("^", "");
                 if(tag.indexOf("~") === -1) {
                     var selected = jQuery('select' + values[tagProc] + ' option:selected');
@@ -364,6 +367,7 @@ var caUI = caUI || {};
                     }
                 }
             });
+        	}
             templatevalues.push({'type': 'END'});   // Mark end of stream of values
             
             // Determine if and where units are displayed
@@ -399,25 +403,28 @@ var caUI = caUI || {};
 			
             // Process <ifdef> tags
             var h = jQuery("<div>" + t + "</div>");
-            jQuery.each(fullTagList, function(k, tag) {
-                var isJoin = false;
-                var originalTag = tag;
-                if (tag.match(/^join_/)) { 
-                    tag = values[tag]; 
-                    isJoin = true;
-                }
-                var tagBits = tag.split(/\~/);
-                var tagRoot = tagBits[0].replace("^", "");
-                var val = jQuery(values[tagRoot]).val();
+            
+            if (fullTagList) {
+				jQuery.each(fullTagList, function(k, tag) {
+					var isJoin = false;
+					var originalTag = tag;
+					if (tag.match(/^join_/)) { 
+						tag = values[tag]; 
+						isJoin = true;
+					}
+					var tagBits = tag.split(/\~/);
+					var tagRoot = tagBits[0].replace("^", "");
+					var val = jQuery(values[tagRoot]).val();
 
-                if(val && (val.length > 0)) {
-                    jQuery.each(h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]"), function(k, v) {
-                        jQuery(v).replaceWith(jQuery(v).html());
-                    });
-                } else {
-                    h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]").remove();
-                }
-            });
+					if(val && (val.length > 0)) {
+						jQuery.each(h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]"), function(k, v) {
+							jQuery(v).replaceWith(jQuery(v).html());
+						});
+					} else {
+						h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]").remove();
+					}
+				});
+			}
             return h.html().trim();
         };
         // --------------------------------------------------------------------------------

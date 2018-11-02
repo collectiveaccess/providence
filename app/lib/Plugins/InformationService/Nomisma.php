@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/InformationService/NomismaMints.php :
+ * app/lib/Plugins/InformationService/Nomisma.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,10 +33,28 @@
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseNomismaLODServicePlugin.php");
 
-global $g_information_service_settings_nomisma_mints;
-$g_information_service_settings_nomisma_mints = [];
+global $g_information_service_settings_nomisma;
+$g_information_service_settings_nomisma = [
+	'ontologies' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'multiple' => 1,
+		'default' => '',
+		'options' => array(
+			_t('Mints') => 'nmo:Mint',
+			_t('Regions') => 'nmo:Region',
+			_t('Materials') => 'nmo:Material',
+			_t('Demoninations') => 'nmo:Denomination',
+			_t('Hoards') => 'nmo:Hoard',
+			_t('Person') => 'foaf:Person',
+		),
+		'width' => 50, 'height' => 5,
+		'label' => _t('Use ontologies'),
+		'description' => _t('Leave all unselected to use all available ontologies.')
+	)
+];
 
-class WLPlugInformationServiceNomismaMints extends BaseNomismaLODServicePlugin implements IWLPlugInformationService {
+class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implements IWLPlugInformationService {
 	# ------------------------------------------------
 	static $s_settings;
 	# ------------------------------------------------
@@ -44,17 +62,17 @@ class WLPlugInformationServiceNomismaMints extends BaseNomismaLODServicePlugin i
 	 *
 	 */
 	public function __construct() {
-		global $g_information_service_settings_nomisma_mints;
+		global $g_information_service_settings_nomisma;
 
-		WLPlugInformationServiceNomismaMints::$s_settings = $g_information_service_settings_nomisma_mints;
+		WLPlugInformationServiceNomisma::$s_settings = $g_information_service_settings_nomisma;
 		parent::__construct();
-		$this->info['NAME'] = 'Nomisma Mints';
+		$this->info['NAME'] = 'Nomisma';
 		
-		$this->description = _t('Provides access to mint data in Nomisma.org data service');
+		$this->description = _t('Provides access to the Nomisma.org data service');
 	}
 	# ------------------------------------------------
 	protected function getConfigName() {
-		return 'nomisma_mints';
+		return 'nomisma';
 	}
 	# ------------------------------------------------
 	/** 
@@ -63,7 +81,7 @@ class WLPlugInformationServiceNomismaMints extends BaseNomismaLODServicePlugin i
 	 * @return array
 	 */
 	public function getAvailableSettings() {
-		return WLPlugInformationServiceNomismaMints::$s_settings;
+		return WLPlugInformationServiceNomisma::$s_settings;
 	}
 	# ------------------------------------------------
 	# Data
@@ -82,18 +100,13 @@ class WLPlugInformationServiceNomismaMints extends BaseNomismaLODServicePlugin i
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
-		$va_service_conf = $this->opo_linked_data_conf->get('nomisma_mints');
+		$va_service_conf = $this->opo_linked_data_conf->get('nomisma');
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
 
 		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
 		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
 		$pn_limit = (int) caGetOption('limit', $pa_options, ($va_service_conf['result_limit']) ? $va_service_conf['result_limit'] : 50);
 
-		/**
-		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
-		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
-		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
-		 */
 		if(is_numeric($ps_search)) {
 			$vs_search = $ps_search;
 		} elseif(isURL($ps_search)) {
@@ -104,6 +117,8 @@ class WLPlugInformationServiceNomismaMints extends BaseNomismaLODServicePlugin i
 			$va_search = preg_split('/[\s]+/', $ps_search);
 			$vs_search = join(' AND ', $va_search);
 		}
+		
+		$ontology_filter = (is_array($pa_settings['ontologies']) && sizeof($pa_settings['ontologies'])) ? "FILTER (?t IN (".join(',', $pa_settings['ontologies'])."))" : "";
 
 		$vs_query = urlencode('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX dcterms:	<http://purl.org/dc/terms/>
@@ -113,16 +128,14 @@ PREFIX nmo: <http://nomisma.org/ontology#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX spatial: <http://jena.apache.org/spatial#>
 PREFIX xsd:	<http://www.w3.org/2001/XMLSchema#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 
 SELECT * WHERE {
-   ?loc 
-        geo:lat ?lat ;
-        geo:long ?long .
-   ?mint geo:location ?loc ;
-         skos:prefLabel ?label ;
-         skos:broader ?parent;
-         a nmo:Mint
-  FILTER (regex(?label, "'.$vs_search.'", "i"))
+   ?data skos:prefLabel ?label .
+   ?data rdf:type ?t.
+   OPTIONAL { ?data skos:broader ?parent }
+  FILTER (regex(?label, "'.trim($vs_search).'", "i"))
+  '.$ontology_filter.'
 }
 LIMIT '.$pn_limit);
 
@@ -136,7 +149,7 @@ LIMIT '.$pn_limit);
 		$res = [];
 		foreach($va_results as $va_values) {
 			$vs_id = '';
-			if(preg_match("/([a-z0-9_\- ]+)$/", $va_values['mint']['value'], $va_matches)) {
+			if(preg_match("/([a-z0-9_\- ]+)$/", $va_values['data']['value'], $va_matches)) {
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 			if(isset($res[$vs_id])) { continue; }
@@ -152,7 +165,7 @@ LIMIT '.$pn_limit);
 
 			$res[$vs_id] = array(
 				'label' => htmlentities($vs_label),
-				'url' => $va_values['mint']['value'],
+				'url' => $va_values['data']['value'],
 				'idno' => $vs_id,
 			);
 		}

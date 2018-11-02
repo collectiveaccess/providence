@@ -169,9 +169,10 @@
 		 * @param string $ps_value
 		 * @return array
 		 */
-		public function getIndexValues($ps_value=null) {
-            if($vs_output = $ps_value ? $ps_value : $this->getValue());
-			return $vs_output;
+		public function getIndexValues($value=null) {
+            if($output = ($value ? $value : $this->getValue()));
+            if(!is_array($output)) { $output = [$output]; }
+			return $output;
 		}
 		# -------------------------------------------------------
 		# User interace (HTML)
