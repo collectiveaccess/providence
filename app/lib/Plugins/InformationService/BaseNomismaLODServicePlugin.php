@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,8 @@ require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServiceP
 abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin {
 	# ------------------------------------------------
 	protected $opo_linked_data_conf = null;
+	
+	static protected $caching = true;
 	# ------------------------------------------------
 	public function __construct() {
 		parent::__construct(); // sets app.conf
@@ -97,7 +99,7 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 			if(!isset($va_node['literal'])) { continue; }
 
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
-
+			
 			// only display if there's content
 			if(strlen($vs_content = self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node)) > 0) {
 				$vs_display .= "<div class='formLabel'>";
@@ -159,7 +161,7 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 	/**
 	 * Fetches a literal property string value from given node
 	 * @param string $ps_base_node
-	 * @param string $ps_literal_propery EasyRdf property definition
+	 * @param string $ps_literal_property EasyRdf property definition
 	 * @param string|null $ps_node_uri Optional related node URI to pull from
 	 * @param array $pa_options Available options are
 	 * 			limit -> limit number of processed related notes, defaults to 10
@@ -167,12 +169,12 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 	 * 				this is useful for gvp:parentString where the top-most category is usually not very useful
 	 * @return string|bool
 	 */
-	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null, $pa_options=array()) {
+	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_property, $ps_node_uri=null, $pa_options=array()) {
 		if(!isURL($ps_base_node)) { return false; }
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
 		$vs_cache_key = md5(serialize(func_get_args()));
-		if(CompositeCache::contains($vs_cache_key, 'NomismaRDFLiterals')) {
+		if(self::$caching && CompositeCache::contains($vs_cache_key, 'NomismaRDFLiterals')) {
 			return CompositeCache::fetch($vs_cache_key, 'NomismaRDFLiterals');
 		}
 
@@ -197,7 +199,8 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 
 		$vn_j = 0;
 		foreach($va_pull_graphs as $vs_uri => $o_g) {
-			$va_literals = $o_g->all($vs_uri, $ps_literal_propery);
+			//print "<pre>[$vs_uri] ".$o_g->dump('text')."</pre>";
+			$va_literals = $o_g->all($vs_uri, $ps_literal_property);
 
 			foreach($va_literals as $o_literal) {
 				if($o_literal instanceof EasyRdf_Literal) {
@@ -240,12 +243,13 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 	static function getURIAsRDFGraph($ps_uri) {
 		if(!$ps_uri) { return false; }
 
-		if(CompositeCache::contains($ps_uri, 'NomismaLinkedDataRDFGraphs')) {
+		if(self::$caching && CompositeCache::contains($ps_uri, 'NomismaLinkedDataRDFGraphs')) {
 			return CompositeCache::fetch($ps_uri, 'NomismaLinkedDataRDFGraphs');
 		}
 
 		try {
-			$o_graph = new EasyRdf_Graph("http://nomisma.org/apis/getRdf?identifiers={$ps_uri}");
+			$id = str_replace('http://nomisma.org/id/', '', $ps_uri);
+			$o_graph = new EasyRdf_Graph("http://nomisma.org/apis/getRdf?identifiers={$id}");
 			$o_graph->load();
 		} catch(Exception $e) {
 			return false;
@@ -266,7 +270,7 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 	static function getListOfRelatedGraphs($po_graph, $ps_base_node, $ps_node_uri, $pn_limit, $pb_recursive=false) {
 		$vs_cache_key = md5(serialize(func_get_args()));
 
-		if(CompositeCache::contains($vs_cache_key, 'NomismaLinkedDataRelatedGraphs')) {
+		if(self::$caching && CompositeCache::contains($vs_cache_key, 'NomismaLinkedDataRelatedGraphs')) {
 			return CompositeCache::fetch($vs_cache_key, 'NomismaLinkedDataRelatedGraphs');
 		}
 

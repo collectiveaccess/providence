@@ -107,10 +107,12 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
 		$pn_limit = (int) caGetOption('limit', $pa_options, ($va_service_conf['result_limit']) ? $va_service_conf['result_limit'] : 50);
 
+		$is_url = false;
 		if(is_numeric($ps_search)) {
 			$vs_search = $ps_search;
 		} elseif(isURL($ps_search)) {
 			$vs_search = str_replace('http://nomisma.org/id/', '', $ps_search);
+			$is_url = true;
 		} elseif($pb_phrase) {
 			$vs_search = '\"'.$ps_search.'\"';
 		} else {
@@ -119,7 +121,7 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		}
 		
 		$ontology_filter = (is_array($pa_settings['ontologies']) && sizeof($pa_settings['ontologies'])) ? "FILTER (?t IN (".join(',', $pa_settings['ontologies'])."))" : "";
-
+		$query_filter = ($is_url) ? 'FILTER (regex(?label, "^'.trim($vs_search).'$", "i"))' : 'FILTER (regex(?label, "\\\\b'.trim($vs_search).'\\\\b", "i"))';
 		$vs_query = urlencode('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX dcterms:	<http://purl.org/dc/terms/>
 PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
@@ -134,7 +136,7 @@ SELECT * WHERE {
    ?data skos:prefLabel ?label .
    ?data rdf:type ?t.
    OPTIONAL { ?data skos:broader ?parent }
-  FILTER (regex(?label, "'.trim($vs_search).'", "i"))
+  '.$query_filter.'
   '.$ontology_filter.'
 }
 LIMIT '.$pn_limit);
