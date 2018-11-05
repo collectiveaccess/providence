@@ -120,6 +120,8 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 			$vs_search = join(' AND ', $va_search);
 		}
 		
+		if($pa_settings['ontologies'] && !is_array($pa_settings['ontologies'])) { $pa_settings['ontologies'] = [$pa_settings['ontologies']]; }
+		
 		$ontology_filter = (is_array($pa_settings['ontologies']) && sizeof($pa_settings['ontologies'])) ? "FILTER (?t IN (".join(',', $pa_settings['ontologies'])."))" : "";
 		$query_filter = ($is_url) ? 'FILTER (regex(?label, "^'.trim($vs_search).'$", "i"))' : 'FILTER (regex(?label, "\\\\b'.trim($vs_search).'\\\\b", "i"))';
 		$vs_query = urlencode('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
