@@ -770,7 +770,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 
 			// check bundle-placement type restrictions if set
 			if (
-				$pn_type_id && sizeof($va_types) &&
+				$pn_type_id && is_array($va_types) && sizeof($va_types) &&
 				!in_array($pn_type_id, $va_types)
 			) { continue; }
 				
