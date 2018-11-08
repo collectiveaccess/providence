@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2016 Whirl-i-Gig
+ * Copyright 2000-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -213,6 +213,7 @@ class Session {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
 		}
 		// Delete session data
+		unset($_COOKIE[Session::$name]);
 		ExternalCache::delete($session_id, 'SessionVars');
 		session_destroy();
 	}
