@@ -95,6 +95,15 @@
 		public function returnsMultipleValues() {
 			return false;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * collectionHierarchyBuilder returns actual row_ids, not idnos
+		 *
+		 * @return bool
+		 */
+		public function returnsRowIDs() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

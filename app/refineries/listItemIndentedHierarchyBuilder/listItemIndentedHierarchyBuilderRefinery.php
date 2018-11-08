@@ -177,6 +177,15 @@
 		public function returnsMultipleValues() {
 			return false;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * listItemIndentedHierarchyBuilder returns actual row_ids, not idnos
+		 *
+		 * @return bool
+		 */
+		public function returnsRowIDs() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

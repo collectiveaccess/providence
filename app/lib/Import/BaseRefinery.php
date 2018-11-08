@@ -300,5 +300,14 @@
 			return true;
 		}
 		# -------------------------------------------------------	
+		/**
+		 * Does refinery return actual row_ids rather than idnos
+		 *
+		 * @return bool Always return false
+		 */
+		public function returnsRowIDs() {
+			return false;
+		}
+		# -------------------------------------------------------	
 	}
 ?>
