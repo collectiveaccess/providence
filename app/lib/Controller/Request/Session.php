@@ -214,6 +214,7 @@ class Session {
 		}
 		// Delete session data
 		unset($_COOKIE[Session::$name]);
+		setCookie(Session::$name, "", time()-3600);
 		ExternalCache::delete($session_id, 'SessionVars');
 		session_destroy();
 	}
