@@ -1,5 +1,4 @@
 <?php
-session_start();
 /* ----------------------------------------------------------------------
  * app/helpers/requestHelpers.php : utility functions for handling incoming requests
  * ----------------------------------------------------------------------
@@ -36,10 +35,10 @@ session_start();
   */
 function caGetPreferredThemeForCurrentDevice($pa_theme_device_mappings) {
     if(isset($_GET['current_theme'])){
-        $_SESSION['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
+        $_COOKIE['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
     }
-    if(isset($_SESSION['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_SESSION['current_theme'])){
-        $vs_theme = $_SESSION['current_theme'];
+    if(isset($_COOKIE['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_COOKIE['current_theme'])){
+        $vs_theme = $_COOKIE['current_theme'];
         return $vs_theme;
     }
     $vs_default_theme = 'default';
