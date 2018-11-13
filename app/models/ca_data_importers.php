@@ -1333,7 +1333,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_import_all_datasets = caGetOption('importAllDatasets', $pa_options, false);
 		
-		$o_progress->start(_t('Reading %1', $ps_source), array('window' => $r_progress));
+		$o_progress->start(_t('Reading %1', $ps_source));
 		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
@@ -1366,7 +1366,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logDebug(_t('Found %1 rows in input source', $vn_num_items));
 
 		$o_progress->setTotal($vn_num_items);
-		$o_progress->start(_t('Importing from %1', $ps_source), array('window' => $r_progress));
+		$o_progress->start(_t('Importing from %1', $ps_source));
 
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
@@ -1818,7 +1818,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 				
-				$o_progress->next(_t("Importing %1", $vs_idno), array('window' => $r_progress));
+				$o_progress->next(_t("Importing %1", $vs_idno));
 			
 				if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 					$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
