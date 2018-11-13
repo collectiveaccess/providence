@@ -739,7 +739,7 @@
 						if (!is_array($va_ancestors)) { $va_ancestors = array(); }
 						$va_ancestors = array_reverse($va_ancestors);
 					}
-					if ($vn_hierarchies_in_use <= 1) {
+					if (($vn_hierarchies_in_use <= 1) && ($t_item->getProperty('HIERARCHY_TYPE') !== __CA_HIER_TYPE_ADHOC_MONO__)) {
 						array_shift($va_ancestors);
 					}
 					break;
