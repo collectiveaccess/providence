@@ -95,6 +95,7 @@ class ExportController extends ActionController {
 		
 		$sets_list = [];
 		foreach($sets as $set) {
+		    if($set['item_count'] < 1) { continue; }
 			$sets_list[$set['set_code']] = $set['name'].' '.(($set['item_count'] == 1) ? _t('(%1 item)', $set['item_count']) : _t('(%1 items)', $set['item_count']));
 		}
 		$this->view->setVar('sets_list_select', caHTMLSelect('set_code', array_flip($sets_list), []));
@@ -127,13 +128,12 @@ class ExportController extends ActionController {
 	 * Ajax-invoked execution of export process. This is where the export is actually run.
 	 */
 	public function RunExport() {
+	    set_time_limit(7200);
 		if (!$this->request->user->canDoAction('can_export_artefacts_canada')) { return; }
 		
 		$set_code = $this->request->getParameter('set_code', pString);
 		$job_id = $this->request->getParameter('job_id', pString);
 	
-		$o_progress = new ProgressBar('WebUI', 0, $job_id);
-		$o_progress->start(_t('Processing'));
 		
 		// Get set
 		$t_set = ca_sets::find(['set_code' => $set_code], ['returnAs' => 'firstModelInstance']);
@@ -148,7 +148,6 @@ class ExportController extends ActionController {
 			throw new ApplicationException(_t('Set must not be empty'));
 		}
 		$items = array_keys($items);
-		$o_progress->setTotal(sizeof($items));
 		
 		if (!($t_display = ca_bundle_displays::find(['display_code' => $display_code = $this->config->get('export_display')], ['returnAs' => 'firstModelInstance']))) {
 			throw new ApplicationException(_t("Configured display '%1' is not available", $display_code));
@@ -178,9 +177,11 @@ class ExportController extends ActionController {
 		$zip = new ZipFile();
 		$seen_idnos = [];
 		
+		
+		$o_progress = new ProgressBar('WebUI', $qr->numHits(), $job_id);
+		$o_progress->start(_t('Processing'));
 		while($qr->nextHit()) {
 			$idno = $qr->get("ca_objects.idno");
-			$o_progress->next(_t('Processing %1', $idno));
 			
 			$row = [];
 			foreach($placements as $placement_id => $placement_info) {
@@ -207,7 +208,7 @@ class ExportController extends ActionController {
 			$row[] = join(",", $media_refs);
 			
 			$rows[] = join(',', $row);
-			
+			$o_progress->next(_t('Processing %1', $idno));
 		}
 		
 		$zip->addFile(join("\n", $rows), "artefacts_data.csv");
@@ -220,8 +221,8 @@ class ExportController extends ActionController {
 		
 		// TODO: support SFTP here?
 	
-		$job_info = $o_progress->getDataForJobID($job_id);
 		$o_progress->finish();
+		$job_info = $o_progress->getDataForJobID($job_id);
 		
 		$va_links = [];
 		if(!is_array($job_info['data']['created'])) { $job_info['data']['created'] = []; }
@@ -262,9 +263,8 @@ class ExportController extends ActionController {
 		if (!$this->request->user->canDoAction('can_export_artefacts_canada')) { return; }
 		
 		$job_id = $this->request->getParameter('job_id', pString);
-		$o_progress = new ProgressBar('WebUI', null, $job_id);
-		
-		$data = $o_progress->getDataForJobID();
+		$o_progress = new ProgressBar('WebUI');
+		$data = $o_progress->getDataForJobID($job_id);
 		$data['elapsedTime'] = caFormatInterval(time()-$data['start']);
 		
 		$this->view->setVar('info', $data);

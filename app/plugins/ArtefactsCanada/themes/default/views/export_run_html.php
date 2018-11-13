@@ -77,10 +77,12 @@
 			// Set up repeating load of progress bar status
 			updateProgressBarInterval = setInterval(function() {
 				jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'GetExportStatus', array('job_id' => $job_id)); ?>', {}, function(data) {
-					jQuery('#progressbar').progressbar("option", "value", data.position).progressbar("option", "max", data.total);
-					jQuery('#batchProcessingTableStatus').html(data.message);
-					jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);
-					jQuery('#batchProcessingCounts').html(data.position + "/" + data.total);
+				    if(data && data.total) {
+                        jQuery('#progressbar').progressbar("option", "max", data.total).progressbar("option", "value", data.position);
+                        jQuery('#batchProcessingTableStatus').html(data.message);
+                        jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);
+                        jQuery('#batchProcessingCounts').html(data.position + "/" + data.total);
+                    }
 				}); 
 			}, 1000);
 		
