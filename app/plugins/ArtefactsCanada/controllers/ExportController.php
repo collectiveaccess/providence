@@ -52,6 +52,13 @@ class ExportController extends ActionController {
 		// Load plugin configuration file
 		$this->config = Configuration::load(__CA_APP_DIR__.'/plugins/ArtefactsCanada/conf/artefactsCanada.conf');
 		
+		if (!$this->config->get('enabled')) {
+			throw new ApplicationException(_t('Artefacts Canada export is not enabled'));
+		}
+		if (!($export_display_code = $this->config->get('export_display')) || (ca_bundle_displays::find(['display_code' => $export_display_code], ['returnAs' => 'count']) == 0)) {
+			throw new ApplicationException(_t("Artefacts Canada export display '%1' does not exist", $export_display_code));
+		}
+		
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		
 		if (!$this->request->user->canDoAction('can_export_artefacts_canada')) {
@@ -70,20 +77,21 @@ class ExportController extends ActionController {
 		if (!$this->request->user->canDoAction('can_export_artefacts_canada')) { return; }
 		
 		
-		// Clean up old files
-		array_map(function($v) { 
-			if(preg_match("!^artefacts_canada_export_!", pathinfo($v, PATHINFO_BASENAME))) { 
-				$t = filemtime($v);
-				if ((time()-$t) > $this->config->get('delete_export_files_older_than')) {
-				print "DELETE $v<br>\n";
-					unlink($v);
-				}
-			} 
-			return;
-		}, caGetDirectoryContentsAsList(__CA_APP_DIR__."/tmp", false));
+		if ($this->config->get('delete_export_files_older_than') > 0) {
+			// Clean up old files
+			array_map(function($v) { 
+				if(preg_match("!^artefacts_canada_export_!", pathinfo($v, PATHINFO_BASENAME))) { 
+					$t = filemtime($v);
+					if ((time()-$t) > $this->config->get('delete_export_files_older_than')) {
+						unlink($v);
+					}
+				} 
+				return;
+			}, caGetDirectoryContentsAsList(__CA_APP_DIR__."/tmp", false));
+		}
 		
-		$t_sets = new ca_sets();
-		$this->view->setVar('sets_list', $sets = caExtractValuesByUserLocale($t_sets->getSets(['user_id' => $this->request->getUserID(), 'table' => 'ca_objects'])));
+		$t_set = new ca_sets();
+		$this->view->setVar('sets_list', $sets = caExtractValuesByUserLocale($t_set->getSets(['user_id' => $this->request->getUserID(), 'table' => 'ca_objects'])));
 		
 		$sets_list = [];
 		foreach($sets as $set) {
@@ -101,6 +109,10 @@ class ExportController extends ActionController {
 		if (!$this->request->user->canDoAction('can_export_artefacts_canada')) { return; }
 		
 		$set_code = $this->request->getParameter('set_code', pString);
+	
+		if (!ca_sets::setExists($set_code, ['user_id' => $this->request->getUserID(), 'access' => __CA_SET_READ_ACCESS__])) { 
+			throw new ApplicationException(_t('Set does not exist'));
+		}
 		$job_id = md5('U'.$this->request->getUserID()."_{$set_code}_".uniqid(rand(), true).'_'.microtime(true));
 		
 		$this->view->setVar('set_code', $set_code);
@@ -234,6 +246,10 @@ class ExportController extends ActionController {
 		if (!$this->request->user->canDoAction('can_export_artefacts_canada')) { return; }
 		$job_id = preg_replace("![^A-Za-z0-9_]+!", "_", $this->request->getParameter('job_id', pString));
 
+		if(!file_exists(__CA_APP_DIR__."/tmp/artefacts_canada_export_{$job_id}.zip")) {
+			throw new ApplicationException(_t('Download file is no longer available'));
+		}
+		
 		$this->view->setVar('archive_path', __CA_APP_DIR__."/tmp/artefacts_canada_export_{$job_id}.zip");
 		$this->view->setVar('archive_name', "artefacts_canada_export_{$job_id}.zip");
 		$this->view->render('bundles/download_file_binary.php');

@@ -2691,6 +2691,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	# ---------------------------------------------------------------
 	/**
 	 * Duplicate all items in this set
+	 *
 	 * @param int $pn_user_id
 	 * @param array $pa_options
 	 * @return ca_sets|bool
@@ -2750,6 +2751,30 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$t_set_to_add_dupes_to->addItems($va_dupes);
 
 		return $t_set_to_add_dupes_to;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Test if set code exists
+	 *
+	 * @param string $set_code
+	 * @param array $options Options include:
+	 *		user_id = Considers set existance subject to acccess the user. 
+	 *		access = Consider set to exist if user has at least the specified access level. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then a set will be considered to exist if the user has at least read access. 
+	 *		checkAccess = Consider set to exist if it has a public access level with the specified values. Can be a single value or array if you wish to filter on multiple public access values.
+	 *			
+	 * @return bool
+	 */
+	static public function setExists($set_code, $options=null) {
+		if ($ids = ca_sets::find(['set_code' => $set_code], ['returnAs' => 'ids'])) {
+			
+			if ($user_id = caGetOption('user_id', $options, null)) {
+				$id = array_shift($ids);
+				$t_set = new ca_sets();
+				return $t_set->haveAccessToSet($user_id, caGetOption('access', $options, null), $id, ['access' => caGetOption('access', $options, null)]);
+			}
+			return true;
+		}
+		return false;
 	}
 	# ---------------------------------------------------------------
 }
