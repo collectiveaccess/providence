@@ -195,6 +195,7 @@ class ExportController extends ActionController {
 			$media_refs = [];
 			if (is_array($media_list = $qr->get('ca_object_representations.media.original.path', ['returnAsArray' => true]))) {
 				foreach($media_list as $media_path) {
+				    if (!file_exists($media_path)) { continue; }
 					$suffix = 0;
 					do {
 						$id = $idno.($suffix ? "-{$suffix}" : "");
