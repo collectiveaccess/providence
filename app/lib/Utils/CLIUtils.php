@@ -4843,5 +4843,42 @@
 		public static function clear_search_indexing_queue_lock_fileHelp() {
 			return _t('The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed using this command. Note that you must run caUtils under a user with privileges to delete the lock file.');
         }
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function rebuild_browse_index($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/Browse/BrowseManager.php");
+			
+			BrowseManager::reindex();
+			
+			CLIUtils::addMessage(_t("Reindexed browse"));
+		}
+		# -------------------------------------------------------
+		public static function rebuild_browse_indexParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_browse_indexUtilityClass() {
+			return _t('Browse');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_browse_indexShortHelp() {
+			return _t('Index for browse.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_browse_indexHelp() {
+			return _t('Index for browse.');
+		}
 		# -------------------------------------------------------
 	}
