@@ -68,13 +68,14 @@
 			$o_search_config = caGetSearchConfig();
 				
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $this->request->getParameter('term', pString);
+			$ps_query = $ps_query_proc = $this->request->getParameter('term', pString);
 			
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
 			$va_excludes = explode(";", $ps_exclude);
 			$ps_type = $this->request->getParameter('type', pString);
 			$ps_types = $this->request->getParameter('types', pString);
+			$ps_restrict_to_access_point = trim($this->request->getParameter('restrictToAccessPoint', pString));
 			$ps_restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
 			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
@@ -144,6 +145,11 @@
 					$vs_additional_query_params = ' AND ('.join(' AND ', $pa_additional_query_params).')';
 				}
 
+				$vs_restrict_to_access_point = '';
+				if((strlen($ps_restrict_to_access_point) > 0) && $ps_query) {
+					$ps_query_proc = $ps_restrict_to_access_point.":\"".str_replace('"', '', $ps_query)."\"";
+				}
+				
 				$vs_restrict_to_search = '';
 				if(strlen($ps_restrict_to_search) > 0) {
 					$vs_restrict_to_search .= ' AND ('.$ps_restrict_to_search.')';
@@ -170,9 +176,9 @@
 				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
-					$vs_search = '('.trim($ps_query).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
+					$vs_search = '('.trim($ps_query_proc).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
 				} else {
-					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
+					$vs_search = trim($ps_query_proc).(intval($pb_exact) ? '' : '*');
 				}
 				
 				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
@@ -185,7 +191,7 @@
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
 					if((strlen($ps_restrict_to_search) > 0)) {
-						$o_no_filter_result = $o_search->search(trim($ps_query) . (intval($pb_exact) ? '' : '*') . $vs_type_query . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+						$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_type_query . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 						if ($o_no_filter_result->numHits() != $qr_res->numHits()) {
 							$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $ps_query, $o_no_filter_result->numHits());
 							$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $ps_query, ($o_no_filter_result->numHits() - $qr_res->numHits()));

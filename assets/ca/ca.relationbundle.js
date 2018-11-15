@@ -66,7 +66,14 @@ var caUI = caUI || {};
 				if(typeof options.lists != 'object') { options.lists = [options.lists]; }
 				options.extraParams.lists = options.lists.join(";");
 			}
-
+			
+			// restrict to access point
+			if (options && options.restrictToAccessPoint && options.restrictToAccessPoint.length) {
+				if (!options.extraParams) { options.extraParams = {}; }
+				if (typeof options.restrictToAccessPoint != 'string') { options.restrictToAccessPoint = ''; }
+				options.extraParams.restrictToAccessPoint = options.restrictToAccessPoint;
+			}
+			
 			// restrict to search expression
 			if (options && options.restrictToSearch && options.restrictToSearch.length) {
 				if (!options.extraParams) { options.extraParams = {}; }
