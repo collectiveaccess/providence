@@ -3979,7 +3979,7 @@ function caFileIsIncludable($ps_file) {
 	    	default:
 	    		$last_item = array_pop($pa_items);
 	    		$list = join(caGetOption('delimiter', $pa_options, ', '), $pa_items);
-	    		return  ' '.caGetOption('conjunction', $pa_options, _t('and')).' '.$last_item;
+	    		return  $list.' '.caGetOption('conjunction', $pa_options, _t('and')).' '.$last_item;
 	    		break;
 	    }
 	}

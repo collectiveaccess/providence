@@ -8264,7 +8264,7 @@ class BaseModel extends BaseObject {
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -9020,7 +9020,7 @@ $pa_options["display_form_field_tips"] = true;
 					$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
 					$vs_max_length = '';
 					if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
-					$vs_element = '<input type="password" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value).'" size="'.$vn_display_width.'" '.$vs_max_length.' '.$vs_js.' autocomplete="off" '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
+					$vs_element = '<input type="password" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value).'" size="'.$vn_display_width.'" '.$vs_max_length.' '.$vs_js.' autocomplete="off" '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')." ".($pa_options['placeholder'] ? "placeholder='".htmlentities($pa_options['placeholder'])."'" : "")."/>";
 					break;
 				# ----------------------------
 				case(FT_BIT):
