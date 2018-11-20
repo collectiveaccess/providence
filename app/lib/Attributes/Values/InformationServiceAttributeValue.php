@@ -233,7 +233,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 				return array(
 					'value_longtext1' => $vs_display_text,	// text
 					'value_longtext2' => $va_tmp[2],		// uri
-					'value_decimal1' => $va_tmp[1], 		// id
+					'value_decimal1' => is_numeric($va_tmp[1]) ? $va_tmp[1] : null, 		// id
 					'value_blob' => caSerializeForDatabase($va_info)
 				);
 			} elseif((sizeof($va_tmp)==1) && (isURL($va_tmp[0], array('strict' => true)) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
