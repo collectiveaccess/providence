@@ -4346,10 +4346,10 @@
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
-						    GROUP BY {$vs_browse_table_name}.{$vs_field_name}
+						    GROUP BY {$vs_browse_table_name}.{$vs_field_name}, {$vs_sort_field}
 						";
 						if($vs_sort_field) {
-							$vs_sql .= " ORDER BY {$vs_sort_field}";
+							$vs_sql .= " ORDER BY {$}";
 						}
 						$qr_res = $this->opo_db->query($vs_sql);
 
