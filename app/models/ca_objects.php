@@ -845,6 +845,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecate
+ 	 *
  	 * Return array with list of significant events in object life cycle as configured for 
  	 * a ca_objects_history editor bundle.
 	 *
@@ -1430,6 +1432,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecate
+ 	 *
  	 * Returns HTML editor form bundle for ca_objects_history (object use history bundle)
 	 *
 	 * @param HTTPRequest $po_request The current request
@@ -1537,6 +1541,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		return $o_view->render('ca_objects_history.php');
  	}
  	# ------------------------------------------------------
+ 	/**
+ 	 * TODO: deprecate?
+ 	 */
 	private function _processObjectHistoryBundleSettings($pa_bundle_settings) {
 
 		if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_criteria = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_criteria)) {
@@ -1614,7 +1621,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	}
 	# ------------------------------------------------------
  	/**
- 	 *
+ 	 * TODO: Deprecate
  	 */
  	public function getLastMovement($pa_options=null) {
  		$pn_object = caGetOption('object_id', $pa_options, null);
@@ -1647,6 +1654,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecate
+ 	 *
  	 *
  	 *
  	 * @param array $pa_options Array of options:
@@ -1761,6 +1770,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecate
+ 	 *
  	 * Return last storage location formatted using provided template
  	 */
  	public function getLastLocationForDisplay($ps_template, $pa_options=null) {
@@ -1771,7 +1782,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 *
+ 	 * TODO: deprecate
  	 *
  	 * @param array $pa_options Array of options:
  	 *		template =
@@ -2061,6 +2072,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecate
+ 	 *
  	 * Determines is a change being made to the object's relationships maight affect current location. I
  	 *
  	 * @param mixed $pm_rel_table_name_or_num Table bame or number of the related table
@@ -2084,6 +2097,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecate
+ 	 *
  	 * Calculates the current location of the currently loaded object and stores them in the ca_objects.current_loc_class,
  	 * ca_objects.current_loc_subclass and ca_objects.current_loc_id fields.
  	 *
@@ -2132,6 +2147,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecate
+ 	 *
  	 * Sets the ca_objects.current_loc_class, ca_objects.current_loc_subclass and ca_objects.current_loc_id
  	 * fields in the currently loaded object row with information about the current location. These fields are used 
  	 * by BrowseEngine to browse objects on current location
@@ -2196,6 +2213,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 * TODO: Deprecste
+ 	 *
  	 * Fetches configuration for the specified location class/subclass
  	 *
  	 * @param mixed $pm_current_loc_class Table name or number (aka. class)
@@ -2362,6 +2381,27 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		return $vb_is_reserved ? $va_reservations : array();
 	}
+	# ------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param null|array $pa_bundle_settings
+	 * @param null|array $pa_options
+	 * @return string
+	 */
+	public function getObjectCirculationStatusHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+
+		if(!is_array($pa_options)) { $pa_options = array(); }
+
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('settings', $pa_bundle_settings);
+		$o_view->setVar('t_subject', $this);
+
+		return $o_view->render('ca_object_circulation_status_html.php');
+	}
 	# --------------------------------------------------------------------------------------------
 	#
 	# --------------------------------------------------------------------------------------------
@@ -2398,27 +2438,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		return null;
-	}
-	# ------------------------------------------------------
-	/**
-	 * @param RequestHTTP $po_request
-	 * @param string $ps_form_name
-	 * @param string $ps_placement_code
-	 * @param null|array $pa_bundle_settings
-	 * @param null|array $pa_options
-	 * @return string
-	 */
-	public function getObjectCirculationStatusHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-
-		if(!is_array($pa_options)) { $pa_options = array(); }
-
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
-		$o_view->setVar('settings', $pa_bundle_settings);
-		$o_view->setVar('t_subject', $this);
-
-		return $o_view->render('ca_object_circulation_status_html.php');
 	}
 	# ------------------------------------------------------
 }
