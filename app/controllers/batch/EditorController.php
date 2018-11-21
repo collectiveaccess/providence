@@ -93,10 +93,10 @@
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array(),
+				[],
+				[],
 				false,
-				array('restrictToTypes' => $t_set->getTypesForItems())
+				['restrictToTypes' => array_keys($t_set->getTypesForItems())]
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
  				$this->request->setActionExtra($va_nav['defaultScreen']);
@@ -334,7 +334,7 @@
  				isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
  				isset($pa_params['requires']) ? $pa_params['requires'] : null,
  				false,
- 				array('hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 'returnTypeRestrictions' => true, 'restrictToTypes' => $t_set->getTypesForItems())
+ 				['hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 'returnTypeRestrictions' => true, 'restrictToTypes' => array_keys($t_set->getTypesForItems())]
  			);
  			
  			if (!$this->request->getActionExtra()) {

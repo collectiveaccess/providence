@@ -127,8 +127,8 @@
  			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
  			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array()
+				[],
+				[]
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
  				$this->request->setActionExtra($va_nav['defaultScreen']);

@@ -302,8 +302,8 @@
 				<h3><?php print _t('Movement details'); ?></h3>
 <?php
 				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-					array(),
-					array()
+					[],
+					[]
 				);
 	
 				$t_movement = new ca_movements();

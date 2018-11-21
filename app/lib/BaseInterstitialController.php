@@ -102,8 +102,8 @@
 				}
 
 				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-					array(),
-					array(),
+					[],
+					[],
 					false,
 					$va_options
 				);
