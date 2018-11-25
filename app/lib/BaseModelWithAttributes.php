@@ -2315,7 +2315,6 @@
 				}
 			}
 
-			$t_dupe->setMode(ACCESS_WRITE);
 			$t_dupe->update();
 
 			if($t_dupe->numErrors()) {
@@ -2365,7 +2364,6 @@
 				return false;
 			}
 			$t_restriction = new ca_metadata_type_restrictions();
-			$t_restriction->setMode(ACCESS_WRITE);
 			$t_restriction->set('table_num', $this->tableNum());
 			$t_restriction->set('element_id', $t_element->getPrimaryKey());
 			$t_restriction->set('type_id', $pn_type_id);	// TODO: validate $pn_type_id
@@ -2388,7 +2386,6 @@
 			}
 			$t_restriction = new ca_metadata_type_restrictions();
 			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $pn_type_id, 'table_num' => $this->tableNum()))) {
-				$t_restriction->setMode(ACCESS_WRITE);
 				$t_restriction->delete();
 				if ($t_restriction->numErrors()) {
 					$this->postError(1981, _t("Couldn't remove element from restriction list: %1",join('; ', $t_restriction->getErrors())), 'BaseModelWithAttributes->addMetadataElementToType()');
