@@ -107,6 +107,8 @@
 		public function getHistory($pa_bundle_settings=null, $pa_options=null) {
 			global $g_ui_locale;
 		
+			// TODO: REWRITE
+		
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 
