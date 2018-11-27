@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,7 +37,7 @@
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
-require_once(__CA_LIB_DIR__."/BaseObjectLocationModel.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueCriterionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
@@ -190,7 +190,9 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
  	)
 );
 
-class ca_storage_locations extends BaseObjectLocationModel implements IBundleProvider, IHierarchy {
+class ca_storage_locations extends RepresentableBaseModel implements IBundleProvider, IHierarchy {
+	use HistoryTrackingCurrentValueCriterionTrait;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------

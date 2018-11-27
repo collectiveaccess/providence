@@ -36,7 +36,6 @@
 
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
-require_once(__CA_LIB_DIR__."/BaseObjectLocationModel.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
@@ -45,6 +44,7 @@ require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects'] = array(
@@ -359,7 +359,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 	)
 );
 
-class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
+class ca_objects extends RepresentableBaseModel implements IBundleProvider {
+	use HistoryTrackingCurrentValueTrait;
+
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------

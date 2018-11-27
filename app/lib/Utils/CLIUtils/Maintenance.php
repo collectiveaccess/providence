@@ -2309,29 +2309,26 @@
 		 *
 		 */
 		public static function reload_current_values_for_history_tracking_policies($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Db.php");
-
-            // TODO: implement new tracking system~
-			$o_db = new Db();
-			$t_object = new ca_objects();
-
-			$qr_res = $o_db->query("SELECT object_id FROM ca_objects ORDER BY object_id");
-
-			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
-
-			$vn_c = 0;
-			while($qr_res->nextRow()) {
-				$vn_object_id = $qr_res->get('object_id');
-				if($t_object->load($vn_object_id)) {
-					print CLIProgressBar::next(1, _t('Processing %1', $t_object->getWithTemplate("^ca_objects.preferred_labels.name (^ca_objects.idno)")));
-					$t_object->deriveCurrentLocationForBrowse();
-				} else {
-					print CLIProgressBar::next(1, _t('Cannot load object %1', $vn_object_id));
-				}
-				$vn_c++;
-			}
-			print CLIProgressBar::finish();
-			CLIUtils::addMessage(_t('Processed %1 objects', $vn_c));
+			$tables = ca_objects::getTablesWithHistoryTrackingPolicies();
+			
+			foreach($tables as $table) {
+			    $c = 0;
+                $t = Datamodel::getInstance($table, true);
+                $qr = $table::find('*', ['returnAs' => 'searchResult']);
+                print CLIProgressBar::start($qr->numHits(), _t('Starting...'));
+                $table::clearHistoryTrackingCurrentValues();
+                while($qr->nextHit()) {
+                    if ($t->load($qr->getPrimaryKey())) {
+                        print CLIProgressBar::next(1, _t('Processing %1', $t->getWithTemplate("^{$table}.preferred_labels (^{$table}.idno)")));
+                        if ($t->deriveHistoryTrackingCurrentValue()) {
+                            $c++;
+                        }
+                    }
+                }
+			    print CLIProgressBar::finish();
+			    CLIUtils::addMessage(_t('Processed %1 %2', $c, Datamodel::getTableProperty($table, "NAME_PLURAL")));
+            }
+			
 			return true;
 		}
 		# -------------------------------------------------------

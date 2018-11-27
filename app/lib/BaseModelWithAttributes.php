@@ -539,6 +539,13 @@
 				}
 				
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+				
+				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+					$table = $this->tableName();
+					$this->deriveHistoryTrackingCurrentValue();
+					if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+				}
+				
 				return $vn_id;
 			} else {
 				// push all attributes onto errored list
@@ -568,11 +575,6 @@
 			$va_fields_changed_array = $this->_FIELD_VALUE_CHANGED;
 			if(parent::update($pa_options)) {
 				$this->_commitAttributes($this->getTransaction());
-				
-			//	$va_field_values_with_updated_attributes = $this->addAttributesToFieldValuesArray();	// copy committed attribute values to field values array
-				
-				// set the field values array for this instance
-				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 
 				$va_index_options = array();
 				if(caGetOption('queueIndexing', $pa_options, true)) {
@@ -585,6 +587,13 @@
 				if ($this->numErrors() > 0) {
 					return false;
 				}
+				
+				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+					$table = $this->tableName();
+					$this->deriveHistoryTrackingCurrentValue();
+					if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+				}
+				
 				return true;
 			}
 			
@@ -667,10 +676,24 @@
 				if ($o_trans) { $o_trans->commit(); }
 					
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				
+				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+					$table = $this->tableName();
+					$this->deriveHistoryTrackingCurrentValue();
+					if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+				}
+				
 				return $vn_rc;
 			}
-			
 			if ($o_trans) { $vn_rc ? $o_trans->commit() : $o_trans->rollback(); }
+			
+			
+			if (($vn_rc) && (method_exists($this, "deriveHistoryTrackingCurrentValue"))) {
+				$table = $this->tableName();
+				$this->deriveHistoryTrackingCurrentValue();
+				if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+			}
+			
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return $vn_rc;
 		}

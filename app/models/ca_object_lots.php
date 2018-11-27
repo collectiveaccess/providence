@@ -36,7 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
-require_once(__CA_LIB_DIR__."/CurrentLocationCriterionTrait.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueCriterionTrait.php");
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 
@@ -171,7 +171,7 @@ class ca_object_lots extends RepresentableBaseModel {
 	/**
 	 * Update location of dependent objects when changing values
 	 */
-	use CurrentLocationCriterionTrait;
+	use HistoryTrackingCurrentValueCriterionTrait;
 	
 	# ---------------------------------
 	# --- Object attribute properties

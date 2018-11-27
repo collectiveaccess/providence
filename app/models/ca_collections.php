@@ -37,7 +37,7 @@
 
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
-
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 	'NAME_SINGULAR' 	=> _t('collection'),
@@ -194,6 +194,8 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 );
 
 class ca_collections extends RepresentableBaseModel implements IBundleProvider {
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
