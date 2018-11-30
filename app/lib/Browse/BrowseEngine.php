@@ -4388,7 +4388,7 @@
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
-						    GROUP BY {$vs_browse_table_name}.{$vs_field_name}, {$vs_sort_field}
+						    GROUP BY {$vs_browse_table_name}.{$vs_field_name}".($vs_sort_field ? ", {$vs_sort_field}" : "")."
 						";
 						if($vs_sort_field) {
 							$vs_sql .= " ORDER BY {$vs_sort_field}";
