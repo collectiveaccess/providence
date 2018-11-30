@@ -129,10 +129,35 @@
 		 * @return bool
 		 */
 		static public function isValidHistoryTrackingCurrentValuePolicy($policy) {
+			return self::getHistoryTrackingCurrentValuePolicy($policy) ? true : false;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return policy config
+		 *
+		 * @param string $policy
+		 *
+		 * @return array Policy or null if policy does not exist.
+		 */
+		static public function getHistoryTrackingCurrentValuePolicy($policy) {
 			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies'][$policy])) {
-				return true;
+				return $history_tracking_policies['policies'][$policy];
 			}
-			return false;
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return default policy for table
+		 *
+		 * @param string $table Name of table
+		 *
+		 * @return string Policy name
+		 */
+		public function getDefaultHistoryTrackingCurrentValuePolicy() {
+			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies']['defaults']) && is_array($history_tracking_policies['policies']['defaults'][$this->tableName()])) {
+				return $history_tracking_policies['policies']['defaults'][$this->tableName()];
+			}
+			return null;
 		}
 		# ------------------------------------------------------
 		/**

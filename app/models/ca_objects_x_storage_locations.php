@@ -34,7 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/ObjectRelationshipBaseModel.php');
-require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueCriterionTrait.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
@@ -100,7 +100,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	/**
 	 * Update location of dependent objects when changing values
 	 */
-	use HistoryTrackingCurrentValueCriterionTrait;
+	use HistoryTrackingCurrentValueTrait;
 	
 	# ---------------------------------
 	# --- Object attribute properties

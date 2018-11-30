@@ -36,7 +36,6 @@
 
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
-require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueCriterionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_loans'] = array(
@@ -178,7 +177,7 @@ class ca_loans extends RepresentableBaseModel implements IBundleProvider {
 	/**
 	 * Update location of dependent objects when changing values
 	 */
-	use HistoryTrackingCurrentValueCriterionTrait;
+	use HistoryTrackingCurrentValueTrait;
 	
 	# ---------------------------------
 	# --- Object attribute properties
