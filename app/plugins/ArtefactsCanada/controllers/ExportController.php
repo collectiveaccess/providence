@@ -172,7 +172,7 @@ class ExportController extends ActionController {
 			}
 			return $v;
 		; }, $headers);
-		$rows[] = join(",", $headers);
+		$rows[] = join("\t", $headers);
 		
 		$zip = new ZipFile();
 		$seen_idnos = [];
@@ -198,7 +198,7 @@ class ExportController extends ActionController {
 				    if (!file_exists($media_path)) { continue; }
 					$suffix = 0;
 					do {
-						$id = $idno.($suffix ? "-{$suffix}" : "");
+						$id = preg_replace("![ ]+!", "_", $idno.($suffix ? "-{$suffix}" : ""));
 						$suffix++;
 					} while(isset($seen_idnos[$id]));
 					
@@ -206,13 +206,14 @@ class ExportController extends ActionController {
 				}
 				$seen_idnos[$id] = true;
 			}
-			$row[] = join(",", $media_refs);
+			$row[] = join(";", $media_refs);
+			$row = array_map(function($v) { return preg_replace("![\t]+!", " ", $v); }, $row);
 			
-			$rows[] = join(',', $row);
+			$rows[] = join("\t", $row);
 			$o_progress->next(_t('Processing %1', $idno));
 		}
 		
-		$zip->addFile(join("\n", $rows), "artefacts_data.csv");
+		$zip->addFile(join("\n", $rows), "artefacts_data.txt");
 		
 		$zip_path = $zip->output(ZIPFILE_FILEPATH);
 		
