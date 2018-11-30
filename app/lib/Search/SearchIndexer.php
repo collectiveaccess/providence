@@ -81,8 +81,9 @@ class SearchIndexer extends SearchBase {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
 			}
 			self::$s_search_indexing_queue_inserts = array(); // nuke cache
-
-			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES " . join(',', $va_insert_segments));
+            foreach($va_insert_segments as $x) {
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES {$x}");
+            }
 		}
 
 		if(sizeof(self::$s_search_unindexing_queue_inserts) > 0) {
@@ -91,8 +92,9 @@ class SearchIndexer extends SearchBase {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
 			}
 			self::$s_search_unindexing_queue_inserts = array(); // nuke cache
-
-			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES " . join(',',$va_insert_segments));
+            foreach($va_insert_segments as $x) {
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES {$x}");
+            }
 		}
 	}
 	# -------------------------------------------------------
