@@ -1529,6 +1529,11 @@ class SearchIndexer extends SearchBase {
 								}
 							}
 
+							if (((isset($pa_data['INDEX_AS_IDNO']) && $pa_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $pa_data)) && method_exists($pt_subject, "getIDNoPlugInInstance") && ($o_idno = $pt_subject->getIDNoPlugInInstance())) {
+								$va_values = $o_idno->getIndexValues($vs_value_to_index, $pa_data);
+								$this->opo_engine->indexField($pn_subject_table_num, "A{$vn_element_id}", $pn_row_id, $va_values, $pa_data);
+								$this->_genIndexInheritance($pt_subject, null, "A{$vn_element_id}", $pn_row_id, $pn_row_id, $va_values, $pa_data);
+							}
 							$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, [$vs_value_to_index], $pa_data);
 							$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, 'A'.$vn_element_id, $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, [$vs_value_to_index], $pa_data);
 						}
