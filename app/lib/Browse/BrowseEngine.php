@@ -224,6 +224,7 @@
 				}
 				
 				
+				// TODO: FIX
 				// group_mode = hierarchical is only supported for location facets when current location criteria is storage locations-only
 				if (($va_facet_info['type'] === 'location') && (caGetOption('group_mode', $va_facet_info, null) == 'hierarchical')) {
 					if((is_array($current_location_criteria = $this->opo_config->get('current_location_criteria'))) && (sizeof($current_location_criteria) == 1) && isset($current_location_criteria['ca_storage_locations'])) {
@@ -662,6 +663,8 @@
 					break;
 				# -----------------------------------------------------
 				case 'location':
+					// TODO: fix
+					return 'XXX';
 					$va_row_tmp = explode(":", urldecode($pn_row_id));
 					if (
 						(sizeof($va_row_tmp) < 3)
@@ -3637,17 +3640,18 @@
 				# -----------------------------------------------------
 				case 'location':
 					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
+					
+					$policy = caGetOption('policy', $va_facet_info, $t_item->getDefaultHistoryTrackingCurrentValuePolicy());
 
 					$vs_sort_field = null;
 					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
 						$vs_sort_field = $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
 					}
 
-					$va_joins = array();
-					$va_wheres = array();
 					$vs_where_sql = '';
-
-					$va_wheres[] = "({$vs_browse_table_name}.current_loc_class IS NOT NULL)";
+					
+					$va_joins = ["INNER JOIN ca_history_tracking_current_values AS cv ON cv.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND cv.table_num = {$vs_browse_table_num}"];
+					$va_wheres = []; //["(cv.current_row_id > 0)"];
 					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
@@ -3711,12 +3715,12 @@
 
 						$vs_pk = $t_item->primaryKey();
 						$vs_sql = "
-							SELECT COUNT(*) _count, {$vs_browse_table_name}.current_loc_class, {$vs_browse_table_name}.current_loc_subclass, {$vs_browse_table_name}.current_loc_id
+							SELECT COUNT(*) _count, cv.current_table_num, cv.current_row_id
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
-							GROUP BY {$vs_browse_table_name}.current_loc_class, {$vs_browse_table_name}.current_loc_subclass, {$vs_browse_table_name}.current_loc_id	
+							GROUP BY cv.current_table_num, cv.current_row_id	
 							";
 						if($vs_sort_field) {
 							$vs_sql .= " ORDER BY {$vs_sort_field}";
@@ -3727,20 +3731,19 @@
 
 						$va_values = $va_values_by_table = array();
 						while($qr_res->nextRow()) {
-							if (!($vs_loc_class = trim($qr_res->get('current_loc_class')))) { continue; }
-							if (!($vs_loc_subclass = trim($qr_res->get('current_loc_subclass')))) { continue; }
-							if (!($vs_loc_id = trim($qr_res->get('current_loc_id')))) { continue; }
-							$vs_val = "{$vs_loc_class}:{$vs_loc_subclass}:{$vs_loc_id}";
+							if (!($current_table_num = trim($qr_res->get('current_table_num')))) { continue; }
+							if (!($current_row_id = trim($qr_res->get('current_row_id')))) { continue; }
+							$vs_val = "{$current_table_num}:{$current_row_id}";
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 
-							$va_values_by_table[$vs_loc_class][$vs_loc_subclass][$vs_loc_id] = true;
+							$va_values_by_table[$current_table_num][$current_row_id] = true;
 						}
 
 
-						foreach($va_values_by_table as $vs_loc_class => $va_loc_id_by_subclass) {
-							foreach($va_loc_id_by_subclass as $vs_loc_subclass => $va_loc_ids) {
-								if(sizeof($va_tmp = array_keys($va_loc_ids))) {
-									$vs_table_name = $vs_loc_table_name = Datamodel::getTableName($vs_loc_class);
+						foreach($va_values_by_table as $current_table_num => $current_row_ids) {
+							//foreach($current_row_ids as $current_row_id => $b) {
+								if(sizeof($va_tmp = array_keys($current_row_ids))) {
+									$vs_table_name = $vs_loc_table_name = Datamodel::getTableName($current_table_num);
 									$vs_hier_table_name = (($vs_loc_table_name) == 'ca_objects_x_storage_locations') ? 'ca_storage_locations' : $vs_loc_table_name;
 
 									$qr_res = caMakeSearchResult($vs_hier_table_name, $va_tmp);
@@ -3753,7 +3756,7 @@
 										continue;
 									}
 									
-									$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vs_loc_subclass, array('facet' => isset($va_facet_info['display']) ? $va_facet_info['display'] : null));
+									//$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vs_loc_subclass, array('facet' => isset($va_facet_info['display']) ? $va_facet_info['display'] : null));
 
 									if ($vs_hier_table_name == 'ca_storage_locations') {
 										
@@ -3798,7 +3801,7 @@
 										);
 									}
 								}
-							}
+							//}
 						}
 
 						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
