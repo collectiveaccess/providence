@@ -71,6 +71,13 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_values'] = arra
 			'DEFAULT' => '',
 			'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which current value applies'
 		),
+		'type_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => 'Type id', 'DESCRIPTION' => 'Type of row to which current value applies'
+		),
 		'current_table_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -86,6 +93,13 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_values'] = arra
 			'DEFAULT' => '',
 			'LABEL' => 'Current value row id', 'DESCRIPTION' => 'Identifier of row that is current value for the policy'
 		),
+		'current_type_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => 'Current type id', 'DESCRIPTION' => 'Type of row that is current value for the policy'
+		),
 		'tracked_table_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -99,7 +113,14 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_values'] = arra
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
-			'LABEL' => 'Tracked row id', 'DESCRIPTION' => 'Identifier of row that establishes curretn value'
+			'LABEL' => 'Tracked row id', 'DESCRIPTION' => 'Identifier of row that establishes current value'
+		),
+		'tracked_type_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => 'Current type id', 'DESCRIPTION' => 'Type of row that establishes current value'
 		),
 		'settings' => array(
 			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
