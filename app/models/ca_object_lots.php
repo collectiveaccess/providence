@@ -502,11 +502,21 @@ class ca_object_lots extends RepresentableBaseModel {
 		$vs_separator = $t_idno->getSeparator();
 		$va_objects = $this->getObjects();
 		$vs_lot_num = $this->get('idno_stub');
+		$va_lot_num = explode($vs_separator, $vs_lot_num);
 		
 		$va_non_conforming_objects= array();
+		
+		$c = sizeof($va_objects);
 		foreach($va_objects as $va_object) {
 			if (!preg_match("!^{$vs_lot_num}{$vs_separator}!", $va_object['idno'])) {
 				$va_non_conforming_objects[$va_object['object_id']] = $va_object;
+				continue;
+			}
+			$tmp = explode($vs_separator, $va_object['idno']);
+			$n = (int)$tmp[sizeof($va_lot_num)];
+			if ($n > $c) { 
+			    $va_non_conforming_objects[$va_object['object_id']] = $va_object;
+				continue;
 			}
 		}
 		
@@ -544,31 +554,36 @@ class ca_object_lots extends RepresentableBaseModel {
 			$vs_separator = $t_idno->getSeparator();
 			$va_lot_num = explode($vs_separator, $vs_lot_num);
 			
-			$vn_i = 1;
-			$seen_last_nums = [];
+			$nums = [];
 			foreach($va_objects as $vn_object_id => $va_object_info) {
+			    $tmp = explode($vs_separator, $va_object_info['idno']);
+			    $n = (int)$tmp[sizeof($va_lot_num)];
+			    $nums[$n] = true;
+			}
+			
+			$c = sizeof($va_objects);
+			$i = 1;
+			foreach($va_non_conforming_objects as $vn_object_id => $va_object_info) {
 				if ($t_object->load($vn_object_id)) {
 					if ($po_application_plugin_manager) {
 						$po_application_plugin_manager->hookBeforeSaveItem(array('id' => $vn_object_id, 'table_num' => $t_object->tableNum(), 'table_name' => $t_object->tableName(), 'instance' => $t_object));
 					}
 					$t_object->setMode(ACCESS_WRITE);
 					
-					$va_tmp = explode($vs_separator, $t_object->get('idno'));
-					$vs_last_num = array_pop($va_tmp);
-					if (!is_numeric($vs_last_num)) { $vs_last_num = "1"; }
-					$vn_last_num = (int)$vs_last_num;
-					if ($vn_last_num < 1) { $vn_last_num = 1; }
+					$va_tmp = $va_lot_num;
 					
-					foreach($va_lot_num as $vn_i => $vs_n) {
-						$va_tmp[$vn_i] = $vs_n;
-					}
+					$cur_num_tmp = explode($vs_separator, $t_object->get('idno'));
+			        $n = (int)$cur_num_tmp[sizeof($va_lot_num)];
+			        
+			        if ($n > $c) {
+			            while(isset($nums[$i])) {
+			                $i++;
+			            }
+			            $va_tmp[] = $i;
+			        } else {
+			            $va_tmp[] = $n;
+			        }
 					
-					while(isset($seen_last_nums[$vn_last_num])) {
-					    $vn_last_num++;
-					}
-					$va_tmp[] = $vn_last_num;
-					
-					$seen_last_nums[$vs_last_num] = true;
 					$t_object->setIdnoWithTemplate(join($vs_separator, $va_tmp));
 				
 					$t_object->update();
@@ -580,9 +595,12 @@ class ca_object_lots extends RepresentableBaseModel {
 					if ($po_application_plugin_manager) {
 						$po_application_plugin_manager->hookSaveItem(array('id' => $vn_object_id, 'table_num' => $t_object->tableNum(), 'table_name' => $t_object->tableName(), 'instance' => $t_object));
 					}
-					$vn_i++;
+					$i++;
+					$max_num++;
 				}
 			}
+			
+			
 			if ($vb_web_set_transaction) {
 				$o_trans->commit();
 			}
