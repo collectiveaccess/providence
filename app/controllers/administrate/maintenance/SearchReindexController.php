@@ -54,4 +54,3 @@ class SearchReindexController extends ActionController {
 	}
 	# ------------------------------------------------
 }
-?>

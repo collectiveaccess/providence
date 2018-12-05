@@ -321,6 +321,7 @@
 			showEmptyFormsOnLoad: 1,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
 			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,

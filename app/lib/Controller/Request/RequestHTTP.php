@@ -539,7 +539,7 @@ class RequestHTTP extends Request {
 		if (!isset($vm_val)) { return ""; }
 		
 		$vm_val = str_replace("\0", '', $vm_val);
-		if(caGetOption('purify', $pa_options, true) && $this->config->get('purify_all_text_input')) {
+		if((caGetOption('purify', $pa_options, true) && $this->config->get('purify_all_text_input')) || caGetOption('forcePurify', $pa_options, false)) {
 		    if(is_array($vm_val)) {
 		        $vm_val = array_map(function($v) { return is_array($v) ? $v : str_replace("&amp;", "&", RequestHTTP::getPurifier()->purify(rawurldecode($v))); }, $vm_val);
 		    } else {
@@ -832,6 +832,10 @@ class RequestHTTP extends Request {
 				} else {
 					$vb_login_successful = true;
 					$vn_user_id = $this->user->getUserID();
+					
+					if (!defined('__CA_IS_SERVICE_REQUEST__')) { // service need to keep auth tokens around
+		                Session::deleteSession();
+		            }
 				}
 			}
 		}
@@ -849,15 +853,13 @@ class RequestHTTP extends Request {
 			return false;
 		} else {		
 			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".$_SERVER["HTTP_USER_AGENT"]));
-		
+		    
+		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
+			
 			Session::setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
 			Session::setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
 			Session::setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
 			Session::setVar($vs_app_name."_lastping",time());
-			
-			Session::setVar("screen_width",isset($_REQUEST["_screen_width"]) ? intval($_REQUEST["_screen_width"]): 0);
-			Session::setVar("screen_height",isset($_REQUEST["_screen_height"]) ? intval($_REQUEST["_screen_height"]) : 0);
-			Session::setVar("has_pdf_plugin",isset($_REQUEST["_has_pdf_plugin"]) ? intval($_REQUEST["_has_pdf_plugin"]) : 0);
 			
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));

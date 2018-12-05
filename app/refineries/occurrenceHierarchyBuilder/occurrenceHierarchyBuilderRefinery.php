@@ -95,6 +95,15 @@
 		public function returnsMultipleValues() {
 			return false;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * occurrenceHierarchyBuilder returns actual row_ids, not idnos
+		 *
+		 * @return bool
+		 */
+		public function returnsRowIDs() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

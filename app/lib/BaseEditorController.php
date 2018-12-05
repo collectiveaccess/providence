@@ -171,8 +171,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-			array(),
-			array()
+			[],
+			[]
 		);
 		if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
 			if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {

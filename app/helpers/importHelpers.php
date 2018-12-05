@@ -110,6 +110,7 @@
 			
 			$va_attributes['idno'] = $vs_idno;
 			$va_attributes['parent_id'] = $vn_id;
+			$va_attributes['_treatNumericValueAsID'] = true;
 			
 			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) {
 				foreach($va_parent['rules'] as $va_rule) {

@@ -114,6 +114,15 @@
 		public function returnsMultipleValues() {
 			return false;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * placeHierarchyBuilder returns actual row_ids, not idnos
+		 *
+		 * @return bool
+		 */
+		public function returnsRowIDs() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

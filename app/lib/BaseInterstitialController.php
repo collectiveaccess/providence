@@ -102,8 +102,8 @@
 				}
 
 				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-					array(),
-					array(),
+					[],
+					[],
 					false,
 					$va_options
 				);
@@ -165,7 +165,7 @@
  			$pn_primary_id = 			$this->request->getParameter('primary_id', pInteger);	
  			
  			// Make sure request isn't empty
- 			if(!sizeof($_POST)) {
+ 			if(!is_array($_POST) || !sizeof($_POST)) {
  				$va_response = array(
 					'status' => 20,
 					'id' => null,
@@ -229,9 +229,11 @@
  			//
  			$va_errors = $this->request->getActionErrors();							// all errors from all sources
  			$va_general_errors = $this->request->getActionErrors('general');		// just "general" errors - ones that are not attached to a specific part of the form
+ 			if (!is_array($va_errors)) { $va_errors = []; }
+ 			if (!is_array($va_general_errors)) { $va_general_errors = []; }
  			
+ 			$va_error_list = array();
  			if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
- 				$va_error_list = array();
  				$vb_no_save_error = false;
  				foreach($va_errors as $o_e) {
  					$va_error_list[$o_e->getErrorDescription()] = $o_e->getErrorDescription()."\n";

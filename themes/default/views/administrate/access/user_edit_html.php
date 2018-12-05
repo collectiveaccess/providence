@@ -51,8 +51,8 @@
 				case 'password':
 					if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
 						// display password confirmation
-						print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
-						print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('name' => 'password_confirm', 'LABEL' => 'Confirm password'));
+						print $t_user->htmlFormElement($vs_f, null, array('value' => '', 'placeholder' => _t('Change password'), 'field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
+						print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('value' => '', 'placeholder' => _t('Confirm password'), 'name' => 'password_confirm', 'LABEL' => 'Confirm password'));
 					}
 					break;
 				case 'entity_id':

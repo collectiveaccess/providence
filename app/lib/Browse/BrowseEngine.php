@@ -568,6 +568,13 @@
 					return $t_table->getLabelForDisplay();
 					break;
 				# -----------------------------------------------------
+			    case 'relationship_types':  
+			        if (!($t_rel = Datamodel::getInstanceByTableName($va_facet_info['relationship_table'], true))) { break; }
+			        $t_rel_type = new ca_relationship_types();
+			        $info = $t_rel_type->getRelationshipInfo($va_facet_info['relationship_table']);
+			        return isset($info[(int)$pn_row_id]) ? $info[(int)$pn_row_id]['typename'] : "???";
+			        break;
+				# -----------------------------------------------------
 				case 'attribute':
 					$t_element = new ca_metadata_elements();
 					if (!$t_element->load(array('element_code' => array_pop(explode(".", $va_facet_info['element_code']))))) {
@@ -1012,7 +1019,9 @@
 		 *		limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
 		 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 		 *		expandResultsHierarchically = expand result set items that are hierarchy roots to include their entire hierarchy. [Default is false]
-		 *		rootRecordsOnly = only return records that are the root of whatever hierarchy they are in. [Default is false]
+		 *		omitChildRecords = only return records that are the root of whatever hierarchy they are in. [Default is false]
+		 *		rootRecordsOnly = Synonym for omitChildRecords.
+		 *		omitChildRecordsForTypes = List of types for which to return only records that are not children [Default is null]
 		 *
 		 * @return bool True on success, null if the browse could not be executed (Eg. no settings), false no error
 		 */
@@ -1020,7 +1029,16 @@
 			global $AUTH_CURRENT_USER_ID;
 			if (!is_array($this->opa_browse_settings)) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
-
+			
+			if ((!isset($pa_options['omitChildRecords'])) && isset($pa_options['rootRecordsOnly'])) { 
+			    $pa_options['omitChildRecords'] = $pa_options['rootRecordsOnly'];
+			}
+			
+			if (is_array($omit_child_records_for_types = caGetOption('omitChildRecordsForTypes', $pa_options, null)) && sizeof($omit_child_records_for_types)) {
+			    $omit_child_records_for_types = caMakeTypeIDList($this->opn_browse_table_num, $omit_child_records_for_types);
+			    $pa_options['omitChildRecords'] = false;        // omitChildRecordsForTypes supercedes omitChildRecords
+			}
+			
 			$vn_user_id = caGetOption('user_id', $pa_options, $AUTH_CURRENT_USER_ID, array('castTo' => 'int'));
 			$vb_no_cache = caGetOption('noCache', $pa_options, caGetOption('no_cache', $pa_options, false, array('castTo' => 'bool')), array('castTo' => 'bool'));
 
@@ -1704,6 +1722,7 @@
 									break;
 								# -----------------------------------------------------
 								case 'authority':
+								case 'relationship_types':  
 									$vs_rel_table_name = $va_facet_info['table'];
 									if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
 									$va_restrict_to_relationship_types = $this->_getRelationshipTypeIDs($va_restrict_to_relationship_types, $va_facet_info['relationship_table']);
@@ -1786,7 +1805,9 @@
 											$vs_where_sql = ' AND '.join(' AND ', $va_wheres);
 										}
 
-										if ((!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) && $t_rel_item->isHierarchical() && $t_rel_item->load((int)$vn_row_id)) {
+                                        if ($va_facet_info['type'] == 'relationship_types') {
+                                            $vs_get_item_sql = "(".$t_item_rel->tableName().".type_id = ".(int)$vn_row_id.")";
+										} elseif ((!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) && $t_rel_item->isHierarchical() && $t_rel_item->load((int)$vn_row_id)) {
 											$vs_hier_left_fld = $t_rel_item->getProperty('HIERARCHY_LEFT_INDEX_FLD');
 											$vs_hier_right_fld = $t_rel_item->getProperty('HIERARCHY_RIGHT_INDEX_FLD');
 
@@ -2203,15 +2224,25 @@
 						if (sizeof($va_hits) < sizeof($va_acc[$vn_smallest_list_index])) { $vn_smallest_list_index = $vn_i; }
 					}
 					
-					if ((!isset($pa_options['rootRecordsOnly']) || !$pa_options['rootRecordsOnly']) && caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = Datamodel::getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) {
+					if ((!isset($pa_options['omitChildRecords']) || !$pa_options['omitChildRecords']) && caGetOption('expandResultsHierarchically', $pa_options, false) && ($vs_hier_id_fld = Datamodel::getTableProperty($this->ops_browse_table_name, 'HIERARCHY_ID_FLD'))) {
+                       $vs_parent_id_fld = Datamodel::getTableProperty($this->ops_browse_table_name, 'PARENT_ID_FLD');
+                       $omit_child_records_for_type_sql = '';
+                       
                        foreach($va_acc as $vn_i => $va_acc_content) {
+                            $params = [array_keys($va_acc_content)];
+
+                            if(is_array($omit_child_records_for_types) && sizeof($omit_child_records_for_types)) {
+                                $omit_child_records_for_type_sql = "AND (({$vs_parent_id_fld} IS NULL) OR ({$vs_parent_id_fld} IS NOT NULL AND type_id NOT IN (?)))";
+                                $params[] = $omit_child_records_for_types;
+                            }
                             if(!sizeof($va_acc_content)) { continue; }
                             $qr_expand =  $this->opo_db->query("
                                 SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
                                 FROM ".$this->ops_browse_table_name."
                                 WHERE
                                     {$vs_hier_id_fld} IN (?)
-                            ",[array_keys($va_acc_content)]);
+                                    {$omit_child_records_for_type_sql}
+                            ",$params);
 
                             if(is_array($va_expanded_res = $qr_expand->getAllFieldValues($t_item->primaryKey())) && sizeof($va_expanded_res)) {
                                 $va_acc[$vn_i] = array_flip($va_expanded_res);
@@ -2262,9 +2293,14 @@
 							$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
 						}
 						
-						if ((isset($pa_options['rootRecordsOnly']) && $pa_options['rootRecordsOnly']) && $t_item->hasField('parent_id')) {
+						if ((isset($pa_options['omitChildRecords']) && $pa_options['omitChildRecords']) && $t_item->hasField('parent_id')) {
 							$va_wheres[] = "(".$this->ops_browse_table_name.".parent_id IS NULL)";
 						}
+						
+						if (is_array($omit_child_records_for_types) && sizeof($omit_child_records_for_types) && $t_item->hasField('parent_id')) {
+							$va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (".join(",", $omit_child_records_for_types).")))";
+						}
+
 
 						if ((isset($pa_options['limitToModifiedOn']) && $pa_options['limitToModifiedOn'])) {
 							$o_tep = new TimeExpressionParser();
@@ -2337,9 +2373,13 @@
 					if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_item->hasField('deleted')) {
 						$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
 					}
-					if ((isset($pa_options['rootRecordsOnly']) && $pa_options['rootRecordsOnly']) && $t_item->hasField('parent_id')) {
+					if ((isset($pa_options['omitChildRecords']) && $pa_options['omitChildRecords']) && $t_item->hasField('parent_id')) {
 						$va_wheres[] = "(".$this->ops_browse_table_name.".parent_id IS NULL)";
-					}
+					}					
+        
+                    if (is_array($omit_child_records_for_types) && sizeof($omit_child_records_for_types) && $t_item->hasField('parent_id')) {
+                        $va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (".join(",", $omit_child_records_for_types).")))";
+                    }
 
 					if ((isset($pa_options['limitToModifiedOn']) && $pa_options['limitToModifiedOn'])) {
 						$o_tep = new TimeExpressionParser();
@@ -3204,13 +3244,15 @@
 
 						return ((int)$qr_res->numRows() > 0) ? true : false;
 					} else {
-						$vs_parent_fld_select = (($vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD')) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '');
+						$vs_parent_fld_select = (($vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD')) ? $vs_browse_table_name.".".$vs_parent_fld : '');
+						
+						$group_by_fields = array_unique(array_merge($va_label_order_by_fields, $va_label_ui_fields, ["l.{$vs_label_display_field}", $vs_parent_fld_select, "l.locale_id", "l.{$vs_item_pk}"]));
 						$vs_sql = "
-							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} {$vs_parent_fld_select}, l.{$vs_item_pk}".((sizeof($va_label_ui_fields) > 0) ? ", ".join(", ", $va_label_ui_fields) : "")."
+							SELECT COUNT(*) as _count, l.locale_id, l.{$vs_label_display_field} ".($vs_parent_fld_select ? ", {$vs_parent_fld_select}" : "").", l.{$vs_item_pk}".((sizeof($va_label_ui_fields) > 0) ? ", ".join(", ", $va_label_ui_fields) : "")."
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
-							GROUP BY l.{$vs_label_display_field} {$vs_parent_fld_select}, l.locale_id, l.{$vs_item_pk}".((sizeof($va_label_order_by_fields) > 0) ? ", ".join(", ", $va_label_order_by_fields) : "")."
+							GROUP BY ".join(", ", $group_by_fields)."
 							ORDER BY ".((sizeof($va_label_order_by_fields) > 0) ? join(", ", $va_label_order_by_fields) : "l.{$vs_label_display_field}")."
 						";
 
@@ -4346,7 +4388,7 @@
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
-						    GROUP BY {$vs_browse_table_name}.{$vs_field_name}
+						    GROUP BY {$vs_browse_table_name}.{$vs_field_name}".($vs_sort_field ? ", {$vs_sort_field}" : "")."
 						";
 						if($vs_sort_field) {
 							$vs_sql .= " ORDER BY {$vs_sort_field}";
@@ -5258,6 +5300,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'authority':
+			    case 'relationship_types':  
 					$vs_rel_table_name = $va_facet_info['table'];
 					$va_params = $this->opo_ca_browse_cache->getParameters();
 
@@ -5285,7 +5328,7 @@
 						break;
 					} else {
 						switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_browse_table_name, $vs_rel_table_name)))) {
-							case __CA_ATTRIBUTE_VALUE_LIST__:
+							case 3:
 								$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 								$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 								$vs_key = 'relation_id';
@@ -5362,7 +5405,18 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
 						$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")".($t_rel_item->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_rel_table_name}.type_id IS NULL)" : '');
-						$va_selects[] = "{$vs_rel_table_name}.type_id";
+						
+						if($va_facet_info['type'] !== 'relationship_types') {
+						    $va_selects[] = "{$vs_rel_table_name}.type_id";
+						}
+					}
+					
+					if($va_facet_info['type'] == 'relationship_types') {
+					    $va_selects[] = "ca_relationship_types.type_id rel_type_id";
+					    $va_selects[] = "ca_relationship_types.type_code";
+					    $va_selects[] = "ca_relationship_type_labels.typename";
+					    $va_joins[] = "INNER JOIN ca_relationship_types ON ".$t_item_rel->tableName().".type_id = ca_relationship_types.type_id";
+					    $va_joins[] = "INNER JOIN ca_relationship_type_labels ON ca_relationship_type_labels.type_id = ca_relationship_types.type_id";
 					}
 
 					if (is_array($va_exclude_types) && (sizeof($va_exclude_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
@@ -5570,6 +5624,16 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							//if (isset($va_facet_items[$vn_id])) { continue; } --- we can't do this as then we don't detect items that have multiple rel_type_ids... argh.
 							if (isset($va_criteria[$vn_id])) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 
+                            if($va_facet_info['type'] === 'relationship_types') {
+                                if(sizeof($va_restrict_to_relationship_types) && !in_array($va_fetched_row['rel_type_id'], $va_restrict_to_relationship_types)) { continue; }
+                                if(sizeof($va_exclude_relationship_types) && in_array($va_fetched_row['rel_type_id'], $va_exclude_relationship_types)) { continue; }
+                                $va_facet_items[$va_fetched_row['rel_type_id']] = [
+                                    'label' => $va_fetched_row['typename'],
+                                    'id' => $va_fetched_row['rel_type_id']
+                                ];
+                                continue;
+                            }
+
 							if (!$va_facet_items[$va_fetched_row[$vs_rel_pk]]) {
 
 								if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types) && $va_fetched_row['type_id'] && !in_array($va_fetched_row['type_id'], $va_restrict_to_types)) {
@@ -5596,6 +5660,10 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							if ($va_fetched_row['rel_type_id']) {
 								$va_facet_items[$va_fetched_row[$vs_rel_pk]]['rel_type_id'][] = $va_fetched_row['rel_type_id'];
 							}
+						}
+						
+						if($va_facet_info['type'] === 'relationship_types') {
+						    return $va_facet_items;
 						}
 
 		if (!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) {
@@ -6503,5 +6571,48 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			}
 			return $va_collapse_map;
 		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+	    public function getAvailableRelationshipTypesForCurrentResult($ps_rel_table, $pa_rel_ids, $pa_options=null) {
+	        if(!$pa_rel_ids) { return null; }
+	        if(!is_array($pa_rel_ids)) { $pa_rel_ids = [$pa_rel_ids]; }
+	        
+	        $pa_rel_ids = array_map(function($v) { return (int)$v; }, $pa_rel_ids);
+	        
+	        if(is_array($va_results =  $this->opo_ca_browse_cache->getResults()) && sizeof($va_results)) {
+	            switch(sizeof($va_path = array_keys(Datamodel::getPath($this->ops_browse_table_name, $ps_rel_table)))) {
+                    case 3:
+                        $t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
+                        $t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
+                        $vs_key = 'relation_id';
+                        break;
+                    default:
+                        // bad related table
+                        return null;
+                        break;
+                }
+                
+                $qr = $this->opo_db->query("
+                    SELECT DISTINCT ca_relationship_types.*, ca_relationship_type_labels.*
+                    FROM {$va_path[1]}
+                    INNER JOIN ca_relationship_types ON ca_relationship_types.type_id = {$va_path[1]}.type_id
+                    INNER JOIN ca_relationship_type_labels ON ca_relationship_types.type_id = ca_relationship_type_labels.type_id
+                    WHERE
+                        {$va_path[1]}.".$t_rel_item->primaryKey()." IN (?)
+                    GROUP BY ca_relationship_types.type_id
+                ", [$pa_rel_ids]);
+                
+                $result = [];
+                while($qr->nextRow()) {
+                    $result[] = $qr->getRow();
+                }
+                
+                return $result;
+	        }
+	            
+	        return null;
+	    }
 		# ------------------------------------------------------
 	}

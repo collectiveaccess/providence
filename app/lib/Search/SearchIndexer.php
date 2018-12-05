@@ -81,8 +81,9 @@ class SearchIndexer extends SearchBase {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
 			}
 			self::$s_search_indexing_queue_inserts = array(); // nuke cache
-
-			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES " . join(',', $va_insert_segments));
+            foreach($va_insert_segments as $x) {
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES {$x}");
+            }
 		}
 
 		if(sizeof(self::$s_search_unindexing_queue_inserts) > 0) {
@@ -91,8 +92,9 @@ class SearchIndexer extends SearchBase {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
 			}
 			self::$s_search_unindexing_queue_inserts = array(); // nuke cache
-
-			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES " . join(',',$va_insert_segments));
+            foreach($va_insert_segments as $x) {
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES {$x}");
+            }
 		}
 	}
 	# -------------------------------------------------------
@@ -1529,6 +1531,11 @@ class SearchIndexer extends SearchBase {
 								}
 							}
 
+							if (((isset($pa_data['INDEX_AS_IDNO']) && $pa_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $pa_data)) && method_exists($pt_subject, "getIDNoPlugInInstance") && ($o_idno = $pt_subject->getIDNoPlugInInstance())) {
+								$va_values = $o_idno->getIndexValues($vs_value_to_index, $pa_data);
+								$this->opo_engine->indexField($pn_subject_table_num, "A{$vn_element_id}", $pn_row_id, $va_values, $pa_data);
+								$this->_genIndexInheritance($pt_subject, null, "A{$vn_element_id}", $pn_row_id, $pn_row_id, $va_values, $pa_data);
+							}
 							$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, [$vs_value_to_index], $pa_data);
 							$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, 'A'.$vn_element_id, $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, [$vs_value_to_index], $pa_data);
 						}

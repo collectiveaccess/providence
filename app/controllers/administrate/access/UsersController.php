@@ -74,8 +74,10 @@
  			$t_user->setMode(ACCESS_WRITE);
  			foreach($t_user->getFormFields() as $vs_f => $va_field_info) {
 				// dont get/set password if backend doesn't support it
-				if($vs_f == 'password' && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
-					continue;
+				if($vs_f == 'password') {
+					if(!strlen($_REQUEST[$vs_f]) || !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+						continue;
+					}
 				}
  				$t_user->set($vs_f, $_REQUEST[$vs_f]);
  				if ($t_user->numErrors()) {

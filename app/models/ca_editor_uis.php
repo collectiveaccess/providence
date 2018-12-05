@@ -770,7 +770,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 
 			// check bundle-placement type restrictions if set
 			if (
-				$pn_type_id && sizeof($va_types) &&
+				$pn_type_id && is_array($va_types) && sizeof($va_types) &&
 				!in_array($pn_type_id, $va_types)
 			) { continue; }
 				
@@ -864,12 +864,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
 		if (!($va_screens = $this->getScreens($pn_type_id, $pa_options))) { return false; }
 		
+		if (is_array($restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) && sizeof($restrict_to_types)) {
+		    $restrict_to_types = caMakeTypeIDList($this->get('editor_type'), $restrict_to_types);
+		}
 		$va_nav = [];
 		$vn_default_screen_id = null;
 		foreach($va_screens as $va_screen) {
-			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && is_array($va_screen['typeRestrictions']) && (sizeof($va_screen['typeRestrictions']) > 0)) {
+			if(is_array($restrict_to_types) && is_array($va_screen['typeRestrictions']) && (sizeof($va_screen['typeRestrictions']) > 0)) {
 				$vb_skip = true;
-				foreach($pa_options['restrictToTypes'] as $vn_res_type_id => $vs_res_type) {
+				foreach($restrict_to_types as $vn_res_type_id) {
 					if (isset($va_screen['typeRestrictions'][$vn_res_type_id]) && $va_screen['typeRestrictions'][$vn_res_type_id]) {
 						$vb_skip = false;
 						break;
