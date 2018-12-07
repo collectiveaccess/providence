@@ -1235,6 +1235,20 @@ class MultipartIDNumber extends IDNumber {
 						$this->setSequenceMaxValue($this->getFormat(), $vs_element_name, join($vs_separator, $va_tmp), $va_element_values[$ps_name.'_'.$vs_element_name]);
 					}
 				}
+			} elseif($va_element_info['type'] == 'YEAR') {  // set constant
+			    $va_date = getdate();
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['year'];
+			} elseif($va_element_info['type'] == 'MONTH') {
+			    $va_date = getdate();
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mon'];
+			} elseif($va_element_info['type'] == 'DAY') {
+			    $va_date = getdate();
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mday'];
+			} elseif($va_element_info['type'] == 'CONSTANT') {
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_element_info['value'];
+			} elseif(($va_element_info['type'] == 'LIST') && (!isset($va_element_values[$ps_name.'_'.$vs_element_name]) || !$va_element_values[$ps_name.'_'.$vs_element_name])) {
+				if (!is_array($va_element_info['values'])) { $va_element_info['values'] = []; }
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_element_info['values'][0];
 			}
 
 			if ($pb_generate_for_search_form) {
