@@ -6218,17 +6218,21 @@ if (!$vb_batch) {
 				$t_parent = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				
-				if ($t_parent->load($vn_parent_id)) {
-					$this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
-					if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
-						$this->set($vs_idno_fld, 
-						    ($t_parent->get($vs_idno_fld)) ? 
-						        $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
-						        :
-						        ''
-						);
-					}
-				}
+				if (!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
+                    if ($t_parent->load($vn_parent_id)) {
+                        $this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
+                        if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
+                            $this->set($vs_idno_fld, 
+                                ($t_parent->get($vs_idno_fld)) ? 
+                                    $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
+                                    :
+                                    ''
+                            );
+                        }
+                    }
+                } else {
+                    $this->set($vs_idno_fld, '');
+                }
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
 			
 			
