@@ -3303,6 +3303,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// save intrinsic fields
 		if (is_array($va_fields_by_type['intrinsic'])) {
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
+			$seen_fields = [];
 			foreach($va_fields_by_type['intrinsic'] as $vs_placement_code => $vs_f) {
 				
 				// convert intrinsics to bare field names if they include tablename (eg. ca_objects.idno => idno)
@@ -3310,6 +3311,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (($this->tableName() === $va_tmp[0]) && $this->hasField($va_tmp[1])) {
 					$vs_f = $va_tmp[1];
 				}
+				
+				if(isset($seen_fields[$vs_f])) { continue; }
+				$seen_fields[$vs_f] = true;
 		
 				if ($vb_batch) { 
 					$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
@@ -6212,7 +6216,7 @@ if (!$vb_batch) {
 				$t_parent = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				
-				if (!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
+				if (!$this->get($vs_idno_fld) && !$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
                     if ($t_parent->load($vn_parent_id)) {
                         $this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
                         if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
@@ -6224,9 +6228,7 @@ if (!$vb_batch) {
                             );
                         }
                     }
-                } else {
-                    $this->set($vs_idno_fld, '');
-                }
+                } 
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
 			
 			
