@@ -126,7 +126,7 @@
 		 */
 		private function _processHistoryBundleSettings($pa_bundle_settings) {
 
-			if (($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) && is_array($va_current_location_criteria = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_criteria)) {
+			if ($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) {
 				// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
 				$va_bundle_settings = array();
 				foreach($va_current_location_criteria as $vs_table => $va_info) {
@@ -256,6 +256,17 @@
 			if(!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return null; }
 			if(!self::isValidHistoryTrackingCurrentValuePolicy($policy)) { return null; }
 			
+			$subject_table_num = $this->tableNum();
+			$subject_table = $this->tableName();
+			
+			if (is_null($values)) {			
+				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance'])) {
+					$l->delete();
+					return true;
+				}
+				return null;
+			}
+			
 			if(!Datamodel::getTableName($values['current_table_num']) || !Datamodel::getTableName($values['tracked_table_num'])) {
 				throw new ApplicationException(_t('Invalid table specification'));
 			}
@@ -270,8 +281,6 @@
 				}
 			}
 			
-			$subject_table_num = $this->tableNum();
-			$subject_table = $this->tableName();
 			
 			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance']))) {
 				throw new ApplicationException(_t('Invalid subject row id'));
@@ -340,7 +349,6 @@
 		 */ 
 		static public function getDependentHistoryTrackingCurrentValuePolicies($table, $options=null) {
 			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
-			
 			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
 				// No policies are configured
 				return [];
@@ -352,8 +360,10 @@
 			foreach($policy_config['policies'] as $policy => $policy_info) {
 				if ($table === $policy_info['table']) { continue; }
 				if (!is_array($policy_info['elements'])) { continue; }
+				
 				foreach($policy_info['elements'] as $dtable => $dinfo) {
-					if ($dtable !== $table) { continue; }
+					$path = Datamodel::getPath($policy_info['table'], $dtable);
+					if (!in_array($table, array_keys($path))) { continue; }
 					if ($types && !sizeof(array_intersect(array_keys($dinfo), $types))) { continue; }
 					$policies[$policy] = $policy_info;
 					break;
@@ -391,6 +401,8 @@
 		 * @param array $options Options include:
 		 *		dontCheckRowIDs = Skip verification of row_id values. [Default is false]
 		 *		row_id = Row id to use instead of currently loaded row. [Default is null]
+		 *		omit_table_num = Tracked table number to ignore when deriving current value. This is used to omit an about-to-be-deleted value from the current value calculation. [Default is null]
+		 *		omit_row_id =  Tracked row_id to ignore when deriving current value. This is used to omit an about-to-be-deleted value from the current value calculation. [Default is null]
 		 *
 		 * @return bool
 		 * @throws ApplicationException
@@ -399,12 +411,24 @@
 			if(!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return false; }
 			if(is_array($policies = self::getHistoryTrackingCurrentValuePolicies($this->tableName()))) {
 				foreach($policies as $policy => $policy_info) {
-					$h = $this->getHistory(self::policy2bundleconfig(['policy' => $policy]), ['row_id' => $row_id]);
+					SearchResult::clearResultCacheForRow($this->tableName(), $row_id);
+					$h = $this->getHistory(['row_id' => $row_id, 'policy' => $policy, 'noCache' => true]);
 					if(sizeof($h)) { 
-						$cl = array_shift(array_shift($h));
+						if(($omit_row_id = caGetOption('omit_row_id', $options, false)) && ($omit_table = caGetOption('omit_table_num', $options, false))) {
+							$cl = array_reduce($h, function($c, $v) use ($omit_table, $omit_row_id) { 
+								if ($c) { return $c; }
+								$x = array_shift($v); 
+								if (($x['tracked_table_num'] != $omit_table) || ($x['tracked_row_id'] != $omit_row_id)) { $c = $x; } 
+								return $c;
+							}, null);
+						} else {
+							$cl = array_shift(array_shift($h));
+						}	
 						if (!($this->setHistoryTrackingCurrentValue($policy, $cl, ['row_id' => $row_id]))) {
 							return false;
 						}
+					} else {
+						$this->setHistoryTrackingCurrentValue($policy, null, ['row_id' => $row_id]); // null values means remove current location entirely
 					}
 				}
 				return true;
@@ -416,18 +440,20 @@
 		 * Update current values for rows with policies that may be affected by changes to this row
 		 *
 		 * @param array $options Options include:
-		 *		
+		 *		row_id = Row id to use instead of currently loaded row. [Default is null]
 		 *
 		 * @return bool
 		 * @throws ApplicationException
 		 */ 
 		public function updateDependentHistoryTrackingCurrentValues($options=null) {
+			if(!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return false; }
+			$mode = caGetOption('mode', $options, null);
+			
 			if(is_array($policies = self::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), ['type_id' => $this->getTypeID()]))) {
-				
 				 $table = $this->tableName();
 				 $num_updated = 0;
 				 foreach($policies as $policy => $policy_info) {
-				 	$rel_ids = $this->getRelatedItems($policy_info['table'], ['returnAs' => 'ids']);
+				 	$rel_ids = $this->getRelatedItems($policy_info['table'], ['returnAs' => 'ids', 'row_ids' => [$row_id]]);
 				 	
 				 	// TODO: take restrictToRelationshipTypes into account
 				 	
@@ -447,8 +473,11 @@
 				 	}
 				 	if ($spec_has_date && !$date_has_changed && !$this->get('deleted')) { continue; }
 				 	if (!($t = Datamodel::getInstance($policy_info['table'], true))) { return null; }
+				 	
+				 	if ($this->inTransaction()) { $t->setTransaction($this->getTransaction()); }
 				 	foreach($rel_ids as $rel_id) {
-				 		$t->deriveHistoryTrackingCurrentValue(['row_id' => $rel_id]);
+						SearchResult::clearResultCacheForRow($policy_info['table'], $rel_id);
+				 		$t->deriveHistoryTrackingCurrentValue(['row_id' => $rel_id, 'omit_table_num' => ($mode == 'delete') ? $this->tableNum() : null, 'omit_row_id' => $row_id]);
 				 		$num_updated++;
 				 	}
  				}
@@ -463,7 +492,8 @@
 		 *
 		 */
 		static public function isHistoryTrackingCriterion($table) {
-			return in_array($table, ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements']);
+			// TODO: analyze relationships to return rel tables as criteria
+			return in_array($table, ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements', 'ca_objects_x_storage_locations']);
 		}
 		# ------------------------------------------------------
 		/**
@@ -479,14 +509,18 @@
 		 *
 		 * @return array A list of life cycle events, indexed by historic timestamp for date of occurrrence. Each list value is an array of history entries.
 		 */
-		public function getHistory($pa_bundle_settings=null, $pa_options=null) {
+		public function getHistory($pa_options=null) {
 			global $g_ui_locale;
-		
 			if(!is_array($pa_options)) { $pa_options = []; }
+		
+			$policy = caGetOption('policy', $pa_options, $this->getDefaultHistoryTrackingCurrentValuePolicy());
+			if ($policy && !is_array($pa_bundle_settings = caGetOption('settings', $pa_options, null))) {
+				$pa_bundle_settings = self::policy2bundleconfig(['policy' => $policy]);
+			}
 			if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 
 			// TODO: fix
-			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
+			//$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 	
 			$row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $pa_options, ['id' => $row_id]));
@@ -514,7 +548,7 @@
 			$table_num = $this->tableNum();
 			$pk = $this->primaryKey();
 			
-			$qr = caMakeSearchResult($table, [$row_id]);
+			$qr = caMakeSearchResult($table, [$row_id], ['transaction' => $this->getTransaction()]);
 			$qr->nextHit();
 				
 	//

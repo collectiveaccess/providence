@@ -671,28 +671,27 @@
 				# -----------------------------------------------------
 				case 'location':
 					// TODO: fix
-					return 'XXX';
 					$va_row_tmp = explode(":", urldecode($pn_row_id));
-					if (
-						(sizeof($va_row_tmp) < 3)
-						&&
-						($object_location_tracking_relationship_type = $this->opo_config->get('object_storage_location_tracking_relationship_type'))
-						&&
-						($object_location_tracking_relationship_type_id = array_shift(caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', [$object_location_tracking_relationship_type])))
-					) {
-						//
-						// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
-						// locations, not loans, occurrences etc.) is configured. The value of location criteria is typically in the 
-						// form <table num>:<type id>:<row id> but is shortened to just the row_id (which is the storage location location_id)
-						// by the hierarchy browser. In this case we can assume the table number is 119 (ca_objects_x_storage_locations) and
-						// the type_id is whatever is configured in "object_storage_location_tracking_relationship_type" in app.conf.
-						//
-						// We prepend those values below, allowing the criterion value to behave as a standard location value/
-						//
-						array_unshift($va_row_tmp, $object_location_tracking_relationship_type_id); 
-						if (sizeof($va_row_tmp) < 3) { array_unshift($va_row_tmp, 119); }	// assume ca_objects_x_storage_locations
-					}
-		
+					// if (
+// 						(sizeof($va_row_tmp) < 3)
+// 						&&
+// 						($object_location_tracking_relationship_type = $this->opo_config->get('object_storage_location_tracking_relationship_type'))
+// 						&&
+// 						($object_location_tracking_relationship_type_id = array_shift(caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', [$object_location_tracking_relationship_type])))
+// 					) {
+// 						//
+// 						// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
+// 						// locations, not loans, occurrences etc.) is configured. The value of location criteria is typically in the 
+// 						// form <table num>:<type id>:<row id> but is shortened to just the row_id (which is the storage location location_id)
+// 						// by the hierarchy browser. In this case we can assume the table number is 119 (ca_objects_x_storage_locations) and
+// 						// the type_id is whatever is configured in "object_storage_location_tracking_relationship_type" in app.conf.
+// 						//
+// 						// We prepend those values below, allowing the criterion value to behave as a standard location value/
+// 						//
+// 						array_unshift($va_row_tmp, $object_location_tracking_relationship_type_id); 
+// 						if (sizeof($va_row_tmp) < 3) { array_unshift($va_row_tmp, 119); }	// assume ca_objects_x_storage_locations
+// 					}
+// 		
 					$vs_loc_table_name = Datamodel::getTableName($va_row_tmp[0]);
 					$va_collapse_map = $this->getCollapseMapForLocationFacet($va_facet_info);
 
@@ -710,7 +709,7 @@
 						return $va_collapse_map[$vs_table_name]['*'];
 					} elseif($va_row_tmp[2] && ($qr_res = caMakeSearchResult($vs_table_name, [$va_row_tmp[2]])) && $qr_res->nextHit()) {
 						// Return label for id
-						$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $va_row_tmp[1]);
+						$va_config = []; //ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $va_row_tmp[1]);
 						$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
 
 						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($vs_template), 30, 'end');
@@ -1867,25 +1866,7 @@
 										$vn_row_id = urldecode($vn_row_id);
 										$va_row_tmp = explode(":", $vn_row_id);
 										
-										if (
-											(sizeof($va_row_tmp) < 3)
-											&&
-											($object_location_tracking_relationship_type = $this->opo_config->get('object_storage_location_tracking_relationship_type'))
-											&&
-											($object_location_tracking_relationship_type_id = array_shift(caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', [$object_location_tracking_relationship_type])))
-										) {
-											//
-											// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
-											// locations, not loans, occurrences etc.) is configured. The value of location criteria is typically in the 
-											// form <table num>:<type id>:<row id> but is shortened to just the row_id (which is the storage location location_id)
-											// by the hierarchy browser. In this case we can assume the table number is 119 (ca_objects_x_storage_locations) and
-											// the type_id is whatever is configured in "object_storage_location_tracking_relationship_type" in app.conf.
-											//
-											// We prepend those values below, allowing the criterion value to behave as a standard location value/
-											//	
-											array_unshift($va_row_tmp, $object_location_tracking_relationship_type_id); 
-											if (sizeof($va_row_tmp) < 3) { array_unshift($va_row_tmp, 119); }	// ca_objects_x_storage_locations
-										}
+										
 										print_R($va_row_tmp);
 										if ($va_row_tmp[0] == 119) { // ca_objects_x_storage_locations
 											$t_loc = new ca_storage_locations();
@@ -3760,12 +3741,12 @@ print_R($va_acc);
 
 						$vs_pk = $t_item->primaryKey();
 						$vs_sql = "
-							SELECT COUNT(*) _count, cv.current_table_num, cv.current_row_id, cv.current_type_id
+							SELECT COUNT(*) _count, cv.current_table_num, cv.current_row_id, cv.current_type_id, cv.tracked_table_num, cv.tracked_row_id, cv.tracked_type_id
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
-							GROUP BY cv.current_table_num, cv.current_row_id, cv.current_type_id
+							GROUP BY cv.current_table_num, cv.current_row_id, cv.current_type_id, cv.tracked_table_num, cv.tracked_row_id, cv.tracked_type_id
 							";
 						if($vs_sort_field) {
 							$vs_sql .= " ORDER BY {$vs_sort_field}";

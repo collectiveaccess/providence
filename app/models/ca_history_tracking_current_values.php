@@ -173,7 +173,7 @@ class ca_history_tracking_current_values extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('idno');
+	protected $ORDER_BY = array('tracking_id');
 
 	# Maximum number of record to display per page in a listing
 	protected $MAX_RECORDS_PER_PAGE = 20; 
@@ -192,7 +192,7 @@ class ca_history_tracking_current_values extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = true;
+	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 	

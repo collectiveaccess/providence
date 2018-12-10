@@ -949,7 +949,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		
 		
-		$h = $this->getHistory($pa_bundle_settings, $pa_options);
+		$h = $this->getHistory($pa_options);
 		$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
 		$o_view->setVar('history', $h);
 		
@@ -1335,7 +1335,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					//
 					// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
 					//
-					if (is_array($va_history = $t_object->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
+					if (is_array($va_history = $t_object->getHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
 						$va_current_location = array_shift(array_shift($va_history));
                         
                         $va_path_components = caGetOption('pathComponents', $pa_options, null);

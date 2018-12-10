@@ -2306,11 +2306,14 @@ function caFileIsIncludable($ps_file) {
 	 * Return search result instance for given table and id list
 	 * @param string $ps_table the table name
 	 * @param array $pa_ids a list of primary key values
-	 * @param null|array $pa_options @see BundlableLabelableBaseModelWithAttributes::makeSearchResult
+	 * @param null|array $pa_options Options include and option from BundlableLabelableBaseModelWithAttributes::makeSearchResult as well as :
+	 *		transaction = transaction to execute queries within. [Default is null]
+	 * @see BundlableLabelableBaseModelWithAttributes::makeSearchResult
 	 * @return null|SearchResult
 	 */
 	function caMakeSearchResult($ps_table, $pa_ids, $pa_options=null) {
 		if ($t_instance = Datamodel::getInstanceByTableName('ca_objects', true)) {	// get an instance of a model inherits from BundlableLabelableBaseModelWithAttributes; doesn't matter which one
+			if ($trans = caGetOption('transaction', $pa_options, null)) { $t_instance->setTransaction($trans); }
 			return $t_instance->makeSearchResult($ps_table, $pa_ids, $pa_options);
 		}
 		return null;
