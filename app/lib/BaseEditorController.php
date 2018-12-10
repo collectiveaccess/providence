@@ -1801,7 +1801,7 @@ class BaseEditorController extends ActionController {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__));
 		}
 		if (
-			is_array($va_restrict_to_types)
+			is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)
 			&&
 			(
 				($pt_subject->get('type_id')) && ($pt_subject->getPrimaryKey() && !in_array($pt_subject->get('type_id'), $va_restrict_to_types))
