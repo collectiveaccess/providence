@@ -257,17 +257,14 @@ class MetadataExportController extends ActionController {
 					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
 					$this->getView()->setVar('dest_display_name', $va_dest['display']);
 
-					if(caExportDataToResourceSpace($va_dest['user'], $va_dest['api_key'], $va_dest['base_api_url'], $vs_tmp_file)){
-						$vb_success = true;
-					}
-
+					$vb_success = caExportDataToResourceSpace($va_dest['user'], $va_dest['api_key'], $va_dest['base_api_url'], $vs_tmp_file);
 				}
 
 			}
 		}
 
 		$this->getView()->setVar('alternate_destination_success', $vb_success);
-		unlink($vs_tmp_file);
+		if (file_exists($vs_tmp_file)) { unlink($vs_tmp_file); }
 		$this->render('export/download_feedback_html.php');
 	}
 	# -------------------------------------------------------

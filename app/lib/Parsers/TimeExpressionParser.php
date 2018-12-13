@@ -3349,6 +3349,14 @@ class TimeExpressionParser {
 		return $va_date_info['year'].".".sprintf('%02d',$va_date_info['mon']).sprintf('%02d',$va_date_info['mday']).sprintf('%02d',$va_date_info['hours']).sprintf('%02d',$va_date_info['minutes']).sprintf('%02d',$va_date_info['seconds']).'00'; 
 	}
 	# -------------------------------------------------------------------
+	public function historicToUnixTimestamp($pn_historic_timestamp) {
+	    $year = (int)$pn_historic_timestamp;
+	    $tmp = explode('.', $pn_historic_timestamp);
+	    $month = substr($tmp[1], 0, 2);
+	    $day = substr($tmp[1], 2, 2);
+	    return strtotime("{$year}-{$month}-{$day}");
+	}
+	# -------------------------------------------------------------------
 	public function setDebug($pn_debug) {
 		$this->opb_debug = ($pn_debug) ? true: false;
 	}

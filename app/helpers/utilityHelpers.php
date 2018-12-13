@@ -1608,14 +1608,35 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
-	  * Converts Unix timestamp to historic date timestamp
+	  * Synonym for caUnixTimestampToHistoricTimestamp
 	  *
 	  * @param int $pn_timestamp A Unix-format timestamp
 	  * @return float Equivalent value as floating point historic timestamp value, or null if Unix timestamp was not valid.
 	  */
 	function caUnixTimestampToHistoricTimestamps($pn_timestamp) {
+		return caUnixTimestampToHistoricTimestamp($pn_timestamp);
+	}
+	# ---------------------------------------
+	/**
+	  * Converts Unix timestamp to historic date timestamp
+	  *
+	  * @param int $pn_timestamp A Unix-format timestamp
+	  * @return float Equivalent value as floating point historic timestamp value, or null if Unix timestamp was not valid.
+	  */
+	function caUnixTimestampToHistoricTimestamp($pn_timestamp) {
 		$o_tep = new TimeExpressionParser();
 		return $o_tep->unixToHistoricTimestamp($pn_timestamp);
+	}
+	# ---------------------------------------
+	/**
+	  * Converts historic date timestamp Unix timestamp
+	  *
+	  * @param int $pn_timestamp A Unix-format timestamp
+	  * @return float Equivalent value as Unix timestamp or null if historic timestamp was not valid or is before 1970.
+	  */
+	function caHistoricTimestampToUnixTimestamp($pn_timestamp) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->historicToUnixTimestamp($pn_timestamp);
 	}
 	# ---------------------------------------
 	/**
@@ -2713,39 +2734,43 @@ function caFileIsIncludable($ps_file) {
 		    caLogEvent('DEBG', "Invalid parameters for ResourceSpace export. Check your configuration!", 'caExportDataToResourceSpace');
 			return false;
 		}
+		if (!file_exists($ps_local_filepath)) { 
+		    return null; 
+		}
         $vs_content = file_get_contents($ps_local_filepath);
         $va_records = json_decode($vs_content, true);
-	foreach($va_records as $vs_key => $va_value){
-	    if($vs_key !== 0){
-	        $va_records = [$va_records];
-	    }
-	    break;
-	}
+       
+        foreach($va_records as $vs_key => $va_value){
+            if($vs_key !== 0){
+                $va_records = [$va_records];
+            }
+            break;
+        }
+        
         $o_client = new \GuzzleHttp\Client(['base_uri' => $ps_base_url]);
         foreach($va_records as $va_record){
             if(!($vs_media_url = $va_record['media_url'])){
                 $vs_media_url = '';
-            } else {
-                unset($va_record['media_url']);
             }
             if(!($vs_collection_name = $va_record['collection_name'])){
                 $vs_collection_name = '';
-            } else {
-                unset($va_record['collection_name']);
-            }
+            } 
             if (!preg_match("!^http!", $vs_media_url)) { 
                 $vs_media_url = __CA_SITE_PROTOCOL__."://{$vs_media_url}";
             }
-	    if((!$vs_resource_type = $va_record['type'])){
-		$vs_resource_type = 0;
-	    } else {
-		unset($va_record['type']);
-	    }
-            $o_temp = array();
+            if((!$vs_resource_type = $va_record['type'])){
+                $vs_resource_type = 0;
+            }
+            
+            foreach($va_record as $k => $v) {
+                if (!is_numeric($k)) { unset($va_record[$k]);}    
+            }
+            
             try{
-                $vs_query = 'user='.$ps_user.'&function=create_resource&param1='.$vs_resource_type.'&param2=0&param3='.rawurlencode(stripslashes($vs_media_url)).'&param4=&param5=&param6=&param7='.rawurlencode(stripslashes(json_encode($va_record)));
+                $vs_query = 'user='.$ps_user.'&function=create_resource&param1='.$vs_resource_type.'&param2=0&param3='.rawurlencode($vs_media_url).'&param4=&param5=&param6=&param7='.rawurlencode(json_encode($va_record));
                 $vs_hash = hash('sha256', $ps_key.$vs_query);
                 $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
+                
                 $vn_rs_id = json_decode($va_response->getBody(), true);
                 if(!$vn_rs_id){
                     caLogEvent('ERR', "Could not create Resource. Check your ResourceSpace configuration", 'caExportDataToResourceSpace');

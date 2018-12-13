@@ -1296,6 +1296,10 @@ class SearchResult extends BaseObject {
 								}
 								
 								if (in_array($t_instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__])) { array_pop($va_hier_ids); }
+								
+								
+								if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
+								
 								if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 									$va_hier_ids = array_slice($va_hier_ids, 0, $vn_max_levels_from_top, true);
 								} elseif (!is_null($vn_max_levels_from_bottom) && ($vn_max_levels_from_bottom > 0)) {
@@ -1303,7 +1307,6 @@ class SearchResult extends BaseObject {
 									$va_hier_ids = array_slice($va_hier_ids, $vn_start, $vn_max_levels_from_bottom, true);
 								}
 								
-								if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
 							}
 							
 							$vm_val = $vb_return_as_array ?  $va_hier_ids : join($vs_hierarchical_delimiter, $va_hier_ids);
@@ -2213,6 +2216,10 @@ class SearchResult extends BaseObject {
                                         case 'width':
                                         case 'height':
                                         case 'mimetype':
+                                        case 'original_filename':
+                                        case 'originalfilename':
+                                        case 'filename':
+                                        case 'id':
                                             $vs_return_type = $vs_e;
                                             break;
                                         default:
@@ -2487,7 +2494,17 @@ class SearchResult extends BaseObject {
 						if($pa_options['unserialize']) {
 							$va_return_values[$vn_id][$vm_locale_id] = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
 						} elseif ($vs_info_element && (!in_array($vs_info_element, ['url', 'path', 'tag']))) {
-							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
+							if(in_array(strtolower($vs_info_element), ['original_filename', 'originalfilename', 'filename'])) {
+								$media_info = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], null, null, $pa_options);
+								$va_return_values[$vn_id][$vm_locale_id] = caGetOption('ORIGINAL_FILENAME', $media_info, pathinfo($this->getMediaPath($va_path_components['table_name'].'.'.$va_path_components['field_name'], 'original', $pa_options), PATHINFO_BASENAME));
+							} elseif(in_array(strtolower($vs_info_element), ['mimetype'])) {
+								$media_info = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'original', null, $pa_options);
+								$va_return_values[$vn_id][$vm_locale_id] = caGetOption('MIMETYPE', $media_info, null);
+							} elseif(in_array(strtolower($vs_info_element), ['id'])) {
+								$va_return_values[$vn_id][$vm_locale_id] = $vn_id;
+							} else {
+								$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
+							}
 						} elseif ((isset($pa_options['returnURL']) && ($pa_options['returnURL'])) || ($vs_info_element == 'url')) {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
 						} elseif ((isset($pa_options['returnPath']) && ($pa_options['returnPath'])) || ($vs_info_element == 'path')) {
