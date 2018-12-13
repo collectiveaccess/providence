@@ -37,6 +37,13 @@
  
 	trait HistoryTrackingCurrentValueTrait {
 		# ------------------------------------------------------
+		
+		/**
+		 *
+		 */
+		static $s_history_tracking_current_value_type_configuration_cache = [];
+		
+		# ------------------------------------------------------
 		/**
 		 *
 		 */
@@ -56,6 +63,8 @@
 			if(!is_array($history_tracking_policies) || !is_array($history_tracking_policies['policies'])) {
 			
 				// Fall back to legacy "current_location_criteria" if no current configuration
+				
+				// TODO: rewrite map such that all keys are items types; move relationship type keys into restrictToRelationshipTypes options
 				if(is_array($map = $o_config->getAssoc('current_location_criteria'))) {
 				 	$history_tracking_policies = [
 				 		'defaults' => [
@@ -98,26 +107,39 @@
 			}
 			if(!is_array($map)){ return null; }
 			
+			if (!($policy_table = caGetOption('table', $policy_info, false))) { return []; }
 			
 			foreach($map as $table => $types) {
+				$path = array_keys(Datamodel::getPath($policy_table, $table));
+				$t_instance = Datamodel::getInstance($table, true);
+				
 				$bundle_settings["{$table}_showTypes"] = [];
 				if(is_array($types)) {
-					foreach($types as $type => $config) {
-						switch($table) {
-							case 'ca_storage_locations':
-							case 'ca_objects_x_storage_locations':
-								$bundle_settings["{$table}_showRelationshipTypes"][] = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $type);
-								break;
-							default:
-								if(!is_array($config)) { break; }
-								$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, array($type)));
-								$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
-								break;
+					foreach($types as $type_list => $config) {
+						if (in_array($type_list, ['*', '__default__'])) { 
+							$types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList());
+						} else {
+							$types = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
+						}
+						foreach($types as $type) {
+							if(!is_array($config)) { break; }
+							
+							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$type]));
+						
+							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
+						
+							if ((sizeof($path) === 3) && ($rel_types = caGetOption('restrictToRelationshipTypes', $config, null)) && $path[1]) { 
+								$bundle_settings["{$table}_showRelationshipTypes"] = [];
+								foreach($rel_types as $rel_type) {
+									if (($rel_type_id = $t_rel_type->getRelationshipTypeID($path[1], $rel_type)) && !in_array($rel_type_id, $bundle_settings["{$table}_showRelationshipTypes"])) { 
+										$bundle_settings["{$table}_showRelationshipTypes"][] = $rel_type_id;
+									}
+								}
+							}
 						}
 					}
 				}
 			}
-		
 			return $bundle_settings;
 		}
 		# ------------------------------------------------------
@@ -128,7 +150,7 @@
 
 			if ($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) {
 				// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
-				$va_bundle_settings = array();
+				$va_bundle_settings = [];
 				foreach($va_current_location_criteria as $vs_table => $va_info) {
 					switch($vs_table) {
 						case 'ca_storage_locations':
@@ -233,10 +255,91 @@
 		 * @return string Policy name
 		 */
 		public function getDefaultHistoryTrackingCurrentValuePolicy() {
-			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults']) && isset($history_tracking_policies['defaults'][$this->tableName()])) {
-				return $history_tracking_policies['defaults'][$this->tableName()];
+			return self::getDefaultHistoryTrackingCurrentValuePolicyForTable($this->tableName());
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return default policy for table
+		 *
+		 * @param string $table Name of table
+		 *
+		 * @return string Policy name
+		 */
+		static public function getDefaultHistoryTrackingCurrentValuePolicyForTable($table) {
+			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults']) && isset($history_tracking_policies['defaults'][$table])) {
+				return $history_tracking_policies['defaults'][$table];
 			}
 			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return policy to use when displaying tracking current value in editor inspector
+		 *
+		 * @return string Policy name
+		 */
+		public function getInspectorHistoryTrackingDisplayPolicy() {
+			$table = $this->tableName();
+			$type_code = $this->getTypeCode();
+			
+			$display_config = $this->getAppConfig()->get('inspector_tracking_displays');
+			if (!isset($display_config[$table])) { return null; }
+			if (!isset($display_config[$table][$type_code])) { $type_code = '__default__'; }
+			
+			if (!isset($display_config[$table][$type_code])) { 
+				// Last ditch, try old config option. If it is set return it as label with default policy.
+				if ($old_config_value = $this->getAppConfig()->get("{$table}_inspector_current_location_label")) { 
+					return ['label' => $old_config_value, 'policy' => $this->getDefaultHistoryTrackingCurrentValuePolicy()]; 
+				}
+				return null; 
+			}
+			
+			return $display_config[$table][$type_code];
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return 
+		 */
+		public static function getConfigurationForHistoryTrackingCurrentValue($policy, $table, $type_id=null, $options=null) {
+			$cache_key = caMakeCacheKeyFromOptions($options, "{$policy}/{$table}/{$type_id}");
+		
+			if (isset(self::$s_history_tracking_current_value_type_configuration_cache[$cache_key])) { return self::$s_history_tracking_current_value_type_configuration_cache[$cache_key]; }
+			$o_config = Configuration::load();
+		
+			$policy_config = self::getHistoryTrackingCurrentValuePolicy($policy); //$o_config->getAssoc('current_location_criteria');
+			$map = $policy_config['elements'];
+		
+			if (!($t_instance = Datamodel::getInstance($table, true))) { return self::$s_history_tracking_current_value_type_configuration_cache[$cache_key] = null; }
+	
+			if (isset($map[$table])) {
+				if ((!$type_id) && (isset($map[$table]['*']) || isset($map[$table]['__default__']))) { return self::$s_history_tracking_current_value_type_configuration_cache[caMakeCacheKeyFromOptions($options, "{$table}/{$type_id}")] = self::$s_history_tracking_current_value_type_configuration_cache[$cache_key] = $map[$table]['*']; }	// return default config if no type is specified
+			
+				if ($type_id) { 
+					$type = $t_instance->getTypeCode($type_id);
+				
+					$facet_display_config = caGetOption('facet', $options, null); 
+					if ($type && isset($map[$table][$type])) {
+						if (is_array($facet_display_config) && isset($facet_display_config[$table][$type])) {
+							$map[$table][$type] = array_merge($map[$table][$type], $facet_display_config[$table][$type]);
+						}
+						return self::$s_history_tracking_current_value_type_configuration_cache[caMakeCacheKeyFromOptions($options, "{$table}/{$type_id}")] = self::$s_history_tracking_current_value_type_configuration_cache[$cache_key] = $map[$table][$type];
+					} elseif (isset($map[$table]['*']) || isset($map[$table]['__default__'])) {
+						if(!isset($map[$table]['__default__'])) { $map[$table]['__default__'] = []; }
+						if(!isset($map[$table]['*'])) { $map[$table]['*'] = []; }
+						$map[$table][$type] = array_merge($map[$table]['*'], $map[$table]['__default__']);
+						
+						if (is_array($facet_display_config) && (isset($facet_display_config[$table]['*']) || isset($facet_display_config[$table]['__default__']))) {
+							if(!isset($facet_display_config[$table]['__default__'])) { $facet_display_config[$table]['__default__'] = []; }
+							if(!isset($facet_display_config[$table]['*'])) { $facet_display_config[$table]['*'] = []; }
+							
+							$map[$table][$type] = array_merge($map[$table][$type], $facet_display_config[$table]['*'], $facet_display_config[$table]['__default__']);
+						}
+						return self::$s_history_tracking_current_value_type_configuration_cache[caMakeCacheKeyFromOptions($options, "{$table}/{$type_id}")] = self::$s_history_tracking_current_value_type_configuration_cache[$cache_key] = $map[$table][$type];
+					}
+				} 
+			}
+			return self::$s_history_tracking_current_value_type_configuration_cache[caMakeCacheKeyFromOptions($options, "{$table}/{$type_id}")] = self::$s_history_tracking_current_value_type_configuration_cache[$cache_key] = null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -493,7 +596,7 @@
 		 */
 		static public function isHistoryTrackingCriterion($table) {
 			// TODO: analyze relationships to return rel tables as criteria
-			return in_array($table, ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements', 'ca_objects_x_storage_locations']);
+			return in_array($table, ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements']);
 		}
 		# ------------------------------------------------------
 		/**
@@ -519,8 +622,7 @@
 			}
 			if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 
-			// TODO: fix
-			//$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
+			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 	
 			$row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $pa_options, ['id' => $row_id]));
@@ -589,9 +691,9 @@
 							$va_dates = [];
 							$va_date_elements = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null);
 				   
-							if (!is_array($va_date_elements) && $va_date_elements) { $va_date_elements = array($va_date_elements); }
+							if (!is_[$va_date_elements] && $va_date_elements) { $va_date_elements = [$va_date_elements]; }
 			
-							if (is_array($va_date_elements) && sizeof($va_date_elements)) {
+							if (is_[$va_date_elements] && sizeof($va_date_elements)) {
 								foreach($va_date_elements as $vs_date_element) {
 									$va_date_bits = explode('.', $vs_date_element);
 									$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
@@ -657,10 +759,10 @@
 					$t_loan = new ca_loans();
 					$va_loan_type_info = $t_loan->getTypeList(); 
 			
-					$va_date_elements_by_type = array();
+					$va_date_elements_by_type = [];
 					foreach($va_loan_types as $vn_type_id) {
 						if (!is_array($va_date_elements = caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
-							$va_date_elements = array($va_date_elements);
+							$va_date_elements = [$va_date_elements];
 						}
 						if (!$va_date_elements) { continue; }
 						$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
@@ -681,7 +783,7 @@
 						$vn_type_id = $qr_loans->get('ca_loans.type_id');
 						$vn_rel_type_id = $qr_loans->get("{$linking_table}.type_id");
 				
-						$va_dates = array();
+						$va_dates = [];
 						if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);
@@ -754,10 +856,10 @@
 					$t_movement = new ca_movements();
 					$va_movement_type_info = $t_movement->getTypeList(); 
 			
-					$va_date_elements_by_type = array();
+					$va_date_elements_by_type = [];
 					foreach($va_movement_types as $vn_type_id) {
 						if (!is_array($va_date_elements = caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
-							$va_date_elements = array($va_date_elements);
+							$va_date_elements = [$va_date_elements];
 						}
 						if (!$va_date_elements) { continue; }
 						$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
@@ -778,7 +880,7 @@
 						$vn_type_id = $qr_movements->get('ca_movements.type_id');
 						$vn_rel_type_id = $qr_movements->get("{$linking_table}.type_id");
 				
-						$va_dates = array();
+						$va_dates = [];
 						if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);
@@ -855,10 +957,10 @@
 			
 					$qr_occurrences = caMakeSearchResult($linking_table, $va_occurrences);
 			
-					$va_date_elements_by_type = array();
+					$va_date_elements_by_type = [];
 					foreach($va_occurrence_types as $vn_type_id) {
 						if (!is_array($va_date_elements = caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
-							$va_date_elements = array($va_date_elements);
+							$va_date_elements = [$va_date_elements];
 						}
 						if (!$va_date_elements) { continue; }
 						$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
@@ -882,7 +984,7 @@
 						$vs_type_idno = $va_occurrence_type_info[$vn_type_id]['idno'];
 						$vn_rel_type_id = $qr_occurrences->get("{$linking_table}.type_id");
 				
-						$va_dates = array();
+						$va_dates = [];
 						if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);	
@@ -955,10 +1057,10 @@
 					$t_collection = new ca_collections();
 					$va_collection_type_info = $t_collection->getTypeList(); 
 			
-					$va_date_elements_by_type = array();
+					$va_date_elements_by_type = [];
 					foreach($va_collection_types as $vn_type_id) {
 						if (!is_array($va_date_elements = caGetOption("ca_collections_{$va_collection_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
-							$va_date_elements = array($va_date_elements);
+							$va_date_elements = [$va_date_elements];
 						}
 						if (!$va_date_elements) { continue; }
 						$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
@@ -981,7 +1083,7 @@
 						$vn_type_id = $qr_collections->get('ca_collections.type_id');
 						$vn_rel_type_id = $qr_collections->get("{$linking_table}.type_id");
 				
-						$va_dates = array();
+						$va_dates = [];
 						if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);

@@ -844,15 +844,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 				} else {
 					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_ca_objects')) {
-						if ($t_ui && method_exists($t_item, "getHistory")) {
+						if ($t_ui && method_exists($t_item, "getHistory") && ($display_info = $t_item->getInspectorHistoryTrackingDisplayPolicy())) {
 							// TODO: make policy displayed here configurable
-							if (is_array($va_history = $t_item->getHistory(['limit' => 1, 'currentOnly' => true])) && (sizeof($va_history) > 0)) {
-								$va_current_location = array_shift(array_shift($va_history));
+							if (is_array($history = $t_item->getHistory(['policy' => $display_info['policy'], 'limit' => 1, 'currentOnly' => true])) && (sizeof($history) > 0)) {
+								$current_value = array_shift(array_shift($history));
 
-								if(!($vs_inspector_current_location_label = $po_view->request->config->get("ca_objects_inspector_current_location_label"))) {
-									$vs_inspector_current_location_label = _t('Current');
-								}
-								if ($va_current_location['display']) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>".$vs_inspector_current_location_label.':</strong><br/>'.$va_current_location['display']."</div>"; }
+								$inspector_current_value_label = caGetOption('label', $display_info, _t('Current'));
+								if ($current_value['display']) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$current_value['display']}</div>"; }
 							}
 						} 
 					}
