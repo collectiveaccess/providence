@@ -2730,6 +2730,9 @@ function caFileIsIncludable($ps_file) {
             } else {
                 unset($va_record['collection_name']);
             }
+            if (!preg_match("!^http!", $vs_media_url)) { 
+                $vs_media_url = __CA_SITE_PROTOCOL__."://{$vs_media_url}";
+            }
 	    if((!$vs_resource_type = $va_record['type'])){
 		$vs_resource_type = 0;
 	    } else {
@@ -2737,7 +2740,7 @@ function caFileIsIncludable($ps_file) {
 	    }
             $o_temp = array();
             try{
-                $vs_query = 'user='.$ps_user.'&function=create_resource&param1='.$vs_resource_type.'&param2=0&param3='.rawurlencode($vs_media_url).'&param4=&param5=&param6=&param7='.rawurlencode(json_encode($va_record));
+                $vs_query = 'user='.$ps_user.'&function=create_resource&param1='.$vs_resource_type.'&param2=0&param3='.rawurlencode(stripslashes($vs_media_url)).'&param4=&param5=&param6=&param7='.rawurlencode(stripslashes(json_encode($va_record)));
                 $vs_hash = hash('sha256', $ps_key.$vs_query);
                 $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
                 $vn_rs_id = json_decode($va_response->getBody(), true);
@@ -2764,7 +2767,8 @@ function caFileIsIncludable($ps_file) {
                         $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
                         $vb_success = json_decode($va_response->getBody(), true);
                         if($vb_success){
-                            $vs_query = 'user='.$va_api['user'].'&function=search_public_collections&param1='.rawurlencode($vs_collection_name).'&param2=name&param3=ASC&param4=0&param5=0';
+                            #$vs_query = 'user='.$va_api['user'].'&function=search_public_collections&param1='.rawurlencode($vs_collection_name).'&param2=name&param3=ASC&param4=0&param5=0';
+                            $vs_query = 'user='.$va_api['user'].'&function=get_user_collections';
                             $vs_hash = hash('sha256', $ps_key.$vs_query);
 
                             $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);

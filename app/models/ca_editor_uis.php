@@ -870,10 +870,13 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$va_nav = [];
 		$vn_default_screen_id = null;
 		foreach($va_screens as $va_screen) {
-			if(is_array($restrict_to_types) && is_array($va_screen['typeRestrictions']) && (sizeof($va_screen['typeRestrictions']) > 0)) {
+			$va_screen_restrictions = $va_screen['typeRestrictions'];
+		    if(is_array($va_screen_restrictions)) { $va_screen_restrictions = caMakeTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); }
+			
+			if(is_array($restrict_to_types) && is_array($va_screen_restrictions) && (sizeof($va_screen_restrictions) > 0)) {
 				$vb_skip = true;
 				foreach($restrict_to_types as $vn_res_type_id) {
-					if (isset($va_screen['typeRestrictions'][$vn_res_type_id]) && $va_screen['typeRestrictions'][$vn_res_type_id]) {
+					if (in_array($vn_res_type_id, $va_screen_restrictions)) {
 						$vb_skip = false;
 						break;
 					}

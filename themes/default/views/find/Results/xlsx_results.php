@@ -25,7 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
+ 
 
+ 	$precision = ini_get('precision');
+	ini_set('precision', 12);
+	
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
@@ -183,3 +187,5 @@
  	@header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
  	@header('Content-Disposition:inline;filename=Export.xlsx ');
  	$o_writer->save('php://output');
+
+    ini_set('precision', $precision);
