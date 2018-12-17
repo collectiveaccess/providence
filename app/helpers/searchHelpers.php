@@ -1386,8 +1386,9 @@
 		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_table}/{$pn_type_id}");
 		
-		if (CompositeCache::contains("available_sorts") && is_array($va_cached_data = CompositeCache::fetch("available_sorts")) && isset($va_cached_data[$vs_cache_key])) { return $va_cached_data[$vs_cache_key]; }
-
+		//if (CompositeCache::contains("available_sorts") && is_array($va_cached_data = CompositeCache::fetch("available_sorts")) && isset($va_cached_data[$vs_cache_key])) { return $va_cached_data[$vs_cache_key]; }
+		$o_config = Configuration::load();
+		
 		$pn_display_id = caGetOption('restrictToDisplay', $pa_options, null);
 	
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
@@ -1556,7 +1557,7 @@
 		}
 
 		if($ps_table) {
-			// add user sorts
+			// Add user sorts
 			if(caGetOption('includeUserSorts', $pa_options, true)) {
 				/** @var RequestHTTP $po_request */
 				if(!($po_request = caGetOption('request', $pa_options)) || ($po_request->getUser()->canDoAction('can_use_user_sorts'))) {
@@ -1564,14 +1565,12 @@
 				}
 			}
 
-			// add sortable elements
+			// Add sortable elements
 			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
 			}
-			
-			
 		
 			// Add interstitial sorts
 			if ($t_rel) {
@@ -1581,6 +1580,12 @@
 				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 					$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
 				}
+			}
+			
+			// Add additional sorts specified in app.conf in <table>_include_result_sorts directives
+			if (is_array($config_sorts = $o_config->get("{$ps_table}_include_result_sorts")) && sizeof($config_sorts)) {
+			    $config_sorts = array_filter($config_sorts, function($v) { return is_string($v); });
+		        $va_base_fields = array_merge($va_base_fields, $config_sorts);
 			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
