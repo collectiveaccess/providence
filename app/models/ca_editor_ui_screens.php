@@ -357,13 +357,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$ps_table = (isset($pa_options['table'])) ? $pa_options['table'] : $this->getTableNum();
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 		
+		$table_name = Datamodel::getTableName($ps_table);
+		
 		//if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
 		//	return array();
 		//}
 		
 		if (!($vn_screen_id = $this->getPrimaryKey())) {
 			if ($pb_return_all_available_if_empty && $ps_table) {
-				return ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id] = $this->getAvailableBundles($ps_table);
+				return ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id] = $this->getAvailableBundles($ps_table, ['table' => $ps_table]);
 			}
 		//	return array(); 
 		}
@@ -396,7 +398,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $table_name));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
 					$t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true);
@@ -676,21 +678,21 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							)
 						);
 						
-						if (($t_instance->tableName() == 'ca_storage_locations') && ($t_rel->tableName() == 'ca_objects')) {
-							$va_additional_settings['locationTrackingMode'] = array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'options' => array(
-											_t('none') => '',
-											_t('movements') => 'ca_movements',
-											_t('object-location relationships') => 'ca_storage_locations'
-										),
-										'default' => '',
-										'width' => "275px", 'height' => 1,
-										'label' => _t('Only show items currently in this location using'),
-										'description' => ''
-									);
-						}
+						// if (($t_instance->tableName() == 'ca_storage_locations') && ($t_rel->tableName() == 'ca_objects')) {
+// 							$va_additional_settings['locationTrackingMode'] = array(
+// 										'formatType' => FT_TEXT,
+// 										'displayType' => DT_SELECT,
+// 										'options' => array(
+// 											_t('none') => '',
+// 											_t('movements') => 'ca_movements',
+// 											_t('object-location relationships') => 'ca_storage_locations'
+// 										),
+// 										'default' => '',
+// 										'width' => "275px", 'height' => 1,
+// 										'label' => _t('Only show items currently in this location using'),
+// 										'description' => ''
+// 									);
+// 						}
 						
 						break;
 					} else {
@@ -1181,17 +1183,27 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 							case 'ca_objects_location':
+							case 'ca_history_tracking_current_value':
 								$va_additional_settings = array(
-									'locationTrackingMode' => array(
+									// 'locationTrackingMode' => array(
+// 										'formatType' => FT_TEXT,
+// 										'displayType' => DT_SELECT,
+// 										'options' => array(
+// 											_t('movements') => 'ca_movements',
+// 											_t('storage location relationships') => 'ca_storage_locations'
+// 										),
+// 										'default' => 'ca_movements',
+// 										'width' => "275px", 'height' => 1,
+// 										'label' => _t('Track location using'),
+// 										'description' => ''
+// 									),
+									'policy' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
-										'options' => array(
-											_t('movements') => 'ca_movements',
-											_t('storage location relationships') => 'ca_storage_locations'
-										),
-										'default' => 'ca_movements',
+										'default' => '__default__',
 										'width' => "275px", 'height' => 1,
-										'label' => _t('Track location using'),
+										'useHistoryTrackingPolicyList' => true,
+										'label' => _t('Use history tracking policy'),
 										'description' => ''
 									),
 									'displayTemplate' => array(
@@ -1251,33 +1263,43 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 							case 'ca_objects_history':
+							case 'ca_history_tracking':
 								$va_to_hide_when_using_defaults = array(
 									'ca_object_lots_showTypes', 'ca_occurrences_showTypes', 'ca_loans_showTypes', 'ca_movements_showTypes',
 									'ca_storage_locations_showRelationshipTypes', 'ca_storage_locations_color', 'ca_storage_locations_displayTemplate',
 									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate', 'sortDirection'
 								);
 								$va_additional_settings = array(
+									'policy' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'default' => '__default__',
+										'width' => "275px", 'height' => 1,
+										'useHistoryTrackingPolicyList' => true,
+										'label' => _t('Use history tracking policy'),
+										'description' => ''
+									),
 									'useAppConfDefaults' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_CHECKBOXES,
 										'width' => "10", 'height' => "1",
 										'takesLocale' => false,
 										'default' => '1',
-										'label' => _t('Use defaults from application configuration (app.conf)?'),
-										'description' => _t('If checked all settings are taken from the main application configuration file (app.conf).')
+										'label' => _t('Use defaults from policy?'),
+										'description' => _t('If checked all settings are taken from history tracking policy. Uncheck to override values.')
 									),
-									'locationTrackingMode' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'options' => array(
-											_t('movements') => 'ca_movements',
-											_t('storage location relationships') => 'ca_storage_locations'
-										),
-										'default' => 'ca_movements',
-										'width' => "275px", 'height' => 1,
-										'label' => _t('Track location using'),
-										'description' => ''
-									),
+// 									'locationTrackingMode' => array(
+// 										'formatType' => FT_TEXT,
+// 										'displayType' => DT_SELECT,
+// 										'options' => array(
+// 											_t('movements') => 'ca_movements',
+// 											_t('storage location relationships') => 'ca_storage_locations'
+// 										),
+// 										'default' => 'ca_movements',
+// 										'width' => "275px", 'height' => 1,
+// 										'label' => _t('Track location using'),
+// 										'description' => ''
+// 									),
 									'sortDirection' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
@@ -1811,18 +1833,27 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Format of contents list'),
 										'description' => _t('.')
 									),
-									'locationTrackingMode' => array(
+									'policy' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
-										'options' => array(
-											_t('movements') => 'ca_movements',
-											_t('object-location relationships') => 'ca_storage_locations'
-										),
-										'default' => 'ca_movements',
+										'default' => '__default__',
 										'width' => "275px", 'height' => 1,
-										'label' => _t('Track location using'),
+										'useHistoryTrackingPolicyList' => true,
+										'label' => _t('Use history tracking policy'),
 										'description' => ''
-									),							
+									),
+									// 'locationTrackingMode' => array(
+// 										'formatType' => FT_TEXT,
+// 										'displayType' => DT_SELECT,
+// 										'options' => array(
+// 											_t('movements') => 'ca_movements',
+// 											_t('object-location relationships') => 'ca_storage_locations'
+// 										),
+// 										'default' => 'ca_movements',
+// 										'width' => "275px", 'height' => 1,
+// 										'label' => _t('Track location using'),
+// 										'description' => ''
+// 									),							
 									'colorItem' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
@@ -1907,7 +1938,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
 				'description' => $vs_description = $t_instance->getDisplayDescription($vs_table.'.'.$vs_bundle),
-				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0_')),
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0_', 'table' => $vs_table)),
 				'settings' => $va_additional_settings
 			);
 			

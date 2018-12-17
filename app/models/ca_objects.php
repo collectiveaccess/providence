@@ -560,10 +560,15 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
+		
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current location'));
 		$this->BUNDLES['ca_objects_location_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current location date'));
-		
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
+		
+		$this->BUNDLES['ca_history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking value'));
+		$this->BUNDLES['ca_history_tracking'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['ca_history_tracking_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+		
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 		$this->BUNDLES['ca_object_checkouts'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object checkouts'));
 		
@@ -776,185 +781,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		return $o_view->render('ca_object_checkouts.php');
 	}
-	# ------------------------------------------------------
- 	# Object location tracking
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns HTML form bundle for location tracking
-	 *
-	 * @param HTTPRequest $po_request The current request
-	 * @param string $ps_form_name
-	 * @param string $ps_placement_code
-	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Options include:
-	 *			None yet.
-	 *
-	 * @return string Rendered HTML bundle
- 	 */
- 	public function getObjectLocationHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
- 		global $g_ui_locale;
-		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
-		if(!is_array($pa_options)) { $pa_options = array(); }
-		
-		if (is_array($vs_display_template = caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined')))) {
-		    $vs_display_template = caExtractSettingValueByLocale($pa_bundle_settings, 'displayTemplate', $g_ui_locale);
-		}
-		if (is_array($vs_history_template = caGetOption('historyTemplate', $pa_bundle_settings, $vs_display_template))) {
-		     $vs_history_template = caExtractSettingValueByLocale($pa_bundle_settings, 'historyTemplate', $g_ui_locale);
-		}
-		
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
-		
-		$o_view->setVar('settings', $pa_bundle_settings);
-		
-		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
-		$o_view->setVar('t_subject', $this);
-		
-		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_storage_locations'));
-		
-		switch($vs_mode) {
-			case 'ca_storage_locations':
-				$t_last_location = $this->getLastLocation(array());
-				
-				if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
-				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
-				
-				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-				$o_view->setVar('location_history', $h = $this->getLocationHistory(array('template' => $vs_history_template)));
-				
-				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
-				$o_view->setVar('location_change_url',  null);
-				break;
-			case 'ca_movements':
-			default:
-				$t_last_movement = $this->getLastMovement(array('dateElement' => $vs_movement_date_element = $this->getAppConfig()->get('movement_storage_location_date_element')));
-				
-				if (!$vs_display_template) { $vs_display_template = "<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l> (^ca_movements.{$vs_movement_date_element})"; }
-				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
-				
-				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-				$o_view->setVar('location_history', $h = $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
-				
-				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_object_tracking_relationship_type'));
-				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
-				break;
-		}
-
-		return $o_view->render('ca_objects_location.php');
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * TODO: Deprecate
- 	 *
- 	 * Returns HTML editor form bundle for ca_objects_history (object use history bundle)
-	 *
-	 * @param HTTPRequest $po_request The current request
-	 * @param string $ps_form_name
-	 * @param string $ps_placement_code
-	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Options include:
-	 *		noCache = Don't use any cached history data. [Default is false]
-	 *		currentOnly = Only return history entries dates before or on the current date. [Default is false]
-	 *		limit = Only return a maximum number of history entries. [Default is null; no limit]
-	 *
-	 * @return string Rendered HTML bundle
-	 *
-	 * @uses ca_objects::getObjectHistory()
- 	 */
- 	public function getObjectHistoryHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
-		require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
-		require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
-		require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
-		
- 		global $g_ui_locale;
-		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
-		if(!is_array($pa_options)) { $pa_options = array(); }
-		
-		$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
-		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
-		
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);
-
-		$pa_bundle_settings = []; // TODO: FIX $this->_processObjectHistoryBundleSettings($pa_bundle_settings);
-		$o_view->setVar('settings', $pa_bundle_settings);
-		
-		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
-		$o_view->setVar('t_subject', $this);
-		
-		//
-		// Occurrence update
-		//
-		$t_occ = new ca_occurrences();
-		$va_occ_types = $t_occ->getTypeList();
-		$va_occ_types_to_show =  caGetOption('add_to_occurrence_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
-		foreach($va_occ_types as $vn_type_id => $va_type_info) {
-			if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
-		}
-		
-		$o_view->setVar('occurrence_types', $va_occ_types);
-		$t_occ_rel = new ca_objects_x_occurrences();
-		$o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-		$o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
-		
-		//
-		// Loan update
-		//
-		$t_loan_rel = new ca_loans_x_objects();
-		$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-		$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
-
-		// Location update
-		$t_location_rel = new ca_objects_x_storage_locations();
-		$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-		$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
-
-		//
-		// Location update
-		//
-		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_storage_locations'));
-		
-		switch($vs_mode) {
-			case 'ca_storage_locations':
-				$t_last_location = null; // TODO: Fix $this->getLastLocation(array());
-				
-				if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
-				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
-				
-				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-				$o_view->setVar('location_history', []); // TODO: fix $this->getLocationHistory(array('template' => $vs_history_template)));
-				
-				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
-				$o_view->setVar('location_change_url',  null);
-				break;
-			case 'ca_movements':
-			default:
-				$t_last_movement = $this->getLastMovement(array('dateElement' => $vs_movement_date_element = $this->getAppConfig()->get('movement_storage_location_date_element')));
-				
-				if (!$vs_display_template) { $vs_display_template = "<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l> (^ca_movements.{$vs_movement_date_element})"; }
-				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
-				
-				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
-				
-				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
-				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
-				break;
-		}
-		
-		
-		
-		$h = $this->getHistory($pa_options);
-		$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
-		$o_view->setVar('history', $h);
-		
-		return $o_view->render('ca_objects_history.php');
- 	}
  	# ------------------------------------------------------
  	# Components
  	# ------------------------------------------------------
@@ -1328,6 +1154,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 		switch($ps_bundle_name) {
 			case 'ca_objects_location':
+			case 'ca_history_tracking_current_value':
 			case 'ca_objects_location_date':
 				
 				if ((method_exists($this, "getHistory")) && (is_array($va_bundle_settings = $this->_processHistoryBundleSettings(['useAppConfDefaults' => true]))) && (sizeof($va_bundle_settings) > 0)) {

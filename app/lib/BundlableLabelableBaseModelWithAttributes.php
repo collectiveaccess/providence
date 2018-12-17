@@ -1757,22 +1757,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_location':		// storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+					case 'ca_history_tracking_current_value':
 						if (!$this->getPrimaryKey() && !$vb_batch) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
-						$vs_element .= $this->getObjectLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						$vs_element .= $this->getHistoryTrackingCurrentValueHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_history':		// summary of object accession, movement, exhibition and deaccession
+					case 'ca_history_tracking':
 						if (!$this->getPrimaryKey() && !$vb_batch) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 					    if (strlen($pb_show_child_history = $pa_options['request']->getParameter("showChildHistory", pInteger))) {
-					        Session::setVar("ca_objects_history_showChildHistory", (bool)$pb_show_child_history);
+					        Session::setVar("{$ps_bundle_name}_showChildHistory", (bool)$pb_show_child_history);
 					    }
-						$vs_element .= $this->getObjectHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, ['showChildHistory' => Session::getVar("ca_objects_history_showChildHistory")]));
+						$vs_element .= $this->getHistoryTrackingHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, ['showChildHistory' => Session::getVar("{$ps_bundle_name}_showChildHistory")]));
 						
 						break;
 					# -------------------------------
@@ -1803,11 +1805,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available for storage locations
 					case 'ca_storage_locations_contents':		// objects in storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+					case 'ca_history_tracking_contents':
 						if ($vb_batch) { return null; } 				// not supported in batch mode
 						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_storage_locations')) { break; }
 					
-						$vs_element .= $this->getLocationContentsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						$vs_element .= $this->getHistoryTrackingContentsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
 					# -------------------------------
@@ -4516,6 +4519,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_location':
+					case 'ca_history_tracking_current_value':
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 						
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
@@ -4528,11 +4532,11 @@ if (!$vb_batch) {
 							) {
 								$this->addRelationship('ca_storage_locations', $vn_location_id, array_shift($va_relationship_type_ids), null, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
-									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
+									$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 								}
 							} else {
 								$o_error = new ApplicationError(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
-								$po_request->addActionError($o_error, 'ca_objects_location', 'general');
+								$po_request->addActionError($o_error, $vs_f, 'general');
 							}
 						}
 						
@@ -4540,11 +4544,12 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_history':
+					case 'ca_history_tracking':
 						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 								
 					    if (strlen($pb_show_child_history = $po_request->getParameter("showChildHistory", pInteger))) {
-					        Session::setVar("ca_objects_history_showChildHistory", (bool)$pb_show_child_history);
+					        Session::setVar("{$vs_f}_showChildHistory", (bool)$pb_show_child_history);
 					    }
 					    
 						// set storage location
@@ -4563,7 +4568,7 @@ if (!$vb_batch) {
 						
 								$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
-									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+									$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 								} else {
 									// set any other defined interstitials
 									if (is_array($va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_bundle_settings, array()))) {
@@ -4591,7 +4596,7 @@ if (!$vb_batch) {
 							if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_type_idnew_0", pInteger)) {
 								$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
 								if ($this->numErrors()) {
-									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+									$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 								}
 							}
 						}
@@ -4605,7 +4610,7 @@ if (!$vb_batch) {
 								if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
 									$this->addRelationship('ca_occurrences', $vn_occurrence_id, $vn_occ_type_id);
 									if ($this->numErrors()) {
-										$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									}
 								}
 							}
@@ -6234,7 +6239,9 @@ if (!$vb_batch) {
                             );
                         }
                     }
-                } 
+                } elseif(!$this->getPrimaryKey()) {
+                    $this->set($vs_idno_fld, '');
+                }
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
 			
 			

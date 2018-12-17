@@ -150,6 +150,8 @@
 
 			if ($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) {
 				// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
+				$va_current_location_criteria = self::policy2bundleconfig(['policy' => caGetOption('policy', $pa_bundle_settings, $this->getDefaultHistoryTrackingCurrentValuePolicy())]);
+			
 				$va_bundle_settings = [];
 				foreach($va_current_location_criteria as $vs_table => $va_info) {
 					switch($vs_table) {
@@ -206,7 +208,7 @@
 				}
 
 				foreach(array(
-							'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
+							'policy', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection'
 						) as $vs_key) {
@@ -249,8 +251,6 @@
 		# ------------------------------------------------------
 		/**
 		 * Return default policy for table
-		 *
-		 * @param string $table Name of table
 		 *
 		 * @return string Policy name
 		 */
@@ -603,7 +603,7 @@
 		 * Return array with list of significant events in life cycle of item
 		 *
 		 * @param array $pa_bundle_settings The settings for a ca_objects_history editing BUNDLES
-		 * @param array $pa_options Array of options. Options include:
+		 * @param array $options Array of options. Options include:
 		 *		noCache = Don't use any cached history data. [Default is false]
 		 *		currentOnly = Only return history entries dates that include the current date. [Default is false]
 		 *		limit = Only return a maximum number of history entries. [Default is null; no limit]
@@ -612,35 +612,35 @@
 		 *
 		 * @return array A list of life cycle events, indexed by historic timestamp for date of occurrrence. Each list value is an array of history entries.
 		 */
-		public function getHistory($pa_options=null) {
+		public function getHistory($options=null) {
 			global $g_ui_locale;
-			if(!is_array($pa_options)) { $pa_options = []; }
+			if(!is_array($options)) { $options = []; }
 		
-			$policy = caGetOption('policy', $pa_options, $this->getDefaultHistoryTrackingCurrentValuePolicy());
-			if ($policy && !is_array($pa_bundle_settings = caGetOption('settings', $pa_options, null))) {
+			$policy = caGetOption('policy', $options, $this->getDefaultHistoryTrackingCurrentValuePolicy());
+			if ($policy && !is_array($pa_bundle_settings = caGetOption('settings', $options, null))) {
 				$pa_bundle_settings = self::policy2bundleconfig(['policy' => $policy]);
 			}
 			if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 
 			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 	
-			$row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
-			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $pa_options, ['id' => $row_id]));
+			$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $options, ['id' => $row_id]));
 		
-			$pb_no_cache 				= caGetOption('noCache', $pa_options, false);
+			$pb_no_cache 				= caGetOption('noCache', $options, false);
 			
 			// TODO: deal with proper clearing of cache
 			//if (!$pb_no_cache && ExternalCache::contains($vs_cache_key, "historyTrackingContent")) { return ExternalCache::fetch($vs_cache_key, "historyTrackingContent"); }
 		
-			$pb_display_label_only 		= caGetOption('displayLabelOnly', $pa_options, false);
+			$pb_display_label_only 		= caGetOption('displayLabelOnly', $options, false);
 		
-			$pb_get_current_only 		= caGetOption('currentOnly', $pa_options, false);
-			$pn_limit 					= caGetOption('limit', $pa_options, null);
+			$pb_get_current_only 		= caGetOption('currentOnly', $options, false);
+			$pn_limit 					= caGetOption('limit', $options, null);
 		
 			$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
 			$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 		
-			$pb_show_child_history 		= caGetOption('showChildHistory', $pa_options, false);
+			$pb_show_child_history 		= caGetOption('showChildHistory', $options, false);
 		
 			$vn_current_date = TimeExpressionParser::now();
 
@@ -661,85 +661,100 @@
 			// TODO: lot code is broken
 			
 			// Lots
-			if (is_array($path = Datamodel::getPath($table, 'ca_loans')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null)) && ($vn_lot_id = $qr->get('lot_id'))) {
+			$linking_table = null;
+			if (is_array($path = Datamodel::getPath($table, 'ca_object_lots')) && (((sizeof($path) == 2) && ($vn_lot_id = $qr->get('lot_id'))) || ((sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])))) {
+				
+				if ($linking_table) {
+					$va_lots = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				} else {
+					$va_lots = [$vn_lot_id];
+				}
+				if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null))) {
 					require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 			
-					$lot_ids = [$vn_lot_id];
 					if(caGetOption('ca_object_lots_includeFromChildren', $pa_bundle_settings, false)) {
 						$va_child_lots = $qr->get('ca_object_lots.lot_id', ['returnAsArray' => true]);
-						if ($pb_show_child_history) { $va_child_lots = array_merge($lot_ids, $va_child_lots); }
+						if ($pb_show_child_history) { $va_lots = array_merge($va_lots, $va_child_lots); }
 					}
+					
+					if($linking_table) {
+						$qr_lots = caMakeSearchResult($linking_table, $va_lots);
+					} else {
+						$qr_lots = caMakeSearchResult('ca_object_lots', $va_lots);
+					}
+					
+					$t_lot = new ca_object_lots();
+					$va_lot_type_info = $t_lot->getTypeList(); 
 					
 					$vs_default_display_template = '^ca_object_lots.preferred_labels.name (^ca_object_lots.idno_stub)';
 					$vs_display_template = $pb_display_label_only ? "" : caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
 								
 					$lots_table_num = Datamodel::getTableNum('ca_object_lots');
-					$rel_table_num = Datamodel::getTableNum($linking_table);
+					$rel_table_num = $linking_table ? Datamodel::getTableNum($linking_table): $lots_table_num;
 			
-					foreach($lot_ids as $vn_lot_id) {
-						$t_lot = new ca_object_lots($vn_lot_id);
-						if (!$t_lot->get('ca_object_lots.deleted')) {
-							$va_lot_type_info = $t_lot->getTypeList(); 
-							$vn_type_id = $t_lot->get('ca_object_lots.type_id');
-			
-							$vs_color = $va_lot_type_info[$vn_type_id]['color'];
-							if (!$vs_color || ($vs_color == '000000')) {
-								$vs_color = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
-							}
-							$vs_color = str_replace("#", "", $vs_color);
-							$va_dates = [];
-							$va_date_elements = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null);
-				   
-							if (!is_[$va_date_elements] && $va_date_elements) { $va_date_elements = [$va_date_elements]; }
-			
-							if (is_[$va_date_elements] && sizeof($va_date_elements)) {
-								foreach($va_date_elements as $vs_date_element) {
-									$va_date_bits = explode('.', $vs_date_element);
-									$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
-									$va_dates[] = [
-										'sortable' => $t_lot->get($vs_date_spec, array('sortable' => true)),
-										'bounds' => explode("/", $t_lot->get($vs_date_spec, array('sortable' => true))),
-										'display' => $t_lot->get($vs_date_spec)
-									];
-								}
-							}
-							if (!sizeof($va_dates)) {
-								$va_dates[] = [
-									'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($t_lot->getCreationTimestamp(null, array('timestampOnly' => true))),
-									'bounds' => array(0, $vn_date),
-									'display' => caGetLocalizedDate($vn_date)
-								];
-							}
-								
-							$relation_id = $qr_locations->get("{$linking_table}.relation_id");
-			
-							foreach($va_dates as $va_date) {
-								if (!$va_date['sortable']) { continue; }
-								if (!in_array($vn_type_id, $va_lot_types)) { continue; }
-								if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
-				
-								$o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
-								$va_history[$va_date['sortable']][] = [
-									'type' => 'ca_object_lots',
-									'id' => $vn_lot_id,
-									'display' => $t_lot->getWithTemplate($vs_display_template),
-									'color' => $vs_color,
-									'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
-									'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
-									'typename_plural' => $va_lot_type_info[$vn_type_id]['name_plural'],
-									'type_id' => $vn_type_id,
-									'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
-									'date' => $va_date['display'],
+					while($qr_lots->nextHit()) {
+						if ((string)$qr_lots->get('ca_object_lots.deleted') !== '0') { continue; }	// filter out deleted
 						
-									'table_num' => $table_num,
-									'row_id' => $row_id,
-									'current_table_num' => $collection_table_num,
-									'current_row_id' => $vn_collection_id,
-									'tracked_table_num' => $rel_table_num,
-									'tracked_row_id' => $relation_id
+						$vn_type_id = $qr_lots->get('ca_object_lots.type_id');
+		
+						$vs_color = $va_lot_type_info[$vn_type_id]['color'];
+						if (!$vs_color || ($vs_color == '000000')) {
+							$vs_color = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+						}
+						$vs_color = str_replace("#", "", $vs_color);
+						$va_dates = [];
+						$va_date_elements = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null);
+			   
+						if (!is_array($va_date_elements) && $va_date_elements) { $va_date_elements = [$va_date_elements]; }
+		
+						if (is_array($va_date_elements) && sizeof($va_date_elements)) {
+							foreach($va_date_elements as $vs_date_element) {
+								$va_date_bits = explode('.', $vs_date_element);
+								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
+								$va_dates[] = [
+									'sortable' => $qr_lots->get($vs_date_spec, array('sortable' => true)),
+									'bounds' => explode("/", $qr_lots->get($vs_date_spec, array('sortable' => true))),
+									'display' => $qr_lots->get($vs_date_spec)
 								];
 							}
+						}
+						if (!sizeof($va_dates)) {
+							$va_dates[] = [
+								'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_lots->getCreationTimestamp(null, array('timestampOnly' => true))),
+								'bounds' => array(0, $vn_date),
+								'display' => caGetLocalizedDate($vn_date)
+							];
+						}
+							
+						if ($linking_table) { 
+							$relation_id = $linking_table ? $qr_lots->get("{$linking_table}.relation_id") : $vn_lot_id;
+						}
+		
+						foreach($va_dates as $va_date) {
+							if (!$va_date['sortable']) { continue; }
+							if (!in_array($vn_type_id, $va_lot_types)) { continue; }
+							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+			
+							$o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
+							$va_history[$va_date['sortable']][] = [
+								'type' => 'ca_object_lots',
+								'id' => $vn_lot_id,
+								'display' => $qr_lots->getWithTemplate($vs_display_template),
+								'color' => $vs_color,
+								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
+								'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
+								'typename_plural' => $va_lot_type_info[$vn_type_id]['name_plural'],
+								'type_id' => $vn_type_id,
+								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+								'date' => $va_date['display'],
+					
+								'table_num' => $table_num,
+								'row_id' => $row_id,
+								'current_table_num' => $collection_table_num,
+								'current_row_id' => $vn_collection_id,
+								'tracked_table_num' => $rel_table_num,
+								'tracked_row_id' => $relation_id
+							];
 						}
 					}
 				}
@@ -1306,4 +1321,230 @@
 			return $va_history;
 		}
 		# ------------------------------------------------------
-	}
+			# ------------------------------------------------------
+ 	/**
+ 	 * TODO: Deprecate
+ 	 *
+ 	 * Returns HTML editor form bundle for ca_objects_history (object use history bundle)
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Options include:
+	 *		noCache = Don't use any cached history data. [Default is false]
+	 *		currentOnly = Only return history entries dates before or on the current date. [Default is false]
+	 *		limit = Only return a maximum number of history entries. [Default is null; no limit]
+	 *
+	 * @return string Rendered HTML bundle
+	 *
+	 * @uses ca_objects::getObjectHistory()
+ 	 */
+ 	public function getHistoryTrackingHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
+		require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
+		require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
+		
+ 		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
+		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
+
+		$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+		$o_view->setVar('t_subject', $this);
+		
+		//
+		// Occurrence update
+		//
+		$t_occ = new ca_occurrences();
+		$va_occ_types = $t_occ->getTypeList();
+		$va_occ_types_to_show =  caGetOption('add_to_occurrence_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
+		foreach($va_occ_types as $vn_type_id => $va_type_info) {
+			if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
+		}
+		
+		$o_view->setVar('occurrence_types', $va_occ_types);
+		$t_occ_rel = new ca_objects_x_occurrences();
+		$o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+		$o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+		
+		//
+		// Loan update
+		//
+		$t_loan_rel = new ca_loans_x_objects();
+		$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+		$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+
+		// Location update
+		$t_location_rel = new ca_objects_x_storage_locations();
+		$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+		$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+
+		//
+		// Location update
+		//
+		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_storage_locations'));
+		
+		switch($vs_mode) {
+			case 'ca_storage_locations':
+				$t_last_location = null; // TODO: Fix $this->getLastLocation(array());
+				
+				if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
+				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
+				
+				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
+				$o_view->setVar('location_history', []); // TODO: fix $this->getLocationHistory(array('template' => $vs_history_template)));
+				
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
+				$o_view->setVar('location_change_url',  null);
+				break;
+			case 'ca_movements':
+			default:
+				$t_last_movement = $this->getLastMovement(array('dateElement' => $vs_movement_date_element = $this->getAppConfig()->get('movement_storage_location_date_element')));
+				
+				if (!$vs_display_template) { $vs_display_template = "<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l> (^ca_movements.{$vs_movement_date_element})"; }
+				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
+				
+				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
+				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
+				
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
+				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
+				break;
+		}
+		
+		$h = $this->getHistory(array_merge($pa_bundle_settings, $pa_options));
+		$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
+		$o_view->setVar('history', $h);
+		
+		return $o_view->render('ca_history_tracking.php');
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns HTML form bundle for location tracking
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Options include:
+	 *			None yet.
+	 *
+	 * @return string Rendered HTML bundle
+ 	 */
+ 	public function getHistoryTrackingCurrentValueHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+ 		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		if (is_array($vs_display_template = caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined')))) {
+		    $vs_display_template = caExtractSettingValueByLocale($pa_bundle_settings, 'displayTemplate', $g_ui_locale);
+		}
+		if (is_array($vs_history_template = caGetOption('historyTemplate', $pa_bundle_settings, $vs_display_template))) {
+		     $vs_history_template = caExtractSettingValueByLocale($pa_bundle_settings, 'historyTemplate', $g_ui_locale);
+		}
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+		$o_view->setVar('t_subject', $this);
+		
+		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_storage_locations'));
+		
+		switch($vs_mode) {
+			case 'ca_storage_locations':
+				$t_last_location = $this->getLastLocation(array());
+				
+				if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
+				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
+				
+				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
+				$o_view->setVar('location_history', $h = $this->getLocationHistory(array('template' => $vs_history_template)));
+				
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
+				$o_view->setVar('location_change_url',  null);
+				break;
+			case 'ca_movements':
+			default:
+				$t_last_movement = $this->getLastMovement(array('dateElement' => $vs_movement_date_element = $this->getAppConfig()->get('movement_storage_location_date_element')));
+				
+				if (!$vs_display_template) { $vs_display_template = "<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l> (^ca_movements.{$vs_movement_date_element})"; }
+				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
+				
+				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
+				$o_view->setVar('location_history', $h = $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
+				
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_object_tracking_relationship_type'));
+				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
+				break;
+		}
+
+		return $o_view->render('ca_history_tracking_current_value.php');
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns HTML form bundle for location contents
+ 	 *
+ 	 * DEPRECATED - part of old location tracking system
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Options include:
+	 *			None yet.
+	 *
+	 * @return string Rendered HTML bundle
+ 	 */
+ 	public function getHistoryTrackingContentsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+ 		require_once(__CA_MODELS_DIR__."/ca_movements.php");
+ 		require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+ 		require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
+ 		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$vs_display_template		= caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined'));
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+		$o_view->setVar('t_subject', $this);
+		
+		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_movements'));
+		
+		// TODO: THIS IS BROKEN
+		$o_view->setVar('qr_result', ($qr_result = $this->getLocationContents($vs_mode)));
+		switch($vs_mode) {
+			case 'ca_storage_locations':
+				$o_view->setVar('t_subject_rel', new ca_objects_x_storage_locations());
+				break;
+			case 'ca_movements':
+			default:
+				$o_view->setVar('t_subject_rel', new ca_movements_x_objects());
+				break;
+		}
+		
+		return $o_view->render('ca_history_tracking_contents.php');
+ 	}
+}
