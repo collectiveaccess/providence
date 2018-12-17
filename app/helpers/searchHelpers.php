@@ -1629,7 +1629,7 @@
 		
 		if(is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
 			foreach($va_base_fields as $vs_k => $vs_v) {
-				if (!in_array($vs_k, $pa_allowed_sorts)) { unset($va_base_fields[$vs_k]); }
+				if (!in_array($vs_k, $pa_allowed_sorts) && !isset($config_sorts[$vs_k])) { unset($va_base_fields[$vs_k]); }
 			}
 		}
 		
@@ -1645,8 +1645,9 @@
 		if ($pn_display_id > 0) {
             $t_display =  new ca_bundle_displays($pn_display_id); 
             $va_display_bundles = array_map(function ($v) { return $v['bundle_name']; }, $t_display->getPlacements());	
-   
-			$va_base_fields = array_filter($va_base_fields, function($v, $k) use ($va_display_bundles) { 
+			$va_base_fields = array_filter($va_base_fields, function($v, $k) use ($va_display_bundles, $config_sorts) { 
+				
+				if (isset($config_sorts[$k])) { return true; }
 				foreach($va_display_bundles as $b) {
 					if (preg_match("!^{$b}!", $k) || preg_match("!^{$k}!", $b)) { return true; }
 				}
