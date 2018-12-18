@@ -845,7 +845,6 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				} else {
 					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_ca_objects')) {
 						if ($t_ui && method_exists($t_item, "getHistory") && ($display_info = $t_item->getInspectorHistoryTrackingDisplayPolicy())) {
-							// TODO: make policy displayed here configurable
 							if (is_array($history = $t_item->getHistory(['policy' => $display_info['policy'], 'limit' => 1, 'currentOnly' => true])) && (sizeof($history) > 0)) {
 								$current_value = array_shift(array_shift($history));
 

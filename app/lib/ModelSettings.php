@@ -142,4 +142,11 @@ class ModelSettings extends BaseSettings {
 		return $this->o_instance->update();
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function _getInstance() {
+		return $this->o_instance;
+	}
+	# ------------------------------------------------------
 }

@@ -1820,6 +1820,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								$va_additional_settings['useAppConfDefaults']['hideOnSelect'] = $va_to_hide_when_using_defaults;
 								break;
 							case 'ca_storage_locations_contents':
+							case 'ca_history_tracking_contents':
 								$va_additional_settings = array(
 									'list_format' => array(
 										'formatType' => FT_TEXT,
@@ -1838,7 +1839,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'displayType' => DT_SELECT,
 										'default' => '__default__',
 										'width' => "275px", 'height' => 1,
-										'useHistoryTrackingPolicyList' => true,
+										'useHistoryTrackingReferringPolicyList' => true,
 										'label' => _t('Use history tracking policy'),
 										'description' => ''
 									),

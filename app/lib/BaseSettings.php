@@ -202,7 +202,7 @@
 			$vs_name = 				caGetOption('name', $pa_options, null);
 			$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 			
-			$va_options = array('request' => $po_request, 'id_prefix' => $vs_id);
+			$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null));
 			foreach($va_settings as $vs_setting => $va_setting_info) {
 				$va_options['id'] = "{$vs_id}_{$vs_setting}";
 				$va_options['label_id'] = $va_options['id'].'_label';
@@ -463,7 +463,15 @@
 							}
 						}
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
-					} elseif (($vs_rel_table = $va_properties['useRelationshipTypeList']) || ($vb_locale_list = (bool)$va_properties['useLocaleList']) || ($vs_list_code = $va_properties['useList']) || ($vb_show_lists = ((bool)$va_properties['showLists'] || (bool)$va_properties['showVocabularies']))) {
+					} elseif (
+						($vs_rel_table = $va_properties['useRelationshipTypeList']) || 
+						($vb_locale_list = (bool)$va_properties['useLocaleList']) || 
+						($vs_list_code = $va_properties['useList']) || 
+						($vb_show_lists = ((bool)$va_properties['showLists'] || 
+						(bool)$va_properties['showVocabularies'])) || 
+						($vb_policy_list = (bool)$va_properties['useHistoryTrackingPolicyList']) ||
+						($vb_referring_policy_list = (bool)$va_properties['useHistoryTrackingReferringPolicyList'])
+					) {
 						if ($vs_rel_table) {
 							$t_rel = new ca_relationship_types();
 							$va_rels = $t_rel->getRelationshipInfo($vs_rel_table);
@@ -480,6 +488,16 @@
 							if ($vb_locale_list) {
  								include_once(__CA_MODELS_DIR__.'/ca_locales.php');
  								$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
+ 							} elseif($vb_policy_list) {
+ 								include_once(__CA_MODELS_DIR__.'/ca_objects.php');
+ 								$va_rel_opts = array_flip(array_map(function($v) {
+ 									return $v['name'];
+ 								}, ca_objects::getHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
+ 							} elseif($vb_referring_policy_list) {
+ 								include_once(__CA_MODELS_DIR__.'/ca_objects.php');
+ 								$va_rel_opts = array_flip(array_map(function($v) {
+ 									return $v['name'];
+ 								}, ca_objects::getDependentHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
 							} else {
 								if ($vb_show_lists) {
  									include_once(__CA_MODELS_DIR__.'/ca_lists.php');
