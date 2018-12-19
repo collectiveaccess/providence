@@ -365,9 +365,9 @@ class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
-		$this->BUNDLES['ca_history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking value'));
-		$this->BUNDLES['ca_history_tracking'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
-		$this->BUNDLES['ca_history_tracking_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking value'));
+		$this->BUNDLES['history_tracking'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 	}
 	# ------------------------------------------------------
 }

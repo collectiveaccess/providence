@@ -389,9 +389,9 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 		
-		$this->BUNDLES['ca_history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking value'));
-		$this->BUNDLES['ca_history_tracking'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
-		$this->BUNDLES['ca_history_tracking_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking value'));
+		$this->BUNDLES['history_tracking'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 	}
 	# ------------------------------------------------------
 	/**

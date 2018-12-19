@@ -540,12 +540,6 @@
 				
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 				
-				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-					$table = $this->tableName();
-					$this->deriveHistoryTrackingCurrentValue();
-					if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
-				}
-				
 				return $vn_id;
 			} else {
 				// push all attributes onto errored list
@@ -587,13 +581,6 @@
 				if ($this->numErrors() > 0) {
 					return false;
 				}
-				
-				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-					$table = $this->tableName();
-					$this->deriveHistoryTrackingCurrentValue();
-					if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
-				}
-				
 				return true;
 			}
 			
@@ -613,14 +600,6 @@
 			
 			$vn_id = $this->getPrimaryKey();
 			
-				
-			// We need to handle updating the current location _before_ we delete the record
-			// in case the record has dependent current values as dependencies cannot be calculated after the row is removed.
-			if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-				$table = $this->tableName();
-				$this->deriveHistoryTrackingCurrentValue(['row_id' => $vn_id]);
-				if ($table::isHistoryTrackingCriterion($table)) {  $this->updateDependentHistoryTrackingCurrentValues(['row_id' => $vn_id, 'mode' => 'delete']); }
-			}
 			if(($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) && (!$this->hasField('deleted') || caGetOption('hard', $pa_options, false))) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("

@@ -210,7 +210,7 @@
 				}
 
 				foreach(array(
-							'policy', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
+							'policy', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection'
 						) as $vs_key) {
@@ -386,7 +386,6 @@
 				}
 			}
 			
-			
 			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance']))) {
 				throw new ApplicationException(_t('Invalid subject row id'));
 			}
@@ -429,8 +428,7 @@
 		static public function getHistoryTrackingCurrentValuePolicies($table, $options=null) {
 			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
 			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
-				// No policies are configured
-				return [];
+				return []; // No policies are configured
 			}
 			
 			$policies = [];
@@ -489,8 +487,7 @@
 		static public function getTablesWithHistoryTrackingPolicies($options=null) {
 			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
 			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
-				// No policies are configured
-				return [];
+				return [];	// No policies are configured
 			}
 			
 			$tables = [];
@@ -598,8 +595,20 @@
 		 *
 		 */
 		static public function isHistoryTrackingCriterion($table) {
-			// TODO: analyze relationships to return rel tables as criteria
-			return in_array($table, ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements']);
+			$basetables = ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
+			
+			if(sizeof($manyrels = Datamodel::getManyToOneRelations($table)) && !in_array($table, $basetables)) {
+				$basetables[] = $table;
+			}
+			$onerels = (in_array($table, $basetables)) ? Datamodel::getOneToManyRelations($table) : [];	
+			
+			$manyrels_tablenames = array_map(function($v) use ($table) {
+				if ($v['one_table'] !== $table) { return $v['one_table']; }
+				return $v['many_table'];
+			}, $manyrels);
+			$reltables = array_merge(array_keys($onerels), array_values($manyrels_tablenames));
+	
+			return in_array($table, array_unique(array_merge($reltables, $basetables)));
 		}
 		# ------------------------------------------------------
 		/**
@@ -620,6 +629,8 @@
 			if(!is_array($options)) { $options = []; }
 		
 			$policy = caGetOption('policy', $options, $this->getDefaultHistoryTrackingCurrentValuePolicy());
+			$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+			
 			if ($policy && !is_array($pa_bundle_settings = caGetOption('settings', $options, null))) {
 				$pa_bundle_settings = self::policy2bundleconfig(['policy' => $policy]);
 			}
@@ -627,7 +638,6 @@
 
 			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 	
-			$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $options, ['id' => $row_id]));
 		
 			$pb_no_cache 				= caGetOption('noCache', $options, false);
@@ -663,7 +673,7 @@
 		
 			// Lots
 			$linking_table = null;
-			if (is_array($path = Datamodel::getPath($table, 'ca_object_lots')) && (((sizeof($path) == 2) && ($vn_lot_id = $qr->get('lot_id'))) || ((sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])))) {
+			if (is_array($path = Datamodel::getPath($table, 'ca_object_lots')) && (((sizeof($path) == 2) && ($vn_lot_id = $qr->get("{$table}.lot_id"))) || ((sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])))) {
 				
 				if ($linking_table) {
 					$va_lots = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
@@ -679,9 +689,9 @@
 					}
 					
 					if($linking_table) {
-						$qr_lots = caMakeSearchResult($linking_table, $va_lots);
+						$qr_lots = caMakeSearchResult($linking_table, $va_lots, ['transaction' => $this->getTransaction()]);
 					} else {
-						$qr_lots = caMakeSearchResult('ca_object_lots', $va_lots);
+						$qr_lots = caMakeSearchResult('ca_object_lots', $va_lots, ['transaction' => $this->getTransaction()]);
 					}
 					
 					$t_lot = new ca_object_lots();
@@ -769,7 +779,7 @@
 					if ($pb_show_child_history) { $va_loans = array_merge($va_loans, $va_child_loans); }
 				}
 				if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans)) {	
-					$qr_loans = caMakeSearchResult($linking_table, $va_loans);
+					$qr_loans = caMakeSearchResult($linking_table, $va_loans, ['transaction' => $this->getTransaction()]);
 					require_once(__CA_MODELS_DIR__."/ca_loans.php");
 					$t_loan = new ca_loans();
 					$va_loan_type_info = $t_loan->getTypeList(); 
@@ -867,7 +877,7 @@
 					if ($pb_show_child_history) { $va_movements = array_merge($va_movements, $va_child_movements); }
 				}
 				if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements)) {	
-					$qr_movements = caMakeSearchResult($linking_table, $va_movements);
+					$qr_movements = caMakeSearchResult($linking_table, $va_movements, ['transaction' => $this->getTransaction()]);
 					require_once(__CA_MODELS_DIR__."/ca_movements.php");
 					$t_movement = new ca_movements();
 					$va_movement_type_info = $t_movement->getTypeList(); 
@@ -972,7 +982,7 @@
 						}
 					}
 			
-					$qr_occurrences = caMakeSearchResult($linking_table, $va_occurrences);
+					$qr_occurrences = caMakeSearchResult($linking_table, $va_occurrences, ['transaction' => $this->getTransaction()]);
 			
 					$va_date_elements_by_type = [];
 					foreach($va_occurrence_types as $vn_type_id) {
@@ -1078,7 +1088,7 @@
 						}
 					}
 			
-					$qr_entities = caMakeSearchResult($linking_table, $va_entities);
+					$qr_entities = caMakeSearchResult($linking_table, $va_entities, ['transaction' => $this->getTransaction()]);
 			
 					$va_date_elements_by_type = [];
 					foreach($va_entity_types as $vn_type_id) {
@@ -1176,7 +1186,7 @@
 					if($pb_show_child_history) { $va_collections = array_merge($va_collections, $va_child_collections); }
 				}
 				if(is_array($va_collection_types = caGetOption('ca_collections_showTypes', $pa_bundle_settings, null)) && is_array($va_collections)) {	
-					$qr_collections = caMakeSearchResult($linking_table, $va_collections);
+					$qr_collections = caMakeSearchResult($linking_table, $va_collections, ['transaction' => $this->getTransaction()]);
 					require_once(__CA_MODELS_DIR__."/ca_collections.php");
 					$t_collection = new ca_collections();
 					$va_collection_type_info = $t_collection->getTypeList(); 
@@ -1286,7 +1296,7 @@
 					$vs_name_singular = $t_location->getProperty('NAME_SINGULAR');
 					$vs_name_plural = $t_location->getProperty('NAME_PLURAL');
 			
-					$qr_locations = caMakeSearchResult($linking_table, $va_locations);
+					$qr_locations = caMakeSearchResult($linking_table, $va_locations, ['transaction' => $this->getTransaction()]);
 			
 					$vs_default_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)';
 					$vs_default_child_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
@@ -1390,7 +1400,7 @@
 			
 				// get children
 				if(caGetOption(['deaccession_includeFromChildren'], $pa_bundle_settings, false)) {
-					if (is_array($va_child_object_ids = $qr->get("ca_objects.children.object_id", ['returnAsArray' => true])) && sizeof($va_child_object_ids) && ($q = caMakeSearchResult('ca_objects', $va_child_object_ids))) {
+					if (is_array($va_child_object_ids = $qr->get("ca_objects.children.object_id", ['returnAsArray' => true])) && sizeof($va_child_object_ids) && ($q = caMakeSearchResult('ca_objects', $va_child_object_ids, ['transaction' => $this->getTransaction()]))) {
 						while($q->nextHit()) {
 							if(!$q->get('is_deaccessioned')) { continue; }
 							$vn_date = $q->get('deaccession_date', array('sortable'=> true));
@@ -1432,17 +1442,13 @@
 		}
 		# ------------------------------------------------------
 		/**
-		 * Return array with list of current contents
+		 * Return array with list of current contents for currently loaded row
 		 *
-		 * @param array $pa_bundle_settings The settings for a ca_objects_history editing BUNDLES
+		 * @param string $policy 
 		 * @param array $options Array of options. Options include:
-		 *		noCache = Don't use any cached history data. [Default is false]
-		 *		currentOnly = Only return history entries dates that include the current date. [Default is false]
-		 *		limit = Only return a maximum number of history entries. [Default is null; no limit]
-		 *      showChildHistory = [Default is false]
 		 *		row_id = 
 		 *
-		 * @return array 
+		 * @return SearchResult 
 		 */
 		public function getContents($policy, $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
@@ -1454,7 +1460,7 @@
 			$row = array_shift($values);
 	
 			if(!($table_name = Datamodel::getTableName($row['table_num']))) { return null; }
-			return caMakeSearchResult($table_name, $ids);
+			return caMakeSearchResult($table_name, $ids, ['transaction' => $this->getTransaction()]);
 		}
 		# ------------------------------------------------------
 		/**
@@ -1568,6 +1574,8 @@
 		/**
 		 * Returns HTML form bundle for location tracking
 		 *
+		 * TODO: FIX - BROKEN
+		 *
 		 * @param HTTPRequest $po_request The current request
 		 * @param string $ps_form_name
 		 * @param string $ps_placement_code
@@ -1671,12 +1679,47 @@
 			
 			$o_view->setVar('qr_result', ($qr_result = $this->getContents($policy)));
 			
-			
-			
 			$o_view->setVar('t_subject_rel', new ca_storage_locations());
 			
 		
 			return $o_view->render('ca_history_tracking_contents.php');
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+			switch($ps_bundle_name) {
+				case 'ca_objects_location':
+				case 'ca_objects_location_date':
+				case 'history_tracking_current_value':
+				case 'history_tracking_current_value_date':
+					if (method_exists($this, "getHistory")) {
+						
+						//
+						// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
+						//
+						$policy = caGetOption('policy', $pa_options, null);
+						if (is_array($h = $this->getHistory(array('limit' => 1, 'currentOnly' => true, 'policy' => $policy, 'row_id' => $pn_row_id))) && (sizeof($h) > 0)) {
+							$va_current_location = array_shift(array_shift($h));
+						
+							$va_path_components = caGetOption('pathComponents', $pa_options, null);
+							if (is_array($va_path_components) && $va_path_components['subfield_name']) {
+								if (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
+									return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
+								}
+							} 
+							return ($ps_bundle_name == 'ca_objects_location_date') ? $va_current_location['date'] : $va_current_location['display'];
+						}
+					} elseif (method_exists($this, "getLastLocationForDisplay")) {
+						// If no ca_objects_history bundle is configured then display the last storage location
+						return $this->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_", ['object_id' => $pn_row_id]);
+					}
+					return '';
+					break;
+			}
+		
+			return null;
 		}
 		# ------------------------------------------------------
 	}

@@ -565,9 +565,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_objects_location_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current location date'));
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
 		
-		$this->BUNDLES['ca_history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking value'));
-		$this->BUNDLES['ca_history_tracking'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
-		$this->BUNDLES['ca_history_tracking_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking value'));
+		$this->BUNDLES['history_tracking'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 		
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 		$this->BUNDLES['ca_object_checkouts'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object checkouts'));
@@ -1144,44 +1144,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$o_view->setVar('t_subject', $this);
 
 		return $o_view->render('ca_object_circulation_status_html.php');
-	}
-	# --------------------------------------------------------------------------------------------
-	#
-	# --------------------------------------------------------------------------------------------
-	/**
-	 *
-	 */
-	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
-		switch($ps_bundle_name) {
-			case 'ca_objects_location':
-			case 'ca_history_tracking_current_value':
-			case 'ca_objects_location_date':
-				
-				if ((method_exists($this, "getHistory")) && (is_array($va_bundle_settings = $this->_processHistoryBundleSettings(['useAppConfDefaults' => true]))) && (sizeof($va_bundle_settings) > 0)) {
-					$t_object = new ca_objects($pn_row_id);
-					//
-					// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
-					//
-					if (is_array($va_history = $t_object->getHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
-						$va_current_location = array_shift(array_shift($va_history));
-                        
-                        $va_path_components = caGetOption('pathComponents', $pa_options, null);
-                        if (is_array($va_path_components) && $va_path_components['subfield_name']) {
-                            if (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
-                                return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
-                            }
-                        } 
-                        return ($ps_bundle_name == 'ca_objects_location_date') ? $va_current_location['date'] : $va_current_location['display'];
-					}
-				} elseif (method_exists($this, "getLastLocationForDisplay")) {
-					// If no ca_objects_history bundle is configured then display the last storage location
-					return $this->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_", ['object_id' => $pn_row_id]);
-				}
-				return '';
-				break;
-		}
-		
-		return null;
 	}
 	# ------------------------------------------------------
 }
