@@ -146,6 +146,25 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * C
+		 *
+		 * @param array $options Options include:
+		 *		policy = Name of policy to apply. If omitted, legacy 'current_location_criteria' configuration will be used if present, otherwise a null value will be returned. [Default is null]
+		 *
+		 * @return array Element array or null if not available.
+		 */
+		static public function getHistoryTrackingCurrentValuePolicyElement($policy, $table, $type=null, $options=null) {
+			if (is_array($policy = self::getHistoryTrackingCurrentValuePolicy($policy)) && is_array($map = $policy['elements']) && is_array($map[$table])) {
+				if(is_array($map[$table][$type])) {
+					return $map[$table][$type];
+				} elseif(is_array($map[$table]['__default__'])) {
+					return $map[$table]['__default__'];
+				}	
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
 		 * TODO: deprecate?
 		 */
 		private function _processHistoryBundleSettings($pa_bundle_settings) {
@@ -594,8 +613,22 @@
 		/**
 		 *
 		 */
+		static public function tablesTakeHistoryTracking() {
+			return ['ca_objects', 'ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		static public function historyTrackingBaseTables() {
+			return ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
 		static public function isHistoryTrackingCriterion($table) {
-			$basetables = ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
+			$basetables = self::historyTrackingBaseTables();
 			
 			if(sizeof($manyrels = Datamodel::getManyToOneRelations($table)) && !in_array($table, $basetables)) {
 				$basetables[] = $table;
@@ -1693,7 +1726,7 @@
 				case 'ca_objects_location':
 				case 'ca_objects_location_date':
 				case 'history_tracking_current_value':
-				case 'history_tracking_current_value_date':
+				case 'history_tracking_current_date':
 					if (method_exists($this, "getHistory")) {
 						
 						//
@@ -1709,12 +1742,9 @@
 									return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
 								}
 							} 
-							return ($ps_bundle_name == 'ca_objects_location_date') ? $va_current_location['date'] : $va_current_location['display'];
+							return (in_array($ps_bundle_name, ['ca_objects_location_date', 'history_tracking_current_date'])) ? $va_current_location['date'] : $va_current_location['display'];
 						}
-					} elseif (method_exists($this, "getLastLocationForDisplay")) {
-						// If no ca_objects_history bundle is configured then display the last storage location
-						return $this->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_", ['object_id' => $pn_row_id]);
-					}
+					} 
 					return '';
 					break;
 			}

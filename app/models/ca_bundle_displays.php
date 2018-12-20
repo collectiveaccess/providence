@@ -43,6 +43,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_display_type_restrictions.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 define('__CA_BUNDLE_DISPLAY_NO_ACCESS__', 0);
 define('__CA_BUNDLE_DISPLAY_READ_ACCESS__', 1);
@@ -1362,7 +1363,7 @@ if (!$pb_omit_editing_info) {
 
 		}
 		
-		if (true) {
+		if (method_exists($t_instance, 'tablesTakeHistoryTracking') && in_array($vs_table, $vs_table::tablesTakeHistoryTracking())) {
 			$va_additional_settings = array(
 				'format' => array(
 					'formatType' => FT_TEXT,
@@ -1402,6 +1403,26 @@ if (!$pb_omit_editing_info) {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_history_tracking_current_value",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$vs_bundle = $vs_table.'.history_tracking_current_date';
+			$vs_label = _t('History tracking current value date');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_history_tracking_current_date'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('History tracking current value date')."</div>";
+			$vs_description = _t('Current value date for history tracking policy');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_history_tracking_current_date",
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
