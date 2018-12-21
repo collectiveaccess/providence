@@ -94,6 +94,7 @@
 	) {
 		array_unshift($va_display_list, [
 			'display' => _t('Media'),
+			'bundle' => "ca_object_representations.media.{$version}",
 			'bundle_name' => "ca_object_representations.media.{$version}",
 		]);
 	}
@@ -111,8 +112,6 @@
 		}
 	}
 	
-
-	
 	$vn_line = 2 ;
 
 	// Other lines
@@ -127,7 +126,8 @@
 		// default to automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
 		$o_sheet->getRowDimension($vn_line)->setRowHeight(-1);
 
-		foreach($va_display_list as $vn_placement_id => $va_info) {
+		foreach($va_display_list as $va_info) {
+		    $vn_placement_id = $va_info['placement_id'];
 			if (
 				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
 				&&
@@ -168,7 +168,6 @@
 
 				}
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
-				
 				$o_sheet->setCellValue($vs_supercol.$vs_column.$vn_line, html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5));
 				// We trust the autosizing up to a certain point, but
 				// we want column widths to be finite :-).
@@ -190,7 +189,7 @@
 
 		$vn_line++;
 	}
-
+	
 	// set column width to auto for all columns where we haven't set width manually yet
 	foreach(range('A','Z') as $vs_chr) {
 		if ($o_sheet->getColumnDimension($vs_chr)->getWidth() == -1) {

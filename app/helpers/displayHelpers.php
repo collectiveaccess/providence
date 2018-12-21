@@ -2212,7 +2212,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=null) {
 	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
-		
+
 		$pb_omit_units = caGetOption('omitUnits', $pa_options, false);
 		
 		$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
