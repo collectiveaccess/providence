@@ -1426,6 +1426,49 @@ if (!$pb_omit_editing_info) {
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
+			
+			$va_additional_settings = array(
+				'format' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				),
+				'policy' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'default' => '__default__',
+					'width' => "275px", 'height' => 1,
+					'useHistoryTrackingReferringPolicyList' => true,
+					'label' => _t('Use history tracking policy'),
+					'description' => ''
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.history_tracking_contents';
+			$vs_label = _t('History tracking current contents');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_history_tracking_contents'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('History tracking contents')."</div>";
+			$vs_description = _t('Current value date for history tracking policy');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_history_tracking_contents",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
 		}
 		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {

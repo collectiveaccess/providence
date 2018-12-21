@@ -126,6 +126,7 @@
 						foreach($types as $type) {
 							if(!is_array($config)) { break; }
 							$bundle_settings["{$table}_{$type}_displayTemplate"] = $config['template'];
+							$bundle_settings["{$table}_{$type}_color"] = $config['color'];
 							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$type]));
 						
 							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
@@ -241,7 +242,7 @@
 				}
 				$pa_bundle_settings = $va_bundle_settings;
 			}
-		
+			
 			return $pa_bundle_settings;
 		}
 		# ------------------------------------------------------
@@ -392,7 +393,7 @@
 			}
 			
 			if(!Datamodel::getTableName($values['current_table_num']) || !Datamodel::getTableName($values['tracked_table_num'])) {
-				throw new ApplicationException(_t('Invalid table specification'));
+				throw new ApplicationException(_t('Invalid table specification for policy %1', $policy));
 			}
 			
 			if (!caGetOption('dontCheckRowIDs', $options, false)) {
@@ -1092,7 +1093,7 @@
 						
 								'table_num' => $table_num,
 								'row_id' => $row_id,
-								'current_table_num' => $occurrence_table_num,
+								'current_table_num' => $occ_table_num,
 								'current_row_id' => $vn_occurrence_id,
 								'current_type_id' => $vn_type_id,
 								'tracked_table_num' => $rel_table_num,
@@ -1620,7 +1621,7 @@
 		 */
 		public function getHistoryTrackingCurrentValueHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
 			global $g_ui_locale;
-		
+		    return '';
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 			if(!is_array($pa_options)) { $pa_options = array(); }
@@ -1747,6 +1748,20 @@
 					} 
 					return '';
 					break;
+				case 'history_tracking_contents':
+					if (method_exists($this, "getContents")) {
+					    $policy = caGetOption('policy', $pa_options, null);
+						if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id])) { 
+							$contents = [];
+							$p = self::getHistoryTrackingCurrentValuePolicy($policy);
+							while($qr->nextHit()) {
+							    $contents[] = $qr->getWithTemplate("<l>^".$p['table'].".preferred_labels</l>");
+							}
+							return join("; ", $contents);
+						}
+					}
+					return null;
+				    break;
 			}
 		
 			return null;

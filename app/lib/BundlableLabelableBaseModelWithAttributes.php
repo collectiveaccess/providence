@@ -352,7 +352,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
 			$table = $this->tableName();
 			$this->deriveHistoryTrackingCurrentValue();
-			if ($table::isHistoryTrackingCriterion($table)) { print "up $table"; $this->updateDependentHistoryTrackingCurrentValues(); }
+			if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
 		}
 
 		return $vn_rc;
@@ -1825,7 +1825,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available for storage locations
 					case 'ca_storage_locations_contents':		// objects in storage location via ca_objects_x_storage_locations or ca_movements_x_objects
-					case 'ca_history_tracking_contents':
+					case 'history_tracking_contents':
 						if ($vb_batch) { return null; } 				// not supported in batch mode
 						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_storage_locations')) { break; }
