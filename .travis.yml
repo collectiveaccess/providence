@@ -32,6 +32,8 @@ install:
   - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=support@collectiveaccess.org > install.log
 
 before_script:
+  – composer self-update
+  – composer update
   # Go into the tests directory to run the tests
   - cd tests/
 
