@@ -211,12 +211,12 @@ class Session {
 
 		if (isset($_COOKIE[session_name()])) {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
+			@session_destroy();
 		}
 		// Delete session data
 		unset($_COOKIE[Session::$name]);
 		setCookie(Session::$name, "", time()-3600);
 		ExternalCache::delete($session_id, 'SessionVars');
-		session_destroy();
 	}
 	# ----------------------------------------
 	/**
