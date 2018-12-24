@@ -23,7 +23,6 @@
     "league/flysystem-aws-s3-v3": ">=1.0.0",
     "league/flysystem-webdav": ">=1.0.0",
     "league/flysystem-ziparchive": ">=1.0.0",
-    "guzzlehttp/psr7": "^1.4",
-    "spomky-labs/jose": "^7.1"
+    "guzzlehttp/psr7": "^1.4"
   }
 }
