@@ -23,10 +23,6 @@
     "league/flysystem-aws-s3-v3": ">=1.0.0",
     "league/flysystem-webdav": ">=1.0.0",
     "league/flysystem-ziparchive": ">=1.0.0",
-    "spatie/flysystem-dropbox": ">=1.0.0",
-    "league/climate": ">=1.0.0",
-    "okta/sdk": ">=1.0.0",
-    "okta/jwt-verifier": "^0.2.1",
     "guzzlehttp/psr7": "^1.4",
     "spomky-labs/jose": "^7.1"
   }
