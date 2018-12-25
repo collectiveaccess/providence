@@ -1450,9 +1450,9 @@ if (!$pb_omit_editing_info) {
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
-			$vs_bundle = $vs_table.'.history_tracking_contents';
+			$vs_bundle = $vs_table.'.history_tracking_current_contents';
 			$vs_label = _t('History tracking current contents');
-			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_history_tracking_contents'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('History tracking contents')."</div>";
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_history_tracking_current_contents'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('History tracking contents')."</div>";
 			$vs_description = _t('Current value date for history tracking policy');
 			
 			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
@@ -1465,7 +1465,7 @@ if (!$pb_omit_editing_info) {
 			
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
-					"#bundleDisplayEditorBundle_history_tracking_contents",
+					"#bundleDisplayEditorBundle_history_tracking_current_contents",
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
