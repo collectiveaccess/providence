@@ -230,7 +230,7 @@
 				}
 
 				foreach(array(
-							'policy', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
+							'policy', 'displayMode', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection'
 						) as $vs_key) {
@@ -1527,6 +1527,13 @@
 			$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
 			$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 		
+		
+			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
+				return null;
+			}
+			$o_view->setVar('policy', $policy);
+			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
+			
 			$o_view->setVar('id_prefix', $ps_form_name);
 			$o_view->setVar('placement_code', $ps_placement_code);
 
@@ -1563,39 +1570,7 @@
 			$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 			$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 
-			//
-			// Location update
-			//
-			$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_storage_locations'));
-		
-			switch($vs_mode) {
-				case 'ca_storage_locations':
-					$t_last_location = null; // TODO: Fix $this->getLastLocation(array());
-				
-					if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
-					$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
-				
-					if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-					$o_view->setVar('location_history', []); // TODO: fix $this->getLocationHistory(array('template' => $vs_history_template)));
-				
-					$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
-					$o_view->setVar('location_change_url',  null);
-					break;
-				case 'ca_movements':
-				default:
-					$t_last_movement = $this->getLastMovement(array('dateElement' => $vs_movement_date_element = $this->getAppConfig()->get('movement_storage_location_date_element')));
-				
-					if (!$vs_display_template) { $vs_display_template = "<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l> (^ca_movements.{$vs_movement_date_element})"; }
-					$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
-				
-					if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-					$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
-				
-					$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
-					$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
-					break;
-			}
-		
+			
 			$h = $this->getHistory(array_merge($pa_bundle_settings, $pa_options));
 			$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
 			$o_view->setVar('history', $h);
@@ -1630,7 +1605,13 @@
 			if (is_array($vs_history_template = caGetOption('historyTemplate', $pa_bundle_settings, $vs_display_template))) {
 				 $vs_history_template = caExtractSettingValueByLocale($pa_bundle_settings, 'historyTemplate', $g_ui_locale);
 			}
-		
+			
+			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
+				return null;
+			}
+			$o_view->setVar('policy', $policy);
+			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
+			
 			$o_view->setVar('id_prefix', $ps_form_name);
 			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
@@ -1640,19 +1621,16 @@
 			$o_view->setVar('t_subject', $this);
 		
 			$h = $x = $this->getHistory();
-			
-				$last_location =array_shift(array_shift($x));// $this->getLastLocation(array());
-				if (!($t_last_location = Datamodel::getInstance($last_location['current_table_num']))) { throw new ApplicationException(_t('Invalid table')); }
-				$t_last_location->load($last_location['current_row_id']);
-				
-				if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
-				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
-			
-				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-				$o_view->setVar('location_history', $h);
-			
-				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
-				$o_view->setVar('location_change_url',  null);
+		
+			$last_location = array_shift(array_shift($x));// $this->getLastLocation(array());
+			if (!($t_last_location = Datamodel::getInstance($last_location['tracked_table_num']))) { throw new ApplicationException(_t('Invalid table')); }
+			$t_last_location->load($last_location['tracked_row_id']);
+			$vs_display_template = null;
+			if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
+			$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
+		
+			if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
+			$o_view->setVar('history', $x);
 
 			return $o_view->render('history_tracking_current_value.php');
 		}
@@ -1678,6 +1656,8 @@
 			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
 				return null;
 			}
+			$o_view->setVar('policy', $policy);
+			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
 			
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		

@@ -1774,19 +1774,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getComponentListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
-					# -------------------------------
-					// This bundle is only available for objects
-					case 'ca_objects_location':		// storage location via ca_objects_x_storage_locations or ca_movements_x_objects
-					case 'history_tracking_current_value':
-						if (!$this->getPrimaryKey() && !$vb_batch) { return null; }	// not supported for new records
-						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
-					
-						$vs_element .= $this->getHistoryTrackingCurrentValueHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
-						
-						break;
-					# -------------------------------
-					// This bundle is only available for objects
+					# -------------------------------s
 					case 'ca_objects_history':		// summary of object accession, movement, exhibition and deaccession
+					case 'ca_objects_location':		// storage location via ca_objects_x_storage_locations or ca_movements_x_objects
 					case 'history_tracking_chronology':
 						if (!$this->getPrimaryKey() && !$vb_batch) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
@@ -4538,33 +4528,8 @@ if (!$vb_batch) {
 						}
 						break;
 					# -------------------------------
-					// This bundle is only available for objects
-					case 'ca_objects_location':
-					case 'history_tracking_current_value':
-						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-						
-						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
-							if (
-								($vs_relationship_type = $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'))
-								&& 
-								(is_array($va_relationship_type_ids = caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', [$vs_relationship_type])))
-								&&
-								(sizeof($va_relationship_type_ids) > 0)
-							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, array_shift($va_relationship_type_ids), null, null, null, null, array('allowDuplicates' => true));
-								if ($this->numErrors()) {
-									$po_request->addActionErrors($this->errors(), $vs_f, 'general');
-								}
-							} else {
-								$o_error = new ApplicationError(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
-								$po_request->addActionError($o_error, $vs_f, 'general');
-							}
-						}
-						
-						break;
-					# -------------------------------
-					// This bundle is only available for objects
 					case 'ca_objects_history':
+					case 'ca_objects_location':
 					case 'history_tracking_chronology':
 						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }

@@ -34,7 +34,7 @@
 
 	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
 	
-	$va_history					= $this->getVar('history');
+	$history					= $this->getVar('history');
 	
 	$vs_mode					= $this->getVar('mode');
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
@@ -45,11 +45,20 @@
 	$va_occ_types  				= $this->getVar('occurrence_types');
 	$va_occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $va_occ_types));
 	
+	$policy  					= $this->getVar('policy');
+	$policy_info  				= $this->getVar('policy_info');
+	
+	$display_mode 				= caGetOption('displayMode', $va_settings, null);
+	
 	if (!($vs_add_label = $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 	
     if (!$this->request->isAjax()) {
 	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings);
 	}
+	
+	
+	// TODO: fix
+	$vs_mode = 'ca_storage_locations';
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
@@ -94,19 +103,78 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 <?php
 	}
 }
-	
-	foreach($va_history as $vn_date => $va_history_entries_for_date) {
-		foreach($va_history_entries_for_date as $vn_i => $va_history_entry) {
+
+switch($display_mode) {
+	case 'tabs':
 ?>
-			<div class="caUseHistoryEntry <?php print ($vn_i == 0) ? 'caUseHistoryEntryFirst' : ''; ?>">
-				<?php print $va_history_entry['icon']; ?>
-				<div><?php print $va_history_entry['display']; ?></div>
-				<div class="caUseHistoryDate"><?php print $va_history_entry['date']; ?></div>
-				<br class="clear"/>
+			<div id="<?php print $vs_id_prefix; ?>Container" class="editorHierarchyBrowserContainer">		
+				<div  id="<?php print $vs_id_prefix; ?>Tabs">
+					<ul>
+						<li><a href="#<?php print $vs_id_prefix; ?>Tabs-location"><span><?php print _t('Current %1', mb_strtolower($policy_info['name'])); ?></span></a></li>
+						<li><a href="#<?php print $vs_id_prefix; ?>Tabs-history"><span><?php print _t('History'); ?></span></a></li>
+					</ul>
+					<div id="<?php print $vs_id_prefix; ?>Tabs-location" class="hierarchyBrowseTab">	
+<?php
+						if (($current_value = array_shift($history)) && ($current_value = array_shift($current_value))) { 
+							print "<div class='caCurrentLocation' style='background-color:#".$va_settings['currentLocationColor']."'>{$current_value['display']}</div>";	 
+						} else {
+?>
+							<?php print _t('No %1 set', mb_strtolower($policy_info['name'])); ?>
+<?php
+						}
+?>
+					</div>
+					<div id="<?php print $vs_id_prefix; ?>Tabs-history" class="hierarchyBrowseTab caLocationHistoryTab">	
+<?php
+						if (is_array($history) && sizeof($history)) {
+							foreach($history as $vs_date => $history_by_date) {
+								foreach($history_by_date as $va_relation) {
+									switch($va_relation['status']) {
+										case 'FUTURE':
+											print "<div class='caLocationHistory' style='background-color:#".$va_settings['futureLocationColor']."'>".$va_relation['display']."</div>\n";
+											break;
+										case 'PRESENT':
+											print "<div class='caCurrentLocation' style='background-color:#".$va_settings['currentLocationColor']."'>".$va_relation['display']."</div>\n";
+											break;
+										case 'PAST':
+										default:
+											print "<div class='caLocationHistory' style='background-color:#".$va_settings['pastLocationColor']."'>".$va_relation['display']."</div>\n";
+											break;	
+									}
+								}
+							}
+						} else {
+?>
+							<?php print _t('No %1 set', mb_strtolower($policy_info['name'])); ?>
+<?php
+						}
+?>
+					</div>
+<?php
+	// get current location
+?>
+				</div>
 			</div>
 <?php
+	
+		break;	
+	case 'chronology':
+	default:
+	
+		foreach($history as $vn_date => $history_entries_for_date) {
+			foreach($history_entries_for_date as $vn_i => $history_entry) {
+?>
+				<div class="caUseHistoryEntry <?php print ($vn_i == 0) ? 'caUseHistoryEntryFirst' : ''; ?>">
+					<?php print $history_entry['icon']; ?>
+					<div><?php print $history_entry['display']; ?></div>
+					<div class="caUseHistoryDate"><?php print $history_entry['date']; ?></div>
+					<br class="clear"/>
+				</div>
+<?php
+			}
 		}
-	}
+		break;
+}
 ?>
 	</div>
 <?php
@@ -304,6 +372,11 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 <script type="text/javascript">
 	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
+		
+<?php if($display_mode === 'tabs') { ?>
+		jQuery("#<?php print $vs_id_prefix; ?>Tabs").tabs({ selected: 0 });	
+<?php } ?>	
+	
 		if (caUI.initPanel) {
 			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
 				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */

@@ -457,6 +457,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, null, !$pb_dont_cache, false, true);
 		foreach($va_defined_bundles as $vs_bundle => $va_info) {
 			if (isset($va_info['deprecated']) && $va_info['deprecated']) { continue; }	// skip bundles left for dead
+			if (isset($va_info['displayOnly']) && $va_info['displayOnly']) { continue; }	// skip bundles meant for use in displays only
 			
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $vs_bundle);
 			$va_additional_settings = [];
@@ -1027,7 +1028,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 
 								),
 								'takesLocale' => false,
-								'default' => 'bubbles',
+								'default' => 'dont_force',
 								'width' => "200px", 'height' => 1,
 								'label' => _t('Always Expand/collapse'),
 								'description' => _t('Controls the expand/collapse behavior')
@@ -1184,69 +1185,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									// @todo: maybe add settings!?
 								);
 								break;
-							case 'ca_objects_location':
-							case 'history_tracking_current_value':
-								$va_additional_settings = array(
-									'policy' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'default' => '__default__',
-										'width' => "275px", 'height' => 1,
-										'useHistoryTrackingPolicyList' => true,
-										'label' => _t('Use history tracking policy'),
-										'description' => ''
-									),
-									'currentValueColor' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_COLORPICKER,
-										'takesLocale' => false,
-										'default' => '#EEEEEE',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Color for current values'),
-										'description' => _t('Color to use as highlight for the current value in the history.')
-									),
-									'futureValueColor' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_COLORPICKER,
-										'takesLocale' => false,
-										'default' => '#EEEEEE',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Color for future values'),
-										'description' => _t('Color to use as highlight for future values in the history.')
-									),
-									'pastValueColor' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_COLORPICKER,
-										'takesLocale' => false,
-										'default' => '#EEEEEE',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Color for past values'),
-										'description' => _t('Color to use as highlight for the previous values in the history.')
-									),
-									'useHierarchicalBrowser' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_CHECKBOXES,
-										'width' => "10", 'height' => "1",
-										'takesLocale' => false,
-										'default' => '1',
-										'label' => _t('Use hierarchy browser for storage locations?'),
-										'description' => _t('If checked a hierarchical browser will be used to select storage location items rather than an auto-complete lookup.')
-									),
-									'useAppConfDefaults' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_CHECKBOXES,
-										'width' => "10", 'height' => "1",
-										'takesLocale' => false,
-										'default' => '1',
-										'label' => _t('Use defaults from policy?'),
-										'description' => _t('If checked all settings are taken from history tracking policy. Uncheck to override values.')
-									)
-								);
-								$va_additional_settings = array_merge($va_additional_settings, ca_objects::getHistoryTrackingEditorBundleSettingsData());
-								$va_to_hide_when_using_defaults = array_values(array_filter(array_keys($va_additional_settings), function($v) { return preg_match("!^(ca_|showDeaccessionInformation|deaccession_)!", $v); }));
-								$va_additional_settings['useAppConfDefaults']['hideOnSelect'] = $va_to_hide_when_using_defaults;
-								break;
 							case 'ca_objects_history':
+							case 'ca_objects_location':
 							case 'history_tracking_chronology':
 								$va_additional_settings = array(
 									'policy' => array(
@@ -1257,6 +1197,19 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useHistoryTrackingPolicyList' => true,
 										'label' => _t('Use history tracking policy'),
 										'description' => ''
+									),
+									'displayMode' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t("Chronological list") => 'chronology', // current default mode
+											_t('Current value + history') => 'tabs'
+										),
+										'takesLocale' => false,
+										'default' => ($bundle == 'ca_objects_location') ? 'tabs' : 'chronology',
+										'width' => "200px", 'height' => 1,
+										'label' => _t('Display'),
+										'description' => _t('Display format for chronology.')
 									),
 									'useAppConfDefaults' => array(
 										'formatType' => FT_TEXT,
@@ -1289,7 +1242,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											_t('Expand') => 'expand',
 										),
 										'takesLocale' => false,
-										'default' => 'bubbles',
+										'default' => 'dont_force',
 										'width' => "200px", 'height' => 1,
 										'label' => _t('Always Expand/collapse'),
 										'description' => _t('Controls the expand/collapse behavior')
