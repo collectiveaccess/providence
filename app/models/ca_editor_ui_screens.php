@@ -1229,6 +1229,33 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Sort direction'),
 										'description' => _t('Set ascending or descending order for list.')
 									),
+									'currentValueColor' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for current values'),
+										'description' => _t('Color to use as highlight for the current value in the history.')
+									),
+									'futureValueColor' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for future values'),
+										'description' => _t('Color to use as highlight for future values in the history.')
+									),
+									'pastValueColor' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for past values'),
+										'description' => _t('Color to use as highlight for the previous values in the history.')
+									),
 									// no 'classic' expand/collapse for this bundle
 									'expand_collapse_value' => false,
 									'expand_collapse_no_value' => false,
@@ -1293,6 +1320,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show "Add to" occurrence controls for'),
+										'description' => ''
+									),
+									'hide_add_to_collection_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to collection" controls'),
+										'description' => _t('Check this option if you want to to hide the "Add to collection" controls in this bundle placement.')
+									),
+									'add_to_collection_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'collection_types',
+										'takesLocale' => false,
+										'default' => '',
+										'multiple' => true,
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show "Add to" collection controls for'),
 										'description' => ''
 									),
 									'useHierarchicalBrowser' => array(

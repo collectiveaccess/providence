@@ -45,6 +45,9 @@
 	$occ_types  				= $this->getVar('occurrence_types');
 	$occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $occ_types));
 	
+	$coll_types  				= $this->getVar('collection_types');
+	$coll_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $coll_types));
+	
 	$policy  					= $this->getVar('policy');
 	$policy_info  				= $this->getVar('policy_info');
 	
@@ -86,6 +89,16 @@
 				}
 			}
 			
+			if(!$read_only && !caGetOption('hide_add_to_collection_controls', $settings, false)) {
+			
+				foreach($coll_types as $vn_type_id => $va_type_info) {
+					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_collections', $va_type_info['idno'])) { continue; }
+?>
+				<div style='float: left;'  class='button caAddCollectionButton caAddCollectionButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddColl<?php print $vn_type_id; ?>"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
+<?php		
+				}
+			}
+			
 ?>
 				<br style='clear: both;'/>
 			</div>
@@ -98,6 +111,14 @@ if(!caGetOption('hide_add_to_occurrence_controls', $settings, false)) {
 		if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_occurrences', $va_type_info['idno'])) { continue; }
 ?>
 		<div class="caOccurrenceList<?php print $vn_type_id; ?>"> </div>
+<?php
+	}
+}
+if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
+	foreach($coll_types as $vn_type_id => $va_type_info) {
+		if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_collections', $va_type_info['idno'])) { continue; }
+?>
+		<div class="caCollectionList<?php print $vn_type_id; ?>"> </div>
 <?php
 	}
 }
@@ -378,6 +399,33 @@ if(!caGetOption('hide_add_to_occurrence_controls', $settings, false)) {
 <?php
 	}
 }
+
+if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
+	foreach($coll_types as $vn_type_id => $va_type_info) {
+?>
+	<textarea class='caHistoryTrackingSetCollectionTemplate<?php print $vn_type_id; ?>' style='display: none;'>
+		<div class="clear"><!-- empty --></div>
+		<div id="<?php print $vs_id_prefix; ?>Collection_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedCollection">
+			<table class="caListItem">
+				<tr>
+					<td><h2><?php print _t('Add to %1', $va_type_info['name_singular']); ?></h2></td>
+					<td>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
+					</td>
+					<td>
+						<select name="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
+					</td>
+					<td>
+						<a href="#" class="caDeleteCollectionButton<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</textarea>
+<?php
+	}
+}
 ?>
 </div>
 
@@ -566,6 +614,47 @@ if(!caGetOption('hide_add_to_occurrence_controls', $settings, false)) {
 				autocompleteInputID: '<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 				quickaddUrl: '<?php print caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				minRepeats: 0,
+				maxRepeats: 2,
+				useAnimation: 1,
+				onAddItem: function(id, options, isNew) {
+					jQuery(".caHistoryTrackingButtonBar").slideUp(250);
+				},
+				onDeleteItem: function(id) {
+					jQuery(".caHistoryTrackingButtonBar").slideDown(250);
+				}
+			});
+	<?php
+		}
+	}
+	if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
+		foreach($coll_types as $vn_type_id => $va_type_info) {
+	?>
+			caRelationBundle<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_',
+				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
+				initialValues: [],
+				initialValueOrder: [],
+				itemID: '<?php print $vs_id_prefix; ?>Collection_<?php print $vn_type_id; ?>_',
+				placementID: '<?php print $vn_placement_id; ?>',
+				templateClassName: 'caHistoryTrackingSetCollectionTemplate<?php print $vn_type_id; ?>',
+				initialValueTemplateClassName: null,
+				itemListClassName: 'caCollectionList<?php print $vn_type_id; ?>',
+				listItemClassName: 'caRelatedCollection',
+				addButtonClassName: 'caAddCollectionButton<?php print $vn_type_id; ?>',
+				deleteButtonClassName: 'caDeleteCollectionButton<?php print $vn_type_id; ?>',
+				hideOnNewIDList: [],
+				showEmptyFormsOnLoad: 0,
+				relationshipTypes: <?php print json_encode($this->getVar('collection_relationship_types_by_sub_type')); ?>,
+				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'collection', 'Get', $coll_lookup_params); ?>',
+				types: <?php print json_encode($settings['restrict_to_types']); ?>,
+				readonly: <?php print $read_only ? "true" : "false"; ?>,
+				isSortable: <?php print ($read_only || $vs_sort) ? "false" : "true"; ?>,
+				listSortOrderID: '<?php print $vs_id_prefix; ?>CollectionBundleList',
+				listSortItems: 'div.roundedRel',
+				autocompleteInputID: '<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_autocomplete',
+				quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+				quickaddUrl: '<?php print caNavUrl($this->request, 'editor/collections', 'collectionQuickAdd', 'Form', array('types' => $vn_type_id,'collection_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,

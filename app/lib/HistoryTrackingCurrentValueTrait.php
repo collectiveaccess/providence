@@ -257,7 +257,9 @@
 				foreach(array(
 							'policy', 'displayMode', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
-							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection',
+							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
+							'hide_add_to_collection_controls', 'add_to_collection_types',
+							'ca_storage_locations_elements', 'sortDirection',
 							'currentValueColor', 'pastValueColor', 'futureValueColor'
 						) as $vs_key) {
 					if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
@@ -1639,11 +1641,25 @@
 			foreach($va_occ_types as $vn_type_id => $va_type_info) {
 				if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
 			}
-		
 			$o_view->setVar('occurrence_types', $va_occ_types);
 			$t_occ_rel = new ca_objects_x_occurrences();
 			$o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 			$o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+		
+			
+			//
+			// Collection update
+			//
+			$t_coll = new ca_collections();
+			$va_coll_types = $t_coll->getTypeList();
+			$va_coll_types_to_show =  caGetOption('add_to_collection_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
+			foreach($va_coll_types as $vn_type_id => $va_type_info) {
+				if (!in_array($vn_type_id, $va_coll_types_to_show) && !in_array($va_type_info['idno'], $va_coll_types_to_show)) { unset($va_coll_types[$vn_type_id]); }
+			}
+			$o_view->setVar('collection_types', $va_coll_types);
+			$t_coll_rel = new ca_objects_x_collections();
+			$o_view->setVar('collection_relationship_types', $t_coll_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+			$o_view->setVar('collection_relationship_types_by_sub_type', $t_coll_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 		
 			//
 			// Loan update

@@ -6777,7 +6777,7 @@ div.caHistoryTrackingButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caSetChildViewButton {
+.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton {
 	margin-top: 5px;
 }
 

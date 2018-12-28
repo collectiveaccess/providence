@@ -4645,6 +4645,23 @@ if (!$vb_batch) {
 							}
 						}
 						
+						// set collection
+						require_once(__CA_MODELS_DIR__."/ca_collections.php");
+						$t_coll = new ca_collections();
+						$va_coll_types = $t_coll->getTypeList();
+						foreach($va_coll_types as $vn_type_id => $vn_type_info) {
+							if ($vn_collection_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_idnew_0", pInteger)) {
+								if ($vn_coll_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_type_idnew_0", pInteger)) {
+									$this->addRelationship('ca_collections', $vn_collection_id, $vn_coll_type_id);
+									if ($this->numErrors()) {
+										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+									}
+									$change_has_been_made = true;
+									SearchResult::clearResultCacheForRow('ca_collections', $vn_collection_id);
+								}
+							}
+						}
+						
 						if ($change_has_been_made) { SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey()); }
 						break;
 					# -------------------------------
