@@ -1271,16 +1271,10 @@
     <list code="loan_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Loan label type values</name>
+          <name>Loan types</name>
         </label>
         <label locale="en_CA">
-          <name>Loan label type values</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Valeurs de type de libellé de prêt</name>
-        </label>
-        <label locale="sv_SE">
-          <name>Lån etikettyp värden</name>
+          <name>Loan types</name>
         </label>
       </labels>
       <items>
