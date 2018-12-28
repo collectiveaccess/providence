@@ -110,6 +110,7 @@
 			if (!($policy_table = caGetOption('table', $policy_info, false))) { return []; }
 			
 			foreach($map as $table => $types) {
+				if ($table == 'ca_objects') { $bundle_settings['showDeaccessionInformation'] = true; }	// TODO: this is a hack
 				$path = array_keys(Datamodel::getPath($policy_table, $table));
 				$t_instance = Datamodel::getInstance($table, true);
 				
@@ -166,13 +167,37 @@
 		}
 		# ------------------------------------------------------
 		/**
-		 * TODO: deprecate?
+		 * 
+		 *
+		 * @param array $options Options include:
+		 *		policy = Name of policy to apply. If omitted, legacy 'current_location_criteria' configuration will be used if present, otherwise a null value will be returned. [Default is null]
+		 *
+		 * @return array Element array or null if not available.
+		 */
+		static public function historyTrackingPolicyUses($policy, $table, $type=null, $options=null) {
+			if (is_array($policy = self::getHistoryTrackingCurrentValuePolicy($policy)) && is_array($map = $policy['elements']) && is_array($map[$table])) {
+				if(is_null($type) && is_array($map[$table]) && (sizeof($map[$table]) > 0)) {
+					return true;
+				} elseif(is_array($map[$table][$type])) {
+					return true;
+				} elseif(is_array($map[$table]['__default__'])) {
+					return true;
+				}	
+			}
+			return false;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
 		 */
 		private function _processHistoryBundleSettings($pa_bundle_settings) {
 
 			if ($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) {
 				// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
-				$va_current_location_criteria = self::policy2bundleconfig(['policy' => caGetOption('policy', $pa_bundle_settings, $this->getDefaultHistoryTrackingCurrentValuePolicy())]);
+				if (!self::isValidHistoryTrackingCurrentValuePolicy($policy = caGetOption('policy', $pa_bundle_settings, null))) {
+					$policy = $this->getDefaultHistoryTrackingCurrentValuePolicy();
+				}
+				$va_current_location_criteria = self::policy2bundleconfig(['policy' => $policy]);
 			
 				$va_bundle_settings = [];
 				foreach($va_current_location_criteria as $vs_table => $va_info) {
@@ -232,7 +257,8 @@
 				foreach(array(
 							'policy', 'displayMode', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
-							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection'
+							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements', 'sortDirection',
+							'currentValueColor', 'pastValueColor', 'futureValueColor'
 						) as $vs_key) {
 					if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
 						$va_bundle_settings[$vs_key] = $va_current_location_criteria[$vs_key];
@@ -585,7 +611,7 @@
 				 	foreach($policy_info['elements'] as $dtable => $dinfo) {
 				 		if ($dtable !== $table) { continue; }
 				 		foreach($dinfo as $type => $dspec) {
-							if (isset($dspec['date'])) {
+							if (isset($dspec['date']) && $dspec['date']) {
 								$spec_has_date = true;
 								$element_code = array_shift(explode('.', $dspec['date']));
 								if($this->elementDidChange($element_code)) {
@@ -779,6 +805,8 @@
 							if (!in_array($vn_type_id, $va_lot_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 							
+							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
+							
 							$o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
 							$va_history[$va_date['sortable']][] = [
 								'type' => 'ca_object_lots',
@@ -789,7 +817,7 @@
 								'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
 								'typename_plural' => $va_lot_type_info[$vn_type_id]['name_plural'],
 								'type_id' => $vn_type_id,
-								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_typename.'</div>').'</div></div>',
 								'date' => $va_date['display'],
 					
 								'table_num' => $table_num,
@@ -797,7 +825,9 @@
 								'current_table_num' => $lots_table_num,
 								'current_row_id' => $vn_lot_id,
 								'tracked_table_num' => $rel_table_num,
-								'tracked_row_id' => $relation_id
+								'tracked_row_id' => $relation_id,
+								
+								'status' => $status
 							];
 						}
 					}
@@ -867,6 +897,8 @@
 							if (!$va_date['sortable']) { continue; }
 							if (!in_array($vn_type_id, $va_loan_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
+							
+							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
 					
 							$vs_color = $va_loan_type_info[$vn_type_id]['color'];
 							if (!$vs_color || ($vs_color == '000000')) {
@@ -884,7 +916,7 @@
 								'typename_singular' => $vs_typename = $va_loan_type_info[$vn_type_id]['name_singular'],
 								'typename_plural' => $va_loan_type_info[$vn_type_id]['name_plural'],
 								'type_id' => $vn_type_id,
-								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_typename.'</div>').'</div></div>',
 								'date' => $va_date['display'],
 								'hasChildren' => sizeof($va_child_loans) ? 1 : 0,
 						
@@ -895,7 +927,9 @@
 								'current_type_id' => $vn_type_id,
 								'tracked_table_num' => $rel_table_num,
 								'tracked_row_id' => $relation_id,
-								'tracked_type_id' => $vn_rel_type_id
+								'tracked_type_id' => $vn_rel_type_id,
+								
+								'status' => $status
 							);
 						}
 					}
@@ -965,6 +999,8 @@
 							if (!$va_date['sortable']) { continue; }
 							if (!in_array($vn_type_id, $va_movement_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
+							
+							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
 					
 							$vs_color = $va_movement_type_info[$vn_type_id]['color'];
 							if (!$vs_color || ($vs_color == '000000')) {
@@ -982,7 +1018,7 @@
 								'typename_singular' => $vs_typename = $va_movement_type_info[$vn_type_id]['name_singular'],
 								'typename_plural' => $va_movement_type_info[$vn_type_id]['name_plural'],
 								'type_id' => $vn_type_id,
-								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_typename.'</div>').'</div></div>',
 								'date' => $va_date['display'],
 								'hasChildren' => sizeof($va_child_movements) ? 1 : 0,
 						
@@ -993,7 +1029,9 @@
 								'current_type_id' => $vn_type_id,
 								'tracked_table_num' => $rel_table_num,
 								'tracked_row_id' => $relation_id,
-								'tracked_type_id' => $vn_rel_type_id
+								'tracked_type_id' => $vn_rel_type_id,
+								
+								'status' => $status
 							);
 						}
 					}
@@ -1071,6 +1109,9 @@
 							if (!in_array($vn_type_id, $va_occurrence_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
 					
+					
+							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
+							
 							$vs_color = $va_occurrence_type_info[$vn_type_id]['color'];
 							if (!$vs_color || ($vs_color == '000000')) {
 								$vs_color = caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
@@ -1087,7 +1128,7 @@
 								'typename_singular' => $vs_typename = $va_occurrence_type_info[$vn_type_id]['name_singular'],
 								'typename_plural' => $va_occurrence_type_info[$vn_type_id]['name_plural'],
 								'type_id' => $vn_type_id,
-								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_typename.'</div>').'</div></div>',
 								'date' => $va_date['display'],
 								'hasChildren' => sizeof($va_child_occurrences) ? 1 : 0,
 						
@@ -1098,7 +1139,9 @@
 								'current_type_id' => $vn_type_id,
 								'tracked_table_num' => $rel_table_num,
 								'tracked_row_id' => $relation_id,
-								'tracked_type_id' => $vn_rel_type_id
+								'tracked_type_id' => $vn_rel_type_id,
+								
+								'status' => $status
 							);
 						}
 					}
@@ -1177,6 +1220,8 @@
 							if (!in_array($vn_type_id, $va_entity_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
 					
+							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
+							
 							$vs_color = $va_entity_type_info[$vn_type_id]['color'];
 							if (!$vs_color || ($vs_color == '000000')) {
 								$vs_color = caGetOption("ca_entities_{$va_entity_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
@@ -1193,7 +1238,7 @@
 								'typename_singular' => $vs_typename = $va_entity_type_info[$vn_type_id]['name_singular'],
 								'typename_plural' => $va_entity_type_info[$vn_type_id]['name_plural'],
 								'type_id' => $vn_type_id,
-								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_typename.'</div>').'</div></div>',
 								'date' => $va_date['display'],
 								'hasChildren' => sizeof($va_child_entities) ? 1 : 0,
 						
@@ -1204,7 +1249,9 @@
 								'current_type_id' => $vn_type_id,
 								'tracked_table_num' => $rel_table_num,
 								'tracked_row_id' => $relation_id,
-								'tracked_type_id' => $vn_rel_type_id
+								'tracked_type_id' => $vn_rel_type_id,
+								
+								'status' => $status
 							);
 						}
 					}
@@ -1277,6 +1324,8 @@
 							if (!in_array($vn_type_id, $va_collection_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
 					
+							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
+							
 							$vs_color = $va_collection_type_info[$vn_type_id]['color'];
 							if (!$vs_color || ($vs_color == '000000')) {
 								$vs_color = caGetOption("ca_collections_{$va_collection_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
@@ -1293,7 +1342,7 @@
 								'typename_singular' => $vs_typename = $va_collection_type_info[$vn_type_id]['name_singular'],
 								'typename_plural' => $va_collection_type_info[$vn_type_id]['name_plural'],
 								'type_id' => $vn_type_id,
-								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_typename.'</div>').'</div></div>',
 								'date' => $va_date['display'],
 								'hasChildren' => sizeof($va_child_collections) ? 1 : 0,
 						
@@ -1304,7 +1353,9 @@
 								'current_type_id' => $vn_type_id,
 								'tracked_table_num' => $rel_table_num,
 								'tracked_row_id' => $relation_id,
-								'tracked_type_id' => $vn_rel_type_id
+								'tracked_type_id' => $vn_rel_type_id,
+								
+								'status' => $status
 							);
 						}
 					}
@@ -1359,6 +1410,8 @@
 						$vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
 				
 						if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
+						
+						$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
 				
 						$vs_color = $va_location_type_info[$vn_type_id]['color'];
 						if (!$vs_color || ($vs_color == '000000')) {
@@ -1378,7 +1431,7 @@
 							'typename_plural' => $vs_name_plural, 
 							'type_id' => $vn_type_id,
 							'rel_type_id' => $vn_rel_type_id,
-							'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_name_singular.'</div>').'</div></div>',
+							'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_name_singular.'</div>').'</div></div>',
 							'date' => $va_date['display'],
 							'hasChildren' => sizeof($va_child_locations) ? 1 : 0,
 						
@@ -1389,7 +1442,9 @@
 							'current_type_id' => $vn_type_id,
 							'tracked_table_num' => $rel_table_num,
 							'tracked_row_id' => $relation_id,
-							'tracked_type_id' => $vn_rel_type_id
+							'tracked_type_id' => $vn_rel_type_id,
+							
+							'status' => $status
 						);
 					}
 				}
@@ -1407,6 +1462,8 @@
 			
 				$vs_name_singular = _t('deaccession');
 				$vs_name_plural = _t('deaccessions');
+				
+				$status = ($vn_date > $vn_current_date) ? 'FUTURE' : 'PAST';
 			
 				if ($qr->get('ca_objects.is_deaccessioned') && !($pb_get_current_only && ($vn_date > $vn_current_date))) {
 					$va_history[$vn_date.(int)$row_id][] = array(
@@ -1418,7 +1475,7 @@
 						'typename_singular' => $vs_name_singular, 
 						'typename_plural' => $vs_name_plural, 
 						'type_id' => null,
-						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon"><div class="caUseHistoryIconText">'.$vs_name_singular.'</div>'.'</div></div>',
+						'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon"><div class="caHistoryTrackingIconText">'.$vs_name_singular.'</div>'.'</div></div>',
 						'date' => $qr->get('ca_objects.deaccession_date'),
 						
 						'table_num' => $table_num,
@@ -1428,7 +1485,9 @@
 						'current_type_id' => $qr->get("{$table}.type_id"),
 						'tracked_table_num' => $table_num,
 						'tracked_row_id' => $row_id,
-						'tracked_type_id' => $qr->get("{$table}.type_id")
+						'tracked_type_id' => $qr->get("{$table}.type_id"),
+						
+						'status' => $status
 					);
 				}
 			
@@ -1438,6 +1497,8 @@
 						while($q->nextHit()) {
 							if(!$q->get('is_deaccessioned')) { continue; }
 							$vn_date = $q->get('deaccession_date', array('sortable'=> true));
+							$status = ($vn_date > $vn_current_date) ? 'FUTURE' : 'PAST';
+							
 							$vn_id = (int)$q->get('ca_objects.object_id');
 							$va_history[$vn_date.$vn_id][] = array(
 								'type' => 'ca_objects_deaccession',
@@ -1448,7 +1509,7 @@
 								'typename_singular' => $vs_name_singular, 
 								'typename_plural' => $vs_name_plural, 
 								'type_id' => null,
-								'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon"><div class="caUseHistoryIconText">'.$vs_name_singular.'</div>'.'</div></div>',
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon"><div class="caHistoryTrackingIconText">'.$vs_name_singular.'</div>'.'</div></div>',
 								'date' => $q->get('deaccession_date'),
 						
 								'table_num' => $table_num,
@@ -1456,23 +1517,49 @@
 								'current_table_num' => $table_num,
 								'current_row_id' => $vn_id,
 								'tracked_table_num' => $table_num,
-								'tracked_row_id' => $vn_id
+								'tracked_row_id' => $vn_id,
+						
+								'status' => $status
 							);    
-					
 						}
 					}
 				}
 			}
 		
 			ksort($va_history);
+			
+			foreach(array_reverse($va_history) as $d => $hl) {
+				foreach($hl as $i => $h) {
+					if ($h['status'] == 'PAST') {
+						$va_history[$d][$i]['status'] = 'CURRENT';
+						break(2);
+					}
+				}
+			}
+			
 			if(caGetOption('sortDirection', $pa_bundle_settings, 'DESC', ['forceUppercase' => true]) !== 'ASC') { $va_history = array_reverse($va_history); }
 		
 			if ($pn_limit > 0) {
 				$va_history = array_slice($va_history, 0, $pn_limit);
 			}
-		
 			ExternalCache::save($vs_cache_key, $va_history, "historyTrackingContent");
 			return $va_history;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return array of all tracked rows in history of row. Array keys are table name; values are lists of row_ids 
+		 *
+		 * @param array $options Array of options. Options include any option that may be passed to HistoryTrackingCurrentValueTrait::getHistory()
+		 *
+		 * @return array 
+		 */
+		public function getHistoryReferences($options=null) {
+			return array_reduce($this->getHistory($options), function($c, $v) { 
+				foreach($v as $i => $x) {
+					$c[Datamodel::getTableName($x['tracked_table_num'])][] = $x['tracked_row_id'];
+				}
+				return $c;
+			}, []);
 		}
 		# ------------------------------------------------------
 		/**

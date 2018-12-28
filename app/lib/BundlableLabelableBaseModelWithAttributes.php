@@ -4540,10 +4540,43 @@ if (!$vb_batch) {
 					    
 					    $policy = caGetOption('policy', $va_bundle_settings, null);
 					    
+					    $change_has_been_made = false;
+					    
+					    // handle deletes
+					    $refs=$this->getHistoryReferences();	// get all references present in this history
+					    foreach($refs as $t => $r) {
+					    	if (is_array($rp = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_delete_{$t}", pArray))) {
+					    		if (is_array($rows_to_delete = array_intersect($r, $rp))) {	// only attempt to delete values passed that are actually in the history
+					    			if (!($t_instance = Datamodel::getInstance($t, true))) { continue; }
+					    			if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
+					    			foreach($rows_to_delete as $row_id) {
+					    				if ($t_instance->isRelationship() && $t_instance->load($row_id)) {
+					    					if(!$t_instance->delete()) {	// TODO: check error handling
+					    						$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
+					    					}
+					    				} elseif(($t === 'ca_object_lots') && ($this->tableName() === 'ca_objects')) {
+					    					$this->set('lot_id', null);
+					    					if (!$this->update()) {	// TODO: check error handling
+					    						$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
+					    					}
+					    				} elseif(($t === 'ca_objects') && ($this->tableName() === 'ca_objects') && ($this->get('is_deaccessioned'))) {
+					    					$this->set('is_deaccessioned', 0);
+					    					if (!$this->update()) {	// TODO: check error handling
+					    						$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
+					    					}
+					    				}
+					    				$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow($t, $row_id);
+					    			}
+					    		}
+					    	}
+					    }
+					    
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
-					    	$t_loc = new ca_storage_locations($vn_location_id);
-							if ($t_loc->isLoaded()) {
+					    	$t_loc = new ca_storage_locations();
+					    	if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+							if ($t_loc->load($vn_location_id)) {
 								if ($policy) {
 									$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_storage_locations', $t_loc->getTypeCode());
 									$vn_relationship_type_id = caGetOption('trackingRelationshipType', $policy_info, null);
@@ -4574,7 +4607,10 @@ if (!$vb_batch) {
 												}
 											}
 										}								
-									}
+									}									
+								
+									$change_has_been_made = true;
+									SearchResult::clearResultCacheForRow('ca_storage_locations', $vn_location_id);
 								}
 							}
 						}
@@ -4582,10 +4618,13 @@ if (!$vb_batch) {
 						// set loan
 						if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_idnew_0", pInteger)) {
 							if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_type_idnew_0", pInteger)) {
-								$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
+								$t_item_rel = $this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 								}
+								$change_has_been_made = true;
+								SearchResult::clearResultCacheForRow('ca_loans', $vn_loan_id);
+								if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
 							}
 						}
 						
@@ -4600,10 +4639,13 @@ if (!$vb_batch) {
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									}
+									$change_has_been_made = true;
+									SearchResult::clearResultCacheForRow('ca_occurrences', $vn_occurrence_id);
 								}
 							}
 						}
 						
+						if ($change_has_been_made) { SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey()); }
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
