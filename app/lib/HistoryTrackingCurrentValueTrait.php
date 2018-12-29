@@ -1370,7 +1370,7 @@
 			
 				$va_child_locations = [];
 				if(caGetOption('ca_storage_locations_includeFromChildren', $pa_bundle_settings, false)) {
-					$va_child_locations = array_reduce($qr->getWithTemplate("<unit relativeTo='ca_objects.children' delimiter=';'>^ca_objects_x_storage_locations.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
+					$va_child_locations = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_locations = array_merge($va_locations, $va_child_locations); }
 				}
 		
@@ -1603,10 +1603,6 @@
 		 * @uses ca_objects::getObjectHistory()
 		 */
 		public function getHistoryTrackingChronologyHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
-			require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
-			require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
-			require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
-		
 			global $g_ui_locale;
 		
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
@@ -1635,44 +1631,58 @@
 			//
 			// Occurrence update
 			//
-			$t_occ = new ca_occurrences();
-			$va_occ_types = $t_occ->getTypeList();
-			$va_occ_types_to_show =  caGetOption('add_to_occurrence_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
-			foreach($va_occ_types as $vn_type_id => $va_type_info) {
-				if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
+			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_occurrences')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+				$linking_table = $path[1];
+				if (($t_occ_rel = Datamodel::getInstance($linking_table, true)) && ($t_occ = Datamodel::getInstance('ca_occurrences', true))) {
+					$va_occ_types = $t_occ->getTypeList();
+					$va_occ_types_to_show =  caGetOption('add_to_occurrence_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
+					foreach($va_occ_types as $vn_type_id => $va_type_info) {
+						if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
+					}
+					$o_view->setVar('occurrence_types', $va_occ_types);
+					$o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+				}
 			}
-			$o_view->setVar('occurrence_types', $va_occ_types);
-			$t_occ_rel = new ca_objects_x_occurrences();
-			$o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-			$o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
-		
 			
 			//
 			// Collection update
 			//
-			$t_coll = new ca_collections();
-			$va_coll_types = $t_coll->getTypeList();
-			$va_coll_types_to_show =  caGetOption('add_to_collection_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
-			foreach($va_coll_types as $vn_type_id => $va_type_info) {
-				if (!in_array($vn_type_id, $va_coll_types_to_show) && !in_array($va_type_info['idno'], $va_coll_types_to_show)) { unset($va_coll_types[$vn_type_id]); }
+			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_collections')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+				$linking_table = $path[1];
+				if (($t_coll_rel = Datamodel::getInstance($linking_table, true)) && ($t_coll = Datamodel::getInstance('ca_collections', true))) {
+					$va_coll_types = $t_coll->getTypeList();
+					$va_coll_types_to_show =  caGetOption('add_to_collection_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
+					foreach($va_coll_types as $vn_type_id => $va_type_info) {
+						if (!in_array($vn_type_id, $va_coll_types_to_show) && !in_array($va_type_info['idno'], $va_coll_types_to_show)) { unset($va_coll_types[$vn_type_id]); }
+					}
+					$o_view->setVar('collection_types', $va_coll_types);
+					$o_view->setVar('collection_relationship_types', $t_coll_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$o_view->setVar('collection_relationship_types_by_sub_type', $t_coll_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+				}
 			}
-			$o_view->setVar('collection_types', $va_coll_types);
-			$t_coll_rel = new ca_objects_x_collections();
-			$o_view->setVar('collection_relationship_types', $t_coll_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-			$o_view->setVar('collection_relationship_types_by_sub_type', $t_coll_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
-		
+			
 			//
 			// Loan update
 			//
-			$t_loan_rel = new ca_loans_x_objects();
-			$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-			$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
-
+			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_loans')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+				$linking_table = $path[1];
+				if ($t_loan_rel = Datamodel::getInstance($linking_table, true)) {
+					$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+				}
+			}
+			
+			//
 			// Location update
-			$t_location_rel = new ca_objects_x_storage_locations();
-			$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-			$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
-
+			//
+			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_storage_locations')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+				$linking_table = $path[1];
+				if ($t_location_rel = Datamodel::getInstance($linking_table, true)) {
+					$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+				}
+			}
 			
 			$h = $this->getHistory(array_merge($pa_bundle_settings, $pa_options));
 			$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
