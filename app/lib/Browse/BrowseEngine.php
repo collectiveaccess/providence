@@ -679,7 +679,6 @@
 					$subject_table = $this->ops_browse_table_name;
 					$policy = caGetOption('policy', $va_facet_info, $subject_table::getDefaultHistoryTrackingCurrentValuePolicyForTable($subject_table));
 					
-					
 					if(sizeof($va_row_tmp) === 1) {
 						// Rewrite lone ids as full storage locations ids including table num and type_id
 						//
@@ -710,7 +709,7 @@
 						$cv_config = ca_objects::getConfigurationForHistoryTrackingCurrentValue($policy, $table, $va_row_tmp[1]);
 						$template = isset($cv_config['template']) ? $cv_config['template'] : "^{$table}.preferred_labels";
 
-						$template = str_replace("<l>", "", str_replace("</l>", "", $template));
+						$template = str_replace("<l>", "", str_replace("</l>", "", $template));	// don't allow links in criterion labels
 
 						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($template), 30, 'end');
 					}
