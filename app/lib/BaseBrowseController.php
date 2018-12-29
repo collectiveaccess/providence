@@ -460,8 +460,8 @@
  			if(!is_array($va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name))) { return null; }
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
- 			
- 			if ($va_facet_info['type'] == 'location') {
+ 				
+ 			if (in_array($va_facet_info['type'], ['current_value', 'location']) ){
  				//
  				// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
  				// locations, not loans, occurrences etc.) is configured. The keys of the location facet array are in the 
@@ -471,7 +471,8 @@
  				//
 				$va_facet_proc = [];
 				foreach($va_facet as $k => $v) {
-					$id = array_pop(explode(':', $k));
+					$t = explode(':', $k);
+					$id = array_pop($t);
 					$va_facet_proc[$id] = $v;
 				}
  				$va_facet = $va_facet_proc;

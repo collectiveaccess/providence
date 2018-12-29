@@ -675,30 +675,28 @@
 				case 'location':
 				case 'current_value':
 					$va_row_tmp = explode(":", urldecode($pn_row_id));
-					if (!($table = Datamodel::getTableName($va_row_tmp[0]))) { return "???"; }
 					
 					$subject_table = $this->ops_browse_table_name;
 					$policy = caGetOption('policy', $va_facet_info, $subject_table::getDefaultHistoryTrackingCurrentValuePolicyForTable($subject_table));
-					// if (
-// 						(sizeof($va_row_tmp) < 3)
-// 						&&
-// 						($object_location_tracking_relationship_type = $this->opo_config->get('object_storage_location_tracking_relationship_type'))
-// 						&&
-// 						($object_location_tracking_relationship_type_id = array_shift(caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', [$object_location_tracking_relationship_type])))
-// 					) {
-// 						//
-// 						// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
-// 						// locations, not loans, occurrences etc.) is configured. The value of location criteria is typically in the 
-// 						// form <table num>:<type id>:<row id> but is shortened to just the row_id (which is the storage location location_id)
-// 						// by the hierarchy browser. In this case we can assume the table number is 119 (ca_objects_x_storage_locations) and
-// 						// the type_id is whatever is configured in "object_storage_location_tracking_relationship_type" in app.conf.
-// 						//
-// 						// We prepend those values below, allowing the criterion value to behave as a standard location value/
-// 						//
-// 						array_unshift($va_row_tmp, $object_location_tracking_relationship_type_id); 
-// 						if (sizeof($va_row_tmp) < 3) { array_unshift($va_row_tmp, 119); }	// assume ca_objects_x_storage_locations
-// 					}
-// 		
+					
+					
+					if(sizeof($va_row_tmp) === 1) {
+						// Rewrite lone ids as full storage locations ids including table num and type_id
+						//
+						// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
+						// locations, not loans, occurrences etc.) is configured. The value of location criteria is typically in the 
+						// form <table num>:<type id>:<row id> but is shortened to just the row_id (which is the storage location location_id)
+						// by the hierarchy browser. In this case we can assume the table number is 119 (ca_objects_x_storage_locations) and
+						// the type_id is whatever is configured in "object_storage_location_tracking_relationship_type" in app.conf.
+						//
+						// We prepend those values below, allowing the criterion value to behave as a standard location value/
+						//
+						$t_loc = Datamodel::getInstance('ca_storage_locations');
+						if(!$t_loc->load($pn_row_id)) { break; }
+						$va_row_tmp = [$t_loc->tableNum(), $t_loc->get('ca_storage_locations.type_id'), $pn_row_id];
+					}
+					if (!($table = Datamodel::getTableName($va_row_tmp[0]))) { return "???"; }
+
 					$va_collapse_map = $this->getCollapseMapForLocationFacet($va_facet_info);
 
 					if (isset($va_collapse_map[$table][$va_row_tmp[1]])) {
@@ -711,6 +709,8 @@
 						// Return label for id
 						$cv_config = ca_objects::getConfigurationForHistoryTrackingCurrentValue($policy, $table, $va_row_tmp[1]);
 						$template = isset($cv_config['template']) ? $cv_config['template'] : "^{$table}.preferred_labels";
+
+						$template = str_replace("<l>", "", str_replace("</l>", "", $template));
 
 						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($template), 30, 'end');
 					}
@@ -1866,6 +1866,13 @@
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										$va_row_tmp = explode(":", $vn_row_id);
+										
+										if(sizeof($va_row_tmp) === 1) {
+											// Rewrite lone ids as full storage locations ids including table num and type_id
+											$t_loc = Datamodel::getInstance('ca_storage_locations');
+											if(!$t_loc->load($vn_row_id)) { break; }
+											$va_row_tmp = [$t_loc->tableNum(), $t_loc->get('ca_storage_locations.type_id'), $vn_row_id];
+										}
 										
 										if ($va_row_tmp[0] == 89) { // ca_storage_locations
 											$t_loc = new ca_storage_locations();
