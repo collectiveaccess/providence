@@ -412,7 +412,9 @@
 			$subject_table_num = $this->tableNum();
 			$subject_table = $this->tableName();
 			
-			if (is_null($values)) {			
+			$is_future = caGetOption('isFuture', $options, null);
+			
+			if (is_null($values) && !$is_future) {			
 				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance'])) {
 					$l->delete();
 					return true;
@@ -420,7 +422,7 @@
 				return null;
 			}
 			
-			if(!Datamodel::getTableName($values['current_table_num']) || !Datamodel::getTableName($values['tracked_table_num'])) {
+			if(($values['current_table_num'] && !Datamodel::getTableName($values['current_table_num'])) || ($values['tracked_table_num'] && !Datamodel::getTableName($values['tracked_table_num']))) {
 				throw new ApplicationException(_t('Invalid table specification for policy %1', $policy));
 			}
 			
@@ -453,7 +455,8 @@
 				'current_row_id' => $values['current_row_id'], 
 				'tracked_table_num' => $values['tracked_table_num'], 
 				'tracked_type_id' => $values['tracked_type_id'], 
-				'tracked_row_id' => $values['tracked_row_id']
+				'tracked_row_id' => $values['tracked_row_id'],
+				'is_future' => $is_future
 			]);
 			if (!($rc = $e->insert())) {
 				$this->errors = $e->errors;
@@ -564,23 +567,53 @@
 					SearchResult::clearResultCacheForRow($this->tableName(), $row_id);
 					$h = $this->getHistory(['row_id' => $row_id, 'policy' => $policy, 'noCache' => true]);
 	
+					$omit_table = caGetOption('omit_table_num', $options, false);
+					$omit_row_id = caGetOption('omit_row_id', $options, false);
+					
+					$is_future = null;
+					$current_entry = null;
+	
 					if(sizeof($h)) { 
-						if(($omit_row_id = caGetOption('omit_row_id', $options, false)) && ($omit_table = caGetOption('omit_table_num', $options, false))) {
-							$cl = array_reduce($h, function($c, $v) use ($omit_table, $omit_row_id) { 
-								if ($c) { return $c; }
-								$x = array_shift($v); 
-								if (($x['tracked_table_num'] != $omit_table) || ($x['tracked_row_id'] != $omit_row_id)) { $c = $x; } 
-								return $c;
-							}, null);
-						} else {
-							$cl = array_shift(array_shift($h));
-						}	
-						if (!($this->setHistoryTrackingCurrentValue($policy, $cl, ['row_id' => $row_id]))) {
+						foreach($h as $d => $by_date) {
+							foreach($by_date as $entry) {
+								if ($omit_table && $omit_row_id && ($entry['tracked_table_num'] == $omit_table) &&($entry['tracked_row_id'] == $omit_row_id)) { continue; }
+							
+								if ($entry['status'] === 'FUTURE') {
+									$is_future = caHistoricTimestampToUnixTimestamp($d);
+									continue;
+								}
+								if ($entry['status'] === 'CURRENT') {
+									$current_entry = $entry;
+									break(2);
+								}
+							}
+						}
+					}
+					
+					if ($current_entry) {
+						if (!($this->setHistoryTrackingCurrentValue($policy, $current_entry, ['row_id' => $row_id, 'isFuture' => $is_future]))) {
 							return false;
 						}
 					} else {
-						$this->setHistoryTrackingCurrentValue($policy, null, ['row_id' => $row_id]); // null values means remove current location entirely
+						$this->setHistoryTrackingCurrentValue($policy, null, ['row_id' => $row_id, 'isFuture' => $is_future]); // null values means remove current location entirely
 					}
+					
+						//if(($omit_row_id = caGetOption('omit_row_id', $options, false)) && ($omit_table = caGetOption('omit_table_num', $options, false))) {
+							// $cl = array_reduce($h, function($c, $v) use ($omit_table, $omit_row_id) { 
+// 								if ($c) { return $c; }
+// 								$x = array_shift($v); 
+// 								if (($x['tracked_table_num'] != $omit_table) || ($x['tracked_row_id'] != $omit_row_id)) { $c = $x; } 
+// 								return $c;
+// 							}, null);
+						//} else {
+							//$cl = array_shift(array_shift($h));
+						//}	
+						//if (!($this->setHistoryTrackingCurrentValue($policy, $cl, ['row_id' => $row_id]))) {
+						//	return false;
+						//}
+					//} else {
+					//	$this->setHistoryTrackingCurrentValue($policy, null, ['row_id' => $row_id]); // null values means remove current location entirely
+					//}
 				}
 				return true;
 			}

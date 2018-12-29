@@ -11457,6 +11457,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
 	 *			count					= the number of matches
 	 *			arrays					= an array of arrays, each of which contains values for each intrinsic field in the model
+	 *			queryresult				= a query result
 	 *
 	 *			The default is ids
 	 *	
@@ -11487,7 +11488,7 @@ $pa_options["display_form_field_tips"] = true;
 			if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
 		}
 		
-		$ps_return_as			= caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count', 'arrays')));
+		$ps_return_as			= caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count', 'arrays', 'queryresult')));
 		$ps_boolean 			= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 		$o_trans 				= caGetOption('transaction', $pa_options, null);
 		$pa_check_access 		= caGetOption('checkAccess', $pa_options, null);
@@ -11710,6 +11711,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_pk = $t_instance->primaryKey();
 		
 		switch($ps_return_as) {
+			case 'queryresult':
+				return $qr_res;
+				break;
 			case 'firstmodelinstance':
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;

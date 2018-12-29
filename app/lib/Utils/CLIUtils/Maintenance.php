@@ -2360,6 +2360,62 @@
 		public static function reload_current_values_for_history_tracking_policiesHelp() {
 			return _t('CollectiveAccess supports tracking of location and use histories through history tracking policies. Current values for each record for each policy are cached to speed browses and display. From time to time these values may become out of date. Use this command to regenerate the cached values based upon the current state of the database.');
 		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_future_values_for_history_tracking_policies($po_opts=null) {
+			Datamodel::getInstance('ca_history_tracking_current_values', true);
+			$tables = ca_history_tracking_current_values::rowsWithFutureValues();
+			
+			foreach($tables as $table_num => $rows) {
+				print CLIProgressBar::start(sizeof($rows), _t('Starting...'));
+			
+				$t = Datamodel::getInstance($table_num, true);
+				$table = $t->tableName();
+				foreach($rows as $row_id) {
+					if ($t->load($row_id)) {
+                        print CLIProgressBar::next(1, _t('Processing %1', $t->getWithTemplate("^{$table}.preferred_labels (^{$table}.idno)")));
+                        if ($t->deriveHistoryTrackingCurrentValue()) {
+                            $c++;
+                        }
+                    }
+				}
+				print CLIProgressBar::finish();
+				CLIUtils::addMessage(_t('Processed %1 %2', $c, Datamodel::getTableProperty($table, "NAME_PLURAL")));
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_future_values_for_history_tracking_policiesParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_future_values_for_history_tracking_policiesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_future_values_for_history_tracking_policiesShortHelp() {
+			return _t('Updates current values for all records with tracking policies for which values with upcoming data have been set.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_future_values_for_history_tracking_policiesHelp() {
+			return _t('CollectiveAccess supports tracking of location and use histories through history tracking policies. Current values for each record for each policy are cached to speed browses and display. For records with values having future dates, current values will change as those future dates become present dates. This command will update the cached current values to reflect the transition from future to current. It should be run periodically (at least once a day) to ensure the accuracy of the current value cache.');
+		}
         # -------------------------------------------------------
 		public static function reload_object_current_location_dates($po_opts=null) {
 			require_once(__CA_MODELS_DIR__."/ca_movements.php");

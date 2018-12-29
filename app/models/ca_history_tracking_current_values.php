@@ -81,53 +81,53 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_values'] = arra
 		'current_table_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
+			'IS_NULL' => true,
+			'DEFAULT' => null,
 			'LABEL' => 'Current value table', 'DESCRIPTION' => 'Table in which current value resides for the policy',
 			'BOUNDS_VALUE' => array(0,255)
 		),
 		'current_row_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
+			'IS_NULL' => true,
+			'DEFAULT' => null,
 			'LABEL' => 'Current value row id', 'DESCRIPTION' => 'Identifier of row that is current value for the policy'
 		),
 		'current_type_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => true,
-			'DEFAULT' => '',
+			'DEFAULT' => null,
 			'LABEL' => 'Current type id', 'DESCRIPTION' => 'Type of row that is current value for the policy'
 		),
 		'tracked_table_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
+			'IS_NULL' => true,
+			'DEFAULT' => null,
 			'LABEL' => 'Tracked table', 'DESCRIPTION' => 'Table in which row that establishes current value resides',
 			'BOUNDS_VALUE' => array(0,255)
 		),
 		'tracked_row_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
+			'IS_NULL' => true,
+			'DEFAULT' => null,
 			'LABEL' => 'Tracked row id', 'DESCRIPTION' => 'Identifier of row that establishes current value'
 		),
 		'tracked_type_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => true,
-			'DEFAULT' => '',
+			'DEFAULT' => null,
 			'LABEL' => 'Current type id', 'DESCRIPTION' => 'Type of row that establishes current value'
 		),
-		'settings' => array(
-			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-			'IS_NULL' => false, 
-			'DEFAULT' => '',
-			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Current value settings')
+		'is_future' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'LABEL' => 'Has future value', 'DESCRIPTION' => 'Flag indicating there there is a value set for this row with a future date'
 		)
  	)
 );
@@ -240,6 +240,19 @@ class ca_history_tracking_current_values extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/** 
+	 *
+	 */
+	public static function rowsWithFutureValues($options=null) {
+		$qr = self::find(['is_future' => ['>', 0]], ['returnAs' => 'queryresult']);
+		
+		$acc = [];
+		while($qr->nextRow()) {
+			$acc[$qr->get('table_num')][$qr->get('row_id')] = true;
+		}
+		return array_map(function($v) { return array_keys($v); }, $acc);
 	}
 	# ------------------------------------------------------
 }
