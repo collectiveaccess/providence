@@ -260,7 +260,7 @@
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
 							'hide_add_to_collection_controls', 'add_to_collection_types',
 							'ca_storage_locations_elements', 'sortDirection',
-							'currentValueColor', 'pastValueColor', 'futureValueColor'
+							'currentValueColor', 'pastValueColor', 'futureValueColor', 'hide_value_interstitial_edit', 'hide_value_delete'
 						) as $vs_key) {
 					if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
 						$va_bundle_settings[$vs_key] = $va_current_location_criteria[$vs_key];

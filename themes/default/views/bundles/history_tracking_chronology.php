@@ -53,6 +53,9 @@
 	
 	$display_mode 				= caGetOption('displayMode', $settings, null);
 	
+	$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
+	$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
+	
 	if (!($add_label = $this->getVar('add_label'))) { $add_label = _t('Update location'); }
 	
     if (!$this->request->isAjax()) {
@@ -202,11 +205,11 @@ switch($display_mode) {
 					
 									
 <?php
-					if (!$read_only && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
+					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
 ?>
 						<div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?php print Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?php print $history_entry['tracked_row_id']; ?>"  data-primary="<?php print Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?php print $history_entry['current_row_id']; ?>"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
 					}
-					if (!$read_only && !$vb_dont_show_del) {
+					if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
 ?>
 						<div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?php print Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?php print $history_entry['tracked_row_id']; ?>"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
 					}

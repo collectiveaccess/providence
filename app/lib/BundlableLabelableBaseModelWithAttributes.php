@@ -4542,122 +4542,132 @@ if (!$vb_batch) {
 					    
 					    $change_has_been_made = false;
 					    
-					    // handle deletes
-					    $refs=$this->getHistoryReferences();	// get all references present in this history
-					    foreach($refs as $t => $r) {
-					    	if (is_array($rp = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_delete_{$t}", pArray))) {
-					    		if (is_array($rows_to_delete = array_intersect($r, $rp))) {	// only attempt to delete values passed that are actually in the history
-					    			if (!($t_instance = Datamodel::getInstance($t, true))) { continue; }
-					    			if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
-					    			foreach($rows_to_delete as $row_id) {
-					    				if ($t_instance->isRelationship() && $t_instance->load($row_id)) {
-					    					if(!$t_instance->delete()) {	// TODO: check error handling
-					    						$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
-					    					}
-					    				} elseif(($t === 'ca_object_lots') && ($this->tableName() === 'ca_objects')) {
-					    					$this->set('lot_id', null);
-					    					if (!$this->update()) {	// TODO: check error handling
-					    						$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
-					    					}
-					    				} elseif(($t === 'ca_objects') && ($this->tableName() === 'ca_objects') && ($this->get('is_deaccessioned'))) {
-					    					$this->set('is_deaccessioned', 0);
-					    					if (!$this->update()) {	// TODO: check error handling
-					    						$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
-					    					}
-					    				}
-					    				$change_has_been_made = true;
-										SearchResult::clearResultCacheForRow($t, $row_id);
-					    			}
-					    		}
-					    	}
-					    }
-					    
-						// set storage location
-						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
-					    	$t_loc = new ca_storage_locations();
-					    	if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
-							if ($t_loc->load($vn_location_id)) {
-								if ($policy) {
-									$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_storage_locations', $t_loc->getTypeCode());
-									$vn_relationship_type_id = caGetOption('trackingRelationshipType', $policy_info, null);
-								}
-								if (!$vn_relationship_type_id) { $vn_relationship_type_id = $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'); }
-								if ($vn_relationship_type_id) {
-									// is effective date set?
-									$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_datenew_0", pString);
-						
-									$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date, null, null, null, array('allowDuplicates' => true));
-									if ($this->numErrors()) {
-										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
-									} else {
-										// set any other defined interstitials
-										if (is_array($va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_bundle_settings, array()))) {
-											foreach($va_storage_location_elements as $vs_element) {
-												if ($vs_element == 'effective_date') { continue; }
-												if ($this->hasField($vs_element)) {
-													$t_item_rel->set($vs_element, $vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vs_element}new_0", pString));
-												} elseif ($vn_element_id = ca_metadata_elements::getElementID($vs_element)) {
-													$va_sub_element_ids = ca_metadata_elements::getElementsForSet($vn_element_id, ['idsOnly' => true]);
-													$va_vals = [];
-													foreach($va_sub_element_ids as $vn_sub_element_id) {
-														$va_vals[ca_metadata_elements::getElementCodeForID($vn_sub_element_id)] = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_sub_element_id}_new_0", pString);
-													}
-													$t_item_rel->addAttribute($va_vals, $vs_element);
-													$t_item_rel->update();
+					    if (!caGetOption('hide_value_delete', $va_bundle_settings, false)) {
+							// handle deletes
+							$refs = $this->getHistoryReferences();	// get all references present in this history
+							foreach($refs as $t => $r) {
+								if (is_array($rp = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_delete_{$t}", pArray))) {
+									if (is_array($rows_to_delete = array_intersect($r, $rp))) {	// only attempt to delete values passed that are actually in the history
+										if (!($t_instance = Datamodel::getInstance($t, true))) { continue; }
+										if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
+										foreach($rows_to_delete as $row_id) {
+											if ($t_instance->isRelationship() && $t_instance->load($row_id)) {
+												if(!$t_instance->delete()) {	// TODO: check error handling
+													$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
+												}
+											} elseif(($t === 'ca_object_lots') && ($this->tableName() === 'ca_objects')) {
+												$this->set('lot_id', null);
+												if (!$this->update()) {	// TODO: check error handling
+													$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
+												}
+											} elseif(($t === 'ca_objects') && ($this->tableName() === 'ca_objects') && ($this->get('is_deaccessioned'))) {
+												$this->set('is_deaccessioned', 0);
+												if (!$this->update()) {	// TODO: check error handling
+													$po_request->addActionErrors($t_instance->errors(), $vs_f, 'general');
 												}
 											}
-										}								
-									}									
+											$change_has_been_made = true;
+											SearchResult::clearResultCacheForRow($t, $row_id);
+										}
+									}
+								}
+							}
+						}
+					    
+					    if (!caGetOption('hide_update_location_controls', $va_bundle_settings, false)) {
+							// set storage location
+							if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
+								$t_loc = new ca_storage_locations();
+								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+								if ($t_loc->load($vn_location_id)) {
+									if ($policy) {
+										$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_storage_locations', $t_loc->getTypeCode());
+										$vn_relationship_type_id = caGetOption('trackingRelationshipType', $policy_info, null);
+									}
+									if (!$vn_relationship_type_id) { $vn_relationship_type_id = $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'); }
+									if ($vn_relationship_type_id) {
+										// is effective date set?
+										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_datenew_0", pString);
+						
+										$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date, null, null, null, array('allowDuplicates' => true));
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										} else {
+											// set any other defined interstitials
+											if (is_array($va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_bundle_settings, array()))) {
+												foreach($va_storage_location_elements as $vs_element) {
+													if ($vs_element == 'effective_date') { continue; }
+													if ($this->hasField($vs_element)) {
+														$t_item_rel->set($vs_element, $vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vs_element}new_0", pString));
+													} elseif ($vn_element_id = ca_metadata_elements::getElementID($vs_element)) {
+														$va_sub_element_ids = ca_metadata_elements::getElementsForSet($vn_element_id, ['idsOnly' => true]);
+														$va_vals = [];
+														foreach($va_sub_element_ids as $vn_sub_element_id) {
+															$va_vals[ca_metadata_elements::getElementCodeForID($vn_sub_element_id)] = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_sub_element_id}_new_0", pString);
+														}
+														$t_item_rel->addAttribute($va_vals, $vs_element);
+														$t_item_rel->update();
+													}
+												}
+											}								
+										}									
 								
-									$change_has_been_made = true;
-									SearchResult::clearResultCacheForRow('ca_storage_locations', $vn_location_id);
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_storage_locations', $vn_location_id);
+									}
 								}
 							}
 						}
 						
-						// set loan
-						if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_idnew_0", pInteger)) {
-							if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_type_idnew_0", pInteger)) {
-								$t_item_rel = $this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
-								if ($this->numErrors()) {
-									$po_request->addActionErrors($this->errors(), $vs_f, 'general');
-								}
-								$change_has_been_made = true;
-								SearchResult::clearResultCacheForRow('ca_loans', $vn_loan_id);
-								if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
-							}
-						}
-						
-						// set occurrence
-						require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
-						$t_occ = new ca_occurrences();
-						$va_occ_types = $t_occ->getTypeList();
-						foreach($va_occ_types as $vn_type_id => $vn_type_info) {
-							if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_idnew_0", pInteger)) {
-								if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
-									$this->addRelationship('ca_occurrences', $vn_occurrence_id, $vn_occ_type_id);
+						if (!caGetOption('hide_add_to_loan_controls', $va_bundle_settings, false)) {
+							// set loan
+							if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_idnew_0", pInteger)) {
+								if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_type_idnew_0", pInteger)) {
+									$t_item_rel = $this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									}
 									$change_has_been_made = true;
-									SearchResult::clearResultCacheForRow('ca_occurrences', $vn_occurrence_id);
+									SearchResult::clearResultCacheForRow('ca_loans', $vn_loan_id);
+									if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
 								}
 							}
 						}
 						
-						// set collection
-						require_once(__CA_MODELS_DIR__."/ca_collections.php");
-						$t_coll = new ca_collections();
-						$va_coll_types = $t_coll->getTypeList();
-						foreach($va_coll_types as $vn_type_id => $vn_type_info) {
-							if ($vn_collection_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_idnew_0", pInteger)) {
-								if ($vn_coll_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_type_idnew_0", pInteger)) {
-									$this->addRelationship('ca_collections', $vn_collection_id, $vn_coll_type_id);
-									if ($this->numErrors()) {
-										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+						if (!caGetOption('hide_add_to_occurrence_controls', $va_bundle_settings, false)) {
+							// set occurrence
+							require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
+							$t_occ = new ca_occurrences();
+							$va_occ_types = $t_occ->getTypeList();
+							foreach($va_occ_types as $vn_type_id => $vn_type_info) {
+								if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_idnew_0", pInteger)) {
+									if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
+										$this->addRelationship('ca_occurrences', $vn_occurrence_id, $vn_occ_type_id);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										}
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_occurrences', $vn_occurrence_id);
 									}
-									$change_has_been_made = true;
-									SearchResult::clearResultCacheForRow('ca_collections', $vn_collection_id);
+								}
+							}
+						}
+						
+						if (!caGetOption('hide_add_to_collection_controls', $va_bundle_settings, false)) {
+							// set collection
+							require_once(__CA_MODELS_DIR__."/ca_collections.php");
+							$t_coll = new ca_collections();
+							$va_coll_types = $t_coll->getTypeList();
+							foreach($va_coll_types as $vn_type_id => $vn_type_info) {
+								if ($vn_collection_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_idnew_0", pInteger)) {
+									if ($vn_coll_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_type_idnew_0", pInteger)) {
+										$this->addRelationship('ca_collections', $vn_collection_id, $vn_coll_type_id);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										}
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_collections', $vn_collection_id);
+									}
 								}
 							}
 						}

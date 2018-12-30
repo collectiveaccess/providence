@@ -1281,7 +1281,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Include child history" controls'),
-										'description' => _t('Check this option if you want to to hide the "Include child history" controls in this bundle placement.')
+										'description' => _t('Check this option if you want to hide the "Include child history" controls in this bundle placement.')
 									),
 									'hide_add_to_loan_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1290,7 +1290,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to loan" controls'),
-										'description' => _t('Check this option if you want to to hide the "Add to loan" controls in this bundle placement.')
+										'description' => _t('Check this option if you want to hide the "Add to loan" controls in this bundle placement.')
 									),
 									'hide_update_location_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1299,7 +1299,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Update Location" controls'),
-										'description' => _t('Check this option if you want to to hide the "Update Location" controls in this bundle placement.')
+										'description' => _t('Check this option if you want to hide the "Update Location" controls in this bundle placement.')
 									),
 									'hide_add_to_occurrence_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1308,7 +1308,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to" occurrence controls'),
-										'description' => _t('Check this option if you want to to hide the "Add to" occurrence controls in this bundle placement.'),
+										'description' => _t('Check this option if you want to hide the "Add to" occurrence controls in this bundle placement.'),
 										'hideOnSelect' => ['add_to_occurrence_types']
 									),
 									'add_to_occurrence_types' => array(
@@ -1329,7 +1329,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to collection" controls'),
-										'description' => _t('Check this option if you want to to hide the "Add to collection" controls in this bundle placement.')
+										'description' => _t('Check this option if you want to hide the "Add to collection" controls in this bundle placement.')
 									),
 									'add_to_collection_types' => array(
 										'formatType' => FT_TEXT,
@@ -1350,6 +1350,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '1',
 										'label' => _t('Use hierarchy browser for storage locations?'),
 										'description' => _t('If checked a hierarchical browser will be used to select storage location items rather than an auto-complete lookup.')
+									),
+									'hide_value_interstitial_edit' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "edit" control for individual history values?'),
+										'description' => _t('Check this option if you want to hide "edit" controls for each history value in this bundle placement.')
+									),
+									'hide_value_delete' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "delete" control for individual history values?'),
+										'description' => _t('Check this option if you want to hide "delete" controls for each history value in this bundle placement.')
 									)
 								);
 								
