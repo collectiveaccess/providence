@@ -559,7 +559,7 @@
 		jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
 		
 		jQuery(".caSetImageCenterLaunchButton").hide();
-		jQuery(".annotationTypeSetCenterImage").show();
+		jQuery(".annotationTypeSetCenterImage, .annotationTypeSetCenterDocument").show();
 	});
 	
 	function caSetImageCenterForSave<?php print $vs_id_prefix; ?>(data) {
