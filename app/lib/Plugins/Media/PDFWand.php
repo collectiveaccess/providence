@@ -96,6 +96,9 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			"filesize" 			=> 'R',
 			"antialiasing"		=> 'W', # amount of antialiasing to apply to final output; 0 means none, 1 means lots; a good value is 0.5
 			"crop"				=> 'W', # if set to geometry value (eg. 72x72) image will be cropped to those dimensions; set by transform() to support fill_box SCALE mode 
+			"crop_from"			=> 'W', # location to calculate crop area from
+			"crop_center_x"		=> 'W',
+			"crop_center_y"		=> 'W',
 			"scaling_correction"=> 'W',	# percent scaling required to correct sizing of image output by Ghostscript (Ghostscript does not do fractional resolutions)
 			"target_width"		=> 'W',
 			"target_height"		=> 'W',
@@ -497,6 +500,11 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 						break;
 					# ----------------
 					case "fill_box":
+						$crop_from = $pa_parameters["crop_from"];
+						if (!in_array($crop_from, array('center', 'north_east', 'north_west', 'south_east', 'south_west', 'random'))) {
+							$crop_from = '';
+						}
+						
 						if ($vn_width_ratio < $vn_height_ratio) {
 							$vn_resolution = ceil($vn_orig_resolution * $vn_width_ratio);
 							$vn_scaling_correction = $w/ceil($vn_resolution * ($cw/$vn_orig_resolution));
@@ -505,6 +513,9 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 							$vn_scaling_correction = $h/ceil($vn_resolution * ($ch/$vn_orig_resolution));
 						}
 						$this->set("crop",$w."x".$h);
+						$this->set("crop_from",$crop_from);
+						$this->set("crop_center_x", caGetOption('_centerX', $pa_parameters, 0.5));
+						$this->set("crop_center_y", caGetOption('_centerY', $pa_parameters, 0.5));
 						break;
 					# ----------------
 					case "bounding_box":
@@ -622,10 +633,11 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 						if ($vs_crop = $this->get("crop")) {
 							$o_media = new Media();
 							list($vn_w, $vn_h) = explode("x", $vs_crop);
+							
 							if (($vn_w > 0) && ($vn_h > 0)) {
 								$o_media->read($vs_file);
 								if (!$o_media->numErrors()) {
-									$o_media->transform('SCALE', array('mode' => 'fill_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h));
+									$o_media->transform('SCALE', array('mode' => 'fill_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h, 'crop_from' => $this->get('crop_from'), '_centerX' => $this->get('crop_center_x'), '_centerY' => $this->get('crop_center_y')));
 									$o_media->write(preg_replace("!\.[A-Za-z0-9]+$!", '', $vs_file), $ps_mimetype, array());
 									if (!$o_media->numErrors()) {
 										$this->properties["width"] = $vn_w;
