@@ -869,7 +869,7 @@ class ItemService extends BaseJSONService {
 		
         if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  Datamodel::getInstanceByTableNum($vn_table_num)) {
+            if($t_set_table =  Datamodel::getInstance($vn_table_num)) {
                 $vs_set_table = $t_set_table->tableName();
                 foreach($pa_data["set_content"] as $vs_idno) {
                     if ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId'])) {
@@ -1042,7 +1042,7 @@ class ItemService extends BaseJSONService {
 		
 		if(($ps_table == 'ca_sets') && is_array($va_post["set_content"]) && sizeof($va_post["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  Datamodel::getInstanceByTableNum($vn_table_num)) {
+            if($t_set_table =  Datamodel::getInstance($vn_table_num)) {
                 $vs_set_table = $t_set_table->tableName();
                 
                $va_current_set_item_ids = $t_instance->getItems(['returnRowIdsOnly' => true]);
