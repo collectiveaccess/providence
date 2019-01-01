@@ -2189,7 +2189,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  			$this->set('current_loc_class', $vn_table_num);
  			$this->set('current_loc_subclass', $vn_type_id);
  			$this->set('current_loc_id', $pn_current_loc_id);
- 			$this->update();
+ 			$this->update(['force' => true]);
  			
  			if ($this->numErrors()) {
  				return false;
@@ -2201,7 +2201,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  			$this->set('current_loc_class', null);
  			$this->set('current_loc_subclass', null);
  			$this->set('current_loc_id', null);
- 			$this->update();
+ 			$this->update(['force' => true]);
  			
  			
  			if ($this->numErrors()) {
