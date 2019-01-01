@@ -943,7 +943,7 @@ class MultipartIDNumber extends IDNumber {
 		}
 		
 		if (isset($pa_options['INDEX_IDNO_PARTS']) || (is_array($pa_options) && (in_array('INDEX_IDNO_PARTS', $pa_options)))) {
-		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $pa_options, [$this->getSeparator()])) && sizeof($va_delimiters)) {
+		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $pa_options, $this->getSeparator() ? [$this->getSeparator()]: null)) && sizeof($va_delimiters)) {
 		        $va_output_values = array_merge($va_output_values, preg_split("![".preg_quote(join('', $va_delimiters), "!")."]!", $ps_value));
 		    }
 		}
