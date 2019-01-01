@@ -491,7 +491,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (strtolower($vs_field) == 'count') {
 			$vs_rel_type = null;
 			
-			if (sizeof($va_rel_type_ids) > 0) {
+			if (is_array($va_rel_type_ids) && (sizeof($va_rel_type_ids) > 0)) {
 				$vn_rel_type = $va_rel_type_ids[0];
 			} else {
 				$va_rel_type_ids = [0];
