@@ -1605,6 +1605,8 @@
 			
 			$o_view->setVar('id_prefix', $ps_form_name);
 			$o_view->setVar('placement_code', $ps_placement_code);
+			$o_view->setVar('bundle_name', caGetOption('bundleName', $pa_options, null));
+			
 
 			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 			$o_view->setVar('settings', $pa_bundle_settings);
@@ -1780,7 +1782,15 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Generate interstitial editing form for related ca_storage_locations/ca_loans/ca_occurrences/ca_collections in history tracking chronology bundle
 		 *
+		 * @param string $id_prefix Form id prefix
+		 * @param string $subject_table Table to which relationship links to
+		 * @param array $settings Array of settings for history tracking chronlogy bundle
+		 * @param array $options Options include:
+		 *		type = type of related record [Default is null]
+		 *
+		 * @return string HTML form
 		 */
 		public static function getHistoryTrackingChronologyInterstitialElementAddHTMLForm($id_prefix, $subject_table, $settings, $options=null) {
 			global $g_ui_locale;
@@ -1835,16 +1845,23 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Process interstitial editing form for related ca_storage_locations/ca_loans/ca_occurrences/ca_collections in history tracking chronology bundle
 		 *
+		 * @param RequestHTTP $po_request The current request
+		 * @param string $placement_code Placement code for this history tracking chronology bundle
+		 * @param string $form_prefix Form prefix for this form
+		 * @param BaseRelationshipModel $t_item_rel Model instance for the relationship
+		 * @param int $rel_id Row_id for related record
+		 * @param array $settings Array of settings for history tracking chronlogy bundle
+		 *
+		 * @return bool
 		 */
-		public static function setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $placement_code, $form_prefix, $t_item_rel, $rel_id, $processed_bundle_settings) {
+		public static function setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $placement_code, $form_prefix, $t_item_rel, $rel_id, $settings) {
 			if($t_item_rel) {
 				$rel_table = get_called_class();
-			
-				// set any other defined interstitials
-				if (!($t = Datamodel::getInstance($rel_table, true))) { return null; }	// ensure model is loaded
+				
 				$type = $rel_table::typeCodeForRowID($rel_id);
-				if (is_array($interstitial_elements = caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $processed_bundle_settings, array()))) {
+				if (is_array($interstitial_elements = caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $settings, array()))) {
 					foreach($interstitial_elements as $element_code) {
 						if ($t_item_rel->hasField($element_code)) {
 							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter("{$placement_code}{$form_prefix}_{$rel_table}_{$element_code}new_0", pString));

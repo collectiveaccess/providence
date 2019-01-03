@@ -1784,7 +1784,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					    if (strlen($pb_show_child_history = $pa_options['request']->getParameter("showChildHistory", pInteger))) {
 					        Session::setVar("{$ps_bundle_name}_showChildHistory", (bool)$pb_show_child_history);
 					    }
-						$vs_element .= $this->getHistoryTrackingChronologyHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, ['showChildHistory' => Session::getVar("{$ps_bundle_name}_showChildHistory")]));
+						$vs_element .= $this->getHistoryTrackingChronologyHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, ['bundleName' => $ps_bundle_name, 'showChildHistory' => Session::getVar("{$ps_bundle_name}_showChildHistory")]));
 						
 						break;
 					# -------------------------------

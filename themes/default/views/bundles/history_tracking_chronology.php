@@ -34,6 +34,7 @@
 	$settings 					= $this->getVar('settings');
 
 	$read_only					= (isset($settings['readonly']) && $settings['readonly']);
+	$bundle_name				= $this->getVar('bundle_name');
 	
 	$history					= $this->getVar('history');
 	
@@ -490,7 +491,7 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 					onCloseCallback: function() {
 						jQuery("#topNavContainer").show(250);
 						if(caBundleUpdateManager) { 
-							caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
+							caBundleUpdateManager.reloadBundle('<?php print $bundle_name; ?>'); 
 							caBundleUpdateManager.reloadInspector(); 
 						}
 					}
