@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,8 +40,6 @@
 	
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
-
-	//$va_storage_location_elements = caGetOption('ca_storage_locations_elements', $settings, array());
 	
 	$occ_types  				= $this->getVar('occurrence_types');
 	$occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $occ_types));

@@ -1607,7 +1607,6 @@
 			$o_view->setVar('placement_code', $ps_placement_code);
 			$o_view->setVar('bundle_name', caGetOption('bundleName', $pa_options, null));
 			
-
 			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 			$o_view->setVar('settings', $pa_bundle_settings);
 		
@@ -1832,7 +1831,7 @@
 								$field_class = '';
 								break;
 						}
-						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'id' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'value' => _t('now'), 'classname' => $field_class])."</td>";
+						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'id' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'value' => _t('today'), 'classname' => $field_class])."</td>";
 					} else {
 						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($this->request, null, $element_code, $this->getVar('placement_code'), $settings, ['elementsOnly' => true])."</td>";
 					}	
