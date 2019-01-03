@@ -1,4 +1,4 @@
-# README: Providence version 1.7.6
+# README: Providence version 1.7.7
 
 [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
 

@@ -962,10 +962,10 @@ class DisplayTemplateParser {
 			// Get trailing options (eg. ca_entities.preferred_labels.displayname%delimiter=;_)
 			if (is_array($va_parsed_tag_opts = DisplayTemplateParser::_parseTagOpts($vs_get_spec))) {
 				$vs_get_spec = $va_parsed_tag_opts['tag'];
-				if (isset($va_parsed_tag_opts['options']['restrictToRelationshipTypes']) && sizeof($va_parsed_tag_opts['options']['restrictToRelationshipTypes'])) {
+				if (isset($va_parsed_tag_opts['options']['restrictToRelationshipTypes']) && is_array($va_parsed_tag_opts['options']['restrictToRelationshipTypes']) && sizeof($va_parsed_tag_opts['options']['restrictToRelationshipTypes'])) {
 					unset($va_remove_opts_for_related['restrictToRelationshipTypes']);
 				}
-				if (isset($va_parsed_tag_opts['options']['restrictToTypes']) && sizeof($va_parsed_tag_opts['options']['restrictToTypes'])) {
+				if (isset($va_parsed_tag_opts['options']['restrictToTypes']) && is_array($va_parsed_tag_opts['options']['restrictToTypes']) && sizeof($va_parsed_tag_opts['options']['restrictToTypes'])) {
 					unset($va_remove_opts_for_related['restrictToTypes']);
 				}
 			}

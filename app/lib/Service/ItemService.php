@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -120,17 +120,28 @@ class ItemService extends BaseJSONService {
 				continue;
 			}
 
-			if(!is_array($va_options)) {
-				$va_options = array();
-			}
+			if(!is_array($va_options)) { $va_options = []; }
 
 			// hack to add option to include comment count in search result
 			if(trim($vs_bundle) == 'ca_item_comments.count') {
 				$va_item[$vs_bundle] = (int) $t_instance->getNumComments(null);
 				continue;
 			}
+			
+			if(caGetOption('coordinates', $va_options, true)) { // Geocode attribute "coordinates" option returns an array which we want to serialize in the response, so we'll need to get it as a structured return value
+				$va_options['returnWithStructure'] = true;
+				unset($va_options['template']);	// can't use template with structured return value
+			}
 
 			$vm_return = $t_instance->get($vs_bundle,$va_options);
+			
+			if(caGetOption('returnWithStructure', $va_options, true)) {	// unroll structured response into flat list
+				$vm_return = array_reduce($vm_return,
+					function($c, $v) { 
+						return array_merge($c, array_values($v));
+					}, []
+				);
+			}
 
 			// render 'empty' arrays as JSON objects, not as lists (which is the default behavior of json_encode)
 			if(is_array($vm_return) && sizeof($vm_return)==0) {
@@ -858,7 +869,7 @@ class ItemService extends BaseJSONService {
 		
         if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  Datamodel::getInstanceByTableNum($vn_table_num)) {
+            if($t_set_table =  Datamodel::getInstance($vn_table_num)) {
                 $vs_set_table = $t_set_table->tableName();
                 foreach($pa_data["set_content"] as $vs_idno) {
                     if ($vn_set_item_id = $vs_set_table::find(['idno' => $vs_idno], ['returnAs' => 'firstId'])) {
@@ -1031,7 +1042,7 @@ class ItemService extends BaseJSONService {
 		
 		if(($ps_table == 'ca_sets') && is_array($va_post["set_content"]) && sizeof($va_post["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
-            if($t_set_table =  Datamodel::getInstanceByTableNum($vn_table_num)) {
+            if($t_set_table =  Datamodel::getInstance($vn_table_num)) {
                 $vs_set_table = $t_set_table->tableName();
                 
                $va_current_set_item_ids = $t_instance->getItems(['returnRowIdsOnly' => true]);

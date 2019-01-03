@@ -386,7 +386,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 
-		$_REQUEST['form_timestamp'] = time();
+		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
 		$vn_old_mode = $t_instance->getMode();
 		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->update();

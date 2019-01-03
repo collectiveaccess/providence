@@ -3372,23 +3372,28 @@ class TimeExpressionParser {
 			}
 			return $vs_date;
 		}
+		
+		$vs_time = '';
+		if (!isset($pa_options['timeOmit']) || !$pa_options['timeOmit']) {
+			if (
+				(!($pa_date['hours'] == 0 && $pa_date['minutes'] == 0 && $pa_date['seconds'] == 0 && ($ps_mode == 'START'))) &&
+				(!($pa_date['hours'] == 23 && $pa_date['minutes'] == 59 && $pa_date['seconds'] == 59 && ($ps_mode == 'END')))
+			) {
+				$vs_time .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+			}
+		}
+		
 		if (
-			(!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
-			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))
+			((!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
+			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))) || $vs_time
+			
 		) {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);
 		} else {
 			$vs_date = $pa_date['year'];
 		}
 		
-		if (!isset($pa_options['timeOmit']) || !$pa_options['timeOmit']) {
-			if (
-				(!($pa_date['hours'] == 0 && $pa_date['minutes'] == 0 && $pa_date['seconds'] == 0 && ($ps_mode == 'START'))) &&
-				(!($pa_date['hours'] == 23 && $pa_date['minutes'] == 59 && $pa_date['seconds'] == 59 && ($ps_mode == 'END')))
-			) {
-				$vs_date .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
-			}
-		}
+		$vs_date .= $vs_time;
 		
 		return $vs_date;
 	}
