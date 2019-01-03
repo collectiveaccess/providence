@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,6 +126,11 @@
 						}
 						foreach($types as $type) {
 							if(!is_array($config)) { break; }
+							if ($table === 'ca_storage_locations') { 
+								$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
+							} else {
+								$bundle_settings["{$table}_{$type}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
+							}
 							$bundle_settings["{$table}_{$type}_displayTemplate"] = $config['template'];
 							$bundle_settings["{$table}_{$type}_color"] = $config['color'];
 							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$type]));
@@ -190,68 +195,14 @@
 		/**
 		 * 
 		 */
-		private function _processHistoryBundleSettings($pa_bundle_settings) {
-
+		public function _processHistoryBundleSettings($pa_bundle_settings) {
 			if ($vb_use_app_defaults = caGetOption('useAppConfDefaults', $pa_bundle_settings, false)) {
 				// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
 				if (!self::isValidHistoryTrackingCurrentValuePolicy($policy = caGetOption('policy', $pa_bundle_settings, null))) {
 					$policy = $this->getDefaultHistoryTrackingCurrentValuePolicy();
 				}
-				$va_current_location_criteria = self::policy2bundleconfig(['policy' => $policy]);
-			
-				$va_bundle_settings = [];
-				foreach($va_current_location_criteria as $vs_table => $va_info) {
-					switch($vs_table) {
-						case 'ca_storage_locations':
-							if(is_array($va_info)) {
-								foreach($va_info as $vs_rel_type => $va_options) {
-									$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $vs_rel_type;
-									foreach($va_options as $vs_opt => $vs_opt_val) {
-										switch($vs_opt) {
-											case 'template':
-												$vs_opt = 'displayTemplate';
-												break;
-										}
-										$va_bundle_settings["{$vs_table}_{$vs_opt}"] = $vs_opt_val;
-									}
-								}
-								$va_bundle_settings["{$vs_table}_showRelationshipTypes"] = caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', $va_bundle_settings["{$vs_table}_showRelationshipTypes"]);
-							}
-							break;
-						case 'ca_objects':
-							if(is_array($va_info)) {
-								$va_bundle_settings['showDeaccessionInformation'] = 1;
-								foreach($va_info as $vs_opt => $vs_opt_val) {
-									switch($vs_opt) {
-										case 'template':
-											$vs_opt = 'displayTemplate';
-											break;
-									}
-									$va_bundle_settings["deaccession_{$vs_opt}"] = $vs_opt_val;
-								}
-							}
-							break;
-						default:
-							if(is_array($va_info)) {
-								foreach($va_info as $vs_type => $va_options) {
-									if(!is_array($va_options)) { continue; }
-									$va_bundle_settings["{$vs_table}_showTypes"][] = $vs_type;
-									foreach($va_options as $vs_opt => $vs_opt_val) {
-										switch($vs_opt) {
-											case 'date':
-												$vs_opt = 'dateElement';
-												break;
-											case 'template':
-												$vs_opt = 'displayTemplate';
-												break;
-										}
-										$va_bundle_settings["{$vs_table}_{$vs_type}_{$vs_opt}"] = $vs_opt_val;
-									}
-								}
-								$va_bundle_settings["{$vs_table}_showTypes"] = caMakeTypeIDList($vs_table, $va_bundle_settings["{$vs_table}_showTypes"]);
-							}
-							break;
-					}
+				if (!is_array($va_bundle_settings = self::policy2bundleconfig(['policy' => $policy]))) {
+					$va_bundle_settings = []; 
 				}
 
 				foreach(array(
@@ -259,7 +210,7 @@
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
 							'hide_add_to_collection_controls', 'add_to_collection_types',
-							'ca_storage_locations_elements', 'sortDirection',
+							'ca_storage_locations_elements', 'sortDirection', 'setInterstitialElementsOnAdd',
 							'currentValueColor', 'pastValueColor', 'futureValueColor', 'hide_value_interstitial_edit', 'hide_value_delete'
 						) as $vs_key) {
 					if (isset($va_current_location_criteria[$vs_key]) && $vb_use_app_defaults) {
@@ -1831,6 +1782,90 @@
 		/**
 		 *
 		 */
+		public static function getHistoryTrackingChronologyInterstitialElementAddHTMLForm($id_prefix, $subject_table, $settings, $options=null) {
+			global $g_ui_locale;
+			
+			$buf = '';
+			
+			$rel_table = get_called_class();
+			$type_idno = caGetOption('type', $options, null);
+			if(is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"]) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
+				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
+				
+				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
+				
+				Datamodel::getInstance('ca_editor_uis', true);
+				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance']);
+				foreach($interstitial_elements as $element_code) {
+					$buf .= "<tr>";
+					
+					$label = null;
+					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle($element_code))) {
+						$l = array_shift($p);
+						
+						if (!($label = caGetOption($g_ui_locale, $l['settings']['label'], null))) {
+							if (is_string($l['settings']['label'])) { $label = $l['settings']['label']; }
+						}
+					} 
+					if (!$label) {
+						$label = $t_rel->getDisplayLabel($t_rel->tableName().".".$element_code);
+					}
+					if ($t_rel->hasField($element_code)) {
+						switch($t_rel->getFieldInfo($element_code, 'FIELD_TYPE')) {
+							case FT_DATETIME:
+							case FT_HISTORIC_DATETIME:
+							case FT_DATERANGE:
+							case FT_HISTORIC_DATERANGE:
+								$field_class = 'dateBg';
+								break;
+							default:
+								$field_class = '';
+								break;
+						}
+						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'id' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'value' => _t('now'), 'classname' => $field_class])."</td>";
+					} else {
+						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($this->request, null, $element_code, $this->getVar('placement_code'), $settings, ['elementsOnly' => true])."</td>";
+					}	
+					$buf .= "</tr>\n";
+				}
+				
+				$buf .= "</table>\n";
+			}
+			return $buf;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $placement_code, $form_prefix, $t_item_rel, $rel_id, $processed_bundle_settings) {
+			if($t_item_rel) {
+				$rel_table = get_called_class();
+			
+				// set any other defined interstitials
+				if (!($t = Datamodel::getInstance($rel_table, true))) { return null; }	// ensure model is loaded
+				$type = $rel_table::typeCodeForRowID($rel_id);
+				if (is_array($interstitial_elements = caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $processed_bundle_settings, array()))) {
+					foreach($interstitial_elements as $element_code) {
+						if ($t_item_rel->hasField($element_code)) {
+							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter("{$placement_code}{$form_prefix}_{$rel_table}_{$element_code}new_0", pString));
+						} elseif ($element_id = ca_metadata_elements::getElementID($element_code)) {
+							$va_sub_element_ids = ca_metadata_elements::getElementsForSet($element_id, ['idsOnly' => true]);
+							$vals = [];
+							foreach($sub_element_ids as $sub_element_id) {
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter("{$placement_code}{$form_prefix}_{$rel_table}_{$sub_element_id}_new_0", pString);
+							}
+							$t_item_rel->addAttribute($vals, $element);
+						}
+					}
+					return $t_item_rel->update();
+				}								
+			}
+			return true;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
 		public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 			switch($ps_bundle_name) {
 				case 'ca_objects_location':
@@ -1879,9 +1914,9 @@
 		/**
 		 *
 		 */
-		public static function getHistoryTrackingEditorBundleSettingsData($options=null) {
-			if (!caGetOption('noCache', $options, false) && ExternalCache::contains("historyTrackingEditorBundleSettingsData")) { return ExternalCache::fetch('historyTrackingEditorBundleSettingsData'); }	
-		
+		public static function getHistoryTrackingEditorBundleSettingsData($table, $options=null) {
+			$cache_key = caMakeCacheKeyFromOptions($options, $table);
+			//if (!caGetOption('noCache', $options, false) && ExternalCache::contains($cache_key, "historyTrackingEditorBundleSettingsData")) { return ExternalCache::fetch($cache_key, 'historyTrackingEditorBundleSettingsData'); }			
 			$additional_settings = [];
 			
 			$additional_settings['ca_object_lots_showTypes'] = array(
@@ -1961,6 +1996,9 @@
 				'description' => ''
 			);
 			$types = caGetTypeList("ca_occurrences");
+			
+			$linking_table = Datamodel::getLinkingTableName($table, 'ca_occurrences');
+			
 			foreach($types as $vn_type_id => $type) {
 				$additional_settings["ca_occurrences_{$type['idno']}_dateElement"] = array(
 					'formatType' => FT_TEXT,
@@ -1983,6 +2021,21 @@
 					'label' => _t('Color for %1', $type['name_singular']),
 					'description' => _t('Color to use as highlight %1.', $type['name_plural'])
 				);
+				if ($linking_table) {
+					$additional_settings["ca_occurrences_{$type['idno']}_setInterstitialElementsOnAdd"] = array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'default' => '',
+						'multiple' => true,
+						'takesLocale' => false,
+						'table' => $linking_table,
+						'showMetadataElementsWithDataType' => "*",
+						'includeIntrinsics' => ['effective_date'],
+						'width' => "275px", 'height' => 4,
+						'label' => _t('Interstitial elements to set'),
+						'description' => _t('Interstitial elements to set')
+					);
+				}
 				$additional_settings["ca_occurrences_{$type['idno']}_displayTemplate"] = array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
@@ -2010,6 +2063,7 @@
 				
 				$to_hide_when_using_defaults[] = "ca_occurrences_{$type['idno']}_dateElement";
 				$to_hide_when_using_defaults[] = "ca_occurrences_{$type['idno']}_color";
+				$to_hide_when_using_defaults[] = "ca_occurrences_{$type['idno']}_setInterstitialElementsOnAdd";
 				$to_hide_when_using_defaults[] = "ca_occurrences_{$type['idno']}_displayTemplate";
 				$to_hide_when_using_defaults[] = "ca_occurrences_{$type['idno']}_includeFromChildren";
 				$to_hide_when_using_defaults[] = "ca_occurrences_{$type['idno']}_childDisplayTemplate";
@@ -2027,6 +2081,8 @@
 				'description' => ''
 			);
 			$types = caGetTypeList("ca_collections");
+			
+			$linking_table = Datamodel::getLinkingTableName($table, 'ca_collections');
 			foreach($types as $vn_type_id => $type) {
 				$additional_settings["ca_collections_{$type['idno']}_dateElement"] = array(
 					'formatType' => FT_TEXT,
@@ -2049,6 +2105,21 @@
 					'label' => _t('Color for %1', $type['name_singular']),
 					'description' => _t('Color to use as highlight %1.', $type['name_plural'])
 				);
+				if ($linking_table) {
+					$additional_settings["ca_collections_{$type['idno']}_setInterstitialElementsOnAdd"] = array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'default' => '',
+						'multiple' => true,
+						'takesLocale' => false,
+						'table' => $linking_table,
+						'showMetadataElementsWithDataType' => "*",
+						'includeIntrinsics' => ['effective_date'],
+						'width' => "275px", 'height' => 4,
+						'label' => _t('Interstitial elements to set'),
+						'description' => _t('Interstitial elements to set')
+					);
+				}
 				$additional_settings["ca_collections_{$type['idno']}_displayTemplate"] = array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
@@ -2076,6 +2147,7 @@
 				
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_dateElement";
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_color";
+				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_setInterstitialElementsOnAdd";
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_displayTemplate";
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_includeFromChildren";
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_childDisplayTemplate";
@@ -2092,6 +2164,8 @@
 				'description' => ''
 			);
 			$types = caGetTypeList("ca_movements");
+			
+			$linking_table = Datamodel::getLinkingTableName($table, 'ca_movements');
 			foreach($types as $vn_type_id => $type) {
 				$additional_settings["ca_movements_{$type['idno']}_dateElement"] = array(
 					'formatType' => FT_TEXT,
@@ -2114,6 +2188,21 @@
 					'label' => _t('Color for %1', $type['name_singular']),
 					'description' => _t('Color to use as highlight %1.', $type['name_plural'])
 				);
+				if ($linking_table) {
+					$additional_settings["ca_movements_{$type['idno']}_setInterstitialElementsOnAdd"] = array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'default' => '',
+						'multiple' => true,
+						'takesLocale' => false,
+						'table' => $linking_table,
+						'showMetadataElementsWithDataType' => "*",
+						'includeIntrinsics' => ['effective_date'],
+						'width' => "275px", 'height' => 4,
+						'label' => _t('Interstitial elements to set'),
+						'description' => _t('Interstitial elements to set')
+					);
+				}
 				$additional_settings["ca_movements_{$type['idno']}_displayTemplate"] = array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
@@ -2141,6 +2230,7 @@
 				
 				$to_hide_when_using_defaults[] = "ca_movements_{$type['idno']}_dateElement";
 				$to_hide_when_using_defaults[] = "ca_movements_{$type['idno']}_color";
+				$to_hide_when_using_defaults[] = "ca_movements_{$type['idno']}_setInterstitialElementsOnAdd";
 				$to_hide_when_using_defaults[] = "ca_movements_{$type['idno']}_displayTemplate";
 				$to_hide_when_using_defaults[] = "ca_movements_{$type['idno']}_includeFromChildren";
 				$to_hide_when_using_defaults[] = "ca_movements_{$type['idno']}_childDisplayTemplate";
@@ -2159,6 +2249,7 @@
 			);
 			$types = caGetTypeList("ca_loans");
 		
+			$linking_table = Datamodel::getLinkingTableName($table, 'ca_loans');
 			foreach($types as $vn_type_id => $type) {
 				$additional_settings["ca_loans_{$type['idno']}_dateElement"] = array(
 					'formatType' => FT_TEXT,
@@ -2181,6 +2272,21 @@
 					'label' => _t('Color for %1', $type['name_singular']),
 					'description' => _t('Color to use as highlight %1.', $type['name_plural'])
 				);
+				if ($linking_table) {
+					$additional_settings["ca_loans_{$type['idno']}_setInterstitialElementsOnAdd"] = array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'default' => '',
+						'multiple' => true,
+						'takesLocale' => false,
+						'table' => $linking_table,
+						'showMetadataElementsWithDataType' => "*",
+						'includeIntrinsics' => ['effective_date'],
+						'width' => "275px", 'height' => 4,
+						'label' => _t('Interstitial elements to set'),
+						'description' => _t('Interstitial elements to set')
+					);
+				}
 				$additional_settings["ca_loans_{$type['idno']}_displayTemplate"] = array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
@@ -2208,11 +2314,13 @@
 				
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_dateElement";
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_color";
+				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_setInterstitialElementsOnAdd";
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_displayTemplate";
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_includeFromChildren";
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_childDisplayTemplate";
 			}
-				
+
+			$linking_table = Datamodel::getLinkingTableName($table, 'ca_storage_locations');
 			$additional_settings += array(
 				'ca_storage_locations_showRelationshipTypes' => array(
 					'formatType' => FT_TEXT,
@@ -2234,13 +2342,13 @@
 					'label' => _t('Color for storage location'),
 					'description' => _t('Color to use as highlight storage location.')
 				),
-				'ca_storage_locations_elements' => array(
+				'ca_storage_locations_setInterstitialElementsOnAdd' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_SELECT,
 					'default' => '',
 					'multiple' => true,
 					'takesLocale' => false,
-					'table' => 'ca_objects_x_storage_locations',
+					'table' => $linking_table,
 					'showMetadataElementsWithDataType' => "*",
 					'includeIntrinsics' => ['effective_date'],
 					'width' => "275px", 'height' => 4,
@@ -2314,7 +2422,7 @@
 					'description' => _t('Layout for deaccession information related to child objects when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
 				)
 			);
-			ExternalCache::save('historyTrackingEditorBundleSettingsData', $additional_settings);
+			ExternalCache::save($cache_key, $additional_settings, 'historyTrackingEditorBundleSettingsData');
 			return $additional_settings;
 		}
 		# ------------------------------------------------------

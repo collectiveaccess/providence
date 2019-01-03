@@ -40,7 +40,7 @@
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
 
-	$va_storage_location_elements = caGetOption('ca_storage_locations_elements', $settings, array());
+	//$va_storage_location_elements = caGetOption('ca_storage_locations_elements', $settings, array());
 	
 	$occ_types  				= $this->getVar('occurrence_types');
 	$occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $occ_types));
@@ -273,33 +273,9 @@ switch($display_mode) {
 			</div>
 			
 			<div class="clear" style="height: 20px;"><!-- empty --></div>
-				
-			<table class='caHistoryTrackingUpdateLocationMetadata'><?php 
-				if(is_array($va_storage_location_elements) && sizeof($va_storage_location_elements)) {
-					$t_rel = Datamodel::getInstanceByTableName('ca_objects_x_storage_locations', true);		
-					foreach($va_storage_location_elements as $vs_element) {
-						print "<tr>";
-						if ($t_rel->hasField($vs_element)) {
-							switch($t_rel->getFieldInfo($vs_element, 'FIELD_TYPE')) {
-								case FT_DATETIME:
-								case FT_HISTORIC_DATETIME:
-								case FT_DATERANGE:
-								case FT_HISTORIC_DATERANGE:
-									$vs_field_class = 'dateBg';
-									break;
-								default:
-									$vs_field_class = '';
-									break;
-							}
-							print "<td><div class='attributeListItem'>".$t_rel->getDisplayLabel($t_rel->tableName().".".$vs_element)."</td><td>".$t_rel->htmlFormElement($vs_element, '', ['name' => $vs_id_prefix.'_location_'.$vs_element.'{n}', 'id' => $vs_id_prefix.'_location_'.$vs_element.'{n}', 'value' => _t('now'), 'classname' => $vs_field_class])."</td>";
-						} else {
-							print "<td>".$t_rel->getDisplayLabel($t_rel->tableName().".".$vs_element)."</td><td>".$t_rel->getAttributeHTMLFormBundle($this->request, null, $vs_element, $this->getVar('placement_code'), $settings, ['elementsOnly' => true])."</td>";
-						}	
-						print "</tr>\n";
-					}
-				}
-			?></table>
-			
+
+			<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings); ?>	
+
 			<div class="clear"><!-- empty --></div>
 		
 			<script type='text/javascript'>
@@ -371,6 +347,7 @@ if(!caGetOption('hide_add_to_loan_controls', $settings, false)) {
 					</td>
 				</tr>
 			</table>
+			<?php print ca_loans::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
 		</div>
 	</textarea>
 <?php
@@ -397,6 +374,7 @@ if(!caGetOption('hide_add_to_occurrence_controls', $settings, false)) {
 					</td>
 				</tr>
 			</table>
+			<?php print ca_occurrences::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
 		</div>
 	</textarea>
 <?php
@@ -424,6 +402,7 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 					</td>
 				</tr>
 			</table>
+			<?php print ca_collections::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
 		</div>
 	</textarea>
 <?php
@@ -469,7 +448,7 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 		});
 	
 		jQuery("#<?php print $vs_id_prefix; ?>").find(".caDeleteItemButton").on('click', null,  {}, function(e) {
-			// handle delete of chronology item
+			// Handle delete of chronology item
 			var table = jQuery(this).data('table');
 			var relation_id = jQuery(this).data('relation_id');
 		
@@ -546,10 +525,10 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 				addMode: 'prepend',
 				useAnimation: 1,
 				onAddItem: function(id, options, isNew) {
-					jQuery(".caHistoryTrackingButtonBar").slideUp(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
 				onDeleteItem: function(id) {
-					jQuery(".caHistoryTrackingButtonBar").slideDown(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
 				}
 			});
 			
@@ -582,10 +561,10 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 				maxRepeats: 2,
 				useAnimation: 1,
 				onAddItem: function(id, options, isNew) {
-					jQuery(".caHistoryTrackingButtonBar").slideUp(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
 				onDeleteItem: function(id) {
-					jQuery(".caHistoryTrackingButtonBar").slideDown(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
 				}
 			});
 	<?php
@@ -621,10 +600,10 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 				maxRepeats: 2,
 				useAnimation: 1,
 				onAddItem: function(id, options, isNew) {
-					jQuery(".caHistoryTrackingButtonBar").slideUp(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
 				onDeleteItem: function(id) {
-					jQuery(".caHistoryTrackingButtonBar").slideDown(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
 				}
 			});
 	<?php
@@ -662,10 +641,10 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 				maxRepeats: 2,
 				useAnimation: 1,
 				onAddItem: function(id, options, isNew) {
-					jQuery(".caHistoryTrackingButtonBar").slideUp(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
 				onDeleteItem: function(id) {
-					jQuery(".caHistoryTrackingButtonBar").slideDown(250);
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
 				}
 			});
 	<?php

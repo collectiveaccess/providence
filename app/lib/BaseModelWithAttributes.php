@@ -1127,6 +1127,28 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Return the type_id for the row with a given id.
+		 *
+		 * @param $pn_id Row_id
+		 * @return int 
+		 */
+		public static function typeIDForRowID($pn_id) {
+			$t = Datamodel::getInstance(get_called_class(), true);
+			return $t->getTypeID($pn_id);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Return the type_code for the row with a given id.
+		 *
+		 * @param $pn_id Row_id
+		 * @return string 
+		 */
+		public static function typeCodeForRowID($pn_id) {
+			$t = Datamodel::getInstance(get_called_class(), true);
+			return $t->getTypeCode($t->getTypeID($pn_id));
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Field in this table that defines the type of the row; the type determines which attributes are applicable to the row
 		 */
 		public function getTypeFieldName() {
@@ -1199,6 +1221,20 @@
 		 */
 		public function getTypeCodeForID($pn_type_id) {
 			$va_types = $this->getTypeList();
+			return isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns ca_list_items.idno (aka "type code") for $pn_type_id. Static version of getTypeCodeForID()
+		 *
+		 * @param int $pn_type_id Number id for the type
+		 * @return string idno (aka "type code") for specified list item id (aka "type id")
+		 *
+		 * @see BaseModelWithAttributes::getTypeCodeForID()
+		 */
+		public static function typeCodeForID($pn_type_id) {
+			$t = Datamodel::getInstance(get_called_class(), true);
+			$va_types = $t->getTypeList();
 			return isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
 		}
 		# ------------------------------------------------------------------

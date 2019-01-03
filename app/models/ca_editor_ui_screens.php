@@ -456,7 +456,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, null, !$pb_dont_cache, false, true);
 		foreach($va_defined_bundles as $vs_bundle => $va_info) {
-			if (isset($va_info['deprecated']) && $va_info['deprecated']) { continue; }	// skip bundles left for dead
+			$deprecated = (bool)(isset($va_info['deprecated']) && $va_info['deprecated']);
 			if (isset($va_info['displayOnly']) && $va_info['displayOnly']) { continue; }	// skip bundles meant for use in displays only
 			
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $vs_bundle);
@@ -1371,7 +1371,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)
 								);
 								
-								$va_additional_settings = array_merge($va_additional_settings, ca_objects::getHistoryTrackingEditorBundleSettingsData());
+								$va_additional_settings = array_merge($va_additional_settings, ca_objects::getHistoryTrackingEditorBundleSettingsData($vs_table));
 								
 								$va_to_hide_when_using_defaults = array_values(array_filter(array_keys($va_additional_settings), function($v) { return preg_match("!^(ca_|showDeaccessionInformation|deaccession_)!", $v); }));
 								$va_additional_settings['useAppConfDefaults']['hideOnSelect'] = $va_to_hide_when_using_defaults;
@@ -1485,7 +1485,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				'display' => $vs_display,
 				'description' => $vs_description = $t_instance->getDisplayDescription($vs_table.'.'.$vs_bundle),
 				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0_', 'table' => $vs_table)),
-				'settings' => $va_additional_settings
+				'settings' => $va_additional_settings,
+				'deprecated' => $deprecated
 			);
 			
 			TooltipManager::add(
