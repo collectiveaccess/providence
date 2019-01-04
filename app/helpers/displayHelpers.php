@@ -844,28 +844,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 				} else {
 					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_ca_objects')) {
-						if (($t_ui && method_exists($t_item, "getObjectHistory")) && (is_array($va_placements = $t_ui->getPlacementsForBundle('ca_objects_history')) && (sizeof($va_placements) > 0))) {
-							//
-							// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
-							//
-							$va_placement = array_shift($va_placements);
-							$va_bundle_settings = caConvertCurrentLocationCriteriaToBundleSettings(); //$va_placement['settings'];
-							if (is_array($va_history = $t_item->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
-								$va_current_location = array_shift(array_shift($va_history));
+						if ($t_ui && method_exists($t_item, "getHistory") && ($display_info = $t_item->getInspectorHistoryTrackingDisplayPolicy())) {
+							if (is_array($history = $t_item->getHistory(['policy' => $display_info['policy'], 'limit' => 1, 'currentOnly' => true])) && (sizeof($history) > 0)) {
+								$current_value = array_shift(array_shift($history));
 
-								if(!($vs_inspector_current_location_label = $po_view->request->config->get("ca_objects_inspector_current_location_label"))) {
-									$vs_inspector_current_location_label = _t('Current');
-								}
-								if ($va_current_location['display']) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>".$vs_inspector_current_location_label.':</strong><br/>'.$va_current_location['display']."</div>"; }
+								$inspector_current_value_label = caGetOption('label', $display_info, _t('Current'));
+								if ($current_value['display']) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$current_value['display']}</div>"; }
 							}
-						} elseif (method_exists($t_item, "getLastLocationForDisplay")) {
-							// If no ca_objects_history bundle is configured then display the last storage location
-							if ($vs_current_location = $t_item->getLastLocationForDisplay("<ifdef code='ca_storage_locations.parent.preferred_labels'>^ca_storage_locations.parent.preferred_labels ➜ </ifdef>^ca_storage_locations.preferred_labels.name")) {
-								$vs_buf .= "<br/><div class='inspectorCurrentLocation'>"._t('Location: %1', $vs_current_location)."</div>\n";
-								$vs_full_location_hierarchy = $t_item->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_");
-								if ($vs_full_location_hierarchy !== $vs_current_location) { TooltipManager::add(".inspectorCurrentLocation", $vs_full_location_hierarchy); }
-							}
-						}
+						} 
 					}
 				}
 				

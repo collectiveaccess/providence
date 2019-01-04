@@ -339,7 +339,7 @@
 									if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 										$vs_path = array_shift($va_candidates);
 									}
-									$va_attr_vals[$vs_element_code][$vn_offset][$vs_k] = $vs_path;
+									$va_attr_vals[$vs_element_code][$vn_offset] = $vs_path;
 									$vn_c = 1;
 								}
 							}

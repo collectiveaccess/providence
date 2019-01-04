@@ -264,7 +264,7 @@ class SearchResult extends BaseObject {
 	 * @param IWLPlugSearchEngineResult $po_engine_result
 	 * @param array $pa_tables
 	 * @param array $pa_options Options include:
-	 *		db = optional Db instance to use for database connectivity. If omitted a new database connection is used. If you need to have you result set access the database within a specific transaction you should pass the Db object used by the transaction here.
+	 *		db = optional Db instance to use for database connectivity. If omitted a new database connection is used. If you need to have your result set access the database within a specific transaction you should pass the Db object used by the transaction here.
 	 */
 	public function init($po_engine_result, $pa_tables, $pa_options=null) {
 		

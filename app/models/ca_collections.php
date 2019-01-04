@@ -37,7 +37,7 @@
 
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
-
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 	'NAME_SINGULAR' 	=> _t('collection'),
@@ -194,6 +194,8 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 );
 
 class ca_collections extends RepresentableBaseModel implements IBundleProvider {
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -386,6 +388,11 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+		
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History tracking – current value'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 	}
 	# ------------------------------------------------------
 	/**
