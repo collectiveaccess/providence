@@ -604,6 +604,9 @@
 								return ($t_rel_item->load($pn_row_id)) ? $t_rel_item->getLabelForDisplay() : "???";
 							}
 							break;
+						case __CA_ATTRIBUTE_VALUE_GEONAMES__:
+						    $value = ca_attribute_values::getValuesFor($pn_row_id);
+							return preg_replace('![ ]*\[[^\]]*\]!', '', $value['value_longtext1']);
 						default:
 						    $value = ca_attribute_values::getValuesFor($pn_row_id);
 							return $value['value_longtext1'];
@@ -3639,6 +3642,14 @@
 									break;
 								case __CA_ATTRIBUTE_VALUE_LCSH__:
 								    $value_id = ca_attribute_values::getValueIDFor($o_attr->getElementID(), $vs_val);
+									$va_values[strToLower($vs_val)] = array(
+										'id' => $value_id,
+										'label' => preg_replace('![ ]*\[[^\]]*\]!', '', $vs_val),
+										'content_count' => $qr_res->get('_count')
+									);
+									break;
+								case __CA_ATTRIBUTE_VALUE_GEONAMES__:
+								    $value_id = ca_attribute_values::getValueIDFor($o_attr->getElementID(), preg_replace('![ ]*\[[^\]]*\]$!', '', $vs_val));
 									$va_values[strToLower($vs_val)] = array(
 										'id' => $value_id,
 										'label' => preg_replace('![ ]*\[[^\]]*\]!', '', $vs_val),
