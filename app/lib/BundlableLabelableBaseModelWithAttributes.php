@@ -4579,7 +4579,7 @@ if (!$vb_batch) {
 					    if (!caGetOption('hide_update_location_controls', $va_bundle_settings, false)) {
 							// set storage location
 							if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
-								$t_loc = new ca_storage_locations();
+								$t_loc = Datamodel::getInstance('ca_storage_locations', true);
 								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
 								if ($t_loc->load($vn_location_id)) {
 									if ($policy) {
