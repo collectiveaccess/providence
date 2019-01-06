@@ -4542,7 +4542,7 @@ if (!$vb_batch) {
 					    
 					    $change_has_been_made = false;
 					    
-						$processed_bundle_settings = ca_occurrences::_processHistoryBundleSettings($va_bundle_settings);
+						$processed_bundle_settings = $this->_processHistoryBundleSettings($va_bundle_settings);
 					    
 					    if (!caGetOption('hide_value_delete', $va_bundle_settings, false)) {
 							// handle deletes
@@ -4624,6 +4624,24 @@ if (!$vb_batch) {
 							}
 						}
 						
+						if (!caGetOption('hide_add_to_movement_controls', $va_bundle_settings, false)) {
+							// set movement
+							if ($vn_movement_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_movement_idnew_0", pInteger)) {
+								if ($vn_movement_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_movement_type_idnew_0", pInteger)) {
+									$t_item_rel = $this->addRelationship('ca_movements', $vn_movement_id, $vn_movement_type_id);
+									if ($this->numErrors()) {
+										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+									} else {
+										ca_movements::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix, $t_item_rel, $vn_movement_id, $processed_bundle_settings);								
+									}		
+									
+									$change_has_been_made = true;
+									SearchResult::clearResultCacheForRow('ca_movements', $vn_movement_id);
+									if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+								}
+							}
+						}
+						
 						if (!caGetOption('hide_add_to_occurrence_controls', $va_bundle_settings, false)) {
 							// set occurrence
 							require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
@@ -4662,6 +4680,28 @@ if (!$vb_batch) {
 										}
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_collections', $vn_collection_id);
+										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+									}
+								}
+							}
+						}
+						
+						if (!caGetOption('hide_add_to_entity_controls', $va_bundle_settings, false)) {
+							// set entity
+							require_once(__CA_MODELS_DIR__."/ca_entities.php");
+							$t_entity = new ca_entities();
+							$va_entity_types = $t_entity->getTypeList();
+							foreach($va_entity_types as $vn_type_id => $vn_type_info) {
+								if ($vn_entity_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_entity_{$vn_type_id}_idnew_0", pInteger)) {
+									if ($vn_entity_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_entity_{$vn_type_id}_type_idnew_0", pInteger)) {
+										$t_item_rel = $this->addRelationship('ca_entities', $vn_entity_id, $vn_entity_type_id);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										} else {
+											ca_entities::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix, $t_item_rel, $vn_entity_id, $processed_bundle_settings);
+										}
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_entities', $vn_entity_id);
 										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
 									}
 								}

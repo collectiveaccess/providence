@@ -207,9 +207,9 @@
 
 				foreach(array(
 							'policy', 'displayMode', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
-							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
+							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls',
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
-							'hide_add_to_collection_controls', 'add_to_collection_types',
+							'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_entity_controls', 'add_to_entity_types', 
 							'ca_storage_locations_elements', 'sortDirection', 'setInterstitialElementsOnAdd',
 							'currentValueColor', 'pastValueColor', 'futureValueColor', 'hide_value_interstitial_edit', 'hide_value_delete'
 						) as $vs_key) {
@@ -1648,6 +1648,23 @@
 			}
 			
 			//
+			// Entity update
+			//
+			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_entities')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+				$linking_table = $path[1];
+				if (($t_entity_rel = Datamodel::getInstance($linking_table, true)) && ($t_entity = Datamodel::getInstance('ca_entities', true))) {
+					$va_entity_types = $t_entity->getTypeList();
+					$va_entity_types_to_show =  caGetOption('add_to_entity_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
+					foreach($va_entity_types as $vn_type_id => $va_type_info) {
+						if (!in_array($vn_type_id, $va_entity_types_to_show) && !in_array($va_type_info['idno'], $va_entity_types_to_show)) { unset($va_entity_types[$vn_type_id]); }
+					}
+					$o_view->setVar('entity_types', $va_entity_types);
+					$o_view->setVar('entity_relationship_types', $t_entity_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$o_view->setVar('entity_relationship_types_by_sub_type', $t_entity_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+				}
+			}
+			
+			//
 			// Loan update
 			//
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_loans')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
@@ -1655,6 +1672,17 @@
 				if ($t_loan_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 					$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+				}
+			}
+			
+			//
+			// Movement update
+			//
+			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_movements')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+				$linking_table = $path[1];
+				if ($t_movement_rel = Datamodel::getInstance($linking_table, true)) {
+					$o_view->setVar('movement_relationship_types', $t_movement_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$o_view->setVar('movement_relationship_types_by_sub_type', $t_movement_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 				}
 			}
 			
@@ -1800,7 +1828,6 @@
 			$type_idno = caGetOption('type', $options, null);
 			if(is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"]) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
-				
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
 				Datamodel::getInstance('ca_editor_uis', true);
@@ -2167,7 +2194,92 @@
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_displayTemplate";
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_includeFromChildren";
 				$to_hide_when_using_defaults[] = "ca_collections_{$type['idno']}_childDisplayTemplate";
-			}								
+			}	
+			
+			$additional_settings['ca_entities_showTypes'] = array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'useList' => 'entity_types',
+				'takesLocale' => false,
+				'default' => '',
+				'multiple' => true,
+				'width' => "275px", 'height' => "75px",
+				'label' => _t('Show entities'),
+				'description' => ''
+			);
+			$types = caGetTypeList("ca_entities");
+			
+			$linking_table = Datamodel::getLinkingTableName($table, 'ca_entities');
+			foreach($types as $vn_type_id => $type) {
+				$additional_settings["ca_entities_{$type['idno']}_dateElement"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'table' => ['ca_entities', 'ca_objects_x_entities'],
+					'showMetadataElementsWithDataType' => 2,
+					'takesLocale' => false,
+					'default' => '',
+					'multiple' => true,
+					'width' => "275px", 'height' => "75px",
+					'label' => _t('%1 date', $type['name_singular']),
+					'description' => ''
+				);
+				$additional_settings["ca_entities_{$type['idno']}_color"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_COLORPICKER,
+					'takesLocale' => false,
+					'default' => '#EEEEEE',
+					'width' => "275px", 'height' => "75px",
+					'label' => _t('Color for %1', $type['name_singular']),
+					'description' => _t('Color to use as highlight %1.', $type['name_plural'])
+				);
+				if ($linking_table) {
+					$additional_settings["ca_entities_{$type['idno']}_setInterstitialElementsOnAdd"] = array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'default' => '',
+						'multiple' => true,
+						'takesLocale' => false,
+						'table' => $linking_table,
+						'showMetadataElementsWithDataType' => "*",
+						'includeIntrinsics' => ['effective_date'],
+						'width' => "275px", 'height' => 4,
+						'label' => _t('Interstitial elements to set'),
+						'description' => _t('Interstitial elements to set')
+					);
+				}
+				$additional_settings["ca_entities_{$type['idno']}_displayTemplate"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'default' => '',
+					'width' => "275px", 'height' => 4,
+					'label' => _t('%1 display template', $type['name_singular']),
+					'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_entities.idno</i>.', $type['name_singular'])
+				);
+				$additional_settings["ca_entities_{$type['idno']}_includeFromChildren"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_CHECKBOXES,
+					'default' => '',
+					'width' => "275px", 'height' => 4,
+					'label' => _t('Include history from %1 related to child objects', $type['name_plural']),
+					'description' => _t('If checked history from %1 that are related to sub-objects (children) is included.', $type['name_plural'])
+				);
+				$additional_settings["ca_entities_{$type['idno']}_childDisplayTemplate"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'default' => '',
+					'width' => "275px", 'height' => 4,
+					'label' => _t('Display template for %1 when related to child objects', $type['name_plural']),
+					'description' => _t('Layout for %1 related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.', $type['name_plural'])
+				);
+				
+				$to_hide_when_using_defaults[] = "ca_entities_{$type['idno']}_dateElement";
+				$to_hide_when_using_defaults[] = "ca_entities_{$type['idno']}_color";
+				$to_hide_when_using_defaults[] = "ca_entities_{$type['idno']}_setInterstitialElementsOnAdd";
+				$to_hide_when_using_defaults[] = "ca_entities_{$type['idno']}_displayTemplate";
+				$to_hide_when_using_defaults[] = "ca_entities_{$type['idno']}_includeFromChildren";
+				$to_hide_when_using_defaults[] = "ca_entities_{$type['idno']}_childDisplayTemplate";
+			}
+										
 			$additional_settings['ca_movements_showTypes'] = array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,

@@ -1292,6 +1292,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Hide "Add to loan" controls'),
 										'description' => _t('Check this option if you want to hide the "Add to loan" controls in this bundle placement.')
 									),
+									'hide_add_to_movement_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to movement" controls'),
+										'description' => _t('Check this option if you want to hide the "Add to movemen" controls in this bundle placement.')
+									),
 									'hide_update_location_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,
@@ -1340,6 +1349,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'multiple' => true,
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show "Add to" collection controls for'),
+										'description' => ''
+									),
+									'hide_add_to_entity_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to entity" controls'),
+										'description' => _t('Check this option if you want to hide the "Add to entity" controls in this bundle placement.')
+									),
+									'add_to_entity_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'entity_types',
+										'takesLocale' => false,
+										'default' => '',
+										'multiple' => true,
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show "Add to" entity controls for'),
 										'description' => ''
 									),
 									'useHierarchicalBrowser' => array(

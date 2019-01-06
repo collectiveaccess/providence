@@ -47,6 +47,9 @@
 	$coll_types  				= $this->getVar('collection_types');
 	$coll_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $coll_types));
 	
+	$entity_types  				= $this->getVar('entity_types');
+	$entity_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $entity_types));
+	
 	$policy  					= $this->getVar('policy');
 	$policy_info  				= $this->getVar('policy_info');
 	
@@ -75,6 +78,11 @@
 				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to loan'); ?></a></div>
 <?php
 			}
+			if(!$read_only && !caGetOption('hide_add_to_movement_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_movements'))) {
+?>
+				<div style='float: left;' class='button caAddmovementButton'><a href="#" id="<?php print $vs_id_prefix; ?>Addmovement"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to movement'); ?></a></div>
+<?php
+			}
 			if(!$read_only && !caGetOption('hide_update_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
 ?>
 				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Update location'); ?></a></div>
@@ -97,6 +105,16 @@
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_collections', $va_type_info['idno'])) { continue; }
 ?>
 				<div style='float: left;'  class='button caAddCollectionButton caAddCollectionButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddColl<?php print $vn_type_id; ?>"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
+<?php		
+				}
+			}
+			
+			if(!$read_only && !caGetOption('hide_add_to_entity_controls', $settings, false)) {
+			
+				foreach($entity_types as $vn_type_id => $va_type_info) {
+					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_entities', $va_type_info['idno'])) { continue; }
+?>
+				<div style='float: left;'  class='button caAddEntityButton caAddEntityButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddEntity<?php print $vn_type_id; ?>"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -124,6 +142,14 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 <?php
 	}
 }
+if(!caGetOption('hide_add_to_entity_controls', $settings, false)) {
+	foreach($entity_types as $vn_type_id => $va_type_info) {
+		if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_entities', $va_type_info['idno'])) { continue; }
+?>
+		<div class="caEntityList<?php print $vn_type_id; ?>"> </div>
+<?php
+	}
+}
 
 switch($display_mode) {
 	case 'tabs':
@@ -136,7 +162,12 @@ switch($display_mode) {
 					</ul>
 					<div id="<?php print $vs_id_prefix; ?>Tabs-location" class="hierarchyBrowseTab">	
 <?php
-						if (($current_value = reset($history)) && ($current_value = array_shift($current_value))) { 
+						if (($current_value = array_reduce($history, function($c, $v) { 
+						    foreach($v as $e) {
+						        if ($e['status'] === 'CURRENT') { $c[] = $e; }
+						    }
+						    return $c;
+						}, [])) && ($current_value = array_shift($current_value))) { 
 							print "<div class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'>{$current_value['icon']} {$current_value['display']}<div class=\"caHistoryTrackingEntryDate\">{$current_value['date']}</div></div>";	 
 							
 							print "<br class=\"clear\"/>\n";
@@ -351,6 +382,32 @@ if(!caGetOption('hide_add_to_loan_controls', $settings, false)) {
 	</textarea>
 <?php
 	}
+	
+	if(!caGetOption('hide_add_to_movement_controls', $settings, false)) {
+?>
+	<textarea class='caHistoryTrackingSetMovementTemplate' style='display: none;'>
+		<div class="clear"><!-- empty --></div>
+		<div id="<?php print $vs_id_prefix; ?>movement_{n}" class="labelInfo caRelatedMovement">
+			<table class="caListItem">
+				<tr>
+					<td><h2><?php print _t('Add to movement'); ?></h2></td>
+					<td>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_movement_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_movement_autocomplete{n}" class="lookupBg"/>
+					</td>
+					<td>
+						<select name="<?php print $vs_id_prefix; ?>_movement_type_id{n}" id="<?php print $vs_id_prefix; ?>_movement_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_movement_id{n}" id="<?php print $vs_id_prefix; ?>_movement_id{n}" value="{id}"/>
+					</td>
+					<td>
+						<a href="#" class="caDeleteMovementButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+					</td>
+				</tr>
+			</table>
+			<?php print ca_movements::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+		</div>
+	</textarea>
+<?php
+	}
 
 if(!caGetOption('hide_add_to_occurrence_controls', $settings, false)) {
 	foreach($occ_types as $vn_type_id => $va_type_info) {
@@ -402,6 +459,34 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 				</tr>
 			</table>
 			<?php print ca_collections::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+		</div>
+	</textarea>
+<?php
+	}
+}
+
+if(!caGetOption('hide_add_to_entity_controls', $settings, false)) {
+	foreach($entity_types as $vn_type_id => $va_type_info) {
+?>
+	<textarea class='caHistoryTrackingSetEntityTemplate<?php print $vn_type_id; ?>' style='display: none;'>
+		<div class="clear"><!-- empty --></div>
+		<div id="<?php print $vs_id_prefix; ?>entity_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedEntity">
+			<table class="caListItem">
+				<tr>
+					<td><h2><?php print _t('Add to %1', $va_type_info['name_singular']); ?></h2></td>
+					<td>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
+					</td>
+					<td>
+						<select name="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
+					</td>
+					<td>
+						<a href="#" class="caDeleteEntityButton<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a>
+					</td>
+				</tr>
+			</table>
+			<?php print ca_entities::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
 		</div>
 	</textarea>
 <?php
@@ -636,6 +721,47 @@ if(!caGetOption('hide_add_to_collection_controls', $settings, false)) {
 				autocompleteInputID: '<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 				quickaddUrl: '<?php print caNavUrl($this->request, 'editor/collections', 'collectionQuickAdd', 'Form', array('types' => $vn_type_id,'collection_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				minRepeats: 0,
+				maxRepeats: 2,
+				useAnimation: 1,
+				onAddItem: function(id, options, isNew) {
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
+				},
+				onDeleteItem: function(id) {
+					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
+				}
+			});
+	<?php
+		}
+	}
+	if(!caGetOption('hide_add_to_entity_controls', $settings, false)) {
+		foreach($entity_types as $vn_type_id => $va_type_info) {
+	?>
+			caRelationBundle<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_',
+				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
+				initialValues: [],
+				initialValueOrder: [],
+				itemID: '<?php print $vs_id_prefix; ?>entity_<?php print $vn_type_id; ?>_',
+				placementID: '<?php print $vn_placement_id; ?>',
+				templateClassName: 'caHistoryTrackingSetEntityTemplate<?php print $vn_type_id; ?>',
+				initialValueTemplateClassName: null,
+				itemListClassName: 'caEntityList<?php print $vn_type_id; ?>',
+				listItemClassName: 'caRelatedEntity',
+				addButtonClassName: 'caAddEntityButton<?php print $vn_type_id; ?>',
+				deleteButtonClassName: 'caDeleteEntityButton<?php print $vn_type_id; ?>',
+				hideOnNewIDList: [],
+				showEmptyFormsOnLoad: 0,
+				relationshipTypes: <?php print json_encode($this->getVar('entity_relationship_types_by_sub_type')); ?>,
+				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'entity', 'Get', $entity_lookup_params); ?>',
+				types: <?php print json_encode($settings['restrict_to_types']); ?>,
+				readonly: <?php print $read_only ? "true" : "false"; ?>,
+				isSortable: <?php print ($read_only || $vs_sort) ? "false" : "true"; ?>,
+				listSortOrderID: '<?php print $vs_id_prefix; ?>EntityBundleList',
+				listSortItems: 'div.roundedRel',
+				autocompleteInputID: '<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_autocomplete',
+				quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+				quickaddUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'entityQuickAdd', 'Form', array('types' => $vn_type_id,'entity_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,

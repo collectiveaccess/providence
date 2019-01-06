@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_entities'] = array(
@@ -190,6 +191,8 @@ BaseModel::$s_ca_models_definitions['ca_entities'] = array(
 );
 
 class ca_entities extends RepresentableBaseModel implements IBundleProvider {
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -367,6 +370,11 @@ class ca_entities extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History tracking – current value'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 	}
 	# ------------------------------------------------------
 	/**
