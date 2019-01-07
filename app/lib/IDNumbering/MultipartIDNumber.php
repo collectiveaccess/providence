@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1235,13 +1235,13 @@ class MultipartIDNumber extends IDNumber {
 						$this->setSequenceMaxValue($this->getFormat(), $vs_element_name, join($vs_separator, $va_tmp), $va_element_values[$ps_name.'_'.$vs_element_name]);
 					}
 				}
-			} elseif($va_element_info['type'] == 'YEAR') {  // set constant
+			} elseif(($va_element_info['type'] == 'YEAR') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {  // set constant
 			    $va_date = getdate();
 			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['year'];
-			} elseif($va_element_info['type'] == 'MONTH') {
+			} elseif(($va_element_info['type'] == 'MONTH') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
 			    $va_date = getdate();
 			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mon'];
-			} elseif($va_element_info['type'] == 'DAY') {
+			} elseif(($va_element_info['type'] == 'DAY') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
 			    $va_date = getdate();
 			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mday'];
 			} elseif($va_element_info['type'] == 'CONSTANT') {
