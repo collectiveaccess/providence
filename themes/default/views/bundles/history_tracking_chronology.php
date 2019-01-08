@@ -168,7 +168,18 @@ switch($display_mode) {
 						    }
 						    return $c;
 						}, [])) && ($current_value = array_shift($current_value))) { 
-							print "<div class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'>{$current_value['icon']} {$current_value['display']}<div class=\"caHistoryTrackingEntryDate\">{$current_value['date']}</div></div>";	 
+							print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($current_value['tracked_table_num']).'-'.$current_value['tracked_row_id']."' class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'>{$current_value['icon']} {$current_value['display']}<div class=\"caHistoryTrackingEntryDate\">{$current_value['date']}</div>";
+							
+                                if (!$read_only && $allow_value_interstitial_edit && ($current_value['tracked_table_num'] !== $current_value['current_table_num']) && ca_editor_uis::loadDefaultUI($current_value['tracked_table_num'], $this->request)) {
+?>
+                                    <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?php print Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?php print $current_value['tracked_row_id']; ?>"  data-primary="<?php print Datamodel::getTableName($current_value['current_table_num']); ?>" data-primary_id="<?php print $current_value['current_row_id']; ?>"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
+                                }
+                                if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+?>
+                                    <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?php print Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?php print $current_value['tracked_row_id']; ?>"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
+                                }
+							
+							print "</div>";	 
 							
 							print "<br class=\"clear\"/>\n";
 						} else {
@@ -185,16 +196,27 @@ switch($display_mode) {
 								foreach($history_by_date as $history_entry) {
 									switch($history_entry['status']) {
 										case 'FUTURE':
-											print "<div class='caHistoryTracking' style='background-color:#".$settings['futureValueColor']."'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div></div>\n";
+										    $color = $settings['futureValueColor'];
 											break;
 										case 'CURRENT':
-											print "<div class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div></div>\n";
+										    $color = $settings['currentValueColor'];
 											break;
 										case 'PAST':
 										default:
-											print "<div class='caHistoryTracking' style='background-color:#".$settings['pastValueColor']."'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div></div>\n";
+										    $color = $settings['pastValueColor'];
 											break;	
 									}
+
+                                    print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']."' class='caHistoryTracking' style='background-color:#{$color}'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div>";
+                                    if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
+?>
+                                        <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?php print Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?php print $history_entry['tracked_row_id']; ?>"  data-primary="<?php print Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?php print $history_entry['current_row_id']; ?>"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
+                                    }
+                                    if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+?>
+                                        <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?php print Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?php print $history_entry['tracked_row_id']; ?>"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
+                                    }
+                                    print "</div>\n";
 								}
 							}
 						} else {
@@ -204,13 +226,9 @@ switch($display_mode) {
 						}
 ?>
 					</div>
-<?php
-	// get current location
-?>
 				</div>
 			</div>
 <?php
-	
 		break;	
 	case 'chronology':
 	default:
@@ -229,11 +247,9 @@ switch($display_mode) {
 						break;
 				}	
 ?>
-				<div id="caHistoryTrackingEntry<?php print Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']; ?>" class="caHistoryTrackingEntry <?php print ($vn_i == 0) ? 'caHistoryTrackingEntryFirst' : ''; ?>" style="background-color:#<?php print $color; ?>">
+				<div id="caHistoryTrackingEntry<?php print $vs_id_prefix.Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']; ?>" class="caHistoryTrackingEntry <?php print ($vn_i == 0) ? 'caHistoryTrackingEntryFirst' : ''; ?>" style="background-color:#<?php print $color; ?>">
 					<?php print $history_entry['icon']; ?>
-					<div><?php print $history_entry['display']; ?></div>
-					
-									
+					<div><?php print $history_entry['display']; ?></div>					
 <?php
 					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
 ?>
@@ -536,7 +552,7 @@ if(!caGetOption('hide_add_to_entity_controls', $settings, false)) {
 			var table = jQuery(this).data('table');
 			var relation_id = jQuery(this).data('relation_id');
 		
-			jQuery("#caHistoryTrackingEntry" + table + "-" + relation_id).remove();
+			jQuery("#caHistoryTrackingEntry<?php print $vs_id_prefix; ?>" + table + "-" + relation_id).remove();
 			jQuery("#<?php print $vs_id_prefix; ?>").append("<input type='hidden' name='<?php print $vs_id_prefix; ?>_delete_" + table + "[]' value='" +relation_id + "'/>");
 		});
 		

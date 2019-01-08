@@ -1217,7 +1217,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "10", 'height' => "1",
 										'takesLocale' => false,
 										'default' => '1',
-										'label' => _t('Use defaults from policy?'),
+										'label' => _t('Use defaults from policy (in app.conf)?'),
 										'description' => _t('If checked all settings are taken from history tracking policy. Uncheck to override values.')
 									),
 									'sortDirection' => array(

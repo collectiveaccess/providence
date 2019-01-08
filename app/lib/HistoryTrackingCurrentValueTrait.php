@@ -1782,10 +1782,11 @@
 			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
 				return null;
 			}
-			$o_view->setVar('policy', $policy);
-			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
 			
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+			
+			$o_view->setVar('policy', $policy);
+			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
 		
 			if(!is_array($pa_options)) { $pa_options = array(); }
 		
