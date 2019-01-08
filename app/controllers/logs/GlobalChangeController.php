@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,16 +34,16 @@ class GlobalChangeController extends ActionController {
 	# -------------------------------------------------------
 	public function Index() {
 
-		if(!$this->getRequest()->getUser()->canDoAction('can_view_my_change_logs')) { // can view everything
-			$this->getResponse()->setRedirect(
-				$this->getRequest()->getAppConfig()->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath())
+		if(!$this->request->getUser()->canDoAction('can_view_my_change_logs')) { // can view everything
+			$this->response->setRedirect(
+				$this->request->getAppConfig()->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath())
 			);
 			return;
 		}
 
 		AssetLoadManager::register('tableList');
 
-		$vn_filter_table = $this->getRequest()->getParameter('filter_table', pInteger);
+		$vn_filter_table = $this->request->getParameter('filter_table', pInteger);
 		$this->getView()->setVar('filter_table', $vn_filter_table);
 
 		if($vn_filter_table) {
@@ -52,37 +52,22 @@ class GlobalChangeController extends ActionController {
 			$va_log_tables = [57,51,20,72,67,13,89,56,133,137,33,153,155];
 		}
 
-		$vs_filter_change_type = $this->getRequest()->getParameter('filter_change_type', pString);
-		$this->getView()->setVar('filter_change_type', $vs_filter_change_type);
-
-		$vn_num_seconds = 60 * 60 * 24;
-		if($vs_filter_date = $this->getRequest()->getParameter('change_log_search', pString)) {
-			$o_tep = new TimeExpressionParser();
-
-			if($o_tep->parse($vs_filter_date)) {
-				$va_timestamps = $o_tep->getUnixTimestamps();
-				if(isset($va_timestamps['start']) && $va_timestamps['start']) {
-					$vn_num_seconds = time() - intval($va_timestamps['start']);
-				}
-			}
-		}
-
-		$this->getView()->setVar('change_log_search', $vs_filter_date);
-
-		$o_change_log = new ApplicationChangeLog();
+		$this->getView()->setVar('filter_change_type', $vs_filter_change_type = $this->request->getParameter('filter_change_type', pString));
+		$this->getView()->setVar('change_log_search', $vs_filter_date = $this->request->getParameter('change_log_search', pString));
+		$this->getView()->setVar('filter_user_id', $filter_user_id = $this->request->getParameter('filter_user', pInteger));
 
 		$va_log_entries = [];
 		foreach($va_log_tables as $vn_table_num) {
 
-			$va_table_log_entries = $o_change_log->getRecentChanges($vn_table_num, $vn_num_seconds);
+			$va_table_log_entries = ApplicationChangeLog::getChangeLogForTable($vn_table_num, ['limit' => 100, 'daterange' => ($vs_filter_date !== _t('any time')) ? $vs_filter_date : null, 'user_id' => $filter_user_id]);
 			foreach($va_table_log_entries as $vs_unit_id => $va_log) {
-				if($vs_filter_change_type) {
-					if($va_log[0]['changetype'] != $vs_filter_change_type) { continue; }
-				}
+// 				if($vs_filter_change_type) {
+// 					if($va_log[0]['changetype'] != $vs_filter_change_type) { continue; }
+// 				}
 				$va_log_entries[$vn_table_num . $vs_unit_id] = $va_log;
 
 				// the ui table doesn't have paging, so we should impose some kind of limit here
-				if(sizeof($va_log_entries) > 10000) { break 2; }
+				//if(sizeof($va_log_entries) > 1000) { break 2; }
 			}
 		}
 

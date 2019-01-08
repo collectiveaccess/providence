@@ -28,6 +28,7 @@
 	$va_change_log_list = $this->getVar('change_log_list');
 	$vn_filter_table = $this->getVar('filter_table');
 	$vs_filter_change_type = $this->getVar('filter_change_type');
+	$vn_filter_user_id = $this->getVar('filter_user_id');
 
 ?>
 <script language="JavaScript" type="text/javascript">
@@ -42,9 +43,13 @@
 		print caFormTag($this->request, 'Index', 'changeLogSearch');
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
-			caHTMLSelect('filter_change_type', [_t('--Any--') => '', _t('Added') => 'I', _t('Edited') => 'U', _t('Deleted') => 'D'], null, ['value' => $vs_filter_change_type]).
-			caHTMLSelect('filter_table', array_merge([_t('--Any--') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
-			_t('Show from').': '.caHTMLTextInput('change_log_search', array('size' => 15, 'value' => $this->getVar('change_log_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
+			'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3 by %4', 
+				caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $vs_filter_change_type, 'width' => '100px']),
+				caHTMLSelect('filter_table', array_merge([_t('anything') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
+				caHTMLTextInput('change_log_search', array('size' => 12, 'value' => ($s = $this->getVar('change_log_search')) ? $s : _t('any time'), 'class' => 'dateBg')),
+				caHTMLSelect('filter_user', array_merge([_t('any user') => ''], ApplicationChangeLog::getChangeLogUsersForSelect()), [], ['value' => $vn_filter_user_id, 'width' => '140px'])
+			).'</div>', 
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
 		);
 		print "</form>";
 	?>
@@ -54,6 +59,9 @@
 			<tr>
 				<th class="list-header-unsorted">
 					<?php print _t('Date/time'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('User'); ?>
 				</th>
 				<th class="list-header-unsorted">
 					<?php print _t('Change type'); ?>
@@ -80,10 +88,13 @@
 					<?php print date("n/d/Y g:i:sa T", $va_log_entry[0]['timestamp']); ?>
 				</td>
 				<td>
+					<?php print $va_log_entry[0]['user']; ?>
+				</td>
+				<td>
 					<?php print $va_log_entry[0]['changetype_display']; ?>
 				</td>
 				<td>
-					<?php print Datamodel::getInstance($va_log_entry[0]['subject_table_num'], true)->getProperty('NAME_PLURAL'); ?>
+					<?php print Datamodel::getTableProperty($va_log_entry[0]['subject_table_num'], 'NAME_PLURAL'); ?>
 				</td>
 				<td>
 					<?php
