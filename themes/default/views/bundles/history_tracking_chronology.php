@@ -293,6 +293,7 @@ switch($display_mode) {
 					</td>
 				</tr>
 			</table>
+			<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings); ?>	
 <?php
 	} else {
 ?>

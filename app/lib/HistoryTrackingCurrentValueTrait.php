@@ -64,19 +64,34 @@
 			
 				// Fall back to legacy "current_location_criteria" if no current configuration
 				
-				// TODO: rewrite map such that all keys are items types; move relationship type keys into restrictToRelationshipTypes options
 				if(is_array($map = $o_config->getAssoc('current_location_criteria'))) {
+				    foreach($map as $t => $by_type) {
+				    
+				        // Rewrite map such that all keys are items types; move relationship type keys into restrictToRelationshipTypes options
+				        if ($t == 'ca_storage_locations') {
+				            foreach($by_type as $type => $v) {
+				                $map[$t][$type]['setInterstitialElementsOnAdd'] = ['effective_date'];
+				                $map[$t][$type]['restrictToRelationshipTypes'] = [$type];
+				            }
+				        }
+				    }
+				    
+				    // Make relationship type entry into default type entry
+				    if (is_array($map['ca_storage_locations'])) {
+				        $map['ca_storage_locations']['_default_'] = array_shift($map[$t]);
+				    }
+				    
 				 	$history_tracking_policies = [
 				 		'defaults' => [
 				 			'ca_objects' => '_default_',
 				 		],
 						'policies' => [
-							'_default_' => [
-								'name' => 'Current location',
-								'table' => 'ca_objects',
-								'mode' => 'workflow',
-								'elements' => $map
-							]
+                            '_default_' => [
+                                'table' => 'ca_objects',
+                                'name' => 'Current location',
+                                'mode' => 'workflow',
+                                'elements' => $map
+                            ]
 						]
 				 	];
 				 }
@@ -108,11 +123,11 @@
 			if(!is_array($map)){ return null; }
 			
 			if (!($policy_table = caGetOption('table', $policy_info, false))) { return []; }
-			
+
 			foreach($map as $table => $types) {
 				if ($table == 'ca_objects') { $bundle_settings['showDeaccessionInformation'] = true; }	// TODO: this is a hack
 				$path = array_keys(Datamodel::getPath($policy_table, $table));
-				$t_instance = Datamodel::getInstance($table, true);
+				if(!($t_instance = Datamodel::getInstance($table, true))) { continue; }
 				
 				$bundle_settings["{$table}_showTypes"] = [];
 				if(is_array($types)) {
@@ -1596,8 +1611,9 @@
 			$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
 			$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 		
+			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 		
-			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
+			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, $this->getDefaultHistoryTrackingCurrentValuePolicy())))) { 
 				return null;
 			}
 			$o_view->setVar('policy', $policy);
@@ -1607,7 +1623,6 @@
 			$o_view->setVar('placement_code', $ps_placement_code);
 			$o_view->setVar('bundle_name', caGetOption('bundleName', $pa_options, null));
 			
-			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 			$o_view->setVar('settings', $pa_bundle_settings);
 		
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
