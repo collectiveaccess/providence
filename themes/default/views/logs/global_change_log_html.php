@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,9 @@
 	$vn_filter_table = $this->getVar('filter_table');
 	$vs_filter_change_type = $this->getVar('filter_change_type');
 	$vn_filter_user_id = $this->getVar('filter_user_id');
+	
+	$page = $this->getVar('page');
+	
 
 ?>
 <script language="JavaScript" type="text/javascript">
@@ -46,13 +49,24 @@
 			'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3 by %4', 
 				caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $vs_filter_change_type, 'width' => '100px']),
 				caHTMLSelect('filter_table', array_merge([_t('anything') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
-				caHTMLTextInput('change_log_search', array('size' => 12, 'value' => ($s = $this->getVar('change_log_search')) ? $s : _t('any time'), 'class' => 'dateBg')),
+				caHTMLTextInput('filter_daterange', array('size' => 12, 'value' => ($s = $this->getVar('filter_daterange')) ? $s : _t('any time'), 'class' => 'dateBg')),
 				caHTMLSelect('filter_user', array_merge([_t('any user') => ''], ApplicationChangeLog::getChangeLogUsersForSelect()), [], ['value' => $vn_filter_user_id, 'width' => '140px'])
 			).'</div>', 
 			caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
 		);
 		print "</form>";
 	?>
+	
+	<div class="changeLogSearchResultsPagination">
+<?php
+	if ($page > 0) {
+		print caNavLink($this->request, "&lsaquo; "._t('Previous'), 'button', '*', '*', '*', ['page' => $page - 1]).' ';
+	}
+	if(is_array($va_change_log_list) && sizeof($va_change_log_list)) {
+		print caNavLink($this->request, _t('Next')." &rsaquo;", 'button', '*', '*', '*', ['page' => $page + 1]);
+	}
+?>
+	</div>
 	
 	<table id="caChangeLogList" class="listtable">
 		<thead>
@@ -98,10 +112,14 @@
 				</td>
 				<td>
 					<?php
-						print "<span style='font-size:12px; font-weight:bold;'><a href='".caEditorUrl($this->request, $va_log_entry[0]['subject_table_num'], $va_log_entry[0]['subject_id'])."'>".$va_log_entry[0]['subject']."</a></span><br/>";
-						print "<a href='#' id='more".$vs_log_key."' onclick='jQuery(\"#more".$vs_log_key."\").hide(); jQuery(\"#changes".$vs_log_key."\").slideDown(250); return false;'>More Info &rsaquo;</a>";
-						print "<div style='display:none;' id='changes".$vs_log_key."'><ul>";					// date/time of change, ready for display (don't use date() on it)
-						// Print out actual content changes
+						if ($va_log_entry[0]['subject'] !== _t('&lt;MISSING&gt;')) {
+							print "<span style='font-size:12px; font-weight:bold;'><a href='".caEditorUrl($this->request, $va_log_entry[0]['subject_table_num'], $va_log_entry[0]['subject_id'])."'>".$va_log_entry[0]['subject']."</a></span><br/>";
+						} else {
+							print "<span style='font-size:12px; font-weight:bold;'>".$va_log_entry[0]['subject']."</span><br/>";
+						}
+						print "<a href='#' id='more".$vs_log_key."' onclick='jQuery(\"#more".$vs_log_key."\").hide(); jQuery(\"#changes".$vs_log_key."\").slideDown(250); return false;'>".caNavIcon(__CA_NAV_ICON_ADD__, '14px')."</a>";
+						print "<div style='display:none;' id='changes{$vs_log_key}'><ul>";					// date/time of change, ready for display (don't use date() on it)
+						
 						foreach($va_log_entry as $va_change_list) {
 							foreach($va_change_list['changes'] as $va_change) {
 								print "<li>";
@@ -122,7 +140,7 @@
 							}
 						}
 						print "</ul>";
-						print "<a href='#' id='hide".$vs_log_key."' style='padding-left:10px;' onclick='jQuery(\"#changes".$vs_log_key."\").slideUp(250); jQuery(\"#more".$vs_log_key."\").show(); return false;'>Hide &rsaquo;</a>";
+						print "<a href='#' id='hide".$vs_log_key."' style='padding-left:10px;' onclick='jQuery(\"#changes".$vs_log_key."\").slideUp(250); jQuery(\"#more".$vs_log_key."\").show(); return false;'>".caNavIcon(__CA_NAV_ICON_CANCEL__, '14px')."</a>";
 					?>
 				</td>
 			</tr>
@@ -133,7 +151,7 @@
 		<tr>
 			<td colspan='5'>
 				<div align="center">
-					<?php print (trim($this->getVar('change_log_search'))) ? _t('No log entries found') : _t('Enter a date to display change log from above'); ?>
+					<?php print (trim($this->getVar('filter_daterange'))) ? _t('No log entries found') : _t('Enter a date to display change log from above'); ?>
 				</div>
 			</td>
 		</tr>

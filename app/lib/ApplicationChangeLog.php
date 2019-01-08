@@ -927,7 +927,8 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	 * @param array $pa_options An array of options:
  	 * 		daterange = 
  	 *		format = 
-	 * 		limit = maximum number of entries returned. Omit or set to zero for no limit. [default=all]
+ 	 *		start =
+	 * 		limit = Maximum number of entries returned. Omit or set to zero for no limit. [default=all]
  	 *		transaction =
  	 *
  	 * @return array
@@ -949,16 +950,18 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	 *
  	 * @param mixed $table Table name or number
  	 * @param array $options Options include:
+ 	 *		table = 
  	 *		daterange = 
  	 *		user_id = 
- 	 *		limit = 
+ 	 *		start =
+ 	 *		limit = Maximum number of entries returned. Omit or set to zero for no limit. [default=all]
  	 *		transaction =
  	 *		noSnapshot = 
  	 *
  	 * @return array
  	 */
- 	static public function getChangeLogForTable($table, $options=null) {
- 		$data = self::getChangeDataForTable($table, $options);
+ 	static public function getChangeLog($options=null) {
+ 		$data = self::getChangeData($options);
  		return self::makeChangeLog($data, $table, $options);
  	}
  	# ----------------------------------------------------------------------
@@ -967,33 +970,42 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	 *
  	 * @param mixed $table Table name or number
  	 * @param array $options Options include:
+ 	 *		table = s
  	 *		daterange = 
  	 *		user_id = 
- 	 *		limit = 
+ 	 *		start =
+ 	 *		limit = Maximum number of entries returned. Omit or set to zero for no limit. [default=all]
  	 *		transaction =
  	 *		noSnapshot = 
  	 *
  	 * @return array
  	 */
- 	static public function getChangeDataForTable($table, $options=null) {
+ 	static public function getChangeData($options=null) {
 		$o_db = ($trans = caGetOption('transaction', $options, null)) ? $trans->getDb() : new Db();
 		
-		if (!($table_name = Datamodel::getTableName($table))) { return null; }
-		$table_num= Datamodel::getTableNum($table);
+		$table = caGetOption('table', $options, null);
+		if ($table && !($table_name = Datamodel::getTableName($table))) { return null; }
+		$table_num = $table_name ? Datamodel::getTableNum($table_name) : null;
 		
-		$params = [$table_num];
+		$params = [];
 		
+		$start = caGetOption('start', $options, 0, ['castTo' => 'int']);
 		$limit = caGetOption('limit', $options, null, ['castTo' => 'int']);
 		$user_id = caGetOption('user_id', $options, null);
 		
-		$sql_limit = ($limit > 0) ? "LIMIT {$limit}" : '';
+		$sql_limit = ($limit > 0) ? "LIMIT {$start},{$limit}" : '';
 		
 		$no_snapshot = caGetOption('noSnapshot', $options, false, ['castTo' => 'bool']);
 		
-		$sql_daterange = $sql_daterange2 = null;
+		$sql_table = null;
+		if ($table_num) {
+			$sql_tables = ['((wcl.logged_table_num = ?) AND (wcls.subject_table_num IS NULL))', '(wcls.subject_table_num = ?)'];
+			$params[] = $table_num;
+		}
+		
+		$sql_daterange = null;
 		if (($daterange = caGetOption('daterange', $options, null)) && is_array($d = caDateToUnixTimestamps($daterange))) {
 			$sql_daterange = "AND (wcl.log_datetime BETWEEN ? AND ?)";
-			$sql_daterange2 = "AND (wcl2.log_datetime BETWEEN ? AND ?)";
 			$params[] = $d['start']; $params[] = $d['end'];
 		}
 		
@@ -1002,53 +1014,40 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (!is_array($user_id)) { $user_id = [$user_id]; }
 			if (sizeof($user_id = array_filter(array_map(function($v) { return (int)$v; }, $user_id), function($v) { return ($v > 0); })) > 0) {
 		    	$sql_user_id = "AND (wcl.user_id IN (?))";
-		    	$sql_user_id2 = "AND (wcl2.user_id IN (?))";
 				$params[] = $user_id;
 			}
 		}
 		
-		$qr = $o_db->query("
-			SELECT DISTINCT
-				wcl.log_id, wcl.log_datetime log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
-				 wcl.unit_id, wu.email, wu.fname, wu.lname, wcls.subject_table_num, wcls.subject_row_id ".($no_snapshot ? '' : ', wclsnap.snapshot')."
-			FROM ca_change_log wcl
-			INNER JOIN ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
-			LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
-			LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
-			WHERE
-				(
-					((wcl.logged_table_num = ?) AND (wcls.subject_table_num IS NULL))
-				)
-				{$sql_daterange} {$sql_user_id}
-			UNION 
-			SELECT DISTINCT
-				wcl2.log_id, wcl2.log_datetime log_datetime, wcl2.user_id, wcl2.changetype, wcl2.logged_table_num, wcl2.logged_row_id,
-				 wcl2.unit_id, wu.email, wu.fname, wu.lname, wcls2.subject_table_num, wcls2.subject_row_id ".($no_snapshot ? '' : ', wclsnap2.snapshot')."
-			FROM ca_change_log wcl2
-			INNER JOIN ca_change_log_snapshots AS wclsnap2 ON wclsnap2.log_id = wcl2.log_id
-			LEFT JOIN ca_change_log_subjects AS wcls2 ON wcl2.log_id = wcls2.log_id
-			LEFT JOIN ca_users AS wu ON wcl2.user_id = wu.user_id
-			WHERE
-				(
-					(wcls2.subject_table_num = ?)
-				)
-				{$sql_daterange2} {$sql_user_id2}
-			{$sql_limit}
-		", array_merge($params, $params));
+		if (!is_array($sql_tables)) { $sql_tables[] = "1"; }
 		
-		if ($qr) {
-			$log = [];
-			while($qr->nextRow()) {
-				$log[] = $qr->getRow();
+		$log = [];
+		foreach($sql_tables as $sql_table) {
+			$qr = $o_db->query($z="
+				SELECT
+					wcl.log_id, wcl.log_datetime log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
+					 wcl.unit_id, wu.email, wu.fname, wu.lname, wcls.subject_table_num, wcls.subject_row_id ".($no_snapshot ? '' : ', wclsnap.snapshot')."
+				FROM ca_change_log wcl
+				INNER JOIN ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
+				LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
+				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
+				WHERE
+					{$sql_table} {$sql_daterange} {$sql_user_id}
+				{$sql_limit}
+			", $params);
+			if ($qr) {
+				while($qr->nextRow()) {
+					$row = $qr->getRow();
 				
-				if (!$no_snapshot) { 
-					$log[sizeof($log)-1]['snapshot'] = caUnserializeForDatabase($log[sizeof($log)-1]['snapshot']);
+					if (!$no_snapshot) { 
+						$row['snapshot'] = caUnserializeForDatabase($row['snapshot']);
+					}
+					$log[$row['log_id']][] = $row;
 				}
 			}
-			return array_reverse($log);
 		}
-		
-		return [];
+		ksort($log);
+		$log = array_reduce($log, function($c, $i) { foreach($i as $v) { if(is_array($v)) { $c[] = $v; }} return $c; }, []);
+		return array_reverse($log);
  	}
  	# ----------------------------------------
 	/**
@@ -1059,7 +1058,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	 *
  	 * @return array
  	 */
-	static private function makeChangeLog($data, $table_num, $options=null) {
+	static private function makeChangeLog($data, $options=null) {
 		$dont_show_timestamp_in_change_log = caGetOption('dontShowTimestampInChangeLog', $options, false);
 		$return_item_names = caGetOption('returnItemNames', $options, true);
 		
@@ -1080,16 +1079,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				'D' => _t('Deleted')
 			);
 			
-			$vs_label_table_name = $vs_label_display_name = '';
-			$t_item = Datamodel::getInstanceByTableNum($table_num, true);
 			
-			$vs_label_table_name = $vn_label_table_num = $vs_label_display_name = null;
-			if (method_exists($t_item, 'getLabelTableName') && $t_item->getLabelTableInstance()) {
-				$t_item_label = $t_item->getLabelTableInstance();
-				$vs_label_table_name = $t_item->getLabelTableName();
-				$vn_label_table_num = $t_item_label->tableNum();
-				$vs_label_display_name = $t_item_label->getProperty('NAME_SINGULAR');
-			}
 			
 			//
 			// Group data by unit
@@ -1107,6 +1097,17 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			foreach($va_grouped_data as $vn_unit_id => $va_log_entries_by_table) {
 				foreach($va_log_entries_by_table as $vs_table_key => $va_log_entries) {
 					foreach($va_log_entries as $va_log_entry) {
+						$vs_label_table_name = $vs_label_display_name = '';
+						$t_item = Datamodel::getInstanceByTableNum($va_log_entry['logged_table_num'], true);
+			
+						$vs_label_table_name = $vn_label_table_num = $vs_label_display_name = null;
+						if (method_exists($t_item, 'getLabelTableName') && $t_item->getLabelTableInstance()) {
+							$t_item_label = $t_item->getLabelTableInstance();
+							$vs_label_table_name = $t_item->getLabelTableName();
+							$vn_label_table_num = $t_item_label->tableNum();
+							$vs_label_display_name = $t_item_label->getProperty('NAME_SINGULAR');
+						}
+			
 						$va_changes = array();
 						
 						if (!is_array($va_log_entry['snapshot'])) { $va_log_entry['snapshot'] = array(); }
@@ -1137,7 +1138,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						$t_obj = Datamodel::getInstanceByTableNum($va_log_entry['logged_table_num'], true);	// get instance for logged table
 						if (!$t_obj) { continue; }
 						
-						$vs_subject_display_name = '???';
+						$vs_subject_display_name = _t('&lt;MISSING&gt;');
 						$vn_subject_row_id = null;
 						$vn_subject_table_num = null;
 						if ($return_item_names) {
@@ -1215,7 +1216,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 													}
 													$vs_proc_val = join(' ', $va_rel_values);
 												}
-												if (!$vs_proc_val) { $vs_proc_val = '???'; }
+												if (!$vs_proc_val) { $vs_proc_val = _t('&lt;MISSING&gt;'); }
 											} else {
 												$vs_proc_val = _t("Not set");
 											}

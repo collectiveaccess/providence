@@ -7463,3 +7463,8 @@ li.mediaItem-selected {
 .cke_maximized {
     top: 0px !important;
 }
+
+div.changeLogSearchResultsPagination {
+	float: right;
+	padding: 5px;
+}
