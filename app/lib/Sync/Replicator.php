@@ -549,7 +549,7 @@ class Replicator {
                                         }
                                         
                                         foreach($va_log_entry['snapshot'] as $k => $v) {
-                                            if (in_array($v, $va_guids_to_skip)) { 
+                                            if (caIsGUID($v) && in_array($v, $va_guids_to_skip, true)) { 
                                                 if (preg_match("!parent!", $k)) {
                                                     unset($va_log_entry['snapshot'][$k]);
                                                     unset($va_log_entry['snapshot'][str_replace("_guid", "", $k)]);
