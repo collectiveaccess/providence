@@ -813,17 +813,14 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			$vn_start = $vn_end = null;
 			if (isset($pa_datetime_range[0])) {
 				$vn_start = (int)$pa_datetime_range[0];
-			} else {
-				if (isset($pa_datetime_range['start'])) {
-					$vn_start = (int)$pa_datetime_range['start'];
-				}
+			} elseif (isset($pa_datetime_range['start'])) {
+				$vn_start = (int)$pa_datetime_range['start'];
 			}
+			
 			if (isset($pa_datetime_range[1])) {
 				$vn_end = (int)$pa_datetime_range[1];
-			} else {
-				if (isset($pa_datetime_range['end'])) {
-					$vn_end = (int)$pa_datetime_range['end'];
-				}
+			} elseif (isset($pa_datetime_range['end'])) {
+				$vn_end = (int)$pa_datetime_range['end'];
 			}
 			
 			if ($vn_start <= 0) { $vn_start = time() - 3600; }
