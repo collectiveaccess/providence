@@ -3277,7 +3277,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool True if $guid is a valid guid
 	 */
 	function caIsGUID($guid){
-		return preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $guid)
+		return preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $guid);
 	}
 	# ----------------------------------------
 	/**
