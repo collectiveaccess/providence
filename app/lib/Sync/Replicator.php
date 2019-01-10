@@ -347,6 +347,14 @@ class Replicator {
                                                                     ->request();
                                                 $va_access_for_dependent = $o_access_for_dependent->getRawData();
                                                 
+                                                // Check for existance on target
+                                                $o_guids_exist_for_missing = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
+                                                                        ->setRequestBody(array_unique(caExtractArrayValuesFromArrayOfArrays($va_log_for_missing_guid, 'guid')))
+                                                                        ->request();
+                                                $va_guids_exist_for_missing = $o_guids_exist_for_missing->getRawData();
+                                                
+                                                $va_guids_that_exist_for_missing = array_keys(array_filter($va_guids_exist_for_missing, function($v) { return !is_array($v); }));
+                                                
                                                 $va_filtered_log_for_missing_guid = [];  
                                                 foreach($va_log_for_missing_guid as $va_missing_entry) {
                                                     if ($va_missing_entry['log_id'] >= $pn_start_replicated_id) { 
@@ -357,6 +365,11 @@ class Replicator {
                                                     if ($pa_filter_on_access_settings && ($va_access_for_dependent[$va_missing_entry['guid']] !== '?') && !in_array($va_access_for_dependent[$va_missing_entry['guid']], $pa_filter_on_access_settings)) {
                                                         // skip rows for which we have no access
                                                         $this->log(_t("SKIP %1 because we have no access: %2", $va_missing_entry['guid'], print_R($va_missing_entry, true)), Zend_Log::DEBUG);
+                                                        continue;
+                                                    }
+                                                    if ($va_guids_that_exist_for_missing && ($va_guids_that_exist_for_missing[$va_missing_entry['guid']])) {
+                                                        // skip rows which already exist on target
+                                                        $this->log(_t("SKIP %1 because it already exists on target", $va_missing_entry['guid']), Zend_Log::DEBUG);
                                                         continue;
                                                     }
                                                     
