@@ -836,7 +836,7 @@
 				}
 
 				$qr_reps = $o_db->query("
-					SELECT *
+					SELECT representation_id, media
 					FROM ca_object_representations
 					{$vs_sql_joins}
 					{$vs_sql_where}
