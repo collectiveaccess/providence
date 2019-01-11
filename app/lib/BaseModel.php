@@ -1636,6 +1636,7 @@ class BaseModel extends BaseObject {
 						
 						$va_matches = null;
 						
+						$vm_value = html_entity_decode($vm_value);
 						if (
 							is_string($vm_value) 
 							&& 
