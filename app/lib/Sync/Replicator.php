@@ -117,6 +117,12 @@ class Replicator {
 				$o_result = $o_target->setEndpoint('getlastreplicatedlogid')
 					->addGetParameter('system_guid', $vs_source_system_guid)
 					->request();
+				$res = $o_result->getRawData();
+				if (is_array($res) && isset($res['errors'])) {
+				    $this->log(_t("There were errors getting last replicated log id for source %1 and target %2: %3", $vs_source_key, $vs_target_key, join('; ', $res['errors'])), Zend_Log::ERR);
+				    continue;
+				}
+				
 				$pn_replicated_log_id = $o_result->getRawData()['replicated_log_id'];
 				$va_backlog = [];
 
