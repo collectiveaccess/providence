@@ -405,7 +405,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement->setMode(ACCESS_WRITE);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->set('display_id', $vn_display_id);
-		$t_placement->set('bundle_name', $ps_bundle_name);
+		$t_placement->set('bundle_name', trim($ps_bundle_name));
 		$t_placement->set('rank', $pn_rank);
 		
 		if (is_array($pa_settings)) {
