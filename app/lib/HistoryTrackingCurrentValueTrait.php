@@ -78,15 +78,15 @@
 				    
 				    // Make relationship type entry into default type entry
 				    if (is_array($map['ca_storage_locations'])) {
-				        $map['ca_storage_locations']['_default_'] = array_shift($map[$t]);
+				        $map['ca_storage_locations']['__default__'] = array_shift($map[$t]);
 				    }
 				    
 				 	$history_tracking_policies = [
 				 		'defaults' => [
-				 			'ca_objects' => '_default_',
+				 			'ca_objects' => '__default__',
 				 		],
 						'policies' => [
-                            '_default_' => [
+                            '__default__' => [
                                 'table' => 'ca_objects',
                                 'name' => 'Current location',
                                 'mode' => 'workflow',
@@ -131,8 +131,13 @@
 				
 				$bundle_settings["{$table}_showTypes"] = [];
 				if(is_array($types)) {
+				    $exit = false;
 					foreach($types as $type_list => $config) {
-						
+						if(!is_array($config)) {    // some old configs omit the types, so we hoist the values into a config for all types here
+						    $config = $types;
+						    $type_list = '*';
+						    $exit = true;
+						}
 						if (in_array($type_list, ['*', '__default__'])) { 
 							$bundle_settings["{$table}_displayTemplate"] = $config['template'];
 							$types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList());
@@ -161,6 +166,7 @@
 								}
 							}
 						}
+						if ($exit) { break; }
 					}
 				}
 			}
@@ -1797,11 +1803,12 @@
 			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
 				return null;
 			}
-			$o_view->setVar('policy', $policy);
-			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
 			
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
+			
+			$o_view->setVar('policy', $policy);
+			$o_view->setVar('policy_info', $x=self::getHistoryTrackingCurrentValuePolicy($policy));
+	
 			if(!is_array($pa_options)) { $pa_options = array(); }
 		
 			$vs_display_template		= caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined'));
