@@ -30,6 +30,8 @@
 	$vs_filter_change_type = $this->getVar('filter_change_type');
 	$vn_filter_user_id = $this->getVar('filter_user_id');
 	$can_filter_by_user = $this->getVar('can_filter_by_user');
+	$table_list = $this->getVar('table_list');
+	$user_list = $this->getVar('user_list');
 	
 	$page = $this->getVar('page');
 	
@@ -51,9 +53,9 @@
 				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
 				'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3 by %4', 
 					caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $vs_filter_change_type, 'width' => '100px']),
-					caHTMLSelect('filter_table', array_merge([_t('anything') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
+					caHTMLSelect('filter_table', array_merge([_t('anything') => ''], $table_list), null, ['value' => $vn_filter_table]),
 					caHTMLTextInput('filter_daterange', array('size' => 12, 'value' => ($s = $this->getVar('filter_daterange')) ? $s : _t('any time'), 'class' => 'dateBg')),
-					caHTMLSelect('filter_user', array_merge([_t('any user') => ''], ApplicationChangeLog::getChangeLogUsersForSelect()), [], ['value' => $vn_filter_user_id, 'width' => '140px'])
+					caHTMLSelect('filter_user', array_merge([_t('any user') => ''], $user_list), [], ['value' => $vn_filter_user_id, 'width' => '140px'])
 				).'</div>', 
 				caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
 			);
@@ -137,7 +139,7 @@
 				</td>
 				<td>
 <?php
-						print "<ul>";					
+						print "<ul style='width: 230px; max-height: 200px; overflow: auto;'>";					
 						
 						foreach($va_log_entry as $va_change_list) {
 							foreach($va_change_list['changes'] as $va_change) {

@@ -47,7 +47,8 @@ class GlobalChangeController extends ActionController {
 		}
 
 		AssetLoadManager::register('tableList');
-	
+
+		$this->view->setVar('table_list', $table_list = caGetPrimaryTablesForHTMLSelect());
 		$filter_table = $this->request->getParameter('filter_table', pInteger);
 		if (!$filter_table && !isset($_REQUEST['filter_table'])) { $filter_table = Session::getVar('global_change_log_filter_table'); }
 		Session::setVar('global_change_log_filter_table', $filter_table);
@@ -63,11 +64,14 @@ class GlobalChangeController extends ActionController {
 		Session::setVar('global_change_log_filter_daterange', $filter_daterange);
 		$this->view->setVar('filter_daterange', $filter_daterange);
 		
+		$this->view->setVar('user_list', $user_list = ApplicationChangeLog::getChangeLogUsersForSelect(['daterange' => $filter_daterange]));
+		
 		if($can_filter_by_user = $this->request->user->canDoAction('can_view_change_logs')) {
 			$filter_user_id = $this->request->getParameter('filter_user', pInteger);
 			if (!$filter_user_id && !isset($_REQUEST['filter_user'])) { 
-				$filter_user_id = Session::varExists('global_change_log_filter_user_id') ? Session::getVar('global_change_log_filter_user_id') : $this->request->getUserID(); 
+				$filter_user_id = Session::varExists('global_change_log_filter_user_id') ? Session::getVar('global_change_log_filter_user_id') : null; 
 			}
+			if (!in_array($filter_user_id, $user_list)) { $filter_user_id = null; }
 		} else {
 			$filter_user_id = $this->request->getUserID();
 		}
@@ -79,8 +83,8 @@ class GlobalChangeController extends ActionController {
 		$this->view->setVar('page', $page);
 		
 		$start = (int)($page * self::$log_entries_per_page);
-
-		$log_entries = ApplicationChangeLog::getChangeLog(['table' => $filter_table, 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id]);
+print "f=$filter_table";
+		$log_entries = ApplicationChangeLog::getChangeLog(['tables' => $filter_table ? $filter_table : array_values($table_list), 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id]);
 		$this->view->setVar('change_log_list', $log_entries);
 
 		$this->render('global_change_log_html.php');
