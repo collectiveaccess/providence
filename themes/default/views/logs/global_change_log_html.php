@@ -29,6 +29,7 @@
 	$vn_filter_table = $this->getVar('filter_table');
 	$vs_filter_change_type = $this->getVar('filter_change_type');
 	$vn_filter_user_id = $this->getVar('filter_user_id');
+	$can_filter_by_user = $this->getVar('can_filter_by_user');
 	
 	$page = $this->getVar('page');
 	
@@ -44,19 +45,31 @@
 <div class="sectionBox">
 	<?php
 		print caFormTag($this->request, 'Index', 'changeLogSearch');
-		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
-			'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3 by %4', 
-				caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $vs_filter_change_type, 'width' => '100px']),
-				caHTMLSelect('filter_table', array_merge([_t('anything') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
-				caHTMLTextInput('filter_daterange', array('size' => 12, 'value' => ($s = $this->getVar('filter_daterange')) ? $s : _t('any time'), 'class' => 'dateBg')),
-				caHTMLSelect('filter_user', array_merge([_t('any user') => ''], ApplicationChangeLog::getChangeLogUsersForSelect()), [], ['value' => $vn_filter_user_id, 'width' => '140px'])
-			).'</div>', 
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
-		);
+		
+		if ($can_filter_by_user) {
+			print caFormControlBox(
+				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
+				'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3 by %4', 
+					caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $vs_filter_change_type, 'width' => '100px']),
+					caHTMLSelect('filter_table', array_merge([_t('anything') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
+					caHTMLTextInput('filter_daterange', array('size' => 12, 'value' => ($s = $this->getVar('filter_daterange')) ? $s : _t('any time'), 'class' => 'dateBg')),
+					caHTMLSelect('filter_user', array_merge([_t('any user') => ''], ApplicationChangeLog::getChangeLogUsersForSelect()), [], ['value' => $vn_filter_user_id, 'width' => '140px'])
+				).'</div>', 
+				caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
+			);
+		} else {
+			print caFormControlBox(
+				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
+				'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3', 
+					caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $vs_filter_change_type, 'width' => '100px']),
+					caHTMLSelect('filter_table', array_merge([_t('anything') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
+					caHTMLTextInput('filter_daterange', array('size' => 12, 'value' => ($s = $this->getVar('filter_daterange')) ? $s : _t('any time'), 'class' => 'dateBg'))
+				).'</div>', 
+				caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
+			);
+		}
 		print "</form>";
-	?>
-	
+	?>	
 	<div class="changeLogSearchResultsPagination">
 <?php
 	if ($page > 0) {
@@ -78,13 +91,16 @@
 					<?php print _t('User'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Change type'); ?>
+					<?php print _t('Change'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Record type'); ?>
+					<?php print _t('Type'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Changed item'); ?>
+					<?php print _t('Item'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('Changes'); ?>
 				</th>
 			</tr>
 		</thead>
@@ -99,7 +115,7 @@
 ?>
 			<tr>
 				<td>
-					<?php print date("n/d/Y g:i:sa T", $va_log_entry[0]['timestamp']); ?>
+					<?php print caGetLocalizedDate($va_log_entry[0]['timestamp']); ?>
 				</td>
 				<td>
 					<?php print $va_log_entry[0]['user']; ?>
@@ -108,7 +124,7 @@
 					<?php print $va_log_entry[0]['changetype_display']; ?>
 				</td>
 				<td>
-					<?php print Datamodel::getTableProperty($va_log_entry[0]['subject_table_num'], 'NAME_PLURAL'); ?>
+					<?php print Datamodel::getTableProperty($va_log_entry[0]['subject_table_num'], 'NAME_SINGULAR'); ?>
 				</td>
 				<td>
 					<?php
@@ -117,8 +133,11 @@
 						} else {
 							print "<span style='font-size:12px; font-weight:bold;'>".$va_log_entry[0]['subject']."</span><br/>";
 						}
-						print "<a href='#' id='more".$vs_log_key."' onclick='jQuery(\"#more".$vs_log_key."\").hide(); jQuery(\"#changes".$vs_log_key."\").slideDown(250); return false;'>".caNavIcon(__CA_NAV_ICON_ADD__, '14px')."</a>";
-						print "<div style='display:none;' id='changes{$vs_log_key}'><ul>";					// date/time of change, ready for display (don't use date() on it)
+					?>
+				</td>
+				<td>
+<?php
+						print "<ul>";					
 						
 						foreach($va_log_entry as $va_change_list) {
 							foreach($va_change_list['changes'] as $va_change) {
@@ -140,8 +159,7 @@
 							}
 						}
 						print "</ul>";
-						print "<a href='#' id='hide".$vs_log_key."' style='padding-left:10px;' onclick='jQuery(\"#changes".$vs_log_key."\").slideUp(250); jQuery(\"#more".$vs_log_key."\").show(); return false;'>".caNavIcon(__CA_NAV_ICON_CANCEL__, '14px')."</a>";
-					?>
+?>
 				</td>
 			</tr>
 <?php
@@ -149,7 +167,7 @@
 	} else {
 ?>
 		<tr>
-			<td colspan='5'>
+			<td colspan='6'>
 				<div align="center">
 					<?php print (trim($this->getVar('filter_daterange'))) ? _t('No log entries found') : _t('Enter a date to display change log from above'); ?>
 				</div>

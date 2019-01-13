@@ -39,8 +39,7 @@ class GlobalChangeController extends ActionController {
 	
 	# -------------------------------------------------------
 	public function Index() {
-
-		if(!$this->request->getUser()->canDoAction('can_view_my_change_logs')) { // can view everything
+		if(!$this->request->getUser()->canDoAction('can_view_my_change_logs') && !$this->request->getUser()->canDoAction('can_view_change_logs')) { 
 			$this->response->setRedirect(
 				$this->request->getAppConfig()->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath())
 			);
@@ -64,10 +63,17 @@ class GlobalChangeController extends ActionController {
 		Session::setVar('global_change_log_filter_daterange', $filter_daterange);
 		$this->view->setVar('filter_daterange', $filter_daterange);
 		
-		$filter_user_id = $this->request->getParameter('filter_user', pInteger);
-		if (!$filter_user_id && !isset($_REQUEST['filter_user'])) { $filter_user_id = Session::getVar('global_change_log_filter_user_id'); }
+		if($can_filter_by_user = $this->request->user->canDoAction('can_view_change_logs')) {
+			$filter_user_id = $this->request->getParameter('filter_user', pInteger);
+			if (!$filter_user_id && !isset($_REQUEST['filter_user'])) { 
+				$filter_user_id = Session::varExists('global_change_log_filter_user_id') ? Session::getVar('global_change_log_filter_user_id') : $this->request->getUserID(); 
+			}
+		} else {
+			$filter_user_id = $this->request->getUserID();
+		}
 		Session::setVar('global_change_log_filter_user_id', $filter_user_id);
 		$this->view->setVar('filter_user_id', $filter_user_id);
+		$this->view->setVar('can_filter_by_user', $can_filter_by_user);
 		
 		if (!($page = $this->request->getParameter('page', pInteger))) { $page = 0; }
 		$this->view->setVar('page', $page);
