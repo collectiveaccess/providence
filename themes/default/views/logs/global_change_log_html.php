@@ -129,9 +129,9 @@
 				<td>
 					<?php
 						if ($va_log_entry[0]['subject'] !== _t('&lt;MISSING&gt;')) {
-							print "<span style='font-size:12px; font-weight:bold;'><a href='".caEditorUrl($this->request, $va_log_entry[0]['subject_table_num'], $va_log_entry[0]['subject_id'])."'>".$va_log_entry[0]['subject']."</a></span><br/>";
+							print "<a href='".caEditorUrl($this->request, $va_log_entry[0]['subject_table_num'], $va_log_entry[0]['subject_id'])."'>".$va_log_entry[0]['subject']."</a></span><br/>";
 						} else {
-							print "<span style='font-size:12px; font-weight:bold;'>".$va_log_entry[0]['subject']."</span><br/>";
+							print $va_log_entry[0]['subject']."<br/>";
 						}
 					?>
 				</td>
