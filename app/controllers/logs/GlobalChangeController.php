@@ -35,7 +35,7 @@ class GlobalChangeController extends ActionController {
 	/**
 	 *
 	 */
-	private static $log_entries_per_page = 250;
+	private static $log_entries_per_page = 25;
 	
 	# -------------------------------------------------------
 	public function Index() {
@@ -79,12 +79,14 @@ class GlobalChangeController extends ActionController {
 		$this->view->setVar('filter_user_id', $filter_user_id);
 		$this->view->setVar('can_filter_by_user', $can_filter_by_user);
 		
+		$this->view->setVar('params_set', $params_set = ($params_set = $filter_user_id || $filter_change_type || $filter_table || ($filter_daterange && ($filter_daterange != _t('any time')))));
+		
 		if (!($page = $this->request->getParameter('page', pInteger))) { $page = 0; }
 		$this->view->setVar('page', $page);
 		
 		$start = (int)($page * self::$log_entries_per_page);
-print "f=$filter_table";
-		$log_entries = ApplicationChangeLog::getChangeLog(['tables' => $filter_table ? $filter_table : array_values($table_list), 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id]);
+
+		$log_entries = $params_set ? ApplicationChangeLog::getChangeLog(['limitByUnit' => true, 'groupBySubject' => true, 'tables' => $filter_table ? $filter_table : array_values($table_list), 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id]) : [];
 		$this->view->setVar('change_log_list', $log_entries);
 
 		$this->render('global_change_log_html.php');

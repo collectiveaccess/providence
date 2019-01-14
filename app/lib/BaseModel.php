@@ -2156,8 +2156,10 @@ class BaseModel extends BaseObject {
 	public function insert ($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 	
+		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
 		$vb_we_set_transaction = false;
-	$this->clearErrors();
+		$this->clearErrors();
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
@@ -2317,11 +2319,13 @@ class BaseModel extends BaseObject {
 						if ((($v == '') || is_null($v)) && !$va_attr["IS_NULL"]) {
 							$this->postError(1805, _t("Date is undefined but field %1 does not support NULL values", $vs_field),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($v) && !(is_null($v) && $va_attr["IS_NULL"])) {
 							$this->postError(1100, _t("Date is invalid for %1", $vs_field),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($v)) { $v = 'null'; }
@@ -2335,11 +2339,13 @@ class BaseModel extends BaseObject {
 						if ((($v == '') || is_null($v)) && !$va_attr["IS_NULL"]) {
 							$this->postError(1805, _t("Time is undefined but field %1 does not support NULL values", $vs_field),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($v) && !(is_null($v) && $va_attr["IS_NULL"])) {
 							$this->postError(1100, _t("Time is invalid for ", $vs_field),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($v)) { $v = 'null'; }
@@ -2369,11 +2375,13 @@ class BaseModel extends BaseObject {
 						) {
 							$this->postError(1805, _t("Daterange is undefined but field does not support NULL values"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
 							$this->postError(1100, _t("Starting date is invalid"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
@@ -2381,6 +2389,7 @@ class BaseModel extends BaseObject {
 						if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 							$this->postError(1100,_t("Ending date is invalid"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
@@ -2404,11 +2413,13 @@ class BaseModel extends BaseObject {
 						) {
 							$this->postError(1805,_t("Time range is undefined but field does not support NULL values"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($this->_FIELD_VALUES[$start_field_name])&& !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
 							$this->postError(1100,_t("Starting time is invalid"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
@@ -2416,6 +2427,7 @@ class BaseModel extends BaseObject {
 						if (!is_numeric($this->_FIELD_VALUES[$end_field_name])&& !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 							$this->postError(1100,_t("Ending time is invalid"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $end_field_name = $this->_FIELD_VALUES[$end_field_name]; }
@@ -2443,6 +2455,7 @@ class BaseModel extends BaseObject {
 						if (!is_numeric($v)) {
 							$this->postError(1100,_t("Number is invalid for %1 [%2]", $vs_field, $v),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						$vs_values .= $v.",";
@@ -2456,6 +2469,7 @@ class BaseModel extends BaseObject {
 						if (!is_numeric($v)) {
 							$this->postError(1100, _t("Timecode is invalid"),"BaseModel->insert()", $vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						$vs_values .= $v.",";
@@ -2569,6 +2583,7 @@ class BaseModel extends BaseObject {
 						$o_db->query("DELETE FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ?", $this->getPrimaryKey(1));
 						$this->_FIELD_VALUES[$this->primaryKey()] = "";
 						if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+						if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 						return false;
 					}
 				}
@@ -2592,6 +2607,7 @@ class BaseModel extends BaseObject {
 				if (($vn_fields_that_have_been_set > 0) && !caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("I", null, ['log_id' => $vn_log_id = caGetOption('log_id', $pa_options, null)]); }
 
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				
 				$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 				$this->_FIELD_VALUE_CHANGED = array();					
@@ -2608,6 +2624,7 @@ class BaseModel extends BaseObject {
 					$this->postError($o_e->getErrorNumber(), $o_e->getErrorDescription().' ['.$o_e->getErrorNumber().']', "BaseModel->insert()", $this->tableName().'.'.$vs_field);
 				}
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				return false;
 			}
 		} else {
@@ -2641,6 +2658,7 @@ class BaseModel extends BaseObject {
 
 			}
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return false;
 		}
 	}
@@ -2660,6 +2678,8 @@ class BaseModel extends BaseObject {
 	 */
 	public function update($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
 		$this->field_conflicts = array();
 		$this->clearErrors();
@@ -2744,6 +2764,7 @@ class BaseModel extends BaseObject {
 					if (in_array($this->get($vs_parent_id_fld), $va_ids)) {
 						$this->postError(2010,_t("Cannot move %1 under its sub-record", $this->getProperty('NAME_SINGULAR')),"BaseModel->update()", $this->tableName().'.'.$vs_parent_id_fld);
 						if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+						if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 						return false;
 					}
 				}
@@ -2760,6 +2781,7 @@ class BaseModel extends BaseObject {
 						if (!($vn_hierarchy_id = $this->get($vs_hier_id_fld))) {
 							$this->postError(2030, _t("Hierarchy ID must be specified for this update"), "BaseModel->update()", $this->tableName().'.'.$vs_hier_id_fld);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							
 							return false;
 						}
@@ -2888,6 +2910,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (!is_numeric($vm_val)) {
 							$this->postError(1100,_t("Number is invalid for %1", $vs_field),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						$vs_sql .= "{$vs_field} = {$vm_val},";
@@ -2915,11 +2938,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if ((($vm_val == '') || is_null($vm_val)) && !$va_attr["IS_NULL"]) {
 							$this->postError(1805,_t("Date is undefined but field does not support NULL values"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($vm_val) && !(is_null($vm_val) && $va_attr["IS_NULL"])) {
 							$this->postError(1100,_t("Date is invalid for %1", $vs_field),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($vm_val)) { $vm_val = 'null'; }
@@ -2933,11 +2958,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if ((($vm_val == '') || is_null($vm_val)) && !$va_attr["IS_NULL"]) {
 							$this->postError(1805, _t("Time is undefined but field does not support NULL values"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($vm_val) && !(is_null($vm_val) && $va_attr["IS_NULL"])) {
 							$this->postError(1100, _t("Time is invalid for %1", $vs_field),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($vm_val)) { $vm_val = 'null'; }
@@ -2967,11 +2994,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						) {
 							$this->postError(1805,_t("Daterange is undefined but field does not support NULL values"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
 							$this->postError(1100,_t("Starting date is invalid"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
@@ -2979,6 +3008,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 							$this->postError(1100,_t("Ending date is invalid"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
@@ -3000,11 +3030,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						) {
 							$this->postError(1805,_t("Time range is undefined but field does not support NULL values"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
 							$this->postError(1100,_t("Starting time is invalid"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
@@ -3012,6 +3044,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 							$this->postError(1100,_t("Ending time is invalid"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
@@ -3026,6 +3059,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (!is_numeric($vm_val)) {
 							$this->postError(1100,_t("Timecode is invalid"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 						$vs_sql .= "{$vs_field} = {$vm_val},";
@@ -3041,6 +3075,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						} else {
 							if ($this->numErrors() > 0) {
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+								if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 								return false;
 							}
 						}
@@ -3053,6 +3088,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						} else {
 							if ($this->numErrors() > 0) {
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+								if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 								return false;
 							}
 						}
@@ -3100,6 +3136,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						}
 					}
 					if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+					if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 					return false;
 				} 
 				
@@ -3140,6 +3177,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			}
 
 			if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			
 			$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 			$this->_FIELD_VALUE_CHANGED = array();
@@ -3152,6 +3190,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			return true;
 		} else {
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return false;
 		}
 	}
@@ -3219,6 +3258,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
 		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$vn_id = $this->getPrimaryKey();
@@ -3240,6 +3282,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
 			
 			if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return $vn_rc;
 		}
 		$this->clearErrors();
@@ -3303,6 +3346,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			if ($qr_res->nextRow()) {
 				$this->postError(780, _t("Can't delete item because it has sub-records"),"BaseModel->delete()");
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				return false;	
 			}
 		}
@@ -3354,6 +3398,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									if ($t_related->numErrors()) {
 										$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
 										if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+										if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 										return false;
 									}
 								}
@@ -3361,6 +3406,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						} else {
 							$this->postError(780, _t("Can't delete item because it is in use (%1)", $vs_many_table),"BaseModel->delete()");
 							if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
 					}
@@ -3374,6 +3420,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if ($o_db->numErrors() > 0) {
 			$this->errors = $o_db->errors();
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return false;
 		}
 		
@@ -3425,10 +3472,12 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$this->clear();
 		} else {
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return false;
 		}
 
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+		if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 		return true;
 	}
 
