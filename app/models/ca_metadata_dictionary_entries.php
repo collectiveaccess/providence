@@ -285,6 +285,27 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get list of entries 
+	 *
+	 * @return array|null
+	 */
+	static public function getEntries() {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		$qr = $o_db->query("
+			SELECT *
+			FROM ca_metadata_dictionary_entries
+		");
+		
+		$entries = [];
+		while($qr->nextRow()) {
+			$row = $qr->getRow();
+			$entries[] = $row;
+		}
+		return $entries;
+	}
+	# ------------------------------------------------------
+	/**
 	  * Sets setting definitions for to use for the current entry. Note that these definitions persist no matter what row is loaded
 	  * (or even if no row is loaded). You can set the definitions once and reuse the instance for many entries. All will have the set definitions.
 	  *

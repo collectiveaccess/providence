@@ -258,9 +258,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	 * 
 	 */
 	static public function getRules($pa_options=null) {
-		if (!($o_db = caGetOption('db', $pa_options, null))) {
-			$o_db = new Db();
-		}
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		
 		$vs_sql = "
 			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, 
