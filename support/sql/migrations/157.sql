@@ -12,6 +12,9 @@ UPDATE ca_change_log SET unit_id = MD5(log_id) WHERE unit_id IS NULL;
 CREATE INDEX i_log_plus on ca_change_log_subjects (log_id, subject_table_num, subject_row_id);
 CREATE INDEX i_date_unit on ca_change_log(log_datetime, unit_id); 
 
+
+ALTER TABLE ca_search_indexing_queue MODIFY COLUMN changed_fields longtext null;
+
 /*==========================================================================*/
 
 
