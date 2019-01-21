@@ -85,7 +85,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 		),
 		'rule_code' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => "200px", 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'FILTER' => '!^[\p{L}0-9_]+$!u',
@@ -95,7 +95,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 		),
 		'expression' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 3,
+				'DISPLAY_WIDTH' => "620px", 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Expression'), 'DESCRIPTION' => _t('Expression to evaluate'),
@@ -103,7 +103,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 		),
 		'rule_level' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 5, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => "160px", 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Rule level'), 'DESCRIPTION' => _t('Level of importance of rule.'),

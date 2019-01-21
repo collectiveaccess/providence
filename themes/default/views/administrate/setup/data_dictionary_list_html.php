@@ -61,16 +61,13 @@
 					<?php print _t('Name'); ?>
 				</th>
 				<th class="list-header-unsorted">
+					<?php print _t('Entry type'); ?>
+				</th>
+				<th class="list-header-unsorted">
 					<?php print _t('Bundle'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Definition'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Mandatory?'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('xxx'); ?>
+					<?php print _t('Rules'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEditDelete"> </th>
 			</tr>
@@ -85,16 +82,13 @@
 					<div class="caMetadataAlertListName"><?php print $entry['label']; ?></div>
 				</td>
 				<td>
+					<div class="caMetadataAlertListName"><?php print Datamodel::getTableProperty($entry['table_num'], 'NAME_PLURAL'); ?></div>
+				</td>
+				<td>
 					<div class="caMetadataAlertListName"><?php print $entry['bundle_label']." (".$entry['bundle_name'].")"; ?></div>
 				</td>
 				<td>
-					<div><?php print $entry['settings']['definition']; ?></div>
-				</td>
-				<td>
-					<div><?php print $entry['settings']['mandatory']; ?></div>
-				</td>
-				<td>
-					<div class="caMetadataAlertListOwner"><?php print $entry['fname'].' '.$entry['lname'].($entry['email'] ? "<br/>(<a href='mailto:".$entry['email']."'>".$entry['email']."</a>)" : ""); ?></div>
+					<div><?php print (int)$entry['numRules']; ?></div>
 				</td>
 				<td class="listtableEditDelete">
 					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit', array('entry_id' => $entry['entry_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>

@@ -54,9 +54,10 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 	'definition' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => "620px", 'height' => 12,
+		'width' => "660px", 'height' => "400px",
 		'takesLocale' => true,
 		'label' => _t('Definition'),
+		'usewysiwygeditor' => true,
 		'description' => _t('Extended text describing standards for entry in this data entry bundle.')
 	),
 	'restrict_to_types' => array(
@@ -96,7 +97,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 		),
 		'table_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => "160px", 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Entry type'), 'DESCRIPTION' => _t('Type of item this entry displays for.'),
@@ -126,7 +127,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 		),
 		'bundle_name' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => "300px", 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Bundle name'), 'DESCRIPTION' => _t('Bundle name'),
@@ -275,7 +276,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 
 		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Data dictionary entry settings'));
 		
-		//$this->BUNDLES['ca_metadata_alert_triggers'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Trigger'));
+		$this->BUNDLES['ca_metadata_dictionary_rules'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Rules'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -330,8 +331,10 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		$label_cache = $t->getPreferredDisplayLabelsForIDs($qr->getAllFieldValues('entry_id'));
 		
 		$qr = $o_db->query("
-			SELECT *
-			FROM ca_metadata_dictionary_entries
+			SELECT cmde.*, count(*) numRules
+			FROM ca_metadata_dictionary_entries cmde
+			LEFT JOIN ca_metadata_dictionary_rules AS cmdr ON cmde.entry_id = cmdr.entry_id
+			GROUP BY cmde.entry_id
 		");
 		
 		$entries = [];
@@ -410,8 +413,12 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		$o_db = $this->getDb();
 
 		$qr_rules = $o_db->query("
-			SELECT * FROM ca_metadata_dictionary_rules ORDER BY rule_id
-		");
+			SELECT * 
+			FROM ca_metadata_dictionary_rules 
+			WHERE
+				entry_id = ?
+			ORDER BY rule_id
+		", [$this->getPrimaryKey()]);
 
 		$va_return = [];
 
@@ -535,6 +542,37 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		}
 		
 		return null;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options
+	 * @return string
+	 */
+	public function getRulesHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, array $pa_bundle_settings=[], array $pa_options=[]) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+
+		$o_view->setVar('t_rule', $this);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
+		$o_view->setVar('request', $po_request);
+
+		if(!($vn_table_num = $this->get('table_num'))) { return null; }
+
+		$o_view->setVar('table_num', $vn_table_num);
+
+		$t_rule = new ca_metadata_dictionary_rules($vn_rule_id);
+		
+		$o_view->setVar('rules', $this->getRules());
+		
+		$o_view->setVar('t_entry', $this);
+		$o_view->setVar('t_rule', $t_rule);
+
+		return $o_view->render('ca_metadata_dictionary_rules.php');
 	}
 	# ------------------------------------------------------
 	public function __destruct() {

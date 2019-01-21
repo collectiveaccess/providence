@@ -85,52 +85,5 @@
 
  			return $this->render('widget_data_dictionary_entry_info_html.php', true);
  		}
- 		# -------------------------------------------------------
-		public function getTriggerTypeSettingsForm() {
-			$t_trigger = $this->getTriggerObject();
-			$ps_trigger_type = $this->getRequest()->getParameter('triggerType', pString);
-			$ps_prefix = $this->getRequest()->getParameter('id_prefix', pString);
-			$this->view->setVar('id_prefix', $ps_prefix);
-
-			$t_trigger->set('trigger_type', $ps_trigger_type);
-
-			$this->view->setVar('available_settings',$t_trigger->getAvailableSettings());
-			$this->render("ajax_rule_trigger_settings_form_html.php");
-		}
-		# -------------------------------------------------------
-		public function getTriggerTypeFilterForm() {
-			$t_trigger = $this->getTriggerObject();
-			$ps_trigger_type = $this->getRequest()->getParameter('triggerType', pString);
-			$ps_prefix = $this->getRequest()->getParameter('id_prefix', pString);
-			$pn_element_id = $this->getRequest()->getParameter('element_id', pString);
-			$this->view->setVar('id_prefix', $ps_prefix);
-			$this->view->setVar('element_id', $pn_element_id);
-
-			$t_trigger->set('trigger_type', $ps_trigger_type);
-			
-			if(!$t_trigger->getTriggerInstance()) { throw new ApplicationException(_t('No trigger')); }
-			$this->view->setVar('filters', $t_trigger->getTriggerInstance()->getElementFilters($pn_element_id, $ps_prefix, ['values' => $t_trigger->get('element_filters')]));
-
-			$this->view->setVar('available_settings',$t_trigger->getAvailableSettings());
-			$this->render("ajax_rule_trigger_filter_form_html.php");
-		}
-		# -------------------------------------------------------
-		/**
-		 * @param bool $pb_set_view_vars
-		 * @param null|int $pn_trigger_id
-		 * @return ca_metadata_alert_triggers
-		 */
-		private function getTriggerObject($pb_set_view_vars=true, $pn_trigger_id=null) {
-			if (!($vn_trigger_id = $this->getRequest()->getParameter('trigger_id', pInteger))) {
-				$vn_trigger_id = $pn_trigger_id;
-			}
-			$t_trigger = new ca_metadata_alert_triggers();
-			$t_trigger->load($vn_trigger_id, false);
-			if ($pb_set_view_vars) {
-				$this->view->setVar('trigger_id', $vn_trigger_id);
-				$this->view->setVar('t_trigger', $t_trigger);
-			}
-			return $t_trigger;
-		}
 		# -------------------------------------------------------
  	}
