@@ -13,7 +13,9 @@ CREATE INDEX i_log_plus on ca_change_log_subjects (log_id, subject_table_num, su
 CREATE INDEX i_date_unit on ca_change_log(log_datetime, unit_id); 
 
 
+/* Reset field settings that may be incorrect in older installations */
 ALTER TABLE ca_search_indexing_queue MODIFY COLUMN changed_fields longtext null;
+ALTER TABLE ca_set_items MODIFY COLUMN rank int unsigned not null default 0;
 
 /*==========================================================================*/
 
