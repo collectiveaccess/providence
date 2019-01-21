@@ -2426,7 +2426,8 @@ class BaseEditorController extends ActionController {
 				$vb_download_for_record = true;
 				$va_rep_info = $va_rep['info'][$ps_version];
 				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
-				switch($this->request->user->getPreference('downloaded_file_naming')) {
+				
+				switch($vs_mode = $this->request->config->get('downloaded_file_naming')) {
 					case 'idno':
 						$vs_file_name = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						break;
@@ -2438,7 +2439,16 @@ class BaseEditorController extends ActionController {
 						break;
 					case 'original_name':
 					default:
-						if (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
+					    if (strpos($vs_mode, "^") !== false) { // template
+					        $vals = [];
+					        foreach(array_merge($va_rep['info'], $va_rep_info) as $k => $v) {
+					            if(is_array($v)) { continue; }
+					            if ($k == 'original_filename') { $v = pathinfo($v, PATHINFO_FILENAME); }
+					            $vals[strtolower($k)] = preg_replace('![^A-Za-z0-9_\-]+!', '_', $v);
+					        }
+					        $vals['idno'] = $vs_idno_proc;
+				            $vs_file_name = caProcessTemplate($vs_mode, $vals);
+						} elseif (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
 							$va_tmp = explode('.', $va_rep['info']['original_filename']);
 							if (sizeof($va_tmp) > 1) {
 								if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
