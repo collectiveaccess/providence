@@ -37,7 +37,7 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			//if (!$this->request->user->canDoAction("can_use_metadata_alerts")) { throw new ApplicationException(_t('Alerts are not available')); }
+ 			if (!$this->request->user->canDoAction("can_configure_data_dictionary")) { throw new ApplicationException(_t('Data dictionary is not available')); }
  		}
  		# -------------------------------------------------------
  		protected function _initView($pa_options=null) {
@@ -54,28 +54,12 @@
  			return $va_init;
  		}
  		# -------------------------------------------------------
- 		protected function _isEntryEditable() {
- 			return true;
- 			// $pn_rule_id = $this->getRequest()->getParameter('rule_id', pInteger);
-//  			if ($pn_rule_id == 0) { return true; }		// allow creation of new rules
-//  			$t_rule = new ca_metadata_alert_rules();
-//  			if (!$t_rule->haveAccessToForm($this->getRequest()->getUserID(), __CA_BUNDLE_DISPLAY_EDIT_ACCESS__, $pn_rule_id)) {		// is user allowed to edit rule?
-//  				$this->notification->addNotification(_t("You cannot edit that rule"), __NOTIFICATION_TYPE_ERROR__);
-//  				$this->response->setRedirect(caNavUrl($this->getRequest(), 'manage', 'SearchForm', 'ListForms'));
-//  				return false; 
-//  			} else {
-//  				return true;
-//  			}
- 		}
- 		# -------------------------------------------------------
  		public function Edit($pa_values=null, $pa_options=null) {
- 			if ($this->_isEntryEditable()) { return parent::Edit($pa_values, $pa_options); }
- 			return false;
+ 			return parent::Edit($pa_values, $pa_options);
  		}
  		# -------------------------------------------------------
  		public function Delete($pa_options=null) {
- 			if ($this->_isEntryEditable()) { return parent::Delete($pa_options); }
- 			return false;
+ 			return parent::Delete($pa_options); 
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

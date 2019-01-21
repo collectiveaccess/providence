@@ -35,10 +35,7 @@ class DataDictionaryController extends ActionController {
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		
-		
-		// TODO: fix
-		
- 		//if (!$this->request->user->canDoAction("can_use_metadata_alerts")) { throw new ApplicationException(_t('Alerts are not available')); }
+ 		if (!$this->request->user->canDoAction("can_configure_data_dictionary")) { throw new ApplicationException(_t('Data dictionary is not available')); }
 	}
 	# -------------------------------------------------------
 	public function ListEntries() {

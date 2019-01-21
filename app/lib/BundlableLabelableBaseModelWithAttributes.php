@@ -4777,10 +4777,21 @@ if (!$vb_batch) {
 						}
 						break;
 					# -------------------------------
+					// This bundle is only available for ca_metadata_alert_rules
 					case 'ca_metadata_alert_triggers':
 						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_alert_rules)) { return null; }
 						if (!$po_request->user->canDoAction('can_use_metadata_alerts')) { break; }
 						$this->saveTriggerHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------
+					// This bundle is only available for ca_metadata_dictionary_entries
+					case 'ca_metadata_dictionary_rules':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_dictionary_entries)) { return null; }
+						if (!$po_request->user->canDoAction('can_configure_data_dictionary')) { break; }
+
+						$this->saveRuleHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------
 					// This bundle is only available items for ca_site_pages

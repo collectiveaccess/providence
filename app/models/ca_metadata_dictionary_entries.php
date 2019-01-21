@@ -403,10 +403,10 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 * Get list of rules for currently loaded row
 	 * @return array|null
 	 */
-	public function getRules() {
+	public function getRules($options=null) {
 		if(!$this->getPrimaryKey()) { return null; }
 
-		if(MemoryCache::contains($this->getPrimaryKey(), 'MDDictRuleList')) {
+		if(!caGetOption('noCache', $options, false) && MemoryCache::contains($this->getPrimaryKey(), 'MDDictRuleList')) {
 			return MemoryCache::fetch($this->getPrimaryKey(), 'MDDictRuleList');
 		}
 
@@ -573,6 +573,78 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		$o_view->setVar('t_rule', $t_rule);
 
 		return $o_view->render('ca_metadata_dictionary_rules.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Save trigger bundle
+	 *
+	 * @param $po_request
+	 * @param $ps_form_prefix
+	 * @param $ps_placement_code
+	 */
+	public function saveRuleHTMLFormBundle($po_request, $ps_form_prefix, $ps_placement_code) {
+		if (!($entry_id = $this->getPrimaryKey())) { return null; }
+		$vs_id_prefix = $ps_placement_code.$ps_form_prefix;
+
+		$rules = $this->getRules();
+		
+		// find settings keys in request and set them
+		$adds = $edits = $deletes = [];
+		foreach($_REQUEST as $vs_k => $vm_v) {
+			if(preg_match("/^{$vs_id_prefix}_setting_(.+)$/u", $vs_k, $va_matches)) {
+				//$t_rule->setSetting($va_matches[1], $vm_v);
+			} elseif(preg_match("/^{$vs_id_prefix}_(.+?)_new_([\d]+)$/u", $vs_k, $va_matches)) {
+				$adds[$va_matches[2]][$va_matches[1]] = $vm_v;
+			} elseif(preg_match("/^{$vs_id_prefix}_(.+)_([\d]+)$/u", $vs_k, $va_matches)) {
+				$edits[$va_matches[2]][$va_matches[1]] = $vm_v;
+			} elseif(preg_match("/^{$vs_id_prefix}_([\d]+)_delete$/u", $vs_k, $va_matches)) {
+				$deletes[$va_matches[1]] = true;
+			}
+		}
+		
+		$t_rule = new ca_metadata_dictionary_rules();
+		
+		foreach(array_keys($deletes) as $rule_id) {
+			if (!isset($rules[$rule_id])) { continue; }
+			if (!$t_rule->load($rule_id)) { continue; }
+			
+			$t_rule->delete();
+			if($t_rule->numErrors() > 0) {
+				$this->errors = $t_rule->errors;
+				return false;
+			}
+		}
+
+		foreach($adds as $content) {
+			$t_rule = new ca_metadata_dictionary_rules();
+			$t_rule->set('entry_id', $entry_id);
+			foreach(['rule_code', 'rule_level', 'expression'] as $f) {
+				if(!isset($content[$f])) { continue; }
+				$t_rule->set($f, $content[$f]);
+			}
+			$t_rule->insert();
+			if($t_rule->numErrors() > 0) {
+				$this->errors = $t_rule->errors;
+				return false;
+			}
+		}
+		foreach($edits as $rule_id => $content) {
+			if (!isset($rules[$rule_id])) { continue; }
+			if (!$t_rule->load($rule_id)) { continue; }
+			foreach(['rule_code', 'rule_level', 'expression'] as $f) {
+				if(!isset($content[$f])) { continue; }
+				$t_rule->set($f, $content[$f]);
+			}
+			$t_rule->update();
+			if($t_rule->numErrors() > 0) {
+				$this->errors = $t_rule->errors;
+				return false;
+			}
+		}
+
+		
+		MemoryCache::delete($this->getPrimaryKey(), 'MDDictRuleList');
+		return true;
 	}
 	# ------------------------------------------------------
 	public function __destruct() {
