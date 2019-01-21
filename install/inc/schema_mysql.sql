@@ -6341,9 +6341,28 @@ create table ca_media_replication_status_check (
 /*==========================================================================*/
 create table ca_metadata_dictionary_entries (
    entry_id                 int unsigned					not null AUTO_INCREMENT,
+   table_num                tinyint unsigned not null default 0,
    bundle_name              varchar(255) not null,
    settings                 longtext not null,
-   primary key (entry_id)
+   primary key (entry_id),
+   key i_table_num (table_num),
+   key i_bundle_name (bundle_name)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_metadata_dictionary_entry_labels (
+	label_id		  int unsigned not null primary key auto_increment,
+	entry_id			  int unsigned null references ca_metadata_dictionary_entries(entry_id),
+	locale_id		  smallint unsigned not null references ca_locales(locale_id),
+	name			    varchar(255) not null,
+	name_sort		  varchar(255) not null,
+	description		text not null,
+	source_info		longtext not null,
+	is_preferred	tinyint unsigned not null,
+
+	KEY i_entry_id (entry_id),
+	KEY i_locale_id (locale_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 

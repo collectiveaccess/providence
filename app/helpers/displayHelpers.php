@@ -4509,3 +4509,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
  		return $va_bundle_settings;
  	}
 	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	function caGetDisplayLabelForBundle($bundle) {
+		$tmp = explode('.', $bundle);
+		if (!($t = Datamodel::getInstance($tmp[0], true))) { return null; }
+		
+		return $t->getDisplayLabel($bundle);
+	}
+	# ------------------------------------------------------------------

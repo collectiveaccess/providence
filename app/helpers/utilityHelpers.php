@@ -1992,6 +1992,7 @@ function caFileIsIncludable($ps_file) {
 	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
 	 *		castTo = array|int|string|float|bool
 	 *		delimiter = A delimiter, or array of delimiters, to break a string option value on. When this option is set an array will always be returned. [Default is null]
+	 *		defaultOnEmptyString = Force use of default value when option is set to an empty string). [Default is false]
 	 * @return mixed
 	 */
 	function caGetOption($pm_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
@@ -2020,6 +2021,7 @@ function caFileIsIncludable($ps_file) {
 		} else {
 			$vm_val = (isset($pa_options[$pm_option]) && !is_null($pa_options[$pm_option])) ? $pa_options[$pm_option] : $pm_default;
 		}
+		if (isset($pa_parse_options['defaultOnEmptyString']) && $pa_parse_options['defaultOnEmptyString'] && is_string($vm_val) && (strlen($vm_val) === 0)) { $vm_val = $pm_default; }
 
 		if (
 			((is_string($vm_val) && !isset($pa_parse_options['castTo'])) || (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'] == 'string')))

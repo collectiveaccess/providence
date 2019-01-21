@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,49 +36,34 @@
  
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entry_labels.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 
 global $_ca_metadata_dictionary_entry_settings;
 $_ca_metadata_dictionary_entry_settings = array(		// global
-	'label' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 1,
-		'takesLocale' => true,
-		'label' => _t('Label to place on entry'),
-		'description' => _t('Custom label text to use for this entry.')
-	),
-	'definition' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 5,
-		'takesLocale' => true,
-		'label' => _t('Descriptive text for bundle.'),
-		'description' => _t('Definition text to display for this bundle.')
-	),
 	'mandatory' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_CHECKBOXES,
 		'width' => "10", 'height' => "1",
 		'takesLocale' => false,
 		'default' => 0,
-		'label' => _t('Bundle is mandatory'),
-		'description' => _t('Bundle is mandatory and a valid value must be set before it can be saved.')
+		'label' => _t('Is mandatory?'),
+		'description' => _t('If checked data entry bundle is mandatory and a valid value must be set before it can be saved.')
 	),
-	'restrict_to' => array(
+	'definition' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 35, 'height' => 5,
-		'takesLocale' => false,
-		'default' => '',
-		'label' => _t('Restrict to'),
-		'description' => _t('Restrict entry to specific table.')
+		'width' => "620px", 'height' => 12,
+		'takesLocale' => true,
+		'label' => _t('Definition'),
+		'description' => _t('Extended text describing standards for entry in this data entry bundle.')
 	),
 	'restrict_to_types' => array(
 		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 35, 'height' => 5,
+		'displayType' => DT_SELECT,
+		'useList' => null,
+		'width' => "200px", 'height' => 5,
 		'takesLocale' => false,
 		'multiple' => 1,
 		'default' => '',
@@ -87,20 +72,20 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 	),
 	'restrict_to_relationship_types' => array(
 		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 35, 'height' => 5,
+		'displayType' => DT_SELECT,
+		'useRelationshipTypeList' => null,
+		'width' => "200px", 'height' => 5,
 		'takesLocale' => false,
 		'multiple' => 1,
 		'default' => '',
 		'label' => _t('Restrict to relationship types'),
 		'description' => _t('Restricts entry to items related using the specified relationship type(s). Leave all unchecked for no restriction.')
 	)
-	
 );
 
 BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
- 	'NAME_SINGULAR' 	=> _t('Metadata dictionary entry'),
- 	'NAME_PLURAL' 		=> _t('Metadata dictionary entries'),
+ 	'NAME_SINGULAR' 	=> _t('Data dictionary entry'),
+ 	'NAME_PLURAL' 		=> _t('Data dictionary entries'),
  	'FIELDS' 			=> array(
  		'entry_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -108,6 +93,36 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Entry id', 'DESCRIPTION' => 'Identifier for metadata dictionary entry'
+		),
+		'table_num' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Entry type'), 'DESCRIPTION' => _t('Type of item this entry displays for.'),
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('objects') => 57,
+					_t('object lots') => 51,
+					_t('entities') => 20,
+					_t('places') => 72,
+					_t('occurrences') => 67,
+					_t('collections') => 13,
+					_t('storage locations') => 89,
+					_t('loans') => 133,
+					_t('movements') => 137,
+					_t('tours') => 153,
+					_t('tour stops') => 155,
+					_t('object representations') => 56,
+					_t('representation annotations') => 82,
+					_t('sets') => 103,
+					_t('set items') => 105,
+					_t('lists') => 36,
+					_t('list items') => 33,
+					_t('search forms') => 121,
+					_t('displays') => 124,
+					_t('relationship types') => 79,
+					_t('site pages') => 235
+				)
 		),
 		'bundle_name' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -128,7 +143,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 );
 
 
-class ca_metadata_dictionary_entries extends BaseModel {
+class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttributes {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -202,7 +217,7 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	# ------------------------------------------------------
 	# Labeling
 	# ------------------------------------------------------
-	protected $LABEL_TABLE_NAME = null;
+	protected $LABEL_TABLE_NAME = 'ca_metadata_dictionary_entry_labels';
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -230,6 +245,11 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	 */
 	static $s_definition_cache_relationship_type_ids;
 	
+	/**
+	 *
+	 */
+	private $additional_settings = null;
+	
 	# ------------------------------------------------------
 	/**
 	 *
@@ -242,11 +262,20 @@ class ca_metadata_dictionary_entries extends BaseModel {
 		
 		//
 		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
+		$this->additional_settings = $pa_additional_settings;
 		$this->setSettingDefinitionsForEntry($pa_additional_settings);
 		
 		if (is_array($pa_setting_values)) {
 			$this->setSettings($pa_setting_values);
 		}
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+
+		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Data dictionary entry settings'));
+		
+		//$this->BUNDLES['ca_metadata_alert_triggers'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Trigger'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -292,6 +321,14 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	static public function getEntries() {
 		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		
+		$t = new ca_metadata_dictionary_entries();
+		$qr = $o_db->query("
+			SELECT entry_id
+			FROM ca_metadata_dictionary_entries
+		");
+		
+		$label_cache = $t->getPreferredDisplayLabelsForIDs($qr->getAllFieldValues('entry_id'));
+		
 		$qr = $o_db->query("
 			SELECT *
 			FROM ca_metadata_dictionary_entries
@@ -300,8 +337,12 @@ class ca_metadata_dictionary_entries extends BaseModel {
 		$entries = [];
 		while($qr->nextRow()) {
 			$row = $qr->getRow();
-			$entries[] = $row;
+			$row['settings'] = caUnserializeForDatabase($row['settings']);
+			$row['label'] = $label_cache[$row['entry_id']];
+			$row['bundle_label'] = caGetOption('label', $row['settings'], caGetDisplayLabelForBundle($row['bundle_name']), ['defaultOnEmptyString' => true]);
+			$entries[$row['entry_id']] = $row;
 		}
+		
 		return $entries;
 	}
 	# ------------------------------------------------------
@@ -314,11 +355,45 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	  * @return bool Always returns true
 	  */
 	public function setSettingDefinitionsForEntry($pa_additional_settings) {
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
+		if (!is_array($pa_additional_settings)) { $pa_additional_settings = []; }
 		global $_ca_metadata_dictionary_entry_settings;
-		$this->SETTINGS = new ModelSettings($this, 'settings', array_merge($_ca_metadata_dictionary_entry_settings, $pa_additional_settings));
+		
+		$standard_settings = $_ca_metadata_dictionary_entry_settings;
+		
+		if ($bundle = $this->get('bundle_name')) {
+			$tmp = explode('.', $bundle);
+			if (($t = Datamodel::getInstance($tmp[0], true)) && method_exists($t, 'getTypeListCode')) {
+				$standard_settings['restrict_to_types']['useList'] = $t->getTypeListCode();
+				
+				$path = Datamodel::getPath($tmp[0], $this->get('table_num'));
+				$path = array_keys($path);
+				$standard_settings['restrict_to_relationship_types']['useRelationshipTypeList'] = $path[1];
+			}
+		}
+		$this->SETTINGS = new ModelSettings($this, 'settings', array_merge($standard_settings, $pa_additional_settings));
 		
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function load($id=null, $use_cache=true) {
+		if($r = parent::load($id, $use_cache)) {
+			$this->setSettingDefinitionsForEntry($this->additional_settings);
+		}
+		return $r;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		$r = parent::set($pa_fields, $pm_value, $pa_options);
+		if ($this->changed('bundle_name')) { 
+			$this->setSettingDefinitionsForEntry($this->additional_settings);
+		}
+		return $r;
 	}
 	# ------------------------------------------------------
 	/**
@@ -338,7 +413,7 @@ class ca_metadata_dictionary_entries extends BaseModel {
 			SELECT * FROM ca_metadata_dictionary_rules ORDER BY rule_id
 		");
 
-		$va_return = array();
+		$va_return = [];
 
 		while($qr_rules->nextRow()) {
 			$va_return[$qr_rules->get('rule_id')] = $qr_rules->getRow();

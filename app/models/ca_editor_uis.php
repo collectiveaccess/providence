@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,7 +104,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('site pages') => 235,
 					_t('user interfaces') => 101,
 					_t('user interface screens') => 100,
-					_t('metadata alert rules') => 238
+					_t('metadata alert rules') => 238,
+					_t('data dictionary entries') => 214
 				)
 		),
 		'color' => array(
