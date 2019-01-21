@@ -1846,6 +1846,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							return null;
 						}
 						break;
+					# -------------------------------
 					// This bundle is only available for md alert rules
 					case 'ca_metadata_alert_triggers':
 						if ($vb_batch) { return null; } // not supported in batch mode
@@ -1853,7 +1854,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 						$vs_element .= $this->getTriggerHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
+					# -------------------------------
+					// This bundle is only available for ca_metadata_dictionary_entries
+					case 'ca_metadata_dictionary_rules':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_dictionary_entries)) { return null; }
 
+						$vs_element .= $this->getRulesHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
 					# -------------------------------
 					// This bundle is only available items for ca_site_pages
 					case 'ca_site_pages_content':
