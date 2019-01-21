@@ -3824,6 +3824,11 @@ function caFileIsIncludable($ps_file) {
 
 		for($i=0; $i < mb_strlen($ps_template); $i++) {
 			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+				case '{':
+				    if (!$vb_in_tag && !$vb_in_single_quote && $vb_in_single_quote && (mb_substr($ps_template, $i+1, 1) === '^')) {
+				        continue;
+				    }
+				    break;
 				case '^':
 					if ($vb_in_tag) {
 					    if ($vs_last_char === '^') {
@@ -3843,6 +3848,7 @@ function caFileIsIncludable($ps_file) {
 						$vs_tag .= $vs_char;
 					}
 					break;
+				case '}':
 				case ' ':
 				case ',':
 				case '<':
