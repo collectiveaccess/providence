@@ -38,7 +38,6 @@
  
 	class BaseSettings {
 		# ------------------------------------------------------
-		
 		/**
 		 *
 		 */
@@ -340,7 +339,7 @@
 						} else {
 							$vs_text_value = $vs_value;
 						}
-						$vs_return .= "{$vs_locale_label}<br/>".caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
+						$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
 						
 						if($va_properties['usewysiwygeditor']) {
 							AssetLoadManager::register("ckeditor");

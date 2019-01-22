@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -326,6 +326,24 @@ class ca_locales extends BaseModel {
 
 		CompositeCache::save($vs_cache_key, $va_locales, 'LocaleList');
 		return $va_locales;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return areay
+	 */
+	static public function getCataloguingLocaleList() {
+		return self::getLocaleList(['available_for_cataloguing_only' => true]);
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return areay
+	 */
+	static public function getCataloguingLocaleCodes() {
+		return array_keys(self::getLocaleList(['available_for_cataloguing_only' => true, 'index_by_code' => true]));
 	}
 	# ------------------------------------------------------
 	/**

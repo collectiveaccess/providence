@@ -42,7 +42,7 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 	'label' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 90, 'height' => 1,
+		'width' => "620px", 'height' => 1,
 		'takesLocale' => true,
 		'label' => _t('Rule display label'),
 		'description' => _t('Short label for this rule, used for display in issue lists.')
@@ -50,7 +50,7 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 	'violationMessage' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 90, 'height' => 8,
+		'width' => "620px", 'height' => "35px",
 		'takesLocale' => true,
 		'label' => _t('Rule violation message'),
 		'description' => _t('Message used for display to user when presenting issues.')
@@ -58,7 +58,7 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 	'description' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 90, 'height' => 8,
+		'width' => "620px", 'height' => "35px",
 		'takesLocale' => true,
 		'label' => _t('Rule description'),
 		'description' => _t('Long form description of rule, used for display to user when presenting issues.')

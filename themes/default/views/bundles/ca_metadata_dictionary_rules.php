@@ -32,9 +32,12 @@
 	$t_entry 				= $this->getVar('t_entry');	
 	$t_rule					= $this->getVar('t_rule');
 	
+	$settings_values_list	= $this->getVar('settings_values_list');
+	$settings_tags			= $this->getVar('settings_tags');
+
 	$va_initial_values = $this->getVar('rules');	// list of existing stops
 	$va_errors = $va_failed_inserts = [];
- 
+	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
  ?>
@@ -48,7 +51,7 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 			<table class="uiScreenItem">
-				<tr >
+				<tr>
 					<td>
 						<div class="formLabel" id="{fieldNamePrefix}edit_name_{n}" style="display: block;">
 							<table>
@@ -62,12 +65,10 @@
 									</td>
 								</tr>
 							</table>
-							<br/>
-							<?php  str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('id' => $vs_id_prefix, 'placement_code' => $this->getVar('placement_code')))); ?>	
-						
+							<?php print str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'id' => "{$vs_id_prefix}_settings_{n}"))); ?>
 						</div>
 					</td>
-					<td>
+					<td valign="top">
 						<div style="float:right;">
 							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						</div>
@@ -87,8 +88,6 @@
 		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add rule"); ?> &rsaquo;</a></div>
 	</div>
 </div>
-
-<input type="hidden" id="<?php print $vs_id_prefix; ?>_RuleBundleList" name="<?php print $vs_id_prefix; ?>_RuleBundleList" value=""/>
 <?php
 	// order element
 ?>
@@ -96,7 +95,7 @@
 <script type="text/javascript">
 	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-		templateValues: ['rule_code', 'rule_level', 'expression', 'rule_id', 'typename'],
+		templateValues: ['rule_code', 'rule_level', 'expression', 'rule_id', 'typename', <?php print join(", ", array_map(function($v) { return "'{$v}'"; }, $settings_tags)); ?>],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
 		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
@@ -110,8 +109,7 @@
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_name_'],
 		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_rule_info_', '<?php print $vs_id_prefix; ?>_edit_'],
 		showEmptyFormsOnLoad: 1,
-		isSortable: true,
-		listSortOrderID: '<?php print $vs_id_prefix; ?>_RuleBundleList',
+		isSortable: false,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

@@ -329,21 +329,29 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		");
 		
 		$label_cache = $t->getPreferredDisplayLabelsForIDs($qr->getAllFieldValues('entry_id'));
+		$qr = $o_db->query("
+			SELECT entry_id, count(*) c
+			FROM ca_metadata_dictionary_rules 
+			GROUP BY entry_id
+		");
+		$rule_counts = [];
+		while($qr->nextRow()) {
+			$rule_counts[$qr->get('entry_id')] = $qr->get('c');
+		}
 		
 		$qr = $o_db->query("
-			SELECT cmde.*, count(*) numRules
+			SELECT cmde.*
 			FROM ca_metadata_dictionary_entries cmde
-			LEFT JOIN ca_metadata_dictionary_rules AS cmdr ON cmde.entry_id = cmdr.entry_id
-			GROUP BY cmde.entry_id
 		");
 		
 		$entries = [];
 		while($qr->nextRow()) {
 			$row = $qr->getRow();
 			$row['settings'] = caUnserializeForDatabase($row['settings']);
-			$row['label'] = $label_cache[$row['entry_id']];
+			$row['label'] = $label_cache[$entry_id = $row['entry_id']];
 			$row['bundle_label'] = caGetOption('label', $row['settings'], caGetDisplayLabelForBundle($row['bundle_name']), ['defaultOnEmptyString' => true]);
-			$entries[$row['entry_id']] = $row;
+			$row['numRules'] = $rule_counts[$entry_id];
+			$entries[$entry_id] = $row;
 		}
 		
 		return $entries;
@@ -404,10 +412,12 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 * @return array|null
 	 */
 	public function getRules($options=null) {
-		if(!$this->getPrimaryKey()) { return null; }
-
-		if(!caGetOption('noCache', $options, false) && MemoryCache::contains($this->getPrimaryKey(), 'MDDictRuleList')) {
-			return MemoryCache::fetch($this->getPrimaryKey(), 'MDDictRuleList');
+		if(!($id = $this->getPrimaryKey())) { return null; }
+		
+		$for_editing_form = caGetOption('forEditingForm', $options, false);
+		
+		if(!caGetOption('noCache', $options, false) && ($cache_key = caMakeCacheKeyFromOptions($options, $id)) && MemoryCache::contains($cache_key, 'MDDictRuleList')) {
+			return MemoryCache::fetch($cache_key, 'MDDictRuleList');
 		}
 
 		$o_db = $this->getDb();
@@ -418,16 +428,34 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			WHERE
 				entry_id = ?
 			ORDER BY rule_id
-		", [$this->getPrimaryKey()]);
+		", [$id]);
 
 		$va_return = [];
 
 		while($qr_rules->nextRow()) {
-			$va_return[$qr_rules->get('rule_id')] = $qr_rules->getRow();
-			$va_return[$qr_rules->get('rule_id')]['settings'] = caUnserializeForDatabase($qr_rules->get('settings'));
+			$rule_id = $qr_rules->get('rule_id');
+			$va_return[$rule_id] = $qr_rules->getRow();
+			
+			$settings = caUnserializeForDatabase($qr_rules->get('settings'));
+			if ($for_editing_form) {
+				if (is_array($settings)) {
+					foreach($settings as $setting => $v) {
+						if(is_array($v)) { 
+							foreach($v as $locale => $vl) {
+								$va_return[$rule_id]["{$setting}_{$locale}"] = $vl;	
+							}
+						} else {
+							$va_return[$rule_id][$setting] = $v;		
+						}
+					}
+					unset($va_return[$rule_id]['settings']);
+				}
+			} else {
+				$va_return[$rule_id]['settings'] = $settings;
+			}
 		}
 
-		MemoryCache::save($this->getPrimaryKey(), $va_return, 'MDDictRuleList');
+		MemoryCache::save($cache_key, $va_return, 'MDDictRuleList');
 
 		return $va_return;
 	}
@@ -556,7 +584,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	public function getRulesHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, array $pa_bundle_settings=[], array $pa_options=[]) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 
-		$o_view->setVar('t_rule', $this);
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);
 		$o_view->setVar('request', $po_request);
@@ -567,10 +594,26 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 
 		$t_rule = new ca_metadata_dictionary_rules($vn_rule_id);
 		
-		$o_view->setVar('rules', $this->getRules());
+		$o_view->setVar('rules', $this->getRules(['forEditingForm' => true]));
 		
 		$o_view->setVar('t_entry', $this);
 		$o_view->setVar('t_rule', $t_rule);
+		
+		$settings_values = $settings_tags = [];
+		foreach($t_rule->getAvailableSettings() as $setting => $setting_info) {
+			if (isset($setting_info['takesLocale'])) {
+				foreach($locales = ca_locales::getCataloguingLocaleCodes() as $locale) {
+					$settings_values[$setting][$locale] = "{{"."{$setting}_{$locale}"."}}";	
+					$settings_tags[] = "{$setting}_{$locale}";
+				}
+				
+			} else {
+				$settings_values[$setting] = "{{".$setting."}}";
+				$settings_tags[] = $setting;
+			}
+		}
+		$o_view->setVar('settings_values_list', $settings_values);
+		$o_view->setVar('settings_tags', $settings_tags);
 
 		return $o_view->render('ca_metadata_dictionary_rules.php');
 	}
@@ -589,10 +632,15 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		$rules = $this->getRules();
 		
 		// find settings keys in request and set them
-		$adds = $edits = $deletes = [];
+		$adds = $edits = $deletes = $settings = [];
+		
 		foreach($_REQUEST as $vs_k => $vm_v) {
-			if(preg_match("/^{$vs_id_prefix}_setting_(.+)$/u", $vs_k, $va_matches)) {
-				//$t_rule->setSetting($va_matches[1], $vm_v);
+			if(preg_match("/^{$vs_id_prefix}_settings_(new_[\d]+|[\d]+)_(.+)$/u", $vs_k, $va_matches)) {
+				$tmp = explode('_', $va_matches[2]);
+				$locale = join('_', array_slice($tmp, -2, 2));
+				$setting = join('_', array_slice($tmp, 0, sizeof($tmp) - 2));
+				
+				$settings[$va_matches[1]][$setting][$locale] = $vm_v;
 			} elseif(preg_match("/^{$vs_id_prefix}_(.+?)_new_([\d]+)$/u", $vs_k, $va_matches)) {
 				$adds[$va_matches[2]][$va_matches[1]] = $vm_v;
 			} elseif(preg_match("/^{$vs_id_prefix}_(.+)_([\d]+)$/u", $vs_k, $va_matches)) {
@@ -615,13 +663,20 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			}
 		}
 
-		foreach($adds as $content) {
+		foreach($adds as $i => $content) {
 			$t_rule = new ca_metadata_dictionary_rules();
 			$t_rule->set('entry_id', $entry_id);
 			foreach(['rule_code', 'rule_level', 'expression'] as $f) {
 				if(!isset($content[$f])) { continue; }
 				$t_rule->set($f, $content[$f]);
 			}
+			if(is_array($settings["new_{$i}"])) {
+				print_r($settings["new_{$i}"]);
+				foreach($settings["new_{$i}"] as $setting => $by_locale) {
+					$t_rule->setSetting($setting, $by_locale);
+				}
+			}
+			
 			$t_rule->insert();
 			if($t_rule->numErrors() > 0) {
 				$this->errors = $t_rule->errors;
@@ -635,6 +690,13 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				if(!isset($content[$f])) { continue; }
 				$t_rule->set($f, $content[$f]);
 			}
+			
+			if(is_array($settings[$rule_id])) {
+				foreach($settings[$rule_id] as $setting => $by_locale) {
+					$t_rule->setSetting($setting, $by_locale);
+				}
+			}
+			
 			$t_rule->update();
 			if($t_rule->numErrors() > 0) {
 				$this->errors = $t_rule->errors;
@@ -643,7 +705,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		}
 
 		
-		MemoryCache::delete($this->getPrimaryKey(), 'MDDictRuleList');
+		MemoryCache::flush('MDDictRuleList');
 		return true;
 	}
 	# ------------------------------------------------------
