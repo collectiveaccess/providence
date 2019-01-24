@@ -349,6 +349,7 @@
 					} elseif (isset($map[$table]['*']) || isset($map[$table]['__default__'])) {
 						if(!isset($map[$table]['__default__'])) { $map[$table]['__default__'] = []; }
 						if(!isset($map[$table]['*'])) { $map[$table]['*'] = []; }
+						if(!is_array($map[$table]['__default__'])) {  $map[$table]['__default__'] = []; }
 						$map[$table][$type] = array_merge($map[$table]['*'], $map[$table]['__default__']);
 						
 						if (is_array($facet_display_config) && (isset($facet_display_config[$table]['*']) || isset($facet_display_config[$table]['__default__']))) {
