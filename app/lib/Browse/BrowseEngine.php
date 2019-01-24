@@ -611,6 +611,10 @@
 						case __CA_ATTRIBUTE_VALUE_GEONAMES__:
 						    $value = ca_attribute_values::getValuesFor($pn_row_id);
 							return preg_replace('![ ]*\[[^\]]*\]!', '', $value['value_longtext1']);
+						case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+						    $value = ca_attribute_values::getValuesFor($pn_row_id);
+							return $value['value_longtext1'].' '.sprintf("%4.2f", $value['value_decimal1']);
+							break;
 						default:
 						    $value = ca_attribute_values::getValuesFor($pn_row_id);
 							return $value['value_longtext1'];
@@ -1386,10 +1390,12 @@
 								case 'attribute':
 									$t_element = new ca_metadata_elements();
 									$va_element_code = explode(".", $va_facet_info['element_code']);
-									if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) {
-										return array();
-									}
-
+									
+									$t_user = new ca_users($vn_user_id);	
+		
+									if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) { return [];}
+								
+									if ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $va_facet_info['element_code']) < __CA_BUNDLE_ACCESS_READONLY__) { break; }
 									$vn_datatype = $t_element->get('datatype');
 
 									if ($va_facet_info['relative_to']) {
@@ -3311,9 +3317,9 @@
 					$t_element = new ca_metadata_elements();
 					$va_element_code = explode(".", $va_facet_info['element_code']);
 					
-					if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) {
-						return array();
-					}
+					if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) { return []; }
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $va_facet_info['element_code']) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 					$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
 
 					$vn_element_type = $t_element->get('datatype');
@@ -3589,7 +3595,7 @@
 						}
 
 						while($qr_res->nextRow()) {
-							$o_attr = Attribute::getValueInstance($vn_element_type, $qr_res->getRow(), true);
+							$o_attr = Attribute::getValueInstance($vn_element_type, $row = $qr_res->getRow(), true);
 							if (!($vs_val = trim($o_attr->getDisplayValue()))) { continue; }
 							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
@@ -3643,7 +3649,7 @@
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-								    $value_id = ca_attribute_values::getValueIDFor($o_attr->getElementID(), $vs_val);
+								    $value_id = ca_attribute_values::getValueIDFor($o_attr->getElementID(), $row);
 									$va_values[sprintf("%014.2f", preg_replace("![\D]+!", "", $vs_val))] = array(
 										'id' => $value_id, 
 										'label' => $vs_val,
