@@ -147,7 +147,7 @@
 								} elseif (!isset($va_templates[$vs_template_tag])) {
 									$va_templates[$vs_template_tag] = array(
 										'name' => $va_template_info['name'],
-										'code' => '_pdf_'.$vs_template_tag,
+										'code' => '_'.$va_template_info['fileFormat'].'_'.$vs_template_tag,
 										'type' => $va_template_info['fileFormat'],
 										'generic' => $va_template_info['generic'] ? 1 : 0
 									);

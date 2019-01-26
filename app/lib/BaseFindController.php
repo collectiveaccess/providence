@@ -496,6 +496,15 @@
 						$vs_file_extension = 'txt';
 						$vs_mimetype = "text/plain";
 					default:
+					    if(substr($ps_output_type, 0, 5) === '_docx') {
+					        $va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));
+                            if (!is_array($va_template_info)) {
+                                $this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
+                                return;
+                            }
+                            $this->render($va_template_info['path']);
+                            return;	
+					    }
 						break;
 				}
 
