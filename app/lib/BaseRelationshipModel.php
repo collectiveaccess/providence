@@ -796,6 +796,28 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get name for related table opposite the one specified by $pm_tablename_or_num.
+	 * For example, if the relationship is ca_objects_x_entities, passing $pm_tablename_or_num = ca_objects will
+	 * result in "ca_entities" being returned. If $pm_tablename_or_num is not referenced by the relationship 
+	 * null is returned.
+	 *
+	 * @param mixed $pm_tablename_or_num Table name of number
+	 * @return string
+	 */
+	public function getOppositeTableName($pm_tablename_or_num) {
+		if ($t_one_side = Datamodel::getInstanceByTableName($pm_tablename_or_num, true)) {
+			if ($this->getLeftTableName() == $t_one_side->tableName()) {
+				// other side is right
+				return $this->getRightTableName();
+			} elseif ($this->getRightTableName() == $t_one_side->tableName()) {
+				// other side is left
+				return $this->getLeftTableName();
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns relationship type name for the currently loaded row. Directionality of the type name can be controlled using the $ps_direction parameter.
 	 *
 	 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
