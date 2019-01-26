@@ -4708,6 +4708,24 @@ if (!$vb_batch) {
 							}
 						}
 						
+						if (!caGetOption('hide_add_to_object_controls', $va_bundle_settings, false)) {
+							// set object
+							if ($vn_object_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_object_idnew_0", pInteger)) {
+								if ($vn_object_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_object_type_idnew_0", pInteger)) {
+									$t_item_rel = $this->addRelationship('ca_objects', $vn_object_id, $vn_object_type_id);
+									if ($this->numErrors()) {
+										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+									} else {
+										ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix, $t_item_rel, $vn_object_id, $processed_bundle_settings);								
+									}		
+									
+									$change_has_been_made = true;
+									SearchResult::clearResultCacheForRow('ca_objects', $vn_object_id);
+									if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+								}
+							}
+						}
+						
 						if ($change_has_been_made) { SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey()); }
 						break;
 					# -------------------------------
