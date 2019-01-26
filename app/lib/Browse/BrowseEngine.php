@@ -607,6 +607,10 @@
 						case __CA_ATTRIBUTE_VALUE_GEONAMES__:
 						    $value = ca_attribute_values::getValuesFor($pn_row_id);
 							return preg_replace('![ ]*\[[^\]]*\]!', '', $value['value_longtext1']);
+						case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+						    $value = ca_attribute_values::getValuesFor($pn_row_id);
+							return $value['value_longtext1'].' '.sprintf("%4.2f", $value['value_decimal1']);
+							break;
 						default:
 						    $value = ca_attribute_values::getValuesFor($pn_row_id);
 							return $value['value_longtext1'];
@@ -1043,6 +1047,8 @@
 			}
 			
 			$vn_user_id = caGetOption('user_id', $pa_options, $AUTH_CURRENT_USER_ID, array('castTo' => 'int'));
+			$t_user = new ca_users($vn_user_id);
+			
 			$vb_no_cache = caGetOption('noCache', $pa_options, caGetOption('no_cache', $pa_options, false, array('castTo' => 'bool')), array('castTo' => 'bool'));
 
 			$va_params = $this->opo_ca_browse_cache->getParameters();
@@ -1126,6 +1132,12 @@
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
 										}
 									}
+									
+									if (isset($va_facet_info['element_code']) && $t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name,  array_shift(explode('.', $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { 
+                                        break; 
+                                    } elseif((isset($va_facet_info['table']) && $t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name,  $va_facet_info['table']) < __CA_BUNDLE_ACCESS_READONLY__))) { 
+                                        break; 
+                                    }
 
 									if ($va_facet_info['element_code']) {
 										$t_element = new ca_metadata_elements();
@@ -1340,6 +1352,11 @@
 								case 'field':
 									$vs_field_name = $va_facet_info['field'];
 									$vs_table_name = $this->ops_browse_table_name;
+									
+                                    // Map deaccession fields to deaccession bundle, which is used for access control on all
+                                    $bundle_name = (in_array($vs_field_name, ['is_deaccessioned', 'deaccession_date', 'deaccession_notes', 'deaccession_type_id', 'deaccession_disposal_date'])) ? 'ca_objects_deaccession' : $vs_field_name;
+                                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
+                    
 
 									if ($va_facet_info['relative_to']) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
@@ -1384,11 +1401,12 @@
 								# -----------------------------------------------------
 								case 'attribute':
 									$t_element = new ca_metadata_elements();
-									$va_element_code = explode(".", $va_facet_info['element_code']);
-									if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) {
-										return array();
-									}
-
+									$va_element_code = explode(".", $va_facet_info['element_code']);	
+		
+									if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) { return [];}
+								    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
+					
+									if ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $va_facet_info['element_code']) < __CA_BUNDLE_ACCESS_READONLY__) { break; }
 									$vn_datatype = $t_element->get('datatype');
 
 									if ($va_facet_info['relative_to']) {
@@ -1492,6 +1510,8 @@
 									if (!($vb_is_element = $t_element->load(array('element_code' => array_pop($va_element_code)))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 										return array();
 									}
+									
+								    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
 
 									// TODO: check that it is a *single-value* (ie. no hierarchical ca_metadata_elements) DateRange attribute
 
@@ -1647,6 +1667,7 @@
 									if (!($vb_is_element = $t_element->load(array('element_code' => array_pop($va_element_code)))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 										return array();
 									}
+                                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
 
 									// TODO: check that it is a *single-value* (ie. no hierarchical ca_metadata_elements) DateRange attribute
 
@@ -1727,6 +1748,9 @@
 								case 'authority':
 								case 'relationship_types':  
 									$vs_rel_table_name = $va_facet_info['table'];
+									
+									if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $vs_rel_table_name) < __CA_BUNDLE_ACCESS_READONLY__)) {  break; }
+					
 									if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
 									$va_restrict_to_relationship_types = $this->_getRelationshipTypeIDs($va_restrict_to_relationship_types, $va_facet_info['relationship_table']);
 
@@ -1863,6 +1887,8 @@
 								break;
 							# -----------------------------------------------------
 								case 'location':
+								    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, 'ca_objects_location') < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										$va_row_tmp = explode(":", $vn_row_id);
@@ -1926,6 +1952,11 @@
 								case 'fieldList':
 									$vs_field_name = $va_facet_info['field'];
 									$vs_table_name = $this->ops_browse_table_name;
+									
+									// Map deaccession fields to deaccession bundle, which is used for access control on all
+                                    $bundle_name = (in_array($vs_field_name, ['deaccession_type_id'])) ? 'ca_objects_deaccession' : $vs_field_name;
+                                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
+                    
 
 									if ($va_facet_info['relative_to']) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
@@ -2808,6 +2839,13 @@
 					if (isset($va_all_criteria[$ps_facet_name])) { break; }		// only one instance of this facet allowed per browse
 
 					if (!($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true))) { break; }
+					
+					if (isset($va_facet_info['element_code']) && $t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name,  array_shift(explode('.', $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { 
+					    return []; 
+					} elseif((isset($va_facet_info['table']) && $t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name,  $va_facet_info['table']) < __CA_BUNDLE_ACCESS_READONLY__))) { 
+					    return []; 
+					}
+					
 
 					$vs_yes_text = (isset($va_facet_info['label_yes']) && $va_facet_info['label_yes']) ? $va_facet_info['label_yes'] : _t('Yes');
 					$vs_no_text = (isset($va_facet_info['label_no']) && $va_facet_info['label_no']) ? $va_facet_info['label_no'] : _t('No');
@@ -3119,6 +3157,10 @@
 				case 'label':
 					if (!($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true))) { break; }
 					if (!($t_label = $t_item->getLabelTableInstance())) { break; }
+					
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name,  'preferred_labels') < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
+					
 					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
 					if (!is_array($va_exclude_types = $va_facet_info['exclude_types'])) { $va_exclude_types = array(); }
 					
@@ -3325,9 +3367,9 @@
 					$t_element = new ca_metadata_elements();
 					$va_element_code = explode(".", $va_facet_info['element_code']);
 					
-					if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) {
-						return array();
-					}
+					if (!$t_element->load(array('element_code' => array_pop($va_element_code)))) { return []; }
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 					$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
 
 					$vn_element_type = $t_element->get('datatype');
@@ -3603,7 +3645,7 @@
 						}
 
 						while($qr_res->nextRow()) {
-							$o_attr = Attribute::getValueInstance($vn_element_type, $qr_res->getRow(), true);
+							$o_attr = Attribute::getValueInstance($vn_element_type, $row = $qr_res->getRow(), true);
 							if (!($vs_val = trim($o_attr->getDisplayValue()))) { continue; }
 							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
@@ -3657,7 +3699,7 @@
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-								    $value_id = ca_attribute_values::getValueIDFor($o_attr->getElementID(), $vs_val);
+								    $value_id = ca_attribute_values::getValueIDFor($o_attr->getElementID(), $row);
 									$va_values[sprintf("%014.2f", preg_replace("![\D]+!", "", $vs_val))] = array(
 										'id' => $value_id, 
 										'label' => $vs_val,
@@ -3690,6 +3732,7 @@
 				# -----------------------------------------------------
 				case 'location':
 					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, 'ca_objects_location') < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 
 					$vs_sort_field = null;
 					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
@@ -3866,6 +3909,11 @@
 				case 'fieldList':
 					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					$vs_field_name = $va_facet_info['field'];
+					
+					// Map deaccession fields to deaccession bundle, which is used for access control on all
+					$bundle_name = (in_array($vs_field_name, ['deaccession_type_id'])) ? 'ca_objects_deaccession' : $vs_field_name;
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
 					$t_list = new ca_lists();
@@ -4286,6 +4334,11 @@
 					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
 
 					$vs_field_name = $va_facet_info['field'];
+					
+					// Map deaccession fields to deaccession bundle, which is used for access control on all
+					$bundle_name = (in_array($vs_field_name, ['is_deaccessioned', 'deaccession_date', 'deaccession_notes', 'deaccession_type_id', 'deaccession_disposal_date'])) ? 'ca_objects_deaccession' : $vs_field_name;
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
 					$vs_sort_field = null;
@@ -4437,8 +4490,6 @@
 				# -----------------------------------------------------
 				case 'violations':
 					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
-					$vs_field_name = $va_facet_info['field'];
-					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
 					$va_joins = array();
 					$va_wheres = array();
@@ -4783,13 +4834,16 @@
 					$va_element_code = explode(".", $va_facet_info['element_code']);
 					$t_element = new ca_metadata_elements();
 
+                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 					$vb_is_element = $vb_is_field = false;
 					if (!($vb_is_element = $t_element->load(array('element_code' => array_pop($va_element_code)))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 						return array();
 					}
 					
 					$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
-
+                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 					if ($vb_is_element) {
 						$va_joins = array(
 							'INNER JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id',
@@ -5133,6 +5187,9 @@
 					
 					$va_element_code = explode(".", $va_facet_info['element_code']);
 					$t_element = new ca_metadata_elements();
+					
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+
 
 					$vb_is_element = $vb_is_field = false;
 					if (!($vb_is_element = $t_element->load(array('element_code' => array_pop($va_element_code)))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
@@ -5140,7 +5197,8 @@
 					}
 					
 					$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
-
+                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 					if ($vb_is_element) {
 						$va_joins = array(
 							'INNER JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id',
@@ -5314,6 +5372,9 @@
 			    case 'relationship_types':  
 					$vs_rel_table_name = $va_facet_info['table'];
 					$va_params = $this->opo_ca_browse_cache->getParameters();
+					
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_rel_table_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
 
 					// Make sure we honor type restrictions for the related authority
 					$va_user_type_restrictions = caGetTypeRestrictionsForUser($vs_rel_table_name);
