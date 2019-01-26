@@ -141,6 +141,8 @@
 						if (in_array($type_list, ['*', '__default__'])) { 
 							$bundle_settings["{$table}_displayTemplate"] = $config['template'];
 							$types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList());
+							
+							$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 						} else {
 							$types = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
 						}
@@ -570,23 +572,6 @@
 					} else {
 						$this->setHistoryTrackingCurrentValue($policy, null, ['row_id' => $row_id, 'isFuture' => $is_future]); // null values means remove current location entirely
 					}
-					
-						//if(($omit_row_id = caGetOption('omit_row_id', $options, false)) && ($omit_table = caGetOption('omit_table_num', $options, false))) {
-							// $cl = array_reduce($h, function($c, $v) use ($omit_table, $omit_row_id) { 
-// 								if ($c) { return $c; }
-// 								$x = array_shift($v); 
-// 								if (($x['tracked_table_num'] != $omit_table) || ($x['tracked_row_id'] != $omit_row_id)) { $c = $x; } 
-// 								return $c;
-// 							}, null);
-						//} else {
-							//$cl = array_shift(array_shift($h));
-						//}	
-						//if (!($this->setHistoryTrackingCurrentValue($policy, $cl, ['row_id' => $row_id]))) {
-						//	return false;
-						//}
-					//} else {
-					//	$this->setHistoryTrackingCurrentValue($policy, null, ['row_id' => $row_id]); // null values means remove current location entirely
-					//}
 				}
 				return true;
 			}
@@ -1369,6 +1354,110 @@
 					}
 				}
 			}
+			
+			// objects
+			if (is_array($path = Datamodel::getPath($table, 'ca_objects')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
+				$va_objects = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_child_objects = [];
+				if(caGetOption('ca_objects_includeFromChildren', $pa_bundle_settings, false)) {
+					$va_child_objects = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
+					if($pb_show_child_history) { $va_objects = array_merge($va_objects, $va_child_objects); }
+				}
+				if(is_array($va_object_types = caGetOption('ca_objects_showTypes', $pa_bundle_settings, null)) && is_array($va_objects)) {	
+					$qr_objects = caMakeSearchResult($linking_table, $va_objects, ['transaction' => $this->getTransaction()]);
+					require_once(__CA_MODELS_DIR__."/ca_objects.php");
+					$t_object = new ca_objects();
+					$va_object_type_info = $t_object->getTypeList(); 
+			
+					$va_date_elements_by_type = [];
+					foreach($va_object_types as $vn_type_id) {
+						if (!is_array($va_date_elements = caGetOption("ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
+							$va_date_elements = [$va_date_elements];
+						}
+						if (!$va_date_elements) { continue; }
+						$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
+					}
+					
+					$vs_default_display_template = '^ca_objects.preferred_labels.name (^ca_objects.idno)';
+					$vs_default_child_display_template = '^ca_objects.preferred_labels.name (^ca_objects.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
+							
+					$object_table_num = Datamodel::getTableNum('ca_objects');
+					$rel_table_num = Datamodel::getTableNum($linking_table);
+			
+					while($qr_objects->nextHit()) {
+						if ((string)$qr_objects->get('ca_objects.deleted') !== '0') { continue; }	// filter out deleted
+						
+						$vn_rel_row_id = $qr_objects->get("{$linking_table}.{$pk}");
+						$vn_object_id = $qr_objects->get('ca_objects.object_id');
+						$relation_id = $qr_objects->get("{$linking_table}.relation_id");
+						$vn_type_id = $qr_objects->get('ca_objects.type_id');
+						$vn_rel_type_id = $qr_objects->get("{$linking_table}.type_id");
+				
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_objects_childDisplayTemplate', 'ca_objects_childTemplate'], $pa_bundle_settings, $vs_display_template);
+		   			
+						$va_dates = [];
+						if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
+							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
+								$va_date_bits = explode('.', $vs_date_element);
+								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_objects.{$vs_date_element}";
+								$va_dates[] = array(
+									'sortable' => $qr_objects->get($vs_date_spec, array('sortable' => true)),
+									'bounds' => explode("/", $qr_objects->get($vs_date_spec, array('sortable' => true))),
+									'display' => $qr_objects->get($vs_date_spec)
+								);
+							}
+						}
+						if (!sizeof($va_dates)) {
+							$va_dates[] = array(
+								'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_objects->get('lastModified.direct')),
+								'bounds' => array(0, $vn_date),
+								'display' => caGetLocalizedDate($vn_date)
+							);
+						}
+				
+						foreach($va_dates as $va_date) {
+							if (!$va_date['sortable']) { continue; }
+							if (!in_array($vn_type_id, $va_object_types)) { continue; }
+							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+					
+							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
+							
+							$vs_color = $va_object_type_info[$vn_type_id]['color'];
+							if (!$vs_color || ($vs_color == '000000')) {
+								$vs_color = caGetOption("ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+							}
+							$vs_color = str_replace("#", "", $vs_color);
+					
+							$o_media_coder->setMedia($va_object_type_info[$vn_type_id]['icon']);
+							$va_history[$va_date['sortable']][] = array(
+								'type' => 'ca_objects',
+								'id' => $vn_object_id,
+								'display' => $qr_objects->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+								'color' => $vs_color,
+								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
+								'typename_singular' => $vs_typename = $va_object_type_info[$vn_type_id]['name_singular'],
+								'typename_plural' => $va_object_type_info[$vn_type_id]['name_plural'],
+								'type_id' => $vn_type_id,
+								'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_typename.'</div>').'</div></div>',
+								'date' => $va_date['display'],
+								'hasChildren' => sizeof($va_child_objects) ? 1 : 0,
+						
+								'table_num' => $table_num,
+								'row_id' => $row_id,
+								'current_table_num' => $object_table_num,
+								'current_row_id' => $vn_object_id,
+								'current_type_id' => $vn_type_id,
+								'tracked_table_num' => $rel_table_num,
+								'tracked_row_id' => $relation_id,
+								'tracked_type_id' => $vn_rel_type_id,
+								
+								'status' => $status
+							);
+						}
+					}
+				}
+			}
 		
 			// Storage locations
 			if (is_array($path = Datamodel::getPath($table, 'ca_storage_locations')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
@@ -1709,6 +1798,17 @@
 			}
 			
 			//
+			// Object update
+			//
+			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_objects')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+				$linking_table = $path[1];
+				if ($t_object_rel = Datamodel::getInstance($linking_table, true)) {
+					$o_view->setVar('object_relationship_types', $t_object_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$o_view->setVar('object_relationship_types_by_sub_type', $t_object_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+				}
+			}
+			
+			//
 			// Location update
 			//
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_storage_locations')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
@@ -1849,7 +1949,7 @@
 			
 			$rel_table = get_called_class();
 			$type_idno = caGetOption('type', $options, null);
-			if(is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"]) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
+			if((is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"])|| is_array($interstitial_elements = $settings["setInterstitialElementsOnAdd"])) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
@@ -2469,6 +2569,90 @@
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_displayTemplate";
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_includeFromChildren";
 				$to_hide_when_using_defaults[] = "ca_loans_{$type['idno']}_childDisplayTemplate";
+			}
+			
+			$additional_settings['ca_objects_showTypes'] = array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'useList' => 'object_types',
+				'takesLocale' => false,
+				'default' => '',
+				'multiple' => true,
+				'width' => "275px", 'height' => "75px",
+				'label' => _t('Show objects'),
+				'description' => ''
+			);
+			$types = caGetTypeList("ca_objects");
+			
+			$linking_table = Datamodel::getLinkingTableName($table, 'ca_objects');
+			foreach($types as $vn_type_id => $type) {
+				$additional_settings["ca_objects_{$type['idno']}_dateElement"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'table' => 'ca_objects',
+					'showMetadataElementsWithDataType' => 2,
+					'takesLocale' => false,
+					'default' => '',
+					'multiple' => true,
+					'width' => "275px", 'height' => "75px",
+					'label' => _t('%1 date', $type['name_singular']),
+					'description' => ''
+				);
+				$additional_settings["ca_objects_{$type['idno']}_color"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_COLORPICKER,
+					'takesLocale' => false,
+					'default' => '#EEEEEE',
+					'width' => "275px", 'height' => "75px",
+					'label' => _t('Color for %1', $type['name_singular']),
+					'description' => _t('Color to use as highlight %1.', $type['name_plural'])
+				);
+				if ($linking_table) {
+					$additional_settings["ca_objects_{$type['idno']}_setInterstitialElementsOnAdd"] = array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'default' => '',
+						'multiple' => true,
+						'takesLocale' => false,
+						'table' => $linking_table,
+						'showMetadataElementsWithDataType' => "*",
+						'includeIntrinsics' => ['effective_date'],
+						'width' => "275px", 'height' => 4,
+						'label' => _t('Interstitial elements to set'),
+						'description' => _t('Interstitial elements to set')
+					);
+				}
+				$additional_settings["ca_objects_{$type['idno']}_displayTemplate"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'default' => '',
+					'width' => "275px", 'height' => 4,
+					'label' => _t('%1 display template', $type['name_singular']),
+					'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.', $type['name_singular'])
+				);
+				$additional_settings["ca_objects_{$type['idno']}_includeFromChildren"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_CHECKBOXES,
+					'default' => '',
+					'width' => "275px", 'height' => 4,
+					'label' => _t('Include history from %1 related to child objects', $type['name_plural']),
+					'description' => _t('If checked history from %1 that are related to sub-objects (children) is included.', $type['name_plural'])
+				);
+				$additional_settings["ca_objects_{$type['idno']}_childDisplayTemplate"] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'default' => '',
+					'width' => "275px", 'height' => 4,
+					'label' => _t('Display template for %1 when related to child objects', $type['name_plural']),
+					'description' => _t('Layout for %1 related to child objects, when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.', $type['name_plural'])
+				);
+				
+				$to_hide_when_using_defaults[] = "ca_objects_{$type['idno']}_dateElement";
+				$to_hide_when_using_defaults[] = "ca_objects_{$type['idno']}_color";
+				$to_hide_when_using_defaults[] = "ca_objects_{$type['idno']}_setInterstitialElementsOnAdd";
+				$to_hide_when_using_defaults[] = "ca_objects_{$type['idno']}_displayTemplate";
+				$to_hide_when_using_defaults[] = "ca_objects_{$type['idno']}_includeFromChildren";
+				$to_hide_when_using_defaults[] = "ca_objects_{$type['idno']}_childDisplayTemplate";
 			}
 
 			$linking_table = Datamodel::getLinkingTableName($table, 'ca_storage_locations');

@@ -362,7 +362,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
-		$this->BUNDLES['ca_storage_locations_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents of location'));
+		$this->BUNDLES['ca_storage_locations_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents of location'), 'deprecated' => true);
 		
 		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History tracking – current value'), 'displayOnly' => true);
 		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
