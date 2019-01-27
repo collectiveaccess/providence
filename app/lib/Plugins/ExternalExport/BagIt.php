@@ -99,6 +99,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
         require_once(__CA_BASE_DIR__.'/vendor/scholarslab/bagit/lib/bagit.php');
         
+        $t_user = caGetOption('user', $options, null);
         $output_config = caGetOption('output', $target_info, null);
         $target_options = caGetOption('options', $output_config, null);
         $bag_info = is_array($target_options['bag-info-data']) ? $target_options['bag-info-data'] : [];
@@ -108,9 +109,18 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         @mkdir($staging_dir);
         
         $bag = new BagIt("{$staging_dir}/{$name}", true, true, true, []);
+        $bag->setHashEncoding(caGetOption('hash', $output_config, 'md5', ['validValues' => ['md5', 'sha1']]));
         
         // bag data
         $content_mappings = caGetOption('content', $output_config, []);
+        
+        $total_filesize = 0;
+        $file_mimetypes = [];
+        $file_list = [];
+        
+        $file_list_template = caGetOption('file_list_template', $target_options, '');
+        $file_list_delimiter = caGetOption('file_list_delimiter', $target_options, '; ');
+        
         foreach($content_mappings as $path => $content_spec) {
             switch($content_spec['type']) {
                 case 'export':
@@ -150,9 +160,11 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                             	
                             	$e = $export_filename = self::processExportFilename($export_filename_spec, [
                             		'extension' => $extension,
-                            		'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : "{$basename}.{$extension}", 'original_basename' => $original_basename ? $original_basename : $basename,
-                            		'filename' => "{$basename}.{$extension}", "basename" => $basename, 'id' => $ids[$i] ? $ids[$i] : $i
-                            	], $t);
+                            		'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : null, 'original_basename' => $original_basename,
+                            		'filename' => "{$basename}.{$extension}", "basename" => $basename, 
+                            	]);
+                            	
+                            	$file_mimetypes[$m] = true;
                             	
                             	// Detect and rename duplicate file names
                             	$i = 1;
@@ -160,8 +172,19 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                             		$e = pathinfo($export_filename, PATHINFO_FILENAME)."-{$i}.{$extension}";
                             		$i++;
                             	}
+                            	$total_filesize += ($fs = filesize($f));
                                 $bag->addFile($f, $e);
                                 $seen_files[$export_filename] = true;
+                                
+                                if ($file_list_template && !isset($file_list[$export_filename])) {
+                                    $file_list_template_proc = caProcessTemplate($file_list_template, [
+                                       'filename' =>  $original_basename ? "{$original_basename}.{$extension}" : "{$basename}.{$extension}",
+                                       'filesize_in_bytes' => $fs,
+                                       'filesize_for_display' => caHumanFilesize($fs),
+                                       'mimetype' => $m
+                                    ], ['skipTagsWithoutValues' => true]);
+                                    $file_list[$export_filename] = $t_instance->getWithTemplate($file_list_template_proc);
+                                }
                             }
                         }
                     }
@@ -173,7 +196,22 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         }
         
         // bag info
+        $creator_name = $creator_email = null;
+        if (is_a($t_user, 'ca_users')) { 
+            $creator_name = $t_user->get('fname').' '.$t_user->get('lname'); 
+            $creator_email = $t_user->get('email');
+        }
+        $special_bag_vals = [
+            'now' => date('c'), 
+            'creator_name' => $creator_name, 'creator_email' => $creator_email, 
+            'total_filesize_in_bytes' => $total_filesize, 'total_filesize_for_display' => caHumanFilesize($total_filesize),
+            'file_count' => sizeof($seen_files), 'mimetypes' => join(", ", array_keys($file_mimetypes)),
+            'file_list' => join($file_list_delimiter, array_values($file_list))
+        ];
+        
         foreach($bag_info as $k => $v) {
+            $k = caProcessTemplate($k, $special_bag_vals, ['skipTagsWithoutValues' => true]);
+            $v = caProcessTemplate($v, $special_bag_vals, ['skipTagsWithoutValues' => true]);
             $bag->setBagInfoData($t_instance->getWithTemplate($k), $t_instance->getWithTemplate($v));
         }
         
