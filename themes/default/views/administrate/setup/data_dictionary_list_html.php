@@ -92,7 +92,6 @@
 				</td>
 				<td class="listtableEditDelete">
 					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit', array('entry_id' => $entry['entry_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Delete', array('entry_id' => $entry['entry_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
 				</td>
 			</tr>
 <?php

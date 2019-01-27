@@ -65,7 +65,7 @@
 									</td>
 								</tr>
 							</table>
-							<?php print str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'id' => "{$vs_id_prefix}_settings_{n}"))); ?>
+							<?php print str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'id' => "{$vs_id_prefix}_settings_{n}", 'no_tooltips' => true))); ?>
 						</div>
 					</td>
 					<td valign="top">
@@ -113,3 +113,4 @@
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>
+

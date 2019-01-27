@@ -88,10 +88,10 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 				'DISPLAY_WIDTH' => "200px", 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'FILTER' => '!^[\p{L}0-9_]+$!u',
+				//'FILTER' => '!^[\p{L}0-9_]+$!u',
 				'LABEL' => _t('Rule code'), 'DESCRIPTION' => _t('Unique alphanumeric code for the rule.'),
 				'BOUNDS_LENGTH' => array(1,30),
-				'UNIQUE_WITHIN' => array()
+				//'UNIQUE_WITHIN' => array()
 		),
 		'expression' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

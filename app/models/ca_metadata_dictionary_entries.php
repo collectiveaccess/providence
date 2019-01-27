@@ -671,7 +671,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				$t_rule->set($f, $content[$f]);
 			}
 			if(is_array($settings["new_{$i}"])) {
-				print_r($settings["new_{$i}"]);
 				foreach($settings["new_{$i}"] as $setting => $by_locale) {
 					$t_rule->setSetting($setting, $by_locale);
 				}
