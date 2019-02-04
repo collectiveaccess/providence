@@ -209,4 +209,3 @@ class ca_object_lots_x_storage_locations extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

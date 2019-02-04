@@ -79,7 +79,6 @@ if (!defined("__CA_SITE_PROTOCOL__")) {
 	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&  ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http'));
 }
 
-
 # Path to CollectiveAccess 'app' directory 
 if (!defined("__CA_APP_DIR__")) {
 	define("__CA_APP_DIR__", __CA_BASE_DIR__."/app");

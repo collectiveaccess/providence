@@ -2918,7 +2918,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/**
 	 *
 	 */
-	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null) {
+	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null, $pt_representation = null) {
 		$o_config = caGetDetailConfig();
 		$vn_can_download = false;
 		if($vs_allow = $o_config->get(['allowObjectRepresentationDownload', 'allow_ca_objects_representation_download'])){
@@ -2954,6 +2954,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$t_list_item = new ca_list_items($t_object->get("type_id"));
 			$va_object_type_code = $t_list_item->get("idno");
 			if(!in_array($va_object_type_code, $va_types)){
+				$vn_can_download = false;
+			}
+		}	
+		$va_download_access_settings = $po_request->config->get("download_access_settings");
+		if((!$po_request->config->get("dont_enforce_access_settings")) && $pt_representation && is_array($va_download_access_settings) && sizeof($va_download_access_settings)){
+			$vn_rep_access = $pt_representation->get("access");
+			if($vn_rep_access && !in_array($vn_rep_access, $va_download_access_settings)){
 				$vn_can_download = false;
 			}
 		}
@@ -3721,7 +3728,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
 			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' title='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
 		}
-		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id)){
+		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id, $pt_representation)){
 			# -- get version to download configured in media_display.conf
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
