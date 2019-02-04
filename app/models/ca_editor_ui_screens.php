@@ -1299,7 +1299,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to movement" controls'),
-										'description' => _t('Check this option if you want to hide the "Add to movemen" controls in this bundle placement.')
+										'description' => _t('Check this option if you want to hide the "Add to movement" controls in this bundle placement.')
 									),
 									'hide_update_location_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1370,6 +1370,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show "Add to" entity controls for'),
 										'description' => ''
+									),
+									'hide_add_to_object_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to object" controls'),
+										'description' => _t('Check this option if you want to hide the "Add to object" controls in this bundle placement.')
 									),
 									'useHierarchicalBrowser' => array(
 										'formatType' => FT_TEXT,
