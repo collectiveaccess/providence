@@ -1252,6 +1252,12 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 									    $vs_query_element = "[".$m[1]." to ".$m[3]."]";
 									}
 									break;
+								case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+									$o_value = new InformationServiceAttributeValue();
+									$va_data = $o_value->parseValue($vs_query_element, ['settings' => $t_element->getSettings()]);
+								
+									$vs_query_element = $va_data['value_longtext1'];
+									break;
 							}
 							$va_query_elements[] = "({$vs_element}:{$vs_query_element})";
 							break;

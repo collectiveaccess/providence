@@ -210,4 +210,3 @@ class ca_objects_x_entities extends ObjectRelationshipBaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

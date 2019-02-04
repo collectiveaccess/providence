@@ -209,4 +209,3 @@ class ca_collections_x_collections extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

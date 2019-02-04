@@ -211,4 +211,3 @@ class ca_loans_x_object_lots extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -372,4 +372,3 @@ class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
 	}
 	# ------------------------------------------------------
 }
-?>

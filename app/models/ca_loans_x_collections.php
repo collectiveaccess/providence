@@ -211,4 +211,3 @@ class ca_loans_x_collections extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

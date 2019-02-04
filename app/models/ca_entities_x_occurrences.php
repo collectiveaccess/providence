@@ -211,4 +211,3 @@ class ca_entities_x_occurrences extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

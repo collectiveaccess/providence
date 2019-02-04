@@ -210,4 +210,3 @@ class ca_object_lots_x_collections extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

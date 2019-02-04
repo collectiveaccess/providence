@@ -211,4 +211,3 @@ class ca_movements_x_collections extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>
