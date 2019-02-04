@@ -26,6 +26,9 @@
  * ----------------------------------------------------------------------
  */
  
+ require_once(__CA_MODELS_DIR__.'/ca_site_pages.php');
+ 
+ 
 	class helpMenuPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------
 		private $opo_config;
@@ -43,8 +46,8 @@
 		public function checkStatus() {
 			return array(
 				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
+				'errors' => [],
+				'warnings' => [],
 				'available' => true
 			);
 		}
@@ -54,27 +57,22 @@
 		 */
 		public function hookRenderMenuBar($pa_menu_bar) {
 			if ($o_req = $this->getRequest()) {
-				$va_help_topics = array();
+				$va_help_topics = [];
 					
-                $va_activity_menu_list['meow'] = array(
-                    'default' => '#',
-                    'displayName' => 'zzz',
-                    'is_enabled' => 1,
-                    'requires' => array(
-                        #'action:'.$vs_priv_name => 'OR'
-                    ),
-                    'parameters' => array(
-                       # $va_editor_url_info['_pk'] => $vn_id
-                    )
-                );
+					
+				$pages = ca_site_pages::getPageList(['type' => 'PROVIDENCE_HELP_TEXT']);
+					
                 
-                $va_help_topics['test'] = array(
-                    'displayName' => 'Testing',
-                    'submenu' => array(
-                        "type" => 'static',
-                        'navigation' => $va_activity_menu_list
-                    )
-                );
+                foreach($pages as $page_info) {
+                	$page_id = $page_info['page_id'];
+					$va_help_topics["page_{$page_id}"] = array(
+						'displayName' => $page_info['title'],
+						"default" => [ 'module' => '', 'controller' => 'helpMenu', 'action' => 'show/' . $page_id ],
+						'is_enabled' => 1,
+						'requires' => [],
+						'parameters' => []
+					);
+				}
 					
 				if(sizeof($va_help_topics)) {	// only show history menu if there's some history...
 					$va_help_menu = array(

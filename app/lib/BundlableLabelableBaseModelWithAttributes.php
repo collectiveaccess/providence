@@ -1280,7 +1280,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		request
 	 */
 	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null, &$ps_bundle_label=null) {
-		global $g_ui_locale;
+		global $g_ui_locale, $g_ui_locale_id;
 		if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 		
 		$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
@@ -1357,7 +1357,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			||
 			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc, $this, $pa_bundle_settings))
 		) {
-			$pa_bundle_settings['definition'][$g_ui_locale] = $va_dictionary_entry['settings']['definition'];
+			# Grab definition out of dictionary entry settings: if it was created in a system with multiple locales the available definitions 
+			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
+			# be a simple string. In the future settings should be normalized such that any value that may be localized is an array key'ed by locale code,
+			# but since we're in the present we check for and handle all three current possibilities here.
+			$pa_bundle_settings['definition'][$g_ui_locale] = is_string($va_dictionary_entry['settings']['definition']) ? $va_dictionary_entry['settings']['definition'] : caGetOption([$g_ui_locale, $g_ui_locale_id], $va_dictionary_entry['settings']['definition'], null);
 			if ($va_dictionary_entry['settings']['mandatory']) {
 				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').$pa_bundle_settings['definition'][$g_ui_locale];
 			}
@@ -1418,6 +1422,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $pa_options['request']->getViewsDirectoryPath();
 				$o_view = new View($pa_options['request'], "{$vs_view_path}/bundles/");
 			
+			
+				$custom_view_exists = ($o_view->viewExists($s = $this->tableName()."_{$ps_bundle_name}.php"));
 					
 				$va_lookup_url_info = caJSONLookupServiceUrl($pa_options['request'], $this->tableName());
 				
@@ -1449,6 +1455,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_additional_field_options
 						)
 					));
+					
+					if ($custom_view_exists) {
+						$o_view->setVar('form_element_raw', $this->htmlFormElement($ps_bundle_name, '^ELEMENT', 
+							array_merge(
+								array(	
+									'readonly' 					=> $vb_read_only,						
+									'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
+									'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
+									'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
+								
+									'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
+									'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
+								),
+								$pa_options,
+								$va_additional_field_options
+							)
+						));
+					}
 				}
 				$o_view->setVar('errors', $pa_options['request']->getActionErrors($ps_bundle_name));
 				if (method_exists($this, "getDefaultMediaPreviewVersion")) {
@@ -1482,7 +1506,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$o_view->setVar('t_instance', $this);
 				$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 				
-				$vs_element = $o_view->render('intrinsic.php', true);
+				$vs_element = $custom_view_exists ? $o_view->render($s, true) : $o_view->render('intrinsic.php', true);
 				
 				
 				if(!($vs_description =  caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale))) {
@@ -4988,24 +5012,28 @@ if (!$vb_batch) {
 		}
 
 		// validate metadata dictionary rules
-		$va_violations = $this->validateUsingMetadataDictionaryRules(array('bundles' => $va_bundle_names));
-		if (sizeof($va_violations)) {
-			if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
-			 	BaseModel::unsetChangeLogUnitID();
-				$this->removeTransaction(false); 
-				if ($vb_is_insert) { $this->_FIELD_VALUES[$this->primaryKey()] = null; }	// clear primary key since transaction has been rolled back
+		try {
+			$va_violations = $this->validateUsingMetadataDictionaryRules(array('bundles' => $va_bundle_names));
+			if (sizeof($va_violations)) {
+				if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
+					BaseModel::unsetChangeLogUnitID();
+					$this->removeTransaction(false); 
+					if ($vb_is_insert) { $this->_FIELD_VALUES[$this->primaryKey()] = null; }	// clear primary key since transaction has been rolled back
 				
-				foreach($va_violations['ERR'] as $vs_bundle => $va_errs_by_bundle) {
-					foreach($va_errs_by_bundle as $vn_i => $va_rule) {
-						$vs_bundle = str_replace($this->tableName().".", "", $vs_bundle);
+					foreach($va_violations['ERR'] as $vs_bundle => $va_errs_by_bundle) {
+						foreach($va_errs_by_bundle as $vn_i => $va_rule) {
+							$vs_bundle = str_replace($this->tableName().".", "", $vs_bundle);
 				
-						$po_request->addActionErrors(array(new ApplicationError(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+							$po_request->addActionErrors(array(new ApplicationError(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+						}
 					}
-				}
-				return false; 
-			}		
+					return false; 
+				}		
+			}
+		} catch (Exception $e) {
+			// TODO: change to specific exception type to allow use to set the specific bundle where the error occurred
+			$po_request->addActionErrors(array(new ApplicationError(1100, _t('Invalid rule expression: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 		}
-
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
