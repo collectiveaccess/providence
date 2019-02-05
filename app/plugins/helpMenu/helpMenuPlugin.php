@@ -62,24 +62,25 @@
 					
 				$pages = ca_site_pages::getPageList(['type' => 'PROVIDENCE_HELP_TEXT']);
 					
-                
-                foreach($pages as $page_info) {
-                	$page_id = $page_info['page_id'];
-					$va_help_topics["page_{$page_id}"] = array(
-						'displayName' => $page_info['title'],
-						"default" => [ 'module' => '', 'controller' => 'helpMenu', 'action' => 'show/' . $page_id ],
-						'is_enabled' => 1,
-						'requires' => [],
-						'parameters' => []
-					);
-				}
+                if(is_array($pages) && sizeof($pages)) {
+					foreach($pages as $page_info) {
+						$page_id = $page_info['page_id'];
+						$va_help_topics["page_{$page_id}"] = array(
+							'displayName' => $page_info['title'],
+							"default" => [ 'module' => '', 'controller' => 'helpMenu', 'action' => 'show/' . $page_id ],
+							'is_enabled' => 1,
+							'requires' => [],
+							'parameters' => []
+						);
+					}
 					
-				if(sizeof($va_help_topics)) {	// only show history menu if there's some history...
-					$va_help_menu = array(
-						'displayName' => _t('Help'),
-						'navigation' => $va_help_topics
-					);
-					$pa_menu_bar['help_menu'] = $va_help_menu;
+					if(sizeof($va_help_topics)) {	// only show history menu if there's some history...
+						$va_help_menu = array(
+							'displayName' => _t('Help'),
+							'navigation' => $va_help_topics
+						);
+						$pa_menu_bar['help_menu'] = $va_help_menu;
+					}
 				}
 			}
 			return $pa_menu_bar;
