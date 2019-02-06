@@ -159,7 +159,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				
         		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label, 'content' => $vs_content];
         		if ($vn_angle !== 0) { $l['angle'] = $vn_angle; }
-        		//if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
+        		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
         		$pointList[] = $l;
 			}
 			$vn_c++;
@@ -189,7 +189,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
 				
         		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label,  'content' => $vs_content, 'radius' => $vn_radius];
-        		//if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
+        		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
         		$circleList[] = $l;
 			}
 			$vn_c++;
@@ -234,20 +234,65 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			var m = L.marker([v.lat, v.lng], opts);
 			
 			if (v.angle != 0) { m.setRotationAngle(v.angle); }
-			if (v.label || v.content) { m.bindPopup(v.label + v.content); }
+			if (v.label || v.content) { 
+			    if (v.ajaxUrl) {
+			        var ajaxUrl = v.ajaxUrl;
+                    m.bindPopup(
+                        (layer)=>{
+                            var el = document.createElement('div');
+                            $.get(ajaxUrl,function(data){
+                                el.innerHTML = data + '<br/>';
+                            });
+
+                            return el;
+                        }, { minWidth: 400, maxWidth : 560 });
+			    } else {
+			        m.bindPopup(v.label + v.content); 
+			    }
+			}
 			m.addTo(g);
 		});
 		
 		jQuery(circleList{$vs_id}).each(function(k, v) {
 			var m = L.circle([v.lat, v.lng], { radius: v.radius, color: '{$vs_path_color}', weight: '{$vn_path_weight}', opacity: '{$vn_path_opacity}', fillColor: '{$vs_fill_color}', fillOpacity: '{$vn_fill_opacity}' });
-			if (v.label || v.content) { m.bindPopup(v.label + v.content); }
+			if (v.label || v.content) { 
+			    if (v.ajaxUrl) {
+			        var ajaxUrl = v.ajaxUrl;
+                    m.bindPopup(
+                        (layer)=>{
+                            var el = document.createElement('div');
+                            $.get(ajaxUrl,function(data){
+                                el.innerHTML = data + '<br/>';
+                            });
+
+                            return el;
+                        }, { minWidth: 400, maxWidth : 560 });
+			    } else {
+			        m.bindPopup(v.label + v.content); 
+			    }
+			}
 			m.addTo(g);
 		});
 		
 		jQuery(pathList{$vs_id}).each(function(k, v) {
 			var splitPts = v.path.map(c => { return [c.latitude, c.longitude] });
 			var m = L.polygon(splitPts, { color: '{$vs_path_color}', weight: '{$vn_path_weight}', opacity: '{$vn_path_opacity}', fillColor: '{$vs_fill_color}', fillOpacity: '{$vn_fill_opacity}' });
-			if (v.label || v.content) { m.bindPopup(v.label + v.content); }
+			if (v.label || v.content) { 
+			    if (v.ajaxUrl) {
+			        var ajaxUrl = v.ajaxUrl;
+                    m.bindPopup(
+                        (layer)=>{
+                            var el = document.createElement('div');
+                            $.get(ajaxUrl,function(data){
+                                el.innerHTML = data + '<br/>';
+                            });
+
+                            return el;
+                        }, { minWidth: 400, maxWidth : 560 });
+			    } else {
+			        m.bindPopup(v.label + v.content); 
+			    }
+			}
 			m.addTo(g);
 		});
 			
