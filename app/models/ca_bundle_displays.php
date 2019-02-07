@@ -1050,6 +1050,15 @@ if (!$pb_omit_editing_info) {
 				'default' => 100,
 				'label' => _t('Maximum length'),
 				'description' => _t('Maximum length, in characters, of displayed information.')
+			),
+			'format' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 35, 'height' => 5,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Display format'),
+				'description' => _t('Template used to format output.')
 			)
 		);
 		foreach($t_instance->getFormFields() as $vs_f => $va_info) {
