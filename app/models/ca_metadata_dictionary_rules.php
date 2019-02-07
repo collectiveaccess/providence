@@ -62,6 +62,30 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 		'takesLocale' => true,
 		'label' => _t('Rule description'),
 		'description' => _t('Long form description of rule, used for display to user when presenting issues.')
+	),
+	'realtimeupdate' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'height' => 1,
+		'default' => 0,
+		'options' => [
+			_t('Yes') => 1,
+			_t('No') => 0,
+		],
+		'label' => _t('Update in real-time'),
+		'description' => _t('Check rule as user enters data.')
+	),
+	'showasprompt' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'height' => 1,
+		'default' => 0,
+		'options' => [
+			_t('Yes') => 1,
+			_t('No') => 0,
+		],
+		'label' => _t('Show as prompt'),
+		'description' => _t('Display violations of this rule as on-screen prompts.')
 	)
 );
 

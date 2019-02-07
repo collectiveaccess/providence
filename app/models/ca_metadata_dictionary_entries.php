@@ -636,11 +636,16 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		
 		foreach($_REQUEST as $vs_k => $vm_v) {
 			if(preg_match("/^{$vs_id_prefix}_settings_(new_[\d]+|[\d]+)_(.+)$/u", $vs_k, $va_matches)) {
-				$tmp = explode('_', $va_matches[2]);
-				$locale = join('_', array_slice($tmp, -2, 2));
-				$setting = join('_', array_slice($tmp, 0, sizeof($tmp) - 2));
+			
+				if (sizeof($tmp = explode('_', $va_matches[2])) > 1) {
+					$locale = join('_', array_slice($tmp, -2, 2));
+					$setting = join('_', array_slice($tmp, 0, sizeof($tmp) - 2));
+					$settings[$va_matches[1]][$setting][$locale] = $vm_v;
+				} else {
+					$setting = $va_matches[2];
+					$settings[$va_matches[1]][$setting] = $vm_v;
+				}
 				
-				$settings[$va_matches[1]][$setting][$locale] = $vm_v;
 			} elseif(preg_match("/^{$vs_id_prefix}_(.+?)_new_([\d]+)$/u", $vs_k, $va_matches)) {
 				$adds[$va_matches[2]][$va_matches[1]] = $vm_v;
 			} elseif(preg_match("/^{$vs_id_prefix}_(.+)_([\d]+)$/u", $vs_k, $va_matches)) {
@@ -649,7 +654,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				$deletes[$va_matches[1]] = true;
 			}
 		}
-		
+		print_R($settings);
 		$t_rule = new ca_metadata_dictionary_rules();
 		
 		foreach(array_keys($deletes) as $rule_id) {
