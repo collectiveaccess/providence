@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,6 +39,7 @@
  	require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
+ 	require_once(__CA_MODELS_DIR__."/ca_acl.php");
  	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ResultContext.php");
@@ -751,16 +752,16 @@
 						foreach($va_regex_info['regexes'] as $vs_regex) {
 							switch($vs_match_mode) {
 								case 'DIRECTORY_NAME':
-									$va_names_to_match = array($d);
+									$va_names_to_match = array($d, str_replace(":", "/", $d));
 									$o_log->logDebug(_t("Trying to match on directory '%1'", $d));
 									break;
 								case 'FILE_AND_DIRECTORY_NAMES':
-									$va_names_to_match = array($f, $d);
+									$va_names_to_match = array($f, $d, str_replace(":", "/", $f), str_replace(":", "/", $d));
 									$o_log->logDebug(_t("Trying to match on directory '%1' and file name '%2'", $d, $f));
 									break;
 								default:
 								case 'FILE_NAME':
-									$va_names_to_match = array($f);
+									$va_names_to_match = array($f, str_replace(":", "/", $f));
 									$o_log->logDebug(_t("Trying to match on file name '%1'", $f));
 									break;
 							}

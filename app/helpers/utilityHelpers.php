@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3270,6 +3270,17 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Test a GUID
+	 *
+	 * @param string $guid
+	 * 
+	 * @return bool True if $guid is a valid guid
+	 */
+	function caIsGUID($guid){
+		return preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $guid);
+	}
+	# ----------------------------------------
+	/**
 	 * Generate a CSRF token and add to session CSRF store
 	 *
 	 * @param RequestHTTP $po_request Current request
@@ -3821,6 +3832,11 @@ function caFileIsIncludable($ps_file) {
 
 		for($i=0; $i < mb_strlen($ps_template); $i++) {
 			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+				case '{':
+				    if (!$vb_in_tag && !$vb_in_single_quote && $vb_in_single_quote && (mb_substr($ps_template, $i+1, 1) === '^')) {
+				        continue;
+				    }
+				    break;
 				case '^':
 					if ($vb_in_tag) {
 					    if ($vs_last_char === '^') {
@@ -3840,6 +3856,7 @@ function caFileIsIncludable($ps_file) {
 						$vs_tag .= $vs_char;
 					}
 					break;
+				case '}':
 				case ' ':
 				case ',':
 				case '<':

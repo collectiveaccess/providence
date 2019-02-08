@@ -467,6 +467,8 @@ class BaseEditorController extends ActionController {
 				return;
 			}
 		}
+		
+		$subject_table = $t_subject->tableName();
 
 		// get parent_id, if it exists, prior to deleting so we can
 		// set the browse_last_id parameter to something sensible
@@ -496,10 +498,10 @@ class BaseEditorController extends ActionController {
 				$t_subject->setTransaction($o_t = new Transaction());
 				$vb_we_set_transaction = true;
 			}
-
+			
 			// Do we need to move relationships?
 			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
-				switch($t_subject->tableName()) {
+				switch($subject_table) {
 					case 'ca_relationship_types':
 						if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
 							$t_target = new ca_relationship_types($vn_remap_id);
@@ -508,41 +510,55 @@ class BaseEditorController extends ActionController {
 						break;
 					default:
 						// update relationships
-						$va_tables = array(
+						$va_tables = [
 							'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_list_items'
-						);
+						];
 
 						$vn_c = 0;
 						foreach($va_tables as $vs_table) {
 							$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
+						}
+						
+						if ($subject_table == 'ca_object_lots') { 		// move objects to new target
+							$object_ids = $t_subject->get('ca_objects.object_id', ['returnAsArray' => true]);
+							if(is_array($object_ids) && sizeof($object_ids)) {
+								$t_object = Datamodel::getInstance('ca_objects', true);
+								foreach($object_ids as $object_id) {
+									if ($t_object->load($object_id)) {
+										$t_object->setMode(ACCESS_WRITE);
+										$t_object->set('lot_id', $vn_remap_id);
+										$t_object->update();
+										if ($t_object->numErrors() > 0) { continue; }
+										$vn_c++;
+									}
+								}
+							}
 						}
 
 						// update existing metadata attributes to use remapped value
 						$t_subject->moveAuthorityElementReferences($vn_remap_id);
 
 						if ($vn_c > 0) {
-							$t_target = Datamodel::getInstanceByTableName($this->ops_table_name);
+							$t_target = Datamodel::getInstance($this->ops_table_name, true);
 							$t_target->load($vn_remap_id);
 							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 						}
 						
 						// move children
-						if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
+						if ($t_subject->isHierarchical() && is_array($va_children = call_user_func("{$subject_table}::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
 							if (!$t_target) {
-								$t_target = Datamodel::getInstanceByTableName($this->ops_table_name);
+								$t_target = Datamodel::getInstance($this->ops_table_name, true);
 								$t_target->load($vn_remap_id);
 							}
 							
-							$t_child = Datamodel::getInstanceByTableName($this->ops_table_name);
+							$t_child = Datamodel::getInstance($this->ops_table_name, true);
 							$vn_child_count = 0;
 							foreach($va_children as $vn_child_id) {
 								$t_child->load($vn_child_id);
 								$t_child->setMode(ACCESS_WRITE);
 								$t_child->set('parent_id', $vn_remap_id);
 								$t_child->update();
-								if ($t_child->numErrors() > 0) {
-									continue;
-								}
+								if ($t_child->numErrors() > 0) { continue; }
 								$vn_child_count++;
 							}
 							$this->notification->addNotification(($vn_child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
@@ -553,8 +569,8 @@ class BaseEditorController extends ActionController {
 			} else {
 				$t_subject->deleteAuthorityElementReferences();
 				
-				if ($t_subject->isHierarchical() && is_array($va_children = call_user_func($t_subject->tableName()."::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
-					$t_child = Datamodel::getInstanceByTableName($this->ops_table_name);
+				if ($t_subject->isHierarchical() && is_array($va_children = call_user_func("{$subject_table}::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
+					$t_child = Datamodel::getInstance($this->ops_table_name, true);
 					$vn_child_count = 0;
 					foreach($va_children as $vn_child_id) {
 						$t_child->load($vn_child_id);
@@ -622,7 +638,7 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($t_subject->primaryKey(), null, 'POST');
 
 				# trigger "DeleteItem" hook
-				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $subject_table, 'instance' => $t_subject));
 
 				# redirect
 				$this->redirectAfterDelete($t_subject->tableName());
@@ -2410,7 +2426,8 @@ class BaseEditorController extends ActionController {
 				$vb_download_for_record = true;
 				$va_rep_info = $va_rep['info'][$ps_version];
 				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
-				switch($this->request->user->getPreference('downloaded_file_naming')) {
+				
+				switch($vs_mode = $this->request->config->get('downloaded_file_naming')) {
 					case 'idno':
 						$vs_file_name = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						break;
@@ -2422,7 +2439,16 @@ class BaseEditorController extends ActionController {
 						break;
 					case 'original_name':
 					default:
-						if (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
+					    if (strpos($vs_mode, "^") !== false) { // template
+					        $vals = [];
+					        foreach(array_merge($va_rep['info'], $va_rep_info) as $k => $v) {
+					            if(is_array($v)) { continue; }
+					            if ($k == 'original_filename') { $v = pathinfo($v, PATHINFO_FILENAME); }
+					            $vals[strtolower($k)] = preg_replace('![^A-Za-z0-9_\-]+!', '_', $v);
+					        }
+					        $vals['idno'] = $vs_idno_proc;
+				            $vs_file_name = caProcessTemplate($vs_mode, $vals);
+						} elseif (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
 							$va_tmp = explode('.', $va_rep['info']['original_filename']);
 							if (sizeof($va_tmp) > 1) {
 								if (strlen($vs_ext = array_pop($va_tmp)) < 3) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,21 +31,6 @@
 <div class="sectionBox">
 <?php
 	if (!$this->getVar('confirmed')) {
-		$va_parameters = array('lot_id' => $vn_lot_id);
-		$vs_warning = '';
-		
-		if ($vn_num_objects = $t_lot->numObjects()) {
-			if ($vn_num_objects == 1) {
-				$vs_warning = _t('There is 1 object linked to this lot. If you continue this object will no longer be associated with a lot.');
-			} else {
-				$vs_warning = _t('There are %1 objects linked to this lot. If you continue these objects will no longer be associated with a lot.', $vn_num_objects);
-			}
-			
-			$va_parameters['warning'] = $vs_warning;
-		}
-		
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_lot, $this->getVar('subject_name'), 'editor/object_lots', 'ObjectLotEditor', 'Edit/'.$this->request->getActionExtra(), $va_parameters);
-	}
+		print caDeleteWarningBox($this->request, $t_lot, $this->getVar('subject_name'), 'editor/object_lots', 'ObjectLotEditor', 'Edit/'.$this->request->getActionExtra(), array('lot_id' => $vn_lot_id));}
 ?>
 </div>

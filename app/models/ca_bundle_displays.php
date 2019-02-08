@@ -405,7 +405,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement->setMode(ACCESS_WRITE);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->set('display_id', $vn_display_id);
-		$t_placement->set('bundle_name', $ps_bundle_name);
+		$t_placement->set('bundle_name', trim($ps_bundle_name));
 		$t_placement->set('rank', $pn_rank);
 		
 		if (is_array($pa_settings)) {
@@ -1050,6 +1050,15 @@ if (!$pb_omit_editing_info) {
 				'default' => 100,
 				'label' => _t('Maximum length'),
 				'description' => _t('Maximum length, in characters, of displayed information.')
+			),
+			'format' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 35, 'height' => 5,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Display format'),
+				'description' => _t('Template used to format output.')
 			)
 		);
 		foreach($t_instance->getFormFields() as $vs_f => $va_info) {
@@ -1750,7 +1759,7 @@ if (!$pb_omit_editing_info) {
 	 * @return int Number of placements. 
 	 */
 	public function getPlacementCount($pa_options=null) {
-		return sizeof($this->getPlacementsInDisplay($pa_options));
+		return is_array($p = $this->getPlacementsInDisplay($pa_options)) ? sizeof($p) : 0;
 	}
 	# ------------------------------------------------------
 	#
@@ -2974,7 +2983,7 @@ if (!$pb_omit_editing_info) {
 		$va_errors = $po_request->getActionErrors();							// all errors from all sources
 		$va_general_errors = $po_request->getActionErrors('general');		// just "general" errors - ones that are not attached to a specific part of the form
 		
-		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
+		if(is_array($va_errors) && is_array($va_general_errors) && ((sizeof($va_errors) - sizeof($va_general_errors)) > 0)) {
 			$va_error_list = [];
 			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
