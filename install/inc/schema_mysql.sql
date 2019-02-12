@@ -1921,6 +1921,7 @@ create index i_row_id on ca_attributes(row_id);
 create index i_table_num on ca_attributes(table_num);
 create index i_element_id on ca_attributes(element_id);
 create index i_row_table_num on ca_attributes(row_id, table_num);
+create index i_prefetch ON ca_attributes(row_id, element_id, table_num);
 
 
 /*==========================================================================*/
