@@ -635,18 +635,25 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		$adds = $edits = $deletes = $settings = [];
 		
 		foreach($_REQUEST as $vs_k => $vm_v) {
-			if(preg_match("/^{$vs_id_prefix}_settings_(new_[\d]+|[\d]+)_(.+)$/u", $vs_k, $va_matches)) {
-			
-				if (sizeof($tmp = explode('_', $va_matches[2])) > 1) {
-					$locale = join('_', array_slice($tmp, -2, 2));
-					$setting = join('_', array_slice($tmp, 0, sizeof($tmp) - 2));
-					$settings[$va_matches[1]][$setting][$locale] = $vm_v;
-				} else {
-					$setting = $va_matches[2];
-					$settings[$va_matches[1]][$setting] = $vm_v;
+			if(
+				preg_match("/^{$vs_id_prefix}_(.+?)_(new_[\d]+|[\d]+)_([A-Za-z]{2}_[A-Za-z]{2})$/u", $vs_k, $va_matches)
+				||
+				preg_match("/^{$vs_id_prefix}_(.+?)_(new_[\d]+|[\d]+)$/u", $vs_k, $va_matches)	
+			) {
+				$rule_id = $va_matches[2];
+				if (isset($rules[$rule_id]) && is_array($rules[$rule_id]) && ($settings_list = array_keys($rules[$rule_id]['settings']))) {
+					$setting = $va_matches[1];
+					if (in_array($setting, $settings_list)) {
+						if ($locale = isset($va_matches[3]) ? $va_matches[3] : null) {
+							$settings[$rule_id][$setting][$locale] = $vm_v;
+						} else {
+							$settings[$rule_id][$setting] = $vm_v;
+						}
+						continue;
+					}
 				}
-				
-			} elseif(preg_match("/^{$vs_id_prefix}_(.+?)_new_([\d]+)$/u", $vs_k, $va_matches)) {
+			}
+			if(preg_match("/^{$vs_id_prefix}_(.+?)_new_([\d]+)$/u", $vs_k, $va_matches)) {
 				$adds[$va_matches[2]][$va_matches[1]] = $vm_v;
 			} elseif(preg_match("/^{$vs_id_prefix}_(.+)_([\d]+)$/u", $vs_k, $va_matches)) {
 				$edits[$va_matches[2]][$va_matches[1]] = $vm_v;
@@ -654,7 +661,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				$deletes[$va_matches[1]] = true;
 			}
 		}
-		print_R($settings);
+		
 		$t_rule = new ca_metadata_dictionary_rules();
 		
 		foreach(array_keys($deletes) as $rule_id) {
