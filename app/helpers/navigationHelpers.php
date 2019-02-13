@@ -553,7 +553,9 @@
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
-		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
+		if($vs_classname = (!$pb_no_background) ? 'form-button' : '') {
+			$pa_attributes['class'] .= " {$vs_classname}";
+		}
 		
 		$va_attr = array();
 		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
@@ -563,7 +565,7 @@
 			}
 		}
 		
-		$vs_button = "<a class='{$vs_classname}' ".join(' ', $va_attr).">";
+		$vs_button = "<a ".join(' ', $va_attr).">";
 		if (!$pb_no_background) { 
 			$vs_button .= "<span class='form-button'>"; 
 			$vn_padding = ($ps_content) ? 10 : 0;
