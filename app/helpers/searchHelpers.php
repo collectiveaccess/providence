@@ -376,6 +376,9 @@
 		$va_contexts = caGetOption('contexts', $pa_options, array(), array('castTo' => 'array'));
 		unset($pa_options['contexts']);
 		
+		
+		if ($purifier = RequestHTTP::getPurifier()) { $ps_search_expression = $purifier->purify($ps_search_expression); }
+		
 		//
 		// Block are lazy-loaded using Ajax requests with additional items as they are scrolled.
 		// "Ajax mode" is used by caPuppySearch to render a single block when it is scrolled
@@ -404,14 +407,10 @@
 			$vb_sort_changed = false;
  			if (!($ps_sort = $po_request->getParameter("{$vs_block}Sort", pString))) {
  				if (isset($va_contexts[$vs_block])) {
- 					if(!($ps_sort = $va_contexts[$vs_block]->getCurrentSort()) && ($va_sorts) && sizeof($va_sorts)) { 
+ 					if((!($ps_sort = $va_contexts[$vs_block]->getCurrentSort()) && ($va_sorts) && sizeof($va_sorts)) || (!in_array($ps_sort, array_keys($va_sorts)))) { 
 						$ps_sort = array_shift(array_keys($va_sorts));
 						$va_contexts[$vs_block]->setCurrentSort($ps_sort); 
 						$vb_sort_changed = true;
-					//} else {
-					//	if (isset($va_sorts[$ps_sort])) { 
-					//		$ps_sort = $va_sorts[$ps_sort];
-					//	}
 					}
  				}
  			}else{
@@ -430,6 +429,8 @@
  					$ps_sort_direction = 'asc';
  				}
  			}
+ 			if(!in_array($ps_sort_direction, ['asc', 'desc'])) {  $ps_sort_direction = 'asc'; }
+ 			
  			$va_contexts[$vs_block]->setCurrentSortDirection($ps_sort_direction); 
  			
  			$va_options['sort'] = $va_sorts[$ps_sort];
@@ -652,6 +653,8 @@
 		$va_for_display = array();
 	 	$va_default_values = $va_values = $va_booleans = array();
 	 	
+	 	$pa_form_values = caPurifyArray($pa_form_values);
+	 	
 	 	foreach($va_form_contents as $vn_i => $vs_element) {
 			$vs_dotless_element = str_replace('.', '_', $vs_element);
 			
@@ -762,9 +765,9 @@
 	function caGetDisplayStringForHTMLFormInput($po_result_context, $pa_options=null) {
 		$pa_form_values = caGetOption('formValues', $pa_options, $_REQUEST);
 		$va_form_contents = explode('|', caGetOption('_formElements', $pa_form_values, ''));
-
 		
-	 	$va_display_string = array();
+	 	$va_display_string = [];
+	 	$pa_form_values = caPurifyArray($pa_form_values);
 	 	
 	 	foreach($va_form_contents as $vn_i => $vs_element) {
 			$vs_dotless_element = str_replace('.', '_', $vs_element);
@@ -850,6 +853,8 @@
 		$o_query_parser = new LuceneSyntaxParser();
 		$o_query_parser->setEncoding($o_config->get('character_set'));
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
+		
+		if ($purifier = RequestHTTP::getPurifier()) { $ps_search = $purifier->purify($ps_search); }
 		
 		$pb_omit_field_names = caGetOption(['omitFieldNames', 'omitQualifiers'], $pa_options, false);
 		
@@ -971,7 +976,9 @@
 		
 		$va_values = [];
 		$i = 1;
+		$purifier = RequestHTTP::getPurifier();
 		foreach(array_values($pa_values) as $vs_val) {
+		    if ($purifier) { $vs_val = $purifier->purify($vs_val); }
 			$va_values[$i] = $vs_val;
 			$i++;
 		}
@@ -1386,7 +1393,7 @@
 		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_table}/{$pn_type_id}");
 		
-		//if (CompositeCache::contains("available_sorts") && is_array($va_cached_data = CompositeCache::fetch("available_sorts")) && isset($va_cached_data[$vs_cache_key])) { return $va_cached_data[$vs_cache_key]; }
+		if (CompositeCache::contains("available_sorts") && is_array($va_cached_data = CompositeCache::fetch("available_sorts")) && isset($va_cached_data[$vs_cache_key])) { return $va_cached_data[$vs_cache_key]; }
 		$o_config = Configuration::load();
 		
 		$pn_display_id = caGetOption('restrictToDisplay', $pa_options, null);

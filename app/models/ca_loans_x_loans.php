@@ -210,4 +210,3 @@ class ca_loans_x_loans extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

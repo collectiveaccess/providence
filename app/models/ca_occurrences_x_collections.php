@@ -210,4 +210,3 @@ class ca_occurrences_x_collections extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

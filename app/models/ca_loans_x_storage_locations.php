@@ -211,4 +211,3 @@ class ca_loans_x_storage_locations extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>
