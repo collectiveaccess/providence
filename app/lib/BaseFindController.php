@@ -244,7 +244,7 @@
 					'code' => '_csv'
 				),
 				array(
-					'name' => _t('Spreadsheet with media icons (XLSX)'),
+					'name' => _t('Spreadsheet (XLSX)'),
 					'code' => '_xlsx'
 				),
                 array(
