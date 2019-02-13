@@ -5041,8 +5041,7 @@ if (!$vb_batch) {
 					foreach($va_violations['ERR'] as $vs_bundle => $va_errs_by_bundle) {
 						foreach($va_errs_by_bundle as $vn_i => $va_rule) {
 							$vs_bundle = str_replace($this->tableName().".", "", $vs_bundle);
-				
-							$po_request->addActionErrors(array(new ApplicationError(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+							$po_request->addActionErrors(array(new ApplicationError(1100, caExtractSettingsValueByUserLocale('violationMessage', $va_rule['rule_settings']), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 						}
 					}
 					return false; 
