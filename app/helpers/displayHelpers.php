@@ -197,6 +197,20 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		return caExtractValuesByUserLocale($va_values);
 	}
 	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caExtractSettingsValueByUserLocale($setting, array $setting_values, $options=null) {
+		global $g_ui_locale;
+		if(!isset($setting_values[$setting])) { return null; }
+		if (!is_array($v = $setting_values[$setting])) { return null; }
+		
+		if (isset($v[$locale])) {
+			return $v[$locale];
+		}
+		return array_shift($v);
+	}
+	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocaleFromHierarchyChildList($pa_list, $ps_primary_key_name, $ps_label_display_field, $ps_use_if_no_label_field, $ps_default_text='???') {
 		if (!is_array($pa_list)) { return array(); }
 		$va_values = array();
