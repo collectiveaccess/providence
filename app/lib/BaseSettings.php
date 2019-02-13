@@ -198,15 +198,22 @@
 			
 			$po_request = 			caGetOption('request', $pa_options, null);
 			$vs_id = 				caGetOption('id', $pa_options, null);
+			
+			$format = 				caGetOption('format', $pa_options, null);
+			
 			$vs_name = 				caGetOption('name', $pa_options, null);
 			$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 			
 			$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null));
 			foreach($va_settings as $vs_setting => $va_setting_info) {
-				$va_options['id'] = "{$vs_id}_{$vs_setting}";
+				if ($format) {
+					$va_options['id'] = str_replace("^setting_name", $vs_setting, $format);
+				} else {
+					$va_options['id'] = "{$vs_id}_{$vs_setting}";
+				}
 				$va_options['label_id'] = $va_options['id'].'_label';
 				if (!$vs_name) { $vs_name = $vs_id; }
-				$va_options['name'] = "{$vs_placement_code}{$vs_name}_{$vs_setting}";
+				$va_options['name'] = $format ? $va_options['id'] : "{$vs_placement_code}{$vs_name}_{$vs_setting}";
 				
 				$va_options['value'] = caGetOption($vs_setting, $va_setting_values, $this->getSetting($vs_setting));
 				$va_options['helpText'] = caGetOption('helpText', $va_setting_info, '');
@@ -665,8 +672,9 @@
 							// Regular drop-down with configured options
 							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
 
-							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$va_opts = array('width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
+							$va_attr['id'] = $vs_input_id;
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
 						}
 					}

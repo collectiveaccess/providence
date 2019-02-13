@@ -35,7 +35,7 @@
 	$settings_values_list	= $this->getVar('settings_values_list');
 	$settings_tags			= $this->getVar('settings_tags');
 
-	$va_initial_values = $this->getVar('rules');	// list of existing stops
+	$va_initial_values = $this->getVar('rules');	// list of existing rules
 	$va_errors = $va_failed_inserts = [];
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
@@ -65,7 +65,7 @@
 									</td>
 								</tr>
 							</table>
-							<?php print str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'id' => "{$vs_id_prefix}_settings_{n}", 'no_tooltips' => true))); ?>
+							<?php print str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'format' => "{$vs_id_prefix}_^setting_name_{n}", 'no_tooltips' => true))); ?>
 						</div>
 					</td>
 					<td valign="top">
