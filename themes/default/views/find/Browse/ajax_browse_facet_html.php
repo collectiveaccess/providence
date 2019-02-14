@@ -46,7 +46,7 @@
 	$va_service_urls = caJSONLookupServiceUrl($this->request, $va_facet_info['table'], array('noInline' => 1, 'noSymbols' => 1));
 
 	if (!$va_facet||!$vs_facet_name) { 
-		print _t('No facet defined'); 
+		print _t('No options available'); 
 		return;
 	}
 	
