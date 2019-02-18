@@ -1950,8 +1950,8 @@ div.control-box-left-content {
 
 div.control-box-middle-content {
     text-align: center;
-    margin: 10px;
-    float: left;
+    margin: 3px;
+    float: right;
     font-size:12px;
     font-weight: bold;
 }

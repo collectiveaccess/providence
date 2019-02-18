@@ -631,6 +631,10 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 
 		$rules = $this->getRules();
 		
+		$t_rule = new ca_metadata_dictionary_rules();
+		$available_settings = $t_rule->getAvailableSettings();
+		$settings_list = array_keys($available_settings);
+		
 		// find settings keys in request and set them
 		$adds = $edits = $deletes = $settings = [];
 		
@@ -641,7 +645,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				preg_match("/^{$vs_id_prefix}_(.+?)_(new_[\d]+|[\d]+)$/u", $vs_k, $va_matches)	
 			) {
 				$rule_id = $va_matches[2];
-				if (isset($rules[$rule_id]) && is_array($rules[$rule_id]) && ($settings_list = array_keys($rules[$rule_id]['settings']))) {
+				if (isset($rules[$rule_id]) && is_array($rules[$rule_id])) {
 					$setting = $va_matches[1];
 					if (in_array($setting, $settings_list)) {
 						if ($locale = isset($va_matches[3]) ? $va_matches[3] : null) {

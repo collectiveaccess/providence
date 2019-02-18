@@ -213,6 +213,10 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
+		// Are there metadata dictionary alerts?
+		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true]);
+		$this->getView()->setVar('show_show_notifications', (sizeof($violations_to_prompt) > 0));
+
 		$this->render("{$vs_view}.php");
 	}
 	# -------------------------------------------------------
@@ -437,6 +441,10 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
+		// Are there metadata dictionary alerts?
+		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true]);
+		$this->getView()->setVar('show_show_notifications', (sizeof($violations_to_prompt) > 0));
+		
 		$this->render('screen_html.php');
 	}
 	# -------------------------------------------------------

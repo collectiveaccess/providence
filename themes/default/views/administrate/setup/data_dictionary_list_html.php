@@ -31,30 +31,30 @@
 		'<div class="caNavHeaderIcon">'.
 		'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 		'</div>'.
-		'<form action="#">'._t('New metadata alert rule for ').' '.caHTMLSelect('table_num', caGetPrimaryTablesForHTMLSelect(true), array('id' => 'tableList')).'</form>'.
+		'<form action="#">'._t('New data dictionary entry for ').' '.caHTMLSelect('table_num', caGetPrimaryTablesForHTMLSelect(true), array('id' => 'tableList')).'</form>'.
 		'</div>';
 ?>
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	jQuery(document).ready(function(){
-		jQuery('#caMetadataAlertList').caFormatListTable();
+		jQuery('#caDataDictionaryList').caFormatListTable();
 	});
 
 	function _navigateToNewForm(table_num) {
-		document.location = '<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit', array('entry_id' => 0)); ?>' + '/table_num/' + table_num;
+		document.location = '<?php print caNavUrl($this->request, 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit', array('entry_id' => 0)); ?>' + '/table_num/' + table_num;
 	}
 /* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caMetadataAlertList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caDataDictionaryList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'', 
 			$new_menu
 		);
 	?>
 	
-	<table id="caMetadataAlertList" class="listtable">
+	<table id="caDataDictionaryList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -79,13 +79,13 @@
 ?>
 			<tr>
 				<td>
-					<div class="caMetadataAlertListName"><?php print $entry['label']; ?></div>
+					<div class="caDataDictionaryListName"><?php print $entry['label']; ?></div>
 				</td>
 				<td>
-					<div class="caMetadataAlertListName"><?php print Datamodel::getTableProperty($entry['table_num'], 'NAME_PLURAL'); ?></div>
+					<div class="caDataDictionaryListName"><?php print Datamodel::getTableProperty($entry['table_num'], 'NAME_PLURAL'); ?></div>
 				</td>
 				<td>
-					<div class="caMetadataAlertListName"><?php print $entry['bundle_label']." (".$entry['bundle_name'].")"; ?></div>
+					<div class="caDataDictionaryListName"><?php print $entry['bundle_label']." (".$entry['bundle_name'].")"; ?></div>
 				</td>
 				<td>
 					<div><?php print (int)$entry['numRules']; ?></div>

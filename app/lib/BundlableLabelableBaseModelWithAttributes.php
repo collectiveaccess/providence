@@ -1352,10 +1352,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
 		$va_violations = null;
+		
 		if (
-			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($ps_bundle_name_proc, $this, $pa_bundle_settings))
+			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $ps_bundle_name_proc, $this, $pa_bundle_settings))
 			||
-			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc, $this, $pa_bundle_settings))
+			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$ps_bundle_name_proc, $this, $pa_bundle_settings))
 		) {
 			# Grab definition out of dictionary entry settings: if it was created in a system with multiple locales the available definitions 
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
@@ -1366,7 +1367,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').$pa_bundle_settings['definition'][$g_ui_locale];
 			}
 			
-			$va_violations = $this->getMetadataDictionaryRuleViolations($ps_bundle_name);
+			$va_violations = $this->getMetadataDictionaryRuleViolations($dict_bundle_spec);
 			if (is_array($va_violations) && sizeof($va_violations)) {
 				$va_violation_text = array();
 				foreach($va_violations as $va_violation) {
@@ -1948,7 +1949,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$ps_bundle_label = $vs_label_text;
 		
-		return caGetOption('contentOnly', $pa_options, false) ? $vs_element : $vs_output;
+		// TODO: document this
+		$prompt = '';
+		$violations_to_prompt = [];
+		foreach($va_violations as $v) {
+			if(is_array($v) && isset($v['showasprompt']) && (bool)$v['showasprompt'] && ($v['bundle_name'] == $dict_bundle_spec)) {
+				$violations_to_prompt[] = $v;
+			}
+		}
+		
+		if (is_array($violations_to_prompt) && sizeof($violations_to_prompt)) {
+			$prompt_id = $pa_options['bundle_id'].'_bundle';
+			$violations_text = array_map(function($v) { return caExtractSettingsValueByUserLocale('violationMessage', $v); }, $violations_to_prompt);
+			$prompt = "<script type='text/javascript'>caPromptManager.addPrompt('{$prompt_id}', '".addslashes(preg_replace("![\n\r\t ]+!", " ", join("; ", $violations_text)))."');</script>";
+		}
+		return (caGetOption('contentOnly', $pa_options, false) ? $vs_element : $vs_output).$prompt;
 	}
 	# ------------------------------------------------------
 	public function getBundleList($pa_options=null) {
@@ -2568,7 +2583,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
 				
-				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
+				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], array_merge($pa_options, ['bundle_id' => "{$pm_screen}_{$va_bundle['placement_id']}"]), $vs_bundle_display_name)) {
 					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$va_bundle['placement_id']}\"></a><span id=\"{$pm_screen}_{$va_bundle['placement_id']}_bundle\">{$vs_bundle_form_html}</span>";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
 					
@@ -7480,16 +7495,22 @@ side. For many self-relations the direction determines the nature and display te
 	/**
 	 * Fetch metadata dictionary rule violations for this instance and (optionally) a given bundle
 	 * @param null|string $ps_bundle_name
+	 * @param array $options Options include:
+	 *		limitToShowAsPrompt = 
+	 *
 	 * @return array|null
 	 */
-	public function getMetadataDictionaryRuleViolations($ps_bundle_name=null) {
+	public function getMetadataDictionaryRuleViolations($ps_bundle_name=null, $options=null) {
 	 	if (!($vn_id = $this->getPrimaryKey())) { return null; }
+	 	
+	 	$limit_to_show_as_prompt = caGetOption('limitToShowAsPrompt', $options, false);
+	 	
 	 	$o_db = $this->getDb();
 	 	
 	 	$va_sql_params = array($vn_id, $this->tableNum());
 	 	$vs_bundle_sql = '';
 	 	
-	 	if ($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) {	 	
+	 	if (($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) && !Datamodel::tableExists($ps_bundle_name)) {	 	
 			if (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name)) {
 				$ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
 			}
@@ -7498,7 +7519,7 @@ side. For many self-relations the direction determines the nature and display te
 	 	} 
 	 	
 	 	
-	 	$qr_res = $o_db->query("
+	 	$qr_res = $o_db->query($z="
 	 		SELECT *
 	 		FROM ca_metadata_dictionary_rule_violations cmdrv
 	 		INNER JOIN ca_metadata_dictionary_rules AS cmdr ON cmdr.rule_id = cmdrv.rule_id
@@ -7514,6 +7535,9 @@ side. For many self-relations the direction determines the nature and display te
 	 		$t_rule = (isset($va_rule_instances[$vn_rule_id])) ? $va_rule_instances[$vn_rule_id] : ($va_rule_instances[$vn_rule_id] = new ca_metadata_dictionary_rules($vn_rule_id));
 	 	
 	 		if ($t_rule && $t_rule->getPrimaryKey()) {
+	 			$show_as_prompt = $t_rule->getSetting('showasprompt');
+	 			
+	 			if ($limit_to_show_as_prompt && !$show_as_prompt) { continue; }
 				$vn_violation_id = $qr_res->get('violation_id');
 	 			$va_violations[$vn_violation_id] = array(
 	 				'violation_id' => $vn_violation_id,
@@ -7524,6 +7548,8 @@ side. For many self-relations the direction determines the nature and display te
 	 				'level' => $vs_level = $qr_res->get('rule_level'),
 	 				'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $vs_level),
 	 				'description' => $t_rule->getSetting('description'),
+	 				'showasprompt' => $show_as_prompt,
+	 				'realtimeupdate' => $t_rule->getSetting('realtimeupdate'),
 	 				'created_on' => $qr_res->get('created_on'),
 	 				'last_checked_on' => $qr_res->get('last_checked_on')
 	 			);

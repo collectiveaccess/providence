@@ -154,6 +154,12 @@
 		} else {
 			jQuery('#caSideNavMoreToggle').hide();
 		}
+		
+		jQuery('.caEditorFormNotifications').on('click', function(e) {
+			introJs().start();
+			e.stopPropagation();
+			return false;
+		});
 	});
 	</script>
 <?php
