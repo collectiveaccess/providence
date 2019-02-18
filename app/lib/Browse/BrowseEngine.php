@@ -714,8 +714,9 @@
 					} elseif($va_row_tmp[2] && ($qr_res = caMakeSearchResult($table, [$va_row_tmp[2]])) && $qr_res->nextHit()) {
 						// Return label for id
 						$cv_config = ca_objects::getConfigurationForHistoryTrackingCurrentValue($policy, $table, $va_row_tmp[1]);
-						$template = isset($cv_config['template']) ? $cv_config['template'] : "^{$table}.preferred_labels";
-
+						
+						$display_config = $this->getTableEntryFromMap($va_facet_info, 'display', $table);
+						$template = isset($display_config['template']) ? $display_config['template'] : (isset($cv_config['template']) ? $cv_config['template'] : "^{$table}.preferred_labels");
 						$template = str_replace("<l>", "", str_replace("</l>", "", $template));	// don't allow links in criterion labels
 
 						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($template), 30, 'end');
