@@ -228,7 +228,7 @@
  			$this->view->setVar('display_list', $va_display_list);
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
- 			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
+ 			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label', 'restrictToTypes' => $this->opn_type_restriction_id)));
  			
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = Datamodel::getTableNum($this->ops_tablename);
@@ -254,7 +254,7 @@
 			);
 			
 			// merge default formats with drop-in print templates
-			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('showOnlyIn' => ['search_browse_'.$this->opo_result_context->getCurrentView()], 'table' => $this->ops_tablename)));
+			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('showOnlyIn' => ['search_browse_'.$this->opo_result_context->getCurrentView()], 'table' => $this->ops_tablename, 'restrictToTypes' => $this->opn_type_restriction_id)));
 			
 			$this->view->setVar('export_formats', $va_export_options);
 			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));

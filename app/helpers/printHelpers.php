@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,19 +81,26 @@
 	 *		type =
 	 * 		elementCode =
 	 *      showOnlyIn = 
+	 *      restrictToTypes = 
 	 *
 	 * @return array
 	 */
 	function caGetAvailablePrintTemplates($ps_type, $pa_options=null) {
 		if (!is_array($va_template_paths = caGetPrintTemplateDirectoryPath($ps_type))) { $va_template_paths = []; }
 		
-		$vs_tablename = caGetOption('table', $pa_options, null);
+		$restrict_to_types = [];
+		if ($vs_tablename = caGetOption('table', $pa_options, null)) {
+            if(($restrict_to_types = caGetOption('restrictToTypes', $pa_options, false)) && !is_array($restrict_to_types)) {
+                $restrict_to_types = [$restrict_to_types];
+            }
+            $restrict_to_types = caMakeTypeList($vs_tablename, $restrict_to_types);
+		}
 		$vs_type = caGetOption('type', $pa_options, 'page');
 		$vs_element_code = caGetOption('elementCode', $pa_options, null);
-		$vb_for_html_select = caGetOption('forHTMLSelect', $pa_options, false);
-		if (!is_array($va_show_only_in = caGetOption('showOnlyIn', $pa_options, null))) {
-		    $va_show_only_in = array_map(function($v) { return trim($v); }, explode(',', $va_show_only_in));
-		}
+		$vb_for_html_select = caGetOption('forHTMLSelect', $pa_options, false);    
+        if (!is_array($va_show_only_in = caGetOption('showOnlyIn', $pa_options, null))) {
+            $va_show_only_in = array_map(function($v) { return trim($v); }, explode(',', $va_show_only_in));
+        }
 		
 
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
@@ -132,11 +139,23 @@
 						if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
 							if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
 							
+							if (!is_array($template_restrict_to_types = caGetOption('restrictToTypes', $va_template_info, null))) { $template_restrict_to_types = []; }
+							$c = (array_intersect($restrict_to_types, $template_restrict_to_types));
+							
+							if (
+							    sizeof($restrict_to_types) && sizeof($template_restrict_to_types) && 
+							    (is_array($c) && !sizeof($c)))
+							{ 
+							    continue; 
+							}
 							$va_template_show_only_in = array_filter(array_map(function($v) { return trim($v); }, explode(",", caGetOption('showOnlyIn', $va_template_info, null))), function($v) { return (bool)strlen($v);});
 							if(is_array($va_show_only_in) && (sizeof($va_show_only_in) > 0) && is_array($va_template_show_only_in) && (sizeof($va_template_show_only_in) > 0) && !sizeof(array_intersect($va_template_show_only_in, $va_show_only_in))) { continue; }
                             
 							if ($vs_element_code && (caGetOption('elementCode', $va_template_info, null) !== $vs_element_code)) { continue; }
 
+							if ($vs_tablename && (!in_array($vs_tablename, $va_template_info['tables'])) && (!in_array('*', $va_template_info['tables']))) {
+								continue;
+							}
 							if ($vs_tablename && (!in_array($vs_tablename, $va_template_info['tables'])) && (!in_array('*', $va_template_info['tables']))) {
 								continue;
 							}
@@ -205,7 +224,7 @@
 
 			$va_info = [];
 			foreach(array(
-				"@name", "@type", "@pageSize", "@pageOrientation", "@tables",
+				"@name", "@type", "@pageSize", "@pageOrientation", "@tables", "@restrictToTypes",
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
 				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic"
@@ -216,8 +235,12 @@
 					$va_info[str_replace("@", "", $vs_tag)] = null;
 				}
 			}
-			if (!$va_info['fileFormat']) { $va_info['fileFormat'] = 'pdf'; }    // pdf is inferred for templates without a specific file format
-			$va_info['tables'] = preg_split("![,;]{1}!", $va_info['tables']);
+			if (!$va_info['fileFormat']) { $va_info['fileFormat'] = 'pdf'; }    // pdf is assumed for templates without a specific file format
+			$va_info['tables'] = preg_split("![,;]{1}!", trim($va_info['tables']));
+			
+			if (trim($va_info['restrictToTypes'])) {
+			    $va_info['restrictToTypes'] = preg_split("![,;]{1}!", trim($va_info['restrictToTypes']));
+			}
 			$va_info['path'] = $vs_template_path;
 
 			ExternalCache::save($vs_cache_key, $va_info, 'PrintTemplateDetails');
@@ -420,7 +443,6 @@
 		try {
 			$po_view->setVar('title', $ps_title);
 			
-		//vs_template_identifier
 			// render labels
 			$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $va_template_info, null), 'mm');
 			$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $va_template_info, null), 'mm');

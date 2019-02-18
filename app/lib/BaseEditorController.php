@@ -743,7 +743,7 @@ class BaseEditorController extends ActionController {
 		
 		// Summary formats list
 		$formats = [];
-		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName()]))) {
+		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName(), 'restrictToTypes' => $t_subject->getTypeID()]))) {
             $num_available_templates = sizeof($available_templates);
             foreach($available_templates as $k => $v) {
                 if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
