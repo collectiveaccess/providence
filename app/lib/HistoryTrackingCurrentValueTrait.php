@@ -73,13 +73,15 @@
 				                $map[$t][$type]['setInterstitialElementsOnAdd'] = ['effective_date'];
 				                $map[$t][$type]['restrictToRelationshipTypes'] = [$type];
 				            }
+				        } elseif ($t == 'ca_objects') {
+				            $map[$t] = ['__default__' => array_merge($by_type, ['showDeaccessionInfo' => true])];
 				        }
 				    }
 				    
 				    // Make relationship type entry into default type entry
-				    if (is_array($map['ca_storage_locations'])) {
-				        $map['ca_storage_locations']['__default__'] = array_shift($map[$t]);
-				    }
+				   //  if (is_array($map['ca_storage_locations'])) {
+// 				        $map['ca_storage_locations']['__default__'] = array_shift($map[$t]);
+// 				    }
 				    
 				 	$history_tracking_policies = [
 				 		'defaults' => [
@@ -96,7 +98,6 @@
 				 	];
 				 }
 			}
-			
 			return $history_tracking_policies;
 		}
 		# ------------------------------------------------------
@@ -125,7 +126,13 @@
 			if (!($policy_table = caGetOption('table', $policy_info, false))) { return []; }
 
 			foreach($map as $table => $types) {
-				if ($table == 'ca_objects') { $bundle_settings['showDeaccessionInformation'] = true; }	// TODO: this is a hack
+				if ($table == 'ca_objects') { // TODO: this is a hack
+				    $bundle_settings['showDeaccessionInformation'] = true; 
+				    $bundle_settings['deaccession_displayTemplate'] = $types['__default__']['template']; 
+				    $bundle_settings['deaccession_color'] = $types['__default__']['color']; 
+				    $bundle_settings['deaccession_includeFromChildren'] = $types['__default__']['includeFromChildren']; 
+				    $bundle_settings['deaccession_childDisplayTemplate'] = $types['__default__']['childTemplate']; 
+				}
 				$path = array_keys(Datamodel::getPath($policy_table, $table));
 				if(!($t_instance = Datamodel::getInstance($table, true))) { continue; }
 				
@@ -1482,7 +1489,7 @@
 			
 					$vs_default_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)';
 					$vs_default_child_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
-					$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(['ca_storage_locations_displayTemplate', 'ca_storage_locations_template'], $pa_bundle_settings, $vs_default_display_template);
+					
 					$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_storage_locations_childDisplayTemplate', 'ca_storage_locations_childTemplate'], $pa_bundle_settings, $vs_display_template);
 			
 					$loc_table_num = Datamodel::getTableNum('ca_storage_locations');
@@ -1490,12 +1497,16 @@
 				
 					while($qr_locations->nextHit()) {
 						if ((string)$qr_locations->get('ca_storage_locations.deleted') !== '0') { continue; }	// filter out deleted
-					
+					    
+					    $vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
+				
 						$vn_rel_row_id = $qr_locations->get("{$linking_table}.{$pk}");
 						$vn_location_id = $qr_locations->get("{$linking_table}.location_id");
 						$relation_id = $qr_locations->get("{$linking_table}.relation_id");
 						$vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id");
 				
+				        $vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+					
 						$va_date = array(
 							'sortable' => $qr_locations->get("{$linking_table}.effective_date", array('getDirectDate' => true)),
 							'bounds' => explode("/", $qr_locations->get("{$linking_table}.effective_date", array('sortable' => true))),
@@ -1504,8 +1515,7 @@
 
 						if (!$va_date['sortable']) { continue; }
 						if (!in_array($vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id"), $va_location_types)) { continue; }
-						$vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
-				
+						
 						if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 						
 						$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
@@ -1551,7 +1561,7 @@
 			if (($table === 'ca_objects') && ((caGetOption('showDeaccessionInformation', $pa_bundle_settings, false) || (caGetOption('deaccession_displayTemplate', $pa_bundle_settings, false))))) {
 				$vs_color = caGetOption('deaccession_color', $pa_bundle_settings, 'cccccc');
 				$vs_color = str_replace("#", "", $vs_color);
-			
+		
 				$vn_date = $qr->get('ca_objects.deaccession_date', array('sortable'=> true));
 			
 				$vs_default_display_template = '^ca_objects.deaccession_notes';
