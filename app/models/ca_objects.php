@@ -1209,7 +1209,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'type_id' => $vn_type_id,
 						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
 						'date' => $va_date['display'],
-						'hasChildren' => sizeof($va_child_occurrence) ? 1 : 0
+						'hasChildren' => sizeof($va_child_occurrences) ? 1 : 0
 					);
 				}
 			}
