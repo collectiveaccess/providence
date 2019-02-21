@@ -844,13 +844,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 				} else {
 					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_ca_objects')) {
-						if ($t_ui && method_exists($t_item, "getHistory") && ($display_info = $t_item->getInspectorHistoryTrackingDisplayPolicy())) {
-							if (is_array($history = $t_item->getHistory(['policy' => $display_info['policy'], 'limit' => 1, 'currentOnly' => true])) && (sizeof($history) > 0)) {
-								$current_value = array_shift(array_shift($history));
-
-								$inspector_current_value_label = caGetOption('label', $display_info, _t('Current'));
-								if ($current_value['display']) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$current_value['display']}</div>"; }
-							}
+						if (method_exists($t_item, "getHistory") && ($inspector_current_value_label = $t_item->getInspectorHistoryTrackingDisplayPolicy('label'))) {
+							if ($inspector_current_value = $t_item->getCurrentValueForDisplay()) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$inspector_current_value}</div>"; }
 						} 
 					}
 				}
@@ -2206,6 +2201,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param array $pa_directives
 	 * @param array $pa_options Options include:
 	 *      omitUnits = Omit unit specifier on dimensional quantities. [Default is false]
+	 *      forceEnglishUnits = 
+	 *      forceMetricUnits = 
 	 *
 	 * @return string
 	 */
@@ -2214,6 +2211,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
 
 		$pb_omit_units = caGetOption('omitUnits', $pa_options, false);
+		$force_english_units = caGetOption('forceEnglishUnits', $pa_options, null, ['validValues' => ['ft', 'in']]);
+		$force_metric_units = caGetOption('forceMetricUnits', $pa_options, null, ['validValues' => ['m', 'cm', 'mm']]);
 		
 		$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
 		$va_add_periods_list = $o_dimensions_config->get('add_period_after_units');
@@ -2229,7 +2228,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                         $vo_measurement = caParseLengthDimension($ps_value);
                         
                         $vs_measure_conv = null;
-                        switch($vs_units = strtolower($va_tmp[1])) {
+                        $vs_units = strtolower($va_tmp[1]);
+                        if ($force_english_units && in_array($vs_units, ['in', 'in.', 'inches', 'inch', '"', 'ft', 'ft.', 'foot', 'feet', "'"])) {
+                            $vs_units = $force_english_units;
+                        }
+                        if ($force_metric_units && in_array($vs_units, ['m', 'cm'])) {
+                            $vs_units = $force_metric_units;
+                        }
+                        switch($vs_units) {
                             case 'infrac':
                             case 'english':
                             case 'fractionalenglish':
@@ -2240,11 +2246,12 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                                 $vs_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
                                 $vn_value_in_inches = (float)preg_replace("![^0-9\.]+!", "", $vs_in_inches);
                                 $va_measure_conv = [];
-                                if ($vn_value_in_inches > $o_dimensions_config->get('use_feet_for_display_up_to')) {
+                                
+                                if (!$force_english_units && ($vn_value_in_inches > $o_dimensions_config->get('use_feet_for_display_up_to'))){
                                     if ($vn_in_miles = (int)($vn_value_in_inches / (12 * 5280))) { $va_measure_conv[] = "{$vn_in_miles} miles".((!$pb_omit_units && in_array('MILE', $va_add_periods_list)) ? '.' : ''); }
                                     $vn_value_in_inches -= ($vn_in_miles * (12 * 5280));
                                 }
-                                if ($vn_value_in_inches > $o_dimensions_config->get('use_inches_for_display_up_to')) {
+                                if (($force_english_units == 'ft') || (!$force_english_units && ($vn_value_in_inches > $o_dimensions_config->get('use_inches_for_display_up_to')))) {
                                     if ($vn_in_feet = (int)($vn_value_in_inches / 12)) { $va_measure_conv[] = "{$vn_in_feet} ft".((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : ''); }
                                     $vn_value_in_inches -= (12 * $vn_in_feet);
                                 }
@@ -2258,11 +2265,12 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                             case 'metric':
                                 $vs_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
                                 $vn_value_in_cm = (float)preg_replace("![^0-9\.]+!", "", $vs_in_cm);
-                                if ($vn_value_in_cm <= $o_dimensions_config->get('use_millimeters_for_display_up_to')) {
+                                
+                                if (($force_metric_units == 'mm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_millimeters_for_display_up_to')))) {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::MILLIMETER, (int)$o_dimensions_config->get('millimeter_decimal_precision')).((!$pb_omit_units && in_array('MILLIMETER', $va_add_periods_list)) ? '.' : '');
-                                } elseif ($vn_value_in_cm <= $o_dimensions_config->get('use_centimeters_for_display_up_to')) {
+                                } elseif (($force_metric_units == 'cm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_centimeters_for_display_up_to')))) {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, (int)$o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
-                                } elseif ($vn_value_in_cm <= $o_dimensions_config->get('use_meters_for_display_up_to')) {
+                                } elseif (($force_metric_units == 'm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_meters_for_display_up_to')))) {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, (int)$o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
                                 } else {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::KILOMETER, $o_dimensions_config->get('kilometer_decimal_precision')).((!$pb_omit_units && in_array('KILOMETER', $va_add_periods_list)) ? '.' : '');

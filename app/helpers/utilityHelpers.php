@@ -3564,10 +3564,6 @@ function caFileIsIncludable($ps_file) {
             $num *= -1;
         }
         
-       //  if (is_array($pa_allow_fractions_for) && !in_array("{$num}/{$pn_denom}", $pa_allow_fractions_for)) {
-//         
-//         }
-        
         if(caGetOption('forceFractions', $pa_options, true)) {
             $v = $num/$pn_denom;
             foreach($pa_allow_fractions_for as $i => $f) {

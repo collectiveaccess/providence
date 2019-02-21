@@ -1729,12 +1729,40 @@ class DisplayTemplateParser {
 	    $vb_omit_repeating_units_for_measurements_in_templates = (bool)$o_dim_config->get('omit_repeating_units_for_measurements_in_templates');
 	    
 	    $vs_last_units = null;
+	    
+        $force_english_units = $force_metric_units = null;
+	    foreach(array_reverse($va_elements) as $vs_element) {
+            $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
+            $va_directives = explode('~', $vs_element);
+            $vs_spec = array_shift($va_directives);
+	        $vo_measurement = caParseLengthDimension($pa_vals[$vs_spec]);
+	        
+	        $in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+	        $in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+	        
+	        if (!$force_english_units) {
+                if ((($threshold = $o_dim_config->get('force_feet_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'ft';
+                } elseif ((($threshold = $o_dim_config->get('force_inches_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'in';
+                }
+            }
+            if (!$force_metric_units) {
+                if ((($threshold = $o_dim_config->get('force_meters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'm';
+                } elseif ((($threshold = $o_dim_config->get('force_centimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'cm';
+                } elseif ((($threshold = $o_dim_config->get('force_millimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'mm';
+                }
+            }
+        }
         
         foreach(array_reverse($va_elements) as $vs_element) {
             $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
             $va_directives = explode('~', $vs_element);
             $vs_spec = array_shift($va_directives);
-            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives);
+            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives, ['forceEnglishUnits' => $force_english_units,  'forceMetricUnits' => $force_metric_units]);
             $va_val = ['val' => $vs_val, 'proc' => $vs_val, 'units' => null];
            
             if ($vb_omit_repeating_units_for_measurements_in_templates) {
