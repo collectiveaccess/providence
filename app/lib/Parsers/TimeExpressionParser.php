@@ -1610,7 +1610,7 @@ class TimeExpressionParser {
 	# Lexical analysis
 	# -------------------------------------------------------------------
 	private function tokenize($ps_expression) {
-		$this->opa_tokens = preg_split("/[ ]+/", $ps_expression);
+		$this->opa_tokens = preg_split("/[\s]+/u", $ps_expression);
 		return sizeof($this->opa_tokens);
 	}
 	# -------------------------------------------------------------------
