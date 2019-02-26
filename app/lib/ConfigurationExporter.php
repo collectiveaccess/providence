@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -452,7 +452,7 @@ final class ConfigurationExporter {
 							// we export all settings (not just non-default) when we're running diff exports ..
 							// otherwise we only care about non default ones
 							if($this->opn_modified_after || ($vs_value != $va_available_settings[$vs_setting]["default"])) {
-								$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
 								$vb_append_settings_element = true;
@@ -514,7 +514,7 @@ final class ConfigurationExporter {
 					$vo_settings = $this->opo_dom->createElement("settings");
 
 					foreach($va_restriction_settings as $vs_setting => $vs_value) {
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -577,7 +577,7 @@ final class ConfigurationExporter {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
 					foreach($va_values as $vs_value) {
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -1441,13 +1441,13 @@ final class ConfigurationExporter {
 					if(is_array($va_value)) {
 						foreach($va_value as $vs_value) {
 							if(!is_array($vs_value)) { // ignore legacy search form settings which usually have nested arrays
-								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
 							}
 						}
 					} else {
-						$vo_setting = $this->opo_dom->createElement("setting",$va_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($va_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -1502,7 +1502,7 @@ final class ConfigurationExporter {
 					foreach($t_placement->getSettings() as $vs_setting => $va_values) {
 						if(is_array($va_values)) {
 							foreach($va_values as $vs_key => $vs_value) {
-								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								if($vs_setting=="label" || $vs_setting=="add_label") {
 									if(is_numeric($vs_key)) { $vs_key = $this->opt_locale->localeIDToCode($vs_key); }
@@ -1511,7 +1511,7 @@ final class ConfigurationExporter {
 								$vo_settings->appendChild($vo_setting);
 							}
 						} else {
-							$vo_setting = $this->opo_dom->createElement("setting",$va_values);
+							$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($va_values));
 							$vo_setting->setAttribute("name", $vs_setting);
 							$vo_settings->appendChild($vo_setting);
 						}
