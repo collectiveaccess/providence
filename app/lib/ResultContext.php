@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -614,7 +614,7 @@
 					return $va_context['param_'.$ps_param] ? $va_context['param_'.$ps_param] : null;
 				}
 			} else {
-				if (!isset($_REQUEST[$ps_param]) && !$this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true])) {
+				if (!isset($_REQUEST[$ps_param]) && (!$this->opo_request || !$this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true]))) {
 					if ($va_context = $this->getContext()) {
 						if (is_array($va_context['param_'.$ps_param])) {
 							return $va_context['param_'.$ps_param];
@@ -1155,7 +1155,7 @@
 				return self::$storage->setVar($key, $value, $options);
 			} else {
 				$s = self::$storage;
-				return $s::setVar($key, $value, $options);
+				return $s ? $s::setVar($key, $value, $options) : null;
 			}
 		}
 		
@@ -1167,7 +1167,7 @@
 				return self::$storage->getVar($key);
 			} else {
 				$s = self::$storage;
-				return$s::getVar($key, $value, $options);
+				return $s ? $s::getVar($key, $value, $options) : null;
 			}
 		}
 	}
