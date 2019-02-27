@@ -6292,7 +6292,7 @@ create table ca_sql_search_word_index (
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
-  field_num varchar(20) not null default '',
+  field_num varchar(100) not null default '',
   field_container_id int unsigned null,  
   field_row_id int(10) unsigned not null,
   rel_type_id smallint unsigned not null default 0,

@@ -714,8 +714,9 @@
 					} elseif($va_row_tmp[2] && ($qr_res = caMakeSearchResult($table, [$va_row_tmp[2]])) && $qr_res->nextHit()) {
 						// Return label for id
 						$cv_config = ca_objects::getConfigurationForHistoryTrackingCurrentValue($policy, $table, $va_row_tmp[1]);
-						$template = isset($cv_config['template']) ? $cv_config['template'] : "^{$table}.preferred_labels";
-
+						
+						$display_config = $this->getTableEntryFromMap($va_facet_info, 'display', $table);
+						$template = isset($display_config['template']) ? $display_config['template'] : (isset($cv_config['template']) ? $cv_config['template'] : "^{$table}.preferred_labels");
 						$template = str_replace("<l>", "", str_replace("</l>", "", $template));	// don't allow links in criterion labels
 
 						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($template), 30, 'end');
@@ -1901,7 +1902,7 @@
 											if(!$t_loc->load($vn_row_id)) { break; }
 											$va_row_tmp = [$t_loc->tableNum(), $t_loc->get('ca_storage_locations.type_id'), $vn_row_id];
 										}
-										
+										$va_row_tmp = array_filter($va_row_tmp, function($v) { return (bool)$v; });
 										if ($va_row_tmp[0] == 89) { // ca_storage_locations
 											$t_loc = new ca_storage_locations();
 											if (!is_array($va_loc_ids = $t_loc->getHierarchy($va_row_tmp[2], ['returnAsArray' => true, 'includeSelf' => true, 'idsOnly' => true])) || !sizeof($va_loc_ids)) { continue; }
@@ -2501,7 +2502,7 @@
 				foreach($va_facets as $vs_facet_name) {
 					$va_facet_info = $this->getInfoForFacet($vs_facet_name);
 					if (
-						(isset($va_criteria[$vs_facet_name]) && isset($va_facet_info['multiple']) && $va_facet_info['multiple']) // facets supporting multiple selection always have content
+						(isset($va_criteria[$vs_facet_name])) // && isset($va_facet_info['multiple']) && $va_facet_info['multiple']) // facets supporting multiple selection always have content
 						|| 
 						$this->getFacet($vs_facet_name, array_merge($pa_options, array('checkAvailabilityOnly' => true)))
 					) {
@@ -2803,8 +2804,8 @@
 			$va_exclude_values = caGetOption('exclude_values', $va_facet_info, array(), array('castTo' => 'array'));
 
 			// Force all facet content when facet supports multiple selection
-			$va_full_criteria = $this->getCriteria();
-			if (isset($va_facet_info['multiple']) && $va_facet_info['multiple'] && isset($va_full_criteria[$ps_facet_name])) { $pa_options['returnFullFacet'] = true; }
+			//$va_full_criteria = $this->getCriteria();
+			//if (isset($va_facet_info['multiple']) && $va_facet_info['multiple'] && isset($va_full_criteria[$ps_facet_name])) { $pa_options['returnFullFacet'] = true; }
 			
 			if (caGetOption('returnFullFacet', $pa_options, false)) {
 			    $va_results = null; $va_container_ids = null;
@@ -3834,7 +3835,7 @@
 								$qr_res = caMakeSearchResult($current_table_name, $current_row_ids);
 
 								if (isset($va_collapse_map[$current_table_name]) && isset($va_collapse_map[$current_table_name]['*']) && $va_collapse_map[$current_table_name]['*']) {
-									$va_values[$vs_id = "{$current_table_num}"] = array(
+									$va_values[$vs_id = "{$current_table_num}:0:0"] = array(
 										'id' => $vs_id,
 										'label' => $va_collapse_map[$current_table_name]['*']
 									);
@@ -3864,7 +3865,8 @@
 									$qr_res = caMakeSearchResult($current_table_name, $va_hier_ids);
 								}
 							
-								$vs_template = strip_tags(isset($va_config['template']) ? $va_config['template'] : "^{$current_table_name}.preferred_labels");
+							    $display_config = $this->getTableEntryFromMap($va_facet_info, 'display', $current_table_name);
+								$vs_template = isset($display_config['template']) ? $display_config['template'] : "^{$current_table_name}.preferred_labels";
 
 								while($qr_res->nextHit()) {
 									$row_id = $qr_res->getPrimaryKey();
@@ -5670,7 +5672,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 	}                  
 	                    $vs_sql .= " GROUP BY ".join(', ', $va_select_flds);
-						//print "<hr>$vs_sql<hr>\n";
+						//print "<hr>$vs_sql<hr>\n"; print_R($va_sql_params);
 						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
 
 						$va_facet = $va_facet_items = array();
@@ -6610,7 +6612,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 *
 		 */
 		private function getCollapseMapForLocationFacet($pa_facet_info) {
-			$va_collapse_map = array();
+			$va_collapse_map = [];
 			if(is_array($pa_facet_info['collapse'])) {
 				foreach($pa_facet_info['collapse'] as $vs_selector => $vs_text) {
 					$va_selector = explode('/', $vs_selector);
@@ -6634,6 +6636,22 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				}
 			}
 			return $va_collapse_map;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		private function getTableEntryFromMap($facet_info, $key, $table, $type=null) {
+			if(is_array($facet_info[$key][$table])) {
+				if($type && is_array($facet_info[$key][$table][$type])) {
+				    return $facet_info[$key][$table][$type];
+				} elseif (is_array($facet_info[$key][$table]['*'])) {
+				    return $facet_info[$key][$table]['*'];
+				} elseif (is_array($facet_info[$key][$table]['__default__'])) {
+				    return $facet_info[$key][$table]['__default__'];
+				}
+			}
+			return null;
 		}
 		# ------------------------------------------------------
 		/**

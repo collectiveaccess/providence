@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -167,7 +167,7 @@
 	
 	
 if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
-	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 	if (sizeof($va_template_list) > 0) {
 ?>
 	<div class='iconButton'>
@@ -205,7 +205,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 	}
 	
 	if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
-		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 		if (sizeof($va_template_list) > 0) {
 ?>
 		<div class='editorBundleValuePrintControl iconButton' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>

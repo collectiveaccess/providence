@@ -393,15 +393,15 @@
  			
  			// Using the back-button can cause requests for facets that are no longer available
  			// In these cases we reset the browse.
- 			if (!($va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
- 				 $this->opo_browse->removeAllCriteria();
- 				 $this->opo_browse->execute();
- 				 $va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
- 				 $va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
- 				 
-				$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
-				$this->opo_result_context->saveContext();
- 			}
+ 			// if (!($va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
+//  				 $this->opo_browse->removeAllCriteria();
+//  				 $this->opo_browse->execute();
+//  				 $va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
+//  				 $va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
+//  				 
+// 				$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
+// 				$this->opo_result_context->saveContext();
+//  			}
  			
  			$this->view->setVar('browse_last_id', (int)$vm_id ? (int)$vm_id : (int)$this->opo_result_context->getParameter($ps_facet_name.'_browse_last_id'));
  			$this->view->setVar('facet', $va_facet);

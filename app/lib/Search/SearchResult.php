@@ -2393,6 +2393,8 @@ class SearchResult extends BaseObject {
 	
 		$vs_table_name = $pt_instance->tableName();
 		
+		if (!is_array($pa_value_list)) { $pa_value_list = []; }
+		
 		// Handle specific intrinsic types
 		switch($va_field_info['FIELD_TYPE']) {
 			case FT_DATERANGE:

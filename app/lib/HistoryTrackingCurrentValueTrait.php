@@ -73,13 +73,15 @@
 				                $map[$t][$type]['setInterstitialElementsOnAdd'] = ['effective_date'];
 				                $map[$t][$type]['restrictToRelationshipTypes'] = [$type];
 				            }
+				        } elseif ($t == 'ca_objects') {
+				            $map[$t] = ['__default__' => array_merge($by_type, ['showDeaccessionInfo' => true])];
 				        }
 				    }
 				    
 				    // Make relationship type entry into default type entry
-				    if (is_array($map['ca_storage_locations'])) {
-				        $map['ca_storage_locations']['__default__'] = array_shift($map[$t]);
-				    }
+				   //  if (is_array($map['ca_storage_locations'])) {
+// 				        $map['ca_storage_locations']['__default__'] = array_shift($map[$t]);
+// 				    }
 				    
 				 	$history_tracking_policies = [
 				 		'defaults' => [
@@ -96,7 +98,6 @@
 				 	];
 				 }
 			}
-			
 			return $history_tracking_policies;
 		}
 		# ------------------------------------------------------
@@ -125,7 +126,13 @@
 			if (!($policy_table = caGetOption('table', $policy_info, false))) { return []; }
 
 			foreach($map as $table => $types) {
-				if ($table == 'ca_objects') { $bundle_settings['showDeaccessionInformation'] = true; }	// TODO: this is a hack
+				if ($table == 'ca_objects') { // TODO: this is a hack
+				    $bundle_settings['showDeaccessionInformation'] = true; 
+				    $bundle_settings['deaccession_displayTemplate'] = $types['__default__']['template']; 
+				    $bundle_settings['deaccession_color'] = $types['__default__']['color']; 
+				    $bundle_settings['deaccession_includeFromChildren'] = $types['__default__']['includeFromChildren']; 
+				    $bundle_settings['deaccession_childDisplayTemplate'] = $types['__default__']['childTemplate']; 
+				}
 				$path = array_keys(Datamodel::getPath($policy_table, $table));
 				if(!($t_instance = Datamodel::getInstance($table, true))) { continue; }
 				
@@ -263,11 +270,13 @@
 		 * Return policy config
 		 *
 		 * @param string $policy
+		 * @param string $key
 		 *
 		 * @return array Policy or null if policy does not exist.
 		 */
-		static public function getHistoryTrackingCurrentValuePolicy($policy) {
+		static public function getHistoryTrackingCurrentValuePolicy($policy, $key=null) {
 			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies'][$policy])) {
+				if ($key) { return isset($history_tracking_policies['policies'][$policy][$key]) ? $history_tracking_policies['policies'][$policy][$key] : null; }
 				return $history_tracking_policies['policies'][$policy];
 			}
 			return null;
@@ -299,11 +308,15 @@
 		/**
 		 * Return policy to use when displaying tracking current value in editor inspector
 		 *
-		 * @return string Policy name
+		 * @param string $key Policy data to return. If omitted the entire policy information array is returned. 
+		 *
+		 * @return mixed Policy data array, or scalar value if $key is defined.
 		 */
-		public function getInspectorHistoryTrackingDisplayPolicy() {
+		public function getInspectorHistoryTrackingDisplayPolicy($key=null) {
 			$table = $this->tableName();
 			$type_code = $this->getTypeCode();
+			
+			$data = null;
 			
 			$display_config = $this->getAppConfig()->get('inspector_tracking_displays');
 			if (!isset($display_config[$table])) { return null; }
@@ -312,11 +325,14 @@
 			if (!isset($display_config[$table][$type_code])) { 
 				// Last ditch, try old config option. If it is set return it as label with default policy.
 				if ($old_config_value = $this->getAppConfig()->get("{$table}_inspector_current_location_label")) { 
-					return ['label' => $old_config_value, 'policy' => $this->getDefaultHistoryTrackingCurrentValuePolicy()]; 
+					$data = ['label' => $old_config_value, 'policy' => $this->getDefaultHistoryTrackingCurrentValuePolicy()]; 
 				}
-				return null; 
+				
+				if ($key) { return isset($data[$key]) ? $data[$key] : null; }
+				return $data; 
 			}
 			
+			if ($key) { return isset($display_config[$table][$type_code][$key]) ? $display_config[$table][$type_code][$key] : null; }
 			return $display_config[$table][$type_code];
 		}
 		# ------------------------------------------------------
@@ -662,6 +678,19 @@
 			$reltables = array_merge(array_keys($onerels), array_values($manyrels_tablenames));
 	
 			return in_array($table, array_unique(array_merge($reltables, $basetables)));
+		}
+		
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getCurrentValueForDisplay($policy=null, $options=null) {
+		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+                $current_value = array_shift(array_shift($history));
+                return isset($current_value['display']) ? $current_value['display'] : null;
+            }
+            return null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -1482,7 +1511,7 @@
 			
 					$vs_default_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)';
 					$vs_default_child_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
-					$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(['ca_storage_locations_displayTemplate', 'ca_storage_locations_template'], $pa_bundle_settings, $vs_default_display_template);
+					
 					$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_storage_locations_childDisplayTemplate', 'ca_storage_locations_childTemplate'], $pa_bundle_settings, $vs_display_template);
 			
 					$loc_table_num = Datamodel::getTableNum('ca_storage_locations');
@@ -1490,12 +1519,16 @@
 				
 					while($qr_locations->nextHit()) {
 						if ((string)$qr_locations->get('ca_storage_locations.deleted') !== '0') { continue; }	// filter out deleted
-					
+					    
+					    $vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
+				
 						$vn_rel_row_id = $qr_locations->get("{$linking_table}.{$pk}");
 						$vn_location_id = $qr_locations->get("{$linking_table}.location_id");
 						$relation_id = $qr_locations->get("{$linking_table}.relation_id");
 						$vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id");
 				
+				        $vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+					
 						$va_date = array(
 							'sortable' => $qr_locations->get("{$linking_table}.effective_date", array('getDirectDate' => true)),
 							'bounds' => explode("/", $qr_locations->get("{$linking_table}.effective_date", array('sortable' => true))),
@@ -1504,8 +1537,7 @@
 
 						if (!$va_date['sortable']) { continue; }
 						if (!in_array($vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id"), $va_location_types)) { continue; }
-						$vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
-				
+						
 						if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 						
 						$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
@@ -1551,7 +1583,7 @@
 			if (($table === 'ca_objects') && ((caGetOption('showDeaccessionInformation', $pa_bundle_settings, false) || (caGetOption('deaccession_displayTemplate', $pa_bundle_settings, false))))) {
 				$vs_color = caGetOption('deaccession_color', $pa_bundle_settings, 'cccccc');
 				$vs_color = str_replace("#", "", $vs_color);
-			
+		
 				$vn_date = $qr->get('ca_objects.deaccession_date', array('sortable'=> true));
 			
 				$vs_default_display_template = '^ca_objects.deaccession_notes';
@@ -2759,6 +2791,21 @@
 			);
 			ExternalCache::save($cache_key, $additional_settings, 'historyTrackingEditorBundleSettingsData');
 			return $additional_settings;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return list of rows which have the specified current value. The returned array is keyed on policy, then table number and finally row_id.
+		 *
+		 * @param int $table_num Table number
+		 * @param int $row_id Row_id
+		 *
+		 * @return array
+		 */
+		public function getDependentCurrentValues($table_num, $row_id) {
+		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], ['returnAs' => 'arrays']);
+		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], ['returnAs' => 'arrays']);
+		    $rows = array_reduce(array_merge($current, $tracked), function($c, $i) { if (!$i['is_future']) { $c[$i['policy']][$i['table_num']][$i['row_id']] = true; } return $c; }, []);
+		    return $rows;
 		}
 		# ------------------------------------------------------
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1869,9 +1869,11 @@
 		 *
 		 * @param bool $pb_preferred
 		 * @param int $pn_locale_id
+		 * @param array $options Options include:
+		 *      omitBlanks = Don't include [BLANK] values in label count. [Default is false]
 		 * @return int Number of labels
 		 */
- 		public function getLabelCount($pb_preferred=true, $pn_locale_id=null) {
+ 		public function getLabelCount($pb_preferred=true, $pn_locale_id=null, $options=null) {
  			if (!$this->getPrimaryKey()) { return null; }
 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
@@ -1887,6 +1889,12 @@
 				$vs_locale_sql = ' AND (l.locale_id = ?)';
 				$va_params[] = (int)$pn_locale_id;
 			}
+			
+			$omit_blanks_sql = '';
+			if (caGetOption('omitBlanks', $options, false)) {
+			    $omit_blanks_sql = " AND (l.".$this->getLabelDisplayField()." <> ?)";
+			    $va_params[] = '['._t('BLANK').']';
+			}
  			
  			if (!$t_label->hasField('is_preferred')) { 
  				array_shift($va_params);
@@ -1894,14 +1902,14 @@
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.".$this->primaryKey()." = ?) {$vs_locale_sql}
+						(l.".$this->primaryKey()." = ?) {$vs_locale_sql} {$omit_blanks_sql}
 				", $va_params);
  			} else {
 				$qr_res = $o_db->query($x="
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?) {$vs_locale_sql}
+						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?) {$vs_locale_sql} {$omit_blanks_sql}
 				", $va_params);
 			}
  			return $qr_res->numRows();

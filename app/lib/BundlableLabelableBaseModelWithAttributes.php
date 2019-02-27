@@ -2260,6 +2260,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
 	
 		if (!in_array($va_tmp[0], array('created', 'modified'))) {
+		    $is_current_value_element = false;
+		    if ((sizeof($va_tmp) == 4) && ($va_tmp[1] == 'current_value')) {
+		        $is_current_value_element = $va_tmp[2]; // 2=policy
+		        $va_tmp = [$va_tmp[0], $va_tmp[3]];
+		        $ps_field = join(".", $va_tmp);
+		    }
 			switch(sizeof($va_tmp)) {
 				# -------------------------------------
 				case 1:		// table_name

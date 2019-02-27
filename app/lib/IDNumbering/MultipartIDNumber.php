@@ -848,7 +848,7 @@ class MultipartIDNumber extends IDNumber {
 		foreach($va_elements as $vs_element) {
 			$va_element_info = $va_elements_normal_order[$vs_element];
 			$vn_i = array_search($vs_element, $va_element_names_normal_order);
-
+            if(!is_array($va_output[$vn_i])) { $va_output[$vn_i] = []; }
 			switch($va_element_info['type']) {
 				case 'LIST':
 					$va_output[$vn_i] = array($va_element_vals[$vn_i]);
@@ -870,8 +870,8 @@ class MultipartIDNumber extends IDNumber {
 				case 'YEAR':
 					$va_output[$vn_i] = array($va_element_vals[$vn_i]);
 					if (preg_match('!^([0]+)([\d]+)$!', $va_element_vals[$vn_i], $va_matches)) {
-						for($vn_i=0; $vn_i < sizeof($va_matches[1]); $vn_i++) {
-							$va_output[$vn_i][] = substr($va_element_vals[$vn_i], $vn_i);
+						for($x=0; $x < strlen($va_matches[1]); $x++) {
+							$va_output[$vn_i][] = substr($va_element_vals[$vn_i], $x);
 						}
 					}
 					break;

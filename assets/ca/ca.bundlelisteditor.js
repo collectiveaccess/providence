@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -154,7 +154,7 @@ var caUI = caUI || {};
 	// Lazily insert popup settings form HTML from map.
 	caUI.bundlelisteditor.initSettingsForm = function (id) {
 		if (caUI.bundlelisteditor.settingsForms[id]) {
-			$('#displayElementSettings_' + id.replace('.', '\\.') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
+			$('#displayElementSettings_' + id.replace(/\./g, '\\.') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
 				.html(caUI.bundlelisteditor
 				.settingsForms[id])					
 				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2018 Whirl-i-Gig
+ * Copyright 2015-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,11 @@ class DisplayTemplateParser {
 	 *
 	 */
 	static $value_count_cache = null;
+	
+	/**
+	 *
+	 */
+	static $join_tag_vals = [];
 	
 	# -------------------------------------------------------------------
 	/**
@@ -149,6 +154,9 @@ class DisplayTemplateParser {
 			'useLocaleCodes') as $vs_k) {
 			unset($pa_options[$vs_k]);
 		}
+		
+		self::$join_tag_vals = [];
+		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		unset($pa_options['returnAsArray']);
@@ -1211,6 +1219,7 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
+		    if (isset(self::$join_tag_vals[$vs_code]) && strlen(self::$join_tag_vals[$vs_code])) { return true; }
 			$va_parsed_tag_opts = DisplayTemplateParser::_parseTagOpts($vs_code);
 			$va_val_list = $pr_res->get($va_parsed_tag_opts['tag'], array_merge($va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true]));
 			if(!is_array($va_val_list)) {  // no value
@@ -1625,6 +1634,7 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
+		    if (isset(self::$join_tag_vals[$vs_code]) && strlen(self::$join_tag_vals[$vs_code])) { return true; }
 			$vm_val = isset($pa_values[$vs_code]) ? $pa_values[$vs_code] : null;
 			$vb_value_present = (bool)$vm_val;
 			
@@ -1730,12 +1740,41 @@ class DisplayTemplateParser {
 	    $vb_omit_repeating_units_for_measurements_in_templates = (bool)$o_dim_config->get('omit_repeating_units_for_measurements_in_templates');
 	    
 	    $vs_last_units = null;
+	    
+        $force_english_units = $force_metric_units = null;
+	    foreach(array_reverse($va_elements) as $vs_element) {
+            $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
+            $va_directives = explode('~', $vs_element);
+            $vs_spec = array_shift($va_directives);
+	        $vo_measurement = caParseLengthDimension($pa_vals[$vs_spec]);
+	        
+	        $in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+	        $in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+	        
+	        if (!$force_english_units) {
+                if ((($threshold = $o_dim_config->get('force_feet_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'ft';
+                } elseif ((($threshold = $o_dim_config->get('force_inches_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'in';
+                }
+            }
+            if (!$force_metric_units) {
+                if ((($threshold = $o_dim_config->get('force_meters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'm';
+                } elseif ((($threshold = $o_dim_config->get('force_centimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'cm';
+                } elseif ((($threshold = $o_dim_config->get('force_millimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'mm';
+                }
+            }
+        }
         
+        $j = 1;
         foreach(array_reverse($va_elements) as $vs_element) {
             $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
             $va_directives = explode('~', $vs_element);
             $vs_spec = array_shift($va_directives);
-            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives);
+            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives, ['forceEnglishUnits' => $force_english_units,  'forceMetricUnits' => $force_metric_units]);
             $va_val = ['val' => $vs_val, 'proc' => $vs_val, 'units' => null];
            
             if ($vb_omit_repeating_units_for_measurements_in_templates) {
@@ -1760,6 +1799,9 @@ class DisplayTemplateParser {
             }
             
             $va_acc[] = $va_val;
+            
+            self::$join_tag_vals["join_{$j}"] = 1;
+            $j++;
         }
         
         $va_acc = array_reverse($va_acc);

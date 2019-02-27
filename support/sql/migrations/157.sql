@@ -4,10 +4,10 @@
 	Description:    Set null change log units
 	                Fix schema issues in older systems
 	                Add labels for ca_metadata_dictionary_entries
+	                Extend SQL Search field_num
 */
 
 /*==========================================================================*/
-
 
 UPDATE ca_change_log SET unit_id = MD5(log_id) WHERE unit_id IS NULL;
 
@@ -41,6 +41,10 @@ UPDATE ca_metadata_dictionary_entries SET table_num = 57; /* all existing entrie
 CREATE INDEX i_table_num ON ca_metadata_dictionary_entries(table_num);
 CREATE INDEX i_name ON ca_metadata_dictionary_entries(bundle_name);
 CREATE INDEX i_prefetch ON ca_attributes(row_id, element_id, table_num);
+
+/*==========================================================================*/
+
+ALTER TABLE ca_sql_search_word_index MODIFY COLUMN field_num varchar(100) not null;
 
 /*==========================================================================*/
 
