@@ -477,7 +477,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private function _getElementIDForAccessPoint($pn_subject_tablenum, $ps_access_point) {
 		$va_tmp = explode('/', $ps_access_point);
-		list($vs_table, $vs_field, $vs_subfield) = explode('.', $va_tmp[0]);
+		list($vs_table, $vs_field, $vs_subfield, $vs_subsubfield, $vs_subsubsubfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : null;
@@ -507,6 +507,26 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				'element_info' => null,
 				'relationship_type_ids' => $va_rel_type_ids
 			);
+		} elseif (strtolower($vs_field) == 'current_value') {
+		    if(!$vs_subfield) { $vs_subfield = '__default__'; }
+		    
+		    $vs_fld_num = null;
+		    if ($vn_fld_num = $this->getFieldNum($vs_table, $vs_subsubsubfield ? $vs_subsubsubfield : $vs_subsubfield)) {
+		        $vs_fld_num = "I{$vn_fld_num}";
+		    } elseif($t_element = ca_metadata_elements::getInstance($vs_subsubsubfield ? $vs_subsubsubfield : $vs_subsubfield)) {
+		        $vs_fld_num = "A".$t_element->getPrimaryKey();
+		    }
+		    return array(
+				'access_point' => $va_tmp[0],
+				'relationship_type' => (int)$vn_rel_type,
+				'table_num' => $vs_table_num,
+				'element_id' => null,
+				'field_num' => "CV{$vs_subfield}_{$vs_fld_num}",
+				'datatype' => 'CV',
+				'element_info' => null,
+				'relationship_type_ids' => $va_rel_type_ids
+			);
+		
 		} elseif (is_numeric($vs_field)) {
 			$vs_fld_num = $vs_field;
 		} else {
@@ -1379,6 +1399,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														break;
 												}
 											}	
+										} elseif($vs_field == 'current_value') {
+										    $vn_fld_num = false;
 										} else { // neither table fields nor elements, i.e. 'virtual' fields like _count should 
 											$vn_fld_num = false;
 											$vs_fld_num = $vs_field;
@@ -1632,6 +1654,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$t = new Timer();
 						$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array();
 						if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
+						
 						$this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
 						
 						$vn_i++;

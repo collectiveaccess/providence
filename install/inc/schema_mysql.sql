@@ -6289,7 +6289,7 @@ create table ca_sql_search_word_index (
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
-  field_num varchar(20) not null default '',
+  field_num varchar(100) not null default '',
   field_container_id int unsigned null,  
   field_row_id int(10) unsigned not null,
   rel_type_id smallint unsigned not null default 0,
@@ -7019,4 +7019,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (156, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (157, unix_timestamp());
