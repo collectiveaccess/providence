@@ -3273,6 +3273,17 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Test a GUID
+	 *
+	 * @param string $guid
+	 * 
+	 * @return bool True if $guid is a valid guid
+	 */
+	function caIsGUID($guid){
+		return preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $guid);
+	}
+	# ----------------------------------------
+	/**
 	 * Generate a CSRF token and add to session CSRF store
 	 *
 	 * @param RequestHTTP $po_request Current request

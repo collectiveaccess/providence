@@ -4770,7 +4770,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available items for batch editing on representable models
 					case 'ca_object_representations_access_status':		
-						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel')) && ($vs_batch_mode = $_REQUEST[$vs_prefix_stub.'batch_mode']) && ($vs_batch_mode === '_replace_')) {
 							$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access", pString);
 							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
 							
@@ -6344,7 +6344,7 @@ if (!$vb_batch) {
 				$t_parent = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				
-				if (!$this->get($vs_idno_fld) && !$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
+				if (!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
                     if ($t_parent->load($vn_parent_id)) {
                         $this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
                         if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
@@ -6357,7 +6357,7 @@ if (!$vb_batch) {
                         }
                     }
                 } elseif(!$this->getPrimaryKey()) {
-                    $this->set($vs_idno_fld, '');
+                    $this->set($this->tableName().".{$vs_idno_fld}", '');
                 }
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
 			

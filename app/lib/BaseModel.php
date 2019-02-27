@@ -1349,7 +1349,7 @@ class BaseModel extends BaseObject {
 									}
 								} else {
 									$vm_orig_value = $vm_value;
-									$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
+									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
 									if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
 										$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()", $this->tableName().'.'.$vs_field);
 										return false;
@@ -1634,6 +1634,7 @@ class BaseModel extends BaseObject {
 						
 						$va_matches = null;
 						
+						$vm_value = html_entity_decode($vm_value);
 						if (
 							is_string($vm_value) 
 							&& 
@@ -9823,6 +9824,7 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
 				unset($va_row[$vs_rel_pk]);
+				$va_row['source_info'] = '';
 				$va_row[$vs_item_pk] = $pn_to_id;
 				 
 				$t_item_rel->set($va_row);
@@ -11556,7 +11558,9 @@ $pa_options["display_form_field_tips"] = true;
                             if (is_array($vm_value)) {
                                 $va_trans_vals = [];
                                 foreach($vm_value as $vn_j => $vs_value) {
-                                    if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
+                                    if(is_numeric($vs_value)) {
+                                         $va_trans_vals[] = (int)$vs_value;
+                                    } elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
                                         $va_trans_vals[] = $vn_id;
                                     }
                                     $pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];

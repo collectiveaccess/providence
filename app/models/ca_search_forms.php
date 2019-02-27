@@ -354,7 +354,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement = new ca_search_form_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('form_id', $vn_form_id);
-		$t_placement->set('bundle_name', $ps_bundle_name);
+		$t_placement->set('bundle_name', trim($ps_bundle_name));
 		$t_placement->set('rank', $pn_rank);
 
 		if (is_array($pa_settings)) {

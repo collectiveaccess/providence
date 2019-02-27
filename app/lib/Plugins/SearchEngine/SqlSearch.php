@@ -1034,7 +1034,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							if ($vs_field = trim($vs_field)) {
 								if (!is_int($vs_field)) {
 									$t_user = new ca_users();
-									if ($t_user->load(array("user_name" => $vs_field))) {
+									if (
+									    $t_user->load(array("user_name" => $vs_field))
+									    ||
+									    ((strpos($vs_field, "_") !== false) && $t_user->load(array("user_name" => str_replace("_", " ", $vs_field))))
+									) {
 										$vn_user_id = (int)$t_user->getPrimaryKey();
 									}
 								} else {

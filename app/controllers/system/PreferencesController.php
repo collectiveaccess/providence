@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -102,12 +102,6 @@
  		public function EditUnitsPrefs() {
  			$this->view->setVar('t_user', $this->request->user);
  			$this->view->setVar('group', 'units');
- 			$this->render('preferences_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function EditMediaPrefs() {
- 			$this->view->setVar('t_user', $this->request->user);
- 			$this->view->setVar('group', 'media');
  			$this->render('preferences_html.php');
  		}
  		# -------------------------------------------------------

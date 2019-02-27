@@ -1597,6 +1597,14 @@
 				}
 			}
 			
+			// Get user values, which can be used as tags in detault text values
+			$user_values = [];
+			if($user = $po_request->getUser()) {
+				foreach(['fname', 'lname', 'email', 'user_name'] as $uf) {
+					$user_values["currentuser.{$uf}"] = $user->get($uf);
+				}
+			}
+			
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
 				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
@@ -1643,7 +1651,7 @@
 				$vs_setting = Attribute::getValueDefault($va_element);
 				if (strlen($vs_setting)) {
 					$tmp_element = ca_metadata_elements::getInstance($va_element['element_id']);
-					$va_element_value_defaults[$va_element['element_id']] = $tmp_element->getSetting($vs_setting);
+					$va_element_value_defaults[$va_element['element_id']] = caProcessTemplate($tmp_element->getSetting($vs_setting), $user_values);
 				}
 			}
 			

@@ -847,27 +847,22 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							return;
 						}
 					}
-					if ($vs_mode == 'Mapping') {
-						$vs_refinery = $va_refinery_ci_map[strtolower(trim((string)$o_refinery->getValue()))];
-					
-						$va_refinery_options = null;
-						if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
-							if (!in_array($vs_refinery, $va_refineries)) {
-								$pa_errors[] = _t("Warning: refinery %1 does not exist", $vs_refinery)."\n";
-								if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
-							} else {
-								if (is_null($va_refinery_options = json_decode($vs_refinery_options_json, true))) {
-									// Error while json decode
-									$pa_errors[] = _t("invalid json for refinery options for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json);
-									if ($o_log) { $o_log->logError( _t("[loadImporterFromFile:%1] invalid json for refinery options for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json)); }
-									return;
-								}
-							}
-						}
-					} else {
-						// Constants don't use refineries
-						$vs_refinery = $va_refinery_options = null;
-					}
+                    $vs_refinery = $va_refinery_ci_map[strtolower(trim((string)$o_refinery->getValue()))];
+                
+                    $va_refinery_options = null;
+                    if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
+                        if (!in_array($vs_refinery, $va_refineries)) {
+                            $pa_errors[] = _t("Warning: refinery %1 does not exist", $vs_refinery)."\n";
+                            if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
+                        } else {
+                            if (is_null($va_refinery_options = json_decode($vs_refinery_options_json, true))) {
+                                // Error while json decode
+                                $pa_errors[] = _t("invalid json for refinery options for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json);
+                                if ($o_log) { $o_log->logError( _t("[loadImporterFromFile:%1] invalid json for refinery options for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json)); }
+                                return;
+                            }
+                        }
+                    }
 					
 					$va_original_values = $va_replacement_values = array();
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
@@ -1959,6 +1954,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (isset($va_item['settings']['convertNewlinesToHTML']) && (bool)$va_item['settings']['convertNewlinesToHTML'] && is_string($vm_val)) {
 								$vm_val = nl2br($vm_val);
 							}
+							if (isset($va_item['settings']['collapseSpaces']) && (bool)$va_item['settings']['collapseSpaces'] && is_string($vm_val)) {
+								$vm_val = preg_replace("![ ]+!", " ", $vm_val);
+							}
 					
 							if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
 								$o_log->logInfo(_t('[%1] Skipped mapping %2 because of type restriction for type %3', $vs_idno, $vn_row, $vs_type));
@@ -2067,12 +2065,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 							// Is it a constant value?
 							if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
-								$va_group_buf[$vn_c][$vs_item_terminal] = $va_matches[1];		// Set it and go onto the next item
+							    $va_group_buf[$vn_c][$vs_item_terminal] = $vm_val = $va_matches[1];		// Set it and go onto the next item
 						
 								if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
 									$va_mandatory_field_values[$vs_k] = $vm_val;
 								}
-								continue;
 							}
 					
 							// Perform refinery call (if required) per value

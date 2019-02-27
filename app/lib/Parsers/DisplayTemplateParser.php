@@ -750,7 +750,8 @@ class DisplayTemplateParser {
                                         if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								        $va_relative_ids = array_values($va_relative_ids);
                                         
-								        $va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))));
+                                        $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), $x=array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
+								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
 								    }
 									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
@@ -1718,7 +1719,7 @@ class DisplayTemplateParser {
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$vs_tag_proc = preg_quote($vs_tag, '/');
-				$ps_template = preg_replace("/\^(?={$vs_tag_proc}[^A-Za-z0-9_]+|{$vs_tag_proc}$){$vs_tag_proc}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
+				$ps_template = preg_replace("/[\{]{0,1}\^(?={$vs_tag_proc}[^A-Za-z0-9_]+|{$vs_tag_proc}$){$vs_tag_proc}[\}]{0,1}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
 			$pa_options['tagIndex']++;
 		}
