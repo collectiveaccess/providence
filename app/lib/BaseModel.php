@@ -9885,6 +9885,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->clear();
 				$t_item_rel->setMode(ACCESS_WRITE);
 				unset($va_row[$vs_rel_pk]);
+				$va_row['source_info'] = '';
 				$va_row[$vs_item_pk] = $pn_to_id;
 				 
 				$t_item_rel->set($va_row);
