@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,13 @@
 	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
 	$pa_bundle_settings = $this->getVar('settings');
+	$hier_browser_width = ($pdim = caParseElementDimension(caGetOption('width', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
+	$hier_browser_height = ($pdim = caParseElementDimension(caGetOption('height', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
+	
+	$hier_browser_dims = [];
+	if ($hier_browser_width) { $hier_browser_dims[] = "width: {$hier_browser_width};"; }
+	if ($hier_browser_height) { $hier_browser_dims[] = "height: {$hier_browser_height};"; }
+	$hier_browser_dim_style = (sizeof($hier_browser_dims) > 0) ? "style='".join(" ", $hier_browser_dims)."'" : '';
 	
 	$vb_objects_x_collections_hierarchy_enabled = (bool)$t_subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
 	
@@ -111,7 +118,7 @@
 					<div class="hierarchyBrowserMessageContainer">
 						<?php print _t('Use the browser to explore the hierarchy. You may edit other hierarchy items by clicking on the arrows.'); ?>
 					</div>
-					<div id="<?php print $vs_id_prefix; ?>HierarchyBrowser" class="hierarchyBrowserSmall">
+					<div id="<?php print $vs_id_prefix; ?>HierarchyBrowser" class="hierarchyBrowserSmall" <?php print $hier_browser_dim_style; ?>>
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierbrowser -->
 				</div>
