@@ -1254,7 +1254,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				}
 				continue;
 			}
-			
 		    $tmp = explode(".", $va_element['bundle_name']);
 		    $policy = null;
 		    $bundle = $vs_field;
@@ -1273,7 +1272,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					'format' => '^ELEMENT',
 					'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT',
 					'id' => str_replace('.', '_', $vs_field),
-					'policy' => $policy
+					'policy' => $policy,
+				    'name' => $bundle
 				)),
 				'label' => ($vs_field_label) ? $vs_field_label :  $t_instance->getDisplayLabel($vs_field),
 				'name' => $bundle

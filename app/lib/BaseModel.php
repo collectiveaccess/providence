@@ -2576,6 +2576,15 @@ class BaseModel extends BaseObject {
 
 				$this->_FILES_CLEAR = array();
 
+	            #
+	            #
+	            #
+                if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+                    $table = $this->tableName();
+                    $this->deriveHistoryTrackingCurrentValue();
+                    if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+                }
+                
 				#
 				# update search index
 				#
@@ -3104,6 +3113,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					return false;
 				} 
 				
+				SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
+                if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+                    $table = $this->tableName();
+                    $this->deriveHistoryTrackingCurrentValue();
+                    if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+                }
+				
 				if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 					# update search index
 					$va_index_options = array();
@@ -3223,6 +3239,15 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$vn_id = $this->getPrimaryKey();
+		
+		// We need to handle updating the current location _before_ we delete the record
+		// in case the record has dependent current values as dependencies cannot be calculated after the row is removed.
+		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+			$table = $this->tableName();
+			$this->deriveHistoryTrackingCurrentValue(['row_id' => $vn_id]);
+			if ($table::isHistoryTrackingCriterion($table)) {  $this->updateDependentHistoryTrackingCurrentValues(['row_id' => $vn_id, 'mode' => 'delete']); }
+		}
+		
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
 			$vb_we_set_transaction = false;
 			if (!$this->inTransaction()) {
@@ -6271,17 +6296,16 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	  * 
 	  */
 	public function htmlFormElementForSearch($po_request, $ps_field, $pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 		
 		if (isset($pa_options['width'])) {
 			if ($va_dim = caParseFormElementDimension($pa_options['width'])) {
 				if ($va_dim['type'] == 'pixels') {
-					unset($pa_options['width']);
-					$pa_options['maxPixelWidth'] = $va_dim['dimension'];
+					$pa_options['width'] = ceil($va_dim['dimension']/7);    // Temporary hack to approximate width
 				}
 			}
 		}
-		
+		print caGetOption('name', $pa_options, $ps_field);
 		$va_tmp = explode('.', $ps_field);
 		
 		if (in_array($va_tmp[0], array('created', 'modified'))) {
@@ -6296,14 +6320,20 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		
 		if ($va_tmp[0] != $this->tableName()) { return null; }
 		
+		if ((sizeof($va_tmp) == 4) && ($va_tmp[1] == 'current_value')) {
+            $is_current_value_element = $va_tmp[2]; // 2=policy
+            $va_tmp = [$va_tmp[0], $va_tmp[3]];
+            $ps_field = join(".", $va_tmp);
+        }
+		
 		if ($this->hasField($va_tmp[1])) {
 			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
 			return $this->htmlFormElement($va_tmp[1], '^ELEMENT', array_merge($pa_options, array(
-					'name' => caGetOption('name', $pa_options, $ps_field).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
+					'name' => ($n = caGetOption('name', $pa_options, $ps_field)).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
-					'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),
+					'value' => caGetOption([$ps_field, $n], $pa_options['values'], ''),     // use field as well as name when looking for default value
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 					'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 					'no_tooltips' => true
@@ -6332,8 +6362,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if (isset($pa_options['width'])) {
 			if ($va_dim = caParseFormElementDimension($pa_options['width'])) {
 				if ($va_dim['type'] == 'pixels') {
-					unset($pa_options['width']);
-					$pa_options['maxPixelWidth'] = $va_dim['dimension'];
+					$pa_options['width'] = ceil($va_dim['dimension']/7);    // Temporary hack to approximate width
 				}
 			}
 		}
