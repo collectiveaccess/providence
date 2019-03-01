@@ -2010,12 +2010,18 @@ if (!$pb_omit_editing_info) {
 					$vs_restrict_to_relationship_types = (is_array($pa_options['restrictToRelationshipTypes']) && sizeof($pa_options['restrictToRelationshipTypes'])) ? "restrictToRelationshipTypes=\"".join("|", $pa_options['restrictToRelationshipTypes'])."\"" : "";
 					
 					// resolve template relative to relationship
-					if (is_array($va_path = Datamodel::getPath($po_result->tableName(), $t_instance->tableName()))) {
+					if (is_array($va_path = Datamodel::getPath($po_result->tableName(), $rel_table = $t_instance->tableName()))) {
 						$va_path = array_keys($va_path);
 						
 						$vs_sort_dir_attr = '';
-						if ($vs_sort_attr = ($vs_sort = caGetOption('sort', $pa_options, null, ['castTo' => 'string'])) ? "sort=\"{$vs_sort}\"" : "") {
-						    $vs_sort_dir_attr = ($vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string'])) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
+						if ($vs_sort = caGetOption('sort', $pa_options, null, ['castTo' => 'string'])) {
+						    $vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string']);
+						} else { 
+						    $vs_sort = caGetOption('sort', $va_settings, null, ['castTo' => 'string']); 
+						    $vs_sort_dir = caGetOption('sortDirection', $va_settings, null, ['castTo' => 'string']);
+						}
+						if ($vs_sort_attr = ($vs_sort) ? "sort=\"{$rel_table}.{$vs_sort}\"" : "") {
+						    $vs_sort_dir_attr = ($vs_sort_dir) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
 						}
 						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
 
