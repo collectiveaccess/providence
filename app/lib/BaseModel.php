@@ -7886,9 +7886,9 @@ class BaseModel extends BaseObject {
 			while($qr_sort_res->nextHit()) {
 				$va_key = array();
 				foreach($pa_sort as $vs_sort) {
-					$va_key[] = $qr_sort_res->get($vs_sort);
+					$va_key[] = str_pad(substr($qr_sort_res->get($vs_sort), 10), 10, " ", STR_PAD_LEFT);
 				}
-				$va_sort_keys[$vn_i] = join("_", $va_key)."_{$vn_i}";
+				$va_sort_keys[$vn_i] = join("", $va_key)."".str_pad("{$vn_i}", 7, " ", STR_PAD_LEFT);
 				$vn_i++;
 			}
 			
