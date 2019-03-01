@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -324,7 +324,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
     public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
         global $g_ui_locale;
         
-        $ps_value = preg_replace("![^\d\.A-Za-z\"\'\"’” \/]+!", " ", $ps_value);
+        $ps_value = preg_replace("![^\d\.\,A-Za-z\"\'\"’” \/]+!", " ", $ps_value);
         $ps_value_proc = caConvertFractionalNumberToDecimal(trim($ps_value), $g_ui_locale);
         
         $va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('requireValue'));
