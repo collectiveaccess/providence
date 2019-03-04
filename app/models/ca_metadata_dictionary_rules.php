@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,6 +47,18 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 		'label' => _t('Rule display label'),
 		'description' => _t('Short label for this rule, used for display in issue lists.')
 	),
+	'showasprompt' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'height' => 1,
+		'default' => 0,
+		'options' => [
+			_t('Yes') => 1,
+			_t('No') => 0,
+		],
+		'label' => _t('Show as prompt'),
+		'description' => _t('Display violations of this rule as on-screen prompts.')
+	),
 	'violationMessage' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
@@ -62,30 +74,6 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 		'takesLocale' => true,
 		'label' => _t('Rule description'),
 		'description' => _t('Long form description of rule, used for display to user when presenting issues.')
-	),
-	'realtimeupdate' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_SELECT,
-		'height' => 1,
-		'default' => 0,
-		'options' => [
-			_t('Yes') => 1,
-			_t('No') => 0,
-		],
-		'label' => _t('Update in real-time'),
-		'description' => _t('Check rule as user enters data.')
-	),
-	'showasprompt' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_SELECT,
-		'height' => 1,
-		'default' => 0,
-		'options' => [
-			_t('Yes') => 1,
-			_t('No') => 0,
-		],
-		'label' => _t('Show as prompt'),
-		'description' => _t('Display violations of this rule as on-screen prompts.')
 	)
 );
 

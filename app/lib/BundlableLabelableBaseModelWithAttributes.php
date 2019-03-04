@@ -7568,7 +7568,6 @@ side. For many self-relations the direction determines the nature and display te
 	 				'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $vs_level),
 	 				'description' => $t_rule->getSetting('description'),
 	 				'showasprompt' => $show_as_prompt,
-	 				'realtimeupdate' => $t_rule->getSetting('realtimeupdate'),
 	 				'created_on' => $qr_res->get('created_on'),
 	 				'last_checked_on' => $qr_res->get('last_checked_on')
 	 			);
