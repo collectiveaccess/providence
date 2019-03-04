@@ -215,7 +215,7 @@ class BaseEditorController extends ActionController {
 
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
-		$this->getView()->setVar('show_show_notifications', (sizeof($violations_to_prompt) > 0));
+		$this->getView()->setVar('show_show_notifications', (is_array($violations_to_prompt) && (sizeof($violations_to_prompt) > 0)));
 
 		$this->render("{$vs_view}.php");
 	}
