@@ -1362,23 +1362,23 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
 			# be a simple string. In the future settings should be normalized such that any value that may be localized is an array key'ed by locale code,
 			# but since we're in the present we check for and handle all three current possibilities here.
-			$pa_bundle_settings['definition'][$g_ui_locale] = is_string($va_dictionary_entry['settings']['definition']) ? $va_dictionary_entry['settings']['definition'] : caGetOption([$g_ui_locale, $g_ui_locale_id], $va_dictionary_entry['settings']['definition'], null);
-			if ($va_dictionary_entry['settings']['mandatory']) {
-				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').$pa_bundle_settings['definition'][$g_ui_locale];
+			$pa_bundle_settings['definition'][$g_ui_locale] = caExtractSettingsValueByUserLocale('definition', $va_dictionary_entry['settings']);
+			if (caGetOption('mandatory', $va_dictionary_entry['settings'], false)) {
+				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').caExtractSettingsValueByUserLocale('definition', $pa_bundle_settings);
 			}
 			
 			$va_violations = $this->getMetadataDictionaryRuleViolations($dict_bundle_spec);
 			if (is_array($va_violations) && sizeof($va_violations)) {
 				$va_violation_text = array();
 				foreach($va_violations as $va_violation) {
-					$va_violation_text[] = "<li class='caMetadataDictionaryViolation'><span class='caMetadataDictionaryViolation".(ucfirst(strtolower($va_violation['level'])))."'>".$va_violation['levelDisplay'].'</span>: '.$va_violation['violationMessage']."</li>";
+					$va_violation_text[] = "<li class='caMetadataDictionaryViolation'><span class='caMetadataDictionaryViolation".(ucfirst(strtolower($va_violation['level'])))."'>".$va_violation['levelDisplay'].'</span>: '.caExtractSettingsValueByUserLocale('violationMessage', $va_violation)."</li>";
 				}
 				$pa_bundle_settings['definition'][$g_ui_locale] = "<div class='caMetadataDictionaryViolationsList'><div class='caMetadataDictionaryViolationsListHeading'>"._t('These problems require attention:')."</div><ol>".join("\n", $va_violation_text)."</ol></div>\n".$pa_bundle_settings['definition'][$g_ui_locale]."<br style='clear: both;'/>";
 			}
 		}
 		
 		// is label for this bundle forced in bundle settings?
-		$vs_label = $vs_label_text = caExtractSettingValueByLocale($pa_bundle_settings, 'label', $g_ui_locale);
+		$vs_label = $vs_label_text = caExtractSettingsValueByUserLocale('label', $pa_bundle_settings);
 		
 		// Set bundle level documentation URL
 		$vs_documentation_url =  trim((isset($pa_bundle_settings['documentation_url']) && $pa_bundle_settings['documentation_url']) ? $pa_bundle_settings['documentation_url']  : '');
@@ -1938,9 +1938,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		
-		if (is_array($va_violations) && sizeof($va_violations)) {
-			$vs_label .= "<img src='".$pa_options['request']->getThemeUrlPath()."/graphics/icons/warning_small.gif' style='margin-left: 5px;' onclick='jQuery(this).parent().find(\".caMetadataDictionaryDefinitionToggle\").click();  return false;'/>";
-		} 
+		//if (is_array($va_violations) && sizeof($va_violations)) {
+			//$vs_label .= "<img src='".$pa_options['request']->getThemeUrlPath()."/graphics/icons/warning_small.gif' style='margin-left: 5px;' onclick='jQuery(this).parent().find(\".caMetadataDictionaryDefinitionToggle\").click();  return false;'/>";
+		//} 
 
 		$vs_output = str_replace("^ELEMENT", $vs_element, $vs_display_format);
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);
@@ -1952,9 +1952,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// TODO: document this
 		$prompt = '';
 		$violations_to_prompt = [];
-		foreach($va_violations as $v) {
-			if(is_array($v) && isset($v['showasprompt']) && (bool)$v['showasprompt'] && ($v['bundle_name'] == $dict_bundle_spec)) {
-				$violations_to_prompt[] = $v;
+		if (is_array($va_violations)) {
+			foreach($va_violations as $v) {
+				if(is_array($v) && isset($v['showasprompt']) && (bool)$v['showasprompt'] && ($v['bundle_name'] == $dict_bundle_spec)) {
+					$violations_to_prompt[] = $v;
+				}
 			}
 		}
 		
@@ -7503,6 +7505,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param null|string $ps_bundle_name
 	 * @param array $options Options include:
 	 *		limitToShowAsPrompt = 
+	 *		screen_id = 
 	 *
 	 * @return array|null
 	 */
@@ -7511,6 +7514,13 @@ side. For many self-relations the direction determines the nature and display te
 	 	
 	 	$limit_to_show_as_prompt = caGetOption('limitToShowAsPrompt', $options, false);
 	 	
+	 	$bundles_on_screen = null;
+	 	if ($screen_id = caGetOption('screen_id', $options, null)) {
+	 		$t_screen = Datamodel::getInstance('ca_editor_ui_screens', true);
+	 		if (is_array($screen_placements = $t_screen->getPlacements(['screen_id' => $screen_id]))) {
+	 			$bundles_on_screen = array_map(function($v) { return preg_replace("!^ca_attribute_!", "", $v['bundle_name']); }, $screen_placements);
+	 		}
+	 	}
 	 	$o_db = $this->getDb();
 	 	
 	 	$va_sql_params = array($vn_id, $this->tableNum());
@@ -7525,7 +7535,7 @@ side. For many self-relations the direction determines the nature and display te
 	 	} 
 	 	
 	 	
-	 	$qr_res = $o_db->query($z="
+	 	$qr_res = $o_db->query("
 	 		SELECT *
 	 		FROM ca_metadata_dictionary_rule_violations cmdrv
 	 		INNER JOIN ca_metadata_dictionary_rules AS cmdr ON cmdr.rule_id = cmdrv.rule_id
@@ -7534,9 +7544,12 @@ side. For many self-relations the direction determines the nature and display te
 	 			cmdrv.row_id = ? AND cmdrv.table_num = ? {$vs_bundle_sql}
 	 	", $va_sql_params);
 	 	
-	 	$va_violations = array();
-	 	$va_rule_instances = array();
+	 	$va_violations = $va_rule_instances = [];
 	 	while($qr_res->nextRow()) {
+	 		$bundle_name = $qr_res->get('bundle_name'); 
+	 		$bundle_elements = explode('.', $bundle_name);
+	 		if (sizeof($bundle_elements) > 1) { array_shift($bundle_elements); }
+	 		if (is_array($bundles_on_screen) && !in_array(join(".", $bundle_elements), $bundles_on_screen)) { continue; }
 	 		$vn_rule_id = $qr_res->get('rule_id');
 	 		$t_rule = (isset($va_rule_instances[$vn_rule_id])) ? $va_rule_instances[$vn_rule_id] : ($va_rule_instances[$vn_rule_id] = new ca_metadata_dictionary_rules($vn_rule_id));
 	 	
@@ -7547,7 +7560,7 @@ side. For many self-relations the direction determines the nature and display te
 				$vn_violation_id = $qr_res->get('violation_id');
 	 			$va_violations[$vn_violation_id] = array(
 	 				'violation_id' => $vn_violation_id,
-	 				'bundle_name' => $qr_res->get('bundle_name'),
+	 				'bundle_name' => $bundle_name,
 	 				'label' => $t_rule->getSetting('label'),
 	 				'violationMessage' => $t_rule->getSetting('violationMessage'),
 	 				'code' => $qr_res->get('rule_code'),
