@@ -442,7 +442,7 @@ class BaseEditorController extends ActionController {
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
 		// Are there metadata dictionary alerts?
-		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true]);
+		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
 		$this->getView()->setVar('show_show_notifications', (sizeof($violations_to_prompt) > 0));
 		
 		$this->render('screen_html.php');
