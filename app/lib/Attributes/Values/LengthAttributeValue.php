@@ -199,7 +199,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                 default:
                 case 'metric':
                     $vs_value_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
-                    $vn_value_in_cm = (float)preg_replace("![^0-9\.]+!", "", $vs_value_in_cm);
+                    $vn_value_in_cm = (float)preg_replace("![^0-9\.\,]+!", "", $vs_value_in_cm);
                     
                     $vn_mm_threshold = $this->config->get('use_millimeters_for_display_up_to');
                     $vn_cm_threshold = $this->config->get('use_centimeters_for_display_up_to');
@@ -223,7 +223,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                     break;
                 case 'english':
                     $vs_value_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
-                    $vn_value_in_inches = (float)preg_replace("![^0-9\.]+!", "", $vs_value_in_inches);
+                    $vn_value_in_inches = (float)preg_replace("![^0-9\.\,]+!", "", $vs_value_in_inches);
                     
                     $vn_inch_threshold = $this->config->get('use_inches_for_display_up_to');
                     $vn_feet_threshold = $this->config->get('use_feet_for_display_up_to');
