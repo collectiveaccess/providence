@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,7 +86,13 @@
 	$pa_bundle_settings = $this->getVar('settings');
 	$vb_read_only		=	((isset($pa_bundle_settings['readonly']) && $pa_bundle_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
 	
-		
+	$hier_browser_width = ($pdim = caParseElementDimension(caGetOption('width', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
+	$hier_browser_height = ($pdim = caParseElementDimension(caGetOption('height', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
+	
+	$hier_browser_dims = [];
+	if ($hier_browser_width) { $hier_browser_dims[] = "width: {$hier_browser_width};"; }
+	if ($hier_browser_height) { $hier_browser_dims[] = "height: {$hier_browser_height};"; }
+	$hier_browser_dim_style = (sizeof($hier_browser_dims) > 0) ? "style='".join(" ", $hier_browser_dims)."'" : '';
 		
 	$va_errors = array();
 	if(is_array($va_action_errors = $this->request->getActionErrors('hierarchy_location'))) {
@@ -271,7 +277,7 @@
 							<?php print _t('Click %1 names to explore. Click on an arrow icon to open a %1 for editing.', $t_subject->getProperty('NAME_SINGULAR')); ?>
 					</div>
 					<div class="clear"><!-- empty --></div>
-					<div id="<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser" class="hierarchyBrowserSmall">
+					<div id="<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser" class="hierarchyBrowserSmall" <?php print $hier_browser_dim_style; ?>>
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierbrowser -->
 				</div>
@@ -288,7 +294,7 @@
 						<div id='<?php print $vs_id_prefix; ?>HierarchyBrowserSelectionMessage' class='hierarchyBrowserNewLocationMessage'><!-- Message specifying move destination is dynamically inserted here by ca.hierbrowser --></div>	
 					</div>
 					<div class="clear"><!-- empty --></div>
-					<div id="<?php print $vs_id_prefix; ?>MoveHierarchyBrowser" class="hierarchyBrowserSmall">
+					<div id="<?php print $vs_id_prefix; ?>MoveHierarchyBrowser" class="hierarchyBrowserSmall" <?php print $hier_browser_dim_style; ?>>
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierbrowser -->				
 <?php
@@ -359,7 +365,7 @@
 					</div>
 				</div>
 				<div class="clear"><!-- empty --></div>
-				<div id="<?php print $vs_id_prefix; ?>AddHierarchyBrowser" class="hierarchyBrowserSmall">
+				<div id="<?php print $vs_id_prefix; ?>AddHierarchyBrowser" class="hierarchyBrowserSmall" <?php print $hier_browser_dim_style; ?>>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierbrowser -->
 		</div>
@@ -385,7 +391,7 @@
 					</div>
 				</div>
 				<div class="clear"><!-- empty --></div>
-				<div id="<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser" class="hierarchyBrowserSmall">
+				<div id="<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser" class="hierarchyBrowserSmall" <?php print $hier_browser_dim_style; ?>>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierbrowser -->
 		</div>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -753,8 +753,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
 								'options' => array(
-									_t('bubbles (draggable)') => 'bubbles',
-									_t('list (not draggable)') => 'list'
+									_t('bubbles') => 'bubbles',
+									_t('list') => 'list'
 								),
 								'default' => 'bubbles',
 								'width' => "200px", 'height' => 1,

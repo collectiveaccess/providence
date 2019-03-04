@@ -486,6 +486,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Convert newlines to HTML'),
 			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
 		);
+		$va_settings['collapseSpaces'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Collapse multiple spaces'),
+			'description' => _t('Convert multiple spaces to a single space.')
+		);
 		$va_settings['useAsSingleValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

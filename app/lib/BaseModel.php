@@ -1349,7 +1349,7 @@ class BaseModel extends BaseObject {
 									}
 								} else {
 									$vm_orig_value = $vm_value;
-									$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
+									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
 									if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
 										$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()", $this->tableName().'.'.$vs_field);
 										return false;
@@ -7890,9 +7890,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			while($qr_sort_res->nextHit()) {
 				$va_key = array();
 				foreach($pa_sort as $vs_sort) {
-					$va_key[] = $qr_sort_res->get($vs_sort);
+					$va_key[] = str_pad(substr($qr_sort_res->get($vs_sort), 10), 10, " ", STR_PAD_LEFT);
 				}
-				$va_sort_keys[$vn_i] = join("_", $va_key)."_{$vn_i}";
+				$va_sort_keys[$vn_i] = join("", $va_key)."".str_pad("{$vn_i}", 7, " ", STR_PAD_LEFT);
 				$vn_i++;
 			}
 			
@@ -9873,6 +9873,7 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
 				unset($va_row[$vs_rel_pk]);
+				$va_row['source_info'] = '';
 				$va_row[$vs_item_pk] = $pn_to_id;
 				 
 				$t_item_rel->set($va_row);

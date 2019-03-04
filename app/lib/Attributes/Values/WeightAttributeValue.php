@@ -197,6 +197,8 @@
  			$ps_value = trim($ps_value);
  			global $g_ui_locale;
  			
+        	$ps_value = preg_replace("![^\d\.\,A-Za-z\"\'\"’” \/]+!", " ", $ps_value);
+ 			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('requireValue'));
  			if (!$va_settings['requireValue'] && !trim($ps_value)) {
  				return array(
