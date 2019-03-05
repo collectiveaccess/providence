@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,7 +141,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			'reference-black'	=> 'W',
 			'reference-white'	=> 'W',
 			'no_upsampling'		=> 'W',
-			'faces'				=> 'W',
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
@@ -446,7 +445,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 					$this->properties["filesize"] = filesize($filepath);
 					$this->properties["bitdepth"] = $this->handle['depth'];
 					$this->properties["resolution"] = $this->handle['resolution'];
-					$this->properties["faces"] = $this->handle['faces'];
 					
 					$this->ohandle = $this->handle;
 					
@@ -649,59 +647,46 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 					);
 					
 					if ($do_fill_box_crop) {
-						// use face detection info to intelligently crop
-							if(is_array($this->properties['faces']) && sizeof($this->properties['faces'])) {
-								$va_info = array_shift($this->properties['faces']);
-								$crop_from_offset_x = ceil($va_info['x'] * (($scale_factor_w > $scale_factor_h) ? $scale_factor_w : $scale_factor_h));
-								$crop_from_offset_x -= ceil(0.15 * $parameters["width"]);	// since face will be tightly cropped give it some room
-								$crop_from_offset_y = ceil($va_info['y'] * (($scale_factor_w > $scale_factor_h) ? $scale_factor_w : $scale_factor_h));
-								$crop_from_offset_y -= ceil(0.15 * $parameters["height"]);	// since face will be tightly cropped give it some room
+						switch($crop_from) {
+							case 'north_west':
+								$crop_from_offset_y = 0;
+								$crop_from_offset_x = $w - $parameters["width"];
+								break;
+							case 'south_east':
+								$crop_from_offset_x = 0;
+								$crop_from_offset_y = $h - $parameters["height"];
+								break;
+							case 'south_west':
+								$crop_from_offset_x = $w - $parameters["width"];
+								$crop_from_offset_y = $h - $parameters["height"];
+								break;
+							case 'random':
+								$crop_from_offset_x = rand(0, $w - $parameters["width"]);
+								$crop_from_offset_y = rand(0, $h - $parameters["height"]);
+								break;
+							case 'north_east':
+								$crop_from_offset_x = $crop_from_offset_y = 0;
+								break;
+							case 'center':
+							default:
+								$crop_from_offset_x = $crop_from_offset_y = 0;
 								
-								// Don't try to crop beyond image boundaries, you just end up scaling the image, often awkwardly
-								if ($crop_from_offset_x > ($w - $parameters["width"])) { $crop_from_offset_x = 0; }
-								if ($crop_from_offset_y > ($h - $parameters["height"])) { $crop_from_offset_y = 0; }
-							} else {
-								switch($crop_from) {
-									case 'north_west':
-										$crop_from_offset_y = 0;
-										$crop_from_offset_x = $w - $parameters["width"];
-										break;
-									case 'south_east':
-										$crop_from_offset_x = 0;
-										$crop_from_offset_y = $h - $parameters["height"];
-										break;
-									case 'south_west':
-										$crop_from_offset_x = $w - $parameters["width"];
-										$crop_from_offset_y = $h - $parameters["height"];
-										break;
-									case 'random':
-										$crop_from_offset_x = rand(0, $w - $parameters["width"]);
-										$crop_from_offset_y = rand(0, $h - $parameters["height"]);
-										break;
-									case 'north_east':
-										$crop_from_offset_x = $crop_from_offset_y = 0;
-										break;
-									case 'center':
-									default:
-										$crop_from_offset_x = $crop_from_offset_y = 0;
-										
-										// Get image center
-										$vn_center_x = caGetOption('_centerX', $parameters, 0.5);
-										$vn_center_y = caGetOption('_centerY', $parameters, 0.5);
-										if ($w > $parameters["width"]) {
-											$crop_from_offset_x = ceil($w * $vn_center_x) - ($parameters["width"]/2);
-											if (($crop_from_offset_x + $parameters["width"]) > $w) { $crop_from_offset_x = $w - $parameters["width"]; }
-											if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
-										} else {
-											if ($h > $parameters["height"]) {
-												$crop_from_offset_y = ceil($h * $vn_center_y) - ($parameters["height"]/2);
-												if (($crop_from_offset_y + $parameters["height"]) > $h) { $crop_from_offset_y = $h - $parameters["height"]; }
-												if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
-											}
-										}
-										break;
+								// Get image center
+								$vn_center_x = caGetOption('_centerX', $parameters, 0.5);
+								$vn_center_y = caGetOption('_centerY', $parameters, 0.5);
+								if ($w > $parameters["width"]) {
+									$crop_from_offset_x = ceil($w * $vn_center_x) - ($parameters["width"]/2);
+									if (($crop_from_offset_x + $parameters["width"]) > $w) { $crop_from_offset_x = $w - $parameters["width"]; }
+									if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
+								} else {
+									if ($h > $parameters["height"]) {
+										$crop_from_offset_y = ceil($h * $vn_center_y) - ($parameters["height"]/2);
+										if (($crop_from_offset_y + $parameters["height"]) > $h) { $crop_from_offset_y = $h - $parameters["height"]; }
+										if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
+									}
 								}
-							}
+								break;
+						}
 						$this->handle['ops'][] = array(
 							'op' => 'crop',
 							'width' => $parameters["width"],
@@ -991,7 +976,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->handle['mimetype'];
 			$this->properties["typename"] = $this->handle['magick'];
-			$this->properties["faces"] = $this->handle['faces'];
 			return true;
 		}
 		return false;
@@ -1159,9 +1143,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 							break;
 					}
 				}
-			}
-			
-			$va_faces = caDetectFaces($ps_filepath, $va_tmp[1], $va_tmp[2]);			
+			}		
 			
 			return array(
 				'mimetype' => $this->magickToMimeType($va_tmp[0]),
@@ -1174,7 +1156,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 					'y' => $va_tmp[5]
 				),
 				'ops' => $this->properties["orientation_rotate"] ? array(0 => array('op' => 'strip')) : array(),
-				'faces' => $va_faces,
 				'filepath' => $ps_filepath
 			);
 		}
