@@ -917,23 +917,28 @@
 						$t_violation = $t_found;
 					}
 
-					if (!$vb_skip && ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
-						// violation
-						if ($t_violation->getPrimaryKey()) {
-							$t_violation->setMode(ACCESS_WRITE);
-							$t_violation->update();
-						} else {
-							$t_violation->setMode(ACCESS_WRITE);
-							$t_violation->set('rule_id', $va_rule['rule_id']);
-							$t_violation->set('table_num', $t_instance->tableNum());
-							$t_violation->set('row_id', $qr_records->getPrimaryKey());
-							$t_violation->insert();
-						}
-					} else {
-						if ($t_violation->getPrimaryKey()) {
-							$t_violation->delete(true);		// remove violation
-						}
-					}
+                    try {
+                        if (!$vb_skip && ExpressionParser::evaluate(html_entity_decode($va_rule['expression']), $va_row)) {
+                            // violation
+                            if ($t_violation->getPrimaryKey()) {
+                                $t_violation->setMode(ACCESS_WRITE);
+                                $t_violation->update();
+                            } else {
+                                $t_violation->setMode(ACCESS_WRITE);
+                                $t_violation->set('rule_id', $va_rule['rule_id']);
+                                $t_violation->set('table_num', $t_instance->tableNum());
+                                $t_violation->set('row_id', $qr_records->getPrimaryKey());
+                                $t_violation->insert();
+                            }
+                        } else {
+                            if ($t_violation->getPrimaryKey()) {
+                                $t_violation->delete(true);		// remove violation
+                            }
+                        }
+                    } catch (Exception $e) {
+                        // pass
+                        print $e->getMessagE()."\n";
+                    }
 				}
 			}
 			print CLIProgressBar::finish();
