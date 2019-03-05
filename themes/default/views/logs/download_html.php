@@ -96,7 +96,7 @@
 				<tr>
 					<td colspan='9'>
 						<div align="center">
-							<?php print (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t('Enter a date to display searches from above'); ?>
+							<?php print (trim($this->getVar('search_list_search'))) ? _t('No downloads found') : _t('Enter a date to display downloads from above'); ?>
 						</div>
 					</td>
 				</tr>
@@ -170,7 +170,7 @@
 				<tr>
 					<td colspan='9'>
 						<div align="center">
-							<?php print (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t('Enter a date to display searches from above'); ?>
+							<?php print (trim($this->getVar('search_list_search'))) ? _t('No downloads found') : _t('Enter a date to display downloads from above'); ?>
 						</div>
 					</td>
 				</tr>
