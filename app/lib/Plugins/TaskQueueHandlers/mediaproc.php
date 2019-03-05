@@ -208,25 +208,24 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 			}
 			
 			$va_old_media_to_delete = array();
-			
+			if(!file_exists($vs_input_file)) {
+                $this->error->setError(505, _t("Input media file '%1' does not exist", $vs_input_file),"mediaproc->process()");
+                $o_media->cleanup();
+                return false;
+            }
+            if(!is_readable($vs_input_file)) {
+                $this->error->setError(506, _t("Denied permission to read input media file '%1'", $vs_input_file),"mediaproc->process()");
+                $o_media->cleanup();
+                return false;
+            }
+            if (!$o_media->read($vs_input_file)) {
+                $this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
+                $o_media->cleanup();
+                return false;
+            }
+            
 			foreach($va_versions as $v => $va_version_settings) {
 				$vs_use_icon = null;
-				
-				if(!file_exists($vs_input_file)) {
-					$this->error->setError(505, _t("Input media file '%1' does not exist", $vs_input_file),"mediaproc->process()");
-					$o_media->cleanup();
-					return false;
-				}
-				if(!is_readable($vs_input_file)) {
-					$this->error->setError(506, _t("Denied permission to read input media file '%1'", $vs_input_file),"mediaproc->process()");
-					$o_media->cleanup();
-					return false;
-				}
-				if (!$o_media->read($vs_input_file)) {
-					$this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
-					$o_media->cleanup();
-					return false;
-				}
 				
 				$vs_rule 			= isset($va_version_info[$v]['RULE']) ? $va_version_info[$v]['RULE'] : '';
 				$va_rules 			= $o_media_proc_settings->getMediaTransformationRule($vs_rule);
