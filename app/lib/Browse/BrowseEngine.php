@@ -635,7 +635,7 @@
 				case 'violations':
 					if (!($t_rule = Datamodel::getInstanceByTableName('ca_metadata_dictionary_rules', true))) { break; }
 					if ($t_rule->load(array('rule_code' => $pn_row_id))) {
-						return $t_rule->getSetting('label');
+						return caExtractSettingsValueByUserLocale('label', $t_rule->getSettings());
 					}
 					return urldecode($pn_row_id);
 					break;

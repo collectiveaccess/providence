@@ -1207,15 +1207,47 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					TooltipManager::add("#caInspectorChangeDate", "<h2>"._t('Last changed on')."</h2>"._t('Last changed on %1', caGetLocalizedDate($va_last_change['timestamp'], array('dateFormat' => 'delimited'))));
 				}
 				
-				if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($va_violations = $t_item->getMetadataDictionaryRuleViolations()) && (($vn_num_violations = (sizeof($va_violations))) > 0)) {
-					$va_violation_messages = array();
+				if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($va_violations = $t_item->getMetadataDictionaryRuleViolations()) && (($total_num_violations = (sizeof($va_violations))) > 0)) {
+					if (!is_array($violations_for_current_screen = $t_item->getMetadataDictionaryRuleViolations(null, ['screen_id' => $po_view->request->getActionExtra()]))) { $violations_for_current_screen = []; }
+					$total_num_violations_for_current_screen = sizeof($violations_for_current_screen);
+					
+					$va_violation_messages = [];
 					foreach($va_violations as $vn_violation_id => $va_violation) {
 						$vs_label = $t_item->getDisplayLabel($va_violation['bundle_name']);
-						$va_violation_messages[] = "<li><em><u>{$vs_label}</u></em> ".caExtractSettingsValueByUserLocale('violationMessage', $va_violation)."</li>";
+						$screen = '';
+						$in_this_tab = false;
+						if (isset($violations_for_current_screen[$vn_violation_id])) { 
+						    $screen = _t('(on this tab)');
+						    $in_this_tab = true;
+						} else {
+						    $b = explode(".", $va_violation['bundle_name']);
+						    $bundle = array_pop($b);
+						    
+						    $placements = $t_ui->getPlacementsForBundle($bundle, $po_view->request, []);
+						    if (!is_array($placements) || !sizeof($placements)) {
+						        $placements = $t_ui->getPlacementsForBundle("ca_attribute_{$bundle}", $po_view->request, []);
+						    }
+						    if(is_array($placements)) {
+						        $placement = array_shift($placements);
+						        $screen = _t("(on tab <em>%1</em>)", $placement['screen_label']);
+						    }
+						}
+						$va_violation_messages[] = "<li ".($in_this_tab ? "class='caMetadataDictionaryViolationInCurrentTab'" : "class='caMetadataDictionaryViolationNotInCurrentTab'")."><em><u>{$vs_label}</u></em> ".caExtractSettingsValueByUserLocale('violationMessage', $va_violation)." {$screen}</li>";
 					}
 					
-					$vs_more_info .= "<div id='caInspectorViolationsList'>".($vs_num_violations_display = "<img src='".$po_view->request->getThemeUrlPath()."/graphics/icons/warning_small.gif' border='0'/> ".(($vn_num_violations > 1) ? _t('%1 problems require attention', $vn_num_violations) : _t('%1 problem requires attention', $vn_num_violations)))."</div>\n"; 
-					TooltipManager::add("#caInspectorViolationsList", "<h2>{$vs_num_violations_display}</h2><ol>".join("\n", $va_violation_messages))."</ol>\n";
+					$vs_num_violations_display = null;
+					if($total_num_violations_for_current_screen > 0) {
+					    if ($total_num_violations_for_current_screen != $total_num_violations) {
+					        $vs_more_info .= "<div id='caInspectorViolationsList'>".caNavIcon(__CA_NAV_ICON_ALERT__, "14px")." ".($vs_num_violations_display = (($total_num_violations_for_current_screen > 1) ? _t('%1 problems on this tab require attention (of %2 total)', $total_num_violations_for_current_screen, $total_num_violations) : _t('%1 problem on this tab requires attention (of %2 total)', $total_num_violations_for_current_screen, $total_num_violations)))."</div>\n"; 
+					    } else {
+					        $vs_more_info .= "<div id='caInspectorViolationsList'>".caNavIcon(__CA_NAV_ICON_ALERT__, "14px")." ".($vs_num_violations_display = (($total_num_violations_for_current_screen > 1) ? _t('%1 problems on this tab require attention', $total_num_violations) : _t('%1 problem on this tab requires attention', $total_num_violations)))."</div>\n"; 
+					    }
+					} else {
+					    $vs_more_info .= "<div id='caInspectorViolationsList'>".caNavIcon(__CA_NAV_ICON_ALERT__, "14px")." ".($vs_num_violations_display = (($total_num_violations > 1) ? _t('%1 problems require attention', $total_num_violations) : _t('%1 problem requires attention', $total_num_violations)))."</div>\n"; 
+					}
+					if($vs_num_violations_display) { 
+					    TooltipManager::add("#caInspectorViolationsList", "<h2>{$vs_num_violations_display}</h2><ol>".join("\n", $va_violation_messages))."</ol>\n";
+				    }
 				}
 				
 				$vs_more_info .= "</div>\n";
