@@ -898,7 +898,8 @@
 				while($qr_records->nextHit()) {
 					$vn_count++;
 
-					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", $va_rule['rule_settings']['label'], $vn_rule_num, $vn_num_rules, $vn_count));
+                    if(!is_array($va_rule['rule_settings'])) { $va_rule['rule_settings'] = []; }
+					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", caExtractSettingsValueByUserLocale('label', $va_rule['rule_settings']), $vn_rule_num, $vn_num_rules, $vn_count));
 					$t_violation->clear();
 					$vn_id = $qr_records->getPrimaryKey();
 
@@ -937,7 +938,6 @@
                         }
                     } catch (Exception $e) {
                         // pass
-                        print $e->getMessagE()."\n";
                     }
 				}
 			}

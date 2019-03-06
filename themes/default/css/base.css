@@ -6910,6 +6910,14 @@ div.caMetadataDictionaryViolationsListHeading {
 	color: #333;
 }
 
+.caMetadataDictionaryViolationInCurrentTab {
+	color: #ffffff;
+}
+
+.caMetadataDictionaryViolationNotInCurrentTab {
+	color: #999999;
+}
+
 /** Metadata importer **/
 table.caFileSourceControls {
 	width: 700px
