@@ -635,7 +635,7 @@
 				case 'violations':
 					if (!($t_rule = Datamodel::getInstanceByTableName('ca_metadata_dictionary_rules', true))) { break; }
 					if ($t_rule->load(array('rule_code' => $pn_row_id))) {
-						return $t_rule->getSetting('label');
+						return caExtractSettingsValueByUserLocale('label', $t_rule->getSettings());
 					}
 					return urldecode($pn_row_id);
 					break;
@@ -4579,7 +4579,7 @@
 						$t_rule = new ca_metadata_dictionary_rules();
 						while($qr_res->nextRow()) {
 							if ($t_rule->load($qr_res->get('rule_id'))) {
-								if (!($vs_val = trim($t_rule->getSetting('label')))) { continue; }
+								if (!($vs_val = trim(caExtractSettingsValueByUserLocale('label', $t_rule->getSettings())))) { continue; }
 								$vs_code = $t_rule->get('rule_code');
 								if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 

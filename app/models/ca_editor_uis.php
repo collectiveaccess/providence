@@ -744,7 +744,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		    }
 		}
 		
-		
 		$va_bundles = [];
 		$qr_res = $o_db->query("
 			SELECT *
@@ -757,6 +756,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		", $va_params);
 		
 		$va_placements = [];
+		$screen_ids = [];
 		while ($qr_res->nextRow()) {
 			$va_tmp = $qr_res->getRow();
 			$va_tmp['settings'] = $qr_res->getVars('settings');
@@ -774,10 +774,14 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				$pn_type_id && is_array($va_types) && sizeof($va_types) &&
 				!in_array($pn_type_id, $va_types)
 			) { continue; }
-				
+			$screen_ids[$va_tmp['screen_id']] = true;
 			$va_placements[] = $va_tmp;
 		}
-		
+		if(sizeof($screen_ids) > 0) {
+		    $t_screen = Datamodel::getInstance('ca_editor_ui_screens', true);
+		    $labels = $t_screen->getPreferredDisplayLabelsForIDs(array_keys($screen_ids));
+		    $va_placements = array_map(function($v) use ($labels) { $v['screen_label'] = $labels[$v['screen_id']]; return $v; }, $va_placements);
+		}
 		return self::$s_screen_bundle_cache[$vs_cache_key] = $va_placements;
 	}
 	# ----------------------------------------
