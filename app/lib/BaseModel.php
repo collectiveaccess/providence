@@ -10098,6 +10098,79 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Check if relationships exists between the currently loaded row and rows in the specified table.
+	 * Returns a list of tables for which relationships exist.
+	 *
+	 * @param string $table Table name or number 
+	 * @param array $options Options are:
+	 *		restrictToTypes = Only consider relationships that link to related rows with the specified types. [Default is null; consider all rows]
+	 *      restrictToRelationshipTypes = Only consider relationships with the specified types. [Default is null; consider all relationships]
+	 *
+	 * @return mixed The number of relationships, false is there are no relationships, null if $table is not relatable to the current table.
+	 */
+	public function hasRelationshipsWith($table, $options=null) {
+		$many_to_many_relations = Datamodel::getManyToManyRelations($this->tableName());
+		
+		if(is_array($restrict_to_types = caGetOption('restrictToTypes', $options, null))) {
+		    $restrict_to_types = caMakeTypeIDList($table, $restrict_to_types);
+		}
+		
+		$restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $options, null);
+		
+		if (is_array($many_to_many_relations)) {
+			$o_db = $this->getDb();
+			$id = (int)$this->getPrimaryKey();
+			$o_trans = $this->getTransaction();
+			$tables = [];
+			foreach($many_to_many_relations as $rel_info) {
+				$rel_pk = Datamodel::primaryKey($many_table = $rel_info['linking_table']);
+				
+		        $restrict_to_relationship_type_ids = null;
+                if(is_array($restrict_to_relationship_types)) {
+                    $restrict_to_relationship_type_ids = caMakeRelationshipTypeIDList($table, $restrict_to_relationship_types);
+                }
+                
+                $sql = null;
+                $params = [$id];
+			    if ($rel_info['left_table'] == $table) {
+			        $sql = "
+						SELECT l.{$rel_pk}
+						FROM {$many_table} l
+						INNER JOIN {$rel_info['left_table']} AS r ON r.{$rel_info['left_table_field']} = l.{$rel_info['linking_table_left_field']}
+						WHERE
+							({$rel_info['right_table_field']} = ?)";
+			    } elseif($rel_info['right_table'] == $table) {
+			        $sql = "
+						SELECT l.{$rel_pk}
+						FROM {$many_table} l
+						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = l.{$rel_info['linking_table_right_field']}
+						WHERE
+							({$rel_info['left_table_field']} = ?)";
+			    } else {
+			        continue;
+			    }
+			    if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
+			        $sql .= " AND r.type_id IN (?)";
+			        $params[] = $restrict_to_types;
+			    }
+			    if (is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types)) {
+			        $sql .= " AND l.type_id IN (?)";
+			        $params[] = $restrict_to_relationship_types;
+			    }
+			    
+			    $qr = $o_db->query($sql, $params);
+			    
+			    if (($count = $qr->numRows()) > 0) {
+                    return $count;
+                }
+		    }
+		    return false;
+		}
+		
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	public function getDefaultLocaleList() {
