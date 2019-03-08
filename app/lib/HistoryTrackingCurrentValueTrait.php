@@ -43,6 +43,16 @@
 		 */
 		static $s_history_tracking_current_value_type_configuration_cache = [];
 		
+		/**
+		 *
+		 */
+		static $s_history_tracking_newly_added_current_values = [];
+		
+		/**
+		 *
+		 */
+		static $s_history_tracking_deleted_current_values = [];
+
 		# ------------------------------------------------------
 		/**
 		 *
@@ -270,11 +280,13 @@
 		 * Return policy config
 		 *
 		 * @param string $policy
+		 * @param string $key
 		 *
 		 * @return array Policy or null if policy does not exist.
 		 */
-		static public function getHistoryTrackingCurrentValuePolicy($policy) {
+		static public function getHistoryTrackingCurrentValuePolicy($policy, $key=null) {
 			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies'][$policy])) {
+				if ($key) { return isset($history_tracking_policies['policies'][$policy][$key]) ? $history_tracking_policies['policies'][$policy][$key] : null; }
 				return $history_tracking_policies['policies'][$policy];
 			}
 			return null;
@@ -306,11 +318,15 @@
 		/**
 		 * Return policy to use when displaying tracking current value in editor inspector
 		 *
-		 * @return string Policy name
+		 * @param string $key Policy data to return. If omitted the entire policy information array is returned. 
+		 *
+		 * @return mixed Policy data array, or scalar value if $key is defined.
 		 */
-		public function getInspectorHistoryTrackingDisplayPolicy() {
+		public function getInspectorHistoryTrackingDisplayPolicy($key=null) {
 			$table = $this->tableName();
 			$type_code = $this->getTypeCode();
+			
+			$data = null;
 			
 			$display_config = $this->getAppConfig()->get('inspector_tracking_displays');
 			if (!isset($display_config[$table])) { return null; }
@@ -319,11 +335,14 @@
 			if (!isset($display_config[$table][$type_code])) { 
 				// Last ditch, try old config option. If it is set return it as label with default policy.
 				if ($old_config_value = $this->getAppConfig()->get("{$table}_inspector_current_location_label")) { 
-					return ['label' => $old_config_value, 'policy' => $this->getDefaultHistoryTrackingCurrentValuePolicy()]; 
+					$data = ['label' => $old_config_value, 'policy' => $this->getDefaultHistoryTrackingCurrentValuePolicy()]; 
 				}
-				return null; 
+				
+				if ($key) { return isset($data[$key]) ? $data[$key] : null; }
+				return $data; 
 			}
 			
+			if ($key) { return isset($display_config[$table][$type_code][$key]) ? $display_config[$table][$type_code][$key] : null; }
 			return $display_config[$table][$type_code];
 		}
 		# ------------------------------------------------------
@@ -395,10 +414,22 @@
 			$subject_table = $this->tableName();
 			
 			$is_future = caGetOption('isFuture', $options, null);
-			
 			if (is_null($values) && !$is_future) {			
 				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance'])) {
-					$l->delete();
+					$l->setDb($this->getDb());	
+					self::$s_history_tracking_deleted_current_values[$l->get('tracked_table_num')][$l->get('tracked_row_id')][$policy] = 
+					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
+					        ['table_num' => $l->get('table_num'), 'row_id' => $l->get('row_id')];
+					
+					$l->setMode(ACCESS_WRITE);
+				    if (!($rc = $l->delete())) {
+                        $this->errors = $l->errors;
+                        return false;
+                    }
+					
+					if ($o_indexer = $this->getSearchIndexer()) {
+                        $o_indexer->updateCurrentValueIndexing($policy, $subject_table_num, $row_id, []);
+                    }
 					return true;
 				}
 				return null;
@@ -422,11 +453,37 @@
 				throw new ApplicationException(_t('Invalid subject row id'));
 			}
 			
-			if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance'])) {
-				$l->delete();
+			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays'])) {
+				foreach($ls as $l) {
+				    if((bool)$l['is_future']) { continue; }
+				    if (
+				        (($l['tracked_table_num']) == $values['tracked_table_num']) && (($l['tracked_row_id']) == $values['tracked_row_id']) && (($l['tracked_type_id']) == $values['tracked_type_id']) &&
+				        (($l['current_table_num']) == $values['current_table_num']) && (($l['current_row_id']) == $values['current_row_id']) && (($l['current_type_id']) == $values['current_type_id'])
+				    ) {
+				        // current value is already set
+				        self::$s_history_tracking_newly_added_current_values[$values['tracked_table_num']][$values['tracked_row_id']][$policy] = 
+                            self::$s_history_tracking_newly_added_current_values[$values['current_table_num']][$values['current_row_id']][$policy] = 
+                                ['table_num' => $subject_table_num, 'row_id' => $row_id];
+                                
+				        return true;
+				    }
+				    self::$s_history_tracking_deleted_current_values[$l['tracked_table_num']][$l['tracked_row_id']][$policy] = 
+					    self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
+					        ['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
+					        
+					$t_l = new ca_history_tracking_current_values($l['tracking_id']);
+					$t_l->setDb($this->getDb());	
+					$t_l->setMode(ACCESS_WRITE);
+				    if (!($rc = $t_l->delete())) {
+                        $this->errors = $t_l->errors;
+                        return false;
+                    }
+				}
 			}
 		
 			$e = new ca_history_tracking_current_values();
+			$e->setDb($this->getDb());	
+			$e->setMode(ACCESS_WRITE);
 			$e->set([
 				'policy' => $policy,
 				'table_num' => $subject_table_num, 
@@ -440,11 +497,21 @@
 				'tracked_row_id' => $values['tracked_row_id'],
 				'is_future' => $is_future
 			]);
+			
 			if (!($rc = $e->insert())) {
 				$this->errors = $e->errors;
 				return false;
 			}
-
+			
+			self::$s_history_tracking_newly_added_current_values[$values['tracked_table_num']][$values['tracked_row_id']][$policy] = 
+					    self::$s_history_tracking_newly_added_current_values[$values['current_table_num']][$values['current_row_id']][$policy] = 
+					        ['table_num' => $subject_table_num, 'row_id' => $row_id];
+			
+			
+			// Update current value indexing for this row
+			if ($o_indexer = $this->getSearchIndexer()) {
+			    $o_indexer->updateCurrentValueIndexing($policy, $subject_table_num, $row_id, []);
+			}
 			return $rc;
 		}
 		# ------------------------------------------------------
@@ -669,6 +736,19 @@
 			$reltables = array_merge(array_keys($onerels), array_values($manyrels_tablenames));
 	
 			return in_array($table, array_unique(array_merge($reltables, $basetables)));
+		}
+		
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getCurrentValueForDisplay($policy=null, $options=null) {
+		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+                $current_value = array_shift(array_shift($history));
+                return isset($current_value['display']) ? $current_value['display'] : null;
+            }
+            return null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -2769,6 +2849,52 @@
 			);
 			ExternalCache::save($cache_key, $additional_settings, 'historyTrackingEditorBundleSettingsData');
 			return $additional_settings;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return list of rows which have the specified current value. The returned array is keyed on policy, then table number and finally row_id.
+		 *
+		 * @param int $table_num Table number
+		 * @param int $row_id Row_id
+		 *
+		 * @return array
+		 */
+		static public function getDependentCurrentValues($table_num, $row_id) {
+		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], ['returnAs' => 'arrays']);
+		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], ['returnAs' => 'arrays']);
+		    
+		    $rows = array_reduce(array_merge($current, $tracked), function($c, $i) { if (!$i['is_future']) { $c[$i['policy']][$i['table_num']][$i['row_id']] = true; } return $c; }, []);
+		    
+		    $newly_added = self::getNewlyAddedCurrentValues();
+		    $deleted = self::getDeletedCurrentValues();
+		    
+		    if (is_array($newly_added[$table_num][$row_id])) {
+		        foreach($newly_added[$table_num][$row_id] as $p => $was_current) {
+		            $rows[$p][$was_current['table_num']][$was_current['row_id']] = true;
+		        }
+		    }
+		    if (is_array($deleted)) {
+		        foreach($deleted as $t => $rids) {
+		            foreach($rids as $r => $p) {
+		                unset($rows[$t][$r][$p]); 
+		            }
+		        }
+		    }
+		    return $rows;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		static public function getNewlyAddedCurrentValues() {
+			return self::$s_history_tracking_newly_added_current_values;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		static public function getDeletedCurrentValues() {
+			return self::$s_history_tracking_deleted_current_values;
 		}
 		# ------------------------------------------------------
 	}

@@ -630,7 +630,9 @@
 								if (is_array($vm_value)) {
 									$va_trans_vals = [];
 									foreach($vm_value as $vn_j => $vs_value) {
-										if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
+									    if (is_numeric($vs_value)) {
+									        $va_trans_vals[] = (int)$vs_value;
+										} elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
 											$va_trans_vals[] = $vn_id;
 										}
 										$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];

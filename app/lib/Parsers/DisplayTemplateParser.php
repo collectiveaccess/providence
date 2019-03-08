@@ -750,7 +750,8 @@ class DisplayTemplateParser {
                                         if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								        $va_relative_ids = array_values($va_relative_ids);
                                         
-								        $va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))));
+                                        $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), $x=array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
+								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
 								    }
 									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
@@ -1718,7 +1719,7 @@ class DisplayTemplateParser {
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$vs_tag_proc = preg_quote($vs_tag, '/');
-				$ps_template = preg_replace("/\^(?={$vs_tag_proc}[^A-Za-z0-9_]+|{$vs_tag_proc}$){$vs_tag_proc}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
+				$ps_template = preg_replace("/[\{]{0,1}\^(?={$vs_tag_proc}[^A-Za-z0-9_]+|{$vs_tag_proc}$){$vs_tag_proc}[\}]{0,1}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
 			$pa_options['tagIndex']++;
 		}
@@ -1739,13 +1740,41 @@ class DisplayTemplateParser {
 	    $vb_omit_repeating_units_for_measurements_in_templates = (bool)$o_dim_config->get('omit_repeating_units_for_measurements_in_templates');
 	    
 	    $vs_last_units = null;
+	    
+        $force_english_units = $force_metric_units = null;
+	    foreach(array_reverse($va_elements) as $vs_element) {
+            $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
+            $va_directives = explode('~', $vs_element);
+            $vs_spec = array_shift($va_directives);
+	        $vo_measurement = caParseLengthDimension($pa_vals[$vs_spec]);
+	        
+	        $in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+	        $in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+	        
+	        if (!$force_english_units) {
+                if ((($threshold = $o_dim_config->get('force_feet_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'ft';
+                } elseif ((($threshold = $o_dim_config->get('force_inches_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'in';
+                }
+            }
+            if (!$force_metric_units) {
+                if ((($threshold = $o_dim_config->get('force_meters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'm';
+                } elseif ((($threshold = $o_dim_config->get('force_centimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'cm';
+                } elseif ((($threshold = $o_dim_config->get('force_millimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'mm';
+                }
+            }
+        }
         
         $j = 1;
         foreach(array_reverse($va_elements) as $vs_element) {
             $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
             $va_directives = explode('~', $vs_element);
             $vs_spec = array_shift($va_directives);
-            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives);
+            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives, ['forceEnglishUnits' => $force_english_units,  'forceMetricUnits' => $force_metric_units]);
             $va_val = ['val' => $vs_val, 'proc' => $vs_val, 'units' => null];
            
             if ($vb_omit_repeating_units_for_measurements_in_templates) {

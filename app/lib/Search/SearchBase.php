@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -108,13 +108,17 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			return $this->opo_db;
 		}
 		# ------------------------------------------------
-		# Utils
+		# Utilities
 		# ------------------------------------------------
 		/**
 		 * Fetch list of fields to index for the subject table
 		 *
 		 * @param mixed $pm_subject_table Name or number of table indexing is to be applied to
 		 * @param mixed $pm_content_table Name or number of table containing content being indexed. [Default is $pm_subject_table]
+		 * @param array $pa_options Options include:
+		 *      currentValueFields = Return fields for current value indexing instead of standard indexing field set. [Default is false]
+		 *      clearCache = Clear field cache. [Default is false]
+		 *      intrinsicOnly = Return only intrinsic fields. [Default is false]
 		 *
 		 * @return array
 		 */
@@ -146,56 +150,84 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = null;
 			}
 	
-			$va_fields_to_index = $va_info[$vs_content_table]['fields'];
-	
+	        if ($current_value_fields_only = caGetOption('currentValueFields', $pa_options, false)) {
+	            $va_fields_to_index = is_array($va_info[$vs_content_table]['current_values']) ? $va_info[$vs_content_table]['current_values'] : [];
+	        } else {
+			    $va_fields_to_index = [0 => $va_info[$vs_content_table]['fields']];
+	        }
 			$t_subject = Datamodel::getInstanceByTableName($vs_content_table, false);
 			
-			if (caGetOption('intrinsicOnly', $pa_options, false)) {
-				unset($va_fields_to_index['_metadata']);
-				foreach($va_fields_to_index as $vs_f => $va_data) {
-					if (substr($vs_f, 0, 14) === '_ca_attribute_') { unset($va_fields_to_index[$vs_f]); continue; }
-					if (!$t_subject->hasField($vs_f)) { unset($va_fields_to_index[$vs_f]); continue; }
-					if (($vs_start = $t_subject->getFieldInfo($vs_f, 'START') && ($vs_end = $t_subject->getFieldInfo($vs_f, 'END')))) {
-						$va_fields_to_index[$vs_start] = $va_data;
-						$va_fields_to_index[$vs_end] = $va_data;
-						unset($va_fields_to_index[$vs_f]);
-						
-					}
-				}
-				
-				return $va_fields_to_index;
-			}
-			
-			// Expand "_metadata" to all available metadata elements
-			if (isset($va_fields_to_index['_metadata'])) {
-				$va_data = $va_fields_to_index['_metadata'];
-				unset($va_fields_to_index['_metadata']);
+			foreach($va_fields_to_index as $p => $field_list) {
+                if (caGetOption('intrinsicOnly', $pa_options, false)) {
+                    unset($field_list['_metadata']);
+                    foreach($field_list as $vs_f => $va_data) {
+                        if (substr($vs_f, 0, 14) === '_ca_attribute_') { unset($field_list[$vs_f]); continue; }
+                        if (!$t_subject->hasField($vs_f)) { unset($field_list[$vs_f]); continue; }
+                        if (($vs_start = $t_subject->getFieldInfo($vs_f, 'START') && ($vs_end = $t_subject->getFieldInfo($vs_f, 'END')))) {
+                            $field_list[$vs_start] = $va_data;
+                            $field_list[$vs_end] = $va_data;
+                            unset($field_list[$vs_f]);
+                        
+                        }
+                    }
+                
+                    return $field_list;
+                }
+            
+                // Expand "_metadata" to all available metadata elements
+                if (isset($field_list['_metadata'])) {
+                    $va_data = $field_list['_metadata'];
+                    unset($field_list['_metadata']);
 
-				$vb_include_non_root_elements = caGetOption('includeNonRootElements', $pa_options, false);
-				$va_field_data = $t_subject->getApplicableElementCodes(null, $vb_include_non_root_elements, false);
-				foreach($va_field_data as $vn_element_id => $vs_element_code) {
-					$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_data;
-				}
-			}
-			
-			// Convert specific attribute codes to element_ids
-			if (is_array($va_fields_to_index)) {
-				foreach($va_fields_to_index as $vs_f => $va_info) {
-					if ((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches)) {
-						$vn_element_id = ca_metadata_elements::getElementID($va_matches[1]);
-						unset($va_fields_to_index[$vs_f]);
-						$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_info;
-					}
-				}
-			}
+                    $vb_include_non_root_elements = caGetOption('includeNonRootElements', $pa_options, false);
+                    $va_field_data = $t_subject->getApplicableElementCodes(null, $vb_include_non_root_elements, false);
+                    foreach($va_field_data as $vn_element_id => $vs_element_code) {
+                        $field_list['_ca_attribute_'.$vn_element_id] = $va_data;
+                    }
+                }
+            
+                // Convert specific attribute codes to element_ids
+                if (is_array($field_list)) {
+                    foreach($field_list as $vs_f => $va_info) {
+                        if ((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches)) {
+                            $vn_element_id = ca_metadata_elements::getElementID($va_matches[1]);
+                            unset($field_list[$vs_f]);
+                            $field_list['_ca_attribute_'.$vn_element_id] = $va_info;
+                        }
+                    }
+                }
 
-			// always index type id if applicable and not already indexed
-			if(method_exists($t_subject, 'getTypeFieldName') && ($vs_type_field = $t_subject->getTypeFieldName()) && !isset($va_fields_to_index[$vs_type_field])) {
-				$va_fields_to_index[$vs_type_field] = array('STORE', 'DONT_TOKENIZE');
-			}
-			
+                // always index type id if applicable and not already indexed
+                if(!$current_value_fields_only && method_exists($t_subject, 'getTypeFieldName') && ($vs_type_field = $t_subject->getTypeFieldName()) && !isset($field_list[$vs_type_field])) {
+                    $field_list[$vs_type_field] = array('STORE', 'DONT_TOKENIZE');
+                }
+                
+                $va_fields_to_index[$p] = $field_list;
+		    }
+		    if (!$current_value_fields_only) { $va_fields_to_index = $va_fields_to_index[0]; }
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = $va_fields_to_index;
 	
+		}
+		# ------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @param mixed $pm_subject_table Name or number of table indexing is to be applied to
+		 *
+		 * @return array
+		 */
+		public function getHistoryTrackingPoliciesToIndex($pm_subject_table, $pa_options=null) {
+		    if (is_numeric($pm_subject_table)) {
+				$vs_subject_table = Datamodel::getTableName($pm_subject_table);
+			} else {
+				$vs_subject_table = $pm_subject_table;
+			}
+			
+			if(!($va_info = $this->opo_search_indexing_config->getAssoc($vs_subject_table))) {
+			    return [];
+			}
+			
+			return is_array($va_info[$vs_subject_table]['current_values']) ? $va_info[$vs_subject_table]['current_values'] : [];
 		}
 		# ------------------------------------------------
 		public static function clearCache() {

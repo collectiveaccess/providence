@@ -1597,6 +1597,14 @@
 				}
 			}
 			
+			// Get user values, which can be used as tags in detault text values
+			$user_values = [];
+			if($user = $po_request->getUser()) {
+				foreach(['fname', 'lname', 'email', 'user_name'] as $uf) {
+					$user_values["currentuser.{$uf}"] = $user->get($uf);
+				}
+			}
+			
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
 				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
@@ -1643,7 +1651,7 @@
 				$vs_setting = Attribute::getValueDefault($va_element);
 				if (strlen($vs_setting)) {
 					$tmp_element = ca_metadata_elements::getInstance($va_element['element_id']);
-					$va_element_value_defaults[$va_element['element_id']] = $tmp_element->getSetting($vs_setting);
+					$va_element_value_defaults[$va_element['element_id']] = caProcessTemplate($tmp_element->getSetting($vs_setting), $user_values);
 				}
 			}
 			
@@ -1714,6 +1722,7 @@
 				return false;
 			}
 			
+			$policy = caGetOption('policy', $pa_options, null);     // current value policy
 			$vb_is_sub_element = (bool)($t_element->get('parent_id'));
 			$t_parent = $vb_is_sub_element ? ca_metadata_elements::getInstance($t_element->get('parent_id')) : null;
 			while($vb_is_sub_element && ($t_parent->get('datatype') == 0) && ($t_parent->get('parent_id') > 0)) {
@@ -1754,7 +1763,8 @@
 				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 				
-				$vs_subelement_code = $this->tableName().'.'.($vb_is_sub_element ? $t_parent->get('element_code').'.' : '').(($vs_element_code !== $va_element['element_code']) ? "{$vs_element_code}." : "").$va_element['element_code'];
+				// Include "current_value" syntax if policy is set
+				$vs_subelement_code = $this->tableName().'.'.($policy ? "current_value.{$policy}." : '').($vb_is_sub_element ? $t_parent->get('element_code').'.' : '').(($vs_element_code !== $va_element['element_code']) ? "{$vs_element_code}." : "").$va_element['element_code'];
 				
 				$vs_value = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : '';
 

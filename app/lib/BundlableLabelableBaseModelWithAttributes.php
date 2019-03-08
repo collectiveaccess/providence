@@ -271,12 +271,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->opo_app_plugin_manager->hookAfterBundleInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
 		
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
-				
-		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-			$table = $this->tableName();
-			$this->deriveHistoryTrackingCurrentValue();
-			if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
-		}
+		
 		
 		if ($vn_id = $this->getPrimaryKey()) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
@@ -349,11 +344,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vb_we_set_transaction) { $this->removeTransaction($vn_rc); }
 						
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-			$table = $this->tableName();
-			$this->deriveHistoryTrackingCurrentValue();
-			if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
-		}
 
 		return $vn_rc;
 	}	
@@ -374,19 +364,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vn_primary_key = $this->getPrimaryKey();
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 		
-		// We need to handle updating the current location _before_ we delete the record
-		// in case the record has dependent current values as dependencies cannot be calculated after the row is removed.
-		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-			$table = $this->tableName();
-			$this->deriveHistoryTrackingCurrentValue(['row_id' => $vn_primary_key]);
-			if ($table::isHistoryTrackingCriterion($table)) {  $this->updateDependentHistoryTrackingCurrentValues(['row_id' => $vn_primary_key, 'mode' => 'delete']); }
-		}
-
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
-		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
-			// Don't remove GUID, otherwise wrong GUID will be sent to target
-			//$this->removeGUID($vn_primary_key);
-		}
 
 		return $vn_rc;
 	}
@@ -2213,6 +2191,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
 	
 		if (!in_array($va_tmp[0], array('created', 'modified'))) {
+		    $is_current_value_element = false;
+		    if ((sizeof($va_tmp) == 4) && ($va_tmp[1] == 'current_value')) {
+		        $is_current_value_element = $va_tmp[2]; // 2=policy
+		        $va_tmp = [$va_tmp[0], $va_tmp[3]];
+		        $ps_field = join(".", $va_tmp);
+		    }
 			switch(sizeof($va_tmp)) {
 				# -------------------------------------
 				case 1:		// table_name
@@ -4764,7 +4748,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available items for batch editing on representable models
 					case 'ca_object_representations_access_status':		
-						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel')) && ($vs_batch_mode = $_REQUEST[$vs_prefix_stub.'batch_mode']) && ($vs_batch_mode === '_replace_')) {
 							$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access", pString);
 							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
 							
@@ -6338,7 +6322,7 @@ if (!$vb_batch) {
 				$t_parent = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				
-				if (!$this->get($vs_idno_fld) && !$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
+				if (!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
                     if ($t_parent->load($vn_parent_id)) {
                         $this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
                         if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
@@ -6351,7 +6335,7 @@ if (!$vb_batch) {
                         }
                     }
                 } elseif(!$this->getPrimaryKey()) {
-                    $this->set($vs_idno_fld, '');
+                    $this->set($this->tableName().".{$vs_idno_fld}", '');
                 }
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
 			

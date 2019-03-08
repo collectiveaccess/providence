@@ -976,9 +976,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if (is_array($va_info['original_values']) && sizeof($va_info['original_values'])) {
-			    $va_item_settings['original_values'] = join("\n", $va_info['original_values']);
+			    $va_item_settings['original_values'] .= "\n".join("\n", $va_info['original_values']);
 			    if (is_array($va_info['replacement_values']) && sizeof($va_info['replacement_values'])) {
-			        $va_item_settings['replacement_values'] = join("\n", $va_info['replacement_values']);  
+			        $va_item_settings['replacement_values'] .= "\n".join("\n", $va_info['replacement_values']);  
 			    }  
 			}
 
