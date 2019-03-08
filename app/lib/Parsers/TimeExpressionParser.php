@@ -854,6 +854,21 @@ class TimeExpressionParser {
 		}
 		$ps_expression=trim($ps_expression);
 		
+		// Convert 19th-century to 19th century
+		if (is_array($va_century = $this->opo_language_settings->getList("centuryIndicator"))) {
+			foreach($va_century as $vs_century) {
+				$ps_expression = preg_replace("/[\-—]+{$vs_century}/", " {$vs_century}", $ps_expression);
+			}
+		}
+		
+		// Convert mid-19th century to mid 19th century
+		if (!is_array($early = $this->opo_language_settings->getList("earlyQualifier"))) { $early = []; }
+		if (!is_array($mid = $this->opo_language_settings->getList("midQualifier"))) { $mid = []; }
+		if (!is_array($late = $this->opo_language_settings->getList("lateQualifier"))) { $late = []; }
+		foreach(array_merge($early, $mid, $late) as $q) {
+			$ps_expression = preg_replace("/{$q}[\-—]+/", "{$q} ", $ps_expression);
+		}
+		
 		#replace time keywords containing spaces with conf defined replacement, allowing treatments for expression like "av. J.-C." in french
 		if(!is_array($wordsWithSpaces = $this->opo_language_settings->getList("wordsWithSpaces"))) { $wordsWithSpaces = []; }
 		if (!is_array($wordsWithSpacesReplacements = $this->opo_language_settings->getList("wordsWithSpacesReplacements"))) { $wordsWithSpacesReplacements = []; }
@@ -872,8 +887,8 @@ class TimeExpressionParser {
 					return strlen($b) - strlen($a);
 				});
 				foreach($keywords as $c) {
-					if (!preg_match('!^'.preg_quote($c, '!').'([\-\d]+)!i', $ps_expression, $m)) { continue; }
-					$ps_expression = preg_replace('!^'.preg_quote($c, '!').'[\-]*!i', "{$c} ", $ps_expression);
+					if (!preg_match('!'.preg_quote($c, '!').'([\-\d]+)!i', $ps_expression, $m)) { continue; }
+					$ps_expression = preg_replace('!'.preg_quote($c, '!').'[\-]*!i', "{$c} ", $ps_expression);
 					break;
 				}
 			}

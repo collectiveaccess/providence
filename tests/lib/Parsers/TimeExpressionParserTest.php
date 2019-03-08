@@ -38,6 +38,49 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 	
+	public function testHyphensInSortOfOddPlaces() {
+	 	$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('c.1887-c.1918');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1887.010100000010");
+		$this->assertEquals($va_parse['end'], "1918.123123595910");
+		$this->assertEquals($va_parse[0], "1887.010100000010");
+		$this->assertEquals($va_parse[1], "1918.123123595910");	
+		$this->assertEquals($o_tep->getText(), "circa 1887 – 1918");
+		
+		$vb_res = $o_tep->parse('19th-century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1800.010100000000");
+		$this->assertEquals($va_parse['end'], "1899.123123595900");
+		$this->assertEquals($va_parse[0], "1800.010100000000");
+		$this->assertEquals($va_parse[1], "1899.123123595900");	
+		$this->assertEquals($o_tep->getText(), "19th century");
+		
+		
+		$vb_res = $o_tep->parse('early-19th century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1800.010100000000");
+		$this->assertEquals($va_parse['end'], "1820.123123595900");
+		$this->assertEquals($va_parse[0], "1800.010100000000");
+		$this->assertEquals($va_parse[1], "1820.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 19th century");
+		
+		$vb_res = $o_tep->parse('early-19th-century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1800.010100000000");
+		$this->assertEquals($va_parse['end'], "1820.123123595900");
+		$this->assertEquals($va_parse[0], "1800.010100000000");
+		$this->assertEquals($va_parse[1], "1820.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 19th century");
+	}
+	
+	
 	public function testQualifiedDecadeAndCenturyRanges() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
