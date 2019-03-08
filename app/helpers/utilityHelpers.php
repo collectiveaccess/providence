@@ -2645,6 +2645,49 @@ function caFileIsIncludable($ps_file) {
 		return false;
 	}
 	# ----------------------------------------
+	/** 
+	 *
+	 */
+	function caGetDirectoryTotalSize($path, $recursive=true) {
+		$total = 0;
+		$files = scandir($path);
+
+		foreach($files as $t) {
+			if (is_dir(rtrim($path, '/') . '/' . $t)) {
+				if (!$recursive) { continue; }
+				if (($t !== ".") && ($t !== "..")) {
+					$total += caGetDirectoryTotalSize(rtrim($path, '/') . '/' . $t);
+				}
+			} else {
+				$total += filesize(rtrim($path, '/') . '/' . $t);
+			}
+		}
+		return $total;
+	}
+	# ----------------------------------------
+	/** 
+	 *
+	 */
+	function caGetFileCountForDirectory($path, $recursive=true) {
+		$total = 0;
+		$files = scandir($path);
+
+		foreach($files as $t) {
+			if (($t === ".") || ($t === "..")) { continue; }
+		
+			if (is_dir(rtrim($path, '/') . '/' . $t)) {
+				if (!$recursive) { continue; }
+				$total += caGetFileCountForDirectory(rtrim($path, '/') . '/' . $t);
+			} else {
+				$total++;
+			}
+		}
+		return $total;
+	}
+	# ----------------------------------------
+	/** 
+	 *
+	 */
 	function caHumanFilesize($bytes, $decimals = 2) {
 		$size = array('B','KiB','MiB','GiB','TiB');
 		$factor = floor((strlen($bytes) - 1) / 3);
