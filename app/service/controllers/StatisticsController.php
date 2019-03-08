@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/controllers/ItemController.php :
+ * app/service/controllers/StatisticsController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,30 +25,30 @@
  *
  * ----------------------------------------------------------------------
  */
-	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
+require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+require_once(__CA_LIB_DIR__.'/Service/StatisticsService.php');
 
-	class ItemController extends BaseServiceController {
-		# -------------------------------------------------------
-		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
-		# -------------------------------------------------------
-		public function __call($ps_table, $pa_args){
-			$vo_service = new ItemService($this->request,$ps_table);
-			$va_content = $vo_service->dispatch();
-
-			if(intval($this->request->getParameter("pretty",pInteger))>0){
-				$this->view->setVar("pretty_print",true);
-			}
-			
-			if($vo_service->hasErrors()){
-				$this->view->setVar("errors",$vo_service->getErrors());
-				$this->render("json_error.php");
-			} else {
-				$this->view->setVar("content",$va_content);
-				$this->render("json.php");
-			}
-		}
-		# -------------------------------------------------------
+class StatisticsController extends BaseServiceController {
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
 	}
+	# -------------------------------------------------------
+	public function __call($ps_endpoint, $pa_args) {
+		try {
+			$va_content = StatisticsService::dispatch($ps_endpoint, $this->getRequest());
+		} catch(Exception $e) {
+			$this->getView()->setVar('errors', array($e->getMessage()));
+			$this->render('json_error.php');
+			return;
+		}
+
+		if(intval($this->getRequest()->getParameter('pretty', pInteger))>0) {
+			$this->getView()->setVar('pretty_print', true);
+		}
+
+		$this->getView()->setVar('content', $va_content);
+		$this->render('json.php');
+	}
+	# -------------------------------------------------------
+}
