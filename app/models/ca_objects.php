@@ -951,7 +951,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
                         $vs_display_template = $pb_display_label_only ? "" : caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
                 
                         $o_media_coder->setMedia($va_lot_type_info[$vn_type_id]['icon']);
-                        $va_history[$va_date['sortable']][] = array(
+                        if(!is_array($va_history[$va_date['sortable']])) { $va_history[$va_date['sortable']] = []; }
+                        array_unshift($va_history[$va_date['sortable']], array(
                             'type' => 'ca_object_lots',
                             'id' => $vn_lot_id,
                             'display' => $t_lot->getWithTemplate($vs_display_template),
@@ -962,7 +963,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
                             'type_id' => $vn_type_id,
                             'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
                             'date' => $va_date['display']
-                        );
+                        ));
                     }
                 }
             }
@@ -1031,7 +1032,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$vs_color = str_replace("#", "", $vs_color);
 					
 					$o_media_coder->setMedia($va_loan_type_info[$vn_type_id]['icon']);
-					$va_history[$va_date['sortable']][] = array(
+					
+					if(!is_array($va_history[$va_date['sortable']])) { $va_history[$va_date['sortable']] = []; }
+					array_unshift($va_history[$va_date['sortable']], array(
 						'type' => 'ca_loans',
 						'id' => $vn_loan_id,
 						'display' => $qr_loans->getWithTemplate(($vn_rel_object_id != $object_id) ? $vs_child_display_template : $vs_display_template),
@@ -1043,7 +1046,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
 						'date' => $va_date['display'],
 						'hasChildren' => sizeof($va_child_loans) ? 1 : 0
-					);
+					));
 				}
 			}
 		}
@@ -1112,7 +1115,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$vs_color = str_replace("#", "", $vs_color);
 					
 					$o_media_coder->setMedia($va_movement_type_info[$vn_type_id]['icon']);
-					$va_history[$va_date['sortable']][] = array(
+					
+					if(!is_array($va_history[$va_date['sortable']])) { $va_history[$va_date['sortable']] = []; }
+					array_unshift($va_history[$va_date['sortable']], array(
 						'type' => 'ca_movements',
 						'id' => $vn_movement_id,
 						'display' => $qr_movements->getWithTemplate(($vn_rel_object_id != $object_id) ? $vs_child_display_template : $vs_display_template),
@@ -1124,7 +1129,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
 						'date' => $va_date['display'],
 						'hasChildren' => sizeof($va_child_movements) ? 1 : 0
-					);
+					));
 				}
 			}
 		}
@@ -1200,7 +1205,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$vs_color = str_replace("#", "", $vs_color);
 					
 					$o_media_coder->setMedia($va_occurrence_type_info[$vn_type_id]['icon']);
-					$va_history[$va_date['sortable']][] = array(
+					
+					if(!is_array($va_history[$va_date['sortable']])) { $va_history[$va_date['sortable']] = []; }
+					array_unshift($va_history[$va_date['sortable']], array(
 						'type' => 'ca_occurrences',
 						'id' => $vn_occurrence_id,
 						'display' => $qr_occurrences->getWithTemplate(($vn_rel_object_id != $object_id) ? $vs_child_display_template : $vs_display_template),
@@ -1212,7 +1219,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
 						'date' => $va_date['display'],
 						'hasChildren' => sizeof($va_child_occurrences) ? 1 : 0
-					);
+					));
 				}
 			}
 		}
@@ -1283,7 +1290,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$vs_color = str_replace("#", "", $vs_color);
 					
 					$o_media_coder->setMedia($va_collection_type_info[$vn_type_id]['icon']);
-					$va_history[$va_date['sortable']][] = array(
+					
+					if(!is_array($va_history[$va_date['sortable']])) { $va_history[$va_date['sortable']] = []; }
+					array_unshift($va_history[$va_date['sortable']], array(
 						'type' => 'ca_collections',
 						'id' => $vn_collection_id,
 						'display' => $qr_collections->getWithTemplate(($vn_rel_object_id != $object_id) ? $vs_child_display_template : $vs_display_template),
@@ -1295,7 +1304,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
 						'date' => $va_date['display'],
 						'hasChildren' => sizeof($va_child_collections) ? 1 : 0
-					);
+					));
 				}
 			}
 		}
@@ -1349,7 +1358,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$vs_color = str_replace("#", "", $vs_color);
 				
 				$o_media_coder->setMedia($va_location_type_info[$vn_type_id]['icon']);
-				$va_history[$va_date['sortable']][] = array(
+				if(!is_array($va_history[$va_date['sortable']])) { $va_history[$va_date['sortable']] = []; }
+				array_unshift($va_history[$va_date['sortable']], array(
 					'type' => 'ca_storage_locations',
 					'id' => $vn_location_id,
 					'relation_id' => $qr_locations->get('relation_id'),
@@ -1363,7 +1373,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_name_singular.'</div>').'</div></div>',
 					'date' => $va_date['display'],
 					'hasChildren' => sizeof($va_child_locations) ? 1 : 0
-				);
+				));
 			}
 		}
 		
