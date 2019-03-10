@@ -7031,6 +7031,19 @@ create table ca_history_tracking_current_values (
 
 
 /*==========================================================================*/
+create table ca_persistent_cache (
+    cache_key         char(32) not null primary key,
+    cache_value       longblob not null,
+    created_on        int unsigned not null,
+    updated_on        int unsigned not null,
+    namespace         varchar(100) not null default '',
+
+	KEY i_namespace (namespace),
+	KEY i_updated_on (updated_on)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7041,4 +7054,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (157, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (158, unix_timestamp());
