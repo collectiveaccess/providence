@@ -49,7 +49,7 @@
 	</div>
 	<div style="clear:both; height:1px;"><!-- empty --></div>
 <?php	
-	print caFormTag($this->request, 'saveGlobalValues', 'globalValuesForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true]);
+	print caFormTag($this->request, 'saveGlobalValues', 'globalValuesForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]);
 	
 	if (sizeof($va_form_elements) > 0) {
 		foreach($va_form_elements as $vs_name => $va_info) {

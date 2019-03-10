@@ -40,7 +40,7 @@
 </script>
 <div class="sectionBox">
 	<?php 
-		print caFormTag($this->request, 'Index', 'downloadLogSearch');
+		print caFormTag($this->request, 'Index', 'downloadLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caDownloadList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 

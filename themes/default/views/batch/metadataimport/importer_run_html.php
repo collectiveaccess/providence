@@ -38,7 +38,7 @@ print $vs_control_box = caFormControlBox(
 ?>
 <div class="sectionBox">
 <?php
-		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Importer'); ?></span> 

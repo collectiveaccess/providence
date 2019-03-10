@@ -634,7 +634,7 @@
                             }
                     </script>
  </div>\n";
-            $vs_buf .= caFormTag($request, 'Summary', 'caSummaryDisplaySelectorForm').
+            $vs_buf .= caFormTag($request, 'Summary', 'caSummaryDisplaySelectorForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]).
             "<div class='searchFormSelector' style='float:right;'>". _t('Display').": {$vs_display_select_html}</div>
             <input type='hidden' name='".$t_item->primaryKey()."' value='{$vn_item_id}'/>
             </form>\n";

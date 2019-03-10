@@ -1164,7 +1164,7 @@
 			</script>\n";
 		}
 		
-		$po_view->setVar("form", caFormTag($po_request, "{$ps_function}", $ps_form_name, $ps_controller, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'submitOnReturn' => true)));
+		$po_view->setVar("form", caFormTag($po_request, "{$ps_function}", $ps_form_name, $ps_controller, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'submitOnReturn' => true)));
  		$po_view->setVar("/form", $vs_script.caHTMLHiddenInput("_advancedFormName", array("value" => $ps_function)).caHTMLHiddenInput("_formElements", array("value" => join('|', $va_form_elements))).caHTMLHiddenInput("_advanced", array("value" => 1))."</form>");
  			
 		return $va_form_elements;

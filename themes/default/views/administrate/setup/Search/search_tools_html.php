@@ -36,7 +36,7 @@
 		<div class="col">
 			<?php
 			print _t("Export results with mapping") . ":<br/>";
-			print caFormTag($this->request, 'ExportData', 'caExportWithMappingForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			print caFormTag($this->request, 'ExportData', 'caExportWithMappingForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
 			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
@@ -51,7 +51,7 @@
 		<div class="col">
 <?php
 			print _t("Print results as labels").":<br/>";
-			print caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			print caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 
 			$va_options = array();
 			foreach($this->getVar('print_forms') as $vn_ => $va_form_info) {
@@ -71,7 +71,7 @@
 	<div class="col">
 <?php
 		print _t("Download results as").":<br/>";
-		print caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+		print caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 
 		$va_options = array();
 		foreach($this->getVar('export_formats') as $vn_i => $va_format_info) {

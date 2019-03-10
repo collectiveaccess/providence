@@ -41,7 +41,7 @@
 	}
 
 	if ($vb_sets_available) {
-		print caFormTag($this->request, 'Run', 'caArtefactsCanadaExportForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noTimestamp' => true]);
+		print caFormTag($this->request, 'Run', 'caArtefactsCanadaExportForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]);
 		print "<p>"._t('Export set %1', $this->getVar('sets_list_select'))."</p>\n";
 		print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Export"), 'caArtefactsCanadaExportForm', [])."</div>";
 		print "</form>";
