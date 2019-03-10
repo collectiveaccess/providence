@@ -42,7 +42,7 @@
 			</a>
 		</div>
 <?php
-		print caFormTag($this->request, 'Summary', 'caSummaryDisplaySelectorForm');
+		print caFormTag($this->request, 'Summary', 'caSummaryDisplaySelectorForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]);
 ?>
 			<div class='searchFormSelector' style='float: right; '>
 <?php

@@ -48,7 +48,7 @@
 </script>
 <div class="sectionBox">
 	<?php
-		print caFormTag($this->request, 'Index', 'changeLogSearch');
+		print caFormTag($this->request, 'Index', 'changeLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		
 		if ($can_filter_by_user) {
 			print caFormControlBox(

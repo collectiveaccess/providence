@@ -36,7 +36,7 @@
 	<h1><?php print _t('Statistics Dashboard'); ?></h1>
 <?php
 
-	print caFormTag($this->request, 'Index', 'libraryDashboardOptions', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+	print caFormTag($this->request, 'Index', 'libraryDashboardOptions', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 	print _t('Dates').': '.caHTMLTextInput('daterange', array('value' => $ps_daterange, 'class' => 'dateBg'), array('width' => '200px'));
 ?>
 </form>

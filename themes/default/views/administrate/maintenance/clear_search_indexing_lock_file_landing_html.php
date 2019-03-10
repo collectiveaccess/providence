@@ -33,7 +33,7 @@
 	print _t("<p>The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed by clicking the button below.</p>");
 	if (true) { //ca_search_indexing_queue::lockExists()) {
 	    if (true) {//ca_search_indexing_queue::lockCanBeRemoved()) {
-            print caFormTag($this->request, 'RemoveLock', 'caClearSearchIndexingLockFileForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+            print caFormTag($this->request, 'RemoveLock', 'caClearSearchIndexingLockFileForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
             print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Clear search indexing queue lock file"), 'caClearSearchIndexingLockFileForm', array())."</div>";
             print "</form>";
         } else {
