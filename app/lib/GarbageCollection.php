@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,6 +44,9 @@ final class GarbageCollection {
 
 			// refresh item with new TTL
 			ExternalCache::save('last_gc', 'meow');
+					
+			// Purge CSRF tokens that haven't been updated for at least a day from persistent cache
+			PersistentCache::clean(time() - 86400, 'csrf_tokens');
 		}
 	}
 	# -------------------------------------------------------
