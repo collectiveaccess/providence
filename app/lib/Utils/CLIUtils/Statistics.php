@@ -37,10 +37,9 @@
 		 *
 		 */
 		public static function fetch_statistics($po_opts=null) {
-			$stats = new StatisticsAggregator();
 			
 			try {
-				$data = $stats->fetch();
+				$data = StatisticsAggregator::fetch();
 			} catch (Exception $e) {
 				CLIUtils::addError($e->getMessage());	
 				return null;
