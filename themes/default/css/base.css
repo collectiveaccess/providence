@@ -7483,3 +7483,30 @@ div.changeLogSearchResultsPagination {
 	float: right;
 	padding: 5px;
 }
+
+/* Statistics dashboard */
+div.statisticsDashboardPanel {
+    width: 268px;
+    height: 300px;
+    overflow: auto;
+    float: left;
+    padding: 0 15px 15px 15px;
+    margin: 0 10px 10px 10px;
+    border: 1px dotted #a0a0a0;
+}
+
+div.statisticsDashboardGroupList {
+    margin: 0 0 10px 0;
+}
+
+div.statisticsDashboardsiteList {
+    margin: 0 0 10px 0;
+}
+
+span.statisticsDashboardSelectedGroup {
+    font-weight: bold;
+}
+
+span.statisticsDashboardSelectedsite {
+    font-weight: bold;
+}

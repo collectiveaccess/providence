@@ -42,27 +42,20 @@ class StatisticsAggregator {
 	/**
 	 *
 	 */
-	public function __construct() {
-		// noop
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */
 	static public function fetch() {
-		$sources = self::getSources();
+		$sites = self::getSites();
 		
 		$stats_data = [];
-		foreach($sources as $k => $source_info) {
-			$client = new CAS\StatisticsService($source_info['url']);
-			$client->setCredentials($source_info['service_user'], $source_info['service_password']);
+		foreach($sites as $k => $site_info) {
+			$client = new CAS\StatisticsService($site_info['url']);
+			$client->setCredentials($site_info['service_user'], $site_info['service_password']);
 			
-			$stats_data_for_source = $client->setEndpoint('runStats')->request()->getRawData();
-			$stats_data_for_source['name'] = $source_info['name'];
-			$stats_data_for_source['description'] = $source_info['description'];
-			$stats_data_for_source['url'] = $source_info['url'];
-			$stats_data_for_source['groups'] = $source_info['groups'];
-			$stats_data[$k] = $stats_data_for_source;
+			$stats_data_for_site = $client->setEndpoint('runStats')->request()->getRawData();
+			$stats_data_for_site['name'] = $site_info['name'];
+			$stats_data_for_site['description'] = $site_info['description'];
+			$stats_data_for_site['url'] = $site_info['url'];
+			$stats_data_for_site['groups'] = $site_info['groups'];
+			$stats_data[$k] = $stats_data_for_site;
 		}
 		
 		PersistentCache::save('site_statistics', $stats_data, 'statistics');
@@ -73,7 +66,7 @@ class StatisticsAggregator {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Return fetched data for all sources
+	 * Return fetched data for all sites
 	 */
 	static public function getData() {
 		$data = PersistentCache::fetch('site_statistics', 'statistics');
@@ -82,7 +75,7 @@ class StatisticsAggregator {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Return fetched data for all sources
+	 * Return fetched data for all sites
 	 */
 	static public function getAggregatedData() {
 		$data = PersistentCache::fetch('aggregated_site_statistics', 'statistics');
@@ -94,35 +87,34 @@ class StatisticsAggregator {
 	 * Return data aggregated for group
 	 */
 	static public function getAggregatedDataForGroup($group) {
-		$data = PersistentCache::fetch("aggregated_site_statistics{$group}", 'statistics');
-		
-		return is_array($data[$group]) ? $data[$group] : null;
+		$data = PersistentCache::fetch("aggregated_site_statistics_by_group_{$group}", 'statistics');
+		return is_array($data) ? $data : null;
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Return data for single source
+	 * Return data for single site
 	 *
-	 * @param string $source
+	 * @param string $site
 	 *
-	 * @return array Data or null if source is not found
+	 * @return array Data or null if site is not found
 	 */
-	static public function getDataForSource($source) {
+	static public function getDataForsite($site) {
 		$data = PersistentCache::fetch('site_statistics', 'statistics');
 		
-		return is_array($data[$source]) ? $data[$source] : null;
+		return is_array($data[$site]) ? $data[$site] : null;
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Return list of configured sources
+	 * Return list of configured sites
 	 *
-	 * @return array List of sources
+	 * @return array List of sites
 	 */
-	static public function getSources() {
+	static public function getSites() {
 		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
-		if (!is_array($sources = $config->getAssoc('sources'))) {
+		if (!is_array($sites = $config->getAssoc('sites'))) {
 			return null;
 		}
-		return $sources;
+		return $sites;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -141,8 +133,23 @@ class StatisticsAggregator {
 	/**
 	 *
 	 */
+	static public function getSitesForGroup($group) {
+		$sites = self::getSites();
+		
+		$site_list = [];
+		foreach($sites as $site => $site_info) {
+			if (in_array($group, $site_info['groups'], true)) {
+				$site_list[$site] = $site_info;
+			}
+		}
+		return $site_list;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
 	static public function aggregateData($data) {
-		$sources = self::getSources();
+		$sites = self::getSites();
 		$groups = self::getGroups();
 		
 		// Generate stats for all sites
@@ -157,9 +164,9 @@ class StatisticsAggregator {
 			foreach($groups as $group => $group_info) {
 				$data_for_group = [];
 				
-				foreach($sources as $source => $source_info) {
-					if(in_array($group, caGetOption('groups', $source_info, [])) && (isset($data[$source]))) {
-						$data_for_group[$source] = $data[$source];
+				foreach($sites as $site => $site_info) {
+					if(in_array($group, caGetOption('groups', $site_info, [])) && (isset($data[$site]))) {
+						$data_for_group[$site] = $data[$site];
 					}
 				}
 				

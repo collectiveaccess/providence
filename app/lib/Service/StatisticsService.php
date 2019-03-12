@@ -70,12 +70,12 @@ class StatisticsService extends BaseJSONService {
 		$db = new Db();
 		
 		$time_intervals = [
-			'last_day' => ($ti_one_day = $ct - (24 * 60 * 60)),
-			'last_week' => ($ti_one_week = $ct - (24 * 60 * 60 * 7)),
-			'last_30_days' => ($ti_last_30_days = $ct - (24 * 60 * 60 * 30)),
-			'last_90_days' => ($ti_last_90_days = $ct - (24 * 60 * 60 * 90)),
-			'last_6_months' => ($ti_last_6_months = $ct - (24 * 60 * 60 * 180)),
-			'last_year' => ($ti_last_6_months = $ct - (24 * 60 * 60 * 365)),
+			'last day' => ($ti_one_day = $ct - (24 * 60 * 60)),
+			'last week' => ($ti_one_week = $ct - (24 * 60 * 60 * 7)),
+			'last 30 days' => ($ti_last_30_days = $ct - (24 * 60 * 60 * 30)),
+			'last 90 days' => ($ti_last_90_days = $ct - (24 * 60 * 60 * 90)),
+			'last 6 months' => ($ti_last_6_months = $ct - (24 * 60 * 60 * 180)),
+			'last year' => ($ti_last_6_months = $ct - (24 * 60 * 60 * 365)),
 		];
 	
 		$access_statues = caGetListItems('access_statuses', ['index' => 'item_value']);
@@ -119,7 +119,7 @@ class StatisticsService extends BaseJSONService {
 		$last_login = $last_login_user = null;
 		$user_count = 0;
 		foreach($users as $user) {
-			if (is_array($x = array_intersect([$user->get('user_name'), $user->get('email')], $exclude_users)) && sizeof($x)) { continue; }
+			if (is_array(site = array_intersect([$user->get('user_name'), $user->get('email')], $exclude_users)) && sizeof(site)) { continue; }
 			$t = $user->getVar('last_login');
 			
 			foreach($time_intervals as $ti_label => $ti) {

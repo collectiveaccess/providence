@@ -44,9 +44,9 @@
 				CLIUtils::addError($e->getMessage());	
 				return null;
 			}
-			$num_systems = is_array($data) ? sizeof($data) : 0;
-			$system_list = is_array($data) ? join(", ", array_keys($data)) : "";
-			CLIUtils::addMessage(($num_systems === 1) ? _t("Cached statistics for %1 system: %2", $num_systems, $system_list) : _t("Cached statistics for %1 systems: %2", $num_systems, $system_list));
+			$num_sites = is_array($data) ? sizeof($data) : 0;
+			$site_list = is_array($data) ? join(", ", array_keys($data)) : "";
+			CLIUtils::addMessage(($num_sites === 1) ? _t("Cached statistics for %1 site: %2", $num_sites, $site_list) : _t("Cached statistics for %1 sites: %2", $num_sites, $site_list));
 		}
 		# -------------------------------------------------------
 		public static function fetch_statisticsParamList() {
@@ -71,7 +71,7 @@
 		 *
 		 */
 		public static function fetch_statisticsHelp() {
-			return _t('To come.');
+			return _t('Fetches data and usage statistics from local and remote CollectiveAccess instances and makes them available in the Statistics Dashboard.');
 		}
 		
 		# -------------------------------------------------------
