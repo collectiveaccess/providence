@@ -154,7 +154,7 @@
  					
  					$this->opo_result_context->setParameter('show_type_id', null);
  				}
- 				if ($this->opn_type_restriction_id) {
+ 				if ($this->opn_type_restriction_id > 0) {
  					$po_search->setTypeRestrictions(array($this->opn_type_restriction_id), array('includeSubtypes' => false));
  				}
  				

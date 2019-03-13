@@ -145,7 +145,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 				$po_search->addCriteria('_search', $vs_search);
 			}
 
-			if ($this->opn_type_restriction_id) {
+			if ($this->opn_type_restriction_id > 0) {
 				$po_search->setTypeRestrictions(array($this->opn_type_restriction_id));
 			}
 
