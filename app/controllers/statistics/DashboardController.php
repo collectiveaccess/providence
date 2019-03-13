@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/statistics/StatisticsAggregator.php');
- 	require_once(__CA_LIB_DIR__.'/statistics/StatisticsDashboard.php');
+ 	require_once(__CA_LIB_DIR__.'/Statistics/StatisticsAggregator.php');
+ 	require_once(__CA_LIB_DIR__.'/Statistics/StatisticsDashboard.php');
  
  	class DashboardController extends ActionController {
  		# -------------------------------------------------------

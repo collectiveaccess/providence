@@ -119,7 +119,7 @@ class StatisticsService extends BaseJSONService {
 		$last_login = $last_login_user = null;
 		$user_count = 0;
 		foreach($users as $user) {
-			if (is_array(site = array_intersect([$user->get('user_name'), $user->get('email')], $exclude_users)) && sizeof(site)) { continue; }
+			if (is_array($x = array_intersect([$user->get('user_name'), $user->get('email')], $exclude_users)) && sizeof($x)) { continue; }
 			$t = $user->getVar('last_login');
 			
 			foreach($time_intervals as $ti_label => $ti) {
