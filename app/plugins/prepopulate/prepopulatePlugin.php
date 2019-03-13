@@ -158,10 +158,10 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$va_parts = explode('.', $vs_target);
 			
 			if ((sizeof($va_parts) == 1) && $vb_is_relationship_rule) {    // clone relationships
-			    // if (($vs_mode === 'addifempty') && $t_instance->hasRelationshipsWith($vs_target)) { 
-// 			        Debug::msg("[prepopulateFields()] skipped rule {$vs_rule_key} because mode is addIfEmpty and it already has {$vs_target} relationships.");
-// 			        continue;
-// 			    }
+			    if (($vs_mode === 'addifempty') && $t_instance->hasRelationshipsWith($vs_target)) { 
+			        Debug::msg("[prepopulateFields()] skipped rule {$vs_rule_key} because mode is addIfEmpty and it already has {$vs_target} relationships.");
+			        continue;
+			    }
 			    
 			    $va_rels = null;
 			    $va_instance_rel_ids = [];

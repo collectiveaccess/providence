@@ -271,12 +271,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->opo_app_plugin_manager->hookAfterBundleInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
 		
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
-				
-		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-			$table = $this->tableName();
-			$this->deriveHistoryTrackingCurrentValue();
-			if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
-		}
+		
 		
 		if ($vn_id = $this->getPrimaryKey()) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
@@ -349,11 +344,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vb_we_set_transaction) { $this->removeTransaction($vn_rc); }
 						
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-			$table = $this->tableName();
-			$this->deriveHistoryTrackingCurrentValue();
-			if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
-		}
 
 		return $vn_rc;
 	}	
@@ -374,19 +364,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vn_primary_key = $this->getPrimaryKey();
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 		
-		// We need to handle updating the current location _before_ we delete the record
-		// in case the record has dependent current values as dependencies cannot be calculated after the row is removed.
-		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
-			$table = $this->tableName();
-			$this->deriveHistoryTrackingCurrentValue(['row_id' => $vn_primary_key]);
-			if ($table::isHistoryTrackingCriterion($table)) {  $this->updateDependentHistoryTrackingCurrentValues(['row_id' => $vn_primary_key, 'mode' => 'delete']); }
-		}
-
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
-		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
-			// Don't remove GUID, otherwise wrong GUID will be sent to target
-			//$this->removeGUID($vn_primary_key);
-		}
 
 		return $vn_rc;
 	}
