@@ -6305,7 +6305,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				}
 			}
 		}
-		print caGetOption('name', $pa_options, $ps_field);
 		$va_tmp = explode('.', $ps_field);
 		
 		if (in_array($va_tmp[0], array('created', 'modified'))) {
