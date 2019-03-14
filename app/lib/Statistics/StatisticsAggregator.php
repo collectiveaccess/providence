@@ -146,6 +146,16 @@ class StatisticsAggregator {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * 
+	 */
+	static public function localSite() {
+		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
+		$local_site = $config->get('local_site');
+		$sites = self::getSites();
+		return isset($sites[$local_site]) ? $sites[$local_site] : null;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 *
 	 */
 	static public function aggregateData($data) {

@@ -3,7 +3,7 @@
 	$totals = is_array($data['records']['counts']['by_type']) ? $data['records']['counts']['by_type'] : [];
 
 ?>
-	<h3><?php print _t('Record totals by type'); ?></h3>
+	<h3><?php print _t('Records totals by type'); ?></h3>
 	<ul>
 <?php
 	foreach($totals as $table => $totals) {

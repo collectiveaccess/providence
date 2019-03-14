@@ -41,12 +41,23 @@
  		}
  		# -------------------------------------------------------
  		public function Index() {
+ 		    $can_access_non_local_system_statistics = (bool)$this->request->user->canDoAction('can_view_system_statistics');
+ 		    
  			$cur_site = $cur_group = $site_list = null;
  			
  			$cur_site = $this->request->getParameter('site', pString);
  			$cur_group = $this->request->getParameter('group', pString);
- 			$this->view->setVar('groups', $groups = StatisticsAggregator::getGroups());
- 			$this->view->setVar('sites', $sites = StatisticsAggregator::getSites());
+ 			
+ 			if ($can_access_non_local_system_statistics) {
+                $groups = StatisticsAggregator::getGroups();
+                $sites = StatisticsAggregator::getSites();
+            } else {
+                $groups = [];
+                $sites = [StatisticsAggregator::localSite()];
+            }
+ 			
+ 			$this->view->setVar('groups', $groups);
+ 			$this->view->setVar('sites', $sites);
  			
  			if ($cur_site && isset($sites[$cur_site])) {
  				$data = StatisticsAggregator::getDataForsite($cur_site);
