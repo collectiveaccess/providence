@@ -82,7 +82,7 @@ class StatisticsService extends BaseJSONService {
 		$return = ['created_on' => date('c'), 'access_statuses' => array_flip($access_statues)];
 		$counts = [];
 		
-		foreach(['ca_objects', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_object_lots', 'ca_list_items'] as $t) {
+		foreach(['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items'] as $t) {
 			Datamodel::getInstance($t, true);
 			$counts['totals'][$t] = $t::find('*', ['returnAs' => 'count']);
 			foreach($access_statues as $v => $l) {
