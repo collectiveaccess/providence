@@ -1011,7 +1011,7 @@ if (!$for_current_value_reindex) {
                                             }
                                             break;
                                         default:
-                                            if (($vn_fn = Datamodel::getFieldNum($vs_related_table, $vs_rel_field)) > 0) {
+                                            if (strlen($vn_fn = Datamodel::getFieldNum($vs_related_table, $vs_rel_field)) > 0) {
                                                 $field_num = ($m == 'current_values') ? "CV{$p}_I{$vn_fn}" : "I{$vn_fn}";
                                                 if (((isset($va_rel_field_info['INDEX_AS_IDNO']) && $va_rel_field_info['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_rel_field_info, true)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
                                                     // specialized identifier (idno) processing; uses IDNumbering plugin to generate searchable permutations of identifier
@@ -1068,7 +1068,7 @@ if (!$for_current_value_reindex) {
                                                             $vn_label_id = $va_label['label_id'];
 
                                                             foreach($va_label_info['related']['fields'] as $vs_label_field => $va_config) {
-                                                                $this->opo_engine->indexField($vn_label_table_num, 'I'.($vn_fn = Datamodel::getFieldNum($vn_label_table_num, $vs_label_field)), $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+                                                                $this->opo_engine->indexField($vn_label_table_num, 'I'.($vn_fn = (int)Datamodel::getFieldNum($vn_label_table_num, $vs_label_field)), $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
                                                                 $this->_genIndexInheritance($t_subject, $t_label, "I{$vn_fn}", $pn_subject_row_id, $vn_label_id, [$va_label[$vs_label_field]], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
                                                             }
                                                         }
