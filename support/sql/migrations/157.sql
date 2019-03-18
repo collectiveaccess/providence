@@ -37,7 +37,8 @@ create table ca_metadata_dictionary_entry_labels (
 /*==========================================================================*/
 
 ALTER TABLE ca_metadata_dictionary_entries ADD COLUMN table_num tinyint unsigned not null default 0;
-UPDATE ca_metadata_dictionary_entries SET table_num = 57; /* all existing entries should be bound to ca_objects */
+UPDATE ca_metadata_dictionary_entries SET table_num = 57;
+/* all existing entries should be bound to ca_objects */
 CREATE INDEX i_table_num ON ca_metadata_dictionary_entries(table_num);
 CREATE INDEX i_name ON ca_metadata_dictionary_entries(bundle_name);
 CREATE INDEX i_prefetch ON ca_attributes(row_id, element_id, table_num);
