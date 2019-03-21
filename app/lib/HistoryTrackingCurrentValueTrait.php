@@ -452,6 +452,7 @@
 			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance']))) {
 				throw new ApplicationException(_t('Invalid subject row id'));
 			}
+			$t->setDb($this->getDb());
 			
 			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays'])) {
 				foreach($ls as $l) {
@@ -507,11 +508,13 @@
 					    self::$s_history_tracking_newly_added_current_values[$values['current_table_num']][$values['current_row_id']][$policy] = 
 					        ['table_num' => $subject_table_num, 'row_id' => $row_id];
 			
+			SearchResult::clearResultCacheForRow($subject_table, $row_id);
 			
 			// Update current value indexing for this row
 			if ($o_indexer = $this->getSearchIndexer()) {
 			    $o_indexer->updateCurrentValueIndexing($policy, $subject_table_num, $row_id, []);
 			}
+			
 			return $rc;
 		}
 		# ------------------------------------------------------
@@ -621,18 +624,19 @@
 					
 					$is_future = null;
 					$current_entry = null;
-	
+					
 					if(sizeof($h)) { 
 						foreach($h as $d => $by_date) {
 							foreach($by_date as $entry) {
-								if ($omit_table && $omit_row_id && ($entry['tracked_table_num'] == $omit_table) &&($entry['tracked_row_id'] == $omit_row_id)) { continue; }
+								if ($omit_table && $omit_row_id && ($entry['tracked_table_num'] == $omit_table) && ($entry['tracked_row_id'] == $omit_row_id)) { continue; }
 							
 								if ($entry['status'] === 'FUTURE') {
 									$is_future = caHistoricTimestampToUnixTimestamp($d);
 									continue;
 								}
-								if ($entry['status'] === 'CURRENT') {
+								if (($entry['status'] === 'CURRENT') || ($omit_table)) {
 									$current_entry = $entry;
+									$current_entry['status'] = 'CURRENT';
 									break(2);
 								}
 							}
@@ -641,7 +645,7 @@
 					
 					if ($current_entry) {
 						if (!($this->setHistoryTrackingCurrentValue($policy, $current_entry, ['row_id' => $row_id, 'isFuture' => $is_future]))) {
-							return false;
+						    return false;
 						}
 					} else {
 						$this->setHistoryTrackingCurrentValue($policy, null, ['row_id' => $row_id, 'isFuture' => $is_future]); // null values means remove current location entirely
@@ -657,6 +661,7 @@
 		 *
 		 * @param array $options Options include:
 		 *		row_id = Row id to use instead of currently loaded row. [Default is null]
+		 *      mode = 
 		 *
 		 * @return bool
 		 * @throws ApplicationException
@@ -694,6 +699,7 @@
 				 	foreach($rel_ids as $rel_id) {
 						SearchResult::clearResultCacheForRow($policy_info['table'], $rel_id);
 				 		$t->deriveHistoryTrackingCurrentValue(['row_id' => $rel_id, 'omit_table_num' => ($mode == 'delete') ? $this->tableNum() : null, 'omit_row_id' => $row_id]);
+				 		
 				 		$num_updated++;
 				 	}
  				}
@@ -1712,8 +1718,18 @@
 					}
 				}
 			}
-		
-			ksort($va_history);
+			
+			// filter out deleted
+			if (is_array($deleted = self::getDeletedCurrentValues())) {
+                foreach($va_history as $d => $by_date) {
+                    foreach($by_date as $i => $h) {
+                        if(isset($deleted[$h['tracked_table_num']][$h['tracked_row_id']]) || isset($deleted[$h['current_table_num']][$h['current_row_id']])) {
+                            unset($va_history[$d][$i]);
+                            if(!sizeof($va_history[$d])) { unset($va_history[$d]); }
+                        }
+                    }
+                }
+            }
 			
 			foreach(array_reverse($va_history) as $d => $hl) {
 				foreach($hl as $i => $h) {
