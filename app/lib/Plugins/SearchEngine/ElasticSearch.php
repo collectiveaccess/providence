@@ -154,7 +154,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 *		BOOST = Indexing boost to apply
 	 *		PRIVATE = Set indexing to private
 	 */
-	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
+	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_container_id, $pn_content_row_id, $ps_content, $pa_options=null) {
 		$vs_table_name = Datamodel::getTableName($pn_subject_tablenum);
 
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
