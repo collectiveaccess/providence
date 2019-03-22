@@ -870,9 +870,11 @@ class MultipartIDNumber extends IDNumber {
 				case 'YEAR':
 					$va_output[$vn_i] = array($va_element_vals[$vn_i]);
 					if (preg_match('!^([0]+)([\d]+)$!', $va_element_vals[$vn_i], $va_matches)) {
-						for($vn_i=0; $vn_i < sizeof($va_matches[1]); $vn_i++) {
-							$va_output[$vn_i][] = substr($va_element_vals[$vn_i], $vn_i);
-						}
+					    if(is_array($va_matches[1])) {
+                            for($vn_i=0; $vn_i < sizeof($va_matches[1]); $vn_i++) {
+                                $va_output[$vn_i][] = substr($va_element_vals[$vn_i], $vn_i);
+                            }
+                        }
 					}
 					break;
 				default:
