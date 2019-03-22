@@ -125,7 +125,7 @@ var caUI = caUI || {};
 				        var e = elements[ie];
 				        if (e == '') { continue; }
 				        var r;
-				        if (r = e.match(/^([\d]+)/)) {
+				        if (r = e.match(/^([\d]+)$/)) {
 				            var e = String(parseInt(r[1]));
                             while (e.length < 10) {e = "0" + e;}
 				        } 
