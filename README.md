@@ -10,7 +10,7 @@ CollectiveAccess is freely available under the open source GNU Public License ve
 
 ### About CollectiveAccess 1.7.7
 
-Version 1.7.7 is a maintenance release with many bug fixes and a handful of new features. It is the first release compatible with PHP 7.2 and will run under PHP versions 5.6, 7.0, 7.1 and 7.2. It has not been extensively tested with PHP 7.3 or MySQL 8.0. A list of changes is [available][https://clangers.collectiveaccess.org/jira/issues/?filter=11242].
+Version 1.7.7 is a maintenance release with many bug fixes and a handful of new features. It is the first release compatible with PHP 7.2 and will run under PHP versions 5.6, 7.0, 7.1 and 7.2. It has not been extensively tested with PHP 7.3 or MySQL 8.0. A list of changes is [available](https://clangers.collectiveaccess.org/jira/issues/?filter=11242).
 
 
 ### Installation
