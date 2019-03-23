@@ -1,0 +1,64 @@
+<record xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.loc.gov/MARC21/slim" xsi:schemaLocation="http://www.loc.gov/MARC21/slim http://www.loc.gov/ standards/marcxml/schema/MARC21slim.xsd">
+  <leader>00711cam a2200229 45004500</leader>
+  <controlfield tag="001">LIBN539044247</controlfield>
+  <controlfield tag="003">OCoLC</controlfield>
+  <controlfield tag="005">20081030150430.0</controlfield>
+  <controlfield tag="008">070630|||||    |||           000 0 eng d</controlfield>
+  <datafield tag="020" ind1=" " ind2=" ">
+    <subfield code="a">9781856075442</subfield>
+  </datafield>
+  <datafield tag="020" ind1=" " ind2=" ">
+    <subfield code="a">1856075443</subfield>
+  </datafield>
+  <datafield tag="035" ind1=" " ind2=" ">
+    <subfield code="a">(OCoLC)156822300</subfield>
+  </datafield>
+  <datafield tag="040" ind1=" " ind2=" ">
+    <subfield code="a">BTCTA</subfield>
+    <subfield code="c">BTCTA</subfield>
+    <subfield code="d">YDXCP</subfield>
+    <subfield code="d">BAKER</subfield>
+    <subfield code="d">EMT</subfield>
+  </datafield>
+  <datafield tag="050" ind1=" " ind2="4">
+    <subfield code="a">BL2747.2</subfield>
+    <subfield code="b">.W45 2006</subfield>
+  </datafield>
+  <datafield tag="100" ind1="1" ind2=" ">
+    <subfield code="a">White, Stephen Ross.</subfield>
+  </datafield>
+  <datafield tag="245" ind1="1" ind2="0">
+    <subfield code="a">Space for unknowing :</subfield>
+    <subfield code="b">the place of agnosis in faith /</subfield>
+    <subfield code="c">Stephen R. White.</subfield>
+  </datafield>
+  <datafield tag="260" ind1=" " ind2=" ">
+    <subfield code="a">Dublin :</subfield>
+    <subfield code="b">Columba Press,</subfield>
+    <subfield code="c">c2006.</subfield>
+  </datafield>
+  <datafield tag="300" ind1=" " ind2=" ">
+    <subfield code="a">160 p. ;</subfield>
+    <subfield code="c">22 cm.</subfield>
+  </datafield>
+  <datafield tag="504" ind1=" " ind2=" ">
+    <subfield code="a">Includes bibliographical references.</subfield>
+  </datafield>
+  <datafield tag="650" ind1=" " ind2="0">
+    <subfield code="a">Agnosticism.</subfield>
+  </datafield>
+  <datafield tag="650" ind1=" " ind2="0">
+    <subfield code="a">Belief and doubt.</subfield>
+  </datafield>
+  <datafield tag="852" ind1=" " ind2=" ">
+    <subfield code="a">1</subfield>
+    <subfield code="h">230 WHI</subfield>
+    <subfield code="p">11111027105040</subfield>
+    <subfield code="t">6511254</subfield>
+    <subfield code="9">p26.95</subfield>
+  </datafield>
+  <datafield tag="901" ind1=" " ind2=" ">
+    <subfield code="a">LIBN539044247</subfield>
+    <subfield code="b">System</subfield>
+  </datafield>
+</record>

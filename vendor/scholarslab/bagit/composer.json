@@ -1,0 +1,16 @@
+{
+    "name": "scholarslab/bagit",
+    "version": "0.3.0",
+    "require": {
+        "pear/archive_tar": "~1.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.4",
+        "phpdocumentor/phpdocumentor": "2.*",
+        "pdepend/pdepend" : "2.1.0",
+        "phpmd/phpmd" : "@stable",
+        "sebastian/phpcpd": "*",
+        "squizlabs/php_codesniffer": "2.*",
+        "mayflower/php-codebrowser": "~1.1"
+    }
+}

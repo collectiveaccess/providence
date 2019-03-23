@@ -1,0 +1,7 @@
+547b21e9c710f562d448a6cd7d32f8257b04e561  data/imgs/109x109xcoins1-150x150.jpg
+fba552acae866d24fb143fef0ddb24efc49b097a  data/imgs/109x109xprosody.png
+4beed314513ad81e1f5fad42672a3b1bd3a018ea  data/imgs/110x108xmetaphor1.png
+4372383348c55775966bb1deeeb2b758b197e2a1  data/imgs/fellows1-150x150.png
+b8593e2b3c2fa3756d2b206a90c7259967ff6650  data/imgs/fibtriangle-110x110.jpg
+aec60202453733a976433833c9d408a449f136b3  data/imgs/uvalib.png
+0de174b95ebacc2d91b0839cb2874b2e8f604b98  data/README.txt

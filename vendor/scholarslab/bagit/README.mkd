@@ -1,0 +1,162 @@
+# BagIt PHP
+
+[![Build Status](https://secure.travis-ci.org/scholarslab/BagItPHP.png?branch=develop)](http://travis-ci.org/scholarslab/BagItPHP)
+
+This is a PHP implementation of the [BagIt
+0.96 specification](https://wiki.ucop.edu/display/Curation/BagIt)
+
+## Supported Features:
+
+* bag compiling
+* manifest and tagmanifest generation
+* generation of tag files, bag-info.txt and bagit.txt
+* fetching remote files (fetch.txt)
+* bag validation
+
+## Using Composer
+
+BagItPHP can be installed using [composer](https://getcomposer.org/) using a
+package repository. Your `composer.json` will need to look something like this:
+
+```json
+{
+  "require": {
+    "scholarslab/bagit": "~0.2"
+  }
+}
+```
+
+## Installation
+
+
+```bash
+% git clone git://github.com/scholarslab/BagItPHP.git
+```
+
+## Dependencies
+
+You'll need to have these installed to use this:
+
+ * Archive\_Tar (http://pear.php.net/package/Archive\_Tar)
+
+## Example: Creating a bag
+
+```php
+require_once 'lib/bagit.php';
+
+define('BASE_DIR', 'testbag');
+
+// create a new bag at BASE_DIR
+$bag = new BagIt(BASE_DIR);
+
+// add a file; these are relative to the data directory
+$bag->addFile('../phpunit.xml', 'phpunit.xml');
+
+// update the hashes
+$bag->update();
+
+// create a tarball
+$bag->package('testbag');
+
+// the bag package will be created at ./testbag.tgz
+```
+
+## Example: Creating an extended bag, with fetch.txt and bag-info.txt entries
+
+```php
+require_once 'lib/bagit.php';
+
+define('BASE_DIR', 'testbag');
+
+// define some metadata to add to bag-info.txt
+$baginfo = array('First-Tag' => 'This is the first tag value',
+  'Second-Tag' => 'This is the second tag value'
+);
+
+// create a new bag at BASE_DIR
+$bag = new BagIt(BASE_DIR, true, true, true, $baginfo);
+
+// add a file; these are relative to the data directory
+$bag->addFile('../phpunit.xml', 'phpunit.xml');
+
+// add additional metadata to bag-info.txt
+$bag->setBagInfoData('Third-Tag', 'This is the third tag value');
+
+// add some entries to fetch.txt
+$bag->fetch->add('http://example.com/bar.htm', 'bar.htm');
+$bag->fetch->add('http://example.com/baz.htm', 'baz.htm');
+
+// update the hashes
+$bag->update();
+
+// create a tarball
+$bag->package('testbag');
+
+// the bag package will be created at ./testbag.tgz
+```
+
+## Example: Validating an existing bag
+
+```php
+require_once 'lib/bagit.php';
+
+// use an existing bag
+$bag = new BagIt('test/TestBag.tgz');
+
+// check validity
+var_dump((bool)$bag->isValid());
+```
+
+## Example: Reading a bag
+
+```php
+require_once 'lib/bagit.php';
+
+// use an existing bag
+$bag = new BagIt('test/TestBag.tgz');
+
+// validate the bag
+$bag->validate();
+
+// only execute if a valid bag
+if (count($bag->getBagErrors()) == 0) {
+  // retrieve remote files
+  $bag->fetch->download();
+
+  // copy files
+  foreach ($bag->getBagContents() as $filename) {
+    copy($filename, 'final/destination/' . basename($filename));
+  }
+}
+```
+
+## Feedback
+
+We are relying on the [GitHub issues tracker][issues] linked from the above for
+feedback. File bugs or other issues [here][issues].
+
+[issues]: http://github.com/scholarslab/BagItPHP/issues
+
+## Tests
+
+The BagItPHP library includes unit tests to ensure the quality of the software.
+The easiest way to contribute to the project is to to let us know about andy bugs,
+and include a test case. Read the build.xml file more more information
+on running tests, the underlying report types, and packing information.
+
+## Note on Patches/Pull Requests
+
+* Fork the project
+* Make your feature addition/bug fix.
+* Add tests for it. This is important so we don't unintentionally break it in a future
+  version
+* Commit
+* Send us a pull request...bonus points for topic branches.
+
+## Kudos
+
+Thanks to everyone who's contributed to this:
+
+* [Wayne Graham](https://github.com/waynegraham/)
+* [Mark Jordan](https://github.com/mjordan)
+
