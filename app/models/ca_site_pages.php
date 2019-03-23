@@ -355,7 +355,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			        if ($vn_index > sizeof($va_media_list) - 1) { $vn_index = sizeof($va_media_list) - 1; }
 			        
 			        if (!isset($va_media_list[$vn_index])) { continue; }
-			        if (is_array($va_access_values) && !in_array($va_media_list[$vn_index]['access'], $va_access_values)) { print "x=".$va_media_list[$vn_index]['access'];continue; }
+			        if (is_array($va_access_values) && !in_array($va_media_list[$vn_index]['access'], $va_access_values)) { continue; }
 			        
 			        $vs_media_tag = null;
 			        switch($vs_version = caGetOption('version', $va_media, 'small')) {

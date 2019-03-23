@@ -821,7 +821,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
 				
 				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-				$o_view->setVar('location_history', $h = $this->getLocationHistory(array('template' => $vs_history_template)));
+				$o_view->setVar('location_history', $this->getLocationHistory(array('template' => $vs_history_template)));
 				
 				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
 				$o_view->setVar('location_change_url',  null);
@@ -834,7 +834,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
 				
 				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
-				$o_view->setVar('location_history', $h = $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
+				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
 				
 				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_object_tracking_relationship_type'));
 				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
@@ -845,8 +845,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
- 	 *
  	 * Return array with list of significant events in object life cycle as configured for 
  	 * a ca_objects_history editor bundle.
 	 *
@@ -1442,8 +1440,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
- 	 *
  	 * Returns HTML editor form bundle for ca_objects_history (object use history bundle)
 	 *
 	 * @param HTTPRequest $po_request The current request
@@ -1552,7 +1548,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: deprecate?
+ 	 * 
  	 */
 	private function _processObjectHistoryBundleSettings($pa_bundle_settings) {
 
@@ -1631,7 +1627,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	}
 	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
+ 	 * 
  	 */
  	public function getLastMovement($pa_options=null) {
  		$pn_object = caGetOption('object_id', $pa_options, null);
@@ -1664,8 +1660,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
- 	 *
  	 *
  	 *
  	 * @param array $pa_options Array of options:
@@ -1780,8 +1774,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
- 	 *
  	 * Return last storage location formatted using provided template
  	 */
  	public function getLastLocationForDisplay($ps_template, $pa_options=null) {
@@ -1792,7 +1784,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: deprecate
+ 	 *
  	 *
  	 * @param array $pa_options Array of options:
  	 *		template =
@@ -2082,8 +2074,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
- 	 *
  	 * Determines is a change being made to the object's relationships maight affect current location. I
  	 *
  	 * @param mixed $pm_rel_table_name_or_num Table bame or number of the related table
@@ -2107,8 +2097,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
- 	 *
  	 * Calculates the current location of the currently loaded object and stores them in the ca_objects.current_loc_class,
  	 * ca_objects.current_loc_subclass and ca_objects.current_loc_id fields.
  	 *
@@ -2157,8 +2145,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecate
- 	 *
  	 * Sets the ca_objects.current_loc_class, ca_objects.current_loc_subclass and ca_objects.current_loc_id
  	 * fields in the currently loaded object row with information about the current location. These fields are used 
  	 * by BrowseEngine to browse objects on current location
@@ -2223,8 +2209,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 * TODO: Deprecste
- 	 *
  	 * Fetches configuration for the specified location class/subclass
  	 *
  	 * @param mixed $pm_current_loc_class Table name or number (aka. class)

@@ -369,7 +369,7 @@ class SearchEngine extends SearchBase {
 				'form_id' => $vn_search_form_id, 
 				'ip_addr' => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null,
 				'details' => $vs_log_details,
-				'search_source' => $vs_search_source,
+				'search_source' => __CA_APP_TYPE__.($vs_search_source ? ":{$vs_search_source}" : ""),
 				'execution_time' => $vn_execution_time
 			));
 		}
