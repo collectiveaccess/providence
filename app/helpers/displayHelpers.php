@@ -34,13 +34,13 @@
    *
    */
    	
-require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
-require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
+require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -284,7 +284,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			case 'ca_relationship_types':
 				// get # of relationships using this type
 				$vn_rel_count = $t_instance->getRelationshipCountForType();
-				$t_rel_instance = $t_instance->getAppDatamodel()->getInstanceByTableNum($t_instance->get('table_num'));
+				$t_rel_instance = Datamodel::getInstanceByTableNum($t_instance->get('table_num'));
 				if (!$t_rel_instance->load($t_instance->get('table_num'))) { return ''; }
 				if ($vn_rel_count == 1) {
 					$va_reference_to_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
@@ -304,7 +304,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
 				
 				foreach($va_tables as $vs_table) {
-					$va_items = $t_instance->getRelatedItems($vs_table);
+					if (!is_array($va_items = $t_instance->getRelatedItems($vs_table))) { $va_items = []; }
 					
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {
@@ -702,8 +702,8 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 */
 	function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = "<script type=\"text/javascript\">
-		jQuery(document).ready(function() {
-			jQuery(document).bind('keydown.ctrl_f', function() {
+		jQuery(document).on('ready', function() {
+			jQuery(document).on('keydown.ctrl_f', function() {
 				caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
 				caEditorFieldList.onOpenCallback = function(){
 					var selector = '#' + caEditorFieldList.panelID + ' a.editorFieldListLink:link';
@@ -742,11 +742,10 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 * @return string 
 	 */
 	function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+		$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
 		$vs_buf = "<script type=\"text/javascript\">
-		jQuery(document).ready(function() {
-			jQuery(document).bind('keydown.ctrl_h', function() {
+		jQuery(document).on('ready', function() {
+			jQuery(document).on('keydown.ctrl_h', function() {
 				caEditorFieldList.hidePanel({dontCloseMask:1});
 				
 				var url;
@@ -793,10 +792,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$vs_type_name			= method_exists($t_item, "getTypeName") ? $t_item->getTypeName() : '';
 		if (!$vs_type_name) { $vs_type_name = $t_item->getProperty('NAME_SINGULAR'); }
 		
-		$va_reps 				= $po_view->getVar('representations');
-		
-		
-		$o_dm = Datamodel::load();
+		if (!is_array($va_reps = $po_view->getVar('representations'))) { $va_reps = []; }		
 		
 		if ($t_item->isHierarchical()) {
 			$va_ancestors 		= $po_view->getVar('ancestors');
@@ -853,7 +849,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 							// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
 							//
 							$va_placement = array_shift($va_placements);
-							$va_bundle_settings = $va_placement['settings'];
+							$va_bundle_settings = caConvertCurrentLocationCriteriaToBundleSettings(); //$va_placement['settings'];
 							if (is_array($va_history = $t_item->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
 								$va_current_location = array_shift(array_shift($va_history));
 
@@ -1256,8 +1252,8 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$vs_rel_table = $po_view->request->getParameter('rel_table', pString);
 				$vn_rel_type_id = $po_view->request->getParameter('rel_type_id', pString);
 				$vn_rel_id = $po_view->request->getParameter('rel_id', pInteger);
-				if($vs_rel_table && $po_view->request->datamodel->tableExists($vs_rel_table) && $vn_rel_type_id && $vn_rel_id) {
-					$t_rel = $po_view->request->datamodel->getTableInstance($vs_rel_table);
+				if($vs_rel_table && Datamodel::tableExists($vs_rel_table) && $vn_rel_type_id && $vn_rel_id) {
+					$t_rel = Datamodel::getInstance($vs_rel_table);
 					if($t_rel && $t_rel->load($vn_rel_id)){
 						$vs_buf .= '<strong>'._t("Will be related to %1", $t_rel->getTypeName()).'</strong>: '.$t_rel->getLabelForDisplay();
 					}
@@ -1380,7 +1376,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			if (is_array($va_show_counts_for = $po_view->request->config->getList($t_item->tableName().'_show_related_counts_in_inspector_for')) && sizeof($va_show_counts_for)) {
 				foreach($va_show_counts_for as $vs_rel_table) {
 					if (($vn_count = (int)$t_item->getRelatedItems($vs_rel_table, ['returnAs' => 'count'])) > 0) {
-						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, $o_dm->getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
+						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, Datamodel::getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
 					}
 				}
 			}
@@ -1391,7 +1387,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			if ($vs_table_name === 'ca_object_representations') {
 				foreach(array('ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements') as $vs_rel_table) {
 					if (sizeof($va_objects = $t_item->getRelatedItems($vs_rel_table))) {
-						$vs_buf .= "<div><strong>"._t("Related %1", $o_dm->getTableProperty($vs_rel_table, 'NAME_PLURAL'))."</strong>: <br/>\n";
+						$vs_buf .= "<div><strong>"._t("Related %1", Datamodel::getTableProperty($vs_rel_table, 'NAME_PLURAL'))."</strong>: <br/>\n";
 						
 						$vs_screen = '';
 						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_view->request, null)) {
@@ -1399,7 +1395,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 						}
 						foreach($va_objects as $vn_rel_id => $va_rel_info) {
 							if ($vs_label = array_shift($va_rel_info['labels'])) {
-								$vs_buf .= caEditorLink($po_view->request, '&larr; '.$vs_label.' ('.$va_rel_info['idno'].')', '', $vs_rel_table, $va_rel_info[$o_dm->getTablePrimaryKeyName($vs_rel_table)], array(), array(), array('action' => 'Edit'.($vs_screen ? "/{$vs_screen}" : "")))."<br/>\n";
+								$vs_buf .= caEditorLink($po_view->request, '&larr; '.$vs_label.' ('.$va_rel_info['idno'].')', '', $vs_rel_table, $va_rel_info[Datamodel::primaryKey($vs_rel_table)], array(), array(), array('action' => 'Edit'.($vs_screen ? "/{$vs_screen}" : "")))."<br/>\n";
 							}
 						}
 						$vs_buf .= "</div>\n";
@@ -1427,7 +1423,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				
 				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
 				
-				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.$o_dm->getTableName($t_item->get('table_num'))))) {
+				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_item->get('table_num'))))) {
 					$vs_buf .= caNavButton($po_view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
 				}
 				TooltipManager::add(".editorBatchSetEditorLink", _t('Batch Edit')); 
@@ -1437,7 +1433,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				if ($t_item->getPrimaryKey()) {
 					
 					$vn_set_table_num = $t_item->get('table_num');
-					$vs_set_table_name = $o_dm->getTableName($vn_set_table_num);
+					$vs_set_table_name = Datamodel::getTableName($vn_set_table_num);
 					$vs_buf .= "<strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
 					
 					$vs_buf .= "</div>\n";
@@ -1500,7 +1496,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				if ($t_set->load($vn_set_id = $t_item->get('set_id'))) {
 					$vs_buf .= "<div><strong>"._t("Part of set")."</strong>: ".caEditorLink($po_view->request, $t_set->getLabelForDisplay(), '', 'ca_sets', $vn_set_id)."<br/>\n";
 					
-					$t_content_instance = $t_item->getAppDatamodel()->getInstanceByTableNum($vn_item_table_num = $t_item->get('table_num'));
+					$t_content_instance = Datamodel::getInstanceByTableNum($vn_item_table_num = $t_item->get('table_num'));
 					if ($t_content_instance->load($vn_row_id = $t_item->get('row_id'))) {
 						$vs_label = $t_content_instance->getLabelForDisplay();
 						if ($vs_id_fld = $t_content_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
@@ -1510,6 +1506,20 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 					}
 					
 					$vs_buf .= "</div>\n";
+				}
+			}
+
+			//
+			// Output extra useful info for metadata alert rules
+			if (($vs_table_name == 'ca_metadata_alert_rules')) {
+				if ($t_item->getPrimaryKey()) {
+					$vs_buf .= "<div><strong>"._t("Rule content type")."</strong>: ".caGetTableDisplayName($t_item->get('table_num'))."<br/></div>\n";
+				} else {
+					if ($vn_set_table_num = $po_view->request->getParameter('table_num', pInteger)) {
+						$vs_buf .= "<div><strong>"._t("Rule content type")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
+
+						$vs_buf .= "</div>\n";
+					}
 				}
 			}
 			
@@ -1548,10 +1558,10 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			// Output containing relationship type name for relationship types
 			// 
 			if ($vs_table_name === 'ca_relationship_types') {
-				if (!($t_rel_instance = $t_item->getAppDatamodel()->getInstanceByTableNum($t_item->get('table_num'), true))) {
+				if (!($t_rel_instance = Datamodel::getInstanceByTableNum($t_item->get('table_num'), true))) {
 					if ($vn_parent_id = $po_view->request->getParameter('parent_id', pInteger)) {
 						$t_rel_type = new ca_relationship_types($vn_parent_id);
-						$t_rel_instance = $t_item->getAppDatamodel()->getInstanceByTableNum($t_rel_type->get('table_num'), true);
+						$t_rel_instance = Datamodel::getInstanceByTableNum($t_rel_type->get('table_num'), true);
 					}
 				}
 				
@@ -1570,7 +1580,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 					$vs_buf .= "<div><strong>"._t("Referenced by user interfaces")."</strong>:<br/>\n";
 					foreach($va_uis as $vn_ui_id => $va_ui_info) {
 						$vs_buf .= caNavLink($po_view->request, $va_ui_info['name'], '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('ui_id' => $vn_ui_id, 'screen_id' => $va_ui_info['screen_id']));
-						$vs_buf .= " (".$o_dm->getTableProperty($va_ui_info['editor_type'], 'NAME_PLURAL').")<br/>\n";
+						$vs_buf .= " (".Datamodel::getTableProperty($va_ui_info['editor_type'], 'NAME_PLURAL').")<br/>\n";
 					}
 					$vs_buf .= "</div>\n";
 				}
@@ -1834,7 +1844,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$o_result_context		= $po_view->getVar('result_context');
 		$t_ui 					= $po_view->getVar('t_ui');
 		
-		$o_dm = Datamodel::load();
 		
 		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink($po_view->request, 'Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
 
@@ -1896,7 +1905,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		// Nav link for batch delete
 		// -------------------------------------------------------------------------------------
 
-		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.$o_dm->getTableName($t_set->get('table_num'))))) {
+		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($t_set->get('table_num'))))) {
 
 			$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More options")."</a> &rsaquo;</div>
 				<div id='inspectorInfo' class='setDelete'>";
@@ -1991,8 +2000,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	  *
 	  */
 	function caTableIsActive($pm_table) {
-		$o_dm = Datamodel::load();
-		$t_instance = is_numeric($pm_table) ? $o_dm->getInstanceByTableNum($pm_table, true) : $o_dm->getInstanceByTableName($pm_table, true);
+		$t_instance = is_numeric($pm_table) ? Datamodel::getInstanceByTableNum($pm_table, true) : Datamodel::getInstanceByTableName($pm_table, true);
 		if (!$t_instance) { return null; }
 		
 		$vs_table_name = $t_instance->tableName();
@@ -2030,7 +2038,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	function caFilterTableList($pa_tables, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
 		$o_config = Configuration::load();
-		$o_dm = Datamodel::load();
 		
 		// assume table display names (*not actual database table names*) are keys and table_nums are values
 		$va_filtered_tables = array();
@@ -2038,7 +2045,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 			
 			if (!caTableIsActive($vn_table_num)) { continue; }
-			$vs_table_name = $o_dm->getTableName($vn_table_num);
+			$vs_table_name = Datamodel::getTableName($vn_table_num);
 			
 			switch($vs_table_name) {
 				case 'ca_occurrences':
@@ -2075,9 +2082,8 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 */
 	function caGetTableDisplayName($pm_table_name_or_num, $pb_use_plural=true) {
 		require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
-		$o_dm = Datamodel::load();
 		
-		$vs_table = $o_dm->getTableName($pm_table_name_or_num);
+		$vs_table = Datamodel::getTableName($pm_table_name_or_num);
 		
 		switch($vs_table) {
 			case 'ca_occurrences':
@@ -2091,7 +2097,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 					return join('/', $va_type_labels);
 				break;
 			default:
-				if($t_instance = $o_dm->getInstanceByTableName($vs_table, true)) {
+				if($t_instance = Datamodel::getInstanceByTableName($vs_table, true)) {
 					return $t_instance->getProperty(($pb_use_plural ? 'NAME_PLURAL' : 'NAME_SINGULAR'));
 				}
 				break;
@@ -2220,7 +2226,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=null) {
 	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
-		
+
 		$pb_omit_units = caGetOption('omitUnits', $pa_options, false);
 		
 		$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
@@ -2392,7 +2398,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 */
 	function caGetRelationDisplayString($po_request, $ps_table, $pa_attributes=null, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_dm = Datamodel::load();
 		
 		$ps_prefix = caGetOption('prefix', $pa_options, null);
 		
@@ -2403,7 +2408,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : []);
 		$vs_display = "{".caGetOption('display', $pa_options, '_display')."}";
 		if (caGetOption('makeLink', $pa_options, false)) {
-			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
+			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.Datamodel::primaryKey($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
 		$vs_reltype_disp = caGetOption('editableRelationshipType', $pa_options, (bool)$o_config->get("{$ps_table}_lookup_relationship_type_editable")) ? "<select name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' class='listRelRelationshipTypeEdit'></select>" : "({{relationship_typename}}) <input type='hidden' name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' value='{type_id}'/>";
@@ -2726,17 +2731,16 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		if(!$po_request) { global $g_request; $po_request = $g_request; }
 		
 	
-		$va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings");
-		$vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter");
+		if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
+		if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
 		if (!$vs_template) { $vs_template = join($vs_display_delimiter, $va_display_format); }
 		
 		$va_related_item_info = $va_parent_ids = $va_hierarchy_ids = array();
 		$va_items = array();
 		
-		$o_dm = Datamodel::load();
-		$t_rel = $o_dm->getInstanceByTableName($vs_rel_table, true);
+		$t_rel = Datamodel::getInstanceByTableName($vs_rel_table, true);
 		/** @var ca_sets $t_set */
-		$t_set = $o_dm->getInstance('ca_sets', true);
+		$t_set = Datamodel::getInstance('ca_sets', true);
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
 		$vn_c = 0;
@@ -2757,7 +2761,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$vs_table = 	$qr_rel_items->tableName();
 				$vs_pk = 		$qr_rel_items->primaryKey();
 				
-				$vs_idno_fld = $o_dm->getTableProperty($vs_table, 'ID_NUMBERING_ID_FIELD');
+				$vs_idno_fld = Datamodel::getTableProperty($vs_table, 'ID_NUMBERING_ID_FIELD');
 				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 				
 				while($qr_rel_items->nextHit()) {
@@ -2929,10 +2933,10 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 *
 	 */
 	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null) {
-		$o_config = Configuration::load();
+		$o_config = caGetDetailConfig();
 		$vn_can_download = false;
-		if($o_config->get('allow_ca_objects_representation_download')){
-			switch($o_config->get('allow_ca_objects_representation_download')){
+		if($vs_allow = $o_config->get(['allowObjectRepresentationDownload', 'allow_ca_objects_representation_download'])){
+			switch($vs_allow){
 				case "anyone":
 					$vn_can_download = true;
 				    break;
@@ -2949,18 +2953,21 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 					}
 				    break;
 				# ------------------------------------------
+				default:
 				case "never":
 				    $vn_can_download = false;
 				    break;
 				# ------------------------------------------
 			}
 		}
-		if($pn_object_id && $vn_can_download && is_array($o_config->get('allow_ca_objects_representation_download_types')) && sizeof($o_config->get('allow_ca_objects_representation_download_types'))){
+		
+		$va_types = $o_config->get(['restrictObjectRepresentationDownloadToObjectTypes', 'allow_ca_objects_representation_download_types']);
+		if($pn_object_id && $vn_can_download && is_array($va_types) && sizeof($va_types)){
 			# --- see if current object's type is in the confirgured array
 			$t_object = new ca_objects($pn_object_id);
 			$t_list_item = new ca_list_items($t_object->get("type_id"));
 			$va_object_type_code = $t_list_item->get("idno");
-			if(!in_array($va_object_type_code, $o_config->get('allow_ca_objects_representation_download_types'))){
+			if(!in_array($va_object_type_code, $va_types)){
 				$vn_can_download = false;
 			}
 		}
@@ -2980,6 +2987,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 * @param array $pa_options Supported options are:
 	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 * 		addRelParameter =
+	 *      absolute = Return absolute urls [Default is false]
 	 *
 	 * @return array A list of HTML links
 	 */
@@ -3001,6 +3009,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$o_doc = str_get_dom($ps_template);	
 		
 		$va_links = array();
+		$va_link_opts = ['absolute' => isset($pa_options['absolute']) ? $pa_options['absolute'] : false];
 		
 		global $g_request;
 		if (!$g_request) { return $pa_text; }
@@ -3025,16 +3034,16 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$vs_content = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $vs_content); 
 				foreach($va_l_tags as $va_l) {
 					if ($vb_can_handle_target) {
-						$va_params = array('request' => $g_request, 'content' => $va_l['content'], 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
+						$va_params = array('request' => $g_request, 'content' => $va_l['content'], 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => $va_link_opts);
 						$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);
 						$vs_link_text = $va_params['tag'];
 					} else {
 						switch(__CA_APP_TYPE__) {
 							case 'PROVIDENCE':
-								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()));
+								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()), null, $va_link_opts);
 								break;
 							case 'PAWTUCKET':
-								$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+								$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i], null, null, $va_link_opts);
 								break;
 						}					
 					}
@@ -3052,16 +3061,16 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 					continue;
 				}
 				if ($vb_can_handle_target) {
-					$va_params = array('request' => $g_request, 'content' => $vs_text, 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
+					$va_params = array('request' => $g_request, 'content' => $vs_text, 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => $va_link_opts);
 					$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);
 					$va_links[$vn_i]  = $va_params['tag'];
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[$vn_i] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()))) ? $vs_link : $vs_text;
+							$va_links[$vn_i] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()), null, $va_link_opts)) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
-							$va_links[$vn_i] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
+							$va_links[$vn_i] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], null, null, $va_link_opts)) ? $vs_link : $vs_text;
 							break;
 						default:
 							$va_links[$vn_i] = $vs_text;
@@ -3226,7 +3235,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 						$va_placements[] = $va_bundles_by_code[$vs_field];
 					}
 					
-					$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements , $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
+					$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements, $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
 					
 					$vs_template = str_replace("^".$va_tag['originalTag'], $vs_val, $vs_template);
 					
@@ -3242,7 +3251,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 */
 	function caProcessBottomLineTemplateForPlacement($po_request, $pa_placement, $pr_res, $pa_options=null) {
 		global $g_ui_units_pref, $g_ui_locale;
-		$o_dm = Datamodel::load();
 		
 		if (!$pr_res) { return null; }
 		
@@ -3257,8 +3265,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$pn_page_start = caGetOption('pageStart', $pa_options, 0);
 		$pn_page_end = caGetOption('pageEnd', $pa_options, $pr_res->numHits());
 		
-		$va_tags_to_process = array();
-		$va_subelements_to_process = array();
+		$va_tags_to_process = $va_subelements_to_process = $va_tag_values = [];
 		
 		foreach($pa_placements as $pa_placement) {
 			if (!$pr_res) { return null; }
@@ -3270,7 +3277,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		
 			$va_tmp = explode(".", $vs_bundle_name);
 		
-			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+			if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
 				return null;
 			}
 
@@ -3560,7 +3567,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
  	 */
  	function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=null) {
  		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
- 		$o_dm = DataModel::load();
  		
 		$va_access_values = caGetUserAccessValues($po_request);
 		
@@ -3573,7 +3579,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
 				
  		
- 		$t_instance = $o_dm->getInstanceByTableName($po_data->tableName(), true);
+ 		$t_instance = Datamodel::getInstanceByTableName($po_data->tableName(), true);
  		
  		$vo_data = null;
  		if(is_a($po_data, 'SearchResult') && ($t_instance) && (is_a($t_instance, 'RepresentableBaseModel'))) {
@@ -3711,9 +3717,21 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$va_add_to_set_link_info = caGetAddToSetInfo($po_request);
 		
 		$vs_tool_bar = "<div class='detailMediaToolbar'>";
-		if(!$va_rep_display_info["no_overlay"]){
-			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $pt_representation->getPrimaryKey(), 'overlay' => 1))."\"); return false;' title='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in'></span></a>\n";
+		$vn_rep_id = $pt_representation->getPrimaryKey();
+		
+		$va_detail_type_config = caGetDetailTypeConfig($ps_context);
+		
+		if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
+			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'overlay' => 1))."\"); return false;' title='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in'></span></a>\n";
 		}
+		
+		if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
+		    $vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
+		}
+		if ($vb_show_compare) {
+		   $vs_tool_bar .= "<a href='#' class='compare_link' title='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true'></i></a>";
+		}
+		
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
 			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' title='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
 		}
@@ -3721,8 +3739,9 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 			# -- get version to download configured in media_display.conf
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
-			
-			$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("title" => _t("Download")));
+			if($vs_download_version){
+				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("title" => _t("Download")));
+			}
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
 		
@@ -3887,9 +3906,8 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				
-				$o_dm = Datamodel::load();
 				
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 
                 
@@ -3909,7 +3927,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				
 				if ($pb_inline) {
 					$vs_tool_bar = caRepToolbar($po_request, $t_instance, $pt_subject, array('display' => $ps_display_type, 'context' => $ps_context, 'checkAccess' => $pa_check_acccess));
-					$vs_viewer = "<div class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}{$vs_tool_bar}</div></div>";
+					$vs_viewer = "<div data-representation_id='{$pn_representation_id}' data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}{$vs_tool_bar}</div></div>";
 				}
 				
 				return $vs_viewer;
@@ -3970,8 +3988,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$o_dm = Datamodel::load();
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 			
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -4020,8 +4037,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$o_dm = Datamodel::load();
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 			
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -4070,8 +4086,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				$o_dm = Datamodel::load();
-				$pt_subject = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 			
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
@@ -4139,12 +4154,14 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 					
 				$vs_caption = (isset($pa_options["captionTemplate"]) && $pa_options["captionTemplate"]) ? $po_data->getWithTemplate($pa_options["captionTemplate"]) : "";
 			
-				$va_reps[$vn_rep_id = $po_data->get('ca_object_representations.representation_id')] = "<div class='repViewerContCont'><div id='cont{$vn_rep_id}' class='repViewerCont'>".$vs_viewer_name::getViewerHTML(
+				$va_reps[$vn_rep_id = $po_data->get('ca_object_representations.representation_id')] = "<div data-representation_id='{$vn_rep_id}' class='repViewerContCont'><div id='cont{$vn_rep_id}' class='repViewerCont'>".$vs_viewer_name::getViewerHTML(
 					$po_request, 
 					"representation:{$vn_representation_id}", 
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
 					['viewerWrapper' => 'viewerInline', 'context' => caGetOption('context', $pa_options, null)]
 				).$vs_tool_bar.$vs_caption."</div></div>";
+				
+				if (sizeof($va_reps) > 10) { break(2); }
 			}
  		}
  		return $va_reps;
@@ -4261,10 +4278,9 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 * @return bool
 	 */
 	function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id=null) {
-		$o_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		
-		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		
 		if(!$pt_request->isLoggedIn() || (!$pt_request->user->canDoAction("can_edit_{$ps_table}") && (($vs_hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$pt_request->user->canDoAction("can_edit_{$vs_hier_table}") : false))) { return false; }
 		if (!$t_instance->isHierarchical()) { return false; }
@@ -4274,7 +4290,7 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 		$vs_def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
 		$vs_def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
 		
-		if ($vs_def_table_name && ($t_def = $o_dm->getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
+		if ($vs_def_table_name && ($t_def = Datamodel::getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
 			return true;
 		} else {
 			$va_sort_values = $o_config->getList("{$ps_table}_hierarchy_browser_sort_values");
@@ -4298,7 +4314,6 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	 * @seealso caDragAndDropSortingForHierarchyEnabled
 	 */
 	function caGetDragAndDropSortingAvailabilityMap($pt_request, $ps_table, $pn_id) {
-		$o_dm = Datamodel::load();
 		$o_config = Configuration::load();
 		
 		if ($ps_table == 'ca_list_items') {
@@ -4458,18 +4473,53 @@ require_once(__CA_LIB_DIR__.'/core/Media/MediaInfoCoder.php');
 	    global $g_request;
 	    if (!$po_request) { $po_request = $g_request; }
 	    if (!$po_request) { return []; }
-	    if (!is_array($pa_tables) && !sizeof($pa_tables)) {
+	    if (!is_array($pa_tables) || !sizeof($pa_tables)) {
 	        $pa_tables = ['ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
 	    }
 	    
-	    $o_dm = Datamodel::load();
 	    
 	    $va_lookup_urls = [];
         foreach($pa_tables as $vs_table) {
             if (!caTableIsActive($vs_table)) { continue; }
             $va_urls = caJSONLookupServiceUrl($po_request, $vs_table);
-            $va_lookup_urls[$vs_table] = ['singular' => $o_dm->getTableProperty($vs_table, 'NAME_SINGULAR'), 'plural' => $o_dm->getTableProperty($vs_table, 'NAME_PLURAL'), 'code' => strtolower($o_dm->getTableProperty($vs_table, 'NAME_SINGULAR')), 'url' => $va_urls['search']];   
+            $va_lookup_urls[$vs_table] = ['singular' => Datamodel::getTableProperty($vs_table, 'NAME_SINGULAR'), 'plural' => Datamodel::getTableProperty($vs_table, 'NAME_PLURAL'), 'code' => strtolower(Datamodel::getTableProperty($vs_table, 'NAME_SINGULAR')), 'url' => $va_urls['search']];   
         }
         return $va_lookup_urls;
 	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caConvertCurrentLocationCriteriaToBundleSettings() {
+	    require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
+	    
+	    $o_config = Configuration::load();
+	    $va_bundle_settings = array();
+ 		$t_rel_type = new ca_relationship_types();
+ 		
+	    $va_map = $o_config->getAssoc('current_location_criteria');
+ 		if(!is_array($va_map)){
+		    $va_map = array();
+	    }
+	 
+ 		foreach($va_map as $vs_table => $va_types) {
+ 			$va_bundle_settings["{$vs_table}_showTypes"] = array();
+ 			if(is_array($va_types)) {
+				foreach($va_types as $vs_type => $va_config) {
+					switch($vs_table) {
+						case 'ca_storage_locations':
+						case 'ca_objects_x_storage_locations':
+							$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $vs_type);
+							break;
+						default:
+							if(!is_array($va_config)) { break; }
+							$va_bundle_settings["{$vs_table}_showTypes"][] = array_shift(caMakeTypeIDList($vs_table, array($vs_type)));
+							$va_bundle_settings["{$vs_table}_{$vs_type}_dateElement"] = $va_config['date'];
+							break;
+					}
+				}
+			}
+ 		}
+ 		return $va_bundle_settings;
+ 	}
 	# ------------------------------------------------------------------

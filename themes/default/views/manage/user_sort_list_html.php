@@ -71,7 +71,7 @@
 					</td>
 					<td>
 <?php
-						print Datamodel::load()->getInstance($va_sort['table_num'])->getProperty('NAME_PLURAL');
+						print Datamodel::getInstance($va_sort['table_num'])->getProperty('NAME_PLURAL');
 ?>
 					</td>
 					<td class="listtableEdit">

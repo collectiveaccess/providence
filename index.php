@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,12 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
+	define("__CA_APP_TYPE__", "PROVIDENCE");
 	define("__CA_MICROTIME_START_OF_REQUEST__", microtime());
 	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
-	define("__CA_APP_TYPE__", "PROVIDENCE");
+	require("./app/helpers/errorHelpers.php");
 	
-	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
+	if (!file_exists('./setup.php')) {
+		caDisplayException(new ApplicationException("No setup.php found"));
+		exit; 
+	}
 	require('./setup.php');
+	require_once('./app/helpers/post-setup.php');
 
 	try {
 		// connect to database
@@ -46,7 +51,7 @@
 		//
 		// do a sanity check on application and server configuration before servicing a request
 		//
-		require_once(__CA_APP_DIR__.'/lib/ca/ConfigurationCheck.php');
+		require_once(__CA_APP_DIR__.'/lib/ConfigurationCheck.php');
 		ConfigurationCheck::performQuick();
 		if(ConfigurationCheck::foundErrors()){
 			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__ && $_REQUEST['updateSchema']) {
@@ -74,11 +79,17 @@
 		// Prevent caching
 		$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
 		$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
+		
+		// Security headers
+		$resp->addHeader("X-XSS-Protection", "1; mode=block");
+		$resp->addHeader("X-Frame-Options", "SAMEORIGIN");
+		$resp->addHeader("Content-Security-Policy", "script-src 'self' ajax.googleapis.com nominatim.openstreetmap.org maps.googleapis.com cdn.knightlab.com 'unsafe-inline' 'unsafe-eval';"); 
+		$resp->addHeader("X-Content-Security-Policy", "script-src 'self' ajax.googleapis.com nominatim.openstreetmap.org maps.googleapis.com cdn.knightlab.com 'unsafe-inline' 'unsafe-eval';"); 
 
 		//
 		// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature
 		//
-		if (!preg_match("/^[\/]{0,1}system\/auth\/(dologin|login|forgot|requestpassword|initreset|doreset)/", strtolower($req->getPathInfo()))) {
+		if ((AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !preg_match("/^[\/]{0,1}system\/auth\/callback/", strtolower($req->getPathInfo()))) || !preg_match("/^[\/]{0,1}system\/auth\/(dologin|login|forgot|requestpassword|initreset|doreset|callback)/", strtolower($req->getPathInfo()))) {
 			$vb_auth_success = $req->doAuthentication(array('noPublicUsers' => true));
 
 			if(!$vb_auth_success) {
@@ -101,7 +112,7 @@
 		//
 		// PageFormat plug-in generates header/footer shell around page content
 		//
-		require_once(__CA_APP_DIR__.'/lib/ca/PageFormat.php');
+		require_once(__CA_APP_DIR__.'/lib/PageFormat.php');
 		if (!$req->isAjax() && !$req->isDownload()) {
 			$app->registerPlugin(new PageFormat());
 		}

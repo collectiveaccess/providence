@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
+require_once(__CA_LIB_DIR__.'/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_set_labels'] = array(

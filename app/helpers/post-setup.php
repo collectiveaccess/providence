@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 
 #
 # __CA_BASE_DIR__ = the absolute server path to the directory containing your CollectiveAccess installation
@@ -77,7 +76,7 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 #		The default value is based on the URL being used to access the site.  To force a protocol, set it explicitly.
 #
 if (!defined("__CA_SITE_PROTOCOL__")) {
-	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : 'http');
+	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&  ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http'));
 }
 
 
@@ -137,7 +136,7 @@ if (!defined("__CA_DB_TYPE__")) {
 	define("__CA_DB_TYPE__", 'mysqli');
 }
 
-set_include_path(__CA_LIB_DIR__.'/ca'.PATH_SEPARATOR.__CA_LIB_DIR__.'/core'.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
+set_include_path(__CA_LIB_DIR__.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
 
 # The path to the main instance configuration file defined as a constant
 if (!defined('__CA_APP_CONFIG__')) {
@@ -179,7 +178,10 @@ if (!defined("__CA_THEME_URL__")) {
 # Installation-specific configuration simply allows you to override selected application configuration as-needed without having to modify the stock config
 # Note also that unit tests should generally ignore local configuration and use the base configuration only
 if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
-	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_THEMES_DIR__."/".__CA_THEME__."/conf");
+	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_APP_DIR__."/conf/local");
+}
+if (!defined("__CA_DEFAULT_THEME_CONFIG_DIRECTORY__")) {
+	define("__CA_DEFAULT_THEME_CONFIG_DIRECTORY__", __CA_THEMES_DIR__."/".__CA_THEME__."/conf");
 }
 
 #
@@ -289,8 +291,29 @@ if (!defined('__CA_REDIS_DB__')) {
 
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
+# __CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__
+#
+# Set this to allow allow web-based loading of missing vendor libraries.
+# This can be a very convenient way to install your system but could present a possible 
+# security risk if your system is publicly accessible on the internet. The risk is that 
+# by exposing the update control on a public url on a publicly accessible site you are 
+# potentially allowing anyone to initiate the update. 
+if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__')) {
+	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__', true);
+}
+
+# Is vendor code set up?
+require_once(__CA_APP_DIR__.'/helpers/requestHelpers.php');	// provides caCheckVendorLibraries helper
+caCheckVendorLibraries();
+
 # includes commonly used classes
 require_once(__CA_APP_DIR__.'/helpers/preload.php');
+
+#
+# Bail if request is a Google Cloud health check. We can to return an HTTP 200 code to 
+# signify "health"
+#
+if (caRequestIsHealthCheck()) { print "OK"; exit; }
 
 # __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__
 #
@@ -330,9 +353,7 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
 # This can be a very convenient way to update your database but could present a possible 
 # security risk if your system is publicly accessible on the internet. The risk is that 
 # by exposing the update control on a public url on a publicly accessible site you are 
-# potentially allowing anyone to initiate the database update. That's all they
-# can do, which in and of itself should not be harmful, but some system administrators 
-# may not be comfortable with it. 
+# potentially allowing anyone to initiate the database update. 
 if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__')) {
 	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__', true);
 }

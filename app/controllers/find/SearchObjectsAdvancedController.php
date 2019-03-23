@@ -25,10 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseAdvancedSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/ObjectBrowse.php");
- 	require_once(__CA_LIB_DIR__."/core/GeographicMap.php");
+ 	require_once(__CA_LIB_DIR__."/BaseAdvancedSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/ObjectBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/GeographicMap.php");
 	require_once(__CA_MODELS_DIR__."/ca_objects.php");
 	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	

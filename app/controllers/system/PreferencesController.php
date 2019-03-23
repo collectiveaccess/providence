@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,7 @@
  
  require_once(__CA_MODELS_DIR__."/ca_users.php");
  require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
- require_once(__CA_LIB_DIR__."/ca/Search/QuickSearch.php");
+ require_once(__CA_LIB_DIR__."/Search/QuickSearch.php");
  
  	class PreferencesController extends ActionController {
  		# -------------------------------------------------------
@@ -105,12 +105,6 @@
  			$this->render('preferences_html.php');
  		}
  		# -------------------------------------------------------
- 		public function EditMediaPrefs() {
- 			$this->view->setVar('t_user', $this->request->user);
- 			$this->view->setVar('group', 'media');
- 			$this->render('preferences_html.php');
- 		}
- 		# -------------------------------------------------------
  		public function EditProfilePrefs() {
  			$this->view->setVar('t_user', $this->request->user);
  			$this->view->setVar('group', 'profile');
@@ -127,8 +121,7 @@
 				throw new ApplicationException(_t('No duplication preferences for %1', $this->request->getActionExtra()));
 			}
 			
- 			$o_dm = Datamodel::load();
-			if (!$t_instance = $o_dm->getInstanceByTableName($vs_current_table, true)) {
+			if (!$t_instance = Datamodel::getInstanceByTableName($vs_current_table, true)) {
 				throw new ApplicationException(_t('Invalid table: %1', $this->request->getActionExtra()));
 			}
 			
@@ -143,7 +136,7 @@
 			
 			$va_available_bundles = $t_screen->getAvailableBundles($vs_current_table);
 			foreach($va_available_bundles as $vs_bundle_name => $va_bundle_info) {
-				if ($o_dm->tableExists($vs_bundle_name)) { continue; }
+				if (Datamodel::tableExists($vs_bundle_name)) { continue; }
 				$vn_duplication_setting = isset($va_duplication_element_settings[$vs_bundle_name]) ? $va_duplication_element_settings[$vs_bundle_name] : 1;
 				$va_bundle_list[$vs_bundle_name] = array(
 					'bundle_info' => $va_bundle_info,

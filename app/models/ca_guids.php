@@ -201,7 +201,7 @@ class ca_guids extends BaseModel {
 			$vs_guid = $qr_guid->get('guid');
 			return $vs_guid;
 		} else {
-			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::load()->getInstance($pn_table_num, true))) {
+			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::getInstance($pn_table_num, true))) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id, $pa_options)) {
 					return $vs_guid;
 				}
@@ -276,19 +276,18 @@ class ca_guids extends BaseModel {
 		
 		if (!($va_info = self::getInfoForGUID($ps_guid))) { return null; }
 
-        $o_dm = Datamodel::load();
         
-        if (in_array($o_dm->getTableName($va_info['table_num']), ['ca_object_lots', 'ca_object_lot_labels', 'ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels'])) {   //TODO: make tables for which we should ignore access configurable
+        if (in_array(Datamodel::getTableName($va_info['table_num']), ['ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels', 'ca_object_lots', 'ca_object_lot_labels'])) {   //TODO: make tables for which we should ignore access configurable
             return true;
-        } elseif ($o_dm->isLabel($va_info['table_num'])) {
-            if ($t_label = $o_dm->getInstanceByTableNum($va_info['table_num'], true) && $t_label->load($va_info['row_id'])) {
+        } elseif (Datamodel::isLabel($va_info['table_num'])) {
+            if (($t_label = Datamodel::getInstanceByTableNum($va_info['table_num'], true)) && $t_label->load($va_info['row_id'])) {
                 if (($t_subject = $t_label->getSubjectTableInstance()) && $t_subject->hasField('access')) {
                     $return = in_array($t_subject->get('access'), $pa_access);
                 }
                 return true;
             }
-        } elseif ($o_dm->isRelationship($va_info['table_num'])) {
-            if ($t_rel = $o_dm->getInstanceByTableNum($va_info['table_num'], true)) {
+        } elseif (Datamodel::isRelationship($va_info['table_num'])) {
+            if ($t_rel = Datamodel::getInstanceByTableNum($va_info['table_num'], true)) {
                 $t_left = $t_rel->getLeftTableInstance();
                 $t_right = $t_rel->getRightTableInstance();
                 
@@ -316,11 +315,11 @@ class ca_guids extends BaseModel {
             $vn_row_id = $t_attr->get('row_id');
             
             // TODO: make configurable
-            if(in_array($o_dm->getTableName($vn_table_num), ['ca_object_lots', 'ca_object_lot_labels', 'ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels']))  { return true; }
+            if(in_array(Datamodel::getTableName($vn_table_num), ['ca_object_lots', 'ca_object_lot_labels', 'ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels']))  { return true; }
             
-            if (!$o_dm->getFieldInfo($vn_table_num, 'access')) { return false; }        // TODO: support attributes on non-acess control tables (eg. config tables; interstitial attributes on relationships)
+            if (!Datamodel::getFieldInfo($vn_table_num, 'access')) { return false; }        // TODO: support attributes on non-acess control tables (eg. config tables; interstitial attributes on relationships)
             $qr_guid = $o_db->query('
-                SELECT access FROM '.$o_dm->getTableName($vn_table_num)." WHERE ".$o_dm->primaryKey($vn_table_num).' = ?
+                SELECT access FROM '.Datamodel::getTableName($vn_table_num)." WHERE ".Datamodel::primaryKey($vn_table_num).' = ?
             ', [$vn_row_id]);
 
             if($qr_guid->nextRow()) {
@@ -341,9 +340,9 @@ class ca_guids extends BaseModel {
                 }
                 return false;
         } else {
-            if (!$o_dm->getFieldInfo($va_info['table_num'], 'access')) { return null; }
+            if (!Datamodel::getFieldInfo($va_info['table_num'], 'access')) { return null; }
             $qr_guid = $o_db->query('
-                SELECT access FROM '.$o_dm->getTableName($va_info['table_num'])." WHERE ".$o_dm->primaryKey($va_info['table_num']).' = ?
+                SELECT access FROM '.Datamodel::getTableName($va_info['table_num'])." WHERE ".Datamodel::primaryKey($va_info['table_num']).' = ?
             ', [$va_info['row_id']]);
 
             if($qr_guid->nextRow()) {
@@ -364,7 +363,7 @@ class ca_guids extends BaseModel {
 		$va_info = self::getInfoForGUID($ps_guid, $pa_options);
 		if(!$va_info) { return false; }
 
-		$t_instance = Datamodel::load()->getInstance($va_info['table_num'], true);
+		$t_instance = Datamodel::getInstance($va_info['table_num'], true);
 		if(!$t_instance) { return false; }
 
 		/** @var Transaction $o_tx */

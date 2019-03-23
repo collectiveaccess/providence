@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2018  Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,12 +34,12 @@
    *
    */ 
    
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/core/View.php');
- 	require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Mail.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Mail/Transport/Smtp.php');
-	require_once(__CA_LIB_DIR__.'/core/Zend/Mail/Transport/Sendmail.php');
+ 	require_once(__CA_LIB_DIR__.'/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/View.php');
+ 	require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Mail.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Mail/Transport/Smtp.php');
+	require_once(__CA_LIB_DIR__.'/Zend/Mail/Transport/Sendmail.php');
  	
  	# ------------------------------------------------------------------------------------------------
  	/**
@@ -65,10 +65,19 @@
  	 * 	$pa_attachment: 	array containing file path, name and mimetype of file to attach.
  	 *				keys are "path", "name", "mimetype"
  	 *
+ 	 *  $pa_options:	Array of options. Options include:
+ 	 *					log = Log activity? [Default is true]
+ 	 *					logSuccess = Log successful sends? [Default is true]
+ 	 *					logFailure = Log failed sends? [Default is true]
+ 	 *					source = source of email, used for logging. [Default is "Registration"]
+ 	 *					successMessage = Message to use for logging on successful send of email. Use %1 as a placeholder for a list of recipient email addresses. [Default is 'Email was sent to %1']
+ 	 *					failureMessage = Message to use for logging on failure of send. Use %1 as a placeholder for a list of recipient email addresses; %2 for the error message. [Default is 'Could not send email to %1: %2']
+ 	 *
  	 * While both $ps_body_text and $ps_html_text are optional, at least one should be set and both can be set for a 
  	 * combination text and HTML email
  	 */
-	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachment=null) {
+	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachment=null, $pa_options=null) {
+		global $g_last_email_error;
 		$o_config = Configuration::load();
 		$o_log = new Eventlog();
 
@@ -177,10 +186,15 @@
 			}
 			$o_mail->send($vo_tr);
 			
-			$o_log->log(array('CODE' => 'SYS', 'SOURCE' => 'Registration', 'MESSAGE' => _t('Registration confirmation email was sent to %1', join(';', array_keys($pa_to)))));
+			if (caGetOption('log', $pa_options, true) && caGetOption('logSuccess', $pa_options, true)) {
+				$o_log->log(array('CODE' => 'SYS', 'SOURCE' => caGetOption('source', $pa_options, 'Registration'), 'MESSAGE' => _t(caGetOption('successMessage', $pa_options, 'Email was sent to %1'), join(';', array_keys($pa_to)))));
+			}
 			return true;
 		} catch (Exception $e) {
-			$o_log->log(array('CODE' => 'ERR', 'SOURCE' => 'Registration',  'MESSAGE' => _t('Could not send registration confirmation email to %1: %2', join(';', array_keys($pa_to)), $e->getMessage())));
+			$g_last_email_error = $e->getMessage();
+			if (caGetOption('log', $pa_options, true) && caGetOption('logDFailure', $pa_options, true)) {
+				$o_log->log(array('CODE' => 'ERR', 'SOURCE' => caGetOption('source', $pa_options, 'Registration'),  'MESSAGE' => _t(caGetOption('failureMessage', $pa_options, 'Could not send email to %1: %2'), join(';', array_keys($pa_to)), $e->getMessage())));
+			}
 			return false;
 		}
 	}
@@ -238,7 +252,7 @@
  	 *
  	 * @return string True if send, false if error
 	 */
-	function caSendMessageUsingView($po_request, $pa_to, $pa_from, $ps_subject, $ps_view, $pa_values, $pa_cc=null, $pa_bcc=null) {
+	function caSendMessageUsingView($po_request, $pa_to, $pa_from, $ps_subject, $ps_view, $pa_values, $pa_cc=null, $pa_bcc=null, $pa_options=null) {
 		$vs_view_path = (is_object($po_request)) ? $po_request->getViewsDirectoryPath() : __CA_BASE_DIR__.'/themes/default/views';
 		if(!is_object($po_request)) { $po_request = null; }
 		
@@ -246,7 +260,6 @@
 		foreach($pa_values as $vs_key => $vm_val) {
 			$o_view->setVar($vs_key, $vm_val);
 		}
-		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc);
+		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, caGetOption('attachment', $pa_options, null), $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>

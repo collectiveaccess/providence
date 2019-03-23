@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
+ 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
 	require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 	require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php'); 
 	require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php'); 
@@ -54,7 +54,6 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
  			$t_form = new ca_search_forms();
  			$this->view->setVar('form_count', $t_form->getFormCount(array('user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_EDIT_ACCESS__)));
  			

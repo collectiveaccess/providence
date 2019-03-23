@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,8 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__.'/SetUniqueIdnoTrait.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_form_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_form_type_restrictions.php');
@@ -129,6 +130,8 @@ $_ca_search_forms_settings = array(		// global
 
 
 class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
+	use SetUniqueIdnoTrait;
+
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -233,9 +236,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
-	protected $ID_NUMBERING_ID_FIELD = null;				// name of field containing user-defined identifier
-	protected $ID_NUMBERING_SORT_FIELD = null;				// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_ID_FIELD = 'form_code';		// name of field containing user-defined identifier
+	protected $ID_NUMBERING_SORT_FIELD = null;			// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
 
+	
 
 	# Local config files containing specs for search elements
 	private $opo_search_config;
@@ -291,43 +296,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * Override update() to set form_code if not specifically set by user and remove all placements if type changes
 	 */
 	public function update($pa_options=null) {
+		$this->_setUniqueIdno(['noUpdate' => true]);
 		if ($this->changed('table_num')) {
 			$this->removeAllPlacements();
 		}
-
-		if($vn_rc = parent::update($pa_options)) {
-			$this->_setUniqueSetCode();
-		}
-		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	/**
-	 * Override addLabel() to set form_code if not specifically set by user
-	 */
-	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
-		if ($vn_rc = parent::addLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options)) {
-			$this->_setUniqueSetCode();
-		}
-		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	private function _setUniqueSetCode() {
-		if (!$this->getPrimaryKey()) { return null; }
-
-		if (!strlen(trim($this->get('form_code')))) {
-			$this->setMode(ACCESS_WRITE);
-			if(!($vs_label = $this->getLabelForDisplay())) { $vs_label = 'form_'.$this->getPrimaryKey(); }
-			$vs_new_form_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_label), 0, 50);
-			if (ca_search_forms::find(array('form_code' => $vs_new_form_name), array('returnAs' => 'firstId')) > 0) {
-				$vs_new_form_name .= '_'.$this->getPrimaryKey();
-			}
-			$this->set('form_code', $vs_new_form_name);
-			return $this->update();
-		}
-		return false;
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -381,7 +354,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement = new ca_search_form_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('form_id', $vn_form_id);
-		$t_placement->set('bundle_name', $ps_bundle_name);
+		$t_placement->set('bundle_name', trim($ps_bundle_name));
 		$t_placement->set('rank', $pn_rank);
 
 		if (is_array($pa_settings)) {
@@ -482,7 +455,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$ps_table = (isset($pa_options['table'])) ? $pa_options['table'] : null;
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 
-		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __ca_search_form_READ_ACCESS__)) {
+		if ($pn_user_id && !$this->haveAccessToForm($pn_user_id, __CA_SEARCH_FORM_READ_ACCESS__)) {
 			return [];
 		}
 
@@ -550,8 +523,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
 		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
 
-		$o_dm = $this->getAppDatamodel();
-		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return []; }
+		if ($pm_table_name_or_num && !($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return []; }
 
 		$o_db = $this->getDb();
 
@@ -563,8 +535,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_params = [];
 		$va_access_wheres = [];
 		if ($pn_user_id) {
-			$o_dm = $this->getAppDatamodel();
-			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
+			$t_user = Datamodel::getInstanceByTableName('ca_users', true);
 			$t_user->load($pn_user_id);
 
 			if ($t_user->getPrimaryKey()) {
@@ -708,7 +679,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!sizeof($pa_form_ids = array_filter($pa_form_ids, "intval"))) { return null; }
 		$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
 		
-		$o_dm = Datamodel::load();
 		$t_form = new ca_search_forms();
 		
 		$qr_res = $o_db->query("
@@ -722,7 +692,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_names = [];
 		while($qr_res->nextRow()) {
-			$t_instance = $o_dm->getInstanceByTableNum($qr_res->get('table_num'), true);
+			$t_instance = Datamodel::getInstanceByTableNum($qr_res->get('table_num'), true);
 			$va_restriction_names = array_map(function($v) { return caUcFirstUTF8Safe(caGetListItemByIDForDisplay($v['type_id'], !$vb_use_singular)); }, $t_form->getTypeRestrictions(null, ['form_id' => $qr_res->get('form_id')]));
 			
 			switch($t_instance->tableName()) {
@@ -824,11 +794,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->get('table_num'); }
-		$pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num);
+		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
 
-		$t_instance = $this->_DATAMODEL->getInstanceByTableNum($pm_table_name_or_num, true);
-		$va_search_settings = $this->opo_search_indexing_config->getAssoc($this->_DATAMODEL->getTableName($pm_table_name_or_num));
+		$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
+		$va_search_settings = $this->opo_search_indexing_config->getAssoc(Datamodel::getTableName($pm_table_name_or_num));
 
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
@@ -869,40 +839,60 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 
 		// get fields 
+		if (is_array($va_search_settings)) { 
+			foreach($va_search_settings as $vs_table => $va_fields) {
+				if (preg_match("!\.related$!", $vs_table)) { continue; }
+				if (!is_array($va_fields['fields'])) { continue; }
 
-		foreach($va_search_settings as $vs_table => $va_fields) {
-		    if (preg_match("!\.related$!", $vs_table)) { continue; }
-			if (!is_array($va_fields['fields'])) { continue; }
+				if ($vs_table == $vs_primary_table) {
+					$va_element_codes = (method_exists($t_instance, 'getApplicableElementCodes') ? $t_instance->getApplicableElementCodes(null, false, false) : []);
 
-			if ($vs_table == $vs_primary_table) {
-				$va_element_codes = (method_exists($t_instance, 'getApplicableElementCodes') ? $t_instance->getApplicableElementCodes(null, false, false) : []);
-
-				$va_field_list = [];
-				foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
-					if ($vs_field === '_metadata') {
-						foreach($va_element_codes as $vs_code) {
-							$va_field_list[$vs_code] = $va_field_indexing_info;
+					$va_field_list = [];
+					foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
+						if ($vs_field === '_metadata') {
+							foreach($va_element_codes as $vs_code) {
+								$va_field_list[$vs_code] = $va_field_indexing_info;
+							}
+						} else {
+							$va_field_list[$vs_field] = $va_field_indexing_info;
 						}
-					} else {
-						$va_field_list[$vs_field] = $va_field_indexing_info;
 					}
-				}
 
-				foreach($va_field_list as $vs_field => $va_field_indexing_info) {
-					if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
+					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
+						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
 
-					if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
-						// is it an attribute?
-						if (in_array($vs_field, $va_element_codes)) {
-							$t_element = ca_metadata_elements::getInstance($vs_field);
-							if(!$t_element) { continue; }
-							if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
-							if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }
+						if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
+							// is it an attribute?
+							if (in_array($vs_field, $va_element_codes)) {
+								$t_element = ca_metadata_elements::getInstance($vs_field);
+								if(!$t_element) { continue; }
+								if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
+								if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }
 
-							if (caGetBundleAccessLevel($vs_primary_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+								if (caGetBundleAccessLevel($vs_primary_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+
+								$vs_bundle = $vs_table.'.'.$vs_field;
+
+								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
+								$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+									'bundle' => $vs_bundle,
+									'label' => $vs_label,
+									'display' => $vs_display,
+									'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
+									'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+									'settings' => $va_additional_settings
+								);
+
+								TooltipManager::add(
+									"#searchFormEditor_{$vs_table}_{$vs_field}",
+									"<h2>{$vs_label}</h2>{$vs_description}"
+								);
+							}
+						} else {
+							if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
+							if (in_array($va_field_info['FIELD_TYPE'], array(FT_MEDIA, FT_FILE))) { continue; }
 
 							$vs_bundle = $vs_table.'.'.$vs_field;
-
 							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 								'bundle' => $vs_bundle,
@@ -918,89 +908,69 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								"<h2>{$vs_label}</h2>{$vs_description}"
 							);
 						}
-					} else {
-						if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
-						if (in_array($va_field_info['FIELD_TYPE'], array(FT_MEDIA, FT_FILE))) { continue; }
-
-						$vs_bundle = $vs_table.'.'.$vs_field;
-						$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
-						$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-							'bundle' => $vs_bundle,
-							'label' => $vs_label,
-							'display' => $vs_display,
-							'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
-							'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-							'settings' => $va_additional_settings
-						);
-
-						TooltipManager::add(
-							"#searchFormEditor_{$vs_table}_{$vs_field}",
-							"<h2>{$vs_label}</h2>{$vs_description}"
-						);
 					}
-				}
-			} else {
-				// related table
-				if ($this->getAppConfig()->get($vs_table.'_disable')) { continue; }
-				$t_table = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
-				if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
-					if ($this->getAppConfig()->get($vs_subject_table.'_disable')) { continue; }
-				}
-				if (caGetBundleAccessLevel($vs_primary_table, $vs_subject_table) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
-				
-				$va_element_codes = (method_exists($t_table, 'getApplicableElementCodes') ? $t_table->getApplicableElementCodes(null, false, false) : []);
-				
-				$va_field_list = [];
-				foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
-					if ($vs_field === '_metadata') {
-						foreach($va_element_codes as $vs_code) {
-							$va_field_list[$vs_code] = $va_field_indexing_info;
-						}
-					} else {
-						$va_field_list[$vs_field] = $va_field_indexing_info;
+				} else {
+					// related table
+					if ($this->getAppConfig()->get($vs_table.'_disable')) { continue; }
+					$t_table = Datamodel::getInstanceByTableName($vs_table, true);
+					if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
+						if ($this->getAppConfig()->get($vs_subject_table.'_disable')) { continue; }
 					}
-				}
-
-				foreach($va_field_list as $vs_field => $va_field_indexing_info) {
-					if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
-
-					if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field))) {
-						if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
-
-						$vs_bundle = $vs_table.'.'.$vs_field;
-
-						$vs_related_table = caUcFirstUTF8Safe($t_table->getProperty('NAME_SINGULAR'));
-						if (method_exists($t_table, 'getSubjectTableInstance')) {
-							$t_subject = $t_table->getSubjectTableInstance();
-							$vs_related_table = caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'));
-						}
-
-						$vs_label = $t_instance->getDisplayLabel($vs_bundle);
-						if  (method_exists($t_table, "getSubjectTableName") && ($vs_primary_table == $vs_subject_table)) {
-							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
+					if (caGetBundleAccessLevel($vs_primary_table, $vs_subject_table) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+				
+					$va_element_codes = (method_exists($t_table, 'getApplicableElementCodes') ? $t_table->getApplicableElementCodes(null, false, false) : []);
+				
+					$va_field_list = [];
+					foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
+						if ($vs_field === '_metadata') {
+							foreach($va_element_codes as $vs_code) {
+								$va_field_list[$vs_code] = $va_field_indexing_info;
+							}
 						} else {
-							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>{$vs_related_table}</span> {$vs_label}</div>";
+							$va_field_list[$vs_field] = $va_field_indexing_info;
 						}
-
-						$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-							'bundle' => $vs_bundle,
-							'label' => $vs_label,
-							'display' => $vs_display,
-							'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
-							'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-							'settings' => $va_additional_settings
-						);
-
-						TooltipManager::add(
-							"#searchFormEditor_{$vs_table}_{$vs_field}",
-							"<h2>{$vs_label}</h2>{$vs_description}"
-						);
 					}
-				}
 
+					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
+						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
+
+						if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field))) {
+							if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
+
+							$vs_bundle = $vs_table.'.'.$vs_field;
+
+							$vs_related_table = caUcFirstUTF8Safe($t_table->getProperty('NAME_SINGULAR'));
+							if (method_exists($t_table, 'getSubjectTableInstance')) {
+								$t_subject = $t_table->getSubjectTableInstance();
+								$vs_related_table = caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'));
+							}
+
+							$vs_label = $t_instance->getDisplayLabel($vs_bundle);
+							if  (method_exists($t_table, "getSubjectTableName") && ($vs_primary_table == $vs_subject_table)) {
+								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
+							} else {
+								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>{$vs_related_table}</span> {$vs_label}</div>";
+							}
+
+							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+								'bundle' => $vs_bundle,
+								'label' => $vs_label,
+								'display' => $vs_display,
+								'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
+								'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+								'settings' => $va_additional_settings
+							);
+
+							TooltipManager::add(
+								"#searchFormEditor_{$vs_table}_{$vs_field}",
+								"<h2>{$vs_label}</h2>{$vs_description}"
+							);
+						}
+					}
+
+				}
 			}
 		}
-//print_R($va_available_bundles);
 
 		//
 		// access points
@@ -1079,9 +1049,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			return [];
 		}
 
-		if (!($pn_table_num = $this->_DATAMODEL->getTableNum($this->get('table_num')))) { return null; }
+		if (!($pn_table_num = Datamodel::getTableNum($this->get('table_num')))) { return null; }
 
-		$t_instance = $this->_DATAMODEL->getInstanceByTableNum($pn_table_num, true);
+		$t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true);
 
 		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = []; }
 
@@ -1151,11 +1121,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_form_contents = $this->getPlacements();
 
-		$o_dm = Datamodel::load();
 		$va_output = [];
 
-		if (!($vs_form_table_name = $o_dm->getTableName($this->get('table_num')))) { return null; }
-		$t_subject = $o_dm->getInstanceByTableName($vs_form_table_name, true);
+		if (!($vs_form_table_name = Datamodel::getTableName($this->get('table_num')))) { return null; }
+		$t_subject = Datamodel::getInstanceByTableName($vs_form_table_name, true);
 
 		foreach($va_form_contents as $vn_i => $va_element) {
 
@@ -1201,9 +1170,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			$va_tmp = explode('.', $vs_field = $va_element['bundle_name']);
-			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+			if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
 				// is this an access point?
-				$va_search_settings = $this->opo_search_indexing_config->getAssoc($this->_DATAMODEL->getTableName($vs_form_table_name));
+				$va_search_settings = $this->opo_search_indexing_config->getAssoc(Datamodel::getTableName($vs_form_table_name));
 				$va_access_points = (isset($va_search_settings['_access_points']) && is_array($va_search_settings['_access_points'])) ? $va_search_settings['_access_points'] : [];
 
 				if (isset($va_access_points[$va_tmp[0]])) {
@@ -1269,7 +1238,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						$vs_query_element = $vs_value;
 					}
-
 					switch($vs_element){
 						case '_fulltext':		// don't qualify special "fulltext" element
 							$va_query_elements[] = $vs_query_element;
@@ -1278,11 +1246,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							$va_tmp = explode(".", $vs_element);
 							$t_element = ca_metadata_elements::getInstance($vs_element_code = array_pop($va_tmp));
 							switch(ca_metadata_elements::getDataTypeForElementCode($vs_element_code)) {
-								case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-									$o_value = new InformationServiceAttributeValue();
-									$va_data = $o_value->parseValue($vs_query_element, ['settings' => $t_element->getSettings()]);
-								
-									$vs_query_element = $va_data['value_longtext1'];
+								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+								    // convert bare ranges to Lucene range syntax
+									if (preg_match("!^([A-Z\$£¥€]+[ ]*[\d\.]+)[ ]*([-–]{1}|to)[ ]*([A-Z\$£¥€]+[ ]*[\d\.]+)$!", trim(str_replace('"', '', $vs_query_element)), $m)) {
+									    $vs_query_element = "[".$m[1]." to ".$m[3]."]";
+									}
 									break;
 							}
 							$va_query_elements[] = "({$vs_element}:{$vs_query_element})";
@@ -1363,7 +1331,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 
-		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, $this->_DATAMODEL->getTableName($this->get('table_num'))));
+		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
 		$o_view->setVar('t_form', $this);
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);
@@ -1464,7 +1432,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }		// UI must be loaded
 		if (!is_array($pa_settings)) { $pa_settings = []; }
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
 			$va_rel_type_list = $t_instance->getRelationshipTypes();
@@ -1546,7 +1514,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
 			$va_type_list = $t_instance->getRelationshipTypes();
@@ -1655,7 +1623,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
 
 		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
 			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])

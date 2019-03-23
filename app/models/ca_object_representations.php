@@ -33,8 +33,8 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotation_labels.php");
@@ -395,6 +395,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lot'));
 		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
+		
 		$this->BUNDLES['ca_object_representations_media_display'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media and preview images'));
 		$this->BUNDLES['ca_object_representation_captions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Captions/subtitles'));
 		
@@ -713,6 +715,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$va_rep_props = $this->getMediaInfo('media', 'original');
  		$vn_timecode_offset = isset($va_rep_props['PROPERTIES']['timecode_offset']) ? (float)$va_rep_props['PROPERTIES']['timecode_offset'] : 0;
  		
+ 		$va_annotation_ids = [];
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
  			$va_annotation_ids[] = $va_tmp['annotation_id'];
@@ -1077,7 +1080,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$va_inital_values = array();
 		if (sizeof($va_items = $this->getAnnotations())) {
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName("{$vs_annotation_table}", true);
+			$t_rel = Datamodel::getInstanceByTableName("{$vs_annotation_table}", true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
 				if (!($vs_label = $va_item['label'])) { $vs_label = ''; }

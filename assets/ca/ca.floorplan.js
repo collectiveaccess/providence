@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.floorplan.js
+ * js/ca.floorplan.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

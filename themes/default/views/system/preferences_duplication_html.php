@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,24 +50,27 @@
 	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'PreferencesForm');
 	
 	
-	$o_dm = Datamodel::load();
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
 	if (caTableIsActive($vs_current_table) && $this->request->user->canDoAction('can_duplicate_'.$vs_current_table)) {
-		$t_instance = $o_dm->getInstanceByTableName($vs_current_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_current_table, true);
 		print "<h2>"._t('Settings for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
 	
 		print "<table width='100%'><tr valign='top'><td width='250'>";
 		foreach($va_prefs as $vs_pref) {
 			if ($vs_pref == 'duplicate_relationships') { continue; }
+			if ($vs_pref == 'duplicate_children') { continue; }
 			print $t_user->preferenceHtmlFormElement("{$vs_current_table}_{$vs_pref}", null, array());
 		}
-		print "</td>";
+		print "</td><td>";
 		if (in_array("duplicate_relationships", $va_prefs)) {
-			print "<td>".$t_user->preferenceHtmlFormElement("{$vs_current_table}_duplicate_relationships", null, array('useTable' => true, 'numTableColumns' => 3))."</td>";
+			print $t_user->preferenceHtmlFormElement("{$vs_current_table}_duplicate_relationships", null, array('useTable' => true, 'numTableColumns' => 3));
+		}
+		if (in_array("duplicate_children", $va_prefs)) {
+			print "<br/>".$t_user->preferenceHtmlFormElement("{$vs_current_table}_duplicate_children", null, array('useTable' => true, 'numTableColumns' => 3));
 		}
 	
-		print "</tr></table>\n";
+		print "</td></tr></table>\n";
 		
 		// metadata elements
 		if($t_user->isValidPreference($vs_current_table.'_duplicate_element_settings')) {

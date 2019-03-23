@@ -25,10 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Feed.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Feed/Rss.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Feed.php');
+ 	require_once(__CA_LIB_DIR__.'/Zend/Feed/Rss.php');
  
 	class lolCatWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------

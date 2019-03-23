@@ -199,7 +199,7 @@
 						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 						
-						//initItemID: <?php print (int)$this->request->session->getVar('ca_storage_locations_browse_last_id'); ?>,
+						//initItemID: <?php print (int)Session::getVar('ca_storage_locations_browse_last_id'); ?>,
 						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						
 						displayCurrentSelectionOnLoad: false,

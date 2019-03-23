@@ -25,12 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Service/deprecated/ItemInfoService.php');
-	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/Server.php');
-	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/AutoDiscover.php');
-	require_once(__CA_LIB_DIR__.'/core/Zend/Rest/Server.php');
-	require_once(__CA_LIB_DIR__.'/core/Zend/Json/Server.php');
+ 	require_once(__CA_LIB_DIR__.'/Service/deprecated/ItemInfoService.php');
+	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+	require_once(__CA_LIB_DIR__.'/Zend/Soap/Server.php');
+	require_once(__CA_LIB_DIR__.'/Zend/Soap/AutoDiscover.php');
+	require_once(__CA_LIB_DIR__.'/Zend/Rest/Server.php');
+	require_once(__CA_LIB_DIR__.'/Zend/Json/Server.php');
 
 	class ItemInfoController extends BaseServiceController {
 		# -------------------------------------------------------

@@ -1,0 +1,122 @@
+# *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
+
+# List month names; used whenever name of month needs to be displayed
+monthList = [gennaio, febbraio, marzo, aprile, maggio, giugno, luglio, agosto, settembre, ottobre, novembre, dicembre]
+
+
+# *** the following list of months is for display and *SHOULD* be capitalized where appropriate
+monthListDisplay = [Gennaio, Febbraio, Marzo, Aprile, Maggio, Giugno, Luglio, Agosto, Settembre, Ottobre, Novembre, Dicembre]
+
+# Hash table mapping acceptable month names to the display names defined in 'monthList'
+monthTable = {
+	jan = gennaio, jan. = gennaio,
+	feb = febbraio, feb. = febbraio,
+	mar = marzo, mar. = marzo,
+	apr = aprile, apr. = aprile,
+	ma = maggio,
+	jun = giugno, jun. = giugno,
+	jul = luglio, jul. = luglio,
+	aug = agosto, aug. = agosto,
+	sep = settembre, sep. = settembre,
+	oct = ottobre, oct. = ottobre,
+	nov = novembre, nov. = novembre,
+	dec = dicembre, dec. = dicembre
+}
+
+# List of day names, starting with Sunday
+dayListDisplay = [Domenica, Lunedì, Martedì, Mercoledì, Giovedì, Venerdì, Sabato]
+
+#rangePreConjunctions = [from, between]
+rangePreConjunctions = [da, entro]
+#rangeConjunctions = [to, -, and, .., through]
+rangeConjunctions = [fino a, -, e, .., compreso]
+
+dateTimeConjunctions = [alle,@]
+
+dateDelimiters = [/,-,.]
+timeDelimiters = [:,.]
+
+timeAMMeridian = am
+timePMMeridian = pm
+
+meridianTable = {
+	a.m. = am,
+	p.m. = pm
+}
+
+dateCircaIndicator = [circa, c, c., ca, ca.]
+dateProbablyIndicator = [probably, possibly]
+dateUncertaintyIndicator = [~]
+dateUncertaintyYearIndicator = [anno?]
+dateUncertaintyDayIndicator = [giorno?]
+
+# What to use to indicate a geological date ("millions of years ago")
+dateMYA = [mya]
+
+# What to use to indicate radiocarbon dates ("before present")
+dateBP = [bp]
+
+dateADIndicator = D.C.
+dateBCIndicator = A.C.
+ADBCTable = {
+	a.d. = D.C.,
+	b.c. = A.C.
+}
+
+#nowDate = [now]
+nowDate = [adesso]
+#todayDate = [today]
+todayDate = [oggi]
+#yesterdayDate = [yesterday]
+yesterdayDate = [ieri]
+#tomorrowDate = [tomorrow]
+tomorrowDate = [domani]
+undatedDate = [undated, unknown]
+
+#presentDate = [present, ?, ??, ???, ????]
+presentDate = [presente, ?, ??, ???, ????]
+#beforeQualifier = [before]
+beforeQualifier = [prima]
+earlyQualifier = [early]
+midQualifier = [mid, middle]
+lateQualifier = [late]
+#diedQualifier = [died, d, d.]
+diedQualifier = [morto, m, m.]
+#afterQualifier = [after]
+afterQualifier = [dopo]
+#bornQualifier = [born, b, b.]
+bornQualifier = [nato, n, n.]
+
+# Text to indicate century (as in "20th century")
+#centuryIndicator = [century, jahrhundert, cent]
+centuryIndicator = [secolo]
+
+# Text to indicate decdae (as in "1920s")
+decadeIndicator = [s]
+
+# list of numeric suffixes, starting with the one for zero
+# (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
+#ordinalSuffixes = [th, st, nd, rd]
+ordinalSuffixes = [°]
+ordinalSuffixDefault = °
+
+# in delimited dates (ex. 12/10/2009) is the first number a month or a day?
+# set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
+monthComesFirstInDelimitedDate = 0
+
+# character(s) to append to day in full (not delimited) date
+# eg. in the date "1. February 2009", "." is the daySuffix
+# Note: you can put arbitrary text here - only punctuation
+daySuffix = 
+
+# Definite articles
+definiteArticles = [il]
+
+# Indefinite articles
+indefiniteArticles = [uno, una]
+
+# Seasons
+winterSeason = [inverno]
+springSeason = [primavera]
+summerSeason = [estate]
+autumnSeason = [autunno]

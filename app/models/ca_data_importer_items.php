@@ -34,10 +34,10 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
-require_once(__CA_LIB_DIR__."/ca/Import/RefineryManager.php");
+require_once(__CA_LIB_DIR__."/Import/RefineryManager.php");
 
 define("__CA_DATA_IMPORTER_DESTINATION_INTRINSIC__", 0);
 define("__CA_DATA_IMPORTER_DESTINATION_ATTRIBUTE__", 1);
@@ -486,6 +486,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Convert newlines to HTML'),
 			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
 		);
+		$va_settings['collapseSpaces'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Collapse multiple spaces'),
+			'description' => _t('Convert multiple spaces to a single space.')
+		);
 		$va_settings['useAsSingleValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -554,11 +563,10 @@ class ca_data_importer_items extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public function getDestinationType() {
-		$vo_dm = Datamodel::load();
 		$vs_destination = $this->get("destination");
 		
 		$t_importer = new ca_data_importers($this->get("importer_id"));
-		$t_instance = $vo_dm->getInstanceByTableNum($t_importer->get("table_num"));
+		$t_instance = Datamodel::getInstanceByTableNum($t_importer->get("table_num"));
 		
 		$va_split = explode(".",$vs_destination);
 		

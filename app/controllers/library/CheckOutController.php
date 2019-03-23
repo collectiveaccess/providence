@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,9 +27,9 @@
  */
 
  	require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
-	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
+	require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+	require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
  	class CheckOutController extends ActionController {
  		# -------------------------------------------------------
@@ -93,7 +93,7 @@
  					$t_checkout = ca_object_checkouts::getCurrentCheckoutInstance($pn_object_id);
  					$vn_current_user_id = $t_checkout->get('user_id');
  					$va_reservations = $t_object->getCheckoutReservations();
- 					$vn_num_reservations = sizeof($va_reservations);
+ 					$vn_num_reservations = is_array($va_reservations) ? sizeof($va_reservations) : 0;
  					
  					$vs_current_user_checkout_date = $t_checkout->get('checkout_date', array('timeOmit' => true));
  					
@@ -102,7 +102,7 @@
  				case __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__:
  					// get reservations list
  					$va_reservations = $t_object->getCheckoutReservations();
- 					$vn_num_reservations = sizeof($va_reservations);
+ 					$vn_num_reservations = is_array($va_reservations) ? sizeof($va_reservations) : 0;
  					$t_checkout = ca_object_checkouts::getCurrentCheckoutInstance($pn_object_id);
  					$vs_current_user_checkout_date = $t_checkout->get('created_on', array('timeOmit' => true));
  					
@@ -150,7 +150,7 @@
  				'media' => $t_object->getWithTemplate('^ca_object_representations.media.icon'),
  				'status' => $vn_status,
  				'status_display' => $vs_status_display,
- 				'numReservations' => sizeof($va_reservations),
+ 				'numReservations' => is_array($va_reservations) ? sizeof($va_reservations) : 0,
  				'reservations' => $va_reservations,
  				'config' => $va_checkout_config,
  				'current_user_id' => $vn_current_user_id,
@@ -179,6 +179,7 @@
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$ps_item_list = $this->request->getParameter('item_list', pString);
  			$pa_item_list = json_decode(stripslashes($ps_item_list), true);
+ 			if (!is_array($pa_item_list)) { $pa_item_list = []; }
  			
  			$t_checkout = ca_object_checkouts::newCheckoutTransaction();
  			$va_ret = array('status' => 'OK', 'total' => sizeof($pa_item_list), 'errors' => array(), 'checkouts' => array());

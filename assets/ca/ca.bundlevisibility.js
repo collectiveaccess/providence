@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.bundlevisibilty.js
+ * js/ca.bundlevisibilty.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

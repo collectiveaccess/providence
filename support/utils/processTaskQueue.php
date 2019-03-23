@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Utils/CLIUtils.php :
+ * app/lib/Utils/CLIUtils.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

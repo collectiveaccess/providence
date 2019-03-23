@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/core/Db.php');
-require_once(__CA_LIB_DIR__.'/core/Search/SearchIndexer.php');
+require_once(__CA_LIB_DIR__.'/Db.php');
+require_once(__CA_LIB_DIR__.'/Search/SearchIndexer.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
@@ -254,31 +254,36 @@ class ca_search_indexing_queue extends BaseModel {
 		if(self::lockAcquire()) {
 		    set_time_limit(self::$s_lock_timeout);
 			$o_db = new Db();
-			$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id");
-			if($o_result && $o_result->numRows()) {
-				$o_si = new SearchIndexer($o_db);
+			
+			do {
+				$num_entries = 0;
+				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id LIMIT 1000")) {
+					$num_entries = (int)$o_result->numRows();
+					if($num_entries > 0) {
+						$o_si = new SearchIndexer($o_db);
 
-				while ($o_result->nextRow()) {
-				    $o_db->query('UPDATE ca_search_indexing_queue SET started_on = ? WHERE entry_id = ?', [time(), (int)$o_result->get('entry_id')]);
-					if(!$o_result->get('is_unindex')) { // normal indexRow() call
-						$o_si->indexRow(
-							$o_result->get('table_num'), $o_result->get('row_id'),
-							caUnserializeForDatabase($o_result->get('field_data')),
-							(bool)$o_result->get('reindex'), null,
-							caUnserializeForDatabase($o_result->get('changed_fields')),
-							array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
-						);
-					} else { // is_unindex = 1, so it's a commitRowUnindexing() call
-						$o_si->commitRowUnIndexing(
-							$o_result->get('table_num'), $o_result->get('row_id'),
-							['queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies'))]
-						);
+						while ($o_result->nextRow()) {
+							$o_db->query('UPDATE ca_search_indexing_queue SET started_on = ? WHERE entry_id = ?', [time(), (int)$o_result->get('entry_id')]);
+							if(!$o_result->get('is_unindex')) { // normal indexRow() call
+								$o_si->indexRow(
+									$o_result->get('table_num'), $o_result->get('row_id'),
+									caUnserializeForDatabase($o_result->get('field_data')),
+									(bool)$o_result->get('reindex'), null,
+									caUnserializeForDatabase($o_result->get('changed_fields')),
+									array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
+								);
+							} else { // is_unindex = 1, so it's a commitRowUnindexing() call
+								$o_si->commitRowUnIndexing(
+									$o_result->get('table_num'), $o_result->get('row_id'),
+									['queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies'))]
+								);
+							}
+
+							$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id = ?', [$o_result->get('entry_id')]);
+						}
 					}
-
-					$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id = ?', [$o_result->get('entry_id')]);
 				}
-
-			}
+			} while($num_entries > 0);
 
 			self::lockRelease();
 		}
@@ -325,6 +330,13 @@ class ca_search_indexing_queue extends BaseModel {
 	 */
 	static public function lockExists() {
 	    return file_exists(self::$s_lock_filepath);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function lockCanBeRemoved() {
+	    return is_writable(self::$s_lock_filepath);
 	}
 	# ------------------------------------------------------
 	/**

@@ -35,8 +35,8 @@
    */
 
 require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
-require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 		
 
 BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
@@ -254,7 +254,7 @@ class ca_attributes extends BaseModel {
 		$this->set('row_id', $pn_row_id);
 		
 		$this->setMode(ACCESS_WRITE);
-		$this->insert();
+		$this->insert($pa_options);
 		
 		if ($this->numErrors()) {
 			if ($vb_web_set_transaction) {
@@ -933,8 +933,7 @@ class ca_attributes extends BaseModel {
 	public function getRowInstance() {
 		if(!$this->getPrimaryKey()) { return false; }
 
-        $o_dm = Datamodel::load();
-        if (($t_instance = $o_dm->getInstanceByTableNum($this->get('table_num'), true)) && ($t_instance->load($this->get('row_id')))) {
+        if (($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num'), true)) && ($t_instance->load($this->get('row_id')))) {
             return $t_instance;
         }
         
@@ -995,9 +994,8 @@ class ca_attributes extends BaseModel {
             WHERE cav.value_id = ?
         ", [(int)$pn_value_id]);
         
-        $o_dm = Datamodel::load();
         while($qr_res->nextRow()) {
-            if (($t_instance = $o_dm->getInstanceByTableNum($qr_res->get('table_num'), true)) && ($t_instance->load($qr_res->get('row_id')))) {
+            if (($t_instance = Datamodel::getInstanceByTableNum($qr_res->get('table_num'), true)) && ($t_instance->load($qr_res->get('row_id')))) {
                 return $t_instance;
             }
         }

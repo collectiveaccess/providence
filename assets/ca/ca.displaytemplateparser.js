@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.displaytemplateparser.js
+ * js/ca.displaytemplateparser.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -113,10 +113,17 @@ var caUI = caUI || {};
             // get tags from template
             var tagRegex = /[\^]+([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
             var tagList = template.match(tagRegex);
+            var fullTagList = tagList;
+            
             
             // rewrite tags
-            jQuery.each(tagList, function(i, tag) {
+            var j = 1;
+            if (tagList) {
+           		jQuery.each(tagList, function(i, tag) {
                 if (tag.substring(0,6) === '^^join') {
+                    var tagProc = "join_" + j;
+                    j++;
+                    fullTagList[i] = tagProc;
                     var opts = that.parseTagOpts(tag);
                     var delimiter = opts['delimiter'] ? opts['delimiter'] : "; ";
                     
@@ -141,12 +148,13 @@ var caUI = caUI || {};
                         acc.push(e);
                     } 
                     
-                    template = template.replace(tag, acc.join(delimiter));
+                    values[tagProc] = acc.join(delimiter);
+                    template = template.replace(tag, values[tagProc]);
                     
                     return;
                 }
             });
-            
+            }
             tagList = template.match(tagRegex);
             var t = template;    
             var unitRegex = /([\.]{0,1}[\d]+[ \d\.\,\/]*)([^\d ]+)/g, bAtLeastOneValueIsSet = false;
@@ -154,17 +162,20 @@ var caUI = caUI || {};
             var templatevalues = [];
             var lastUnits = null;
             //tagList.reverse();
-            jQuery.each(tagList, function(i, tag) {
+            
+            if (tagList) {
+            	jQuery.each(tagList, function(i, tag) {
                 var tagProc = tag.replace("^", "");
                 if(tag.indexOf("~") === -1) {
                     var selected = jQuery('select' + values[tagProc] + ' option:selected');
                     
                     var d;
                     if (selected.length) {
-                        t=t.replace(tag, d = selected.text());
+                        d = selected.text();
                     } else {
-                        t=t.replace(tag, d = jQuery(values[tagProc]).val());
+                        d = jQuery(values[tagProc]).val();
                     }
+                    t=t.replace(tag, d.replace('&nbsp;', ' ').trim());
                     if (d) { bAtLeastOneValueIsSet = true; }
                 } else {
                     var tagBits = tag.split(/\~/);
@@ -281,14 +292,24 @@ var caUI = caUI || {};
                                                 emitUnits = (!omitRepeatingUnits) || (lastUnits !== ((inFeet > 0) ? 'ft' : 'in'));
                                             }
                                             if (inFeet > 0) { 
-                                                vals.push(inFeet + (emitUnits ? " ft" : "") + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
+                                                if (inInches == 0) {
+                                                    vals.push(inFeet);
+                                                    lastUnits = u = 'ft';
+                                                } else {
+                                                    vals.push(inFeet + (emitUnits ? " ft" : "") + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
+                                                    lastUnits = null; u = '';
+                                                }
                                             }
                                             if (inInches > 0) {
-                                                vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
+                                                if (inFeet > 0) {
+                                                    vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
+                                                    lastUnits = null; u = '';
+                                                } else {
+                                                    vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}));
+                                                    lastUnits = u = 'in';
+                                                }
                                             }
-                                            lastUnits = null;
                                             q = vals.join(" ");
-                                            u = ''
                                         } else {
                                             var inMiles = parseInt(inInches / (5280 * 12));
                                             inInches -= inMiles * (5280 * 12);
@@ -346,6 +367,7 @@ var caUI = caUI || {};
                     }
                 }
             });
+        	}
             templatevalues.push({'type': 'END'});   // Mark end of stream of values
             
             // Determine if and where units are displayed
@@ -381,19 +403,28 @@ var caUI = caUI || {};
 			
             // Process <ifdef> tags
             var h = jQuery("<div>" + t + "</div>");
-            jQuery.each(tagList, function(k, tag) {
-                var tagBits = tag.split(/\~/);
-                var tagRoot = tagBits[0].replace("^", "");
-                var val = jQuery(values[tagRoot]).val();
+            
+            if (fullTagList) {
+				jQuery.each(fullTagList, function(k, tag) {
+					var isJoin = false;
+					var originalTag = tag;
+					if (tag.match(/^join_/)) { 
+						tag = values[tag]; 
+						isJoin = true;
+					}
+					var tagBits = tag.split(/\~/);
+					var tagRoot = tagBits[0].replace("^", "");
+					var val = jQuery(values[tagRoot]).val();
 
-                if(val && (val.length > 0)) {
-                    jQuery.each(h.find("ifdef[code=" + tagRoot + "]"), function(k, v) {
-                        jQuery(v).replaceWith(jQuery(v).html());
-                    });
-                } else {
-                    h.find("ifdef[code=" + tagRoot + "]").remove();
-                }
-            });
+					if(val && (val.length > 0)) {
+						jQuery.each(h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]"), function(k, v) {
+							jQuery(v).replaceWith(jQuery(v).html());
+						});
+					} else {
+						h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]").remove();
+					}
+				});
+			}
             return h.html().trim();
         };
         // --------------------------------------------------------------------------------

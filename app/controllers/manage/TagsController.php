@@ -25,10 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
 	require_once(__CA_MODELS_DIR__."/ca_item_tags.php");
 	require_once(__CA_MODELS_DIR__."/ca_items_x_tags.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ItemTagSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ItemTagSearch.php");
  	
  	class TagsController extends BaseSearchController {
  		# -------------------------------------------------------

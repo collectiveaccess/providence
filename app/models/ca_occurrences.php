@@ -34,9 +34,9 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
-require_once(__CA_LIB_DIR__."/ca/CurrentLocationCriterionTrait.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/BaseObjectLocationModel.php");
+require_once(__CA_LIB_DIR__."/CurrentLocationCriterionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
@@ -358,6 +358,8 @@ class ca_occurrences extends BaseObjectLocationModel implements IBundleProvider 
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
 		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
+		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 

@@ -69,18 +69,8 @@
 						<div class="loginFormElement"><?php print _t("Password"); ?>:<br/>
 							<input type="password" name="password" size="25"/>
 						</div>
-						<input name="redirect" type="hidden" value="<?php echo $this->getVar('redirect'); ?>" />
+						<input name="redirect" type="hidden" value="<?php echo htmlspecialchars($this->getVar('redirect'), ENT_QUOTES); ?>" />
 						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
-						<script type="text/javascript">
-							jQuery(document).ready(function() {
-								var pdfInfo = caUI.utils.getAcrobatInfo();
-								jQuery("#login").append(
-									"<input type='hidden' name='_screen_width' value='"+ screen.width + "'/>" +
-									"<input type='hidden' name='_screen_height' value='"+ screen.height + "'/>" +
-									"<input type='hidden' name='_has_pdf_plugin' value='"+ ((pdfInfo && pdfInfo['acrobat'] && (pdfInfo['acrobat'] === 'installed')) ? 1 : 0) + "'/>"
-								);
-							});
-						</script>
 					</form>
 <?php if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { ?>
 					<div id="forgotLink"><?php print caNavLink($this->request, _t("Forgot your password?"), 'forgotLink', 'system/auth', 'forgot', ''); ?></div>

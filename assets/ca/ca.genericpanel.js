@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.genericpanel.js
+ * js/ca.genericpanel.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

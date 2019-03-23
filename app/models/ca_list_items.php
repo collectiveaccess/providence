@@ -34,9 +34,9 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
-require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/RepresentableBaseModel.php');
+require_once(__CA_LIB_DIR__.'/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 
@@ -656,6 +656,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		} else {
 			if ($vb_we_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
+			ExternalCache::flush('listItems');
 		}
 		return $vn_rc;
 	}
@@ -683,6 +684,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		} else {
 			if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
 			$this->_setSettingsForList();
+			ExternalCache::flush('listItems');
 		}
 		return $vn_rc;
 	}
@@ -701,6 +703,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		$vn_id = $this->getPrimaryKey();
 		if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			ExternalCache::flush('listItems');
 			// Delete any associated attribute values that use this list item
 			if (!($qr_res = $this->getDb()->query("
 				DELETE FROM ca_attribute_values 

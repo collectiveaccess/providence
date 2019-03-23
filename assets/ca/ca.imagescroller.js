@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.imagescroller.js
+ * js/ca.imagescroller.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

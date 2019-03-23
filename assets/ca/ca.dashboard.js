@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.dashboard.js
+ * js/ca.dashboard.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

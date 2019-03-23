@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
  	require_once(__CA_MODELS_DIR__.'/ca_users.php');
  
 	class notificationsWidget extends BaseWidget implements IWidget {
@@ -37,8 +37,8 @@
 		static $s_widget_settings = [];
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {
-			$this->title = _t('Notifications');
-			$this->description = _t('Displays notifications');
+			$this->title = _t('Notification inbox');
+			$this->description = _t('Displays current notifications');
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/notifications.conf');
@@ -65,7 +65,7 @@
 		public function renderWidget($ps_widget_id, &$pa_settings) {
 			parent::renderWidget($ps_widget_id, $pa_settings);
 
-			$va_notification_list = $this->getRequest()->getUser()->getNotifications();
+			$va_notification_list = $this->getRequest()->getUser()->getNotifications(['deliverToInbox' => true]);
 			
 			$this->opo_view->setVar('request', $this->getRequest());
 			$this->opo_view->setVar('notification_list', $va_notification_list);

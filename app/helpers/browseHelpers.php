@@ -106,71 +106,70 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	 * @return BaseBrowse
 	 */
 	function caGetBrowseInstance($pm_table_name_or_num, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		
-		$vs_table = (is_numeric($pm_table_name_or_num)) ? $o_dm->getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
+		$vs_table = (is_numeric($pm_table_name_or_num)) ? Datamodel::getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
 		
-		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { return null; }
 		if ($t_instance->isRelationship()) { 
-			require_once(__CA_LIB_DIR__.'/ca/Browse/InterstitialBrowse.php');
+			require_once(__CA_LIB_DIR__.'/Browse/InterstitialBrowse.php');
 			return new InterstitialBrowse(null, null, $vs_table);
 		}
 		
 		switch($vs_table) {
 			case 'ca_objects':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/ObjectBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/ObjectBrowse.php');
 				return new ObjectBrowse();
 				break;
 			case 'ca_entities':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/EntityBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/EntityBrowse.php');
 				return new EntityBrowse();
 				break;
 			case 'ca_places':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/PlaceBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/PlaceBrowse.php');
 				return new PlaceBrowse();
 				break;
 			case 'ca_occurrences':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/OccurrenceBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/OccurrenceBrowse.php');
 				return new OccurrenceBrowse();
 				break;
 			case 'ca_collections':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/CollectionBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/CollectionBrowse.php');
 				return new CollectionBrowse();
 				break;
 			case 'ca_loans':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/LoanBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/LoanBrowse.php');
 				return new LoanBrowse();
 				break;
 			case 'ca_movements':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/MovementBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/MovementBrowse.php');
 				return new MovementBrowse();
 				break;
 			case 'ca_lists':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/ListBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/ListBrowse.php');
 				return new ListBrowse();
 				break;
 			case 'ca_list_items':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/ListItemBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/ListItemBrowse.php');
 				return new ListItemBrowse();
 				break;
 			case 'ca_object_lots':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/ObjectLotBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/ObjectLotBrowse.php');
 				return new ObjectLotBrowse();
 				break;
 			case 'ca_object_representations':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/ObjectRepresentationBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/ObjectRepresentationBrowse.php');
 				return new ObjectRepresentationBrowse();
 				break;
 			case 'ca_tours':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/TourBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/TourBrowse.php');
 				return new TourBrowse();
 				break;
 			case 'ca_tour_stops':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/TourStopBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/TourStopBrowse.php');
 				return new TourStopBrowse();
 				break;
 			case 'ca_storage_locations':
-				require_once(__CA_LIB_DIR__.'/ca/Browse/StorageLocationBrowse.php');
+				require_once(__CA_LIB_DIR__.'/Browse/StorageLocationBrowse.php');
 				return new StorageLocationBrowse();
 				break;
 			default:
@@ -197,11 +196,23 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	function caGetInfoForBrowseType($ps_browse_type) {
 		$o_browse_config = caGetBrowseConfig();
 		
-		$va_browse_types = $o_browse_config->getAssoc('browseTypes');
+		if (!is_array($va_browse_types = $o_browse_config->getAssoc('browseTypes'))) { return null; }
+		
 		$ps_browse_type = strtolower($ps_browse_type);
 		
 		if (isset($va_browse_types[$ps_browse_type])) {
 			return $va_browse_types[$ps_browse_type];
+		} else {
+		    // Try to match case insensitively
+		    $keys = array_keys($va_browse_types);
+		    
+		    $dict = [];
+		    foreach($keys as $k) {
+		        $dict[strtolower($k)] = $k;
+		    }
+		    if (isset($dict[$ps_browse_type])) {
+		        return $va_browse_types[$dict[$ps_browse_type]];
+		    }
 		}
 		return null;
 	}
@@ -236,7 +247,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		$vs_default_facet = caGetOption('defaultFacet', $pa_options, null);
 		
 		$o_browse_config = caGetBrowseConfig();
-		$vs_key = '';//$po_request->session->getVar('objects_last_browse_id');
+		$vs_key = '';//Session::getVar('objects_last_browse_id');
 		
 		if (!($va_browse_info = caGetInfoForBrowseType($vs_browse_type))) {
 			// invalid browse type – throw error

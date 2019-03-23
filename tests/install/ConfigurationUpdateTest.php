@@ -228,7 +228,7 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$va_restrictions = $t_instance->getTypeRestrictions();
 		$this->assertEquals(1, sizeof($va_restrictions));
 		$va_newest_restriction = array_pop($va_restrictions);
-		$this->assertEquals($va_newest_restriction['table_num'], Datamodel::load()->getTableNum('ca_storage_locations'));
+		$this->assertEquals($va_newest_restriction['table_num'], Datamodel::getTableNum('ca_storage_locations'));
 	}
 
 	public function testAddNewUI() {

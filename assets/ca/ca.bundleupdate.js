@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.bundleupdatemanager.js
+ * js/ca.bundleupdatemanager.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,11 +64,16 @@ var caBundleUpdateManager = null;
 		}
 		
 		// --------------------------------------------------------------------------------
-		that.reloadBundle = function(bundle) {
+		that.reloadBundle = function(bundle, options) {
 			var b = that.byBundle[bundle];
 			if (b) {
 				jQuery.each(b, function(k, v) {
 					var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v.bundle + "/placement_id/" + v.placement_id;
+					if (options) { 
+					    for(var k in options) {
+					        loadURL += "/" + k + "/" + options[k];
+					    }
+					}
 					jQuery("#" + v.id).load(loadURL);
 				});
 			}

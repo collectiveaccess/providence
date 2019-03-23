@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 

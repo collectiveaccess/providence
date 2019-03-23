@@ -26,20 +26,20 @@
  * ----------------------------------------------------------------------
  */
  	
- 	require_once(__CA_LIB_DIR__."/core/Configuration.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseFindController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ObjectLotSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/EntitySearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/PlaceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/OccurrenceSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/CollectionSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/StorageLocationSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/LoanSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/MovementSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/TourSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/TourStopSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/QuickSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Configuration.php");
+ 	require_once(__CA_LIB_DIR__."/BaseFindController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectLotSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/EntitySearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/PlaceSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/OccurrenceSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/CollectionSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/StorageLocationSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/LoanSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/MovementSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/TourSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/TourStopSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/QuickSearch.php");
  	
  	require_once(__CA_MODELS_DIR__."/ca_lists.php");
  	
@@ -59,9 +59,9 @@
  			$ps_search 		= $this->request->getParameter('search', pString);
  			$ps_sort 		= $this->request->getParameter('sort', pString);
  			
- 			if (!$ps_search) { $ps_search = $this->request->session->getVar('quick_search_last_search'); }
+ 			if (!$ps_search) { $ps_search = Session::getVar('quick_search_last_search'); }
  			if (!in_array($ps_sort, array('name', 'idno', 'relevance'))) {
- 				if (!$ps_sort = $this->request->session->getVar('quick_search_last_sort')) {
+ 				if (!$ps_sort = Session::getVar('quick_search_last_sort')) {
  					$ps_sort = 'name';
  				}
  			}
@@ -123,13 +123,13 @@
  			
  			// note last quick search
  			if ($ps_search) {
- 				$this->request->session->setVar('quick_search_last_search', $ps_search);
+ 				Session::setVar('quick_search_last_search', $ps_search);
  			}
  			if($ps_sort) {
- 				$this->request->session->setVar('quick_search_last_sort', $ps_sort);
+ 				Session::setVar('quick_search_last_sort', $ps_sort);
  			}
  			$this->view->setVar('search', $ps_search);
- 			$this->view->setVar('sort', $this->request->session->getVar('quick_search_last_sort'));
+ 			$this->view->setVar('sort', Session::getVar('quick_search_last_sort'));
  					
  			$this->view->setVar('maxNumberResults', $this->opn_num_results_per_item_type);
  			
@@ -153,57 +153,57 @@
  			switch($ps_target) {
  				case 'ca_objects':
  					$o_object_search = new ObjectSearch();
- 					if ($ps_type) { $o_object_search->setTypeRestrictions($ps_type); }
+ 					if ($ps_type) { $o_object_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
  					return $o_object_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_object_lots':
 					$o_object_lots_search = new ObjectLotSearch();
- 					if ($ps_type) { $o_object_lots_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_object_lots_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_object_lots_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_entities':
 					$o_entity_search = new EntitySearch();
- 					if ($ps_type) { $o_entity_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_entity_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_entity_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_places':
 					$o_place_search = new PlaceSearch();
- 					if ($ps_type) { $o_place_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_place_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_place_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_occurrences':
 					$o_occurrence_search = new OccurrenceSearch();
- 					if ($ps_type) { $o_occurrence_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_occurrence_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_occurrence_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_collections':
 					$o_collection_search = new CollectionSearch();
- 					if ($ps_type) { $o_collection_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_collection_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_collection_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_storage_locations':
 					$o_storage_location_search = new StorageLocationSearch();
- 					if ($ps_type) { $o_storage_location_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_storage_location_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_storage_location_search->search(($ps_search == '*') ? '(ca_storage_locations.is_enabled:1)' : '('.$ps_search.') AND (ca_storage_locations.is_enabled:1)', array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_loans':
 					$o_loan_search = new LoanSearch();
- 					if ($ps_type) { $o_loan_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_loan_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_loan_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_movements':
 					$o_movement_search = new MovementSearch();
- 					if ($ps_type) { $o_movement_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_movement_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_movement_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_tours':
 					$o_tour_search = new TourSearch();
- 					if ($ps_type) { $o_tour_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_tour_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_tour_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_tour_stops':
 					$o_tour_stop_search = new TourStopSearch();
- 					if ($ps_type) { $o_tour_stop_search->setTypeRestrictions([$ps_type]); }
+ 					if ($ps_type) { $o_tour_stop_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_tour_stop_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				default:

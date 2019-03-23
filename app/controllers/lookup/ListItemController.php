@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
  	
  	class ListItemController extends BaseLookupController {
  		# -------------------------------------------------------
@@ -184,7 +184,7 @@
  				//
  				// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
  				// is part of a browser initialization
- 				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
+ 				Session::setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
  			}
  			
  			$this->view->setVar('dontShowSymbols', (bool)$this->request->getParameter('noSymbols', pString));

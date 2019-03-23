@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,15 +47,31 @@
 	function caGetThemeGraphic($po_request, $ps_file_path, $pa_attributes=null, $pa_options=null) {
 		$vs_base_url_path = $po_request->getThemeUrlPath();
 		$vs_base_path = $po_request->getThemeDirectoryPath();
-		$vs_file_path = '/assets/pawtucket/graphics/'.$ps_file_path;
+		$vs_file_path = "/assets/pawtucket/graphics/{$ps_file_path}";
 
-		if (!file_exists($vs_base_path.$vs_file_path)) {
-			$vs_base_url_path = $po_request->getDefaultThemeUrlPath();
+        if (file_exists($vs_base_path.$vs_file_path)) {
+            // Graphic is present in currently configured theme
+			return caHTMLImage($vs_base_url_path.$vs_file_path, $pa_attributes, $pa_options);
 		}
 
-		$vs_html = caHTMLImage($vs_base_url_path.$vs_file_path, $pa_attributes, $pa_options);
+        $o_config = Configuration::load();		
+		if ($o_config->get('allowThemeInheritance')) {
+            $i=0;
+            
+            while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
+                $i++;
+                if (file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/{$vs_file_path}")) {
+                    return caHTMLImage(__CA_THEMES_URL__."/{$vs_inherit_from_theme}/{$vs_file_path}", $pa_attributes, $pa_options);
+                }
+                
+                if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
+                $o_config = Configuration::load(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf", false, false, true);
+                if ($i > 10) {break;} // max 10 levels
+            }
+        }
 
-		return $vs_html;
+        // Fall back to default theme
+		return caHTMLImage($po_request->getDefaultThemeUrlPath().$vs_file_path, $pa_attributes, $pa_options);
 	}
 	# ---------------------------------------
 	/**
@@ -263,10 +279,8 @@
 			$vs_access_where = ' AND orep.access IN ('.join(',', $pa_access_values).')';
 		}
 		$o_db = new Db();
-		$o_dm = Datamodel::load();
-
 		if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($ps_table))) { return null; }
-		$vs_pk = $o_dm->getTablePrimaryKeyName($ps_table);
+		$vs_pk = Datamodel::primaryKey($ps_table);
 
 		$qr_res = $o_db->query("
 			SELECT oxor.{$vs_pk}, orep.media, orep.representation_id
@@ -711,14 +725,12 @@
 		$vs_current_action = ($po_request = caGetOption('request', $pa_options, null)) ? $po_request->getAction() : null;
 		if (isset($g_theme_detail_for_type_cache[$pm_table.'/'.$pm_type])) { return $g_theme_detail_for_type_cache[$pm_table.'/'.$pm_type.'/'.$vs_current_action]; }
 		$o_config = caGetDetailConfig();
-		$o_dm = Datamodel::load();
-
 		$vs_preferred_detail = caGetOption('preferredDetail', $pa_options, null);
 
-		if (!($vs_table = $o_dm->getTableName($pm_table))) { return null; }
+		if (!($vs_table = Datamodel::getTableName($pm_table))) { return null; }
 
 		if ($pm_type) {
-			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 			$vs_type = is_numeric($pm_type) ? $t_instance->getTypeCode($pm_type) : $pm_type;
 		} else {
 			$vs_type = null;
@@ -754,8 +766,7 @@
 	 *
 	 */
 	function caGetDisplayImagesForAuthorityItems($pm_table, $pa_ids, $pa_options=null) {
-		$o_dm = Datamodel::load();
-		if (!($t_instance = $o_dm->getInstanceByTableName($pm_table, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstanceByTableName($pm_table, true))) { return null; }
 		if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) { return array(); }
 		
 		$ps_return = caGetOption("return", $pa_options, 'tags');
@@ -781,7 +792,7 @@
 		if($pa_options['checkAccess']){
 			$vs_access_wheres = " AND ca_objects.access IN (".join(",", $pa_access_values).") AND ca_object_representations.access IN (".join(",", $pa_access_values).")";
 		}
-		$va_path = array_keys($o_dm->getPath($vs_table = $t_instance->tableName(), "ca_objects"));
+		$va_path = array_keys(Datamodel::getPath($vs_table = $t_instance->tableName(), "ca_objects"));
 		$vs_pk = $t_instance->primaryKey();
 
 		$va_params = array();
@@ -1013,8 +1024,7 @@
 		
 		if (!($va_search_info = caGetInfoForAdvancedSearchType($ps_function))) { return null; }
 		
-		$o_dm = Datamodel::load();
- 		if (!($pt_subject = $o_dm->getInstanceByTableName($va_search_info['table'], true))) { return null; }
+ 		if (!($pt_subject = Datamodel::getInstanceByTableName($va_search_info['table'], true))) { return null; }
  		
  		$va_globals = $pt_subject->getAppConfig()->getAssoc('global_template_values');
  		
@@ -1125,11 +1135,11 @@
 		
 		if($vb_submit_or_reset_set) {
 			$vs_script = "<script type='text/javascript'>
-			jQuery('.caAdvancedSearchFormSubmit').bind('click', function() {
+			jQuery('.caAdvancedSearchFormSubmit').on('click', function() {
 				jQuery('#caAdvancedSearch').submit();
 				return false;
 			});
-			jQuery('.caAdvancedSearchFormReset').bind('click', function() {
+			jQuery('.caAdvancedSearchFormReset').on('click', function() {
 				jQuery('#caAdvancedSearch').find('input[type!=\"hidden\"],textarea').val('');
 				jQuery('#caAdvancedSearch').find('input.lookupBg').val('');
 				jQuery('#caAdvancedSearch').find('select.caAdvancedSearchBoolean').val('AND');
@@ -1247,7 +1257,7 @@ jQuery(document).ready(function() {
 	 * 
 	 */
 	function caGetComparisonList($po_request, $ps_table, $pa_options=null) {
-		if (!is_array($va_comparison_list = $po_request->session->getVar("{$ps_table}_comparison_list"))) { $va_comparison_list = []; }
+		if (!is_array($va_comparison_list = Session::getVar("{$ps_table}_comparison_list"))) { $va_comparison_list = []; }
 		
 		// Get title template from config
 		$va_compare_config = $po_request->config->get('compare_images');
@@ -1274,21 +1284,43 @@ jQuery(document).ready(function() {
 		if($o_collections_config->get("export_max_levels") && ($vn_level > $o_collections_config->get("export_max_levels"))){
 			return;
 		}
+		$t_list = new ca_lists();
+		$va_exclude_collection_type_ids = array();
+		if($va_exclude_collection_type_idnos = $o_collections_config->get("export_exclude_collection_types")){
+			# --- convert to type_ids
+			$va_exclude_collection_type_ids = $t_list->getItemIDsFromList("collection_types", $va_exclude_collection_type_idnos, array("dontIncludeSubItems" => true));
+		}
 		$vs_output = "";
 		$qr_collections = caMakeSearchResult("ca_collections", $va_collection_ids);
 		
 		$vs_sub_collection_label_template = $o_collections_config->get("export_sub_collection_label_template");
 		$vs_sub_collection_desc_template = $o_collections_config->get("export_sub_collection_description_template");
 		$vs_object_template = $o_collections_config->get("export_object_label_template");
-	
+		$va_collection_type_icons = array();
+		$va_collection_type_icons_by_idnos = $o_collections_config->get("export_collection_type_icons");
+		if(is_array($va_collection_type_icons_by_idnos) && sizeof($va_collection_type_icons_by_idnos)){
+			foreach($va_collection_type_icons_by_idnos as $vs_idno => $vs_icon){
+				$va_collection_type_icons[$t_list->getItemId("collection_types", $vs_idno)] = $vs_icon;
+			}
+		}
 		if($qr_collections->numHits()){
 			while($qr_collections->nextHit()) {
+				if($va_exclude_collection_type_ids && is_array($va_exclude_collection_type_ids) && (in_array($qr_collections->get("ca_collections.type_id"), $va_exclude_collection_type_ids))){
+					continue;
+				}
+		
 				$vs_icon = "";
+				if(is_array($va_collection_type_icons) && $va_collection_type_icons[$qr_collections->get("ca_collections.type_id")]){
+					$vs_icon = $va_collection_type_icons[$qr_collections->get("ca_collections.type_id")];
+				}			
 				# --- related objects?
 				$va_object_ids = $qr_collections->get("ca_objects.object_id", array("returnAsArray" => true, 'checkAccess' => $va_access_values));
 				$vn_rel_object_count = sizeof($va_object_ids);
 				$va_child_ids = $qr_collections->get("ca_collections.children.collection_id", array("returnAsArray" => true, "checkAccess" => $va_access_values, "sort" => "ca_collections.idno_sort"));
 				$vs_output .= "<div class='unit' style='margin-left:".(40*($vn_level - 1))."px;'>";
+				if($vs_icon){
+					$vs_output .= $vs_icon." ";
+				}
 				$vs_output .= "<b>";
 				if($vs_sub_collection_label_template){
 					$vs_output .= $qr_collections->getWithTemplate($vs_sub_collection_label_template);

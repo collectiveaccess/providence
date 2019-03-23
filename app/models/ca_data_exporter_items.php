@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
@@ -221,16 +221,6 @@ class ca_data_exporter_items extends BaseModel {
 	protected function initSettings($pa_settings=null){
 		$va_settings = is_array($pa_settings) ? $pa_settings : array();
 		
-		/*$va_settings['refineries'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_SELECT,
-			'width' => 40, 'height' => 6,
-			'takesLocale' => false,
-			'default' => '',
-			'options' => ca_data_exporter_items::getAvailableRefineries(),
-			'label' => _t('Refineries'),
-			'description' => _t('Select the refinery that preforms the correct function to alter your data source as it maps to CollectiveAccess.')
-		);*/
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -432,6 +422,16 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the context of the mapping to only records of the designated type. Only valid when context is set.')
 		);
+		$va_settings['filterTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'multiple' => 1,
+			'default' => '',
+			'label' => _t('Filter types'),
+			'description' => _t('Filter returned list item hierarachy returning only items with the specified types. Only valid for export of list item attributes.')
+		);
 
 		$va_settings['restrictToRelationshipTypes'] = array(
 			'formatType' => FT_TEXT,
@@ -631,4 +631,3 @@ class ca_data_exporter_items extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>
