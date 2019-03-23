@@ -69,7 +69,7 @@
 						'id' => $vs_id,
 						'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
 						'viewer_base_url' => $po_request->getBaseUrlPath(),
-						'annotation_load_url' => caNavUrl($po_request, '*', '*', 'GetAnnotationList', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
+						'annotation_load_url' => caNavUrl($po_request, '*', '*', 'GetAnnotations', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
 						'annotation_save_url' => caNavUrl($po_request, '*', '*', 'SaveAnnotations', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
 						'download_url' => caNavUrl($po_request, '*', '*', 'DownloadMedia', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
 						'help_load_url' => caNavUrl($po_request, '*', '*', 'ViewerHelp', array()),
