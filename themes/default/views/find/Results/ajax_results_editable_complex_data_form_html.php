@@ -46,7 +46,7 @@
 			'dontAllowBundleShowHide' => true
 	));
 	
-	print caFormTag($this->request, '#', 'caEditableResultsComplexDataForm', null, 'POST', 'multipart/form-data', null, array('disableUnsavedChangesWarning' => true, 'disableSubmit' => true));
+	print caFormTag($this->request, '#', 'caEditableResultsComplexDataForm', null, 'POST', 'multipart/form-data', null, array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'disableSubmit' => true));
 ?>
 		<div class="caResultsComplexDataEditorErrorContainer" id="caEditableResultsComplexDataFormErrors"> </div>
 		

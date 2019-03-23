@@ -41,7 +41,7 @@ $vo_result					= $this->getVar('result');
 <h3 class="tools"><?php print _t("History"); ?>:
 	<div>
 <?php
-		print caFormTag($this->request, 'Index', 'caSearchHistoryForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'Index', 'caSearchHistoryForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
 		print "<select name='search' class='searchHistorySelect'>\n";
 		foreach(array_reverse($va_search_history) as $vs_search => $va_search_info) {
@@ -64,7 +64,7 @@ $vo_result					= $this->getVar('result');
 <h3 class="tools"><?php print _t("Saved searches"); ?>:
 	<div>
 <?php
-		print caFormTag($this->request, 'doSavedSearch', 'caSavedSearchesForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'doSavedSearch', 'caSavedSearchesForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
 		print "<select name='saved_search_key' class='savedSearchSelect'>\n";
 		
@@ -91,7 +91,7 @@ if(sizeof($this->getVar("available_sets")) > 0){
 	<h3 class='searchTools'><?php print _t("Search by set"); ?>:
 		<div>
 			<?php
-			print caFormTag($this->request, 'Index', 'caSearchSetsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			print caFormTag($this->request, 'Index', 'caSearchSetsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 			print "<select name='search' class='searchSetSelect'>\n";
 			foreach($this->getVar("available_sets") as $vn_set_id => $va_set) {
 				$vs_set_identifier = ($va_set['set_code']) ? $va_set['set_code'] : $vn_set_id;

@@ -29,7 +29,7 @@
 	$o_widget_manager = $this->getVar('widget_manager');
 	$va_widget_list = $o_widget_manager->getWidgetNames();
 	
-	print caFormTag($this->request, 'addWidget', 'caWidgetManagerForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+	print caFormTag($this->request, 'addWidget', 'caWidgetManagerForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 ?>
 		<input type="hidden" name="widget" value="" id='caWidgetManagerFormWidgetValue'/>
 <?php

@@ -79,7 +79,7 @@ foreach($va_searches_by_table as $vs_table => $va_searches){
 		foreach($va_searches as $vs_search_type => $va_search_info){
 			if (sizeof($va_search_info) > 0) {
 				print "<div style='float:".(($vs_search_type == "basic_search") ? "left": "right").";'>";
-				print caFormTag($po_request, 'doSavedSearch', 'caSavedSearchesForm'.$vs_table.$vs_search_type, $vs_path.(($vs_search_type == "advanced_search") ? "Advanced": ""), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+				print caFormTag($po_request, 'doSavedSearch', 'caSavedSearchesForm'.$vs_table.$vs_search_type, $vs_path.(($vs_search_type == "advanced_search") ? "Advanced": ""), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 				print (($vs_search_type == "advanced_search") ? _t("advanced"): _t("basic")).": <select name='saved_search_key' style='width:100px;'>\n";			
 				foreach(array_reverse($va_search_info) as $vs_key => $va_search) {
 					$vs_search = strip_tags($va_search['_label']);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -222,17 +222,18 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 */
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+		global $g_ui_locale_id;
  		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("geonames_user"));
 
-		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
+		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, ['canBeEmpty']);
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
 				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
 				return false;
 			}
-			return array();
+			return [];
  		} else {
  			$vs_text = $ps_value;
  			$vs_id = null;
@@ -241,17 +242,60 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $ps_value);
 			}
 			if (!$vs_id) {
+			    $vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
+                $t_locale = new ca_locales($g_ui_locale_id);
+                $vs_lang = $t_locale->get("language");
+                $va_params = [
+                    "q" => $ps_value,
+                    "lang" => $vs_lang,
+                    'style' => 'full',
+                    'username' => $vs_user,
+                    'maxRows' => 5,
+                ];
+                
+                $vs_query_string = '';
+                foreach ($va_params as $vs_key => $vs_value) {
+                    $vs_query_string .= "$vs_key=" . urlencode($vs_value) . "&";
+                }
+
+                try {
+                    $vs_xml = caQueryExternalWebservice("{$vs_base}?$vs_query_string");
+                    $vo_xml = new SimpleXMLElement($vs_xml);
+                
+                    $va_attr = $vo_xml->status ? $vo_xml->status->attributes() : null;
+                    if ($va_attr && isset($va_attr['value']) && ((int)$va_attr['value'] > 0)) { 
+                        $this->postError(1970, _t('Connection to GeoNames with username "%1" was rejected with the message "%2". Check your configuration and make sure your GeoNames.org account is enabled for web services.', $vs_user, $va_attr['message']), 'GeoNamesAttributeValue->parseValue()');
+                        return false;
+                    } else {
+                        foreach($vo_xml->children() as $vo_child){
+                            if($vo_child->getName()=="geoname"){
+
+                                $vs_text = $vo_child->name.
+                                                ($vo_child->lat ? " [".$vo_child->lat."," : '').
+                                                ($vo_child->lng ? $vo_child->lng."]" : '');
+                                $vs_id = (string)$vo_child->geonameId;
+                                return [
+                                    'value_longtext1' => $vs_text,
+                                    'value_longtext2' => $vs_id,
+                                ];
+                            }
+                        }
+                    }
+                } catch (Exception $e) {
+                    $this->postError(1970, _t('Could not connect to GeoNames'), 'GeoNamesAttributeValue->parseValue()');
+				    return false;
+                }
 				if(!$va_settings["canBeEmpty"]){
 					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
 					return false;
 				}
-				return array();
+				return [];
 			}
 
-			return array(
+			return [
 				'value_longtext1' => $vs_text,
 				'value_longtext2' => $vs_id,
-			);
+			];
 		}
 	}
 	# ------------------------------------------------------------------

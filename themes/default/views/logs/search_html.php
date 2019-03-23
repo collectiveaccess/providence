@@ -40,7 +40,7 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Show from').': '.caFormTag($this->request, 'Index', 'searchLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('search_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'searchLogSearch')."</form>"
+			_t('Show from').': '.caFormTag($this->request, 'Index', 'searchLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)).caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('search_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'searchLogSearch')."</form>"
 		); 
 	?>
 	

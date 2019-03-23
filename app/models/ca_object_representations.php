@@ -1901,7 +1901,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * @return int Number of representations
 	 */
 	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
-		return sizeof($this->representationsOfClass($ps_class, $pa_options));
+		$reps = $this->representationsOfClass($ps_class, $pa_options);
+		return is_array($reps) ? sizeof($reps) : 0;
 	}
 	# ------------------------------------------------------
 	/**

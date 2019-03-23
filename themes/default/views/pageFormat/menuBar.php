@@ -15,9 +15,9 @@
 					<!-- Quick search -->
 <?php 	
 						if ($vs_target_table = $this->request->config->get('one_table_search')) {	
-							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/'.$vs_target_table, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/'.$vs_target_table, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 						} else {
-							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/QuickSearch', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/QuickSearch', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 						}
 					
 						if ($this->request->isLoggedIn() && ($this->request->user->getPreference('clear_quicksearch') == 'auto_clear')) { 
