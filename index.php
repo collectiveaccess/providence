@@ -45,9 +45,6 @@
 			require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
 			exit();
 		}
-		$g_monitor = new ApplicationMonitor();
-		if ($g_monitor->isEnabled()) { $o_db->setMonitor($g_monitor); }
-
 		//
 		// do a sanity check on application and server configuration before servicing a request
 		//

@@ -55,4 +55,3 @@
 	$resp->sendResponse();
 
 	$req->close();
-?>

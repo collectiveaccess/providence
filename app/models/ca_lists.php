@@ -1548,8 +1548,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!is_array($va_list_items)) { $va_list_items = array(); }
 		
-		$va_options = array();
-		$va_disabled_options = array();
+		$va_options = $va_disabled_options = [];
 		
 		if (!isset($pa_options['value'])) { $pa_options['value'] = null; }
 		if (!isset($pa_options['key'])) { $pa_options['key'] = 'item_id'; }
@@ -1561,7 +1560,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
 		$pa_exclude_items = caGetOption('exclude', $pa_options, null);
 	
-		if ((!isset($pa_options['implicitNullOption']) || !$pa_options['implicitNullOption']) && (isset($pa_options['nullOption']) && $pa_options['nullOption']) && ($vs_render_as != 'checklist')) {
+		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && ($vs_render_as !== 'checklist')) {
 			$va_options[''] = $pa_options['nullOption'];
 		}
 		
